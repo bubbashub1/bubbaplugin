@@ -8,15 +8,27 @@ document.querySelector('#adminSearch').addEventListener('input',render);
 document.querySelector('#newActivity').addEventListener('click',()=>alert('The secure activity editor will connect to the production API/database in the next backend phase.'));
 document.querySelector('#deployLatest').addEventListener('click',async()=>{
 const status=document.querySelector('#deployStatus');
-const key=prompt('Enter your Bubba Hub deployment key:');
-if(!key)return;
+const button=document.querySelector('#deployLatest');
+
+button.disabled=true;
 status.textContent='Starting deployment…';
+
 try{
-const response=await fetch('deploy.php',{method:'POST',headers:{'X-Bubba-Deploy-Key':key}});
+const response=await fetch('deploy.php',{
+method:'POST',
+headers:{'Content-Type':'application/json'}
+});
+
 const data=await response.json();
+
 if(!response.ok||!data.ok)throw new Error(data.error||'Deployment failed');
+
 status.textContent='✓ Deployment started. GitHub Actions is now publishing the latest main branch.';
-}catch(e){status.textContent='Deployment failed: '+e.message;}
+}catch(error){
+status.textContent='Deployment failed: '+error.message;
+}finally{
+button.disabled=false;
+}
 });
 render();
 }init();
