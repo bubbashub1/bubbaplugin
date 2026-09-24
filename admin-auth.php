@@ -6,7 +6,18 @@ header('Cache-Control: no-store');
 
 function respond(int $s,array $d):never{http_response_code($s);echo json_encode($d);exit;}
 
-$f='/github-deploy-config.php';
+$configCandidates = array_filter([
+    dirname($_SERVER['DOCUMENT_ROOT'] ?? '') . '/github-deploy-config.php',
+    ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/github-deploy-config.php',
+    '/github-deploy-config.php'
+]);
+$f = '';
+foreach ($configCandidates as $candidate) {
+    if (is_file($candidate)) {
+        $f = $candidate;
+        break;
+    }
+}
 if(!is_file($f))respond(503,['ok'=>false,'error'=>'Admin authentication is not configured on the server.']);
 $c=require $f;
 if(!is_array($c))respond(503,['ok'=>false,'error'=>'Invalid server configuration.']);
