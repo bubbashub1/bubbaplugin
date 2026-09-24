@@ -8,9 +8,17 @@
 </header>
 <main class="app-shell">
 <div class="page-heading"><div><span class="eyebrow">Bubba Hub control centre</span><h1>Admin dashboard</h1><p>A clean foundation for managing the family activity directory.</p></div><button class="button button-primary" id="newActivity">+ Add activity</button></div>
+
+<section class="admin-panel deployment-panel">
+<div class="admin-panel-head"><div><span class="eyebrow">Deployment</span><h2>Publish latest version</h2><p>GitHub <strong>main</strong> deploys to the Bubba Hub beta site.</p></div><a class="button button-primary" href="https://github.com/bubbashub1/bubbaplugin/actions/workflows/deploy.yml" target="_blank" rel="noopener">Deploy latest version ↗</a></div>
+<p class="deployment-note">Opens the secure GitHub Actions deployment controls. Choose <strong>Run workflow</strong> to deploy the current <strong>main</strong> branch. No GitHub credentials are exposed in the website.</p>
+</section>
+
 <section class="admin-stats"><article><span>Published activities</span><strong id="statActivities">0</strong><small>Live in directory</small></article><article><span>Regions</span><strong>14</strong><small>Devon &amp; Cornwall</small></article><article><span>Saved activities</span><strong id="statSaved">0</strong><small>Prototype browser data</small></article><article><span>System</span><strong>Ready</strong><small>Standalone front end</small></article></section>
+
 <section class="admin-panel"><div class="admin-panel-head"><div><span class="eyebrow">Directory</span><h2>Activities</h2></div><input id="adminSearch" type="search" placeholder="Search activities…" aria-label="Search activities"></div>
 <div class="admin-table-wrap"><table><thead><tr><th>Activity</th><th>Category</th><th>Area</th><th>Day</th><th>Price</th><th>Status</th></tr></thead><tbody id="adminActivities"></tbody></table></div></section>
+
 <section class="admin-panel"><div class="admin-panel-head"><div><span class="eyebrow">Architecture</span><h2>System areas</h2></div></div><div class="admin-links">
 <a href="#"><strong>Organisers</strong><span>Profiles, listings and verification →</span></a><a href="#"><strong>Bookings</strong><span>Bookings, consent and payments →</span></a><a href="#"><strong>Users &amp; families</strong><span>Accounts, profiles and permissions →</span></a><a href="#"><strong>Settings</strong><span>Regions, categories and site preferences →</span></a>
 </div></section>
