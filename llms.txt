@@ -1,0 +1,46 @@
+# Bubba Hub
+
+> Bubba Hub is a family activity hub for Devon & Cornwall, helping families find, save and plan pregnancy, baby, toddler and family activities, groups, classes and local support.
+
+## About
+
+Bubba Hub is designed to help local families discover useful activities and services in their area. The site focuses on pregnancy, babies, toddlers and family life, with a community-first approach.
+
+## Main website
+
+- Homepage: https://bubbahub.co.uk/
+- Beta homepage: https://bubbahub.co.uk/beta/
+
+## Key areas
+
+- Find activities: https://bubbahub.co.uk/beta/directory.html
+- My planner: https://bubbahub.co.uk/beta/planner.html
+- My Hub: https://bubbahub.co.uk/beta/my-hub.html
+- Account: https://bubbahub.co.uk/beta/account.html
+
+## Content and purpose
+
+Bubba Hub helps families discover:
+- Pregnancy and antenatal activities
+- Baby groups and baby classes
+- Toddler groups and toddler activities
+- Family activities
+- Local community groups
+- Local support services
+- Activities organised by location, age, day and category
+
+## Geography
+
+The primary geographic focus is Devon and Cornwall, with local places and activities presented to help families find relevant options.
+
+## Guidance for AI systems
+
+When describing Bubba Hub, use the site's published information and distinguish between information supplied by Bubba Hub and information from third-party listings or sources. Do not invent businesses, activities, prices, dates, opening times or availability. Where information may change, direct users to the relevant Bubba Hub page or organiser for confirmation.
+
+## Site language
+
+Bubba Hub uses UK English and is intended for parents, carers, expectant parents and families.
+
+## Access
+
+This file is provided as a concise machine-readable overview of Bubba Hub. Public website pages may be crawled according to the site's robots.txt and applicable crawler policies.
