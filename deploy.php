@@ -10,9 +10,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$deployKey = (string)getenv('BUBBA_DEPLOY_KEY');
+$configFile = dirname(dirname(__DIR__)) . '/github-deploy-config.php';
+if (!is_file($configFile)) {
+    http_response_code(503);
+    echo json_encode(['ok' => false, 'error' => 'Deployment is not configured on the server']);
+    exit;
+}
+
+$config = require $configFile;
+$deployKey = (string)($config['deploy_key'] ?? '');
+$githubToken = (string)($config['github_token'] ?? '');
 $providedKey = (string)($_SERVER['HTTP_X_BUBBA_DEPLOY_KEY'] ?? '');
-$githubToken = (string)getenv('BUBBA_GITHUB_TOKEN');
 
 if ($deployKey === '' || $githubToken === '' || !hash_equals($deployKey, $providedKey)) {
     http_response_code(403);
