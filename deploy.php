@@ -17,7 +17,7 @@ if (empty($_SESSION['bh_admin_authenticated'])) {
     exit;
 }
 
-$configFile = dirname(dirname(dirname(__DIR__))) . '/github-deploy-config.php';
+$configFile = dirname(dirname(__DIR__)) . '/github-deploy-config.php';
 
 if (!is_file($configFile)) {
     http_response_code(503);
