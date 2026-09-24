@@ -17,7 +17,18 @@ if (empty($_SESSION['bh_admin_authenticated'])) {
     exit;
 }
 
-$configFile = '/github-deploy-config.php';
+$configCandidates = array_filter([
+    dirname($_SERVER['DOCUMENT_ROOT'] ?? '') . '/github-deploy-config.php',
+    ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/github-deploy-config.php',
+    '/github-deploy-config.php'
+]);
+$configFile = '';
+foreach ($configCandidates as $candidate) {
+    if (is_file($candidate)) {
+        $configFile = $candidate;
+        break;
+    }
+}
 
 if (!is_file($configFile)) {
     http_response_code(503);
