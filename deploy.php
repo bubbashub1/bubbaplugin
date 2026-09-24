@@ -28,6 +28,14 @@ if (!is_file($configFile)) {
 }
 
 $config = require $configFile;
+$adminKey = (string)($config['admin_key'] ?? ($config['file_manager_key'] ?? ''));
+$providedAdminKey = (string)($_SERVER['HTTP_X_BUBBA_ADMIN_KEY'] ?? '');
+if ($adminKey === '' || $providedAdminKey === '' || !hash_equals($adminKey, $providedAdminKey)) {
+    http_response_code(401);
+    echo json_encode(['ok' => false, 'error' => 'Admin access required']);
+    exit;
+}
+
 $githubToken = (string)($config['github_token'] ?? '');
 
 if ($githubToken === '') {
