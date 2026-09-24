@@ -56,8 +56,15 @@ jobs:
           : > "$SFTP_BATCH"
           printf 'cd "%s"\n' "$REMOTE_PATH" >> "$SFTP_BATCH"
           find . -maxdepth 1 -type f ! -name '.gitignore' ! -name 'README.md' -printf 'put "%p"\n' >> "$SFTP_BATCH"
-          find assets data -type f -print 2>/dev/null | while IFS= read -r file; do
-            printf 'put "%s" "%s"\n' "$file" "$file" >> "$SFTP_BATCH"
+          for dir in assets data library; do
+            if [ -d "$dir" ]; then
+              find "$dir" -type d -print | while IFS= read -r folder; do
+                printf -- '-mkdir "%s"\n' "$folder" >> "$SFTP_BATCH"
+              done
+              find "$dir" -type f -print | while IFS= read -r file; do
+                printf 'put "%s" "%s"\n' "$file" "$file" >> "$SFTP_BATCH"
+              done
+            fi
           done
           sftp -b "$SFTP_BATCH" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
           echo "Deployment completed successfully."
