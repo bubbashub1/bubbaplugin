@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Account · Bubba Hub</title>
+<meta name="description" content="Manage your Bubba Hub account, family details, planner preferences and notifications.">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+<header class="site-header">
+<a class="brand" href="index.html"><span class="brand-mark">B</span><span><strong>Bubba</strong><small>HUB</small></span></a>
+<nav class="main-nav" aria-label="Main navigation">
+<a href="directory.html">Find activities</a><a href="planner.html">My planner</a><a href="my-hub.html">My Hub</a>
+</nav>
+<a class="button button-soft active" href="account.html">My account</a>
+</header>
+<main class="app-shell">
+<div class="page-heading">
+<div><span class="eyebrow">Your account</span><h1>My Account</h1><p>Manage your Bubba Hub profile and the preferences that shape your family experience.</p></div>
+</div>
+<section class="feature-grid">
+<article class="feature-card"><span class="feature-icon">👤</span><h3>Profile</h3><p>Manage your name, email address and account details.</p><a class="card-link" href="#profile">Manage profile →</a></article>
+<article class="feature-card"><span class="feature-icon">👶</span><h3>Children &amp; bump</h3><p>Keep family profiles up to date so activities can be personalised.</p><a class="card-link" href="my-hub.html">Open My Hub →</a></article>
+<article class="feature-card"><span class="feature-icon">✓</span><h3>Planner preferences</h3><p>Choose the locations, days and planning options you want to use.</p><a class="card-link" href="#preferences">Manage preferences →</a></article>
+<article class="feature-card"><span class="feature-icon">♡</span><h3>Saved activities</h3><p>Return to activities you've saved and decide which ones belong in your planner.</p><a class="card-link" href="directory.html">View activities →</a></article>
+</section>
+<section class="section" id="profile">
+<div class="admin-panel">
+<div class="admin-panel-head"><div><span class="eyebrow">Account details</span><h2>Your profile</h2></div><span class="status">Demo account</span></div>
+<div class="directory-toolbar" style="grid-template-columns:1fr 1fr;">
+<label>Name<input class="filter-input" type="text" value="" placeholder="Your name"></label>
+<label>Email<input class="filter-input" type="email" value="" placeholder="you@example.com"></label>
+</div>
+<button class="button button-primary" type="button" onclick="this.textContent='Saved';this.disabled=true">Save profile</button>
+</div>
+</section>
+<section class="section" id="preferences">
+<div class="admin-panel">
+<div class="admin-panel-head"><div><span class="eyebrow">My Bubba Hub Directory Preferences</span><h2>Planning preferences</h2></div></div>
+<div class="feature-grid">
+<article class="feature-card"><h3>Area</h3><p>Choose the Devon &amp; Cornwall areas you normally search.</p></article>
+<article class="feature-card"><h3>Activities</h3><p>Set preferred ages, categories and days for discovery.</p></article>
+<article class="feature-card"><h3>Notifications</h3><p>Control saved-search and planner reminders.</p></article>
+<article class="feature-card"><h3>Privacy</h3><p>Review what family information is used to personalise your hub.</p></article>
+</div>
+</div>
+</section>
+</main>
+<footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
+</body>
+</html>
