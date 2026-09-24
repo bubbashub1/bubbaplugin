@@ -1,34 +1,16 @@
-async function init(){
-const r=await fetch('data/activities.json');const all=await r.json();
-const saved=JSON.parse(localStorage.getItem('bubba.saved')||'[]');
-document.querySelector('#statActivities').textContent=all.length;
-document.querySelector('#statSaved').textContent=saved.length;
-const render=()=>{const q=document.querySelector('#adminSearch').value.toLowerCase();const list=all.filter(a=>`${a.title} ${a.category} ${a.town}`.toLowerCase().includes(q));document.querySelector('#adminActivities').innerHTML=list.map(a=>`<tr><td><strong>${a.title}</strong><small>${a.location}</small></td><td>${a.category}</td><td>${a.town}</td><td>${a.day} ${a.time}</td><td>${a.price}</td><td><span class="admin-status">Published</span></td></tr>`).join('')};
-document.querySelector('#adminSearch').addEventListener('input',render);
-document.querySelector('#newActivity').addEventListener('click',()=>alert('The secure activity editor will connect to the production API/database in the next backend phase.'));
-document.querySelector('#deployLatest').addEventListener('click',async()=>{
-const status=document.querySelector('#deployStatus');
-const button=document.querySelector('#deployLatest');
-
-button.disabled=true;
-status.textContent='Starting deployment…';
-
-try{
-const response=await fetch('deploy.php',{
-method:'POST',
-headers:{'Content-Type':'application/json'}
-});
-
-const data=await response.json();
-
-if(!response.ok||!data.ok)throw new Error(data.error||'Deployment failed');
-
-status.textContent='✓ Deployment started. GitHub Actions is now publishing the latest main branch.';
-}catch(error){
-status.textContent='Deployment failed: '+error.message;
-}finally{
-button.disabled=false;
-}
-});
-render();
-}init();
+const ADMIN_KEY_STORAGE="bhAdminKey";
+const adminState={key:sessionStorage.getItem(ADMIN_KEY_STORAGE)||""};
+const authHeaders=()=>({"X-Bubba-Admin-Key":adminState.key});
+const setAuthMessage=(m,e=false)=>{const x=document.querySelector("#adminAuthMessage");x.textContent=m;x.classList.toggle("is-error",e)};
+async function verifyAdmin(){const r=await fetch("admin-auth.php",{headers:authHeaders(),cache:"no-store"});let d={};try{d=await r.json()}catch{}if(!r.ok||!d.ok)throw new Error(d.error||"Admin access required.");return d}
+async function loadDashboard(){
+const r=await fetch("data/activities.json");const all=await r.json();const saved=JSON.parse(localStorage.getItem("bubba.saved")||"[]");
+document.querySelector("#statActivities").textContent=all.length;document.querySelector("#statSaved").textContent=saved.length;
+const render=()=>{const q=document.querySelector("#adminSearch").value.toLowerCase();const list=all.filter(a=>`${a.title} ${a.category} ${a.town}`.toLowerCase().includes(q));document.querySelector("#adminActivities").innerHTML=list.map(a=>`<tr><td><strong>${a.title}</strong><small>${a.location}</small></td><td>${a.category}</td><td>${a.town}</td><td>${a.day} ${a.time}</td><td>${a.price}</td><td><span class="admin-status">Published</span></td></tr>`).join("")};
+document.querySelector("#adminSearch").addEventListener("input",render);
+document.querySelector("#newActivity").addEventListener("click",()=>alert("The secure activity editor will connect to the production API/database in the next backend phase."));
+document.querySelector("#deployLatest").addEventListener("click",async()=>{const s=document.querySelector("#deployStatus"),b=document.querySelector("#deployLatest");b.disabled=true;s.textContent="Starting deployment…";try{const r=await fetch("deploy.php",{method:"POST",headers:{...authHeaders(),"Content-Type":"application/json"}});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"Deployment failed");s.textContent="✓ Deployment started. GitHub Actions is now publishing the latest main branch."}catch(e){s.textContent="Deployment failed: "+e.message}finally{b.disabled=false}});
+render()}
+async function unlock(){const i=document.querySelector("#adminKey");adminState.key=i.value.trim();if(!adminState.key){setAuthMessage("Enter your Admin key.",true);return}try{await verifyAdmin();sessionStorage.setItem(ADMIN_KEY_STORAGE,adminState.key);document.querySelector("#adminAccess").hidden=true;document.querySelector("#adminContent").hidden=false;await loadDashboard()}catch(e){adminState.key="";sessionStorage.removeItem(ADMIN_KEY_STORAGE);setAuthMessage(e.message,true)}}
+document.querySelector("#saveAdminKey").addEventListener("click",unlock);document.querySelector("#adminKey").addEventListener("keydown",e=>{if(e.key==="Enter")unlock()});
+if(adminState.key)verifyAdmin().then(()=>{document.querySelector("#adminAccess").hidden=true;document.querySelector("#adminContent").hidden=false;loadDashboard()}).catch(()=>{adminState.key="";sessionStorage.removeItem(ADMIN_KEY_STORAGE)})
