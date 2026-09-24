@@ -1,10 +1,11 @@
 <?php
 declare(strict_types=1);
+session_start();
 header('Content-Type: application/json; charset=utf-8'); header('Cache-Control: no-store');
 const MAX_IMAGE_BYTES=8388608; const ALLOWED_FOLDERS=['general','home','listings','logos']; const ALLOWED_EXTENSIONS=['jpg','jpeg','png','webp','gif'];
 function respond(int $status,array $data):never{http_response_code($status);echo json_encode($data);exit;}
 function config():array{$file=dirname(dirname(__DIR__)).'/github-deploy-config.php';if(!is_file($file))respond(503,['ok'=>false,'error'=>'File Manager is not configured on the server.']);$config=require $file;if(!is_array($config))respond(503,['ok'=>false,'error'=>'Invalid server configuration.']);return $config;}
-function authenticate(array $config):void{$expected=(string)($config['admin_key']??($config['file_manager_key']??''));$provided=(string)($_SERVER['HTTP_X_BUBBA_ADMIN_KEY']??'');if($expected===''||$provided===''||!hash_equals($expected,$provided))respond(401,['ok'=>false,'error'=>'Admin access required.']);}
+function authenticate(array $config):void{if(empty($_SESSION["bh_admin_authenticated"]))respond(401,["ok"=>false,"error"=>"Admin login required."]);}
 function github(array $config,string $method,string $url,?array $body=null):array{$token=(string)($config['github_token']??'');if($token==='')respond(503,['ok'=>false,'error'=>'GitHub deployment token is missing.']);$ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_CUSTOMREQUEST=>$method,CURLOPT_RETURNTRANSFER=>true,CURLOPT_HTTPHEADER=>['Accept: application/vnd.github+json','Authorization: Bearer '.$token,'Content-Type: application/json','User-Agent: BubbaHub-File-Manager','X-GitHub-Api-Version: 2022-11-28'],CURLOPT_TIMEOUT=>30]);if($body!==null)curl_setopt($ch,CURLOPT_POSTFIELDS,json_encode($body));$raw=curl_exec($ch);$status=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$error=curl_error($ch);curl_close($ch);if($raw===false)respond(502,['ok'=>false,'error'=>'GitHub request failed: '.$error]);$data=json_decode($raw,true);if($status<200||$status>=300){$message=is_array($data)?(string)($data['message']??'GitHub request failed'):'GitHub request failed';respond(502,['ok'=>false,'error'=>$message]);}return is_array($data)?$data:[];}
 $config=config();authenticate($config);$action=(string)($_GET['action']??'check');$base='https://api.github.com/repos/bubbashub1/bubbaplugin/contents/';$rawBase='https://raw.githubusercontent.com/bubbashub1/bubbaplugin/main/';
 if($action==='check')respond(200,['ok'=>true]);
