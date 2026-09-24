@@ -94,8 +94,8 @@ main { min-height: calc(100vh - 170px); }
   background-image:url("../../images/home/herobanner-20260924-220048-e3d271.png");
   background-repeat:no-repeat;
   background-position:center;
-  background-size:contain;
-  opacity:.4;
+  background-size:cover;
+  opacity:.25;
   pointer-events:none;
   z-index:-1;
 }
