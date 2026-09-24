@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+session_start();
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -10,31 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-/*
- * The endpoint only accepts POST requests.
- * GitHub credentials remain on the server and are never sent to the browser.
- *
- * The admin page is currently a static standalone app, so browser Origin/Referer
- * headers cannot be relied upon for authorisation. Real admin authentication
- * should be added when the backend account system is introduced.
- */
-
-$configFile = dirname(dirname(__DIR__)) . '/github-deploy-config.php';
-
-if (!is_file($configFile)) {
-    http_response_code(503);
-    echo json_encode(['ok' => false, 'error' => 'Deployment is not configured']);
-    exit;
-}
-
-$config = require $configFile;
-$adminKey = (string)($config['admin_key'] ?? ($config['file_manager_key'] ?? ''));
-$providedAdminKey = (string)($_SERVER['HTTP_X_BUBBA_ADMIN_KEY'] ?? '');
-if ($adminKey === '' || $providedAdminKey === '' || !hash_equals($adminKey, $providedAdminKey)) {
-    http_response_code(401);
-    echo json_encode(['ok' => false, 'error' => 'Admin access required']);
-    exit;
-}
+if (empty($_SESSION["bh_admin_authenticated"])) { http_response_code(401); echo json_encode(["ok"=>false,"error"=>"Admin login required"]); exit; }
 
 $githubToken = (string)($config['github_token'] ?? '');
 
