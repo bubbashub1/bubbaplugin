@@ -1,6 +1,9 @@
 const state={folder:"home"};
 const $=s=>document.querySelector(s);
 const manager=$("#manager"),libraryAccess=$("#libraryAccess"),authMessage=$("#authMessage"),grid=$("#imageGrid"),status=$("#uploadStatus"),title=$("#folderTitle"),fileInput=$("#fileInput");
+function escapeHtml(value){return String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]))}
+function escapeAttr(value){return escapeHtml(value)}
+function formatBytes(bytes){const n=Number(bytes)||0;if(n<1024)return n+" B";if(n<1048576)return (n/1024).toFixed(1)+" KB";return (n/1048576).toFixed(1)+" MB"}
 function headers(json=false){const h={"X-Requested-With":"XMLHttpRequest"};if(json)h["Content-Type"]="application/json";return h}
 function setMessage(el,msg,error=false){el.textContent=msg;el.classList.toggle("is-error",error)}
 async function api(action,options={}){const response=await fetch("api.php?action="+action,{...options,headers:{...headers(),...(options.headers||{})},credentials:"same-origin"});let data={};try{data=await response.json()}catch{}if(!response.ok||!data.ok)throw new Error(data.error||"File Manager request failed");return data}
