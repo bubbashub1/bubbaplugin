@@ -11,7 +11,27 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-if (empty($_SESSION["bh_admin_authenticated"])) { http_response_code(401); echo json_encode(["ok"=>false,"error"=>"Admin login required"]); exit; }
+if (empty($_SESSION['bh_admin_authenticated'])) {
+    http_response_code(401);
+    echo json_encode(['ok' => false, 'error' => 'Admin login required']);
+    exit;
+}
+
+$configFile = dirname(dirname(__DIR__)) . '/github-deploy-config.php';
+
+if (!is_file($configFile)) {
+    http_response_code(503);
+    echo json_encode(['ok' => false, 'error' => 'Server configuration file not found']);
+    exit;
+}
+
+$config = require $configFile;
+
+if (!is_array($config)) {
+    http_response_code(503);
+    echo json_encode(['ok' => false, 'error' => 'Invalid server configuration']);
+    exit;
+}
 
 $githubToken = (string)($config['github_token'] ?? '');
 
@@ -27,9 +47,7 @@ $ch = curl_init(
 
 curl_setopt_array($ch, [
     CURLOPT_POST => true,
-    CURLOPT_POSTFIELDS => json_encode([
-        'ref' => 'main'
-    ]),
+    CURLOPT_POSTFIELDS => json_encode(['ref' => 'main']),
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_HTTPHEADER => [
         'Accept: application/vnd.github+json',
@@ -44,22 +62,17 @@ curl_setopt_array($ch, [
 $response = curl_exec($ch);
 $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $error = curl_error($ch);
-
 curl_close($ch);
 
 if ($response === false || $status < 200 || $status >= 300) {
     http_response_code(502);
-
     echo json_encode([
         'ok' => false,
         'error' => 'GitHub deployment request failed',
         'details' => $error !== '' ? $error : 'HTTP ' . $status
     ]);
-
     exit;
 }
 
-echo json_encode([
-    'ok' => true,
-    'message' => 'Deployment started'
-]);
+echo json_encode(['ok' => true, 'message' => 'Deployment started']);
+?>
