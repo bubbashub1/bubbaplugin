@@ -34,6 +34,22 @@ jobs:
           mkdir -p "$RUNNER_TEMP/ssh"
           ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" > "$RUNNER_TEMP/ssh/known_hosts"
 
+      - name: Check eWebAll SFTP root
+        env:
+          SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
+          SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+        run: |
+          set -euo pipefail
+          printf 'pwd\\nls -la\\n' > "$RUNNER_TEMP/check.sftp"
+          sftp \\
+            -b "$RUNNER_TEMP/check.sftp" \\
+            -P "$SSH_PORT" \\
+            -i "$RUNNER_TEMP/eweball_deploy_key" \\
+            -o IdentitiesOnly=yes \\
+            -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \\
+            "$SSH_USERNAME@$SSH_HOST"
+
       - name: Deploy via OpenSSH SFTP
         env:
           SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
