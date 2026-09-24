@@ -13,18 +13,56 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deploy via SFTP
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
-        with:
-          server: ${{ secrets.EWEBALL_SSH_HOST }}
-          username: ${{ secrets.EWEBALL_SSH_USERNAME }}
-          port: ${{ secrets.EWEBALL_SSH_PORT }}
-          ssh_private_key: ${{ secrets.EWEBALL_SSH_PRIVATE_KEY }}
-          local_path: './*'
-          remote_path: ${{ secrets.EWEBALL_REMOTE_PATH }}
-          sftp_only: true
-          rsyncArgs: '--exclude=.git --exclude=.github --exclude=README.md'
+      - name: Prepare SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EWEBALL_SSH_PRIVATE_KEY }}
+        run: |
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/eweball_deploy_key"
+          chmod 600 "$RUNNER_TEMP/eweball_deploy_key"
+          ssh-keygen -y -f "$RUNNER_TEMP/eweball_deploy_key" >/dev/null
+
+      - name: Add eWebAll host key
+        env:
+          SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+          SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/ssh"
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" > "$RUNNER_TEMP/ssh/known_hosts"
+
+      - name: Deploy via OpenSSH SFTP
+        env:
+          SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
+          SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+          REMOTE_PATH: ${{ secrets.EWEBALL_REMOTE_PATH }}
+        run: |
+          set -euo pipefail
+
+          SFTP_BATCH="$RUNNER_TEMP/deploy.sftp"
+          : > "$SFTP_BATCH"
+
+          printf 'cd "%s"\n' "$REMOTE_PATH" >> "$SFTP_BATCH"
+
+          find . -maxdepth 1 -type f \
+            ! -name '.gitignore' \
+            ! -name 'README.md' \
+            -printf 'put "%p"\n' >> "$SFTP_BATCH"
+
+          find assets data -type f -print 2>/dev/null | while IFS= read -r file; do
+            printf 'put "%s" "%s"\n' "$file" "$file" >> "$SFTP_BATCH"
+          done
+
+          sftp \
+            -b "$SFTP_BATCH" \
+            -P "$SSH_PORT" \
+            -i "$RUNNER_TEMP/eweball_deploy_key" \
+            -o IdentitiesOnly=yes \
+            -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
+            "$SSH_USERNAME@$SSH_HOST"
+
+          echo "Deployment completed successfully."
