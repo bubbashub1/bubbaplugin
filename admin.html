@@ -10,8 +10,8 @@
 <div class="page-heading"><div><span class="eyebrow">Bubba Hub control centre</span><h1>Admin dashboard</h1><p>A clean foundation for managing the family activity directory.</p></div><button class="button button-primary" id="newActivity">+ Add activity</button></div>
 
 <section class="admin-panel deployment-panel">
-<div class="admin-panel-head"><div><span class="eyebrow">Deployment</span><h2>Publish latest version</h2><p>GitHub <strong>main</strong> deploys to the Bubba Hub beta site.</p></div><a class="button button-primary" href="https://github.com/bubbashub1/bubbaplugin/actions/workflows/deploy.yml" target="_blank" rel="noopener">Deploy latest version ↗</a></div>
-<p class="deployment-note">Opens the secure GitHub Actions deployment controls. Choose <strong>Run workflow</strong> to deploy the current <strong>main</strong> branch. No GitHub credentials are exposed in the website.</p>
+<div class="admin-panel-head"><div><span class="eyebrow">Deployment</span><h2>Publish latest version</h2><p>Deploy the current GitHub <strong>main</strong> branch to the beta site.</p></div><button class="button button-primary" id="deployLatest">Deploy latest version</button></div>
+<p class="deployment-note" id="deployStatus">Secure server-side deployment. Your GitHub credentials are never sent to the browser.</p>
 </section>
 
 <section class="admin-stats"><article><span>Published activities</span><strong id="statActivities">0</strong><small>Live in directory</small></article><article><span>Regions</span><strong>14</strong><small>Devon &amp; Cornwall</small></article><article><span>Saved activities</span><strong id="statSaved">0</strong><small>Prototype browser data</small></article><article><span>System</span><strong>Ready</strong><small>Standalone front end</small></article></section>
