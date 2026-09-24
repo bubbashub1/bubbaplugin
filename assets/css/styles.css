@@ -161,7 +161,7 @@ main { min-height: calc(100vh - 170px); }
 .hero-search-field select{width:100%;min-height:46px;padding:9px 11px;border:1px solid rgba(65,102,81,.12);border-radius:11px;background:#f8fbf8;color:var(--bh-text);font-weight:650;outline:none}
 .hero-search-field select:focus{border-color:var(--bh-secondary);box-shadow:0 0 0 3px rgba(60,142,150,.12)}
 .hero-age-slider{min-width:145px;padding-top:10px}
-.hero-age-slider input{width:100%;accent-color:var(--bh-primary);margin:8px 0 0}
+.age-range-dual{position:relative;height:34px;margin-top:6px}.age-range-dual input{position:absolute;left:0;top:7px;width:100%;margin:0;pointer-events:none;appearance:none;background:transparent;z-index:2}.age-range-dual input::-webkit-slider-thumb{pointer-events:auto;appearance:none;width:22px;height:22px;border-radius:50%;background:var(--bh-primary);border:3px solid #fff;box-shadow:0 2px 7px rgba(20,68,0,.25);cursor:pointer}.age-range-dual input::-moz-range-thumb{pointer-events:auto;width:16px;height:16px;border-radius:50%;background:var(--bh-primary);border:3px solid #fff;box-shadow:0 2px 7px rgba(20,68,0,.25);cursor:pointer}.age-range-track{position:absolute;left:9px;right:9px;top:15px;height:7px;border-radius:999px;background:var(--bh-soft);z-index:1}.hero-age-slider input{width:100%;accent-color:var(--bh-primary);margin:8px 0 0}.
 .hero-age-slider strong{display:inline-block;min-width:76px;padding:3px 8px;border-radius:999px;background:var(--bh-bg);color:var(--bh-primary);text-align:center}
 .hero-age-scale{display:grid;grid-template-columns:repeat(2,1fr);align-items:start;margin-top:3px;color:var(--bh-text-muted);font-size:9px;font-weight:700}
 .hero-age-scale span{text-align:center;position:relative}
