@@ -11,25 +11,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 /*
- * Only allow deployment requests originating from the Bubba Hub beta site.
+ * The endpoint only accepts POST requests.
  * GitHub credentials remain on the server and are never sent to the browser.
+ *
+ * The admin page is currently a static standalone app, so browser Origin/Referer
+ * headers cannot be relied upon for authorisation. Real admin authentication
+ * should be added when the backend account system is introduced.
  */
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-$referer = $_SERVER['HTTP_REFERER'] ?? '';
 
-$allowed =
-    ($origin === 'https://www.bubbahub.co.uk') ||
-    str_starts_with($referer, 'https://www.bubbahub.co.uk/beta/');
-
-if (!$allowed) {
-    http_response_code(403);
-    echo json_encode(['ok' => false, 'error' => 'Request not authorised']);
-    exit;
-}
-
-/*
- * GitHub credentials are stored outside public_html.
- */
 $configFile = dirname(dirname(__DIR__)) . '/github-deploy-config.php';
 
 if (!is_file($configFile)) {
@@ -47,9 +36,6 @@ if ($githubToken === '') {
     exit;
 }
 
-/*
- * Trigger the GitHub Actions deployment.
- */
 $ch = curl_init(
     'https://api.github.com/repos/bubbashub1/bubbaplugin/actions/workflows/deploy.yml/dispatches'
 );
