@@ -1,0 +1,49 @@
+[
+  {
+    "id": "baby-sensory-torquay",
+    "title": "Baby Sensory Torquay",
+    "category": "Baby classes",
+    "region": "Torbay",
+    "town": "Torquay",
+    "age_range": [
+      "0-3"
+    ],
+    "day": "Tuesday",
+    "time": "09:30",
+    "duration": "45 mins",
+    "price": "£8",
+    "location": "Torquay Community Centre"
+  },
+  {
+    "id": "tiny-tots-paignton",
+    "title": "Tiny Tots Play",
+    "category": "Baby & toddler",
+    "region": "Torbay",
+    "town": "Paignton",
+    "age_range": [
+      "0-3",
+      "3-6"
+    ],
+    "day": "Wednesday",
+    "time": "10:00",
+    "duration": "60 mins",
+    "price": "£4",
+    "location": "Paignton"
+  },
+  {
+    "id": "nature-club-exeter",
+    "title": "Family Nature Club",
+    "category": "Family activities",
+    "region": "Exeter",
+    "town": "Exeter",
+    "age_range": [
+      "3-6",
+      "6-9"
+    ],
+    "day": "Saturday",
+    "time": "11:00",
+    "duration": "90 mins",
+    "price": "£6",
+    "location": "Exeter & East Devon"
+  }
+]
