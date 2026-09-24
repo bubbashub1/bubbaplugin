@@ -10,28 +10,55 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+/*
+ * Only allow deployment requests originating from the Bubba Hub beta site.
+ * GitHub credentials remain on the server and are never sent to the browser.
+ */
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$referer = $_SERVER['HTTP_REFERER'] ?? '';
+
+$allowed =
+    ($origin === 'https://www.bubbahub.co.uk') ||
+    str_starts_with($referer, 'https://www.bubbahub.co.uk/beta/');
+
+if (!$allowed) {
+    http_response_code(403);
+    echo json_encode(['ok' => false, 'error' => 'Request not authorised']);
+    exit;
+}
+
+/*
+ * GitHub credentials are stored outside public_html.
+ */
 $configFile = dirname(dirname(__DIR__)) . '/github-deploy-config.php';
+
 if (!is_file($configFile)) {
     http_response_code(503);
-    echo json_encode(['ok' => false, 'error' => 'Deployment is not configured on the server']);
+    echo json_encode(['ok' => false, 'error' => 'Deployment is not configured']);
     exit;
 }
 
 $config = require $configFile;
-$deployKey = (string)($config['deploy_key'] ?? '');
 $githubToken = (string)($config['github_token'] ?? '');
-$providedKey = (string)($_SERVER['HTTP_X_BUBBA_DEPLOY_KEY'] ?? '');
 
-if ($deployKey === '' || $githubToken === '' || !hash_equals($deployKey, $providedKey)) {
-    http_response_code(403);
-    echo json_encode(['ok' => false, 'error' => 'Deployment not authorised']);
+if ($githubToken === '') {
+    http_response_code(503);
+    echo json_encode(['ok' => false, 'error' => 'GitHub deployment token is missing']);
     exit;
 }
 
-$ch = curl_init('https://api.github.com/repos/bubbashub1/bubbaplugin/actions/workflows/deploy.yml/dispatches');
+/*
+ * Trigger the GitHub Actions deployment.
+ */
+$ch = curl_init(
+    'https://api.github.com/repos/bubbashub1/bubbaplugin/actions/workflows/deploy.yml/dispatches'
+);
+
 curl_setopt_array($ch, [
     CURLOPT_POST => true,
-    CURLOPT_POSTFIELDS => json_encode(['ref' => 'main']),
+    CURLOPT_POSTFIELDS => json_encode([
+        'ref' => 'main'
+    ]),
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_HTTPHEADER => [
         'Accept: application/vnd.github+json',
@@ -45,12 +72,23 @@ curl_setopt_array($ch, [
 
 $response = curl_exec($ch);
 $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$error = curl_error($ch);
+
 curl_close($ch);
 
 if ($response === false || $status < 200 || $status >= 300) {
     http_response_code(502);
-    echo json_encode(['ok' => false, 'error' => 'GitHub rejected the deployment request']);
+
+    echo json_encode([
+        'ok' => false,
+        'error' => 'GitHub deployment request failed',
+        'details' => $error !== '' ? $error : 'HTTP ' . $status
+    ]);
+
     exit;
 }
 
-echo json_encode(['ok' => true, 'message' => 'Deployment started.']);
+echo json_encode([
+    'ok' => true,
+    'message' => 'Deployment started'
+]);
