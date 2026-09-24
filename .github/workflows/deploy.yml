@@ -67,4 +67,12 @@ jobs:
             fi
           done
           sftp -b "$SFTP_BATCH" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
-          echo "Deployment completed successfully."
+          echo "Deployment upload finished."
+          printf 'cd "%s"\n' "$REMOTE_PATH" > "$RUNNER_TEMP/verify.sftp"
+          printf 'ls -l index.html\n' >> "$RUNNER_TEMP/verify.sftp"
+          printf 'ls -l assets/css/styles.css\n' >> "$RUNNER_TEMP/verify.sftp"
+          printf 'ls -l assets/js/app.js\n' >> "$RUNNER_TEMP/verify.sftp"
+          printf 'ls -l data/activities.json\n' >> "$RUNNER_TEMP/verify.sftp"
+          printf 'ls -l images/home\n' >> "$RUNNER_TEMP/verify.sftp"
+          sftp -b "$RUNNER_TEMP/verify.sftp" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
+          echo "Deployment completed and remote files verified successfully."
