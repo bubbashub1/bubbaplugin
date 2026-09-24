@@ -41,6 +41,138 @@ jobs:
           SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
         run: |
           set -euo pipefail
+          SSH_HOST="$(printf '%s' "$SSH_HOST" | tr -d '\\r\\n')"
+          SSH_USERNAME="$(printf '%s' "$SSH_USERNAME" | tr -d '\\r\\n')"
+          SSH_PORT="$(printf '%s' "$SSH_PORT" | tr -d '\\r\\n')"
+          echo "SSH host length: ${#SSH_HOST}"
+          echo "SSH username length: ${#SSH_USERNAME}"
+          echo "SSH port length: ${#SSH_PORT}"
+          printf '%s\\n' "$SSH_HOST" | grep -Eq '^[A-Za-z0-9.-]+
+          sftp \\
+            -b "$RUNNER_TEMP/check.sftp" \\
+            -P "$SSH_PORT" \\
+            -i "$RUNNER_TEMP/eweball_deploy_key" \\
+            -o IdentitiesOnly=yes \\
+            -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \\
+            "$SSH_USERNAME@$SSH_HOST"
+
+      - name: Deploy via OpenSSH SFTP
+        env:
+          SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
+          SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+          REMOTE_PATH: ${{ secrets.EWEBALL_REMOTE_PATH }}
+        run: |
+          set -euo pipefail
+
+          SFTP_BATCH="$RUNNER_TEMP/deploy.sftp"
+          : > "$SFTP_BATCH"
+
+          printf 'cd "%s"\n' "$REMOTE_PATH" >> "$SFTP_BATCH"
+
+          find . -maxdepth 1 -type f \
+            ! -name '.gitignore' \
+            ! -name 'README.md' \
+            -printf 'put "%p"\n' >> "$SFTP_BATCH"
+
+          find assets data -type f -print 2>/dev/null | while IFS= read -r file; do
+            printf 'put "%s" "%s"\n' "$file" "$file" >> "$SFTP_BATCH"
+          done
+
+          sftp \
+            -b "$SFTP_BATCH" \
+            -P "$SSH_PORT" \
+            -i "$RUNNER_TEMP/eweball_deploy_key" \
+            -o IdentitiesOnly=yes \
+            -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
+            "$SSH_USERNAME@$SSH_HOST"
+
+          echo "Deployment completed successfully."
+ || { echo "SSH_HOST contains invalid characters"; exit 1; }
+          printf '%s\\n' "$SSH_USERNAME" | grep -Eq '^[A-Za-z0-9._-]+
+          sftp \\
+            -b "$RUNNER_TEMP/check.sftp" \\
+            -P "$SSH_PORT" \\
+            -i "$RUNNER_TEMP/eweball_deploy_key" \\
+            -o IdentitiesOnly=yes \\
+            -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \\
+            "$SSH_USERNAME@$SSH_HOST"
+
+      - name: Deploy via OpenSSH SFTP
+        env:
+          SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
+          SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+          REMOTE_PATH: ${{ secrets.EWEBALL_REMOTE_PATH }}
+        run: |
+          set -euo pipefail
+
+          SFTP_BATCH="$RUNNER_TEMP/deploy.sftp"
+          : > "$SFTP_BATCH"
+
+          printf 'cd "%s"\n' "$REMOTE_PATH" >> "$SFTP_BATCH"
+
+          find . -maxdepth 1 -type f \
+            ! -name '.gitignore' \
+            ! -name 'README.md' \
+            -printf 'put "%p"\n' >> "$SFTP_BATCH"
+
+          find assets data -type f -print 2>/dev/null | while IFS= read -r file; do
+            printf 'put "%s" "%s"\n' "$file" "$file" >> "$SFTP_BATCH"
+          done
+
+          sftp \
+            -b "$SFTP_BATCH" \
+            -P "$SSH_PORT" \
+            -i "$RUNNER_TEMP/eweball_deploy_key" \
+            -o IdentitiesOnly=yes \
+            -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
+            "$SSH_USERNAME@$SSH_HOST"
+
+          echo "Deployment completed successfully."
+ || { echo "SSH_USERNAME contains invalid characters"; exit 1; }
+          printf '%s\\n' "$SSH_PORT" | grep -Eq '^[0-9]+
+          sftp \\
+            -b "$RUNNER_TEMP/check.sftp" \\
+            -P "$SSH_PORT" \\
+            -i "$RUNNER_TEMP/eweball_deploy_key" \\
+            -o IdentitiesOnly=yes \\
+            -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \\
+            "$SSH_USERNAME@$SSH_HOST"
+
+      - name: Deploy via OpenSSH SFTP
+        env:
+          SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
+          SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+          REMOTE_PATH: ${{ secrets.EWEBALL_REMOTE_PATH }}
+        run: |
+          set -euo pipefail
+
+          SFTP_BATCH="$RUNNER_TEMP/deploy.sftp"
+          : > "$SFTP_BATCH"
+
+          printf 'cd "%s"\n' "$REMOTE_PATH" >> "$SFTP_BATCH"
+
+          find . -maxdepth 1 -type f \
+            ! -name '.gitignore' \
+            ! -name 'README.md' \
+            -printf 'put "%p"\n' >> "$SFTP_BATCH"
+
+          find assets data -type f -print 2>/dev/null | while IFS= read -r file; do
+            printf 'put "%s" "%s"\n' "$file" "$file" >> "$SFTP_BATCH"
+          done
+
+          sftp \
+            -b "$SFTP_BATCH" \
+            -P "$SSH_PORT" \
+            -i "$RUNNER_TEMP/eweball_deploy_key" \
+            -o IdentitiesOnly=yes \
+            -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
+            "$SSH_USERNAME@$SSH_HOST"
+
+          echo "Deployment completed successfully."
+ || { echo "SSH_PORT contains invalid characters"; exit 1; }
           printf 'pwd\\nls -la\\n' > "$RUNNER_TEMP/check.sftp"
           sftp \\
             -b "$RUNNER_TEMP/check.sftp" \\
