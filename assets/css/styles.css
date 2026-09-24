@@ -116,7 +116,7 @@ main { min-height: calc(100vh - 170px); }
   text-transform:uppercase; letter-spacing:.12em;
 }
 .hero h1, .hero h2, .page-heading h1, .page-heading h2 {
-  margin:0; font-family:"Chewy", cursive; font-weight:400; font-size:clamp(42px, 6vw, 72px); line-height:1.03; letter-spacing:.01em;
+  margin:0; font-family:"Chewy", cursive; font-weight:400; font-size:clamp(32px, 4vw, 46px); line-height:1.08; letter-spacing:.01em;
 }
 .hero h1 em { color:var(--bh-primary); font-style:normal; }
 .hero p {
@@ -241,7 +241,7 @@ td { font-size:14px; }
   padding:24px 20px;
   border-radius:20px;
 }
-  .hero h1 { font-size:42px; }
+  .hero h1 { font-size:34px; }
   .hero p { font-size:16px; }
   .feature-grid, .admin-stats, .activity-grid, .admin-links { grid-template-columns:1fr; }
   .page-heading, .admin-panel-head { align-items:flex-start; flex-direction:column; }
