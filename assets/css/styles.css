@@ -306,3 +306,10 @@ td { font-size:14px; }
 @media(max-width:620px){.consent-grid,.consent-topic-grid{grid-template-columns:1fr}.consent-wide{grid-column:auto}.consent-notice{flex-direction:column}.consent-actions .button{width:100%}}
 .support-prefill-note{margin:-8px 0 0;color:var(--bh-text-muted);font-size:12px}
 
+
+
+/* Class leader CTA */
+.header-actions{display:flex;align-items:center;gap:10px}
+.leader-cta{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 16px;border:1px solid var(--bh-border);border-radius:999px;background:#fff;color:var(--bh-primary);font-weight:750;text-decoration:none;white-space:nowrap}
+.leader-cta:hover{border-color:var(--bh-secondary);color:var(--bh-secondary)}
+@media(max-width:760px){.header-actions{gap:7px}.leader-cta{padding:0 11px;font-size:12px}.header-actions .button{padding-left:11px;padding-right:11px}}
