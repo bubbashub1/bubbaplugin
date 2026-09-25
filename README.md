@@ -10,7 +10,7 @@ Standalone front-end foundation with directory, activity detail, My Planner, My 
 
 ## Deployment
 
-GitHub Actions deployment workflow is included in `.github/workflows/deploy.yml` for GitHub Pages.
+GitHub Actions deployment workflow is included in `.github/workflows/deploy.yml` and publishes the standalone app to eWebAll over SFTP.
 
 The next production stage is a real API/database for authenticated admin, organiser, family, booking and planner data.
 ## File Manager
