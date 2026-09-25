@@ -314,3 +314,16 @@ td { font-size:14px; }
 .leader-cta::after{content:" →";margin-left:6px;font-size:15px}
 .leader-cta:hover{background:var(--bh-secondary);color:#fff!important;transform:translateY(-1px);box-shadow:0 7px 18px rgba(0,0,0,.16)}
 @media(max-width:760px){.header-actions{gap:7px}.leader-cta{min-height:40px;padding:0 13px;font-size:12px;border-radius:10px}.header-actions .button{padding-left:11px;padding-right:11px}}
+
+/* Planner layout */
+.planner-controls-card{display:grid;grid-template-columns:minmax(220px,1fr) minmax(0,2.2fr) auto;align-items:center;gap:22px;margin-bottom:24px;padding:22px;background:#fff;border:1px solid var(--bh-border);border-radius:18px}
+.planner-controls-card h3{margin:2px 0 4px;font-size:19px}
+.planner-controls-card p{margin:0;color:var(--bh-text-muted);font-size:13px}
+.planner-day-controls{display:flex;align-items:center;justify-content:flex-start;gap:8px;flex-wrap:wrap}
+.planner-day-controls label{display:inline-flex;align-items:center;gap:7px;padding:9px 11px;border:1px solid var(--bh-border);border-radius:11px;background:#fbfdfb;color:var(--bh-text);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.planner-day-controls label:has(input:checked){background:var(--bh-bg);border-color:transparent;color:var(--bh-primary)}
+.planner-day-controls input{width:17px;height:17px;margin:0;accent-color:var(--bh-primary)}
+.planner-results{grid-template-columns:repeat(2,minmax(0,1fr))}
+.planner-results>.admin-panel{grid-column:1/-1}
+@media(max-width:900px){.planner-controls-card{grid-template-columns:1fr}.planner-day-controls{width:100%}.planner-controls-card>.button{justify-self:start}.planner-results{grid-template-columns:1fr}}
+@media(max-width:620px){.planner-controls-card{padding:18px;gap:15px}.planner-day-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.planner-day-controls label{width:100%}.planner-controls-card>.button{width:100%}}
