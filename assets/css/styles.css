@@ -353,3 +353,25 @@ td { font-size:14px; }
 .preferences-save-message{color:var(--bh-secondary);font-size:13px}
 @media(max-width:900px){.preference-channel-grid{grid-template-columns:1fr}.preference-list,.preferences-link-grid{grid-template-columns:1fr}}
 @media(max-width:620px){.preferences-two-col{grid-template-columns:1fr}.preferences-actions .button{width:100%}.preferences-save-message{width:100%}}
+
+/* Site-wide surface cleanup */
+.admin-panel,.admin-stats article,.activity-card,.feature-card,.calendar-panel,.image-library-card{border-color:rgba(65,102,81,.10);box-shadow:0 6px 22px rgba(20,68,0,.035)}
+.planner-shell{min-width:0}
+.planner-shell>.admin-panel-head{margin-bottom:18px}
+.planner-shell>.deployment-note{margin:0 0 22px;padding:0;color:var(--bh-text-muted)}
+.planner-controls-card{margin:0 0 24px;background:#fff;border:1px solid var(--bh-border);box-shadow:0 6px 20px rgba(20,68,0,.035)}
+.planner-empty{padding:42px 24px;text-align:center;border:1px dashed var(--bh-border);border-radius:18px;background:#fbfdfb}
+.planner-empty h3{margin:0 0 6px;font-size:20px}
+.planner-empty p{margin:0 0 18px;color:var(--bh-text-muted)}
+.planner-results .feature-card{height:100%}
+
+/* Keep preferences clean: sections, not a stack of floating boxes */
+.preferences-layout>.admin-panel{margin:0;padding:26px 0;border:0;border-radius:0;background:transparent;box-shadow:none}
+.preferences-layout>.admin-panel:first-child{padding-top:0}
+.preferences-layout>.admin-panel+.admin-panel{border-top:1px solid var(--bh-border)}
+.preferences-layout .admin-panel-head{margin-bottom:12px}
+.preferences-layout .preference-channel-grid{margin-top:16px}
+.preferences-layout .preference-channel{background:#fff;box-shadow:0 3px 12px rgba(20,68,0,.025)}
+.preferences-layout .preference-list label{background:#fff}
+.preferences-layout .preferences-link-grid a{background:#eef5ef;border:1px solid transparent}
+.preferences-layout .preferences-link-grid a:hover{border-color:var(--bh-accent)}
