@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en-GB">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Booking Consent & Child Information · Bubba Hub</title>
+<link rel="stylesheet" href="assets/css/styles.css?v=20260925-consent1">
+</head>
+<body>
+<header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav"><a href="directory.html">Find activities</a><a href="planner.html">My planner</a><a href="calendar.html">Calendar</a><a class="active" href="my-hub.html">My Hub</a></nav><a class="button button-soft" href="account.html">My account</a></header>
+
+<main class="app-shell">
+<section class="page-heading"><div><span class="eyebrow">My Bubba Hub</span><h1>Booking consent & child information</h1><p>Save the information you want to provide when you book or reserve a family activity through Bubba Hub.</p></div><a class="button button-soft" href="my-hub.html">← My Hub</a></section>
+
+<section class="consent-notice"><strong>🔒 Private family information</strong><span>This information is for bookings you choose to make. Medical and additional-needs information is sensitive and is only shared with an organiser when you give permission for that booking.</span></section>
+
+<form id="consentForm" class="consent-layout">
+<section class="admin-panel">
+<span class="eyebrow">1 · Child</span><h2>Child information</h2>
+<p class="consent-help">Choose a child from your family profile or enter their details for this consent profile.</p>
+<div class="consent-grid">
+<label>Child name<input name="child_name" required autocomplete="name"></label>
+<label>Date of birth<input name="date_of_birth" type="date"></label>
+<label>Gender <span class="optional">(optional)</span><input name="gender"></label>
+<label class="consent-wide">Additional needs or accessibility information <span class="optional">(optional)</span><textarea name="additional_needs" rows="3" placeholder="Anything the organiser needs to know to help your child take part safely and comfortably."></textarea></label>
+</div>
+</section>
+
+<section class="admin-panel">
+<span class="eyebrow">2 · Health & safety</span><h2>Medical information</h2>
+<p class="consent-help">Only include information relevant to the activities you are booking. You can leave fields blank if they do not apply.</p>
+<div class="consent-grid">
+<label>Allergies <span class="optional">(optional)</span><textarea name="allergies" rows="3"></textarea></label>
+<label>Medical conditions <span class="optional">(optional)</span><textarea name="medical_conditions" rows="3"></textarea></label>
+<label>Medication <span class="optional">(optional)</span><textarea name="medications" rows="3"></textarea></label>
+<label>Dietary requirements <span class="optional">(optional)</span><textarea name="dietary_requirements" rows="3"></textarea></label>
+<label class="consent-wide">Other emergency information <span class="optional">(optional)</span><textarea name="emergency_information" rows="3" placeholder="Relevant information for the organiser in an emergency."></textarea></label>
+<label>Emergency contact name <span class="optional">(optional)</span><input name="emergency_contact_name" autocomplete="name"></label>
+<label>Emergency contact phone <span class="optional">(optional)</span><input name="emergency_contact_phone" autocomplete="tel"></label>
+</div>
+</section>
+
+<section class="admin-panel">
+<span class="eyebrow">3 · Photos</span><h2>Photo permissions</h2>
+<p class="consent-help">These are separate permissions. Saying yes to one does not automatically give permission for the others.</p>
+<div class="consent-check-list">
+<label><input type="checkbox" name="photo_activity"> I give permission for the organiser to take/use photos of my child during the activity for that activity's normal class/event use.</label>
+<label><input type="checkbox" name="photo_bubbahub"> I give permission for Bubba Hub to use photos of my child on Bubba Hub channels.</label>
+<label><input type="checkbox" name="photo_organiser_marketing"> I give permission for the organiser to use photos of my child for their own marketing, website or social media.</label>
+</div>
+</section>
+
+<section class="admin-panel">
+<span class="eyebrow">4 · Support</span><h2>Help & Support connection</h2>
+<p class="consent-help">This does not automatically send your medical information to a responder. If you later ask a private support question, selected profile information can be copied into the form for you to review before you send it.</p>
+<div class="consent-check-list">
+<label><input type="checkbox" name="support_prefill_enabled"> Allow selected information from this consent profile to pre-fill my private Help & Support questions for me to review.</label>
+</div>
+<div id="supportTopics" class="consent-topic-grid" hidden>
+<label><input type="checkbox" name="support_prefill_topics" value="baby-child-health"> Baby & child health</label>
+<label><input type="checkbox" name="support_prefill_topics" value="feeding-weaning"> Feeding & weaning</label>
+<label><input type="checkbox" name="support_prefill_topics" value="sleep"> Sleep</label>
+<label><input type="checkbox" name="support_prefill_topics" value="family-wellbeing"> Family wellbeing</label>
+</div>
+</section>
+
+<section class="admin-panel">
+<span class="eyebrow">5 · Booking consent</span><h2>Permission to share for bookings</h2>
+<div class="consent-final">
+<label><input type="checkbox" name="consent_to_share_with_organiser" required> I agree that the information in this consent profile that is relevant to my booking can be shared with the organiser so they can safely action my booking or reservation.</label>
+<p>Each booking will use a dated snapshot of the consent information you have chosen to share at that time.</p>
+</div>
+<div class="consent-actions"><button class="button button-primary" type="submit">Save consent profile</button><a class="button button-soft" href="my-hub.html">Cancel</a></div>
+<p id="consentStatus" class="consent-status" role="status"></p>
+</section>
+</form>
+</main>
+<footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
+<script src="assets/js/consent.js?v=20260925-consent1"></script>
+</body></html>
