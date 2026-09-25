@@ -5,14 +5,50 @@
     "category": "Baby classes",
     "region": "Torbay",
     "town": "Torquay",
-    "age_range": [
-      "0-3"
-    ],
+    "age_range": ["0-3"],
     "day": "Tuesday",
     "time": "09:30",
     "duration": "45 mins",
     "price": "£8",
-    "location": "Torquay Community Centre"
+    "location": "Torquay Community Centre",
+    "venues": [
+      {
+        "id": "torquay-community-centre",
+        "name": "Torquay Community Centre",
+        "town": "Torquay",
+        "region": "Torbay",
+        "address": "Torquay Community Centre",
+        "lat": 50.461,
+        "long": -3.525,
+        "sessions": [
+          {"day": "Tuesday", "time": "09:30", "duration": "45 mins", "price": "£8"}
+        ]
+      },
+      {
+        "id": "paignton-community-centre",
+        "name": "Paignton Community Centre",
+        "town": "Paignton",
+        "region": "Torbay",
+        "address": "Paignton Community Centre",
+        "lat": 50.435,
+        "long": -3.565,
+        "sessions": [
+          {"day": "Thursday", "time": "10:00", "duration": "45 mins", "price": "£8"}
+        ]
+      },
+      {
+        "id": "brixham-community-centre",
+        "name": "Brixham Community Centre",
+        "town": "Brixham",
+        "region": "Torbay",
+        "address": "Brixham Community Centre",
+        "lat": 50.395,
+        "long": -3.515,
+        "sessions": [
+          {"day": "Friday", "time": "09:30", "duration": "45 mins", "price": "£8"}
+        ]
+      }
+    ]
   },
   {
     "id": "tiny-tots-paignton",
@@ -20,15 +56,24 @@
     "category": "Baby & toddler",
     "region": "Torbay",
     "town": "Paignton",
-    "age_range": [
-      "0-3",
-      "3-6"
-    ],
+    "age_range": ["0-3", "3-6"],
     "day": "Wednesday",
     "time": "10:00",
     "duration": "60 mins",
     "price": "£4",
-    "location": "Paignton"
+    "location": "Paignton Community Centre",
+    "venues": [
+      {
+        "id": "tiny-tots-paignton-main",
+        "name": "Paignton Community Centre",
+        "town": "Paignton",
+        "region": "Torbay",
+        "address": "Paignton Community Centre",
+        "sessions": [
+          {"day": "Wednesday", "time": "10:00", "duration": "60 mins", "price": "£4"}
+        ]
+      }
+    ]
   },
   {
     "id": "nature-club-exeter",
@@ -36,14 +81,23 @@
     "category": "Family activities",
     "region": "Exeter",
     "town": "Exeter",
-    "age_range": [
-      "3-6",
-      "6-9"
-    ],
+    "age_range": ["3-6", "6-9"],
     "day": "Saturday",
     "time": "11:00",
     "duration": "90 mins",
     "price": "£6",
-    "location": "Exeter & East Devon"
+    "location": "Exeter & East Devon",
+    "venues": [
+      {
+        "id": "exeter-east-devon-nature",
+        "name": "Exeter & East Devon",
+        "town": "Exeter",
+        "region": "Exeter",
+        "address": "Exeter & East Devon",
+        "sessions": [
+          {"day": "Saturday", "time": "11:00", "duration": "90 mins", "price": "£6"}
+        ]
+      }
+    ]
   }
 ]
