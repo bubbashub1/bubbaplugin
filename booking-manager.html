@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Booking Manager · Bubba Hub</title><link rel="stylesheet" href="assets/css/styles.css?v=20260925-booking1"></head>
+<body>
+<header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-220048-e3d271.jpg" alt="Bubba Hub"></a><nav class="main-nav"><a href="directory.html">Find activities</a><a href="planner.html">My planner</a><a href="calendar.html">Calendar</a><a href="my-hub.html">My Hub</a><a class="active" href="leader.html">Class Leader Portal</a></nav><a class="button button-soft" href="account.html">My account</a></header>
+<main class="app-shell">
+<div class="page-heading"><div><span class="eyebrow">Class Leader Portal</span><h1>Booking Manager</h1><p>Choose how families book, manage your sessions and keep external booking dates up to date.</p></div><a class="button button-soft" href="leader.html">← Leader portal</a></div>
+<section class="booking-manager-grid">
+<section class="admin-panel"><div class="admin-panel-head"><div><span class="eyebrow">Booking method</span><h2>How should families book?</h2></div></div>
+<div class="booking-mode-grid">
+<label class="booking-mode"><input type="radio" name="mode" value="bubba" checked><span>🏡</span><strong>Bubba Hub bookings</strong><small>Families request a place through Bubba Hub. You action and confirm the request.</small></label>
+<label class="booking-mode"><input type="radio" name="mode" value="external"><span>🔗</span><strong>My own booking system</strong><small>Families see your available schedule and use your booking website to complete the booking.</small></label>
+</div></section>
+<section class="admin-panel" id="externalPanel"><div class="admin-panel-head"><div><span class="eyebrow">External booking</span><h2>Booking website</h2><p>We'll cache the schedule where the booking source makes dates available to us.</p></div><button class="button button-soft" id="refreshExternal" type="button">↻ Refresh now</button></div>
+<label class="booking-field"><span>Booking URL</span><input id="bookingUrl" type="url" placeholder="https://your-booking-system.example/..."></label>
+<div class="booking-sync-status"><div><strong>Automatic refresh</strong><span>Every 6 weeks</span></div><div><strong>Last checked</strong><span id="lastChecked">Not checked yet</span></div><div><strong>Next check</strong><span id="nextCheck">After saving the URL</span></div></div>
+<p class="booking-note">If the schedule cannot be refreshed, the last cached dates stay visible and families are told to check your booking website for the latest details.</p>
+</section>
+<section class="admin-panel" id="bubbaPanel"><div class="admin-panel-head"><div><span class="eyebrow">Bubba Hub bookings</span><h2>Your bookable sessions</h2><p>Add the dates, times and places you want families to request.</p></div><button class="button button-primary" id="addSlot" type="button">+ Add session</button></div>
+<div id="slotList"></div></section>
+<section class="admin-panel"><div class="admin-panel-head"><div><span class="eyebrow">Reservation requests</span><h2>Requests from families</h2><p>Requests submitted through Bubba Hub can be tracked here.</p></div><span class="status" id="requestCount">0 new</span></div><div id="requestList" class="booking-request-list"><div class="booking-empty">No reservation requests yet.</div></div></section>
+<div class="booking-manager-actions"><button class="button button-primary" id="saveBooking" type="button">Save booking settings</button><span id="bookingMessage" class="deployment-note" role="status"></span></div>
+</main>
+<footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
+<script src="assets/js/booking-manager.js?v=20260925-booking1"></script></body></html>
