@@ -248,3 +248,51 @@ CREATE TABLE IF NOT EXISTS bh_booking_reservations (
  INDEX idx_reservation_slot (slot_id),
  INDEX idx_reservation_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Family booking consent profiles and booking-time consent snapshots.
+-- Sensitive child/medical data is kept separate from public activity data.
+CREATE TABLE IF NOT EXISTS bh_consent_profiles (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ user_id BIGINT UNSIGNED NOT NULL,
+ child_id BIGINT UNSIGNED NULL,
+ child_name VARCHAR(120) NOT NULL,
+ date_of_birth DATE NULL,
+ gender VARCHAR(40) NULL,
+ additional_needs TEXT NULL,
+ allergies TEXT NULL,
+ medical_conditions TEXT NULL,
+ medications TEXT NULL,
+ dietary_requirements TEXT NULL,
+ emergency_information TEXT NULL,
+ emergency_contact_name VARCHAR(190) NULL,
+ emergency_contact_phone VARCHAR(80) NULL,
+ photo_activity TINYINT(1) NOT NULL DEFAULT 0,
+ photo_bubbahub TINYINT(1) NOT NULL DEFAULT 0,
+ photo_organiser_marketing TINYINT(1) NOT NULL DEFAULT 0,
+ support_prefill_enabled TINYINT(1) NOT NULL DEFAULT 0,
+ support_prefill_topics VARCHAR(500) NULL,
+ consent_to_share_with_organiser TINYINT(1) NOT NULL DEFAULT 0,
+ consent_version VARCHAR(30) NOT NULL DEFAULT '1.0',
+ consent_given_at DATETIME NULL,
+ updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ INDEX idx_consent_user (user_id),
+ INDEX idx_consent_child (child_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS bh_booking_consent_snapshots (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ user_id BIGINT UNSIGNED NOT NULL,
+ booking_id BIGINT UNSIGNED NULL,
+ reservation_id BIGINT UNSIGNED NULL,
+ consent_profile_id BIGINT UNSIGNED NULL,
+ consent_version VARCHAR(30) NOT NULL,
+ child_name VARCHAR(120) NOT NULL,
+ consent_json LONGTEXT NOT NULL,
+ consent_given_at DATETIME NOT NULL,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ INDEX idx_consent_snapshot_user (user_id),
+ INDEX idx_consent_snapshot_booking (booking_id),
+ INDEX idx_consent_snapshot_reservation (reservation_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
