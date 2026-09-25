@@ -304,4 +304,5 @@ td { font-size:14px; }
 .consent-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
 .consent-status{margin:12px 0 0;color:var(--bh-secondary);font-size:13px}
 @media(max-width:620px){.consent-grid,.consent-topic-grid{grid-template-columns:1fr}.consent-wide{grid-column:auto}.consent-notice{flex-direction:column}.consent-actions .button{width:100%}}
+.support-prefill-note{margin:-8px 0 0;color:var(--bh-text-muted);font-size:12px}
 
