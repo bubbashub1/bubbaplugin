@@ -137,3 +137,59 @@ CREATE TABLE IF NOT EXISTS bh_bookings (
  INDEX idx_booking_user (user_id),
  INDEX idx_booking_activity (activity_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- Private family Help & Support. These tables are separate from public leader FAQs.
+CREATE TABLE IF NOT EXISTS bh_guidance_topics (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ name VARCHAR(120) NOT NULL UNIQUE,
+ description VARCHAR(500) NULL,
+ active TINYINT(1) NOT NULL DEFAULT 1,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS bh_guidance_offers (
+ user_id BIGINT UNSIGNED NOT NULL,
+ topic_id BIGINT UNSIGNED NOT NULL,
+ enabled TINYINT(1) NOT NULL DEFAULT 1,
+ PRIMARY KEY (user_id, topic_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS bh_support_questions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ user_id BIGINT UNSIGNED NOT NULL,
+ topic_id BIGINT UNSIGNED NULL,
+ subject VARCHAR(190) NULL,
+ question TEXT NOT NULL,
+ status ENUM('submitted','assigned','awaiting_user','answered','closed') NOT NULL DEFAULT 'submitted',
+ assigned_user_id BIGINT UNSIGNED NULL,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ INDEX idx_support_user (user_id),
+ INDEX idx_support_assigned (assigned_user_id),
+ INDEX idx_support_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS bh_support_answers (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ question_id BIGINT UNSIGNED NOT NULL,
+ responder_user_id BIGINT UNSIGNED NOT NULL,
+ answer TEXT NOT NULL,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ INDEX idx_support_answer_question (question_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS bh_leader_faqs (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ organiser_id BIGINT UNSIGNED NOT NULL,
+ activity_id BIGINT UNSIGNED NULL,
+ question VARCHAR(500) NOT NULL,
+ answer TEXT NOT NULL,
+ status ENUM('draft','published','archived') NOT NULL DEFAULT 'draft',
+ sort_order INT NOT NULL DEFAULT 0,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ INDEX idx_faq_organiser (organiser_id),
+ INDEX idx_faq_activity (activity_id),
+ INDEX idx_faq_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
