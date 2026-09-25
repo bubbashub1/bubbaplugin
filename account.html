@@ -21,7 +21,7 @@
 </div>
 <section class="feature-grid">
 <article class="feature-card"><span class="feature-icon">👤</span><h3>Profile</h3><p>Manage your name, email address and account details.</p><a class="card-link" href="#profile">Manage profile →</a></article>
-<article class="feature-card"><span class="feature-icon">👶</span><h3>Children &amp; bump</h3><p>Keep family profiles up to date so activities can be personalised.</p><a class="card-link" href="my-hub.html">Open My Hub →</a></article>
+<article class="feature-card"><span class="feature-icon">👶</span><h3>Children &amp; bump</h3><p>Keep family profiles up to date so activities can be personalised.</p><a class="card-link" href="#family">Manage family →</a></article>
 <article class="feature-card"><span class="feature-icon">✓</span><h3>Planner preferences</h3><p>Choose the locations, days and planning options you want to use.</p><a class="card-link" href="#preferences">Manage preferences →</a></article>
 <article class="feature-card"><span class="feature-icon">♡</span><h3>Saved activities</h3><p>Return to activities you've saved and decide which ones belong in your planner.</p><a class="card-link" href="directory.html">View activities →</a></article>
 </section>
@@ -33,6 +33,16 @@
 <label>Email<input class="filter-input" type="email" value="" placeholder="you@example.com"></label>
 </div>
 <button class="button button-primary" type="button" onclick="this.textContent='Saved';this.disabled=true">Save profile</button>
+</div>
+</section>
+<section class="section" id="family">
+<div class="admin-panel">
+<div class="admin-panel-head"><div><span class="eyebrow">Family profiles</span><h2>Children &amp; bump</h2></div><span class="status">Demo account</span></div>
+<div class="feature-grid">
+<article class="feature-card"><span class="feature-icon">👶</span><h3>Add a child</h3><p>Add a child's name, date of birth and profile details to help personalise activity discovery.</p><button class="button button-primary" type="button" onclick="this.textContent='Coming with account database';this.disabled=true">Add child</button></article>
+<article class="feature-card"><span class="feature-icon">🤰</span><h3>Add a bump</h3><p>Create a pregnancy profile with a nickname, photo and due date.</p><button class="button button-primary" type="button" onclick="this.textContent='Coming with account database';this.disabled=true">Add bump</button></article>
+</div>
+<p class="helper-text">Family profiles are currently a front-end placeholder. They will become account-backed data rather than browser-only demo content when the MySQL API is connected.</p>
 </div>
 </section>
 <section class="section" id="preferences">
