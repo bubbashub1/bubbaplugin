@@ -18,6 +18,14 @@ async function loadVenueSuggestions(){
   });
  }catch{}
 }
+
+function addAdditionalVenue(venue={}){
+ const wrap=document.querySelector("#additionalVenues");if(!wrap)return;
+ const row=document.createElement("div");row.className="admin-additional-venue";row.dataset.venueId=venue.id||"";
+ row.innerHTML='<div class="admin-additional-venue-head"><strong>Additional venue</strong><button type="button" class="button button-soft remove-additional-venue">Remove</button></div><div class="admin-form-grid"><label>Venue name<input data-venue="venue_name" required value="'+escapeHtml(venue.venue_name||"")+'"></label><label>Address<input data-venue="address" value="'+escapeHtml(venue.address||"")+'"></label><label>Town<input data-venue="town" value="'+escapeHtml(venue.town||"")+'"></label><label>Region<input data-venue="region" value="'+escapeHtml(venue.region||"")+'"></label><label>Postcode<input data-venue="postcode" value="'+escapeHtml(venue.postcode||"")+'"></label><label>Latitude<input data-venue="latitude" type="number" step="any" value="'+(venue.latitude??"")+'"></label><label>Longitude<input data-venue="longitude" type="number" step="any" value="'+(venue.longitude??"")+'"></label></div>';
+ row.querySelector(".remove-additional-venue").onclick=()=>row.remove();wrap.appendChild(row);
+}
+function collectAdditionalVenues(){return [...document.querySelectorAll(".admin-additional-venue")].map(row=>{const v=n=>row.querySelector('[data-venue="'+n+'"]')?.value.trim()||"";return {id:row.dataset.venueId||null,venue_name:v("venue_name"),address:v("address"),town:v("town"),region:v("region"),postcode:v("postcode"),latitude:v("latitude"),longitude:v("longitude")}}).filter(v=>v.venue_name&&v.town)}
 function validateSessions(){const rows=[...document.querySelectorAll(".admin-session-row")];for(const row of rows){const day=row.querySelector('[data-field="day_of_week"]')?.value,start=row.querySelector('[data-field="start_time"]')?.value,end=row.querySelector('[data-field="end_time"]')?.value;if(!day&&!start&&!end)continue;if(!day||!start)return "Each session needs a day and start time.";if(end&&end===start)return "Session end time must be different from the start time.";}return ""}
 const setAuthMessage=(m,e=false)=>{const x=document.querySelector("#adminAuthMessage");x.textContent=m;x.classList.toggle("is-error",e)};
 async function logout(){try{await fetch("admin-auth.php?action=logout",{credentials:"same-origin",cache:"no-store"});}finally{location.reload()}}
@@ -348,7 +356,7 @@ async function createActivity(e){
  body.county=document.querySelector("#activityCounty")?.value||"";
  const selectedRegion=regionById(body.region);
  if(selectedRegion){body.region=selectedRegion.region;body.county=selectedRegion.county||body.county||"";}
- const sessionError=validateSessions();if(sessionError){statusMessage(sessionError,true);return;}body.sessions=collectSessions();body.id=editingActivityId||null;
+ const sessionError=validateSessions();if(sessionError){statusMessage(sessionError,true);return;}body.sessions=collectSessions();body.venues=collectAdditionalVenues();body.id=editingActivityId||null;
  const status=document.querySelector("#activityFormMessage"),button=form.querySelector('button[type="submit"]');
  button.disabled=true;status.textContent=editingActivityId?"Saving changes…":"Publishing…";status.classList.remove("is-error");
  try{
@@ -393,6 +401,7 @@ document.querySelector("#deployLatest").addEventListener("click",async()=>{
  }
 });
 document.querySelector("#adminPassword").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
+document.querySelector("#addVenue")?.addEventListener("click",()=>addAdditionalVenue());
 document.querySelector("#newActivity").addEventListener("click",openEditor);
 document.querySelector("#cancelActivity").addEventListener("click",closeEditor);
 document.querySelector("#cancelActivity2").addEventListener("click",closeEditor);
