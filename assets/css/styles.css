@@ -876,3 +876,13 @@ body{background:linear-gradient(180deg,#f8fbf8 0%,#f4f8f4 100%);}
   .listing-actions #compare[aria-pressed="true"]::before{content:"✓"}
   .listing-actions .activity-action{border-radius:11px}
 }
+
+/* Stage 8 — admin usability */
+.admin-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.admin-table-wrap table{min-width:760px}
+.admin-status-published{display:inline-flex;align-items:center;gap:5px}
+.admin-status-published::before{content:"";width:7px;height:7px;border-radius:50%;background:#4d8b61}
+.admin-status-draft{opacity:.72}
+.admin-session-row{position:relative;padding:12px;border:1px solid rgba(65,102,81,.1);border-radius:14px;margin-bottom:10px;background:rgba(65,102,81,.025)}
+.admin-session-row .remove-session{align-self:end}
+@media(max-width:700px){.admin-table-wrap{margin-inline:-4px}.admin-session-row{grid-template-columns:1fr 1fr}.admin-session-row .remove-session{width:100%;grid-column:1/-1}.admin-form-section .admin-panel-head{gap:10px;align-items:flex-start}.admin-form-section .admin-panel-head .button{white-space:nowrap}}
