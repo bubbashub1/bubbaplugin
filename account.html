@@ -1,67 +1,24 @@
 <!doctype html>
-<html lang="en-GB">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>My Account · Bubba Hub</title>
-<meta name="description" content="Manage your Bubba Hub account, family details, planner preferences and notifications.">
-<link rel="stylesheet" href="assets/css/styles.css?v=20260927-sitewide2">
-</head>
-<body>
-<header class="site-header">
-<a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a>
-<nav class="main-nav" aria-label="Main navigation">
-<a href="directory.html">Find activities</a><a href="planner.html">My planner</a><a href="my-hub.html">My Hub</a>
-</nav>
-<a class="button button-soft active" href="account.html">My account</a>
-</header>
-<main class="app-shell">
-<div class="page-heading">
-<div><span class="eyebrow">Your account</span><h1>My Account</h1><p>Manage your Bubba Hub profile and the preferences that shape your family experience.</p></div>
-</div>
-<section class="feature-grid">
-<article class="feature-card"><span class="feature-icon">👤</span><h3>Profile</h3><p>Your secure sign-in keeps your Bubba Hub family data connected across devices.</p><a class="card-link" href="account-profile.html">Manage profile →</a></article>
-<article class="feature-card"><span class="feature-icon">👶</span><h3>Children &amp; bump</h3><p>Keep family profiles up to date so activities can be personalised.</p><a class="card-link" href="family.html">Manage family →</a></article>
-<article class="feature-card"><span class="feature-icon">✓</span><h3>Planner preferences</h3><p>Choose the locations, days and planning options you want to use.</p><a class="card-link" href="preferences.html">Manage preferences →</a></article>
-<article class="feature-card"><span class="feature-icon">♡</span><h3>Saved activities</h3><p>Return to activities you've saved and decide which ones belong in your planner.</p><a class="card-link" href="directory.html?saved=1">View saved →</a></article>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Account · Bubba Hub</title><meta name="description" content="Manage your Bubba Hub account and family settings.">
+<link rel="stylesheet" href="assets/css/styles.css?v=20260927-sitewide2"><link rel="stylesheet" href="assets/css/account-dashboard.css?v=20260927-accountdashboard1"></head>
+<body><header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a>
+<nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="planner.html">My planner</a><a href="my-hub.html">My Hub</a></nav><a class="button button-soft active" href="account.html">My account</a></header>
+<main class="app-shell"><div class="page-heading"><div><span class="eyebrow">Your account</span><h1>My Account</h1><p>Everything you need to manage your Bubba Hub family experience.</p></div></div>
+<section class="account-pro-banner"><div><span class="eyebrow">Bubba Hub Pro</span><h2>Make family life a little easier</h2><p>Explore optional Pro tools for planning, organising and getting more from your Bubba Hub account.</p></div><a class="button" href="subscription.html">Explore Pro →</a></section>
+<div class="account-section-label"><h2>Manage your account</h2><p>Each section has its own settings, so you can change exactly what you need.</p></div>
+<section class="account-dashboard-grid">
+<article class="account-dashboard-card"><span class="feature-icon">👤</span><h3>Profile</h3><p>Update your name, phone number and account details.</p><a class="card-link" href="account-profile.html">Edit profile →</a></article>
+<article class="account-dashboard-card"><span class="feature-icon">👶</span><h3>My Family</h3><p>Manage children and bump profiles used for family planning.</p><a class="card-link" href="family.html">Edit family →</a></article>
+<article class="account-dashboard-card"><span class="feature-icon">⚙️</span><h3>Preferences</h3><p>Set areas, towns, days, ages, categories and useful filters.</p><a class="card-link" href="preferences.html">Edit preferences →</a></article>
+<article class="account-dashboard-card"><span class="feature-icon">🔔</span><h3>Notifications</h3><p>Choose which reminders, updates and alerts you receive.</p><a class="card-link" href="notifications.html">Edit notifications →</a></article>
+<article class="account-dashboard-card"><span class="feature-icon">♡</span><h3>Saved Activities</h3><p>See the activities you've saved and remove anything you no longer need.</p><a class="card-link" href="saved-activities.html">View saved →</a></article>
+<article class="account-dashboard-card"><span class="feature-icon">📅</span><h3>Planner &amp; Bookings</h3><p>Keep planned sessions and connected bookings together.</p><a class="card-link" href="account-planner.html">Manage planner →</a></article>
+<article class="account-dashboard-card"><span class="feature-icon">🔒</span><h3>Privacy &amp; Consent</h3><p>Review your privacy choices and optional account permissions.</p><a class="card-link" href="privacy.html">Manage privacy →</a></article>
+<article class="account-dashboard-card"><span class="feature-icon">⭐</span><h3>Subscription / Pro</h3><p>View your current plan and explore optional Pro features.</p><a class="card-link" href="subscription.html">View subscription →</a></article>
 </section>
-<section class="section" id="profile">
-<div class="admin-panel" id="accountAuth">
-<div class="admin-panel-head"><div><span class="eyebrow">Family account</span><h2 id="accountAuthTitle">Sign in to your family account</h2><p>Use your account to keep your planner with you when you change device.</p></div></div>
-<div class="account-auth-tabs" role="tablist" aria-label="Account access">
-<button type="button" class="button button-soft active" data-auth-mode="login" role="tab" aria-selected="true">Sign in</button>
-<button type="button" class="button button-soft" data-auth-mode="register" role="tab" aria-selected="false">Create account</button>
-</div>
-<form id="accountAuthForm" class="account-auth-form">
-<label>Email<input name="email" type="email" required autocomplete="email" placeholder="you@example.com"></label>
-<label>Password<input name="password" type="password" required autocomplete="current-password" minlength="8" placeholder="At least 8 characters"></label>
-<label id="confirmPassword" hidden>Confirm password<input name="confirm_password" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the password again"></label>
-<button class="button button-primary" type="submit">Sign in</button>
-<p class="library-message" id="accountAuthMessage" aria-live="polite"></p>
-</form>
-</div>
-</section><section class="section" id="family">
-<div class="admin-panel">
-<div class="admin-panel-head"><div><span class="eyebrow">Family profiles</span><h2>Children &amp; bump</h2></div><span class="status">Family account</span></div>
-<div class="feature-grid">
-<article class="feature-card"><span class="feature-icon">👶</span><h3>Add a child</h3><p>Add a child's name, date of birth and profile details to help personalise activity discovery.</p><button class="button button-primary" type="button" onclick="this.textContent='Coming with account database';this.disabled=true">Add child</button></article>
-<article class="feature-card"><span class="feature-icon">🤰</span><h3>Add a bump</h3><p>Create a pregnancy profile with a nickname, photo and due date.</p><button class="button button-primary" type="button" onclick="this.textContent='Coming with account database';this.disabled=true">Add bump</button></article>
-</div>
-<p class="helper-text">Family profiles are now stored against your Bubba Hub account and can be managed from My Hub.</p>
-</div>
-</section>
-<section class="section" id="preferences">
-<div class="admin-panel">
-<div class="admin-panel-head"><div><span class="eyebrow">My Bubba Hub Directory Preferences</span><h2>Planning preferences</h2></div></div>
-<div class="feature-grid">
-<article class="feature-card"><h3>Area</h3><p>Choose the Devon &amp; Cornwall areas you normally search.</p></article>
-<article class="feature-card"><h3>Activities</h3><p>Set preferred ages, categories and days for discovery.</p></article>
-<article class="feature-card"><h3>Notifications</h3><p>Control saved-search and planner reminders.</p></article>
-<article class="feature-card"><h3>Privacy</h3><p>Review what family information is used to personalise your hub.</p></article>
-</div>
-</div>
-</section>
-</main>
-<footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
-<script src="assets/js/app.js?v=20260927-adminaccess1"></script><script src="assets/js/auth.js?v=20260927-adminaccess2"></script></body>
-</html>
+<section class="admin-panel account-account-access" id="accountAuth"><div class="admin-panel-head"><div><span class="eyebrow">Family account</span><h2 id="accountAuthTitle">Sign in to your family account</h2><p>Use your account to keep your planner with you when you change device.</p></div></div>
+<div class="account-auth-tabs" role="tablist" aria-label="Account access"><button type="button" class="button button-soft active" data-auth-mode="login" role="tab" aria-selected="true">Sign in</button><button type="button" class="button button-soft" data-auth-mode="register" role="tab" aria-selected="false">Create account</button></div>
+<form id="accountAuthForm" class="account-auth-form"><label>Email<input name="email" type="email" required autocomplete="email" placeholder="you@example.com"></label><label>Password<input name="password" type="password" required autocomplete="current-password" minlength="8" placeholder="At least 8 characters"></label><label id="confirmPassword" hidden>Confirm password<input name="confirm_password" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the password again"></label><button class="button button-primary" type="submit">Sign in</button><p class="library-message" id="accountAuthMessage" aria-live="polite"></p></form></section>
+</main><footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
+<script src="assets/js/app.js?v=20260927-adminaccess1"></script><script src="assets/js/auth.js?v=20260927-adminaccess2"></script></body></html>
