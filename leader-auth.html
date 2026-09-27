@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Leader sign in · Bubba Hub</title>
+<meta name="description" content="Sign in or set up your Bubba Hub class leader account.">
+<link rel="stylesheet" href="assets/css/styles.css?v=20260927-leaderauth1">
+</head><body>
+<header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="events">Events</a><a href="venues">Venues</a><a href="planner.html">My planner</a><a href="calendar.html">Calendar</a><a href="my-hub.html">My Hub</a><a class="active" href="leader.html">For class leaders</a><a href="admin.html">Admin</a></nav><a class="button button-soft" href="account.html">My account</a></header>
+<main class="app-shell auth-page bh-leader-auth-page">
+<section class="auth-hero"><div><span class="eyebrow">Bubba Hub for class leaders</span><h1 id="leaderAuthTitle">Sign in to your leader portal</h1><p id="leaderAuthIntro">Manage your classes, venues, schedules and bookings from one dedicated account.</p></div></section>
+<section class="auth-layout">
+<div class="admin-panel auth-card">
+<div class="auth-tabs" role="tablist" aria-label="Leader account access"><button type="button" class="button button-soft active" data-leader-mode="login" role="tab" aria-selected="true">Sign in</button><button type="button" class="button button-soft" data-leader-mode="register" role="tab" aria-selected="false">Set up access</button></div>
+<form id="leaderAuthForm" novalidate>
+<label>Email address<input name="email" type="email" required autocomplete="email" placeholder="leader@example.com"></label>
+<label>Password<input id="leaderPassword" name="password" type="password" required autocomplete="current-password" minlength="8" placeholder="At least 8 characters"><span class="auth-password-row"><button type="button" class="auth-show-password" id="leaderShowPassword">Show password</button><small>Minimum 8 characters</small></span></label>
+<label id="leaderConfirmWrap" hidden>Confirm password<input name="confirm_password" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the password again"></label>
+<button class="button button-primary auth-submit" type="submit" id="leaderAuthSubmit">Sign in</button>
+<p class="library-message" id="leaderAuthMessage" role="status" aria-live="polite"></p>
+</form>
+<div class="auth-note"><span>🔐</span><div><strong>Leader accounts are separate from family accounts</strong><p>Your leader login gives access to the class leader portal. Family profiles remain separate.</p></div></div>
+</div>
+<aside class="auth-benefits"><span class="eyebrow">Your leader portal</span><h2>Everything for your classes in one place.</h2><ul><li>🎨 Manage class listings</li><li>📍 Manage venues and map details</li><li>📅 Review schedules</li><li>🎟️ Manage booking requests</li><li>⭐ Keep your organiser profile up to date</li></ul><p class="deployment-note">Leader access is only available to organisers already set up with Bubba Hub.</p></aside>
+</section>
+</main>
+<footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
+<script src="assets/js/leader-auth.js?v=20260927-leaderauth1"></script><script src="assets/js/site-auth.js?v=20260927-auth3"></script>
+</body></html>
