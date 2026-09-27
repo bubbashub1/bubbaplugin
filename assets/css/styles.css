@@ -2425,3 +2425,11 @@ img,svg,video{max-width:100%;height:auto}
   .activity-hero .listing-summary h1{font-size:40px}
   .activity-hero .listing-actions .button{flex:1 1 calc(50% - 10px);min-width:140px}
 }
+
+/* Google account sign-in */
+.google-signin-button{width:100%;min-height:50px;display:flex;align-items:center;justify-content:center;gap:10px;border:1px solid #dadce0;border-radius:12px;background:#fff;color:#202124;font-family:var(--bh-font);font-size:1rem;font-weight:750;cursor:pointer;transition:.18s}
+.google-signin-button:hover{box-shadow:0 2px 8px rgba(0,0,0,.12);border-color:#c7c7c7}
+.google-signin-button:disabled{opacity:.6;cursor:wait}
+.google-mark{font-family:Arial,sans-serif;font-size:1.2rem;font-weight:800}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--bh-text-muted);font-size:.85rem;font-weight:700}
+.auth-divider:before,.auth-divider:after{content:"";height:1px;background:var(--bh-border);flex:1}
