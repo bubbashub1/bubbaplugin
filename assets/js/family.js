@@ -37,6 +37,31 @@ function schoolTracker(dob){
  const primaryDays=Math.ceil((primaryClose-now)/(1000*60*60*24)),secondaryDays=Math.ceil((secondaryClose-now)/(1000*60*60*24));
  return {primaryYear,secondaryYear,primaryOpen,primaryClose,secondaryOpen,secondaryClose,primaryDays,secondaryDays,primaryOpenText:fmt(primaryOpen),primaryCloseText:fmt(primaryClose),secondaryOpenText:fmt(secondaryOpen),secondaryCloseText:fmt(secondaryClose)};
 }
+function pregnancyTracker(due){
+ if(!due)return null;
+ const dueDate=new Date(due+"T00:00:00"),now=new Date();
+ const msWeek=7*24*60*60*1000;
+ const weeksLeft=Math.ceil((dueDate-now)/msWeek);
+ const weeksPreg=Math.max(0,40-weeksLeft);
+ const antenatalStart=new Date(dueDate.getTime()-12*msWeek);
+ const antenatalEnd=new Date(dueDate.getTime()-8*msWeek);
+ const birthReady=new Date(dueDate.getTime()-2*msWeek);
+ const fmt=x=>x.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+ const month=x=>x.toLocaleDateString("en-GB",{month:"long"});
+ return {dueDate,weeksLeft,weeksPreg,antenatalStart,antenatalEnd,birthReady,fmt,month};
+}
+function babyHere(id,nickname){
+ const name=prompt("Baby's name",nickname||"Baby");
+ if(name===null)return;
+ const clean=name.trim();
+ if(!clean){alert("Please enter the baby's name.");return}
+ const gender=prompt("Gender (optional)","")||"";
+ const dob=new Date().toISOString().slice(0,10);
+ const p={action:"convert_bump_to_child",id,name:clean,gender,date_of_birth:dob,csrf};
+ fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(p)})
+ .then(async r=>{const j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||j.error||"Could not convert profile.");await load()})
+ .catch(e=>alert(e.message));
+}
 function render(d){
  const c=d.children||[],b=d.bumps||[];
  list.innerHTML=c.concat(b).length?c.map(x=>{
@@ -50,9 +75,24 @@ function render(d){
    school="<div class='school-tracker'><span class='school-tracker-icon'>🎓</span><div><strong>School application tracker</strong><div class='school-tracker-row'><b>Primary · Sep "+t.primaryYear+"</b><span class='school-tracker-status'>"+esc(primaryStatus)+"</span></div><small>Opens "+esc(t.primaryOpenText)+" · closes "+esc(t.primaryCloseText)+"</small><div class='school-tracker-row'><b>Secondary · Sep "+t.secondaryYear+"</b><span class='school-tracker-status'>"+esc(secondaryStatus)+"</span></div><small>Opens "+esc(t.secondaryOpenText)+" · closes "+esc(t.secondaryCloseText)+"</small></div></div>";
   }
   return "<article class='hub-family-card'><span>👶</span><div class='hub-family-main'><strong>"+esc(x.name)+"</strong><small>"+(x.date_of_birth?age(x.date_of_birth)+" · "+x.date_of_birth:"Date of birth not set")+"</small>"+school+"</div><button class='button button-soft' data-edit-child='"+x.id+"'>Edit</button></article>";
- }).join("")+b.map(x=>"<article class='hub-family-card'><span>🤰</span><div><strong>"+esc(x.nickname||"Baby")+"</strong><small>"+(x.due_date?"Due "+x.due_date:"Due date not set")+"</small></div><button class='button button-soft' data-edit-bump='"+x.id+"'>Edit</button></article>").join(""):"<div class='hub-empty'><strong>Your family profile is empty</strong><p>Add a child or bump profile to get started.</p></div>";
+ }).join("")+b.map(x=>{
+  const t=pregnancyTracker(x.due_date);
+  let tracker="";
+  if(t){
+   const now=new Date();
+   const daysLeft=Math.max(0,Math.ceil((t.dueDate-now)/(24*60*60*1000)));
+   const antenatalActive=now>=t.antenatalStart&&now<=t.antenatalEnd;
+   const birthReady=now>=t.birthReady;
+   const weeksText=t.weeksPreg>=40?"40+ weeks":t.weeksPreg+" weeks";
+   const dueText=daysLeft===0?"Due today":daysLeft===1?"Due tomorrow":daysLeft>0?daysLeft+" days to go":"Due date passed";
+   const antenatalText=antenatalActive?"Now is a good time for antenatal classes":t.weeksPreg<28?"Attend antenatal classes from "+t.month(t.antenatalStart)+" to "+t.month(t.antenatalEnd):"Recommended antenatal window: "+t.month(t.antenatalStart)+" to "+t.month(t.antenatalEnd);
+   tracker="<div class='pregnancy-tracker'><span class='pregnancy-tracker-icon'>🤰</span><div><strong>Pregnancy tracker</strong><div class='pregnancy-due'><b>"+esc(weeksText)+"</b><span>"+esc(dueText)+"</span></div><small>Due "+esc(t.fmt(t.dueDate))+"</small><div class='pregnancy-antenatal'><b>💛 Antenatal classes</b><span>"+esc(antenatalText)+"</span><small>28–32 weeks · "+esc(t.fmt(t.antenatalStart))+" to "+esc(t.fmt(t.antenatalEnd))+"</small></div>"+(birthReady?"<button type='button' class='button button-primary baby-here-button' data-baby-here='"+x.id+"'>👶 Baby is here!</button>":"")+"</div></div>";
+  }
+  return "<article class='hub-family-card'><span>🤰</span><div class='hub-family-main'><strong>"+esc(x.nickname||"Baby")+"</strong><small>"+(x.due_date?"Due "+esc(x.due_date):"Due date not set")+"</small>"+tracker+"</div><button class='button button-soft' data-edit-bump='"+x.id+"'>Edit</button></article>";
+ }).join(""):"<div class='hub-empty'><strong>Your family profile is empty</strong><p>Add a child or bump profile to get started.</p></div>";
  c.forEach(x=>list.querySelector("[data-edit-child='"+x.id+"']")?.addEventListener("click",()=>modal("Edit child","child",x)));
  b.forEach(x=>list.querySelector("[data-edit-bump='"+x.id+"']")?.addEventListener("click",()=>modal("Edit bump","bump",x)));
+ b.forEach(x=>list.querySelector("[data-baby-here='"+x.id+"']")?.addEventListener("click",()=>babyHere(x.id,x.nickname)));
 }
 async function load(){try{const d=await get();csrf=d.csrf||"";render(d);message.textContent="";}catch(e){list.innerHTML="<div class='hub-empty'><strong>Sign in required</strong><p>"+esc(e.message)+"</p><a class='button button-primary' href='account.html'>Sign in</a></div>"}}
 document.getElementById("addChild").onclick=()=>modal("Add a child","child");document.getElementById("addBump").onclick=()=>modal("Add a bump","bump");load();
