@@ -253,6 +253,43 @@ document.addEventListener("DOMContentLoaded", async () => {
       const calendar = $("calendarView");
       if (!calendar) return;
 
+      // The calendar is intentionally opt-in: with 1,000+ listings we only
+      // show sessions after the visitor has narrowed the directory results.
+      const hasCalendarFilter = () => {
+        const search = $("search").value.trim();
+        const category = $("category").value;
+        const region = $("area").value;
+        const town = $("town").value;
+        const minAge = Number($("ageMin").value);
+        const maxAge = Number($("ageMax").value);
+        const day = $("day").value;
+        const maxPrice = $("maxPrice").value;
+        const freeOnly = $("free").checked;
+        return !!(search || category || region || town || day || maxPrice || freeOnly || minAge > 0 || maxAge < 9);
+      };
+
+      if (!hasCalendarFilter()) {
+        calendar.innerHTML = `
+          <div class="directory-calendar-empty-state">
+            <div class="directory-calendar-empty-icon" aria-hidden="true">🔎</div>
+            <h2>Find your perfect listings</h2>
+            <p>Please use the filters above to narrow down activities by location, age, category, day or price. Your matching listings will then appear in the weekly calendar.</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (!list.length) {
+        calendar.innerHTML = `
+          <div class="directory-calendar-empty-state">
+            <div class="directory-calendar-empty-icon" aria-hidden="true">📅</div>
+            <h2>No matching listings</h2>
+            <p>Try widening your filters to find activities for your family.</p>
+          </div>
+        `;
+        return;
+      }
+
       const baseDate = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
       const weekStart = new Date(baseDate);
       const dayOffset = (weekStart.getDay() + 6) % 7;
@@ -326,9 +363,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       const results = $("results");
       const mapView = $("mapView");
       const calendarView = $("calendarView");
-      if (results) results.hidden = currentView === "map" || currentView === "calendar";
-      if (mapView) mapView.hidden = currentView !== "map";
-      if (calendarView) calendarView.hidden = currentView !== "calendar";
+
+      // Only one primary directory view is ever visible at a time.
+      if (results) {
+        results.hidden = currentView === "map" || currentView === "calendar";
+        results.setAttribute("aria-hidden", results.hidden ? "true" : "false");
+      }
+      if (mapView) {
+        mapView.hidden = currentView !== "map";
+        mapView.setAttribute("aria-hidden", mapView.hidden ? "true" : "false");
+      }
+      if (calendarView) {
+        calendarView.hidden = currentView !== "calendar";
+        calendarView.setAttribute("aria-hidden", calendarView.hidden ? "true" : "false");
+      }
     };
 
     const render = () => {
