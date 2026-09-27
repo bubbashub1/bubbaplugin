@@ -2,8 +2,32 @@ document.addEventListener("DOMContentLoaded",async()=>{
 const list=document.getElementById("familyList"),message=document.getElementById("familyMessage"),esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])));let csrf="";
 const get=async()=>{const r=await fetch("api/my-hub.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});const j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||"Please sign in.");return j};
 const age=d=>{if(!d)return "";const x=new Date(d+"T00:00:00"),n=new Date();let y=n.getFullYear()-x.getFullYear(),m=n.getMonth()-x.getMonth();if(n.getDate()<x.getDate())m--;if(m<0){y--;m+=12}return y<2?Math.max(0,y*12+m)+" months":y+" years"};
-function modal(title,type,item={}){const o=document.createElement("div");o.className="hub-modal";o.innerHTML="<form class='hub-modal-card'><div class='admin-panel-head'><div><span class='eyebrow'>Family profile</span><h2>"+title+"</h2></div><button type='button' class='button button-soft' data-close>Close</button></div><div class='hub-form-grid'>"+(type==="child"?"<label>Name<input name='name' required maxlength='100' value='"+esc(item.name||"")+"'></label><label>Gender<input name='gender' maxlength='40' value='"+esc(item.gender||"")+"'></label><label>Date of birth<input name='date_of_birth' type='date' value='"+esc(item.date_of_birth||"")+"'></label>":"<label>Nickname<input name='nickname' maxlength='80' value='"+esc(item.nickname||"")+"" placeholder='Optional'></label><label>Due date<input name='due_date' type='date' value='"+esc(item.due_date||"")+"'></label>")+"</div><div class='hero-actions'><button class='button button-primary' type='submit'>Save</button></div><p data-msg class='library-message'></p></form>";
-document.body.appendChild(o);o.querySelector("[data-close]").onclick=()=>o.remove();o.onclick=e=>{if(e.target===o)o.remove()};o.querySelector("form").onsubmit=async e=>{e.preventDefault();const p=Object.fromEntries(new FormData(e.target));p.action=type==="child"?"save_child":"save_bump";if(item.id)p.id=item.id;p.csrf=csrf;const m=e.target.querySelector("[data-msg]");try{const r=await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(p)}),j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||j.error||"Could not save.");o.remove();await load()}catch(err){m.textContent=err.message;m.classList.add("is-error")}}}
+function modal(title,type,item={}){
+ const o=document.createElement("div");
+ o.className="hub-modal";
+ const fields=type==="child"
+  ? "<label>Name<input name='name' required maxlength='100' value='"+esc(item.name||"")+"'></label><label>Gender<input name='gender' maxlength='40' value='"+esc(item.gender||"")+"'></label><label>Date of birth<input name='date_of_birth' type='date' value='"+esc(item.date_of_birth||"")+"'></label>"
+  : "<label>Nickname<input name='nickname' maxlength='80' value='"+esc(item.nickname||"")+"' placeholder='Optional'></label><label>Due date<input name='due_date' type='date' value='"+esc(item.due_date||"")+"'></label>";
+ o.innerHTML="<form class='hub-modal-card'><div class='admin-panel-head'><div><span class='eyebrow'>Family profile</span><h2>"+title+"</h2></div><button type='button' class='button button-soft' data-close>Close</button></div><div class='hub-form-grid'>"+fields+"</div><div class='hero-actions'><button class='button button-primary' type='submit'>Save</button></div><p data-msg class='library-message'></p></form>";
+ document.body.appendChild(o);
+ o.querySelector("[data-close]").onclick=()=>o.remove();
+ o.onclick=e=>{if(e.target===o)o.remove()};
+ o.querySelector("form").onsubmit=async e=>{
+  e.preventDefault();
+  const p=Object.fromEntries(new FormData(e.target));
+  p.action=type==="child"?"save_child":"save_bump";
+  if(item.id)p.id=item.id;
+  p.csrf=csrf;
+  const m=e.target.querySelector("[data-msg]");
+  try{
+   const r=await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(p)});
+   const j=await r.json();
+   if(!r.ok||!j.ok)throw Error(j.message||j.error||"Could not save.");
+   o.remove();
+   await load();
+  }catch(err){m.textContent=err.message;m.classList.add("is-error")}
+ };
+}
 function schoolTracker(dob){
  if(!dob)return null;
  const d=new Date(dob+"T00:00:00"),primaryYear=d.getFullYear()+5,secondaryYear=d.getFullYear()+11;
