@@ -1,4 +1,6 @@
 (function(){
+  if(window.__bhSiteAuthLoaded)return;
+  window.__bhSiteAuthLoaded=true;
   "use strict";
 
   const RESTRICTED_PAGES = new Set([
