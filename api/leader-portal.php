@@ -17,14 +17,26 @@ register_shutdown_function(function(){
 function lp(int $s,array $d): void{http_response_code($s);echo json_encode($d,JSON_UNESCAPED_SLASHES);exit;}
 if(empty($_SESSION['bh_user_id'])) lp(401,['ok'=>false,'error'=>'login_required']);
 $userId=(int)$_SESSION['bh_user_id']; $db=bh_mysql();
-$o=$db->prepare("SELECT * FROM bh_organisers WHERE user_id=? LIMIT 1");$o->execute([$userId]);$org=$o->fetch();
-if(!$org) lp(403,['ok'=>false,'error'=>'organiser_required']);
+$hasOrgUserId=false;
+try{$cc=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME='user_id'");$cc->execute();$hasOrgUserId=((int)$cc->fetchColumn())>0;}catch(Throwable $ignored){}
+$org=null;
+if($hasOrgUserId){
+ $o=$db->prepare("SELECT * FROM bh_organisers WHERE user_id=? LIMIT 1");$o->execute([$userId]);$org=$o->fetch();
+}else{
+ try{
+  $uc=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_users'");
+  if((int)$uc->fetchColumn()===1){
+   $u=$db->prepare("SELECT email FROM bh_users WHERE id=? LIMIT 1");$u->execute([$userId]);$user=$u->fetch();
+   if($user && !empty($user['email'])){$o=$db->prepare("SELECT * FROM bh_organisers WHERE email=? LIMIT 1");$o->execute([$user['email']]);$org=$o->fetch();}
+  }
+ }catch(Throwable $ignored){}
+}
+if(!$org)lp(403,['ok'=>false,'error'=>'organiser_required','message'=>'Your account is not linked to a class leader organisation yet.']);
 $oid=(int)$org['id'];
 if($_SERVER['REQUEST_METHOD']==='GET'){
- $a=$db->prepare("SELECT id,title,description,category,age_range,county,price_from,booking_url,image_path,status FROM bh_activities WHERE organiser_id=? AND status<>'archived' ORDER BY title");$a->execute([$oid]);$classes=$a->fetchAll();
- foreach($classes as &$c){$v=$db->prepare("SELECT id,venue_name,address,town,region,postcode,latitude,longitude,notes FROM bh_venues WHERE activity_id=? ORDER BY id");$v->execute([(int)$c['id']);$c['venues']=$v->fetchAll();foreach($c['venues'] as &$venue){$s=$db->prepare("SELECT id,day_of_week,start_time,end_time,price,term_time_only,frequency,start_date,end_date FROM bh_sessions WHERE venue_id=? ORDER BY day_of_week,start_time");$s->execute([(int)$venue['id']]);$venue['sessions']=$s->fetchAll();}}
- unset($c,$venue);
- $bookings=[];
+ $a=$db->prepare("SELECT * FROM bh_activities WHERE organiser_id=? AND status<>'archived' ORDER BY title");$a->execute([$oid]);$classes=$a->fetchAll();
+ foreach($classes as &$c){$v=$db->prepare("SELECT * FROM bh_venues WHERE activity_id=? ORDER BY id");$v->execute([(int)$c['id']);$c['venues']=$v->fetchAll();foreach($c['venues'] as &$venue){$s=$db->prepare("SELECT * FROM bh_sessions WHERE venue_id=? ORDER BY day_of_week,start_time");$s->execute([(int)$venue['id']);$venue['sessions']=$s->fetchAll();}}
+ unset($c,$venue); $bookings=[];
  try {
   $bookingCheck=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('bh_booking_reservations','bh_booking_slots','bh_users')");
   if((int)$bookingCheck->fetchColumn()===3){
