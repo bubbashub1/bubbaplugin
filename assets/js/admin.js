@@ -217,8 +217,15 @@ function initAddressAutocomplete(){
  input.addEventListener("focus",()=>{if(input.value.trim().length>=3)search()});
  document.querySelector("#activityTown")?.addEventListener("change",e=>applyTownMatch(e.target.value));
  document.querySelector("#activityTown")?.addEventListener("blur",e=>applyTownMatch(e.target.value));
+ document.querySelector("#activityTown")?.addEventListener("input",e=>{ const match=findTownMatch(e.target.value); if(match)setRegionAndCounty(match.region_id); });
  document.querySelector("#activityRegion")?.addEventListener("change",updateCountyFromRegion);
- document.querySelector("#addTownButton")?.addEventListener("click",addNewTown);
+ const addTownToggle=document.querySelector("#addTownButton");
+ const addTownPanel=document.querySelector("#addTownPanel");
+ const confirmAddTown=document.querySelector("#confirmAddTown");
+ const cancelAddTown=document.querySelector("#cancelAddTown");
+ addTownToggle?.addEventListener("click",()=>{ const open=!addTownPanel.hidden; addTownPanel.hidden=open; addTownToggle.setAttribute("aria-expanded",String(!open)); if(!open)document.querySelector("#activityTown")?.focus(); });
+ confirmAddTown?.addEventListener("click",addNewTown);
+ cancelAddTown?.addEventListener("click",()=>{ addTownPanel.hidden=true; addTownToggle?.setAttribute("aria-expanded","false"); });
  document.querySelector("#activityLatitude")?.addEventListener("change",()=>updateEditorMapFromFields(true));
  document.querySelector("#activityLongitude")?.addEventListener("change",()=>updateEditorMapFromFields(true));
  document.querySelector("#useAddressLocation")?.addEventListener("click",()=>updateEditorMapFromFields(true));
