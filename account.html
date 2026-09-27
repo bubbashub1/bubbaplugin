@@ -26,23 +26,28 @@
 <article class="feature-card"><span class="feature-icon">♡</span><h3>Saved activities</h3><p>Return to activities you've saved and decide which ones belong in your planner.</p><a class="card-link" href="directory.html?saved=1">View saved →</a></article>
 </section>
 <section class="section" id="profile">
-<div class="admin-panel">
-<div class="admin-panel-head"><div><span class="eyebrow">Account details</span><h2>Your profile</h2></div><span class="status">Demo account</span></div>
-<div class="directory-toolbar" style="grid-template-columns:1fr 1fr;">
-<label>Name<input class="filter-input" type="text" value="" placeholder="Your name"></label>
-<label>Email<input class="filter-input" type="email" value="" placeholder="you@example.com"></label>
+<div class="admin-panel" id="accountAuth">
+<div class="admin-panel-head"><div><span class="eyebrow">Family account</span><h2 id="accountAuthTitle">Sign in to your family account</h2><p>Use your account to keep your planner with you when you change device.</p></div></div>
+<div class="account-auth-tabs" role="tablist" aria-label="Account access">
+<button type="button" class="button button-soft active" data-auth-mode="login" role="tab" aria-selected="true">Sign in</button>
+<button type="button" class="button button-soft" data-auth-mode="register" role="tab" aria-selected="false">Create account</button>
 </div>
-<button class="button button-primary" type="button" onclick="this.textContent='Saved';this.disabled=true">Save profile</button>
+<form id="accountAuthForm" class="account-auth-form">
+<label>Email<input name="email" type="email" required autocomplete="email" placeholder="you@example.com"></label>
+<label>Password<input name="password" type="password" required autocomplete="current-password" minlength="8" placeholder="At least 8 characters"></label>
+<label id="confirmPassword" hidden>Confirm password<input name="confirm_password" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the password again"></label>
+<button class="button button-primary" type="submit">Sign in</button>
+<p class="library-message" id="accountAuthMessage" aria-live="polite"></p>
+</form>
 </div>
-</section>
-<section class="section" id="family">
+</section><section class="section" id="family">
 <div class="admin-panel">
-<div class="admin-panel-head"><div><span class="eyebrow">Family profiles</span><h2>Children &amp; bump</h2></div><span class="status">Demo account</span></div>
+<div class="admin-panel-head"><div><span class="eyebrow">Family profiles</span><h2>Children &amp; bump</h2></div><span class="status">Family account</span></div>
 <div class="feature-grid">
 <article class="feature-card"><span class="feature-icon">👶</span><h3>Add a child</h3><p>Add a child's name, date of birth and profile details to help personalise activity discovery.</p><button class="button button-primary" type="button" onclick="this.textContent='Coming with account database';this.disabled=true">Add child</button></article>
 <article class="feature-card"><span class="feature-icon">🤰</span><h3>Add a bump</h3><p>Create a pregnancy profile with a nickname, photo and due date.</p><button class="button button-primary" type="button" onclick="this.textContent='Coming with account database';this.disabled=true">Add bump</button></article>
 </div>
-<p class="helper-text">Family profiles are currently a front-end placeholder. They will become account-backed data rather than browser-only demo content when the MySQL API is connected.</p>
+<p class="helper-text">Family profiles are separate from the planner account connection and can be connected to the same account as those features are completed.</p>
 </div>
 </section>
 <section class="section" id="preferences">
@@ -58,5 +63,5 @@
 </section>
 </main>
 <footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
-</body>
+<script src="assets/js/app.js?v=20260927-account1"></script><script src="assets/js/auth.js?v=20260927-account1"></script></body>
 </html>
