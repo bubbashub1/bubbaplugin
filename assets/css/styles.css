@@ -1831,3 +1831,6 @@ body{background:#f5f3ed;color:var(--bh-ink);font-family:"Quicksand",sans-serif}
 
 /* Hero background opacity: 60% */
 .hero::before{opacity:.60!important}
+
+/* Hero background opacity: 75% */
+.hero::before{opacity:.75!important}
