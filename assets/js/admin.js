@@ -66,6 +66,7 @@ function initAddressAutocomplete(){
  input.addEventListener("focus",()=>{if(input.value.trim().length>=3)search()});
  document.querySelector("#activityLatitude")?.addEventListener("change",()=>updateEditorMapFromFields(true));
  document.querySelector("#activityLongitude")?.addEventListener("change",()=>updateEditorMapFromFields(true));
+ document.querySelector("#useAddressLocation")?.addEventListener("click",()=>{updateEditorMapFromFields(true);});
  document.addEventListener("click",e=>{if(!input.parentElement.contains(e.target))hide()});
 }
 
