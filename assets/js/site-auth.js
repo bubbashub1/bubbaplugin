@@ -57,21 +57,50 @@
     document.querySelectorAll(".site-header").forEach(header => {
       const nav = header.querySelector(".main-nav");
       if(nav){
-        nav.querySelectorAll("[data-bh-auth-link], .bh-logout-link").forEach(el => el.remove());
-        const leaderLink = Array.from(nav.querySelectorAll("a")).find(a => /class leaders/i.test(a.textContent || ""));
-        if(leaderLink) leaderLink.href = auth.user && auth.user.role === "leader" ? new URL("leader.html",document.baseURI).href : leaderAuthTarget();
+        // Keep the primary navigation identical across the site. Authentication
+        // only changes the account/leader destinations and whether Log out is shown.
+        nav.innerHTML = "";
+
+        const links = [
+          ["Find activities", new URL("directory.html", document.baseURI).href],
+          ["My Hub", new URL("my-hub.html", document.baseURI).href],
+          ["Support & Guidance", new URL("help-support.html", document.baseURI).href]
+        ];
+        links.forEach(([label, href]) => nav.appendChild(makeLink(label, href)));
+
+        const leader = makeLink(
+          "Class Leaders",
+          auth.user && auth.user.role === "leader"
+            ? new URL("leader.html", document.baseURI).href
+            : leaderAuthTarget(),
+          "button button-soft bh-leader-nav-button"
+        );
+        leader.setAttribute("data-bh-auth-link","leader");
+        nav.appendChild(leader);
+
+        const account = makeLink(
+          auth.authenticated
+            ? (auth.user && auth.user.role === "leader"
+              ? "My Account"
+              : "My Account")
+            : "My Account",
+          auth.authenticated
+            ? (auth.user && auth.user.role === "leader"
+              ? new URL("leader-account.html", document.baseURI).href
+              : new URL("account.html", document.baseURI).href)
+            : buildAuthTarget(),
+          "bh-auth-link"
+        );
+        account.setAttribute("data-bh-auth-link","account");
+        nav.appendChild(account);
+
+        const admin = makeLink("Admin", new URL("admin.html", document.baseURI).href);
+        nav.appendChild(admin);
 
         if(auth.authenticated){
-          const logout = document.createElement("a");
-          logout.href = "#";
-          logout.textContent = "Log out";
-          logout.className = "bh-logout-link";
+          const logout = makeLink("Log out", "#", "bh-logout-link");
           logout.setAttribute("data-bh-auth-link","logout");
           nav.appendChild(logout);
-        } else {
-          const signIn = makeLink("Sign in", buildAuthTarget(), "bh-auth-link");
-          signIn.setAttribute("data-bh-auth-link","signin");
-          nav.appendChild(signIn);
         }
       }
 
