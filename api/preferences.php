@@ -31,7 +31,7 @@ try{
         if($_SERVER['REQUEST_METHOD']==='GET') bh_preferences_json(200,['ok'=>true,'admin_mode'=>true,'preferences'=>bh_preferences_default(),'csrf'=>$_SESSION['bh_csrf']]);
         if($_SERVER['REQUEST_METHOD']==='POST') bh_preferences_json(200,['ok'=>true,'admin_mode'=>true,'preferences'=>bh_preferences_default(),'csrf'=>$_SESSION['bh_csrf']]);
     }
-    $user=$db->prepare("SELECT id,status FROM bh_users WHERE id=? LIMIT 1");
+    $user=$db->prepare("SELECT id,email,status FROM bh_users WHERE id=? LIMIT 1");
     $user->execute([$userId]);
     $account=$user->fetch();
     if(!$account||($account['status']??'')!=='active') bh_preferences_json(401,['ok'=>false,'error'=>'login_required']);
@@ -76,7 +76,7 @@ try{
             $decoded=json_decode((string)($row['categories_json']??''),true);
             $p['categories']=is_array($decoded)?array_values(array_map('strval',$decoded)):[];
         }
-        bh_preferences_json(200,['ok'=>true,'userId'=>$userId,'preferences'=>$p,'csrf'=>$_SESSION['bh_csrf']]);
+        bh_preferences_json(200,['ok'=>true,'userId'=>$userId,'email'=>(string)($account['email']??''),'preferences'=>$p,'csrf'=>$_SESSION['bh_csrf']]);
     }
 
     if($_SERVER['REQUEST_METHOD']!=='POST') bh_preferences_json(405,['ok'=>false,'error'=>'method_not_allowed']);
