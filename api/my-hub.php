@@ -196,9 +196,6 @@ try {
         bh_hub_json(200, ['ok' => true, 'photo_path' => $publicPath]);
     }
 
-
-    }
-
     $body = json_decode((string)file_get_contents('php://input'), true);
     if (!is_array($body)) bh_hub_json(400, ['ok' => false, 'error' => 'invalid_json']);
 
