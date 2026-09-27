@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const apply=p=>{ids.forEach(id=>{const el=document.getElementById(id);if(el)el.checked=!!p[id]});document.querySelectorAll("[data-pref]").forEach(el=>el.checked=!!p[el.dataset.pref]);};
   const collect=()=>{const p={};ids.forEach(id=>p[id]=document.getElementById(id).checked);document.querySelectorAll("[data-pref]").forEach(el=>p[el.dataset.pref]=el.checked);return p;};
   const getOneSignal=async()=>{if(!window.__bubbaOneSignalPromise)throw new Error("OneSignal is not loaded yet.");return await window.__bubbaOneSignalPromise;};
-  const syncOneSignalUser=async(data)=>{const OneSignal=await getOneSignal();if(data.userId)await OneSignal.login(String(data.userId));return OneSignal;};
+  const syncOneSignalUser=async(data)=>{const OneSignal=await getOneSignal();if(data.userId)await OneSignal.login(String(data.userId));if(data.email&&data.preferences?.emailEnabled){await OneSignal.User.addEmail(String(data.email));}return OneSignal;};
   const setPushSubscription=async(enabled)=>{
     const OneSignal=await getOneSignal();
     if(!OneSignal.Notifications.isPushSupported())throw new Error("Push notifications are not supported by this browser.");
