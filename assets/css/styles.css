@@ -450,3 +450,42 @@ td { font-size:14px; }
 @media(min-width:621px){
   .directory-toolbar{display:grid!important}
 }
+
+
+/* Stage 5 — directory views and card density */
+.directory-view-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.directory-count-control{display:flex;align-items:center;gap:7px;color:var(--bh-text-muted);font-size:12px;font-weight:800}
+.directory-count-control select{min-height:38px;padding:6px 28px 6px 10px;border:1px solid var(--bh-border);border-radius:10px;background:#fff;color:var(--bh-text);font-weight:750}
+.activity-grid.directory-view-list{grid-template-columns:1fr}
+.activity-grid.directory-view-grid.directory-cards-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.activity-grid.directory-view-grid.directory-cards-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.activity-grid.directory-view-grid.directory-cards-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.activity-grid.directory-view-grid.directory-cards-5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.activity-grid.directory-view-grid.directory-cards-6{grid-template-columns:repeat(6,minmax(0,1fr))}
+.activity-grid.directory-view-list .activity-card{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:190px}
+.activity-grid.directory-view-list .activity-image{height:100%;min-height:190px}
+.activity-grid.directory-view-list .activity-body{display:flex;flex-direction:column;justify-content:center}
+.activity-grid.directory-view-list .activity-footer{margin-top:auto}
+.activity-grid.directory-view-grid .activity-card{height:100%}
+@media(max-width:1100px){
+  .activity-grid.directory-view-grid.directory-cards-5,.activity-grid.directory-view-grid.directory-cards-6{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:900px){
+  .activity-grid.directory-view-grid.directory-cards-4,.activity-grid.directory-view-grid.directory-cards-5,.activity-grid.directory-view-grid.directory-cards-6{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .directory-view-controls{width:100%;justify-content:space-between}
+}
+@media(max-width:700px){
+  .activity-grid.directory-view-grid.directory-cards-3,.activity-grid.directory-view-grid.directory-cards-4,.activity-grid.directory-view-grid.directory-cards-5,.activity-grid.directory-view-grid.directory-cards-6{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .activity-grid.directory-view-list .activity-card{grid-template-columns:120px minmax(0,1fr)}
+  .activity-grid.directory-view-list .activity-image{min-height:160px}
+}
+@media(max-width:620px){
+  .directory-view-controls{align-items:stretch;flex-direction:column;width:100%}
+  .directory-views{width:100%}
+  .directory-view{flex:1}
+  .directory-count-control{justify-content:space-between}
+  .directory-count-control select{flex:1}
+  .activity-grid.directory-view-grid.directory-cards-2,.activity-grid.directory-view-grid.directory-cards-3,.activity-grid.directory-view-grid.directory-cards-4,.activity-grid.directory-view-grid.directory-cards-5,.activity-grid.directory-view-grid.directory-cards-6{grid-template-columns:1fr}
+  .activity-grid.directory-view-list .activity-card{grid-template-columns:1fr}
+  .activity-grid.directory-view-list .activity-image{height:170px;min-height:170px}
+}
