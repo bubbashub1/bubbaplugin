@@ -1805,3 +1805,7 @@ body{background:#f5f3ed;color:var(--bh-ink);font-family:"Quicksand",sans-serif}
 .bh-useful-intro h2{margin-bottom:10px}
 .bh-useful-bottom .feature-card{text-decoration:none;color:inherit;transition:transform .2s ease,box-shadow .2s ease}
 .bh-useful-bottom .feature-card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(32,53,47,.11)}
+
+/* Hero image + softer background */
+.hero::before{opacity:.52!important}
+.hero-visual img{content:url("../../images/home/gemini_generated_image_k7ugr8k7ugr8k7ug-20260927-181231-744570.jpeg")}
