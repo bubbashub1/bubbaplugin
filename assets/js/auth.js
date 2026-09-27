@@ -37,7 +37,11 @@ document.addEventListener("DOMContentLoaded",async()=>{
       const data=await response.json();
       csrf=data.csrf||"";
       if(data.authenticated){
-        loginPanel.innerHTML="<div class='account-signed-in'><span class='feature-icon'>✓</span><div><span class='eyebrow'>Signed in</span><h2>Family account connected</h2><p>"+esc(data.user.email)+"</p><small>Your My Planner can now sync across devices.</small></div><button class='button button-soft' id='accountLogout' type='button'>Sign out</button></div>";
+        const adminOnly=!!data.is_admin&&!data.user?.id;
+        const titleText=adminOnly?"Admin access enabled":"Family account connected";
+        const eyebrow=adminOnly?"Admin session":"Signed in";
+        const detail=adminOnly?"All Bubba Hub pages are available without a family sign-in.":"Your My Planner can now sync across devices.";
+        loginPanel.innerHTML="<div class='account-signed-in'><span class='feature-icon'>✓</span><div><span class='eyebrow'>"+eyebrow+"</span><h2>"+titleText+"</h2><p>"+esc(data.user?.email||"")+"</p><small>"+detail+"</small></div><button class='button button-soft' id='accountLogout' type='button'>Sign out</button></div>";
         document.getElementById("accountLogout").onclick=async()=>{
           try{
             await fetch("api/auth.php?action=logout",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({csrf})});
