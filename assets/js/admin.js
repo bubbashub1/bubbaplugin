@@ -45,13 +45,34 @@ function findTownMatch(town){
  if(!key)return null;
  return bhRegionData.towns.find(t=>normaliseTown(t.town)===key)||null;
 }
+const BH_COUNTIES=["Devon","Cornwall","Plymouth","Torbay"];
+function countyForTown(town){
+ const key=normaliseTown(town);
+ if(["torquay","paignton","brixham"].includes(key))return "Torbay";
+ return "";
+}
+function setCountyValue(value){
+ const county=document.querySelector("#activityCounty");
+ if(!county)return;
+ const match=BH_COUNTIES.find(x=>normaliseTown(x)===normaliseTown(value));
+ if(match)county.value=match;
+}
 function setRegionAndCounty(regionId){
  const region=regionById(regionId);
  const regionEl=document.querySelector("#activityRegion");
- const countyEl=document.querySelector("#activityCounty");
  if(!region)return;
  if(regionEl)regionEl.value=String(region.id);
- if(countyEl)countyEl.value=region.county||"";
+ setCountyValue(region.county||"");
+}
+function populateCountySelect(selected=""){
+ const county=document.querySelector("#activityCounty");
+ if(!county)return;
+ county.innerHTML='<option value="">Select county / area</option>';
+ BH_COUNTIES.forEach(name=>{
+  const option=document.createElement("option");
+  option.value=name; option.textContent=name; county.appendChild(option);
+ });
+ if(selected)setCountyValue(selected);
 }
 function applyTownMatch(town){
  const match=findTownMatch(town);
@@ -82,18 +103,12 @@ function populateRegionSelect(selected=""){
   select.appendChild(group);
  });
  if(selected!=="")select.value=String(selected);
+ populateCountySelect(regionById(selected)?.county||"");
  updateCountyFromRegion();
 }
 function updateCountyFromRegion(){
  const region=regionById(document.querySelector("#activityRegion")?.value);
- const county=document.querySelector("#activityCounty");
- if(county){
-  county.innerHTML='<option value="">Select county</option>';
-  [...new Set(bhRegionData.regions.map(r=>r.county).filter(Boolean))].forEach(name=>{
-   const option=document.createElement("option");option.value=name;option.textContent=name;county.appendChild(option);
-  });
-  if(region)county.value=region.county||"";
- }
+ if(region)setCountyValue(region.county||"");
 }
 function populateTownList(){
  const list=document.querySelector("#activityTownList");
@@ -113,6 +128,7 @@ async function loadRegionData(selectedRegion="", selectedTown=""){
   if(!r.ok||!d.ok)throw new Error(d.error||"Could not load regions and towns.");
   bhRegionData={regions:Array.isArray(d.regions)?d.regions:[],towns:Array.isArray(d.towns)?d.towns:[]};
   populateRegionSelect(selectedRegion);
+  populateCountySelect();
   populateTownList();
   if(selectedTown && !applyTownMatch(selectedTown) && selectedRegion){
    const region=bhRegionData.regions.find(x=>String(x.id)===String(selectedRegion)||x.region===selectedRegion);
@@ -177,16 +193,12 @@ function initAddressAutocomplete(){
    document.querySelector("#activityLatitude").value=result.lat||"";
    document.querySelector("#activityLongitude").value=result.lon||"";
    if(!applyTownMatch(town)){
-    const county=document.querySelector("#activityCounty");
-    const addressCounty=String(x.county||x.state||"").toLowerCase();
-    if(county){
-     if(addressCounty.includes("cornwall"))county.value="Cornwall";
-     else if(addressCounty.includes("devon"))county.value="Devon";
-     else if(addressCounty.includes("torbay"))county.value="Torbay";
-     else if(addressCounty.includes("plymouth"))county.value="Plymouth";
-    }
+    const inferred=countyForTown(town);
+    if(inferred)setCountyValue(inferred);
+    else setCountyValue(x.county||x.state||"");
    }
    hide();
+   updateEditorMapFromFields(true);
  };
  const search=async()=>{
    const q=input.value.trim();
@@ -199,7 +211,12 @@ function initAddressAutocomplete(){
     const d=await r.json();
     if(!r.ok||!d.ok)throw new Error(d.error||"Address lookup failed");
     cache.set(q,d.results||[]);render(d.results||[]);
-   }catch(e){if(e.name!=="AbortError")hide()}
+   }catch(e){
+    if(e.name!=="AbortError"){
+     suggestions.hidden=false;
+     suggestions.innerHTML='<div class="bh-address-error">'+escapeHtml(e.message||"Address lookup unavailable.")+'</div>';
+    }
+   }
  };
  const render=results=>{
   suggestions.innerHTML="";
@@ -217,7 +234,15 @@ function initAddressAutocomplete(){
  input.addEventListener("focus",()=>{if(input.value.trim().length>=3)search()});
  document.querySelector("#activityTown")?.addEventListener("change",e=>applyTownMatch(e.target.value));
  document.querySelector("#activityTown")?.addEventListener("blur",e=>applyTownMatch(e.target.value));
- document.querySelector("#activityTown")?.addEventListener("input",e=>{ const match=findTownMatch(e.target.value); if(match)setRegionAndCounty(match.region_id); });
+ document.querySelector("#activityTown")?.addEventListener("input",e=>{
+   const town=e.target.value;
+   const match=findTownMatch(town);
+   if(match)setRegionAndCounty(match.region_id);
+   else{
+    const county=countyForTown(town);
+    if(county)setCountyValue(county);
+   }
+ });
  document.querySelector("#activityRegion")?.addEventListener("change",updateCountyFromRegion);
  const addTownToggle=document.querySelector("#addTownButton");
  const addTownPanel=document.querySelector("#addTownPanel");
@@ -228,7 +253,18 @@ function initAddressAutocomplete(){
  cancelAddTown?.addEventListener("click",()=>{ addTownPanel.hidden=true; addTownToggle?.setAttribute("aria-expanded","false"); });
  document.querySelector("#activityLatitude")?.addEventListener("change",()=>updateEditorMapFromFields(true));
  document.querySelector("#activityLongitude")?.addEventListener("change",()=>updateEditorMapFromFields(true));
- document.querySelector("#useAddressLocation")?.addEventListener("click",()=>updateEditorMapFromFields(true));
+ document.querySelector("#useAddressLocation")?.addEventListener("click",async()=>{
+   const q=input.value.trim();
+   if(q.length<3){suggestions.hidden=false;suggestions.innerHTML='<div class="bh-address-error">Enter at least 3 characters in the address first.</div>';return;}
+   try{
+    const r=await fetch("api/geocode.php?q="+encodeURIComponent(q),{credentials:"same-origin",cache:"no-store"});
+    const d=await r.json();
+    if(!r.ok||!d.ok||!Array.isArray(d.results)||!d.results.length)throw new Error(d.error||"We could not find that address.");
+    fill(d.results[0]);
+   }catch(e){
+    suggestions.hidden=false;suggestions.innerHTML='<div class="bh-address-error">'+escapeHtml(e.message||"Address lookup unavailable.")+'</div>';
+   }
+ });
  document.addEventListener("click",e=>{if(!input.parentElement.contains(e.target))hide()});
 }
 
