@@ -13,12 +13,11 @@
 <a class="button button-soft active" href="account.html">My account</a>
 </header>
 <main class="app-shell account-page">
-<div class="page-heading"><div><span class="eyebrow">My Account · Profile</span><h1>My profile</h1><p>Keep your personal details up to date. Your family information stays separate in My Family.</p></div><a class="button button-soft" href="account.html">← Account</a></div>
+<div class="page-heading"><div><span class="eyebrow">My Account · Profile</span><h1>My profile</h1><p>Keep your name and date of birth up to date. Family profiles and school planning live in My Hub.</p></div><a class="button button-soft" href="account.html">← Account</a></div>
 <section class="account-profile-layout">
 <aside class="account-side-nav" aria-label="Account sections">
 <a href="account.html">🏠 <span>Account home</span></a>
 <a href="account-profile.html" class="active" aria-current="page">👤 <span>Profile</span></a>
-<a href="family.html" >👶 <span>My family</span></a>
 <a href="preferences.html" >✓ <span>Preferences</span></a>
 <a href="notifications.html" >🔔 <span>Notifications</span></a>
 <a href="saved-activities.html" >♡ <span>Saved activities</span></a>
@@ -32,10 +31,9 @@
 <div class="account-profile-grid">
 <label>First name<input name="first_name" type="text" autocomplete="given-name" maxlength="80" placeholder="First name"></label>
 <label>Last name<input name="last_name" type="text" autocomplete="family-name" maxlength="80" placeholder="Last name"></label>
-<label>Email address<input name="email" type="email" autocomplete="email" readonly></label>
-<label>Phone number<input name="phone" type="tel" autocomplete="tel" maxlength="40" placeholder="Optional"></label>
+<label>Date of birth<input name="date_of_birth" type="date" autocomplete="bday"></label>
 </div>
-<div class="account-profile-note"><span>🔒</span><div><strong>Your email is your sign-in</strong><p>For security, changing your sign-in email will be handled separately.</p></div></div>
+<div class="account-profile-note"><span>🔒</span><div><strong>Your sign-in details stay secure</strong><p>Your account email remains your sign-in address and is not edited here.</p></div></div>
 <div class="account-form-actions"><a class="button button-soft" href="account.html">Cancel</a><button class="button button-primary" type="submit">Save changes</button></div>
 <p class="library-message" id="profileMessage" aria-live="polite"></p>
 </form>
