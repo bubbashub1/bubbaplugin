@@ -1481,3 +1481,20 @@ body{background:#fbfcfa;color:var(--bh-text)}
   *{scroll-behavior:auto!important}
   .feature-card,.activity-card{transition:none}
 }
+
+
+/* Date-aware What Should We Do */
+.personal-when-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.personal-when-card{min-height:86px;padding:13px;text-align:left;border:1px solid var(--bh-border);border-radius:15px;background:#fbfdfb;color:var(--bh-text);cursor:pointer;transition:.15s ease}
+.personal-when-card:hover{border-color:rgba(60,142,150,.35);transform:translateY(-1px)}
+.personal-when-card.is-selected{border-color:var(--bh-primary);background:var(--bh-bg);box-shadow:0 7px 18px rgba(20,68,0,.05)}
+.personal-when-card b,.personal-when-card small{display:block}
+.personal-when-card b{font-size:13px;margin-bottom:5px}
+.personal-when-card small{font-size:9px;color:var(--bh-text-muted);line-height:1.35}
+.personal-date-row{display:flex;align-items:end;gap:12px;margin-top:13px}
+.personal-date-row label{display:grid;gap:6px;font-size:11px;font-weight:800}
+.personal-date-row input{min-width:210px}
+.personal-date-row .status{margin-bottom:1px}
+.personal-session-fit{font-weight:800;color:var(--bh-primary)!important}
+@media(max-width:760px){.personal-when-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.personal-date-row{align-items:stretch;flex-direction:column}.personal-date-row input{min-width:0;width:100%}}
+@media(max-width:520px){.personal-when-grid{grid-template-columns:1fr 1fr}.personal-when-card{min-height:74px;padding:11px}.personal-when-card b{font-size:12px}}
