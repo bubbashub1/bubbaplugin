@@ -125,7 +125,31 @@ function bhSet(key,value){localStorage.setItem(key,JSON.stringify(value.map(Stri
 function bhIsSaved(id){return bhGet(BH_KEYS.saved).includes(String(id))}
 function bhToggleSaved(id){const a=bhGet(BH_KEYS.saved),key=String(id),i=a.indexOf(key);i>=0?a.splice(i,1):a.push(key);bhSet(BH_KEYS.saved,a);return i<0}
 function bhIsPlanned(id){return bhGet(BH_KEYS.planner).includes(String(id))}
-function bhTogglePlanned(id){const a=bhGet(BH_KEYS.planner),key=String(id),i=a.indexOf(key);i>=0?a.splice(i,1):a.push(key);bhSet(BH_KEYS.planner,a);return i<0}
+let bhAuthPromise=null;
+async function bhAuthSession(){
+  if(!bhAuthPromise){
+    bhAuthPromise=fetch("api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}})
+      .then(r=>r.json())
+      .catch(()=>({ok:false,authenticated:false}));
+  }
+  return bhAuthPromise;
+}
+async function bhPlannerPersist(activityId,planned){
+  try{
+    const auth=await bhAuthSession();
+    if(!auth?.authenticated||!auth.csrf)return false;
+    const visited=bhGet("bhVisitedActivities").includes(String(activityId));
+    const response=await fetch("api/planner.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"set_activity",activity_id:Number(activityId),planned:!!planned,visited})});
+    return response.ok && (await response.json()).ok;
+  }catch(e){return false}
+}
+function bhTogglePlanned(id){
+  const a=bhGet(BH_KEYS.planner),key=String(id),i=a.indexOf(key),planned=i<0;
+  if(i>=0)a.splice(i,1);else a.push(key);
+  bhSet(BH_KEYS.planner,a);
+  void bhPlannerPersist(id,planned);
+  return planned;
+}
 function bhActivity(id,items){return items.find(x=>String(x.id)===String(id))||null}
 function bhVenues(activity){if(Array.isArray(activity?.venues)&&activity.venues.length)return activity.venues;return [{id:String(activity?.id||"venue"),name:activity?.location||activity?.town||activity?.region||"Venue",address:activity?.location||"",town:activity?.town||"",region:activity?.region||"",lat:activity?.lat,long:activity?.long,sessions:[{day:activity?.day,time:activity?.time,duration:activity?.duration,price:activity?.price}]}]}
 function bhSessions(activity){return bhVenues(activity).flatMap(v=>(Array.isArray(v.sessions)?v.sessions:[]).map(s=>({...s,venue:v})))}
