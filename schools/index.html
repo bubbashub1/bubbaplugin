@@ -134,7 +134,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     locationInput.value=homeLocation;
     let lat=Number(a.latitude),lon=Number(a.longitude);
     if(!Number.isFinite(lat)||!Number.isFinite(lon)){
-      const gr=await fetch("api/geocode.php?q="+encodeURIComponent(homeLocation+", UK"),{cache:"no-store"}),gj=await gr.json(),g=gj?.results?.[0];
+      const gr=await fetch("api/geocode.php?q="+encodeURIComponent(homeLocation),{cache:"no-store"}),gj=await gr.json(),g=gj?.results?.[0];
       lat=Number(g?.lat);lon=Number(g?.lon);
     }
     if(!Number.isFinite(lat)||!Number.isFinite(lon))throw Error("We could not locate your saved home area.");
