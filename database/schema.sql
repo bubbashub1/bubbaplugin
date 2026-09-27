@@ -84,10 +84,7 @@ CREATE TABLE IF NOT EXISTS bh_users (
 CREATE TABLE IF NOT EXISTS bh_user_preferences (
  user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
  email_enabled TINYINT(1) NOT NULL DEFAULT 1,
- sms_enabled TINYINT(1) NOT NULL DEFAULT 0,
  push_enabled TINYINT(1) NOT NULL DEFAULT 0,
- phone VARCHAR(80) NULL,
- sms_marketing TINYINT(1) NOT NULL DEFAULT 0,
  planner_reminders TINYINT(1) NOT NULL DEFAULT 1,
  booking_updates TINYINT(1) NOT NULL DEFAULT 1,
  saved_searches TINYINT(1) NOT NULL DEFAULT 0,
@@ -330,3 +327,23 @@ ALTER TABLE bh_activities ADD COLUMN IF NOT EXISTS county ENUM('Devon','Cornwall
 ALTER TABLE bh_user_preferences ADD COLUMN IF NOT EXISTS newsletter_enabled TINYINT(1) NOT NULL DEFAULT 0;
 ALTER TABLE bh_user_preferences ADD COLUMN IF NOT EXISTS newsletter_frequency ENUM('daily','weekly','monthly') NOT NULL DEFAULT 'weekly';
 ALTER TABLE bh_user_preferences ADD COLUMN IF NOT EXISTS newsletter_last_sent_at DATETIME NULL;
+
+
+CREATE TABLE IF NOT EXISTS bh_push_subscriptions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ user_id BIGINT UNSIGNED NOT NULL,
+ endpoint TEXT NOT NULL,
+ endpoint_hash CHAR(64) NOT NULL,
+ p256dh VARCHAR(255) NOT NULL,
+ auth VARCHAR(255) NOT NULL,
+ content_encoding VARCHAR(30) NOT NULL DEFAULT 'aes128gcm',
+ user_agent VARCHAR(500) NULL,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ UNIQUE KEY uq_push_endpoint_hash (endpoint_hash),
+ INDEX idx_push_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE bh_user_preferences DROP COLUMN IF EXISTS sms_enabled;
+ALTER TABLE bh_user_preferences DROP COLUMN IF EXISTS phone;
+ALTER TABLE bh_user_preferences DROP COLUMN IF EXISTS sms_marketing;
