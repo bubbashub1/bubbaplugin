@@ -1913,3 +1913,10 @@ img,svg,video{max-width:100%;height:auto}
 .directory-filter-toggle{margin-top:12px;margin-bottom:12px}
 @media(max-width:900px){.directory-advanced-fields{grid-template-columns:1fr 1fr}}
 @media(max-width:650px){.directory-advanced-fields{grid-template-columns:1fr;padding:16px}.directory-filter-toggle{width:100%}}
+
+.admin-accessibility-fieldset{grid-column:1/-1;border:1px solid var(--bh-line);border-radius:18px;padding:18px;margin:0;background:var(--bh-bg)}
+.admin-accessibility-fieldset legend{font-weight:800;color:var(--bh-ink);padding:0 8px}
+.admin-check-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.admin-check-grid label{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--bh-line);border-radius:12px;background:#fff;font-weight:600}
+@media(max-width:900px){.admin-check-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.admin-check-grid{grid-template-columns:1fr}}
