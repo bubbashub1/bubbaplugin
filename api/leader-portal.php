@@ -5,7 +5,16 @@ header('Cache-Control: no-store');
 try {
 require_once __DIR__.'/db.php';
 session_start();
-function lp(int $s,array $d): never{http_response_code($s);echo json_encode($d,JSON_UNESCAPED_SLASHES);exit;}
+register_shutdown_function(function(){
+ $e=error_get_last();
+ if($e && in_array($e['type'],[E_ERROR,E_PARSE,E_CORE_ERROR,E_COMPILE_ERROR],true)){
+  if(!headers_sent()) header('Content-Type: application/json; charset=utf-8');
+  http_response_code(500);
+  echo json_encode(['ok'=>false,'error'=>'leader_portal_fatal','message'=>$e['message']],JSON_UNESCAPED_SLASHES);
+ }
+});
+
+function lp(int $s,array $d): void{http_response_code($s);echo json_encode($d,JSON_UNESCAPED_SLASHES);exit;}
 if(empty($_SESSION['bh_user_id'])) lp(401,['ok'=>false,'error'=>'login_required']);
 $userId=(int)$_SESSION['bh_user_id']; $db=bh_mysql();
 $o=$db->prepare("SELECT * FROM bh_organisers WHERE user_id=? LIMIT 1");$o->execute([$userId]);$org=$o->fetch();
