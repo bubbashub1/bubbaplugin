@@ -571,3 +571,13 @@ td { font-size:14px; }
  .bh-map-popup-body h3{font-size:17px}
  .bh-address-suggestions{position:fixed;left:16px;right:16px;top:auto}
 }
+
+
+/* Admin map location picker */
+.admin-map-picker{margin-top:4px;padding:18px;background:#fbfdfb;border:1px solid var(--bh-border);border-radius:16px}
+.admin-map-picker-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
+.admin-map-picker-head h3{margin:0 0 5px;font-size:17px}
+.admin-map-picker-head p{margin:0;color:var(--bh-text-muted);font-size:12px;line-height:1.45}
+.admin-editor-map{width:100%;height:340px;border-radius:14px;overflow:hidden;border:1px solid var(--bh-border);background:#e8eee9}
+.admin-editor-map .leaflet-control-attribution{font-size:9px}
+@media(max-width:620px){.admin-map-picker{padding:14px}.admin-map-picker-head{align-items:stretch;flex-direction:column}.admin-map-picker-head .button{width:100%}.admin-editor-map{height:280px}}
