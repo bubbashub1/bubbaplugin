@@ -30,8 +30,8 @@
 
 <div class="notification-channel-grid">
 <label class="notification-choice"><input type="checkbox" id="emailEnabled"><span><strong>✉️ Email</strong><small>Receive useful Bubba Hub updates by email.</small></span></label>
-<label class="notification-choice"><input type="checkbox" id="smsEnabled"><span><strong>💬 Text messages</strong><small>Use SMS for reminders and important booking updates when available.</small></span></label>
-<label class="notification-choice"><input type="checkbox" id="pushEnabled"><span><strong>🔔 Push notifications</strong><small>Receive reminders on your phone or device when push is connected.</small></span></label>
+<label class="notification-choice"><input type="checkbox" id="pushEnabled"><span><strong>🔔 Push notifications</strong><small>Receive reminders on your phone or device. When enabled, your browser will ask for permission to send Bubba Hub notifications.</small></span></label>
+<p class="preferences-help" id="pushStatus">Push notifications are currently switched off.</p>
 </div>
 
 <div class="notification-section">
@@ -59,14 +59,7 @@
 </label>
 <p class="preferences-help" id="newsletterStatus">Choose a frequency and save your notification settings.</p>
 </div>
-\n<div class="notification-section">
-<h3>Mobile number</h3>
-<label class="notification-field">Mobile number
-<input id="phone" type="tel" autocomplete="tel" placeholder="e.g. 07123 456789">
-</label>
-<label class="notification-choice notification-marketing"><input type="checkbox" id="smsMarketing"><span><strong>Occasional Bubba Hub news</strong><small>New features, family events and occasional community updates. This is separate from essential account messages.</small></span></label>
-</div>
-
+\n
 <div class="notification-actions">
 <span id="notificationMessage" class="library-message" aria-live="polite"></span>
 <button class="button button-primary" id="saveNotifications" type="button">Save notification settings</button>
