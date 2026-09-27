@@ -2340,3 +2340,88 @@ img,svg,video{max-width:100%;height:auto}
 
 /* Sign in / register */
 .auth-page{padding-bottom:60px}.auth-hero{margin-bottom:20px;padding:34px 36px;border-radius:24px;background:linear-gradient(135deg,#24483c,#397f78);color:#fff;box-shadow:var(--bh-shadow)}.auth-hero h1{margin:5px 0 7px;color:#fff}.auth-hero p{margin:0;color:rgba(255,255,255,.88);max-width:62ch}.auth-hero .eyebrow{color:#f2c765}.auth-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.75fr);gap:20px;align-items:start}.auth-card{padding:28px}.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px}.auth-tabs .button{width:100%;justify-content:center}.auth-form,.auth-card form{display:grid;gap:16px}.auth-card label{display:flex;flex-direction:column;gap:7px;color:var(--bh-text-muted);font-size:12px;font-weight:800}.auth-card input[type=email],.auth-card input[type=password]{width:100%;min-height:48px;padding:11px 13px;border:1px solid var(--bh-border);border-radius:13px;background:#fff;color:var(--bh-text);font:inherit}.auth-password-row{display:flex;justify-content:space-between;align-items:center;gap:10px}.auth-password-row small{font-weight:600;color:var(--bh-muted)}.auth-show-password{border:0;background:none;padding:0;color:var(--bh-secondary);font:inherit;font-size:11px;font-weight:800;cursor:pointer}.auth-check{display:grid!important;grid-template-columns:auto 1fr;align-items:start;gap:9px;padding:12px;border-radius:12px;background:var(--bh-bg);font-weight:600!important;line-height:1.45}.auth-check input{margin-top:3px}.auth-submit{width:100%;justify-content:center}.auth-note{display:flex;gap:10px;margin-top:22px;padding:14px;border-radius:15px;background:var(--bh-bg)}.auth-note span{font-size:18px}.auth-note strong{display:block;color:var(--bh-primary);font-size:13px}.auth-note p{margin:3px 0 0;color:var(--bh-text-muted);font-size:11px}.auth-benefits{padding:26px;border-radius:22px;background:#fff;border:1px solid var(--bh-border);box-shadow:var(--bh-shadow)}.auth-benefits h2{margin:5px 0 14px;color:var(--bh-primary)}.auth-benefits ul{list-style:none;padding:0;margin:0 0 22px;display:grid;gap:11px}.auth-benefits li{padding:11px 13px;border-radius:13px;background:var(--bh-bg);font-size:13px;font-weight:700}.auth-benefits .button{width:100%;justify-content:center}@media(max-width:800px){.auth-layout{grid-template-columns:1fr}.auth-benefits{order:2}}@media(max-width:600px){.auth-hero{padding:25px 20px}.auth-card{padding:20px}.auth-tabs{grid-template-columns:1fr 1fr}.auth-page{padding-bottom:40px}}
+
+
+/* Unified green Activity hero */
+.activity-hero{
+  display:grid;
+  grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);
+  gap:0;
+  align-items:stretch;
+  margin:24px 0 28px;
+  padding:0;
+  overflow:hidden;
+  border-radius:28px;
+  background:var(--bh-primary);
+  box-shadow:0 12px 32px rgba(20,68,0,.14);
+}
+.activity-hero .listing-gallery{
+  min-height:380px;
+  padding:12px;
+  gap:10px;
+  background:var(--bh-primary);
+}
+.activity-hero .listing-gallery img,
+.activity-hero .listing-gallery-placeholder{
+  border-radius:18px;
+  background:#355844;
+}
+.activity-hero .listing-gallery img:first-child{height:356px}
+.activity-hero .listing-summary{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:42px 42px 42px 28px;
+  color:#fff;
+}
+.activity-hero .listing-summary .eyebrow{color:#d8e6db}
+.activity-hero .listing-summary h1{
+  margin:8px 0 14px;
+  color:#fff;
+  font-family:"Chewy",cursive;
+  font-weight:400;
+  font-size:clamp(38px,5vw,58px);
+  line-height:1.05;
+}
+.activity-hero .listing-intro{color:rgba(255,255,255,.92)}
+.activity-hero .listing-tags span{
+  background:#d8e6db;
+  color:#24483c;
+  font-weight:700;
+}
+.activity-hero .listing-actions{margin-top:4px}
+.activity-hero .listing-actions .button{
+  background:#d8e6db;
+  color:#24483c;
+  border-color:#d8e6db;
+  font-weight:800;
+}
+.activity-hero .listing-actions .button:hover{
+  background:#fff;
+  color:#24483c;
+  border-color:#fff;
+}
+.activity-hero .listing-actions .button.button-primary{
+  background:#24483c;
+  color:#fff;
+  border-color:#24483c;
+}
+.activity-hero .listing-actions .button.button-primary:hover{
+  background:#17362c;
+  border-color:#17362c;
+}
+@media(max-width:850px){
+  .activity-hero{grid-template-columns:1fr}
+  .activity-hero .listing-gallery{min-height:260px}
+  .activity-hero .listing-gallery img:first-child{height:260px}
+  .activity-hero .listing-summary{padding:28px}
+}
+@media(max-width:650px){
+  .activity-hero{margin:12px 0 20px;border-radius:22px}
+  .activity-hero .listing-gallery{padding:8px;min-height:210px}
+  .activity-hero .listing-gallery img:first-child{height:210px}
+  .activity-hero .listing-gallery img{height:100px}
+  .activity-hero .listing-summary{padding:24px 20px 26px}
+  .activity-hero .listing-summary h1{font-size:40px}
+  .activity-hero .listing-actions .button{flex:1 1 calc(50% - 10px);min-width:140px}
+}
