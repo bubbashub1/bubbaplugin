@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="/beta/"><title>Venue · Bubba Hub</title><link rel="stylesheet" href="assets/css/styles.css?v=20260927-venue1"></head>
+<body>
+<header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav"><a href="directory.html">Find activities</a><a href="planner.html">My planner</a><a href="calendar.html">Calendar</a><a href="my-hub.html">My Hub</a></nav><a class="button button-soft" href="account.html">My account</a></header>
+<main class="app-shell"><div id="venueState" class="listing-loading"><p>Loading venue…</p></div></main>
+<footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
+<script src="assets/js/app.js?v=20260927-venue1"></script>
+<script>
+document.addEventListener("DOMContentLoaded",async()=>{
+ const state=document.getElementById("venueState"),id=new URLSearchParams(location.search).get("id");
+ try{
+  const r=await fetch("api/venue.php?id="+encodeURIComponent(id||""),{cache:"no-store"}),d=await r.json();
+  if(!r.ok||!d.ok)throw new Error(d.error||"Venue could not be loaded.");
+  const v=d.venue,acts=Array.isArray(d.activities)?d.activities:[];
+  document.title=v.name+" · Bubba Hub";
+  const address=[v.address,v.town,v.postcode].filter(Boolean).join(" · ");
+  const mapLink=v.latitude&&v.longitude?"https://www.openstreetmap.org/?mlat="+encodeURIComponent(v.latitude)+"&mlon="+encodeURIComponent(v.longitude)+"#map=17/"+encodeURIComponent(v.latitude)+"/"+encodeURIComponent(v.longitude):"https://www.openstreetmap.org/search?query="+encodeURIComponent(address);
+  state.className="listing-page";
+  state.innerHTML='<section class="listing-card venue-page-hero"><span class="eyebrow">Venue</span><h1>'+bhEscape(v.name)+'</h1><p class="listing-intro">'+bhEscape(address||"Local family venue")+'</p><div class="listing-actions"><a class="button button-primary" href="'+mapLink+'" target="_blank" rel="noopener">Get directions</a><a class="button button-soft" href="directory.html?town='+encodeURIComponent(v.town||"")+'">More activities nearby</a></div></section>'+
+  '<section class="listing-card"><span class="eyebrow">At this venue</span><h2>Groups &amp; classes</h2><p>'+acts.length+' published '+(acts.length===1?"activity":"activities")+' currently linked to this venue.</p><div class="activity-grid venue-activity-grid">'+(acts.length?acts.map(a=>'<article class="activity-card"><div class="activity-card-body"><span class="eyebrow">'+bhEscape(a.category||"Activity")+'</span><h3>'+bhEscape(a.title)+'</h3><p>'+bhEscape(a.organisation_name||"")+'</p><div class="listing-tags">'+(a.age_range?'<span>'+bhEscape(a.age_range)+'</span>':"")+(a.price_from!==null?'<span>£'+Number(a.price_from).toFixed(2)+'</span>':"")+'</div><a class="button button-soft" href="activity.html?slug='+encodeURIComponent(a.slug||"")+'&id='+encodeURIComponent(a.id)+'">View activity</a></div></article>').join(""):'<div class="admin-panel"><p>No published groups or classes are linked to this venue yet.</p></div>')+'</div></section>';
+ }catch(e){state.innerHTML='<div class="admin-panel"><h2>Venue unavailable</h2><p>'+bhEscape(e.message)+'</p><a class="button button-primary" href="directory.html">Find activities</a></div>'}
+});
+</script></body></html>
