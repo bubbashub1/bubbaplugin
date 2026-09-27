@@ -1791,3 +1791,10 @@ body{background:#f5f3ed;color:var(--bh-ink);font-family:"Quicksand",sans-serif}
  .hero-links{display:grid;grid-template-columns:1fr;gap:8px}
  .hero-links .button{width:100%}
 }
+
+/* Full-width familiar section */
+.familiar-section{width:100vw!important;max-width:none!important;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);padding-left:clamp(24px,7vw,110px);padding-right:clamp(24px,7vw,110px)}
+.familiar-intro,.familiar-list{max-width:1400px;margin-left:auto;margin-right:auto}
+.familiar-intro h2{max-width:none}
+.familiar-list{width:100%}
+@media(max-width:650px){.familiar-section{padding-left:16px;padding-right:16px}}
