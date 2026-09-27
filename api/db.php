@@ -3,17 +3,8 @@ declare(strict_types=1);
 
 /**
  * Bubba Hub MySQL connection.
- *
- * Uses the existing beta/config.php server-side configuration.
- * Expected config keys:
- *   mysql_host
- *   mysql_database
- *   mysql_username
- *   mysql_password
- * Optional:
- *   mysql_charset (defaults to utf8mb4)
- *
- * Credentials are deliberately NOT stored in GitHub.
+ * Uses /public_html/beta/config.php.
+ * Database credentials remain server-side and are never stored in GitHub.
  */
 
 function bh_mysql(): PDO {
@@ -28,26 +19,26 @@ function bh_mysql(): PDO {
 
     $config = require $configFile;
 
-    if (!is_array($config)) {
-        throw new RuntimeException('Server database configuration must return an array.');
+    if (!is_array($config) || !isset($config['db']) || !is_array($config['db'])) {
+        throw new RuntimeException('Database configuration section is missing.');
     }
 
-    foreach (['mysql_host', 'mysql_database', 'mysql_username', 'mysql_password'] as $key) {
-        if (!array_key_exists($key, $config)) {
-            throw new RuntimeException('Missing MySQL configuration: ' . $key);
+    foreach (['host', 'name', 'user', 'pass'] as $key) {
+        if (!array_key_exists($key, $config['db'])) {
+            throw new RuntimeException('Missing database configuration: ' . $key);
         }
     }
 
-    $charset = (string)($config['mysql_charset'] ?? 'utf8mb4');
+    $charset = 'utf8mb4';
 
-    $dsn = 'mysql:host=' . $config['mysql_host']
-         . ';dbname=' . $config['mysql_database']
+    $dsn = 'mysql:host=' . (string)$config['db']['host']
+         . ';dbname=' . (string)$config['db']['name']
          . ';charset=' . $charset;
 
     $pdo = new PDO(
         $dsn,
-        (string)$config['mysql_username'],
-        (string)$config['mysql_password'],
+        (string)$config['db']['user'],
+        (string)$config['db']['pass'],
         [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
