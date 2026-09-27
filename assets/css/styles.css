@@ -82,7 +82,7 @@ main { min-height:calc(100vh - 170px); width:100%; overflow:visible; }
   isolation:isolate;
 }
 .hero::before,.hero::after { border-radius:30px; }
-.hero::before { content:"";position:absolute;inset:0;background-image:url("../../images/home/herobanner-20260924-220048-e3d271.png");background-repeat:no-repeat;background-position:center;background-size:cover;opacity:.32;pointer-events:none;z-index:0; }
+.hero::before { content:"";position:absolute;inset:0;background-image:url("../../images/home/herobanner-20260924-220048-e3d271.png");background-repeat:no-repeat;background-position:center;background-size:cover;opacity:.20;pointer-events:none;z-index:0; }
 .hero::after { content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(216,230,219,.15) 0%,rgba(216,230,219,.05) 48%,rgba(20,68,0,.08) 100%);pointer-events:none;z-index:0; }
 .hero-copy { position:relative;z-index:1;width:min(680px,100%);padding:10px 4px; }
 .hero .eyebrow { margin-bottom:10px; }
