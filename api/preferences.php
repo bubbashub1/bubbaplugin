@@ -76,7 +76,7 @@ try{
             $decoded=json_decode((string)($row['categories_json']??''),true);
             $p['categories']=is_array($decoded)?array_values(array_map('strval',$decoded)):[];
         }
-        bh_preferences_json(200,['ok'=>true,'preferences'=>$p,'csrf'=>$_SESSION['bh_csrf']]);
+        bh_preferences_json(200,['ok'=>true,'userId'=>$userId,'preferences'=>$p,'csrf'=>$_SESSION['bh_csrf']]);
     }
 
     if($_SERVER['REQUEST_METHOD']!=='POST') bh_preferences_json(405,['ok'=>false,'error'=>'method_not_allowed']);
