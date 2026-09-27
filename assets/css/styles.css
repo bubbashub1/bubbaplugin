@@ -633,3 +633,83 @@ td { font-size:14px; }
   .good-to-know-pill{min-width:0;padding:13px}
   .contact-modal{padding:24px 18px;border-radius:20px}
 }
+
+
+/* Modern Bubba Hub refresh — 2026-09-27 */
+:root{
+  --bh-radius:24px;
+  --bh-radius-sm:16px;
+  --bh-shadow:0 18px 50px rgba(20,68,0,.08);
+  --bh-shadow-hover:0 24px 60px rgba(20,68,0,.13);
+}
+body{background:linear-gradient(180deg,#f8fbf8 0%,#f4f8f4 100%);}
+.site-header{backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 34px rgba(20,68,0,.07);}
+.main-nav a{transition:background .18s ease,color .18s ease,transform .18s ease;}
+.main-nav a:hover{transform:translateY(-1px);}
+.button{border:1px solid transparent;border-radius:14px;box-shadow:none;}
+.button-primary{box-shadow:0 10px 24px rgba(65,102,81,.18);}
+.page-heading{padding:68px 0 30px;}
+.page-heading h1{letter-spacing:-.025em;}
+.directory-toolbar{
+  padding:20px;
+  gap:12px;
+  background:rgba(255,255,255,.9);
+  border:1px solid rgba(65,102,81,.11);
+  border-radius:24px;
+  box-shadow:0 14px 42px rgba(20,68,0,.07);
+  backdrop-filter:blur(10px);
+}
+.directory-toolbar .filter-input{
+  min-height:48px;
+  border-radius:14px;
+  background:#fff;
+  border-color:rgba(65,102,81,.12);
+  transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+.directory-toolbar .filter-input:focus{transform:translateY(-1px);}
+.directory-filter-label,.directory-toolbar label{font-size:11px;letter-spacing:.055em;}
+.directory-filter-toggle{border-radius:14px;}
+.directory-viewbar{margin:20px 0 16px;align-items:center;}
+.directory-views{
+  padding:4px;
+  border:1px solid var(--bh-border);
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 6px 18px rgba(20,68,0,.05);
+}
+.directory-view{border-radius:10px!important;padding:9px 14px!important;transition:all .18s ease;}
+.directory-view.active{box-shadow:0 5px 14px rgba(20,68,0,.10);}
+.activity-grid{gap:18px;}
+.activity-card{
+  border:1px solid rgba(65,102,81,.11)!important;
+  border-radius:22px!important;
+  overflow:hidden;
+  background:rgba(255,255,255,.98);
+  box-shadow:0 10px 30px rgba(20,68,0,.055);
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.activity-card:hover{
+  transform:translateY(-4px);
+  box-shadow:var(--bh-shadow-hover);
+  border-color:rgba(60,142,150,.2)!important;
+}
+.activity-image{background:linear-gradient(135deg,#dce9de,#eef5ef);}
+.activity-body{padding:19px;}
+.activity-card h3{letter-spacing:-.02em;line-height:1.15;}
+.activity-card .status,.activity-card .badge,.activity-card .chip{border-radius:999px;}
+.activity-footer{padding-top:14px;}
+.directory-count-control select{border-radius:12px;min-height:40px;}
+.listing-page{padding-bottom:60px;}
+.good-to-know-card{border:1px solid rgba(65,102,81,.1);box-shadow:0 10px 30px rgba(20,68,0,.05);}
+.good-to-know-pill{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;}
+.good-to-know-pill:hover{transform:translateY(-2px);box-shadow:0 9px 24px rgba(20,68,0,.08);border-color:rgba(60,142,150,.2);}
+.activity-action{border-radius:14px!important;}
+@media(max-width:620px){
+  .site-header{width:calc(100% - 20px);margin-top:10px;border-radius:18px;}
+  .page-heading{padding:42px 0 22px;}
+  .page-heading h1{font-size:clamp(34px,10vw,46px);}
+  .directory-toolbar{border-radius:20px;padding:15px;}
+  .directory-viewbar{margin-top:14px;}
+  .activity-grid{gap:14px;}
+  .activity-card{border-radius:19px!important;}
+}
