@@ -2433,3 +2433,14 @@ img,svg,video{max-width:100%;height:auto}
 .google-mark{font-family:Arial,sans-serif;font-size:1.2rem;font-weight:800}
 .auth-divider{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--bh-text-muted);font-size:.85rem;font-weight:700}
 .auth-divider:before,.auth-divider:after{content:"";height:1px;background:var(--bh-border);flex:1}
+
+/* Header account actions */
+.header-account-actions{display:flex;align-items:center;gap:8px}
+.header-account-actions .button{white-space:nowrap}
+@media(max-width:900px){
+  .header-account-actions{gap:6px}
+}
+@media(max-width:650px){
+  .header-account-actions .button{padding:9px 12px;font-size:12px}
+  .header-account-actions a.button-soft{display:none}
+}
