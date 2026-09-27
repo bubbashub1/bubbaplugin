@@ -324,3 +324,9 @@ CREATE TABLE IF NOT EXISTS bh_booking_consent_snapshots (
 
 
 ALTER TABLE bh_activities ADD COLUMN IF NOT EXISTS county ENUM('Devon','Cornwall','Plymouth','Torbay') NULL AFTER age_range;
+
+
+-- Optional Bubba Hub Round Up newsletter preferences.
+ALTER TABLE bh_user_preferences ADD COLUMN IF NOT EXISTS newsletter_enabled TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE bh_user_preferences ADD COLUMN IF NOT EXISTS newsletter_frequency ENUM('daily','weekly','monthly') NOT NULL DEFAULT 'weekly';
+ALTER TABLE bh_user_preferences ADD COLUMN IF NOT EXISTS newsletter_last_sent_at DATETIME NULL;
