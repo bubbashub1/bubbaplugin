@@ -17,6 +17,71 @@ document.addEventListener("DOMContentLoaded",async()=>{
     activities=await bhActivities();
     render();
   }
+  function activityAgeRanges(a){
+    const source=Array.isArray(a.age_range)?a.age_range:[a.age_range];
+    return source.map(v=>{
+      const nums=[...String(v||"").replace(/–/g,"-").matchAll(/\d+(?:\.\d+)?/g)].map(m=>Number(m[0]));
+      if(!nums.length)return null;
+      const raw=String(v||"").toLowerCase();
+      if(/\+|plus/.test(raw))return [nums[0],9];
+      if(nums.length===1)return [nums[0],Math.min(9,nums[0]+1)];
+      return [Math.min(nums[0],nums[1]),Math.max(nums[0],nums[1])];
+    }).filter(Boolean);
+  }
+  function childAge(date){
+    if(!date)return null;
+    const p=String(date).split("-");if(p.length!==3)return null;
+    const dob=new Date(Number(p[0]),Number(p[1])-1,Number(p[2])),now=new Date();
+    if(Number.isNaN(dob.getTime()))return null;
+    const months=(now.getFullYear()-dob.getFullYear())*12+(now.getMonth()-dob.getMonth())-(now.getDate()<dob.getDate()?1:0);
+    return Math.max(0,months/12);
+  }
+  function activityFitsAge(a,ages){
+    if(!ages.length)return true;
+    const ranges=activityAgeRanges(a);if(!ranges.length)return true;
+    return ages.some(age=>ranges.some(r=>age>=r[0]-.01&&age<=r[1]+.01));
+  }
+  function activityDays(a){
+    const out=[];(Array.isArray(a.venues)?a.venues:[]).forEach(v=>(Array.isArray(v.sessions)?v.sessions:[]).forEach(s=>{if(s.day)out.push(String(s.day))}));
+    return [...new Set(out)];
+  }
+  async function renderBrief(){
+    const intro=$("hubBriefIntro"),wrap=$("hubBriefItems");if(!intro||!wrap)return;
+    let pref={};try{const pr=await fetch("api/preferences.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});const pj=await pr.json();if(pj?.ok)pref=pj.preferences||{}}catch(e){}
+    const children=data.children||[];
+    const ages=children.map(c=>childAge(c.date_of_birth)).filter(v=>v!==null);
+    const saved=new Set((data.saved||[]).map(String));
+    const planned=new Set((data.planner||[]).map(x=>String(x.id)));
+    const interests=new Set((Array.isArray(pref.categories)?pref.categories:[]).map(String).map(v=>v.toLowerCase()));
+    const preferredDay=String(pref.day||"");
+    const preferredRegion=String(pref.region||"");
+    const preferredTown=String(pref.town||"");
+    const maxPrice=pref.maxPrice===""||pref.maxPrice===null?null:Number(pref.maxPrice);
+    const ranked=activities.map(a=>{
+      let s=0;const price=Number(a.price_value),cat=String(a.category||"").toLowerCase(),days=activityDays(a);
+      if(ages.length&&activityFitsAge(a,ages))s+=35;
+      if(preferredDay)s+=days.includes(preferredDay)?22:-10;
+      if(preferredTown)s+=a.town===preferredTown?20:-6;
+      else if(preferredRegion)s+=a.region===preferredRegion?15:-5;
+      if(interests.has(cat))s+=18;
+      if(maxPrice!==null&&Number.isFinite(price))s+=price<=maxPrice?12:-15;
+      if(pref.freeActivities&&Number.isFinite(price))s+=price===0?10:-2;
+      if(saved.has(String(a.id)))s+=9;
+      if(planned.has(String(a.id)))s+=7;
+      return {a,s,days};
+    }).filter(x=>x.s>5).sort((a,b)=>b.s-a.s).slice(0,3);
+    intro.textContent=ranked.length
+      ? (ages.length?"Based on your family profiles":"Based on your saved preferences")+" · updated just now."
+      : "Add a family profile or a few preferences and we’ll make this more useful.";
+    wrap.innerHTML=ranked.length?ranked.map(x=>{
+      const a=x.a,url=typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id);
+      const price=Number(a.price_value);
+      const priceText=Number.isFinite(price)?(price===0?"Free":"From £"+price.toFixed(2)):(a.price||"Price on request");
+      const reason=ages.length&&activityFitsAge(a,ages)?"Age match":preferredDay&&x.days.includes(preferredDay)?preferredDay:(interests.has(String(a.category||"").toLowerCase())?a.category:"Good fit");
+      return "<a class='hub-brief-item' href='"+url+"'><div class='hub-brief-icon'>✦</div><div><span>"+esc(reason)+"</span><strong>"+esc(a.title)+"</strong><small>"+esc(a.town||a.location||"")+" · "+esc(priceText)+"</small></div><b>→</b></a>";
+    }).join(""):"<div class='hub-empty'><strong>Your brief is waiting</strong><p>Set your usual area, preferred day or interests in Preferences.</p><a class='button button-soft' href='preferences.html'>Set preferences</a></div>";
+  }
+
   function render(){
     const children=data.children||[],bumps=data.bumps||[],savedIds=new Set((data.saved||[]).map(String)),planned=data.planner||[],bookings=data.bookings||[];
     const upcoming=bookings.filter(b=>b.status!=="cancelled").filter(b=>!b.starts_at||new Date(String(b.starts_at).replace(" ","T"))>=new Date()).slice(0,4);
@@ -31,6 +96,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     $("hubSaved").innerHTML=savedActivities.length?savedActivities.map(a=>"<a class='hub-list-card' href='"+(typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id))+"'><div><span>"+esc(a.category||"Activity")+"</span><strong>"+esc(a.title)+"</strong><small>"+esc(a.town||a.location||"")+" · "+esc(Array.isArray(a.age_range)?a.age_range.join(", "):a.age_range||"")+"</small></div><b>→</b></a>").join(""):"<div class='hub-empty'><strong>No saved activities yet</strong><p>Save activities you like while browsing the directory.</p><a class='button button-soft' href='directory.html'>Find activities</a></div>";
     $("hubPlanner").innerHTML=plannedActivities.length?plannedActivities.map(a=>"<a class='hub-list-card' href='planner.html'><div><span>My Planner</span><strong>"+esc(a.title)+"</strong><small>"+esc(a.town||a.location||"")+"</small></div><b>→</b></a>").join(""):"<div class='hub-empty'><strong>Your planner is empty</strong><p>Add an activity to your weekly plan.</p><a class='button button-soft' href='planner.html'>Open planner</a></div>";
     $("hubBookings").innerHTML=upcoming.length?upcoming.map(b=>"<article class='hub-booking-card'><div><span class='status'>"+esc(b.status||"Reserved")+"</span><strong>"+esc(b.title||"Booking")+"</strong><small>"+esc(b.venue_name||"Venue")+" · "+esc(bookingDate(b.starts_at)||"Date to be confirmed")+"</small></div><span class='hub-booking-qty'>"+Number(b.quantity||1)+"×</span></article>").join(""):"<div class='hub-empty'><strong>No upcoming bookings</strong><p>Your confirmed or reserved bookings will appear here.</p></div>";
+    void renderBrief();
     message.textContent="Signed in as "+(data.user?.email||"your account");
     root.querySelectorAll(".hub-edit-child").forEach(btn=>btn.onclick=()=>{const child=children.find(c=>String(c.id)===String(btn.dataset.id));if(child)editChild(child)});
     root.querySelectorAll(".hub-edit-bump").forEach(btn=>btn.onclick=()=>{const bump=bumps.find(b=>String(b.id)===String(btn.dataset.id));if(bump)editBump(bump)});
