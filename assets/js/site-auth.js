@@ -18,6 +18,7 @@
     "privacy.html",
     "subscription.html"
   ]);
+  const LEADER_PAGES = new Set(["leader.html", "booking-manager.html"]);
 
   const pageName = (location.pathname.split("/").filter(Boolean).pop() || "index.html").toLowerCase();
   const authUrl = new URL("auth.html", document.baseURI);
@@ -25,6 +26,16 @@
 
   function isRestricted(){
     return RESTRICTED_PAGES.has(pageName);
+  }
+
+  function isLeaderPage(){
+    return LEADER_PAGES.has(pageName);
+  }
+
+  function leaderAuthTarget(){
+    const url = new URL("leader-auth.html", document.baseURI);
+    url.searchParams.set("next", nextUrl());
+    return url.href;
   }
 
   function makeLink(textValue, href, className){
@@ -47,6 +58,8 @@
       const nav = header.querySelector(".main-nav");
       if(nav){
         nav.querySelectorAll("[data-bh-auth-link], .bh-logout-link").forEach(el => el.remove());
+        const leaderLink = Array.from(nav.querySelectorAll("a")).find(a => /class leaders/i.test(a.textContent || ""));
+        if(leaderLink) leaderLink.href = auth.user && auth.user.role === "leader" ? new URL("leader.html",document.baseURI).href : leaderAuthTarget();
 
         if(auth.authenticated){
           const logout = document.createElement("a");
@@ -149,6 +162,11 @@
       });
       if(response.ok) auth = await response.json();
     }catch(e){}
+
+    if(isLeaderPage() && (!auth.authenticated || (auth.user && auth.user.role !== "leader" && !auth.is_admin))){
+      location.replace(auth.authenticated ? leaderAuthTarget() : leaderAuthTarget());
+      return;
+    }
 
     if(isRestricted() && !auth.authenticated){
       const target = buildAuthTarget();
