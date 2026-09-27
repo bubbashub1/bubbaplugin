@@ -5,7 +5,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
 try {
-    require __DIR__.'/db.php';
+    require __DIR__ . '/db.php';
     $db = bh_mysql();
     $db->query('SELECT 1');
 
@@ -22,5 +22,7 @@ try {
         'ok' => false,
         'system' => 'Bubba Hub',
         'database' => 'not_connected',
+        'error_type' => get_class($e),
+        'error' => $e->getMessage(),
     ]);
 }
