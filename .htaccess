@@ -4,6 +4,7 @@ RewriteBase /beta/
 # Clean section URLs
 RewriteRule ^events/?$ events.html [L,QSA]
 RewriteRule ^venues/?$ venues.html [L,QSA]
+RewriteRule ^schools/?$ schools.html [L,QSA]
 
 # Clean personalised finder URL: /beta/choose
 RewriteRule ^choose/?$ choose.html [L,QSA]
