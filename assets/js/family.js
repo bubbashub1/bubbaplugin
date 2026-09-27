@@ -7,10 +7,10 @@ document.body.appendChild(o);o.querySelector("[data-close]").onclick=()=>o.remov
 function schoolTracker(dob){
  if(!dob)return null;
  const d=new Date(dob+"T00:00:00"),startYear=d.getFullYear()+5;
- const applicationDate=new Date(startYear,0,15),startDate=new Date(startYear,8,1),now=new Date();
+ const applicationDate=new Date(startYear,0,15),applicationOpen=new Date(startYear-1,10,1),startDate=new Date(startYear,8,1),now=new Date();
  const days=Math.ceil((applicationDate-now)/(1000*60*60*24));
  const fmt=x=>x.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
- return {startYear,applicationDate,startDate,days,deadline:fmt(applicationDate),start:fmt(startDate)};
+ return {startYear,applicationDate,applicationOpen,startDate,days,deadline:fmt(applicationDate),openDate:fmt(applicationOpen),start:fmt(startDate)};
 }
 function render(d){
  const c=d.children||[],b=d.bumps||[];
@@ -18,8 +18,8 @@ function render(d){
   const tracker=x.date_of_birth?schoolTracker(x.date_of_birth):null;
   let school="";
   if(tracker){
-   const openStart=new Date(tracker.applicationDate.getFullYear()-1,8,1),isOpen=new Date()>=openStart&&new Date()<=tracker.applicationDate;const countdown=isOpen?(tracker.days>0?"Applications are OPEN · "+tracker.days+" day"+(tracker.days===1?"":"s")+" left":"Applications close today"):(tracker.days>0?"Applications open 1 September "+(tracker.applicationDate.getFullYear()-1):(tracker.days===0?"Applications close today":"Application deadline has passed");
-   school="<div class='school-tracker'><span class='school-tracker-icon'>🎓</span><div><strong>Primary school tracker</strong><small class='school-tracker-status'>"+esc(countdown)+"</small><p>Reception place for September "+tracker.startYear+". Typical England application deadline: "+esc(tracker.deadline)+"</p></div></div>";
+   const isOpen=new Date()>=tracker.applicationOpen&&new Date()<=tracker.applicationDate;const countdown=isOpen?(tracker.days>0?"Applications are OPEN · "+tracker.days+" day"+(tracker.days===1?"":"s")+" left":"Applications close today"):(tracker.days>0?"Applications open "+tracker.openDate:(tracker.days===0?"Applications close today":"Application deadline has passed");
+   school="<div class='school-tracker'><span class='school-tracker-icon'>🎓</span><div><strong>Primary school tracker</strong><small class='school-tracker-status'>"+esc(countdown)+"</small><p>Reception place for September "+tracker.startYear+". Primary applications: "+esc(tracker.deadline)+"</p></div></div>";
   }
   return "<article class='hub-family-card'><span>👶</span><div class='hub-family-main'><strong>"+esc(x.name)+"</strong><small>"+(x.date_of_birth?age(x.date_of_birth)+" · "+x.date_of_birth:"Date of birth not set")+"</small>"+school+"</div><button class='button button-soft' data-edit-child='"+x.id+"'>Edit</button></article>";
  }).join("")+b.map(x=>"<article class='hub-family-card'><span>🤰</span><div><strong>"+esc(x.nickname||"Baby")+"</strong><small>"+(x.due_date?"Due "+x.due_date:"Due date not set")+"</small></div><button class='button button-soft' data-edit-bump='"+x.id+"'>Edit</button></article>").join(""):"<div class='hub-empty'><strong>Your family profile is empty</strong><p>Add a child or bump profile to get started.</p></div>";
