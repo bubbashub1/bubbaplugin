@@ -18,7 +18,7 @@
     "privacy.html",
     "subscription.html"
   ]);
-  const LEADER_PAGES = new Set(["leader.html", "booking-manager.html"]);
+  const LEADER_PAGES = new Set(["leader.html", "booking-manager.html", "leader-account.html"]);
 
   const pageName = (location.pathname.split("/").filter(Boolean).pop() || "index.html").toLowerCase();
   const authUrl = new URL("auth.html", document.baseURI);
