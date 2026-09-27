@@ -1,1 +1,194 @@
-<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Planner · Bubba Hub</title><link rel="stylesheet" href="assets/css/styles.css?v=20260925-planner4"></head><body><header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav"><a href="directory.html">Find activities</a><a class="active" href="planner.html">My planner</a><a href="calendar.html">Calendar</a><a href="my-hub.html">My Hub</a></nav><a class="button button-soft" href="account.html">My account</a></header><main class="app-shell"><div class="page-heading"><div><span class="eyebrow">Your week</span><h1>My Planner</h1><p>Keep the activities you want to do together in one place.</p></div><a class="button button-primary" href="directory.html">+ Add activity</a></div><section class="planner-shell"><div class="admin-panel-head"><div><span class="eyebrow">Week view</span><h2>This week</h2></div><span class="status" id="count">0 planned</span></div><p class="deployment-note">Planner selections, hidden days and visited badges are currently saved on this device. Account syncing will be added with the database.</p><div class="planner-controls-card"><div><span class="eyebrow">Display</span><h3>Choose your days</h3><p>Hide any days you do not want to see in your weekly planner.</p></div><div id="dayControls" class="planner-day-controls" aria-label="Choose which days to show"></div><button class="button button-soft" id="showAll" type="button">Show all days</button></div><div class="activity-grid planner-results" id="results"></div></section></main><footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span></footer><script src="assets/js/app.js?v=20260925-planner2"></script><script>document.addEventListener("DOMContentLoaded",()=>{(async()=>{const items=await bhActivities(),results=document.getElementById("results"),count=document.getElementById("count"),controls=document.getElementById("dayControls"),days=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],HIDE_KEY="bhHiddenPlannerDays",VISITED_KEY="bhVisitedActivities";const getList=key=>{try{const v=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(v)?v.map(String):[]}catch{return[]}};const setList=(key,v)=>localStorage.setItem(key,JSON.stringify(v.map(String)));const hidden=()=>getList(HIDE_KEY),visited=()=>getList(VISITED_KEY);const isVisited=id=>visited().includes(String(id));const toggleVisited=id=>{const a=visited(),k=String(id),i=a.indexOf(k);i>=0?a.splice(i,1):a.push(k);setList(VISITED_KEY,a)};controls.innerHTML=days.map(d=>'<label><input type="checkbox" class="day-toggle" value="'+d+'"><span>'+d+'</span></label>').join("");const applyDays=()=>{const h=hidden();document.querySelectorAll(".day-toggle").forEach(x=>x.checked=!h.includes(x.value));render()};document.querySelectorAll(".day-toggle").forEach(x=>x.addEventListener("change",()=>{const h=hidden(),i=h.indexOf(x.value);if(x.checked){if(i>=0)h.splice(i,1)}else if(i<0)h.push(x.value);setList(HIDE_KEY,h);render()}));document.getElementById("showAll").onclick=()=>{setList(HIDE_KEY,[]);applyDays()};const render=()=>{const ids=bhGet(BH_KEYS.planner),list=items.filter(x=>ids.includes(String(x.id))&&!hidden().includes(String(x.day||"")));count.textContent=list.length+" shown · "+ids.length+" planned";results.innerHTML=list.map(x=>'<article class="feature-card"><div style="display:flex;justify-content:space-between;gap:.75rem;align-items:flex-start"><span class="eyebrow">'+bhEscape(x.day)+" · "+bhEscape(x.time)+'</span><button class="button button-soft visit-badge" type="button" data-id="'+bhEscape(x.id)+'" aria-pressed="'+isVisited(x.id)+'">'+(isVisited(x.id)?"✓ Visited":"○ Mark visited")+'</button></div><h3>'+bhEscape(x.title)+'</h3><p>'+bhEscape(x.location||x.town||"")+' · '+bhEscape((x.age_range||[]).join(", "))+'</p><div class="hero-actions"><a class="button button-soft" href="activity.html?id='+encodeURIComponent(x.id)+'">View activity</a><button class="button button-soft remove" data-id="'+bhEscape(x.id)+'" type="button">Remove</button></div></article>').join("")||'<div class="planner-empty"><h3>Your planner is empty</h3><p>Find an activity and choose Add to planner.</p><a class="button button-primary" href="directory.html">Find activities</a></div>';document.querySelectorAll(".remove").forEach(b=>b.onclick=()=>{bhTogglePlanned(b.dataset.id);render()});document.querySelectorAll(".visit-badge").forEach(b=>b.onclick=()=>{toggleVisited(b.dataset.id);render()})};applyDays()})().catch(e=>{document.getElementById("results").innerHTML='<div class="admin-panel"><h3>Planner unavailable</h3><p>'+bhEscape(e.message||"Unable to load planner.")+'</p></div>'})});</script></body></html>
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Planner · Bubba Hub</title>
+<link rel="stylesheet" href="assets/css/styles.css?v=20260927-planner5">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a>
+  <nav class="main-nav" aria-label="Main navigation">
+    <a href="directory.html">Find activities</a>
+    <a class="active" href="planner.html">My planner</a>
+    <a href="calendar.html">Calendar</a>
+    <a href="my-hub.html">My Hub</a>
+  </nav>
+  <a class="button button-soft" href="account.html">My account</a>
+</header>
+
+<main class="app-shell planner-page">
+  <div class="page-heading planner-page-heading">
+    <div>
+      <span class="eyebrow">Your family week</span>
+      <h1>My Planner</h1>
+      <p>See your planned activities at a glance and keep the week organised.</p>
+    </div>
+    <div class="planner-heading-actions">
+      <span class="status" id="count">0 planned</span>
+      <a class="button button-primary" href="directory.html">＋ Add activity</a>
+    </div>
+  </div>
+
+  <section class="planner-shell">
+    <div class="planner-overview">
+      <div>
+        <span class="eyebrow">Weekly view</span>
+        <h2>This week</h2>
+        <p id="plannerIntro">Your planned activities will appear on the days they run.</p>
+      </div>
+      <button class="button button-soft" id="showAll" type="button">Show all days</button>
+    </div>
+
+    <div class="planner-day-controls" id="dayControls" aria-label="Choose which days to show"></div>
+
+    <div class="planner-week" id="results" aria-live="polite"></div>
+
+    <div class="planner-footer-note">
+      <span>✓</span>
+      <p>Planner choices are currently saved on this device. Account syncing can be connected later without changing your planned activities.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span></footer>
+
+<script src="assets/js/app.js?v=20260927-planner5"></script>
+<script>
+document.addEventListener("DOMContentLoaded",()=>{(async()=>{
+  const results=document.getElementById("results");
+  const count=document.getElementById("count");
+  const intro=document.getElementById("plannerIntro");
+  const controls=document.getElementById("dayControls");
+  const days=[
+    {name:"Monday",short:"Mon",num:1},{name:"Tuesday",short:"Tue",num:2},{name:"Wednesday",short:"Wed",num:3},
+    {name:"Thursday",short:"Thu",num:4},{name:"Friday",short:"Fri",num:5},{name:"Saturday",short:"Sat",num:6},{name:"Sunday",short:"Sun",num:7}
+  ];
+  const HIDE_KEY="bhHiddenPlannerDays";
+  const VISITED_KEY="bhVisitedActivities";
+
+  const getList=key=>{try{const v=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(v)?v.map(String):[]}catch{return[]}};
+  const setList=(key,v)=>localStorage.setItem(key,JSON.stringify(v.map(String)));
+  const hiddenDays=()=>getList(HIDE_KEY);
+  const visited=()=>getList(VISITED_KEY);
+  const isVisited=id=>visited().includes(String(id));
+  const toggleVisited=id=>{
+    const list=visited(),key=String(id),index=list.indexOf(key);
+    index>=0?list.splice(index,1):list.push(key);
+    setList(VISITED_KEY,list);
+  };
+
+  const esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])));
+  const formatTime=v=>window.bhFormatTime?window.bhFormatTime(v):String(v||"").slice(0,5);
+  const plannedIds=()=>bhGet(BH_KEYS.planner);
+  const todayNum=((new Date()).getDay()||7);
+
+  const items=await bhActivities();
+  const byId=new Map(items.map(item=>[String(item.id),item]));
+
+  function getEntries(){
+    const entries=[];
+    plannedIds().forEach(id=>{
+      const activity=byId.get(String(id));
+      if(!activity)return;
+      const sessions=typeof bhSessions==="function"?bhSessions(activity):[];
+      if(sessions.length){
+        sessions.forEach(session=>{
+          const day=Number(session.day_of_week||0);
+          if(day>=1&&day<=7){
+            entries.push({activity,session,day});
+          }
+        });
+      }else{
+        entries.push({activity,session:null,day:0});
+      }
+    });
+    return entries;
+  }
+
+  controls.innerHTML=days.map(day=>"<label class='planner-day-toggle'><input type='checkbox' class='day-toggle' value='"+day.num+"'><span><b>"+day.short+"</b><small>"+day.name+"</small></span></label>").join("");
+
+  const render=()=>{
+    const hidden=hiddenDays();
+    controls.querySelectorAll(".day-toggle").forEach(input=>input.checked=!hidden.includes(input.value));
+
+    const entries=getEntries();
+    const shownEntries=entries.filter(entry=>entry.day===0||!hidden.includes(String(entry.day)));
+    const uniqueActivities=new Set(shownEntries.map(x=>String(x.activity.id)));
+
+    count.textContent=uniqueActivities.size+" activit"+(uniqueActivities.size===1?"y":"ies")+" · "+shownEntries.filter(x=>x.day>0).length+" session"+(shownEntries.filter(x=>x.day>0).length===1?"":"s")+" shown";
+    intro.textContent=entries.length
+      ? "Your planned activities are grouped by the day they run. Hide quieter days when you want a simpler view."
+      : "Add activities from the directory and they will appear here as soon as they are planned.";
+
+    if(!entries.length){
+      results.innerHTML="<div class='planner-empty'><div class='planner-empty-icon'>＋</div><h3>Your planner is ready for its first activity</h3><p>Save a class to your planner from any activity page, then come back here to see the week take shape.</p><a class='button button-primary' href='directory.html'>Find activities</a></div>";
+      return;
+    }
+
+    const sections=days.filter(day=>!hidden.includes(String(day.num))).map(day=>{
+      const dayEntries=shownEntries.filter(entry=>entry.day===day.num).sort((a,b)=>{
+        const aTime=String(a.session?.start_time||"");
+        const bTime=String(b.session?.start_time||"");
+        return aTime.localeCompare(bTime)||String(a.activity.title).localeCompare(String(b.activity.title));
+      });
+      const isToday=day.num===todayNum;
+      return "<section class='planner-day-column"+(isToday?" is-today":"")+"' data-day='"+day.num+"'>"+
+        "<div class='planner-day-heading'><div><span>"+esc(day.short)+"</span><h3>"+esc(day.name)+"</h3></div>"+(isToday?"<small>Today</small>":"")+"</div>"+
+        (dayEntries.length?dayEntries.map(entry=>{
+          const a=entry.activity, s=entry.session, venue=s?.venue;
+          const time=s?(formatTime(s.start_time)+(s.end_time?" – "+formatTime(s.end_time):"")):"Time TBC";
+          const location=venue?.town||venue?.name||a.location||a.town||"";
+          const age=Array.isArray(a.age_range)?a.age_range.join(", "):String(a.age_range||"");
+          const visitedLabel=isVisited(a.id)?"Visited":"Mark visited";
+          return "<article class='planner-card'>"+
+            "<div class='planner-card-top'><span class='planner-time'>"+esc(time)+"</span>"+(s?.term_time_only?"<span class='planner-mini-badge'>Term time</span>":"")+"</div>"+
+            "<h4>"+esc(a.title)+"</h4>"+
+            "<p class='planner-card-location'>"+esc(location)+(age?" · "+esc(age):"")+"</p>"+
+            "<div class='planner-card-actions'>"+
+              "<a class='button button-soft' href='"+(typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id))+"'>View</a>"+
+              "<button class='button button-soft planner-visit' type='button' data-id='"+esc(a.id)+"' aria-pressed='"+isVisited(a.id)+"'>✓ "+visitedLabel+"</button>"+
+              "<button class='planner-remove' type='button' data-id='"+esc(a.id)+"' aria-label='Remove "+esc(a.title)+" from planner'>Remove</button>"+
+            "</div>"+
+          "</article>";
+        }).join(""):"<div class='planner-day-empty'>Nothing planned</div>")+
+      "</section>";
+    }).join("");
+
+    const unscheduled=shownEntries.filter(entry=>entry.day===0);
+    results.innerHTML=sections+(unscheduled.length?"<section class='planner-unscheduled'><div class='planner-day-heading'><div><span>Other</span><h3>Schedule to confirm</h3></div></div>"+unscheduled.map(entry=>{
+      const a=entry.activity;
+      return "<article class='planner-card'><div class='planner-card-top'><span class='planner-time'>Time TBC</span></div><h4>"+esc(a.title)+"</h4><p class='planner-card-location'>"+esc(a.location||a.town||"")+"</p><div class='planner-card-actions'><a class='button button-soft' href='"+(typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id))+"'>View</a><button class='planner-remove' type='button' data-id='"+esc(a.id)+"'>Remove</button></div></article>";
+    }).join("")+"</section>":"");
+
+    results.querySelectorAll(".planner-remove").forEach(button=>button.addEventListener("click",()=>{
+      bhTogglePlanned(button.dataset.id);
+      render();
+    }));
+    results.querySelectorAll(".planner-visit").forEach(button=>button.addEventListener("click",()=>{
+      toggleVisited(button.dataset.id);
+      render();
+    }));
+  };
+
+  controls.querySelectorAll(".day-toggle").forEach(input=>input.addEventListener("change",()=>{
+    const hidden=hiddenDays(),value=input.value,index=hidden.indexOf(value);
+    if(input.checked){if(index>=0)hidden.splice(index,1)}else if(index<0)hidden.push(value);
+    setList(HIDE_KEY,hidden);
+    render();
+  }));
+
+  document.getElementById("showAll").addEventListener("click",()=>{
+    setList(HIDE_KEY,[]);
+    render();
+  });
+
+  render();
+})().catch(error=>{
+  document.getElementById("results").innerHTML="<div class='admin-panel'><h3>Planner unavailable</h3><p>"+(window.bhEscape?bhEscape(error.message||"Unable to load planner."):String(error.message||"Unable to load planner."))+"</p></div>";
+});
+});
+</script>
+</body>
+</html>
