@@ -25,7 +25,18 @@ $query = '[out:json][timeout:20];'
     . '(nwr["amenity"="school"](around:30000,' . (float)$lat . ',' . (float)$lon . '););'
     . 'out center tags;';
 
-$ch = curl_init('https://overpass-api.de/api/interpreter');
+$overpassEndpoints = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://overpass.private.coffee/api/interpreter'
+];
+
+$raw = false;
+$code = 0;
+$curlError = '';
+
+foreach ($overpassEndpoints as $endpoint) {
+    $ch = curl_init($endpoint);
 curl_setopt_array($ch, [
     CURLOPT_POST => true,
     CURLOPT_POSTFIELDS => $query,
@@ -39,10 +50,21 @@ curl_setopt_array($ch, [
     ],
 ]);
 
-$raw = curl_exec($ch);
-$code = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-$curlError = curl_error($ch);
-curl_close($ch);
+$attemptRaw = curl_exec($ch);
+    $attemptCode = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+    $attemptError = curl_error($ch);
+    curl_close($ch);
+
+    if ($attemptRaw !== false && $attemptCode >= 200 && $attemptCode < 300) {
+        $raw = $attemptRaw;
+        $code = $attemptCode;
+        $curlError = '';
+        break;
+    }
+
+    $code = $attemptCode;
+    $curlError = $attemptError;
+}
 
 if ($raw === false || $code < 200 || $code >= 300) {
     bh_schools_json(502, [
