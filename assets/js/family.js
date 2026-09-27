@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded",async()=>{
 const list=document.getElementById("familyList"),message=document.getElementById("familyMessage"),esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])));let csrf="";
-const get=async()=>{const r=await fetch("api/my-hub.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});const j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||"Please sign in.");return j};
+const get=async()=>{const r=await fetch("api/my-hub.php?view=family",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});const j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||"Please sign in.");return j};
 const age=d=>{if(!d)return "";const x=new Date(d+"T00:00:00"),n=new Date();let y=n.getFullYear()-x.getFullYear(),m=n.getMonth()-x.getMonth();if(n.getDate()<x.getDate())m--;if(m<0){y--;m+=12}return y<2?Math.max(0,y*12+m)+" months":y+" years"};
 function modal(title,type,item={}){
  const o=document.createElement("div");
