@@ -204,6 +204,31 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     };
 
+    const schoolHolidayCache = new Map();
+    const activityIsTermTime = activity => bhSessions(activity).some(s => !!s.term_time);
+    const countyForActivity = activity => activity.county || "";
+    const getSchoolHolidayStatus = async county => {
+      if (!county) return false;
+      if (schoolHolidayCache.has(county)) return schoolHolidayCache.get(county);
+      try {
+        const response = await fetch("api/school-holidays.php?county="+encodeURIComponent(county), {cache:"no-store"});
+        const payload = await response.json();
+        const holiday = !!(response.ok && payload.ok && payload.is_school_holiday);
+        schoolHolidayCache.set(county, holiday);
+        return holiday;
+      } catch (e) {
+        // If the external holiday source is unavailable, do not hide activities.
+        schoolHolidayCache.set(county, false);
+        return false;
+      }
+    };
+    const filterTermTimeForCalendar = async list => {
+      const counties = [...new Set(list.filter(activityIsTermTime).map(countyForActivity).filter(Boolean))];
+      const statuses = await Promise.all(counties.map(async county => [county, await getSchoolHolidayStatus(county)]));
+      const holidayByCounty = new Map(statuses);
+      return list.filter(activity => !(activityIsTermTime(activity) && holidayByCounty.get(countyForActivity(activity)) === true));
+    };
+
     const buildCalendarEvents = (list, rangeStart, rangeEnd) => {
       const events = {};
       list.forEach(activity => {
@@ -291,6 +316,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
 
+    let calendarRenderToken = 0;
+    const calendarLoading = () => {
+      const calendar = $("calendarView");
+      if (calendar) calendar.innerHTML = '<div class="admin-panel"><p>Checking school holiday dates…</p></div>';
+    };
+
     const render = () => {
       const search = $("search").value.trim().toLowerCase();
       const category = $("category").value;
@@ -374,7 +405,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
       if (currentView === "map") setTimeout(() => renderMap(list), 0);
-      if (currentView === "calendar") renderCalendar(list);
+      if (currentView === "calendar") {
+        calendarRenderToken++;
+        const token = calendarRenderToken;
+        calendarLoading();
+        filterTermTimeForCalendar(list).then(calendarList => {
+          if (token !== calendarRenderToken || currentView !== "calendar") return;
+          renderCalendar(calendarList);
+        });
+      }
     };
 
     const updateAge = source => {
