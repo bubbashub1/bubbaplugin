@@ -148,6 +148,7 @@ foreach ($payload['elements'] as $element) {
         'distance_miles' => round($distance($schoolLat, $schoolLon), 1),
         'address' => $address,
         'postcode' => (string)($tags['addr:postcode'] ?? ''),
+        'city' => (string)($tags['addr:city'] ?? $tags['addr:town'] ?? $tags['addr:village'] ?? ''),
         'phone' => $phone,
         'website' => $website,
         'ofsted_url' => $ofstedUrl,
