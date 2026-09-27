@@ -2,6 +2,7 @@
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
+try {
 require_once __DIR__.'/db.php';
 session_start();
 function lp(int $s,array $d): never{http_response_code($s);echo json_encode($d,JSON_UNESCAPED_SLASHES);exit;}
@@ -32,3 +33,8 @@ if($action==='save_booking'){
  $id=(int)($b['id']??0);$status=$b['status']??'';if(!in_array($status,['reserved','confirmed','cancelled','attended'],true))lp(422,['ok'=>false,'error'=>'invalid_status']);$q=$db->prepare("UPDATE bh_booking_reservations br JOIN bh_booking_slots bs ON bs.id=br.slot_id JOIN bh_activities a ON a.id=bs.activity_id SET br.status=? WHERE br.id=? AND a.organiser_id=?");$q->execute([$status,$id,$oid]);if(!$q->rowCount())lp(404,['ok'=>false,'error'=>'booking_not_found']);lp(200,['ok'=>true]);
 }
 lp(400,['ok'=>false,'error'=>'unknown_action']);
+} catch (Throwable $e) {
+ http_response_code(500);
+ echo json_encode(['ok'=>false,'error'=>'leader_portal_error','message'=>$e->getMessage()], JSON_UNESCAPED_SLASHES);
+ exit;
+}
