@@ -57,7 +57,37 @@ document.addEventListener("DOMContentLoaded",async()=>{
     document.body.appendChild(overlay); const close=()=>overlay.remove(); overlay.querySelector(".contact-modal-close").onclick=close; overlay.addEventListener("click",e=>{if(e.target===overlay)close()}); const form=overlay.querySelector("#contactForm"); form.querySelector("input[name=name]")?.focus();
     form.addEventListener("submit",async e=>{e.preventDefault();const status=form.querySelector(".contact-form-status"),button=form.querySelector("button[type=submit]");status.textContent="Sending…";button.disabled=true;const fd=new FormData(form);fd.append("activity_id",String(a.id));try{const res=await fetch("api/contact.php",{method:"POST",body:fd,headers:{Accept:"application/json"}});const data=await res.json();if(!res.ok||!data.ok)throw new Error(data.error||"Could not send your message.");status.textContent="Message sent. The organiser will get back to you.";form.reset();button.textContent="Sent";}catch(err){status.textContent=err.message||"Could not send your message. Please try again.";button.disabled=false;}});
   });
-  if(window.L){const points=venues.filter(v=>v.lat&&v.long);if(points.length){const map=L.map("listingMap").setView([Number(points[0].lat),Number(points[0].long)],12);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap contributors"}).addTo(map);points.forEach(v=>L.marker([Number(v.lat),Number(v.long)]).addTo(map).bindPopup("<strong>"+bhEscape(v.name||"Venue")+"</strong><br>"+bhEscape(v.address||v.town||"")));if(points.length>1){const group=L.featureGroup(points.map(v=>L.marker([Number(v.lat),Number(v.long)])));map.fitBounds(group.getBounds().pad(.2));}}else document.getElementById("listingMap").innerHTML="<div class='map-empty'>Venue map will appear when a location is added.</div>";}
+  if(window.L){
+    const mapEl=document.getElementById("listingMap");
+    const geocodeVenue=async venue=>{
+      if(Number.isFinite(Number(venue.lat))&&Number.isFinite(Number(venue.long))) return venue;
+      const query=[venue.address,venue.town,venue.region,venue.postcode].filter(Boolean).join(", ");
+      if(!query) return null;
+      try{
+        const key="bh_geocode_"+query.toLowerCase().replace(/\\s+/g," ").trim();
+        const cached=JSON.parse(localStorage.getItem(key)||"null");
+        if(cached&&Number.isFinite(Number(cached.lat))&&Number.isFinite(Number(cached.lon))) return {...venue,lat:Number(cached.lat),long:Number(cached.lon)};
+        const response=await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=gb&q="+encodeURIComponent(query),{headers:{Accept:"application/json"}});
+        if(!response.ok) return null;
+        const data=await response.json();
+        if(!Array.isArray(data)||!data[0]) return null;
+        const point={lat:Number(data[0].lat),lon:Number(data[0].lon)};
+        if(!Number.isFinite(point.lat)||!Number.isFinite(point.lon)) return null;
+        localStorage.setItem(key,JSON.stringify(point));
+        return {...venue,lat:point.lat,long:point.lon};
+      }catch(e){return null;}
+    };
+    (async()=>{
+      const points=(await Promise.all(venues.map(geocodeVenue))).filter(Boolean);
+      if(points.length){
+        const map=L.map("listingMap").setView([Number(points[0].lat),Number(points[0].long)],12);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap contributors"}).addTo(map);
+        const leafletMarkers=points.map(v=>L.marker([Number(v.lat),Number(v.long)]).addTo(map).bindPopup("<strong>"+bhEscape(v.name||"Venue")+"</strong><br>"+bhEscape(v.address||v.town||"")));
+        if(leafletMarkers.length>1){const group=L.featureGroup(leafletMarkers);map.fitBounds(group.getBounds().pad(.2));}
+        setTimeout(()=>map.invalidateSize(),100);
+      }else if(mapEl) mapEl.innerHTML="<div class='map-empty'>Add a venue address or location to show it on the map.</div>";
+    })();
+  }
  }catch(e){state.innerHTML='<div class="admin-panel"><h2>Activity unavailable</h2><p>We couldn’t load this activity right now.</p><a class="button button-primary" href="directory.html">Back to activities</a></div>'}
 });
 </script></body></html>
