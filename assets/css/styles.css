@@ -910,3 +910,75 @@ body{background:linear-gradient(180deg,#f8fbf8 0%,#f4f8f4 100%);}
 .bh-modal-fields hr{grid-column:1/-1;width:100%;border:0;border-top:1px solid var(--bh-border);margin:4px 0}.bh-modal-fields h3{margin:0;font-size:15px}.bh-leader-page .hero-actions{display:flex;gap:9px;flex-wrap:wrap}
 @media(max-width:1050px){.bh-leader-stats-v2{grid-template-columns:repeat(3,minmax(0,1fr))}.bh-leader-dashboard-grid{grid-template-columns:1fr}.bh-leader-quick-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.bh-leader-stats-v2{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.bh-leader-stat{padding:12px;border-radius:15px;gap:8px}.bh-leader-stat>span{flex-basis:32px;width:32px;height:32px;font-size:16px}.bh-leader-stat strong{font-size:20px}.bh-leader-stat em{display:none}.bh-leader-tabs{position:sticky;top:8px;overflow-x:auto;scrollbar-width:none}.bh-leader-tabs::-webkit-scrollbar{display:none}.bh-leader-tabs a{flex:0 0 auto}.bh-leader-quick-actions{grid-template-columns:1fr}.bh-support-banner{align-items:flex-start;flex-direction:column;padding:18px}.bh-support-actions{width:100%}.bh-support-actions .button{flex:1}.bh-schedule-row{align-items:flex-start;flex-direction:column;gap:8px}.bh-schedule-row>small{align-self:flex-start}.bh-leader-page .admin-panel-head{align-items:flex-start;flex-direction:column}.bh-leader-page .admin-panel-head .button{width:100%}}
+
+
+/* Planner refresh — weekly family view */
+.planner-page{padding-bottom:54px}
+.planner-page-heading{align-items:flex-end}
+.planner-heading-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.planner-shell{padding:20px 0 0}
+.planner-overview{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 22px;margin-bottom:12px;background:var(--bh-bg);border:1px solid rgba(65,102,81,.10);border-radius:20px}
+.planner-overview h2{margin:2px 0 4px;font-family:"Chewy",cursive;font-weight:400;font-size:30px;line-height:1}
+.planner-overview p{margin:0;color:var(--bh-text-muted);font-size:13px}
+.planner-day-controls{display:flex;gap:8px;overflow-x:auto;padding:2px 1px 12px;scrollbar-width:thin}
+.planner-day-toggle{position:relative;flex:1 0 82px;min-width:82px;cursor:pointer}
+.planner-day-toggle input{position:absolute;opacity:0;pointer-events:none}
+.planner-day-toggle span{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:58px;padding:8px 10px;border:1px solid var(--bh-border);border-radius:14px;background:#fff;color:var(--bh-text-muted);box-shadow:0 5px 16px rgba(20,68,0,.035);transition:all .18s ease}
+.planner-day-toggle span b{font-size:12px;color:var(--bh-primary)}
+.planner-day-toggle span small{font-size:9px}
+.planner-day-toggle input:not(:checked)+span{opacity:.48;background:#f4f7f4;box-shadow:none}
+.planner-day-toggle:hover span{transform:translateY(-1px)}
+.planner-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;align-items:start}
+.planner-day-column,.planner-unscheduled{min-width:0;padding:12px;border:1px solid var(--bh-border);border-radius:18px;background:#fdfefe}
+.planner-day-column.is-today{border-color:rgba(60,142,150,.28);box-shadow:0 8px 24px rgba(60,142,150,.08)}
+.planner-day-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:43px;margin-bottom:10px}
+.planner-day-heading span{display:block;color:var(--bh-secondary);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.09em}
+.planner-day-heading h3{margin:1px 0 0;font-size:16px;line-height:1.1}
+.planner-day-heading small{padding:5px 8px;border-radius:999px;background:var(--bh-bg);color:var(--bh-primary);font-size:9px;font-weight:800}
+.planner-card{padding:12px;margin-bottom:9px;border:1px solid rgba(65,102,81,.10);border-radius:15px;background:#fff;box-shadow:0 6px 18px rgba(20,68,0,.045)}
+.planner-card:last-child{margin-bottom:0}
+.planner-card-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.planner-time{font-size:11px;font-weight:800;color:var(--bh-primary)}
+.planner-mini-badge{padding:3px 6px;border-radius:999px;background:#eef4ef;color:var(--bh-text-muted);font-size:8px;font-weight:800;white-space:nowrap}
+.planner-card h4{margin:6px 0 4px;font-size:14px;line-height:1.25}
+.planner-card-location{margin:0;color:var(--bh-text-muted);font-size:10px;line-height:1.4;overflow-wrap:anywhere}
+.planner-card-actions{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
+.planner-card-actions .button{min-height:32px;padding:6px 9px;border-radius:9px;font-size:10px}
+.planner-remove{min-height:32px;padding:6px 4px;border:0;background:none;color:var(--bh-text-muted);font-size:10px;font-weight:700}
+.planner-remove:hover{color:var(--bh-primary)}
+.planner-visit[aria-pressed="true"]{background:#e9f3eb;color:var(--bh-primary)}
+.planner-day-empty{padding:18px 8px;text-align:center;color:#8a978d;font-size:10px}
+.planner-unscheduled{grid-column:1/-1}
+.planner-unscheduled .planner-card{max-width:420px}
+.planner-empty{grid-column:1/-1;padding:48px 24px;border:1px dashed var(--bh-border);border-radius:22px;background:#fff;text-align:center}
+.planner-empty-icon{width:54px;height:54px;margin:0 auto 12px;display:grid;place-items:center;border-radius:17px;background:var(--bh-bg);color:var(--bh-primary);font-size:26px;font-weight:800}
+.planner-empty h3{margin:0 0 7px;font-size:21px}
+.planner-empty p{max-width:560px;margin:0 auto 18px;color:var(--bh-text-muted)}
+.planner-footer-note{display:flex;align-items:flex-start;gap:9px;margin-top:12px;padding:11px 14px;border-radius:14px;background:#f7faf7;color:var(--bh-text-muted);font-size:11px}
+.planner-footer-note span{color:var(--bh-primary);font-weight:800}
+.planner-footer-note p{margin:0}
+@media(max-width:1050px){
+  .planner-week{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .planner-day-column:nth-child(5){grid-column:1}
+}
+@media(max-width:760px){
+  .planner-page-heading{align-items:flex-start}
+  .planner-heading-actions{width:100%;justify-content:stretch}
+  .planner-heading-actions .button{flex:1}
+  .planner-overview{align-items:flex-start;flex-direction:column}
+  .planner-overview .button{width:100%}
+  .planner-week{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .planner-day-column:nth-child(5){grid-column:auto}
+}
+@media(max-width:520px){
+  .planner-page-heading{padding-top:34px}
+  .planner-heading-actions{display:grid;grid-template-columns:1fr auto}
+  .planner-heading-actions .status{min-height:42px;display:inline-flex;align-items:center;justify-content:center}
+  .planner-day-controls{margin-inline:-4px;padding-inline:4px 6px}
+  .planner-day-toggle{flex-basis:69px;min-width:69px}
+  .planner-day-toggle span{min-height:54px;padding:7px 6px}
+  .planner-day-toggle span small{display:none}
+  .planner-week{grid-template-columns:1fr}
+  .planner-day-column{padding:11px}
+  .planner-unscheduled{grid-column:auto}
+}
