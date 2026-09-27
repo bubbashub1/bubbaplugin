@@ -26,8 +26,26 @@ try {
     }
 
     $userId = (int)($_SESSION['bh_user_id'] ?? 0);
-    if ($userId < 1) {
+    $adminOnly = !empty($_SESSION['bh_admin_authenticated']) && $userId < 1;
+    if ($userId < 1 && !$adminOnly) {
         bh_hub_json(401, ['ok' => false, 'error' => 'login_required', 'message' => 'Please sign in to use My Hub.']);
+    }
+
+    if ($adminOnly && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        if (!isset($_SESSION['bh_csrf'])) {
+            $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
+        }
+        bh_hub_json(200, [
+            'ok' => true,
+            'admin_mode' => true,
+            'user' => ['id' => 0, 'email' => 'Admin access', 'role' => 'admin', 'status' => 'active'],
+            'children' => [],
+            'bumps' => [],
+            'saved' => [],
+            'planner' => [],
+            'bookings' => [],
+            'csrf' => $_SESSION['bh_csrf'],
+        ]);
     }
 
     $db = bh_mysql();
@@ -40,6 +58,10 @@ try {
 
     if (!isset($_SESSION['bh_csrf'])) {
         $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
+    }
+
+    if ($adminOnly) {
+        bh_hub_json(403, ['ok' => false, 'error' => 'admin_read_only', 'message' => 'Family data changes require a family account.']);
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
