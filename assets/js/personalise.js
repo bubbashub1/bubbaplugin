@@ -226,7 +226,7 @@
     
     try{
       state.activities=await bhActivities();
-      renderCategories();fillRegions();renderDayChoices();renderBudgetChoices();
+      renderCategories();fillRegions();initWhenChoices();renderBudgetChoices();
       const auth=window.bhAuthSession?await bhAuthSession():null;
       if(auth?.authenticated){
         const hub=await fetch("api/my-hub.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}).then(r=>r.json()).catch(()=>null);
