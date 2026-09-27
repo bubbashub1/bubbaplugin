@@ -64,12 +64,15 @@ document.addEventListener("DOMContentLoaded",()=>{
  const esc=v=>window.bhEscape(v??"");
  const link=(url,label,cls="")=>url?'<a class="'+cls+'" href="'+esc(url)+'" target="_blank" rel="noopener">'+label+' ↗</a>':"";
  const render=()=>{
-   if(!visibleSchools.length){count.textContent="No schools found";list.innerHTML='<div class="schools-empty"><h2>No schools found</h2><p>Try a nearby town or postcode.</p></div>';return}
-   {count.textContent="No schools found";list.innerHTML='<div class="schools-empty"><h2>No schools found</h2><p>Try a nearby town or postcode.</p></div>';return}
-   count.textContent=schools.length+" school"+(schools.length===1?"":"s")+" found";
-   list.innerHTML=schools.map((s,i)=>{
+   if(!visibleSchools.length){
+     count.textContent=schools.length?"No schools match that type":"No schools found";
+     list.innerHTML='<div class="schools-empty"><h2>'+(schools.length?"No schools match":"No schools found")+'</h2><p>'+(schools.length?"Try another school type.":"Try a nearby town or postcode.")+'</p></div>';
+     return;
+   }
+   count.textContent=visibleSchools.length+" school"+(visibleSchools.length===1?"":"s")+" found";
+   list.innerHTML=visibleSchools.map((s,i)=>{
     const phaseText=s.phase||s.school_type||"School";
-    return '<article class="school-card"><div class="school-card-number">'+(i+1)+'</div><div class="school-card-main"><div class="school-card-heading"><div><span class="eyebrow">'+esc(s.distance_miles)+' miles away · '+esc(phaseText)+'</span><h2>'+esc(s.name)+'</h2></div></div><p class="school-address">📍 '+esc(s.address||"Address not listed")+'</p><div class="school-details">'+(s.postcode?'<span>Postcode · '+esc(s.postcode)+'</span>':"")+(s.age_range?'<span>'+esc(s.age_range)+'</span>':"")+'</div><div class="school-actions">'+link(s.website,"School website","button button-soft")+link(s.ofsted_url,"Ofsted","button button-soft")+link(s.dfe_url,"DfE school record","button button-soft")+"<button class=\"button button-soft school-google-search\" data-school-index=\""+i+"\" type=\"button\">Search online</button>"+'</div></div></article>'
+    return '<article class="school-card"><div class="school-card-number">'+(i+1)+'</div><div class="school-card-main"><div class="school-card-heading"><div><span class="eyebrow">'+esc(s.distance_miles)+' miles away · '+esc(phaseText)+'</span><h2>'+esc(s.name)+'</h2></div></div><p class="school-address">📍 '+esc(s.address||"Address not listed")+'</p><div class="school-details">'+(s.postcode?'<span>Postcode · '+esc(s.postcode)+'</span>':"")+'</div><div class="school-actions">'+link(s.website,"School website","button button-soft")+link(s.ofsted_url,"Ofsted","button button-soft")+"<button class=\"button button-soft school-google-search\" data-school-index=\""+i+"\" type=\"button\">Search online</button>"+'</div></div></article>';
    }).join("");
  };
  const searchSchool=async index=>{
@@ -87,7 +90,7 @@ document.addEventListener("DOMContentLoaded",()=>{
    }catch(e){if(btn){btn.disabled=false;btn.textContent="Search again";}status.textContent=e.message||"Online search failed."}
  };
  const renderMap=()=>{
-  if(!window.L||!schools.length)return;
+  if(!window.L||!visibleSchools.length)return;
   if(!map)map=L.map(mapEl).setView([50.42,-3.57],11);
   if(!map._bhTiles)L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors"}).addTo(map),map._bhTiles=true;
   markers.forEach(x=>x.remove());markers=[];
