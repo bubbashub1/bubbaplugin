@@ -57,6 +57,24 @@ async function login(){
 
 document.querySelector("#saveAdminLogin").addEventListener("click",login);
 document.querySelector("#adminLogout").addEventListener("click",logout);
+
+document.querySelector("#deployLatest").addEventListener("click",async()=>{
+ const status=document.querySelector("#deployStatus");
+ const button=document.querySelector("#deployLatest");
+ button.disabled=true;
+ status.textContent="Starting deployment…";
+ try{
+  const response=await fetch("deploy.php",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",cache:"no-store"});
+  let data={};
+  try{data=await response.json()}catch{}
+  if(!response.ok||!data.ok)throw new Error(data.error||"Deployment failed");
+  status.textContent="✓ Deployment started. GitHub Actions is now publishing the latest main branch.";
+ }catch(error){
+  status.textContent="Deployment failed: "+error.message;
+ }finally{
+  button.disabled=false;
+ }
+});
 document.querySelector("#adminPassword").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
 document.querySelector("#newActivity").addEventListener("click",openEditor);
 document.querySelector("#cancelActivity").addEventListener("click",closeEditor);
