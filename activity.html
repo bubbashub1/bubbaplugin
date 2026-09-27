@@ -59,20 +59,30 @@ document.addEventListener("DOMContentLoaded",async()=>{
   });
   if(window.L){
     const mapEl=document.getElementById("listingMap");
+    const validCoordinate=(value,min,max)=>{
+      if(value===null||value===undefined||value==="") return null;
+      const number=Number(String(value).trim().replace(",","."));
+      return Number.isFinite(number)&&number>=min&&number<=max?number:null;
+    };
     const geocodeVenue=async venue=>{
-      if(Number.isFinite(Number(venue.lat))&&Number.isFinite(Number(venue.long))) return venue;
+      const lat=validCoordinate(venue.lat,-90,90);
+      const long=validCoordinate(venue.long,-180,180);
+      if(lat!==null&&long!==null) return {...venue,lat,long};
       const query=[venue.address,venue.town,venue.region,venue.postcode].filter(Boolean).join(", ");
       if(!query) return null;
       try{
-        const key="bh_geocode_"+query.toLowerCase().replace(/\\s+/g," ").trim();
+        const key="bh_geocode_"+query.toLowerCase().replace(/\s+/g," ").trim();
         const cached=JSON.parse(localStorage.getItem(key)||"null");
         if(cached&&Number.isFinite(Number(cached.lat))&&Number.isFinite(Number(cached.lon))) return {...venue,lat:Number(cached.lat),long:Number(cached.lon)};
         const response=await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=gb&q="+encodeURIComponent(query),{headers:{Accept:"application/json"}});
         if(!response.ok) return null;
         const data=await response.json();
         if(!Array.isArray(data)||!data[0]) return null;
-        const point={lat:Number(data[0].lat),lon:Number(data[0].lon)};
-        if(!Number.isFinite(point.lat)||!Number.isFinite(point.lon)) return null;
+        const point={
+          lat:validCoordinate(data[0].lat,-90,90),
+          lon:validCoordinate(data[0].lon,-180,180)
+        };
+        if(point.lat===null||point.lon===null) return null;
         localStorage.setItem(key,JSON.stringify(point));
         return {...venue,lat:point.lat,long:point.lon};
       }catch(e){return null;}
@@ -85,7 +95,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
         const leafletMarkers=points.map(v=>L.marker([Number(v.lat),Number(v.long)]).addTo(map).bindPopup("<strong>"+bhEscape(v.name||"Venue")+"</strong><br>"+bhEscape(v.address||v.town||"")));
         if(leafletMarkers.length>1){const group=L.featureGroup(leafletMarkers);map.fitBounds(group.getBounds().pad(.2));}
         setTimeout(()=>map.invalidateSize(),100);
-      }else if(mapEl) mapEl.innerHTML="<div class='map-empty'>Add a venue address or location to show it on the map.</div>";
+      }else if(mapEl) mapEl.innerHTML="<div class='map-empty'><strong>Venue map unavailable</strong><span>We could not locate this venue from its saved address or coordinates.</span></div>";
     })();
   }
  }catch(e){state.innerHTML='<div class="admin-panel"><h2>Activity unavailable</h2><p>We couldn’t load this activity right now.</p><a class="button button-primary" href="directory.html">Back to activities</a></div>'}
