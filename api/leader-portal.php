@@ -41,7 +41,26 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
  }catch(Throwable $activityError){
   lp(500,['ok'=>false,'error'=>'classes_query_failed','message'=>$activityError->getMessage()]);
  }
- foreach($classes as &$c){$v=$db->prepare("SELECT * FROM bh_venues WHERE activity_id=? ORDER BY id");$v->execute([(int)$c['id']);$c['venues']=$v->fetchAll();foreach($c['venues'] as &$venue){$s=$db->prepare("SELECT * FROM bh_sessions WHERE venue_id=? ORDER BY day_of_week,start_time");$s->execute([(int)$venue['id']);$venue['sessions']=$s->fetchAll();}}
+ foreach($classes as &$c){
+  $c['venues']=[];
+  try{
+   $v=$db->prepare("SELECT * FROM bh_venues WHERE activity_id=? ORDER BY id");
+   $v->execute([(int)$c['id']]);$c['venues']=$v->fetchAll();
+  }catch(Throwable $venueError){
+   // A class can still be displayed if an older database has a venue schema mismatch.
+   $c['venues']=[];
+  }
+  foreach($c['venues'] as &$venue){
+   $venue['sessions']=[];
+   try{
+    $s=$db->prepare("SELECT * FROM bh_sessions WHERE venue_id=? ORDER BY day_of_week,start_time");
+    $s->execute([(int)$venue['id']]);$venue['sessions']=$s->fetchAll();
+   }catch(Throwable $sessionError){
+    // Sessions are optional; keep the venue visible rather than failing the whole portal.
+    $venue['sessions']=[];
+   }
+  }
+ }
  unset($c,$venue); $bookings=[];
  try {
   $bookingCheck=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('bh_booking_reservations','bh_booking_slots','bh_users')");
