@@ -1901,3 +1901,8 @@ img,svg,video{max-width:100%;height:auto}
   .hero-visual img{width:100%!important}
   .pill,.badge{max-width:100%;white-space:normal}
 }
+
+/* Site-wide edge breathing room while keeping sections full width */
+.site-main{padding-left:50px!important;padding-right:50px!important}
+@media(max-width:900px){.site-main{padding-left:24px!important;padding-right:24px!important}}
+@media(max-width:650px){.site-main{padding-left:16px!important;padding-right:16px!important}}
