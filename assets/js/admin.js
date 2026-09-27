@@ -4,22 +4,32 @@ const escapeHtml=v=>String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;
 async function verifyAdmin(){const r=await fetch("admin-auth.php?action=check",{credentials:"same-origin",cache:"no-store"});let d={};try{d=await r.json()}catch{}if(!r.ok||!d.ok)throw new Error(d.error||"Admin login required.");return d}
 
 async function loadDashboard(){
- const r=await fetch("api/admin-activities.php",{credentials:"same-origin",cache:"no-store"});
- if(!r.ok)throw new Error("Could not load activities.");
- const payload=await r.json();
- if(!payload.ok)throw new Error(payload.error||"Could not load activities.");
- const all=Array.isArray(payload.data)?payload.data:[];
- document.querySelector("#statActivities").textContent=all.filter(a=>a.status==="published").length;
- document.querySelector("#statRegions").textContent="—";
- document.querySelector("#statSaved").textContent="—";
- document.querySelector(".admin-stats article:last-child strong").textContent="Live";
- const render=()=>{
-  const q=document.querySelector("#adminSearch").value.trim().toLowerCase();
-  const list=all.filter(a=>`${a.title??""} ${a.category??""} ${a.organisation_name??""}`.toLowerCase().includes(q));
-  document.querySelector("#adminActivities").innerHTML=list.map(a=>`<tr><td><strong>${escapeHtml(a.title)}</strong><small>${escapeHtml(a.organisation_name||"")}</small></td><td>${escapeHtml(a.category)}</td><td>${escapeHtml(a.venue_count)} venue${Number(a.venue_count)===1?"":"s"}</td><td>—</td><td>${a.price_from!==null&&a.price_from!==undefined?"£"+Number(a.price_from).toFixed(2):"—"}</td><td><span class="admin-status">${escapeHtml(a.status)}</span></td><td><button type="button" class="button button-soft admin-edit-activity" data-id="${escapeHtml(a.id)}">Edit</button></td></tr>`).join("")||'<tr><td colspan="7">No activities found.</td></tr>';
- };
- document.querySelector("#adminSearch").oninput=render;
- render();
+ const table=document.querySelector("#adminActivities");
+ try{
+  const r=await fetch("api/admin-activities.php",{credentials:"same-origin",cache:"no-store"});
+  let payload={};
+  try{payload=await r.json()}catch{}
+  if(!r.ok)throw new Error(payload.error||("Could not load activities (HTTP "+r.status+")."));
+  if(!payload.ok)throw new Error(payload.error||"Could not load activities.");
+  const all=Array.isArray(payload.data)?payload.data:[];
+  document.querySelector("#statActivities").textContent=all.filter(a=>a.status==="published").length;
+  document.querySelector("#statRegions").textContent="—";
+  document.querySelector("#statSaved").textContent=String(all.length);
+  document.querySelector(".admin-stats article:last-child strong").textContent="Live";
+  const render=()=>{
+   const q=document.querySelector("#adminSearch").value.trim().toLowerCase();
+   const list=all.filter(a=>`${a.title??""} ${a.category??""} ${a.organisation_name??""}`.toLowerCase().includes(q));
+   table.innerHTML=list.map(a=>`<tr><td><strong>${escapeHtml(a.title)}</strong><small>${escapeHtml(a.organisation_name||"")}</small></td><td>${escapeHtml(a.category)}</td><td>${escapeHtml(a.venue_count)} venue${Number(a.venue_count)===1?"":"s"}</td><td>—</td><td>${a.price_from!==null&&a.price_from!==undefined?"£"+Number(a.price_from).toFixed(2):"—"}</td><td><span class="admin-status">${escapeHtml(a.status)}</span></td><td><button type="button" class="button button-soft admin-edit-activity" data-id="${escapeHtml(a.id)}">Edit</button></td></tr>`).join("")||'<tr><td colspan="7">No activities found.</td></tr>';
+  };
+  document.querySelector("#adminSearch").oninput=render;
+  render();
+ }catch(error){
+  table.innerHTML='<tr><td colspan="7"><strong>Activities could not be loaded.</strong><br><small>'+escapeHtml(error.message)+'</small><br><button type="button" class="button button-soft" id="retryActivities">Try again</button></td></tr>';
+  document.querySelector("#statActivities").textContent="—";
+  document.querySelector("#statSaved").textContent="—";
+  document.querySelector("#retryActivities")?.addEventListener("click",loadDashboard);
+  console.error("Bubba Hub admin activities:",error);
+ }
 }
 
 function initAddressAutocomplete(){
