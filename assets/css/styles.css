@@ -1798,3 +1798,10 @@ body{background:#f5f3ed;color:var(--bh-ink);font-family:"Quicksand",sans-serif}
 .familiar-intro h2{max-width:none}
 .familiar-list{width:100%}
 @media(max-width:650px){.familiar-section{padding-left:16px;padding-right:16px}}
+
+/* Homepage useful toolkit */
+.bh-useful-bottom{padding-top:72px;padding-bottom:72px}
+.bh-useful-intro{text-align:center;max-width:760px;margin:0 auto 30px}
+.bh-useful-intro h2{margin-bottom:10px}
+.bh-useful-bottom .feature-card{text-decoration:none;color:inherit;transition:transform .2s ease,box-shadow .2s ease}
+.bh-useful-bottom .feature-card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(32,53,47,.11)}
