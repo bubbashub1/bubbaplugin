@@ -73,6 +73,64 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (params.get("free")) $("free").checked = true;
     if (params.get("max_price")) $("maxPrice").value = params.get("max_price");
 
+    // Basic vs advanced search: keep the common fields visible and move deeper filters into a collapsible panel.
+    const setupAdvancedSearch = () => {
+      const toolbar = $("directoryFilters");
+      const toggle = $("filterToggle");
+      if (!toolbar || !toggle) return;
+
+      const basicIds = ["search","category","area","town"];
+      const advancedIds = ["ageMin","day","maxPrice","free"];
+      const advancedWrap = document.createElement("div");
+      advancedWrap.className = "directory-advanced-fields";
+      advancedWrap.id = "advancedFields";
+
+      advancedIds.forEach(id => {
+        const el = $(id);
+        if (!el) return;
+        const field = el.closest("div, label") || el.parentElement;
+        if (field && !advancedWrap.contains(field)) advancedWrap.appendChild(field);
+      });
+
+      const extras = [
+        ["sessionLength","Session length",[["","Any length"],["60","Up to 1 hour"],["120","1–2 hours"],["180","2–3 hours"],["181","3+ hours"]]],
+        ["sen","SEN friendly",[["","Any"],["yes","Yes"],["no","No"]]],
+        ["termTime","Term time",[["","Any"],["yes","Term time only"],["no","Not term time only"]]],
+        ["booking","Booking",[["","Any"],["yes","Bookable online"],["no","No online booking"]]]
+      ];
+      extras.forEach(([id,label,options]) => {
+        const wrap=document.createElement("div");
+        wrap.innerHTML='<label class="directory-filter-label" for="'+id+'">'+label+'</label><select class="filter-input" id="'+id+'">'+options.map(o=>'<option value="'+o[0]+'">'+o[1]+'</option>').join("")+'</select>';
+        advancedWrap.appendChild(wrap);
+      });
+
+      const heading=document.createElement("div");
+      heading.className="advanced-search-heading";
+      heading.innerHTML='<span class="eyebrow">Refine your search</span><strong>Find something that fits your family</strong><span>Age, day, price and practical details.</span>';
+
+      const clear=$( "clear" );
+      toolbar.insertBefore(heading, toolbar.firstChild);
+      toolbar.appendChild(advancedWrap);
+      if (clear) advancedWrap.appendChild(clear);
+
+      const advancedFieldEls=[...advancedWrap.querySelectorAll("input,select")];
+      toggle.textContent="Advanced search ＋";
+      toggle.setAttribute("aria-expanded","false");
+      toolbar.hidden=true;
+      toggle.onclick=()=>{
+        const open=!toolbar.hidden;
+        toolbar.hidden=!open;
+        toggle.setAttribute("aria-expanded",String(open));
+        toggle.innerHTML=open?"Advanced search −":"Advanced search ＋";
+      };
+      advancedFieldEls.forEach(el=>{
+        el.addEventListener("input",render);
+        el.addEventListener("change",render);
+      });
+    };
+
+    setupAdvancedSearch();
+
     let map = null;
     let markers = [];
     let currentView = localStorage.getItem("bh_directory_view") || "list";
@@ -390,6 +448,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       const day = $("day").value;
       const maxPrice = $("maxPrice").value;
       const freeOnly = $("free").checked;
+      const sessionLength = $("sessionLength")?.value || "";
+      const sen = $("sen")?.value || "";
+      const termTime = $("termTime")?.value || "";
+      const booking = $("booking")?.value || "";
 
       const list = activities.filter(activity => {
         const venues = bhVenues(activity);
@@ -411,6 +473,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         const price = Number(activity.price_value ?? sessions[0]?.price_value ?? 0);
         const priceMatch = !maxPrice || price <= Number(maxPrice);
         const freeMatch = !freeOnly || price === 0;
+        const duration = sessions.map(x => Number(x.duration_minutes || 0)).filter(Boolean);
+        const durationMatch = !sessionLength || (sessionLength === "181" ? duration.some(x => x >= 181) : duration.some(x => x > (Number(sessionLength)-60) && x <= Number(sessionLength)));
+        const senValue = String(activity.sen_friendly ?? activity.sen_friendly_flag ?? "").toLowerCase();
+        const senMatch = !sen || (sen === "yes" ? ["yes","1","true"].includes(senValue) : !["yes","1","true"].includes(senValue));
+        const termMatch = !termTime || (termTime === "yes" ? sessions.some(x => !!x.term_time) : !sessions.some(x => !!x.term_time));
+        const bookingMatch = !booking || (booking === "yes" ? !!activity.booking_url : !activity.booking_url);
 
         return (!search || text.includes(search)) &&
           (!category || (categoryMap[activity.category] || activity.category) === category) &&
@@ -419,6 +487,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           sessionMatch &&
           priceMatch &&
           freeMatch &&
+          durationMatch &&
+          senMatch &&
+          termMatch &&
+          bookingMatch &&
           (!params.get("saved") || bhIsSaved(activity.id));
       });
 
@@ -489,7 +561,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       render();
     };
 
-    ["search", "category", "area", "town", "day", "maxPrice", "free"].forEach(id => {
+    ["search", "category", "area", "town", "day", "maxPrice", "free", "sessionLength", "sen", "termTime", "booking"].forEach(id => {
       $(id).addEventListener("input", render);
       $(id).addEventListener("change", render);
     });
@@ -498,7 +570,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("ageMax").addEventListener("input", () => updateAge("max"));
 
     $("clear").onclick = () => {
-      ["search", "category", "area", "town", "day", "maxPrice"].forEach(id => $(id).value = "");
+      ["search", "category", "area", "town", "day", "maxPrice", "sessionLength", "sen", "termTime", "booking"].forEach(id => { if ($(id)) $(id).value = ""; });
       $("ageMin").value = 0;
       $("ageMax").value = 9;
       $("free").checked = false;
