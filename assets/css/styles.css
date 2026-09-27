@@ -527,3 +527,14 @@ td { font-size:14px; }
   .directory-calendar-weekday{font-size:9px}
   .directory-calendar-day{min-height:115px}
 }
+
+.directory-calendar-week-grid{grid-template-columns:repeat(7,minmax(0,1fr))}
+.directory-calendar-week-grid .directory-calendar-weekday{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.directory-calendar-week-grid .directory-calendar-weekday span{font-size:14px}
+.directory-calendar-week-grid .directory-calendar-day{min-height:280px}
+.directory-calendar-empty{display:block;padding:10px 3px;color:var(--bh-text-muted);font-size:10px}
+@media(max-width:900px){.directory-calendar-week-grid .directory-calendar-day{min-height:220px}}
+@media(max-width:620px){
+  .directory-calendar-week-grid{min-width:980px}
+  .directory-calendar-week-grid .directory-calendar-day{min-height:200px}
+}
