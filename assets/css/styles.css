@@ -886,3 +886,12 @@ body{background:linear-gradient(180deg,#f8fbf8 0%,#f4f8f4 100%);}
 .admin-session-row{position:relative;padding:12px;border:1px solid rgba(65,102,81,.1);border-radius:14px;margin-bottom:10px;background:rgba(65,102,81,.025)}
 .admin-session-row .remove-session{align-self:end}
 @media(max-width:700px){.admin-table-wrap{margin-inline:-4px}.admin-session-row{grid-template-columns:1fr 1fr}.admin-session-row .remove-session{width:100%;grid-column:1/-1}.admin-form-section .admin-panel-head{gap:10px;align-items:flex-start}.admin-form-section .admin-panel-head .button{white-space:nowrap}}
+
+/* Stage 9 — multiple venues */
+.bh-venues-section{margin-top:18px}
+.admin-additional-venue{margin:12px 0;padding:14px;border:1px solid rgba(65,102,81,.12);border-radius:14px;background:rgba(65,102,81,.025)}
+.admin-additional-venue-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.admin-additional-venue-head strong{font-size:13px}
+.admin-additional-venue-head .button{min-height:32px;padding:6px 10px;font-size:11px}
+.admin-session-row label:first-child{grid-column:1/-1}
+@media(max-width:700px){.admin-additional-venue{padding:11px}.admin-additional-venue-head{align-items:flex-start}.admin-additional-venue-head .button{flex:0 0 auto}}
