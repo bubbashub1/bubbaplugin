@@ -1809,3 +1809,6 @@ body{background:#f5f3ed;color:var(--bh-ink);font-family:"Quicksand",sans-serif}
 /* Hero image + softer background */
 .hero::before{opacity:.52!important}
 .hero-visual img{content:url("../../images/home/gemini_generated_image_k7ugr8k7ugr8k7ug-20260927-181231-744570.jpeg")}
+
+/* Softer hero background */
+.hero::before{opacity:.34!important}
