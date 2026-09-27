@@ -19,7 +19,59 @@
 </div>
 
 <section id="myHubApp">
-<div class="admin-panel"><p>Loading your family hub…</p></div>
+  <div class="hub-welcome">
+    <span class="eyebrow">Your account</span>
+    <h2>Welcome back</h2>
+    <p id="hubEmail"></p>
+  </div>
+
+  <div class="hub-stats" id="hubStats"></div>
+
+  <div class="hub-dashboard-grid">
+    <section class="admin-panel hub-panel" id="family">
+      <div class="admin-panel-head">
+        <div><span class="eyebrow">My family</span><h2>Family profiles</h2></div>
+        <div class="hub-section-actions">
+          <button class="button button-soft" id="addChild" type="button">＋ Child</button>
+          <button class="button button-soft" id="addBump" type="button">＋ Bump</button>
+        </div>
+      </div>
+      <div class="hub-family-list" id="hubFamily"><div class="hub-empty">Loading…</div></div>
+    </section>
+
+    <section class="admin-panel hub-panel">
+      <div class="admin-panel-head">
+        <div><span class="eyebrow">Your week</span><h2>My Planner</h2></div>
+        <a class="button button-soft" href="planner.html">Open planner</a>
+      </div>
+      <div class="hub-list" id="hubPlanner"><div class="hub-empty">Loading…</div></div>
+    </section>
+  </div>
+
+  <div class="hub-dashboard-grid">
+    <section class="admin-panel hub-panel">
+      <div class="admin-panel-head">
+        <div><span class="eyebrow">Your favourites</span><h2>Saved activities</h2></div>
+        <a class="button button-soft" href="directory.html?saved=1">View all</a>
+      </div>
+      <div class="hub-list" id="hubSaved"><div class="hub-empty">Loading…</div></div>
+    </section>
+
+    <section class="admin-panel hub-panel">
+      <div class="admin-panel-head">
+        <div><span class="eyebrow">Bookings</span><h2>Upcoming</h2></div>
+        <a class="button button-soft" href="planner.html">Planner</a>
+      </div>
+      <div class="hub-list" id="hubBookings"><div class="hub-empty">Loading…</div></div>
+    </section>
+  </div>
+
+  <section class="hub-tools-grid">
+    <a class="feature-card" href="preferences.html"><span class="feature-icon">⚙</span><h3>Preferences</h3><p>Set the areas, days and family planning options Bubba Hub should use for you.</p></a>
+    <a class="feature-card" href="consent.html"><span class="feature-icon">🔒</span><h3>Booking consent</h3><p>Manage the information and permissions you choose to share during bookings.</p></a>
+    <a class="feature-card" href="help-support.html"><span class="feature-icon">💛</span><h3>Help &amp; Support</h3><p>Get guidance or send a private support question.</p></a>
+    <a class="feature-card" href="directory.html"><span class="feature-icon">✨</span><h3>Discover more</h3><p>Find activities matched to your family's ages, location and interests.</p></a>
+  </section>
 </section>
 
 <div class="my-hub-message" id="hubMessage" aria-live="polite"></div>
