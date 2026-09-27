@@ -205,6 +205,71 @@ try {
         }
     }
 
+    if ($action === 'leader_register') {
+        $email = strtolower(trim((string)($body['email'] ?? '')));
+        $password = (string)($body['password'] ?? '');
+        $confirm = (string)($body['confirm_password'] ?? '');
+        $csrf = (string)($body['csrf'] ?? '');
+        if (empty($_SESSION['bh_csrf']) || $csrf === '' || !hash_equals((string)$_SESSION['bh_csrf'], $csrf)) {
+            bh_auth_response(403, ['ok'=>false,'error'=>'csrf_invalid','message'=>'Please refresh the page and try again.']);
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) bh_auth_response(422, ['ok'=>false,'error'=>'invalid_email','message'=>'Please enter a valid email address.']);
+        if (strlen($password) < 8) bh_auth_response(422, ['ok'=>false,'error'=>'password_too_short','message'=>'Please choose a password with at least 8 characters.']);
+        if ($password !== $confirm) bh_auth_response(422, ['ok'=>false,'error'=>'password_mismatch','message'=>'The passwords do not match.']);
+
+        $org = false;
+        try {
+            $hasUserId = false;
+            $cc = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME='user_id'");
+            $cc->execute();
+            $hasUserId = ((int)$cc->fetchColumn()) > 0;
+            if ($hasUserId) {
+                $q = $db->prepare("SELECT id,name,email,user_id FROM bh_organisers WHERE LOWER(email)=? LIMIT 1");
+            } else {
+                $q = $db->prepare("SELECT id,name,email FROM bh_organisers WHERE LOWER(email)=? LIMIT 1");
+            }
+            $q->execute([$email]);
+            $org = $q->fetch();
+        } catch (Throwable $e) {
+            bh_auth_response(500, ['ok'=>false,'error'=>'leader_registration_unavailable','message'=>'Leader account setup is not available yet. Please contact Bubba Hub support.']);
+        }
+        if (!$org) bh_auth_response(403, ['ok'=>false,'error'=>'leader_not_invited','message'=>'We could not find an organiser account for that email. Please contact Bubba Hub to have your leader access set up.']);
+
+        $check = $db->prepare("SELECT id,role,status FROM bh_users WHERE email=? LIMIT 1");
+        $check->execute([$email]);
+        $existing = $check->fetch();
+        if ($existing && ($existing['role'] ?? '') !== 'leader') {
+            $stmt = $db->prepare("UPDATE bh_users SET password_hash=?,role='leader',status='active' WHERE id=?");
+            $stmt->execute([password_hash($password, PASSWORD_DEFAULT), (int)$existing['id']]);
+            $userId = (int)$existing['id'];
+        } elseif ($existing) {
+            $stmt = $db->prepare("UPDATE bh_users SET password_hash=?,status='active' WHERE id=?");
+            $stmt->execute([password_hash($password, PASSWORD_DEFAULT), (int)$existing['id']]);
+            $userId = (int)$existing['id'];
+        } else {
+            $stmt = $db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?, 'leader','active')");
+            $stmt->execute([$email, password_hash($password, PASSWORD_DEFAULT)]);
+            $userId = (int)$db->lastInsertId();
+        }
+
+        try {
+            $cc = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME='user_id'");
+            $cc->execute();
+            if ((int)$cc->fetchColumn() > 0) {
+                $db->prepare("UPDATE bh_organisers SET user_id=? WHERE id=?")->execute([$userId, (int)$org['id']]);
+            }
+        } catch (Throwable $ignored) {}
+
+        session_regenerate_id(true);
+        $_SESSION['bh_user_id'] = $userId;
+        $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
+        bh_auth_response(201, [
+            'ok'=>true,'authenticated'=>true,
+            'user'=>['id'=>$userId,'email'=>$email,'role'=>'leader','status'=>'active'],
+            'csrf'=>$_SESSION['bh_csrf']
+        ]);
+    }
+
     if ($action === 'login') {
         $email = strtolower(trim((string)($body['email'] ?? '')));
         $password = (string)($body['password'] ?? '');
