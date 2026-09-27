@@ -123,7 +123,25 @@ function bhFormatDate(value){
 function bhGet(key){try{const value=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(value)?value.map(String):[]}catch{return[]}}
 function bhSet(key,value){localStorage.setItem(key,JSON.stringify(value.map(String)))}
 function bhIsSaved(id){return bhGet(BH_KEYS.saved).includes(String(id))}
-function bhToggleSaved(id){const a=bhGet(BH_KEYS.saved),key=String(id),i=a.indexOf(key);i>=0?a.splice(i,1):a.push(key);bhSet(BH_KEYS.saved,a);return i<0}
+async function bhSavedPersist(activityId,saved){
+  try{
+    const auth=await bhAuthSession();
+    if(!auth?.authenticated||!auth.csrf)return false;
+    const current=bhGet(BH_KEYS.saved);
+    const response=await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"sync_saved",saved:current,csrf:auth.csrf})});
+    if(!response.ok)return false;
+    const data=await response.json();
+    if(data.ok&&Array.isArray(data.saved))bhSet(BH_KEYS.saved,data.saved);
+    return !!data.ok;
+  }catch(e){return false}
+}
+function bhToggleSaved(id){
+  const a=bhGet(BH_KEYS.saved),key=String(id),i=a.indexOf(key),saved=i<0;
+  if(i>=0)a.splice(i,1);else a.push(key);
+  bhSet(BH_KEYS.saved,a);
+  void bhSavedPersist(id,saved);
+  return saved;
+}
 function bhIsPlanned(id){return bhGet(BH_KEYS.planner).includes(String(id))}
 let bhAuthPromise=null;
 async function bhAuthSession(){
