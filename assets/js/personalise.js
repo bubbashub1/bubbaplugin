@@ -116,12 +116,71 @@
       return [];
     }
 
-    function renderDayChoices(){
-      $("dayChoices").innerHTML=days.map(d=>"<button type='button' class='personal-chip "+(state.day===d||(!state.day&&!d)?"is-selected":"")+"' data-day='"+esc(d==="Any day"?"":d)+"'>"+esc(d)+"</button>").join("");
-      $("dayChoices").querySelectorAll("[data-day]").forEach(btn=>btn.addEventListener("click",function(){
-        state.day=btn.dataset.day||"";
-        renderDayChoices();
+    function localISODate(date){
+      const d=new Date(date);
+      return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+    }
+    function shortDate(value){
+      if(!value)return "";
+      const p=String(value).split("-");
+      if(p.length!==3)return value;
+      const d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));
+      return d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});
+    }
+    function updateWhenUI(){
+      const today=new Date(),tomorrow=new Date(today);tomorrow.setDate(today.getDate()+1);
+      const todayISO=localISODate(today),tomorrowISO=localISODate(tomorrow);
+      document.querySelectorAll("[data-when]").forEach(btn=>{
+        const k=btn.dataset.when;
+        btn.classList.toggle("is-selected",
+          (k==="today"&&state.targetDate===todayISO)||
+          (k==="tomorrow"&&state.targetDate===tomorrowISO)||
+          (k==="weekend"&&state.targetDate==="__weekend__")||
+          (k==="any"&&!state.targetDate&&!state.day));
+      });
+      const tl=document.getElementById("todayLabel"),tml=document.getElementById("tomorrowLabel");
+      if(tl)tl.textContent=shortDate(todayISO);
+      if(tml)tml.textContent=shortDate(tomorrowISO);
+      const input=document.getElementById("personalDate");
+      if(input)input.value=state.targetDate.startsWith("__")?"":state.targetDate;
+      const selected=document.getElementById("selectedWhen");
+      if(selected)selected.textContent=state.targetDate==="__weekend__"?"This weekend":state.targetDate?shortDate(state.targetDate):state.day||"Any day";
+    }
+    function setTargetDate(value){
+      state.targetDate=value||"";
+      if(state.targetDate){
+        const p=state.targetDate.split("-");
+        const d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));
+        state.day=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d.getDay()];
+      }
+      updateWhenUI();
+    }
+    function initWhenChoices(){
+      const today=new Date(),tomorrow=new Date(today);tomorrow.setDate(today.getDate()+1);
+      document.querySelectorAll("[data-when]").forEach(btn=>btn.addEventListener("click",()=>{
+        const k=btn.dataset.when;
+        if(k==="today")setTargetDate(localISODate(today));
+        else if(k==="tomorrow")setTargetDate(localISODate(tomorrow));
+        else if(k==="weekend"){state.targetDate="__weekend__";state.day="";updateWhenUI();}
+        else {state.targetDate="";state.day="";updateWhenUI();}
       }));
+      document.getElementById("personalDate")?.addEventListener("change",e=>setTargetDate(e.target.value));
+      updateWhenUI();
+    }
+    function sessionOccursOnDate(a,dateValue){
+      if(!dateValue||dateValue.startsWith("__"))return true;
+      const p=dateValue.split("-");
+      if(p.length!==3)return true;
+      const d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));
+      if(Number.isNaN(d.getTime()))return true;
+      const dayNo=d.getDay()===0?7:d.getDay();
+      const dayName=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d.getDay()];
+      const sessions=(Array.isArray(a.venues)?a.venues:[]).flatMap(v=>Array.isArray(v.sessions)?v.sessions:[]);
+      return sessions.some(s=>{
+        if(Number(s.day_of_week)!==dayNo&&String(s.day||"")!==dayName)return false;
+        const from=String(s.start_date||"").trim(),to=String(s.end_date||"").trim();
+        return (!from||dateValue>=from)&&(!to||dateValue<=to);
+      });
     }
 
     function renderBudgetChoices(){
@@ -162,7 +221,11 @@
     function score(a,ages){
       let score=0;
       const days=sessionDays(a),price=activityPrice(a);
-      if(state.day){
+      if(state.targetDate==="__weekend__"){
+        if(days.has("Saturday")||days.has("Sunday"))score+=26;else score-=38;
+      }else if(state.targetDate){
+        score+=sessionOccursOnDate(a,state.targetDate)?28:-44;
+      }else if(state.day){
         if(days.has(state.day))score+=24;else score-=40;
       }else score+=4;
       if(state.region)score+=a.region===state.region?14:-12;
@@ -191,7 +254,9 @@
       $("resultsTitle").textContent=ranked.length?"Ideas for your family":"Let's widen the search";
       const pieces=[];
       if(ages.length)pieces.push(ages.length===1?"age match":"age matches");
-      if(state.day)pieces.push(state.day);
+      if(state.targetDate==="__weekend__")pieces.push("this weekend");
+      else if(state.targetDate)pieces.push(shortDate(state.targetDate));
+      else if(state.day)pieces.push(state.day);
       if(state.town)pieces.push(state.town);else if(state.region)pieces.push(state.region);
       if(state.category)pieces.push(state.category);
       $("resultsSummary").textContent=ranked.length?"Showing "+ranked.length+" picks · "+(pieces.join(" · ")||"based on your choices"):"We couldn't find enough matches with those choices. Try another day, area or budget.";
