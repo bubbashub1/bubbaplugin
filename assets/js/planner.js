@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
         (dayEntries.length?dayEntries.map(entry=>{
           const a=entry.activity,s=entry.session,venue=s?.venue,range=timeRange(s),clash=conflicts.has(entry._index);
           const time=s?(formatTime(s.start_time)+(s.end_time?" – "+formatTime(s.end_time):"")):"Time TBC",location=venue?.town||venue?.name||a.location||a.town||"",age=Array.isArray(a.age_range)?a.age_range.join(", "):String(a.age_range||""),visit=localVisited().includes(String(a.id));
-          return "<article class='planner-card"+(clash?" is-conflict":"')'><div class='planner-card-top'><span class='planner-time'>"+esc(time)+"</span>"+(clash?"<span class='planner-conflict'>⚠ Clash</span>":(s?.term_time_only?"<span class='planner-mini-badge'>Term time</span>":""))+"</div>"+
+          return "<article class='planner-card"+(clash?" is-conflict":"")+'><div class='planner-card-top'><span class='planner-time'>"+esc(time)+"</span>"+(clash?"<span class='planner-conflict'>⚠ Clash</span>":(s?.term_time_only?"<span class='planner-mini-badge'>Term time</span>":""))+"</div>"+
             "<h4>"+esc(a.title)+"</h4><p class='planner-card-location'>"+esc(location)+(age?" · "+esc(age):"")+"</p>"+
             "<div class='planner-card-actions'><a class='button button-soft' href='"+(typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id))+"'>View</a>"+
             "<button class='button button-soft planner-visit' type='button' data-id='"+esc(a.id)+"' aria-pressed='"+visit+"'>✓ "+(visit?"Visited":"Mark visited")+"</button>"+
