@@ -4,10 +4,35 @@
 <link rel="stylesheet" href="assets/css/styles.css?v=20260927-sitewide2">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head><body>
-<header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a class="active" href="directory.html">Find activities</a><a href="planner.html">My planner</a><a href="calendar.html">Calendar</a><a href="my-hub.html">My Hub</a><a href="leader.html">For class leaders</a><a href="admin.html">Admin</a></nav><a class="button button-soft" href="account.html">My account</a></header>
+<header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a class="active" href="directory.html">Find activities</a><a href="planner.html">My planner</a><a href="calendar.html">Calendar</a><a href="my-hub.html">My Hub</a><a href="leader.html">For class leaders</a><a href="admin.html">Admin</a></nav><div class="header-account-actions"><a class="button button-soft" href="account.html">My account</a><button class="button button-soft" id="siteLogout" type="button">Log out</button></div></header>
 <main class="app-shell"><div id="activityState" class="listing-loading"><p>Loading activity…</p></div></main>
 <footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
-<script src="assets/js/app.js?v=20260927-accountplanner1"></script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="assets/js/app.js?v=20260927-accountplanner1"></script>
+<script>
+document.addEventListener("DOMContentLoaded",()=>{
+  const logout=document.getElementById("siteLogout");
+  logout?.addEventListener("click",async()=>{
+    logout.disabled=true;
+    logout.textContent="Logging out…";
+    try{
+      const auth=await bhAuthSession();
+      const response=await fetch("api/auth.php?action=logout",{
+        method:"POST",
+        credentials:"same-origin",
+        headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body:JSON.stringify({csrf:auth?.csrf||""})
+      });
+      const data=await response.json();
+      if(!response.ok||!data.ok)throw new Error(data.error||"Could not log out");
+      location.href="account.html";
+    }catch(error){
+      logout.disabled=false;
+      logout.textContent="Log out";
+      alert(error.message||"Could not log out. Please try again.");
+    }
+  });
+});
+</script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded",async()=>{
  const state=document.getElementById("activityState");
