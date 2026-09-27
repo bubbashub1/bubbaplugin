@@ -982,3 +982,27 @@ body{background:linear-gradient(180deg,#f8fbf8 0%,#f4f8f4 100%);}
   .planner-day-column{padding:11px}
   .planner-unscheduled{grid-column:auto}
 }
+
+
+/* Family account access + planner sync */
+.account-auth-tabs{display:flex;gap:8px;margin:0 0 18px;flex-wrap:wrap}
+.account-auth-tabs .button{min-height:38px;padding:8px 14px;font-size:12px}
+.account-auth-tabs .button.active{background:var(--bh-primary);color:#fff}
+.account-auth-form{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:720px}
+.account-auth-form label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700}
+.account-auth-form label:nth-child(3){grid-column:1/-1}
+.account-auth-form input{max-width:none}
+.account-auth-form button,.account-auth-form p{grid-column:1/-1}
+.account-signed-in{display:flex;align-items:center;gap:16px}
+.account-signed-in>div{min-width:0;flex:1}
+.account-signed-in h2{margin:0 0 3px;font-family:"Chewy",cursive;font-weight:400;font-size:28px}
+.account-signed-in p{margin:0;color:var(--bh-text-muted)}
+.account-signed-in small{display:block;margin-top:3px;color:var(--bh-text-muted)}
+.account-signed-in .feature-icon{flex:0 0 42px}
+.planner-footer-note a{color:var(--bh-primary);font-weight:800;text-decoration:underline;text-underline-offset:2px}
+@media(max-width:650px){
+ .account-auth-form{grid-template-columns:1fr}
+ .account-auth-form label:nth-child(3),.account-auth-form button,.account-auth-form p{grid-column:auto}
+ .account-signed-in{align-items:flex-start;flex-wrap:wrap}
+ .account-signed-in .button{width:100%}
+}
