@@ -1839,3 +1839,6 @@ body{background:#f5f3ed;color:var(--bh-ink);font-family:"Quicksand",sans-serif}
 .site-header .main-nav a,.site-header .header-actions a,.site-header .leader-cta{font-size:1.02rem!important;font-weight:650!important;line-height:1.2}
 .site-header .main-nav{gap:24px}
 @media(max-width:900px){.site-header .main-nav a,.site-header .header-actions a,.site-header .leader-cta{font-size:1rem!important}}
+
+/* Keep personalised recommendations on the parent section background */
+.familiar-section .personal-home-callout{background:transparent!important;box-shadow:none!important;border:0!important}
