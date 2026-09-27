@@ -33,11 +33,23 @@ document.addEventListener("DOMContentLoaded",async()=>{
   button.addEventListener("click",async()=>{
     button.disabled=true;setMessage("Saving…");
     try{
-      const p=collect();await setPushSubscription(!!p.pushEnabled);p.csrf=csrf;
+      const p=collect();
+      p.csrf=csrf;
       const response=await fetch("api/preferences.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(p)}),data=await response.json();
-      if(!response.ok||!data.ok)throw new Error(data.message||"Could not save notification settings.");csrf=data.csrf||csrf;
+      if(!response.ok||!data.ok)throw new Error(data.message||"Could not save notification settings.");
+      csrf=data.csrf||csrf;
+      try{
+        if(p.pushEnabled) await setPushSubscription(true);
+      }catch(pushError){
+        pushStatus.textContent=pushError.message||"Push could not be enabled on this device.";
+      }
       const nResponse=await fetch("api/newsletter.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({csrf,enabled:document.getElementById("newsletterEnabled").checked,frequency:document.getElementById("newsletterFrequency").value})}),nData=await nResponse.json();
-      if(!nResponse.ok||!nData.ok)throw new Error(nData.message||"Could not save Round Up settings.");csrf=nData.csrf||csrf;status.textContent="Saved to your account";const nn=nData.newsletter||{};document.getElementById("newsletterStatus").textContent=nn.enabled?"Round Up set to "+nn.frequency+".":"Round Up is switched off.";setMessage("Notification settings saved.");
+      if(!nResponse.ok||!nData.ok)throw new Error(nData.message||"Could not save Round Up settings.");
+      csrf=nData.csrf||csrf;
+      status.textContent="Saved to your account";
+      const nn=nData.newsletter||{};
+      document.getElementById("newsletterStatus").textContent=nn.enabled?"Round Up set to "+nn.frequency+".":"Round Up is switched off.";
+      setMessage("Notification settings saved.");
     }catch(e){setMessage(e.message||"Could not save notification settings.",true);}finally{button.disabled=false;}
   });
 });
