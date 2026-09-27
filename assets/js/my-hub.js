@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     void renderBrief();
     message.textContent=adminOnly?"Admin access — family data remains separate.":"Signed in as "+(data.user?.email||"your account");
     if(adminOnly){
-      root.querySelectorAll(".hub-edit-child,.hub-edit-bump").forEach(btn=>btn.disabled=true);
+      root.querySelectorAll(".hub-edit-child,.hub-edit-bump,#addChild,#addBump").forEach(btn=>btn.disabled=true);
       const family=root.querySelector("#hubFamily");
       if(family&&!children.length&&!bumps.length) family.innerHTML="<div class='hub-empty'><strong>Admin view</strong><p>Family profiles belong to a family account and are not changed by admin access.</p></div>";
     }
