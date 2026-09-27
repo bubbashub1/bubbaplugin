@@ -1,121 +1,25 @@
 <!doctype html>
-<html lang="en-GB">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Preferences · Bubba Hub</title>
-<meta name="description" content="Manage your Bubba Hub activity, planner and notification preferences.">
-<link rel="stylesheet" href="assets/css/styles.css?v=20260927-sitewide2">
-</head>
-<body>
-<header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="events">Events</a><a href="venues">Venues</a><a href="planner.html">My planner</a><a href="calendar.html">Calendar</a><a href="my-hub.html">My Hub</a><a href="leader.html">For class leaders</a><a href="admin.html">Admin</a></nav><a class="button button-soft active" href="account.html">My account</a></header>
-
-<main class="app-shell account-page">
-<div class="page-heading">
-<div><span class="eyebrow">Your choices</span><h1>Preferences</h1><p>Choose what Bubba Hub remembers, what you hear about and how we can contact you.</p></div>
-</div>
-
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Preferences · Bubba Hub</title><meta name="description" content="Manage the family preferences Bubba Hub uses to personalise activity ideas.">
+<link rel="stylesheet" href="assets/css/styles.css?v=20260927-sitewide3"></head><body>
+<header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"></nav><a class="button button-soft" href="account.html">My account</a></header>
+<main class="app-shell account-page"><div class="page-heading"><div><span class="eyebrow">Your choices</span><h1>Preferences</h1><p>Tell Bubba Hub about your usual area, days and interests so your activity ideas feel more relevant.</p></div></div>
 <div class="account-profile-layout"><aside class="account-side-nav" aria-label="Account sections">
-<a href="account.html">🏠 <span>Account home</span></a>
-<a href="account-profile.html" >👤 <span>Profile</span></a>
-<a href="family.html" >👶 <span>My family</span></a>
-<a href="preferences.html" class="active" aria-current="page">✓ <span>Preferences</span></a>
-<a href="notifications.html" >🔔 <span>Notifications</span></a>
-<a href="saved-activities.html" >♡ <span>Saved activities</span></a>
-<a href="account-planner.html" >📅 <span>Planner &amp; bookings</span></a>
-<a href="privacy.html" >🔒 <span>Privacy &amp; consent</span></a>
-<a href="subscription.html" >⭐ <span>Subscription &amp; Pro</span></a>
-</aside><section class="preferences-layout">
-<article class="admin-panel">
-<div class="admin-panel-head"><div><span class="eyebrow">Notifications</span><h2>How would you like to hear from us?</h2></div><span class="status" id="saveStatus">Not saved yet</span></div>
-<p class="preferences-intro">You can change these choices at any time. Text and push notifications are planned features; your preferences can be saved now so they are ready when those services are connected.</p>
-
-<div class="preference-channel-grid">
-<label class="preference-channel">
-<input type="checkbox" id="emailEnabled">
-<span><strong>✉️ Email</strong><small>Receive useful updates by email.</small></span>
-</label>
-<label class="preference-channel">
-<input type="checkbox" id="smsEnabled">
-<span><strong>💬 Text messages</strong><small>For reminders and important booking updates when SMS is available.</small></span>
-</label>
-<label class="preference-channel">
-<input type="checkbox" id="pushEnabled">
-<span><strong>🔔 Push notifications</strong><small>For reminders and updates on your phone or device when push is available.</small></span>
-</label>
-</div>
-
-<div class="preferences-subsection">
-<h3>Notification types</h3>
-<div class="preference-list">
-<label><input type="checkbox" data-pref="plannerReminders"><span><strong>Planner reminders</strong><small>Reminders about activities in your planner.</small></span></label>
-<label><input type="checkbox" data-pref="bookingUpdates"><span><strong>Booking updates</strong><small>Reservation requests, confirmations, changes and cancellations.</small></span></label>
-<label><input type="checkbox" data-pref="savedSearches"><span><strong>Saved activity alerts</strong><small>Let me know when relevant new activities are added.</small></span></label>
-<label><input type="checkbox" data-pref="supportReplies"><span><strong>Support replies</strong><small>Tell me when someone replies to one of my private support questions.</small></span></label>
-<label><input type="checkbox" data-pref="eventReminders"><span><strong>Event reminders</strong><small>Remind me about upcoming family events I have saved or planned.</small></span></label>
-</div>
-</div>
-</article>
-
-<article class="admin-panel">
-<div class="admin-panel-head"><div><span class="eyebrow">Text messages</span><h2>Mobile number</h2></div></div>
-<p class="preferences-intro">Your number will only be used for the notification choices you enable. SMS delivery will be connected later.</p>
-<label class="preferences-field">Mobile number
-<input id="phone" type="tel" autocomplete="tel" placeholder="e.g. 07123 456789">
-</label>
-<label class="preferences-check"><input type="checkbox" id="smsMarketing"><span><strong>Occasional Bubba Hub news</strong><small>News, new features and family events. This is separate from essential booking and account messages.</small></span></label>
-</article>
-
-<article class="admin-panel">
-<div class="admin-panel-head"><div><span class="eyebrow">Push notifications</span><h2>Phone &amp; device alerts</h2></div><span class="status" id="pushStatus">Not connected</span></div>
-<p class="preferences-intro">When push notifications are connected, Bubba Hub will ask your device for permission before sending them.</p>
-<button class="button button-primary" type="button" id="enablePush">Enable push notifications</button>
-<p class="preferences-help" id="pushMessage">Your preference can be saved now. Device permission will be requested when the push service is connected.</p>
-</article>
-
-<article class="admin-panel">
-<div class="admin-panel-head"><div><span class="eyebrow">Discovery</span><h2>What should we show you?</h2></div><span class="status">Used for personalised ideas</span></div>
+<a href="account.html">🏠 <span>Account home</span></a><a href="account-profile.html">👤 <span>Profile</span></a><a href="family.html">👶 <span>My family</span></a><a href="preferences.html" class="active" aria-current="page">✓ <span>Preferences</span></a><a href="notifications.html">🔔 <span>Notifications</span></a><a href="saved-activities.html">♡ <span>Saved activities</span></a><a href="account-planner.html">📅 <span>Planner &amp; bookings</span></a><a href="privacy.html">🔒 <span>Privacy &amp; consent</span></a><a href="subscription.html">⭐ <span>Subscription &amp; Pro</span></a>
+</aside>
+<section class="preferences-layout">
+<article class="admin-panel"><div class="admin-panel-head"><div><span class="eyebrow">Discovery</span><h2>What should we show you?</h2></div><span class="status" id="saveStatus">Loading…</span></div>
 <div class="preferences-two-col">
-<label class="preferences-field">Usual region
-<select id="region"><option value="">Any region</option></select>
-</label>
-<label class="preferences-field">Usual town
-<select id="town" disabled><option value="">Any town</option></select>
-</label>
-<label class="preferences-field">Preferred day
-<select id="day"><option value="">Any day</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select>
-</label>
-<label class="preferences-field">Maximum session price
-<select id="maxPrice"><option value="">Any price</option><option value="0">Free</option><option value="5">Up to £5</option><option value="10">Up to £10</option><option value="15">Up to £15</option><option value="20">Up to £20</option><option value="30">Up to £30</option></select>
-</label>
+<label class="preferences-field">Usual region<select id="region"><option value="">Any region</option></select></label>
+<label class="preferences-field">Usual town<select id="town" disabled><option value="">Any town</option></select></label>
+<label class="preferences-field">Preferred day<select id="day"><option value="">Any day</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select></label>
+<label class="preferences-field">Maximum session price<select id="maxPrice"><option value="">Any price</option><option value="0">Free</option><option value="5">Up to £5</option><option value="10">Up to £10</option><option value="15">Up to £15</option><option value="20">Up to £20</option><option value="30">Up to £30</option></select></label>
 </div>
-<div class="preferences-subsection">
-<h3>Interests</h3>
-<p class="preferences-intro">Choose the types of activities your family tends to enjoy. Bubba Hub uses these to prioritise results, not block everything else.</p>
-<div id="interestChoices" class="preferences-interest-grid"><span class="preferences-loading">Loading activity types…</span></div>
-</div>
-<div class="preference-list">
-<label><input type="checkbox" data-pref="freeActivities"><span><strong>Show free activities first</strong><small>Prioritise activities with no charge when browsing.</small></span></label>
-<label><input type="checkbox" data-pref="termTime"><span><strong>Prefer term-time activities</strong><small>Prioritise sessions that run during school terms.</small></span></label>
-</div>
+<div class="preferences-subsection"><h3>Interests</h3><p class="preferences-intro">Choose the types of activities your family tends to enjoy. These prioritise results; they do not hide everything else.</p><div id="interestChoices" class="preferences-interest-grid"><span class="preferences-loading">Loading activity types…</span></div></div>
+<div class="preference-list"><label><input type="checkbox" data-pref="freeActivities"><span><strong>Show free activities first</strong><small>Prioritise activities with no charge when browsing.</small></span></label><label><input type="checkbox" data-pref="termTime"><span><strong>Prefer term-time activities</strong><small>Prioritise sessions that run during school terms.</small></span></label></div>
+<div class="preferences-actions"><button class="button button-primary" type="button" id="savePreferences">Save preferences</button><span class="preferences-save-message" id="message" role="status"></span></div>
 </article>
-
-<article class="admin-panel preferences-links-panel">
-<div class="admin-panel-head"><div><span class="eyebrow">Privacy &amp; family</span><h2>Manage permissions</h2></div></div>
-<div class="preferences-link-grid">
-<a href="consent.html"><strong>🔒 Booking &amp; privacy permissions</strong><span>Manage child information, health details, photo permissions and organiser sharing.</span></a>
-<a href="help-support.html"><strong>💛 Help &amp; Support</strong><span>Manage how saved child information can pre-fill private support questions.</span></a>
-</div>
-</article>
-
-<div class="preferences-actions">
-<button class="button button-primary" type="button" id="savePreferences">Save preferences</button>
-<a class="button button-soft" href="account.html">Back to account</a>
-<span class="preferences-save-message" id="message" role="status"></span>
-</div>
-</section></div>
-</main>
-<footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
-<script src="assets/js/app.js?v=20260927-adminaccess1"></script><script src="assets/js/preferences.js?v=20260927-adminaccess1"></script>
-</body>
-</html>
+<article class="admin-panel"><div class="admin-panel-head"><div><span class="eyebrow">Notifications</span><h2>Manage messages separately</h2></div></div><p class="preferences-intro">Email, push reminders and the Bubba Hub Round Up are managed on the Notifications page so there is one place for communication settings.</p><a class="button button-soft" href="notifications.html">Open notification settings →</a></article>
+<article class="admin-panel preferences-links-panel"><div class="admin-panel-head"><div><span class="eyebrow">Privacy &amp; family</span><h2>Manage permissions</h2></div></div><div class="preferences-link-grid"><a href="consent.html"><strong>🔒 Booking &amp; privacy permissions</strong><span>Manage child information, health details, photo permissions and organiser sharing.</span></a><a href="privacy.html"><strong>Privacy choices</strong><span>Control optional personalisation, saved/planner connection and communications choices.</span></a><a href="help-support.html"><strong>💛 Help &amp; Support</strong><span>Get guidance or send a private support question.</span></a></div></article>
+</section></div></main><footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
+<script src="assets/js/app.js?v=20260927-sitewide3"></script><script src="assets/js/preferences.js?v=20260927-sitewide3"></script></body></html>
