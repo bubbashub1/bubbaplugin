@@ -25,7 +25,7 @@ $from = (new DateTimeImmutable('now'))->modify('+23 hours');
 $to = (new DateTimeImmutable('now'))->modify('+25 hours');
 
 $stmt = $db->prepare("SELECT DISTINCT
-    p.user_id, s.id AS slot_id, a.title, s.starts_at,
+    p.user_id, p.activity_id, s.id AS slot_id, a.title, s.starts_at,
     v.venue_name, v.town
   FROM bh_planner p
   INNER JOIN bh_user_preferences up ON up.user_id=p.user_id
