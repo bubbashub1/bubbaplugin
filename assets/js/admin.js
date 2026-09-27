@@ -22,6 +22,51 @@ async function loadDashboard(){
  render();
 }
 
+function initAddressAutocomplete(){
+ const input=document.querySelector("#activityAddress");
+ const suggestions=document.querySelector("#addressSuggestions");
+ if(!input||!suggestions)return;
+ let timer=null,controller=null,cache=new Map();
+ const hide=()=>{suggestions.hidden=true;suggestions.innerHTML=""};
+ const fill=result=>{
+   const x=result.address||{};
+   input.value=[x.house_number,x.road].filter(Boolean).join(" ")||result.display_name||"";
+   document.querySelector("#activityTown").value=x.city||x.town||x.village||x.municipality||"";
+   document.querySelector("#activityRegion").value=x.county||x.state||"Devon";
+   document.querySelector("#activityPostcode").value=x.postcode||"";
+   document.querySelector("#activityLatitude").value=result.lat||"";
+   document.querySelector("#activityLongitude").value=result.lon||"";
+   hide();
+ };
+ const search=async()=>{
+   const q=input.value.trim();
+   if(q.length<3){hide();return}
+   if(cache.has(q)){render(cache.get(q));return}
+   if(controller)controller.abort();
+   controller=new AbortController();
+   try{
+     const r=await fetch("api/geocode.php?q="+encodeURIComponent(q),{credentials:"same-origin",signal:controller.signal,cache:"no-store"});
+     const d=await r.json();
+     if(!r.ok||!d.ok)throw new Error(d.error||"Address lookup failed");
+     cache.set(q,d.results||[]);render(d.results||[]);
+   }catch(e){if(e.name!=="AbortError")hide()}
+ };
+ const render=results=>{
+   suggestions.innerHTML="";
+   if(!results.length){hide();return}
+   results.slice(0,5).forEach((result,i)=>{
+     const b=document.createElement("button");
+     b.type="button";b.className="bh-address-suggestion";b.setAttribute("role","option");
+     b.innerHTML='<strong>'+escapeHtml(result.address?.house_number?((result.address.house_number+" "+(result.address.road||"")).trim()):result.display_name.split(",")[0])+'</strong><span>'+escapeHtml(result.display_name)+'</span>';
+     b.onclick=()=>fill(result);suggestions.appendChild(b);
+   });
+   suggestions.hidden=false;
+ };
+ input.addEventListener("input",()=>{clearTimeout(timer);timer=setTimeout(search,900)});
+ input.addEventListener("focus",()=>{if(input.value.trim().length>=3)search()});
+ document.addEventListener("click",e=>{if(!input.parentElement.contains(e.target))hide()});
+}
+
 function openEditor(){document.querySelector("#activityEditor").hidden=false;document.querySelector("#activityEditor").scrollIntoView({behavior:"smooth",block:"start"})}
 function closeEditor(){document.querySelector("#activityEditor").hidden=true;document.querySelector("#activityForm").reset();document.querySelector("#activityFormMessage").textContent=""}
 async function createActivity(e){
@@ -80,4 +125,5 @@ document.querySelector("#newActivity").addEventListener("click",openEditor);
 document.querySelector("#cancelActivity").addEventListener("click",closeEditor);
 document.querySelector("#cancelActivity2").addEventListener("click",closeEditor);
 document.querySelector("#activityForm").addEventListener("submit",createActivity);
+initAddressAutocomplete();
 verifyAdmin().then(()=>{document.querySelector("#adminAccess").hidden=true;document.querySelector("#adminContent").hidden=false;loadDashboard()}).catch(()=>{});
