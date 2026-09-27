@@ -851,3 +851,28 @@ body{background:linear-gradient(180deg,#f8fbf8 0%,#f4f8f4 100%);}
 .bh-add-town-panel span{font-size:11px;color:var(--bh-text-muted)}
 .bh-add-town-actions{display:flex;gap:7px;margin-top:3px}
 .bh-add-town-actions .button{min-height:32px;padding:6px 10px;font-size:11px}
+
+/* Mobile activity actions: compact icon-only controls */
+@media (max-width: 620px){
+  .listing-actions .activity-action{
+    width:40px;
+    min-width:40px;
+    height:40px;
+    min-height:40px;
+    padding:0;
+    font-size:0;
+    line-height:1;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .listing-actions #save::before{content:"♡";font-size:21px}
+  .listing-actions #planner::before{content:"＋";font-size:21px}
+  .listing-actions #visited::before{content:"✓";font-size:18px}
+  .listing-actions #compare::before{content:"⇄";font-size:19px}
+  .listing-actions #save[aria-pressed="true"]::before{content:"♥"}
+  .listing-actions #planner[aria-pressed="true"]::before{content:"✓"}
+  .listing-actions #visited[aria-pressed="true"]::before{content:"✓"}
+  .listing-actions #compare[aria-pressed="true"]::before{content:"✓"}
+  .listing-actions .activity-action{border-radius:11px}
+}
