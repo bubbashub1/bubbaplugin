@@ -136,6 +136,90 @@ document.addEventListener("DOMContentLoaded", async () => {
     let currentView = localStorage.getItem("bh_directory_view") || "list";
     let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let cardCount = Number(localStorage.getItem("bh_directory_cards") || 4);
+    let homeLocation = null;
+    let homeLocationLoading = false;
+
+    const distanceMiles = (lat1, lon1, lat2, lon2) => {
+      const toRad = value => value * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+      return 3958.7613 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    };
+
+    const nearestVenue = activity => {
+      if (!homeLocation) return null;
+      const venues = bhVenues(activity).filter(v =>
+        Number.isFinite(Number(v.lat)) && Number.isFinite(Number(v.long))
+      );
+      if (!venues.length) return null;
+      return venues.reduce((best, venue) => {
+        const miles = distanceMiles(homeLocation.lat, homeLocation.long, Number(venue.lat), Number(venue.long));
+        return !best || miles < best.miles ? { venue, miles } : best;
+      }, null);
+    };
+
+    const setNearbyStatus = message => {
+      const el = $("nearbyStatus");
+      if (el) el.textContent = message || "";
+    };
+
+    const loadHomeLocation = async () => {
+      if (homeLocationLoading) return;
+      homeLocationLoading = true;
+      setNearbyStatus("Loading your saved home area…");
+      try {
+        const response = await fetch("api/profile.php", { credentials: "same-origin", cache: "no-store" });
+        const payload = await response.json();
+        if (!response.ok || !payload.ok || !payload.user) {
+          throw new Error("Please sign in and add your home town or postcode in My account.");
+        }
+        const address = payload.user.address || {};
+        const town = String(address.city || "").trim();
+        const postcode = String(address.postcode || "").trim();
+
+        // Prefer coordinates already saved on the private profile. If they are
+        // missing, geocode only the town (not the full home address) so the
+        // private street address is never sent to the public map service.
+        let lat = Number(address.latitude);
+        let long = Number(address.longitude);
+        if (!Number.isFinite(lat) || !Number.isFinite(long)) {
+          if (!town) throw new Error("Add your home town in My account first.");
+          const geo = await fetch("api/geocode.php?q=" + encodeURIComponent(town + ", UK"), {cache:"no-store"});
+          const geoPayload = await geo.json();
+          const result = geoPayload?.results?.[0];
+          lat = Number(result?.lat);
+          long = Number(result?.lon);
+          if (!Number.isFinite(lat) || !Number.isFinite(long)) throw new Error("We could not locate your home town.");
+          try {
+            await fetch("api/profile.php", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: {"Content-Type":"application/json","Accept":"application/json"},
+              body: JSON.stringify({
+                csrf: payload.csrf,
+                first_name: payload.user.first_name || "",
+                last_name: payload.user.last_name || "",
+                phone: payload.user.phone || "",
+                date_of_birth: payload.user.date_of_birth || "",
+                address: {...address, latitude: lat, longitude: long}
+              })
+            });
+          } catch (_) {}
+        }
+        homeLocation = {lat, long, town, postcode};
+        setNearbyStatus(town ? "Near " + town : "Nearby results");
+        render();
+      } catch (error) {
+        homeLocation = null;
+        setNearbyStatus(error.message || "Nearby search unavailable.");
+      } finally {
+        homeLocationLoading = false;
+      }
+    };
+
+
     if (![2,3,4,5,6].includes(cardCount)) cardCount = 4;
     $("cardCount").value = String(cardCount);
     const updateCardCountVisibility = () => {
@@ -454,7 +538,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const booking = $("booking")?.value || "";
       const accessibility = $("accessibility")?.value || "";
 
-      const list = activities.filter(activity => {
+      let list = activities.filter(activity => {
         const venues = bhVenues(activity);
         const sessions = bhSessions(activity);
         const text = [
@@ -497,6 +581,18 @@ document.addEventListener("DOMContentLoaded", async () => {
           (!params.get("saved") || bhIsSaved(activity.id));
       });
 
+      if (homeLocation) {
+        list = list
+          .map(activity => ({ activity, nearby: nearestVenue(activity) }))
+          .sort((a, b) => {
+            if (a.nearby && b.nearby) return a.nearby.miles - b.nearby.miles;
+            if (a.nearby) return -1;
+            if (b.nearby) return 1;
+            return String(a.activity.title || "").localeCompare(String(b.activity.title || ""));
+          })
+          .map(item => item.activity);
+      }
+
       $("count").textContent =
         `${list.length} activit${list.length === 1 ? "y" : "ies"} found` +
         (params.get("saved") ? " · Saved" : "");
@@ -520,6 +616,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               : (venues[0]?.town || activity.town || activity.region || ""))} ·
               ${escapeHtml(firstSession?.day || "Flexible")} ·
               ${escapeHtml(price)}</p>
+            ${homeLocation && nearestVenue(activity) ? '<div class="directory-distance">📍 ' + escapeHtml(nearestVenue(activity).miles.toFixed(1)) + ' miles away</div>' : ""}
             <div class="activity-footer">
               <a class="text-link" href="${bhActivityUrl(activity)}">View activity →</a>
               <button class="button button-soft bh-save" data-id="${escapeHtml(activity.id)}">
@@ -572,11 +669,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("ageMin").addEventListener("input", () => updateAge("min"));
     $("ageMax").addEventListener("input", () => updateAge("max"));
 
+    $("useHomeLocation").onclick = loadHomeLocation;
+
     $("clear").onclick = () => {
       ["search", "category", "area", "town", "day", "maxPrice", "sessionLength", "sen", "termTime", "booking", "accessibility"].forEach(id => { if ($(id)) $(id).value = ""; });
       $("ageMin").value = 0;
       $("ageMax").value = 9;
       $("free").checked = false;
+      homeLocation = null;
+      setNearbyStatus("");
 
       const clean = new URL(location.href);
       ["saved", "category", "region", "town", "age_min", "age_max", "day", "max_price"].forEach(key =>
