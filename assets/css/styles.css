@@ -2083,7 +2083,7 @@ img,svg,video{max-width:100%;height:auto}
   min-height:64px;
   padding:14px!important;
   border-radius:15px!important;
-  background:#fafd fa;
+  background:#fafdfb;
   transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease,background .15s ease;
 }
 .personal-choice:hover{
