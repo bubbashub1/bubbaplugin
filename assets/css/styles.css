@@ -840,3 +840,14 @@ body{background:linear-gradient(180deg,#f8fbf8 0%,#f4f8f4 100%);}
 .bh-town-row .button{white-space:nowrap}
 .bh-town-field .library-message{margin:.35rem 0 0;font-size:.82rem}
 @media (max-width:700px){.bh-town-row{flex-direction:column}.bh-town-row .button{width:100%}}
+
+/* Admin town field: keep normal editing separate from adding a new town. */
+.bh-town-field{position:relative}
+.bh-town-field #activityTown{width:100%}
+.bh-add-town-toggle{display:inline-flex;align-items:center;margin-top:7px;padding:0;border:0;background:none;color:var(--bh-primary,#365f4a);font:inherit;font-size:12px;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.bh-add-town-toggle:hover{opacity:.8}
+.bh-add-town-panel{display:flex;flex-direction:column;gap:5px;margin-top:9px;padding:11px 12px;border:1px solid rgba(65,102,81,.12);border-radius:10px;background:rgba(65,102,81,.035)}
+.bh-add-town-panel strong{font-size:12px}
+.bh-add-town-panel span{font-size:11px;color:var(--bh-text-muted)}
+.bh-add-town-actions{display:flex;gap:7px;margin-top:3px}
+.bh-add-town-actions .button{min-height:32px;padding:6px 10px;font-size:11px}
