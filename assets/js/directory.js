@@ -80,6 +80,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     let cardCount = Number(localStorage.getItem("bh_directory_cards") || 4);
     if (![2,3,4,5,6].includes(cardCount)) cardCount = 4;
     $("cardCount").value = String(cardCount);
+    const updateCardCountVisibility = () => {
+      const control = document.querySelector(".directory-count-control");
+      if (control) control.hidden = currentView !== "grid";
+    };
+    updateCardCountVisibility();
 
     const renderAgeTrack = () => {
       const min = Number($("ageMin").value);
