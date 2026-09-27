@@ -41,6 +41,21 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
 if($_SERVER['REQUEST_METHOD']!=='POST')lp(405,['ok'=>false,'error'=>'method_not_allowed']);
 $b=json_decode(file_get_contents('php://input'),true);if(!is_array($b))lp(400,['ok'=>false,'error'=>'invalid_json']);
 $action=$b['action']??'';
+if($action==='create_listing'){
+ $title=trim((string)($b['title']??''));$description=trim((string)($b['description']??''));$category=trim((string)($b['category']??''));$age=trim((string)($b['age_range']??''));$price=($b['price_from']??'')===''?null:(float)$b['price_from'];$url=trim((string)($b['booking_url']??''));
+ $venueName=trim((string)($b['venue_name']??''));$address=trim((string)($b['address']??''));$town=trim((string)($b['town']??''));$region=trim((string)($b['region']??''));$postcode=trim((string)($b['postcode']??''));$lat=trim((string)($b['latitude']??''));$lng=trim((string)($b['longitude']??''));
+ if($title==='')lp(422,['ok'=>false,'error'=>'title_required']);
+ if($venueName===''||$town==='')lp(422,['ok'=>false,'error'=>'venue_required']);
+ $db->beginTransaction();
+ try{
+  $q=$db->prepare("INSERT INTO bh_activities (title,description,category,age_range,county,price_from,booking_url,status,organiser_id) VALUES (?,?,?,?,?,?,?,?,?)");
+  $q->execute([$title,$description,$category,$age,'',$price,$url,'draft',$oid]);$activityId=(int)$db->lastInsertId();
+  $v=$db->prepare("INSERT INTO bh_venues (venue_name,address,town,region,postcode,latitude,longitude,notes,activity_id) VALUES (?,?,?,?,?,?,?,?,?)");
+  $v->execute([$venueName,$address,$town,$region,$postcode,$lat===''?null:$lat,$lng===''?null:$lng,'',$activityId]);
+  $db->commit();
+  lp(201,['ok'=>true,'id'=>$activityId]);
+ }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+}
 if($action==='save_class'){
  $id=(int)($b['id']??0);$title=trim((string)($b['title']??''));$description=trim((string)($b['description']??''));$category=trim((string)($b['category']??''));$age=trim((string)($b['age_range']??''));$price=($b['price_from']??'')===''?null:(float)$b['price_from'];$url=trim((string)($b['booking_url']??''));
  if($title==='')lp(422,['ok'=>false,'error'=>'title_required']);
