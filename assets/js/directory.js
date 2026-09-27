@@ -431,6 +431,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       button.onclick = () => {
         currentView = button.dataset.view;
         localStorage.setItem("bh_directory_view", currentView);
+        updateCardCountVisibility();
         document.querySelectorAll(".directory-view")
           .forEach(item => item.classList.toggle("active", item === button));
         $("results").hidden = currentView === "map" || currentView === "calendar";
