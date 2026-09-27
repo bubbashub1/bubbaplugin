@@ -10,7 +10,7 @@ function bh_preferences_json(int $status,array $data): never{
 }
 function bh_preferences_default(): array{
     return [
-        'emailEnabled'=>true,'smsEnabled'=>false,'pushEnabled'=>false,'phone'=>'','smsMarketing'=>false,
+        'emailEnabled'=>true,'pushEnabled'=>false,
         'plannerReminders'=>true,'bookingUpdates'=>true,'savedSearches'=>false,'supportReplies'=>true,'eventReminders'=>true,
         'region'=>'','town'=>'','day'=>'','categories'=>[],'freeActivities'=>false,'termTime'=>false,'maxPrice'=>''
     ];
@@ -39,10 +39,7 @@ try{
     $db->exec("CREATE TABLE IF NOT EXISTS bh_user_preferences (
       user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
       email_enabled TINYINT(1) NOT NULL DEFAULT 1,
-      sms_enabled TINYINT(1) NOT NULL DEFAULT 0,
       push_enabled TINYINT(1) NOT NULL DEFAULT 0,
-      phone VARCHAR(80) NULL,
-      sms_marketing TINYINT(1) NOT NULL DEFAULT 0,
       planner_reminders TINYINT(1) NOT NULL DEFAULT 1,
       booking_updates TINYINT(1) NOT NULL DEFAULT 1,
       saved_searches TINYINT(1) NOT NULL DEFAULT 0,
@@ -69,8 +66,7 @@ try{
         $p=bh_preferences_default();
         if($row){
             $p=array_merge($p,[
-                'emailEnabled'=>(bool)$row['email_enabled'],'smsEnabled'=>(bool)$row['sms_enabled'],'pushEnabled'=>(bool)$row['push_enabled'],
-                'phone'=>(string)($row['phone']??''),'smsMarketing'=>(bool)$row['sms_marketing'],
+                'emailEnabled'=>(bool)$row['email_enabled'],'pushEnabled'=>(bool)$row['push_enabled'],
                 'plannerReminders'=>(bool)$row['planner_reminders'],'bookingUpdates'=>(bool)$row['booking_updates'],
                 'savedSearches'=>(bool)$row['saved_searches'],'supportReplies'=>(bool)$row['support_replies'],
                 'eventReminders'=>(bool)$row['event_reminders'],'region'=>(string)($row['region']??''),'town'=>(string)($row['town']??''),
@@ -95,8 +91,7 @@ try{
     $maxPriceValue=$maxPrice===''?null:(float)$maxPrice;
 
     $values=[
-        !empty($body['emailEnabled'])?1:0,!empty($body['smsEnabled'])?1:0,!empty($body['pushEnabled'])?1:0,
-        trim((string)($body['phone']??''))?:null,!empty($body['smsMarketing'])?1:0,
+        !empty($body['emailEnabled'])?1:0,!empty($body['pushEnabled'])?1:0,
         !empty($body['plannerReminders'])?1:0,!empty($body['bookingUpdates'])?1:0,!empty($body['savedSearches'])?1:0,
         !empty($body['supportReplies'])?1:0,!empty($body['eventReminders'])?1:0,
         trim((string)($body['region']??''))?:null,trim((string)($body['town']??''))?:null,
@@ -104,11 +99,10 @@ try{
         !empty($body['termTime'])?1:0,$maxPriceValue
     ];
     $sql="INSERT INTO bh_user_preferences
-      (user_id,email_enabled,sms_enabled,push_enabled,phone,sms_marketing,planner_reminders,booking_updates,saved_searches,support_replies,event_reminders,region,town,preferred_day,categories_json,free_activities,term_time,max_price)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+      (user_id,email_enabled,push_enabled,planner_reminders,booking_updates,saved_searches,support_replies,event_reminders,region,town,preferred_day,categories_json,free_activities,term_time,max_price)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       ON DUPLICATE KEY UPDATE
-      email_enabled=VALUES(email_enabled),sms_enabled=VALUES(sms_enabled),push_enabled=VALUES(push_enabled),phone=VALUES(phone),
-      sms_marketing=VALUES(sms_marketing),planner_reminders=VALUES(planner_reminders),booking_updates=VALUES(booking_updates),
+      email_enabled=VALUES(email_enabled),push_enabled=VALUES(push_enabled),planner_reminders=VALUES(planner_reminders),booking_updates=VALUES(booking_updates),
       saved_searches=VALUES(saved_searches),support_replies=VALUES(support_replies),event_reminders=VALUES(event_reminders),
       region=VALUES(region),town=VALUES(town),preferred_day=VALUES(preferred_day),categories_json=VALUES(categories_json),
       free_activities=VALUES(free_activities),term_time=VALUES(term_time),max_price=VALUES(max_price)";
