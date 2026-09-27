@@ -122,14 +122,48 @@ document.addEventListener("DOMContentLoaded", async () => {
         Number.isFinite(Number(venue.lat)) && Number.isFinite(Number(venue.long))
       );
 
+      const sleekDarkIcon = L.divIcon({
+        className: "custom-sleek-dark-marker",
+        html: '<div class="bubba-dark-pin"><div class="dark-core"></div></div>',
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -36]
+      });
+
+      const popupHtml = (activity, venue) => {
+        const sessions = bhSessions(activity);
+        const session = sessions.find(s => s.venue_id == null || String(s.venue_id) === String(venue.id)) || sessions[0] || {};
+        const category = activity.category || "Family activity";
+        const age = Array.isArray(activity.age_range) ? activity.age_range.join(" · ") : (activity.age_range || "All ages");
+        const price = activity.price || session.price || "Price on request";
+        const time = [session.day, session.start && session.start.slice(0,5)].filter(Boolean).join(" · ");
+        const image = activity.image_url
+          ? '<img class="bh-map-popup-image" src="' + escapeHtml(activity.image_url) + '" alt="' + escapeHtml(activity.title) + '">'
+          : '<div class="bh-map-popup-image bh-map-popup-placeholder">Bubba Hub</div>';
+        return '<article class="bh-map-popup-card">' +
+          image +
+          '<div class="bh-map-popup-body">' +
+            '<span class="bh-map-popup-category">' + escapeHtml(category) + '</span>' +
+            '<h3>' + escapeHtml(activity.title) + '</h3>' +
+            '<p class="bh-map-popup-location">📍 ' + escapeHtml(venue.name || venue.town || venue.address || "") + '</p>' +
+            '<div class="bh-map-popup-meta">' +
+              '<span>👶 ' + escapeHtml(age) + '</span>' +
+              '<span>💷 ' + escapeHtml(price) + '</span>' +
+              (time ? '<span>🕒 ' + escapeHtml(time) + '</span>' : '') +
+            '</div>' +
+            '<a class="button button-primary bh-map-popup-link" href="' + bhActivityUrl(activity) + '">View activity →</a>' +
+          '</div>' +
+        '</article>';
+      };
+
       valid.forEach(({ activity, venue }) => {
-        const marker = L.marker([Number(venue.lat), Number(venue.long)])
+        const marker = L.marker([Number(venue.lat), Number(venue.long)], { icon: sleekDarkIcon })
           .addTo(map)
-          .bindPopup(
-            `<strong>${escapeHtml(activity.title)}</strong><br>` +
-            `${escapeHtml(venue.name || venue.address || venue.town || "")}<br>` +
-            `<a href="${bhActivityUrl(activity)}">View activity</a>`
-          );
+          .bindPopup(popupHtml(activity, venue), {
+            maxWidth: 340,
+            minWidth: 260,
+            className: "bh-map-popup"
+          });
         markers.push(marker);
       });
 
