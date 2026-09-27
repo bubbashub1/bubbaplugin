@@ -1249,3 +1249,27 @@ body{background:linear-gradient(180deg,#f8fbf8 0%,#f4f8f4 100%);}
  .personal-home-callout .button,.hub-personal-cta .button,.page-heading>.button{width:100%}
  .hub-personal-cta h2{font-size:25px}
 }
+
+
+/* Bubba Brief */
+.hub-brief{margin:0 0 18px;padding:20px 21px;border:1px solid rgba(60,142,150,.14);border-radius:20px;background:linear-gradient(135deg,#f8fbf8,#eef8f8);box-shadow:0 9px 26px rgba(20,68,0,.04)}
+.hub-brief-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:13px}
+.hub-brief-head h2{margin:2px 0 4px;font-family:"Chewy",cursive;font-size:29px;font-weight:400;line-height:1}
+.hub-brief-head p{margin:0;color:var(--bh-text-muted);font-size:10px}
+.hub-brief-head .button{white-space:nowrap}
+.hub-brief-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.hub-brief-item{display:flex;align-items:center;gap:9px;min-width:0;padding:12px;border:1px solid rgba(60,142,150,.10);border-radius:14px;background:#fff;color:inherit;text-decoration:none;transition:transform .15s ease,box-shadow .15s ease}
+.hub-brief-item:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(20,68,0,.06)}
+.hub-brief-icon{display:grid;place-items:center;width:34px;height:34px;flex:0 0 auto;border-radius:11px;background:var(--bh-bg);color:var(--bh-primary);font-size:15px}
+.hub-brief-item div:nth-child(2){min-width:0;flex:1}
+.hub-brief-item span{display:block;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;color:var(--bh-secondary)}
+.hub-brief-item strong{display:block;margin:2px 0;font-size:12px;line-height:1.2}
+.hub-brief-item small{display:block;color:var(--bh-text-muted);font-size:9px;overflow-wrap:anywhere}
+.hub-brief-item>b{color:var(--bh-text-muted);font-size:14px}
+.hub-brief .hub-empty{background:rgba(255,255,255,.6)}
+.preferences-interest-grid{display:flex;flex-wrap:wrap;gap:7px}
+.preferences-interest{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid var(--bh-border);border-radius:999px;background:#fff;cursor:pointer}
+.preferences-interest input{width:15px;height:15px;accent-color:var(--bh-primary)}
+.preferences-interest span{font-size:10px;font-weight:800}
+.preferences-loading{font-size:11px;color:var(--bh-text-muted)}
+@media(max-width:850px){.hub-brief-grid{grid-template-columns:1fr}.hub-brief-head{align-items:flex-start;flex-direction:column}.hub-brief-head .button{width:100%}}
