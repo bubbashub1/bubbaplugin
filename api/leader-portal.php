@@ -18,6 +18,8 @@ function lp(int $s,array $d): void{http_response_code($s);echo json_encode($d,JS
 $adminOnly=!empty($_SESSION['bh_admin_authenticated'])&&empty($_SESSION['bh_user_id']);
 if(empty($_SESSION['bh_user_id'])&&!$adminOnly) lp(401,['ok'=>false,'error'=>'login_required']);
 $userId=(int)($_SESSION['bh_user_id']??0); $db=bh_mysql();
+$roleStmt=$db->prepare("SELECT role,status FROM bh_users WHERE id=? LIMIT 1");$roleStmt->execute([$userId]);$roleUser=$roleStmt->fetch();
+if(!$adminOnly && (!$roleUser || $roleUser['status']!=='active' || ($roleUser['role']??'')!=='leader')) lp(403,['ok'=>false,'error'=>'leader_role_required','message'=>'A class leader account is required.']);
 if($adminOnly){
  if($_SERVER['REQUEST_METHOD']==='GET') lp(200,['ok'=>true,'admin_mode'=>true,'organisation'=>null,'classes'=>[],'bookings'=>[]]);
  lp(403,['ok'=>false,'error'=>'admin_read_only','message'=>'Admin access can view the leader area, but leader account changes require a linked class leader account.']);
