@@ -110,6 +110,24 @@ try {
 
     $action = (string)($body['action'] ?? '');
 
+    if ($action === 'set_saved') {
+        $activityId = (int)($body['activity_id'] ?? 0);
+        $savedState = !empty($body['saved']);
+        if ($activityId < 1) bh_hub_json(422, ['ok' => false, 'error' => 'activity_required']);
+
+        if ($savedState) {
+            $stmt = $db->prepare("SELECT id FROM bh_activities WHERE id=? AND status='published' LIMIT 1");
+            $stmt->execute([$activityId]);
+            if (!$stmt->fetch()) bh_hub_json(404, ['ok' => false, 'error' => 'activity_not_found']);
+            $stmt = $db->prepare("INSERT IGNORE INTO bh_saved_activities (user_id,activity_id) VALUES (?,?)");
+            $stmt->execute([$userId, $activityId]);
+        } else {
+            $stmt = $db->prepare("DELETE FROM bh_saved_activities WHERE user_id=? AND activity_id=?");
+            $stmt->execute([$userId, $activityId]);
+        }
+        bh_hub_json(200, ['ok' => true, 'saved' => $savedState]);
+    }
+
     if ($action === 'sync_saved') {
         $saved = array_values(array_unique(array_filter(array_map('intval', (array)($body['saved'] ?? [])), static fn($id) => $id > 0)));
         $db->beginTransaction();
