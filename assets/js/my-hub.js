@@ -1,18 +1,20 @@
 document.addEventListener("DOMContentLoaded",async()=>{
   const $=id=>document.getElementById(id),root=$("myHubApp"),message=$("hubMessage");
   const esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])));
-  let data=null,csrf="",activities=[];
+  let data=null,csrf="",activities=[],adminOnly=false;
   const dateDisplay=value=>{if(!value)return "";const p=String(value).split("-");return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:String(value)};
   const ageFromDob=value=>{if(!value)return "";const dob=new Date(value+"T00:00:00");if(Number.isNaN(dob.getTime()))return "";const now=new Date();let years=now.getFullYear()-dob.getFullYear(),months=now.getMonth()-dob.getMonth();if(now.getDate()<dob.getDate())months--;if(months<0){years--;months+=12}return years<2?Math.max(0,years*12+months)+" months":years+" years"};
   const bookingDate=raw=>{if(!raw)return "";const d=new Date(String(raw).replace(" ","T"));if(Number.isNaN(d.getTime()))return "";return d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})+" · "+d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})};
   async function getJson(url,opts){const r=await fetch(url,opts);const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.message||j.error||"Something went wrong.");return j}
   async function load(){
     const auth=await getJson("api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}}).catch(()=>({authenticated:false}));
+    adminOnly=!!auth.is_admin&&!auth.user?.id;
     if(!auth.authenticated){root.innerHTML="<section class='admin-panel my-hub-login'><div class='feature-icon'>👤</div><span class='eyebrow'>Your personal hub</span><h2>Sign in to make Bubba Hub yours</h2><p>Keep your family, saved activities, planner and bookings together across devices.</p><a class='button button-primary' href='account.html?next=my-hub.html'>Sign in or create an account</a></section>";return}
     csrf=auth.csrf||"";
     data=await getJson("api/my-hub.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
     const merged=[...new Set([...(data.saved||[]).map(String),...bhGet(BH_KEYS.saved)])];
-    if(JSON.stringify(merged)!==JSON.stringify((data.saved||[]).map(String))){const sync=await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"sync_saved",saved:merged,csrf})}).then(r=>r.json()).catch(()=>null);if(sync?.ok)data.saved=sync.saved||merged}
+    if(!adminOnly&&JSON.stringify(merged)!==JSON.stringify((data.saved||[]).map(String))){const sync=await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"sync_saved",saved:merged,csrf})}).then(r=>r.json()).catch(()=>null);if(sync?.ok)data.saved=sync.saved||merged}
+    data.saved=merged;
     bhSet(BH_KEYS.saved,(data.saved||[]).map(String));
     activities=await bhActivities();
     render();
@@ -97,7 +99,12 @@ document.addEventListener("DOMContentLoaded",async()=>{
     $("hubPlanner").innerHTML=plannedActivities.length?plannedActivities.map(a=>"<a class='hub-list-card' href='planner.html'><div><span>My Planner</span><strong>"+esc(a.title)+"</strong><small>"+esc(a.town||a.location||"")+"</small></div><b>→</b></a>").join(""):"<div class='hub-empty'><strong>Your planner is empty</strong><p>Add an activity to your weekly plan.</p><a class='button button-soft' href='planner.html'>Open planner</a></div>";
     $("hubBookings").innerHTML=upcoming.length?upcoming.map(b=>"<article class='hub-booking-card'><div><span class='status'>"+esc(b.status||"Reserved")+"</span><strong>"+esc(b.title||"Booking")+"</strong><small>"+esc(b.venue_name||"Venue")+" · "+esc(bookingDate(b.starts_at)||"Date to be confirmed")+"</small></div><span class='hub-booking-qty'>"+Number(b.quantity||1)+"×</span></article>").join(""):"<div class='hub-empty'><strong>No upcoming bookings</strong><p>Your confirmed or reserved bookings will appear here.</p></div>";
     void renderBrief();
-    message.textContent="Signed in as "+(data.user?.email||"your account");
+    message.textContent=adminOnly?"Admin access — family data remains separate.":"Signed in as "+(data.user?.email||"your account");
+    if(adminOnly){
+      root.querySelectorAll(".hub-edit-child,.hub-edit-bump").forEach(btn=>btn.disabled=true);
+      const family=root.querySelector("#hubFamily");
+      if(family&&!children.length&&!bumps.length) family.innerHTML="<div class='hub-empty'><strong>Admin view</strong><p>Family profiles belong to a family account and are not changed by admin access.</p></div>";
+    }
     root.querySelectorAll(".hub-edit-child").forEach(btn=>btn.onclick=()=>{const child=children.find(c=>String(c.id)===String(btn.dataset.id));if(child)editChild(child)});
     root.querySelectorAll(".hub-edit-bump").forEach(btn=>btn.onclick=()=>{const bump=bumps.find(b=>String(b.id)===String(btn.dataset.id));if(bump)editBump(bump)});
   }
