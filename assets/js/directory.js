@@ -92,6 +92,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (field && !advancedWrap.contains(field)) advancedWrap.appendChild(field);
       });
 
+      const accessibilityOptions=[["","Any accessibility"],["step_free","Step-free access"],["accessible_toilet","Accessible toilet"],["accessible_parking","Accessible parking"],["wheelchair_space","Wheelchair space"],["baby_changing","Baby changing"],["quiet_space","Quiet / low-sensory space"],["hearing_support","Hearing support"],["visual_support","Visual support"],["assistance_dog","Assistance dogs welcome"]];
+      const accessibilityWrap=document.createElement("div");
+      accessibilityWrap.innerHTML='<label class="directory-filter-label" for="accessibility">Accessibility</label><select class="filter-input" id="accessibility">'+accessibilityOptions.map(o=>'<option value="'+o[0]+'">'+o[1]+'</option>').join("")+'</select>';
+      advancedWrap.appendChild(accessibilityWrap);
+
       const extras = [
         ["sessionLength","Session length",[["","Any length"],["60","Up to 1 hour"],["120","1–2 hours"],["180","2–3 hours"],["181","3+ hours"]]],
         ["sen","SEN friendly",[["","Any"],["yes","Yes"],["no","No"]]],
@@ -447,6 +452,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const sen = $("sen")?.value || "";
       const termTime = $("termTime")?.value || "";
       const booking = $("booking")?.value || "";
+      const accessibility = $("accessibility")?.value || "";
 
       const list = activities.filter(activity => {
         const venues = bhVenues(activity);
@@ -474,6 +480,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const senMatch = !sen || (sen === "yes" ? ["yes","1","true"].includes(senValue) : !["yes","1","true"].includes(senValue));
         const termMatch = !termTime || (termTime === "yes" ? sessions.some(x => !!x.term_time) : !sessions.some(x => !!x.term_time));
         const bookingMatch = !booking || (booking === "yes" ? !!activity.booking_url : !activity.booking_url);
+        const accessibilityMatch = !accessibility || (Array.isArray(activity.accessibility) && activity.accessibility.includes(accessibility));
 
         return (!search || text.includes(search)) &&
           (!category || (categoryMap[activity.category] || activity.category) === category) &&
@@ -486,6 +493,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           senMatch &&
           termMatch &&
           bookingMatch &&
+          accessibilityMatch &&
           (!params.get("saved") || bhIsSaved(activity.id));
       });
 
@@ -556,7 +564,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       render();
     };
 
-    ["search", "category", "area", "town", "day", "maxPrice", "free", "sessionLength", "sen", "termTime", "booking"].forEach(id => {
+    ["search", "category", "area", "town", "day", "maxPrice", "free", "sessionLength", "sen", "termTime", "booking", "accessibility"].forEach(id => {
       $(id).addEventListener("input", render);
       $(id).addEventListener("change", render);
     });
@@ -565,7 +573,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("ageMax").addEventListener("input", () => updateAge("max"));
 
     $("clear").onclick = () => {
-      ["search", "category", "area", "town", "day", "maxPrice", "sessionLength", "sen", "termTime", "booking"].forEach(id => { if ($(id)) $(id).value = ""; });
+      ["search", "category", "area", "town", "day", "maxPrice", "sessionLength", "sen", "termTime", "booking", "accessibility"].forEach(id => { if ($(id)) $(id).value = ""; });
       $("ageMin").value = 0;
       $("ageMax").value = 9;
       $("free").checked = false;
