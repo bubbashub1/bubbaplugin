@@ -141,3 +141,9 @@
   .my-hub-page .hub-family-card{padding:14px}
   .my-hub-page .school-tracker-grid{grid-template-columns:1fr}
 }
+
+/* Main My Hub dashboard: four equal 2×2 panels */
+.my-hub-page .hub-main-dashboard{grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}
+.my-hub-page .hub-main-dashboard > .hub-dashboard-grid{display:contents}
+.my-hub-page .hub-main-dashboard > .hub-brief{height:100%}
+@media(max-width:700px){.my-hub-page .hub-main-dashboard{grid-template-columns:1fr}}
