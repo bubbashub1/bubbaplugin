@@ -375,3 +375,31 @@ td { font-size:14px; }
 .preferences-layout .preference-list label{background:#fff}
 .preferences-layout .preferences-link-grid a{background:#eef5ef;border:1px solid transparent}
 .preferences-layout .preferences-link-grid a:hover{border-color:var(--bh-accent)}
+
+
+/* Admin activity editor */
+#activityEditor{margin-top:22px}
+.admin-form{display:flex;flex-direction:column;gap:24px}
+.admin-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.admin-form label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:750;color:var(--bh-text)}
+.admin-form input,.admin-form select,.admin-form textarea{box-sizing:border-box;width:100%;min-height:46px;padding:11px 13px;border:1px solid var(--bh-border);border-radius:12px;background:#fff;color:var(--bh-text);font:inherit;outline:none;transition:border-color .15s,box-shadow .15s,background .15s}
+.admin-form textarea{min-height:120px;resize:vertical;line-height:1.5}
+.admin-form input::placeholder,.admin-form textarea::placeholder{color:#aaa}
+.admin-form input:focus,.admin-form select:focus,.admin-form textarea:focus{border-color:var(--bh-secondary);box-shadow:0 0 0 3px rgba(60,142,150,.12)}
+.admin-form-wide{grid-column:1/-1}
+.admin-form-section{padding:20px;background:#fbfdfb;border:1px solid var(--bh-border);border-radius:16px}
+.admin-form-section h3{margin:0 0 16px;font-size:17px}
+.admin-form-section .admin-form-grid{margin:0}
+.admin-form .filter-free{align-self:end;display:flex;flex-direction:row;align-items:center;gap:9px;min-height:46px;padding:0 12px;border:1px solid var(--bh-border);border-radius:12px;background:#fff}
+.admin-form .filter-free input{width:18px;min-height:18px;margin:0;accent-color:var(--bh-primary)}
+#activityFormMessage{min-height:20px;margin:0}
+#activityFormMessage.is-error{color:#b42318}
+#activityForm .hero-actions{margin-top:0}
+#activityEditor[hidden]{display:none}
+@media(max-width:700px){
+  .admin-form-grid{grid-template-columns:1fr}
+  .admin-form-wide{grid-column:auto}
+  .admin-form-section{padding:16px}
+  #activityForm .hero-actions{display:flex;flex-direction:column;align-items:stretch}
+  #activityForm .hero-actions .button{width:100%}
+}
