@@ -814,3 +814,22 @@ body{background:linear-gradient(180deg,#f8fbf8 0%,#f4f8f4 100%);}
     font-size: 27px;
   }
 }
+
+
+/* Compact activity Where section — 2026-09-27 */
+.where-card > h2{margin-bottom:16px}
+.where-card .listing-map{margin:0 0 18px}
+.where-card .venue-list{display:flex;flex-direction:column;gap:8px}
+.where-card .venue-list-heading{font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--bh-text-muted);margin:2px 0 2px}
+.where-card .venue-card{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 12px;border:1px solid rgba(65,102,81,.11);border-radius:12px;background:#fff}
+.where-card .venue-card-details{min-width:0;display:flex;align-items:baseline;gap:10px;flex:1}
+.where-card .venue-card h3{margin:0;font-size:14px;line-height:1.25;white-space:nowrap}
+.where-card .venue-card p{margin:0;color:var(--bh-text-muted);font-size:12px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.where-card .venue-directions{flex:0 0 auto;min-height:34px;padding:7px 11px;font-size:12px;border-radius:10px}
+@media(max-width:620px){
+ .where-card .venue-card{align-items:center;gap:8px;padding:9px 10px}
+ .where-card .venue-card-details{display:block}
+ .where-card .venue-card h3{font-size:13px;margin-bottom:2px}
+ .where-card .venue-card p{font-size:11px}
+ .where-card .venue-directions{padding:6px 9px;font-size:11px}
+}
