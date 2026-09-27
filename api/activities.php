@@ -30,8 +30,14 @@ try {
     $params = [];
 
     if ($search !== '') {
-        $where[] = "(a.title LIKE :search OR a.description LIKE :search OR a.category LIKE :search OR o.organisation_name LIKE :search OR v.venue_name LIKE :search OR v.town LIKE :search)";
-        $params[':search'] = '%' . $search . '%';
+        $where[] = "(a.title LIKE :search_title OR a.description LIKE :search_description OR a.category LIKE :search_category OR o.organisation_name LIKE :search_organisation OR v.venue_name LIKE :search_venue OR v.town LIKE :search_town)";
+        $searchLike = '%' . $search . '%';
+        $params[':search_title'] = $searchLike;
+        $params[':search_description'] = $searchLike;
+        $params[':search_category'] = $searchLike;
+        $params[':search_organisation'] = $searchLike;
+        $params[':search_venue'] = $searchLike;
+        $params[':search_town'] = $searchLike;
     }
 
     if ($category !== '') {
