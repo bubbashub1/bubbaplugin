@@ -1872,7 +1872,8 @@ img,svg,video{max-width:100%;height:auto}
 
 @media(max-width:650px){
   .site-header{padding-top:10px!important;padding-bottom:10px!important}
-  .site-header .main-nav{display:none}
+  /* Keep the main navigation available on mobile; allow it to wrap/scroll rather than disappearing. */
+.site-header .main-nav{display:flex;flex-wrap:wrap;gap:8px;overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
   .site-header .header-actions{gap:8px;flex-wrap:wrap}
   .site-header .header-actions a{white-space:nowrap}
   h1{font-size:clamp(2.2rem,10vw,3.4rem);line-height:1.02}
