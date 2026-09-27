@@ -12,7 +12,7 @@
 document.addEventListener("DOMContentLoaded",async()=>{
  const state=document.getElementById("activityState");
  try{
-  const items=await bhActivities(),id=new URLSearchParams(location.search).get("id"),a=bhActivity(id,items);
+  const items=await bhActivities(),params=new URLSearchParams(location.search),slug=decodeURIComponent(params.get("slug")||location.pathname.replace(/\/+$/, "").split("/").pop()||""),id=params.get("id"),a=bhActivityBySlug(slug,items)||bhActivity(id,items);
   if(!a){state.innerHTML='<div class="admin-panel"><h2>Activity not found</h2><p>This activity may have been removed or the link is incorrect.</p><a class="button button-primary" href="directory.html">Find activities</a></div>';return}
   const venues=bhVenues(a),sessions=bhSessions(a),images=Array.isArray(a.gallery)&&a.gallery.length?a.gallery:(a.image_url?[a.image_url]:[]);
   document.title=a.title+" · Bubba Hub";
