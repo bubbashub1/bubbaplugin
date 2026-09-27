@@ -347,3 +347,14 @@ CREATE TABLE IF NOT EXISTS bh_push_subscriptions (
 ALTER TABLE bh_user_preferences DROP COLUMN IF EXISTS sms_enabled;
 ALTER TABLE bh_user_preferences DROP COLUMN IF EXISTS phone;
 ALTER TABLE bh_user_preferences DROP COLUMN IF EXISTS sms_marketing;
+
+
+CREATE TABLE IF NOT EXISTS bh_push_notifications (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ user_id BIGINT UNSIGNED NOT NULL,
+ slot_id BIGINT UNSIGNED NULL,
+ notification_type VARCHAR(60) NOT NULL,
+ sent_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ UNIQUE KEY uq_push_notification (user_id,slot_id,notification_type),
+ INDEX idx_push_notification_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
