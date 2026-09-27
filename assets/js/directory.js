@@ -198,66 +198,67 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!calendar) return;
 
       const events = buildCalendarEvents(list);
-      const year = calendarMonth.getFullYear();
-      const month = calendarMonth.getMonth();
-      const monthStart = new Date(year, month, 1);
-      const monthEnd = new Date(year, month + 1, 0);
-      const firstDay = monthStart.getDay() === 0 ? 6 : monthStart.getDay() - 1;
-      const daysInMonth = monthEnd.getDate();
-      const previousMonthDays = new Date(year, month, 0).getDate();
-      const cells = [];
+      const baseDate = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
+      const weekStart = new Date(baseDate);
+      const dayOffset = (weekStart.getDay() + 6) % 7;
+      weekStart.setDate(weekStart.getDate() - dayOffset);
 
-      for (let i = firstDay - 1; i >= 0; i--) {
-        cells.push({ date: new Date(year, month - 1, previousMonthDays - i), muted: true });
-      }
-      for (let day = 1; day <= daysInMonth; day++) {
-        cells.push({ date: new Date(year, month, day), muted: false });
-      }
-      while (cells.length % 7 !== 0) {
-        cells.push({ date: new Date(year, month, cells.length - firstDay - daysInMonth + 1), muted: true });
-      }
+      const days = Array.from({length:7}, (_, index) => {
+        const date = new Date(weekStart);
+        date.setDate(weekStart.getDate() + index);
+        return date;
+      });
 
-      const monthLabel = monthStart.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+      const weekLabel = days[0].toLocaleDateString("en-GB", {day:"numeric", month:"short"}) +
+        " – " + days[6].toLocaleDateString("en-GB", {day:"numeric", month:"short", year:"numeric"});
       const todayKey = calendarDateKey(new Date());
 
       calendar.innerHTML = `
         <div class="directory-calendar-head">
-          <div><strong>${escapeHtml(monthLabel)}</strong><span>${list.length} matching activit${list.length === 1 ? "y" : "ies"}</span></div>
+          <div><strong>${escapeHtml(weekLabel)}</strong><span>${list.length} matching activit${list.length === 1 ? "y" : "ies"}</span></div>
           <div class="directory-calendar-actions">
-            <button type="button" class="button button-soft" data-calendar-prev aria-label="Previous month">‹</button>
+            <button type="button" class="button button-soft" data-calendar-prev aria-label="Previous week">‹</button>
             <button type="button" class="button button-soft" data-calendar-today>Today</button>
-            <button type="button" class="button button-soft" data-calendar-next aria-label="Next month">›</button>
+            <button type="button" class="button button-soft" data-calendar-next aria-label="Next week">›</button>
           </div>
         </div>
-        <div class="directory-calendar-grid">
-          ${["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map(day => `<div class="directory-calendar-weekday">${day}</div>`).join("")}
-          ${cells.map(cell => {
-            const key = calendarDateKey(cell.date);
+        <div class="directory-calendar-grid directory-calendar-week-grid">
+          ${days.map(date => `<div class="directory-calendar-weekday">${date.toLocaleDateString("en-GB",{weekday:"short"})}<span>${date.getDate()}</span></div>`).join("")}
+          ${days.map(date => {
+            const key = calendarDateKey(date);
             const dayEvents = events[key] || [];
-            return `<div class="directory-calendar-day${cell.muted ? " is-muted" : ""}${key === todayKey ? " is-today" : ""}">
-              <div class="directory-calendar-date">${cell.date.getDate()}</div>
+            return `<div class="directory-calendar-day${key === todayKey ? " is-today" : ""}">
+              <div class="directory-calendar-date">${date.toLocaleDateString("en-GB",{weekday:"long"})}</div>
               <div class="directory-calendar-events">
-                ${dayEvents.slice(0, 4).map(event => `
+                ${dayEvents.length ? dayEvents.map(event => `
                   <a class="directory-calendar-event" href="${bhActivityUrl(event.activity)}">
                     <span>${escapeHtml(event.time || "")}</span>
                     <strong>${escapeHtml(event.activity.title)}</strong>
                     <small>${escapeHtml(event.venue?.town || event.venue?.name || "")}</small>
-                  </a>`).join("")}
-                ${dayEvents.length > 4 ? `<span class="directory-calendar-more">+${dayEvents.length - 4} more</span>` : ""}
+                  </a>`).join("") : '<span class="directory-calendar-empty">No activities</span>'}
               </div>
             </div>`;
           }).join("")}
         </div>
       `;
 
-      calendar.querySelector("[data-calendar-prev]").onclick = () => { calendarMonth = new Date(year, month - 1, 1); render(); };
-      calendar.querySelector("[data-calendar-next]").onclick = () => { calendarMonth = new Date(year, month + 1, 1); render(); };
+      calendar.querySelector("[data-calendar-prev]").onclick = () => {
+        calendarMonth = new Date(weekStart);
+        calendarMonth.setDate(calendarMonth.getDate() - 7);
+        render();
+      };
+      calendar.querySelector("[data-calendar-next]").onclick = () => {
+        calendarMonth = new Date(weekStart);
+        calendarMonth.setDate(calendarMonth.getDate() + 7);
+        render();
+      };
       calendar.querySelector("[data-calendar-today]").onclick = () => {
         const now = new Date();
-        calendarMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        calendarMonth = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         render();
       };
     };
+
 
     const render = () => {
       const search = $("search").value.trim().toLowerCase();
