@@ -15,6 +15,7 @@
 <form id="authForm" novalidate>
 <label>Email address<input name="email" type="email" required autocomplete="email" placeholder="you@example.com"></label>
 <label>Password<input id="authPassword" name="password" type="password" required autocomplete="current-password" minlength="8" placeholder="At least 8 characters"><span class="auth-password-row"><button type="button" class="auth-show-password" id="showPassword">Show password</button><small>Minimum 8 characters</small></span></label>
+<div class="auth-forgot" id="forgotWrap"><a href="forgot-password.html">Forgot your password?</a></div>
 <label id="confirmWrap" hidden>Confirm password<input name="confirm_password" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the password again"></label>
 <label id="termsWrap" class="auth-check" hidden><input type="checkbox" id="terms" required><span>I agree to create a Bubba Hub account and understand that my family information is kept private according to the site's privacy information.</span></label>
 <button class="button button-primary auth-submit" type="submit" id="authSubmit">Sign in</button>
