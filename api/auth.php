@@ -157,6 +157,113 @@ try {
         bh_auth_response(200,['ok'=>true,'authenticated'=>true,'user'=>['id'=>(int)$user['id'],'email'=>$user['email'],'role'=>$user['role'],'status'=>$user['status']],'csrf'=>$_SESSION['bh_csrf'],'provider'=>'google']);
     }
 
+    if ($action === 'forgot_password') {
+        $email = strtolower(trim((string)($body['email'] ?? '')));
+        $generic = 'If an account exists for that email, a password reset link has been sent.';
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            bh_auth_response(200, ['ok' => true, 'message' => $generic]);
+        }
+
+        $db->exec("CREATE TABLE IF NOT EXISTS bh_password_resets (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            user_id BIGINT UNSIGNED NOT NULL,
+            token_hash CHAR(64) NOT NULL,
+            expires_at DATETIME NOT NULL,
+            used_at DATETIME NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY(id),
+            UNIQUE KEY uq_password_reset_token(token_hash),
+            KEY idx_password_reset_user(user_id),
+            KEY idx_password_reset_expiry(expires_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $stmt = $db->prepare("SELECT id,status FROM bh_users WHERE email=? LIMIT 1");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+
+        if ($user && ($user['status'] ?? '') === 'active') {
+            $rawToken = bin2hex(random_bytes(32));
+            $hash = hash('sha256', $rawToken);
+            $expires = date('Y-m-d H:i:s', time() + 3600);
+
+            $db->prepare("UPDATE bh_password_resets SET used_at=NOW() WHERE user_id=? AND used_at IS NULL")->execute([(int)$user['id']]);
+            $db->prepare("INSERT INTO bh_password_resets (user_id,token_hash,expires_at) VALUES (?,?,?)")->execute([(int)$user['id'],$hash,$expires]);
+
+            $base = rtrim((string)($config['app']['base_url'] ?? getenv('BUBBAHUB_BASE_URL') ?: 'https://bubbahub.co.uk/beta'), '/');
+            $resetUrl = $base . '/reset-password.html?token=' . rawurlencode($rawToken);
+            $apiKey = (string)($config['resend']['api_key'] ?? getenv('RESEND_API_KEY') ?: '');
+            $from = (string)($config['resend']['from'] ?? getenv('RESEND_FROM') ?: 'Bubba Hub <noreply@bubbahub.co.uk>');
+
+            if ($apiKey !== '') {
+                $payload = json_encode([
+                    'from' => $from,
+                    'to' => [$email],
+                    'subject' => 'Reset your Bubba Hub password',
+                    'html' => '<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#144400"><h1 style="color:#416651">Reset your Bubba Hub password</h1><p>We received a request to reset your Bubba Hub password.</p><p><a href="' . htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8') . '" style="display:inline-block;padding:12px 18px;background:#416651;color:#fff;text-decoration:none;border-radius:10px">Reset my password</a></p><p>This link expires in 1 hour and can only be used once.</p><p>If you did not request this, you can safely ignore this email.</p></div>',
+                    'text' => "Reset your Bubba Hub password\n\nOpen this link within 1 hour:\n{$resetUrl}\n\nIf you did not request this, ignore this email."
+                ], JSON_UNESCAPED_SLASHES);
+
+                $ch = curl_init('https://api.resend.com/emails');
+                curl_setopt_array($ch, [
+                    CURLOPT_POST => true,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_TIMEOUT => 10,
+                    CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $apiKey, 'Content-Type: application/json'],
+                    CURLOPT_POSTFIELDS => $payload,
+                ]);
+                $response = curl_exec($ch);
+                $http = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+
+                if ($http < 200 || $http >= 300) {
+                    bh_auth_response(500, ['ok' => false, 'error' => 'reset_email_failed', 'message' => 'We could not send the reset email right now. Please try again shortly.']);
+                }
+            } else {
+                bh_auth_response(503, ['ok' => false, 'error' => 'reset_email_not_configured', 'message' => 'Password reset email is not configured yet.']);
+            }
+        }
+
+        bh_auth_response(200, ['ok' => true, 'message' => $generic]);
+    }
+
+    if ($action === 'reset_password') {
+        $token = trim((string)($body['token'] ?? ''));
+        $password = (string)($body['password'] ?? '');
+        $confirm = (string)($body['confirm_password'] ?? '');
+
+        if ($token === '' || strlen($password) < 8 || $password !== $confirm) {
+            bh_auth_response(422, ['ok' => false, 'error' => 'invalid_reset_request', 'message' => 'Please enter matching passwords with at least 8 characters.']);
+        }
+
+        $db->exec("CREATE TABLE IF NOT EXISTS bh_password_resets (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            user_id BIGINT UNSIGNED NOT NULL,
+            token_hash CHAR(64) NOT NULL,
+            expires_at DATETIME NOT NULL,
+            used_at DATETIME NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY(id),
+            UNIQUE KEY uq_password_reset_token(token_hash),
+            KEY idx_password_reset_user(user_id),
+            KEY idx_password_reset_expiry(expires_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $hash = hash('sha256', $token);
+        $stmt = $db->prepare("SELECT id,user_id FROM bh_password_resets WHERE token_hash=? AND used_at IS NULL AND expires_at > NOW() LIMIT 1");
+        $stmt->execute([$hash]);
+        $reset = $stmt->fetch();
+
+        if (!$reset) {
+            bh_auth_response(400, ['ok' => false, 'error' => 'reset_token_invalid', 'message' => 'This password reset link has expired or has already been used.']);
+        }
+
+        $stmt = $db->prepare("UPDATE bh_users SET password_hash=? WHERE id=? AND status='active'");
+        $stmt->execute([password_hash($password, PASSWORD_DEFAULT), (int)$reset['user_id']]);
+        $db->prepare("UPDATE bh_password_resets SET used_at=NOW() WHERE id=?")->execute([(int)$reset['id']]);
+
+        bh_auth_response(200, ['ok' => true, 'message' => 'Your password has been updated.']);
+    }
+
     if ($action === 'register') {
         $email = strtolower(trim((string)($body['email'] ?? '')));
         $password = (string)($body['password'] ?? '');
