@@ -1,3 +1,23 @@
+async function loadVenueSuggestions(){
+ const input=document.querySelector("#activityVenueName"),list=document.querySelector("#venueNameList");
+ if(!input||!list)return;
+ try{
+  const r=await fetch("api/venues.php",{credentials:"same-origin",cache:"no-store"});
+  const d=await r.json(); if(!r.ok||!d.ok)return;
+  list.innerHTML="";
+  (d.data||[]).forEach(v=>{
+   const o=document.createElement("option");o.value=v.name;o.label=v.name+" · "+[v.town,v.postcode].filter(Boolean).join(" · ");o.dataset.id=v.id;list.appendChild(o);
+  });
+  input.addEventListener("change",()=>{
+   const v=(d.data||[]).find(x=>String(x.name).toLowerCase()===input.value.trim().toLowerCase());
+   if(!v)return;
+   const set=(id,val)=>{const el=document.querySelector(id);if(el&&val!==null&&val!==undefined)el.value=val};
+   set("#activityAddress",v.address||"");set("#activityTown",v.town||"");set("#activityPostcode",v.postcode||"");set("#activityLatitude",v.latitude??"");set("#activityLongitude",v.longitude??"");
+   applyTownMatch(v.town||""); if(v.region){const match=bhRegionData.regions.find(x=>String(x.region).toLowerCase()===String(v.region).toLowerCase());if(match)setRegionAndCounty(match.id);}
+   updateEditorMapFromFields(true);
+  });
+ }catch{}
+}
 const setAuthMessage=(m,e=false)=>{const x=document.querySelector("#adminAuthMessage");x.textContent=m;x.classList.toggle("is-error",e)};
 async function logout(){try{await fetch("admin-auth.php?action=logout",{credentials:"same-origin",cache:"no-store"});}finally{location.reload()}}
 const escapeHtml=v=>String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
@@ -375,4 +395,5 @@ document.querySelector("#cancelActivity").addEventListener("click",closeEditor);
 document.querySelector("#cancelActivity2").addEventListener("click",closeEditor);
 document.querySelector("#activityForm").addEventListener("submit",createActivity);document.querySelector("#addSession").addEventListener("click",()=>addSessionRow());document.querySelector("#adminActivities").addEventListener("click",async e=>{const b=e.target.closest(".admin-edit-activity");if(!b)return;try{await editActivity(b.dataset.id)}catch(err){alert(err.message)}});
 initAddressAutocomplete();
+loadVenueSuggestions();
 verifyAdmin().then(()=>{document.querySelector("#adminAccess").hidden=true;document.querySelector("#adminContent").hidden=false;loadDashboard()}).catch(()=>{});
