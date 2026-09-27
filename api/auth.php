@@ -134,6 +134,29 @@ try {
         ]);
     }
 
+    if ($action === 'google') {
+        $credential=trim((string)($body['credential']??''));
+        if($credential==='') bh_auth_response(422,['ok'=>false,'error'=>'google_credential_required','message'=>'Google sign-in could not be started.']);
+        $configFile=__DIR__.'/config.php'; $config=is_file($configFile)?require $configFile:[]; $clientId=(string)($config['google']['client_id']??'');
+        if($clientId==='') bh_auth_response(503,['ok'=>false,'error'=>'google_not_configured','message'=>'Google sign-in is not configured yet.']);
+        $context=stream_context_create(['http'=>['method'=>'GET','timeout'=>8,'ignore_errors'=>true,'header'=>"Accept: application/json\r\n"]]);
+        $verify=@file_get_contents('https://oauth2.googleapis.com/tokeninfo?id_token='.rawurlencode($credential),false,$context); $google=is_string($verify)?json_decode($verify,true):null;
+        if(!is_array($google)||!empty($google['error'])||(string)($google['aud']??'')!==$clientId||(string)($google['iss']??'')!=='https://accounts.google.com') bh_auth_response(401,['ok'=>false,'error'=>'google_invalid_token','message'=>'Google could not verify this sign-in. Please try again.']);
+        $email=strtolower(trim((string)($google['email']??''))); $googleId=trim((string)($google['sub']??'')); $emailVerified=filter_var($google['email_verified']??false,FILTER_VALIDATE_BOOLEAN);
+        if($email===''||$googleId===''||!$emailVerified||!filter_var($email,FILTER_VALIDATE_EMAIL)) bh_auth_response(401,['ok'=>false,'error'=>'google_unverified_email','message'=>'Google did not provide a verified email address.']);
+        $db->exec("CREATE TABLE IF NOT EXISTS bh_social_accounts (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,user_id BIGINT UNSIGNED NOT NULL,provider VARCHAR(32) NOT NULL,provider_user_id VARCHAR(191) NOT NULL,email VARCHAR(255) NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY(id),UNIQUE KEY uq_provider_user(provider,provider_user_id),UNIQUE KEY uq_user_provider(user_id,provider),KEY idx_social_user(user_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $stmt=$db->prepare("SELECT user_id FROM bh_social_accounts WHERE provider='google' AND provider_user_id=? LIMIT 1"); $stmt->execute([$googleId]); $linked=$stmt->fetch();
+        if($linked){$userId=(int)$linked['user_id'];}else{
+            $stmt=$db->prepare("SELECT id,status FROM bh_users WHERE email=? LIMIT 1"); $stmt->execute([$email]); $user=$stmt->fetch();
+            if($user){if(($user['status']??'')!=='active') bh_auth_response(403,['ok'=>false,'error'=>'account_not_active','message'=>'This account is not currently active.']); $userId=(int)$user['id'];}
+            else{$randomPassword=password_hash(bin2hex(random_bytes(32)),PASSWORD_DEFAULT);$stmt=$db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,'family','active')");$stmt->execute([$email,$randomPassword]);$userId=(int)$db->lastInsertId();}
+            $stmt=$db->prepare("INSERT INTO bh_social_accounts (user_id,provider,provider_user_id,email) VALUES (?, 'google', ?, ?)");$stmt->execute([$userId,$googleId,$email]);
+        }
+        session_regenerate_id(true); $_SESSION['bh_user_id']=$userId; $_SESSION['bh_csrf']=bin2hex(random_bytes(24));
+        $stmt=$db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");$stmt->execute([$userId]);$user=$stmt->fetch();
+        bh_auth_response(200,['ok'=>true,'authenticated'=>true,'user'=>['id'=>(int)$user['id'],'email'=>$user['email'],'role'=>$user['role'],'status'=>$user['status']],'csrf'=>$_SESSION['bh_csrf'],'provider'=>'google']);
+    }
+
     if ($action === 'register') {
         $email = strtolower(trim((string)($body['email'] ?? '')));
         $password = (string)($body['password'] ?? '');
