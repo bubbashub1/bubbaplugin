@@ -268,6 +268,8 @@ async function createActivity(e){
  e.preventDefault();
  const form=e.currentTarget,fd=new FormData(form);
  const body=Object.fromEntries(fd.entries());
+ const selectedRegion=regionById(body.region);
+ if(selectedRegion){body.region=selectedRegion.region;body.county=selectedRegion.county||body.county||"";}
  body.sessions=collectSessions();body.id=editingActivityId||null;
  const status=document.querySelector("#activityFormMessage"),button=form.querySelector('button[type="submit"]');
  button.disabled=true;status.textContent=editingActivityId?"Saving changes…":"Publishing…";status.classList.remove("is-error");
