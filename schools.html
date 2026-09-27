@@ -60,7 +60,7 @@
 <script>
 document.addEventListener("DOMContentLoaded",()=>{
  const list=document.getElementById("schoolList"),mapEl=document.getElementById("schoolMap"),status=document.getElementById("locationStatus"),count=document.getElementById("schoolCount"),locationInput=document.getElementById("schoolLocation"),phase=document.getElementById("schoolPhase");
- let schools=[],map=null,markers=[],currentView="list";
+ let schools=[],visibleSchools=[],map=null,markers=[],currentView="list";
  const esc=v=>window.bhEscape(v??"");
  const link=(url,label,cls="")=>url?'<a class="'+cls+'" href="'+esc(url)+'" target="_blank" rel="noopener">'+label+' ↗</a>':"";
  const render=()=>{
