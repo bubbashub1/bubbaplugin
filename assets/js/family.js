@@ -2,29 +2,43 @@ document.addEventListener("DOMContentLoaded",async()=>{
 const list=document.getElementById("familyList"),message=document.getElementById("familyMessage"),esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])));let csrf="";
 const get=async()=>{const r=await fetch("api/my-hub.php?view=family",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});const j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||"Please sign in.");return j};
 const age=d=>{if(!d)return "";const x=new Date(d+"T00:00:00"),n=new Date();let y=n.getFullYear()-x.getFullYear(),m=n.getMonth()-x.getMonth();if(n.getDate()<x.getDate())m--;if(m<0){y--;m+=12}return y<2?Math.max(0,y*12+m)+" months":y+" years"};
+function avatarMarkup(item){
+ const path=item.photo_path||"";
+ return path
+  ? "<div class='family-avatar'><img src='"+esc(path)+"' alt=''></div>"
+  : "<div class='family-avatar family-avatar-placeholder'>"+esc((item.name||"Child").trim().charAt(0).toUpperCase())+"</div>";
+}
+async function uploadAvatar(childId,file,form,msg){
+ if(!file)return;
+ const fd=new FormData();
+ fd.append("action","upload_child_avatar"); fd.append("id",childId); fd.append("csrf",csrf); fd.append("avatar",file);
+ try{
+  msg.textContent="Uploading photo…";msg.className="library-message";
+  const r=await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",body:fd});
+  const j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||j.error||"Could not upload photo.");
+  msg.textContent="Photo uploaded.";await load();form.closest(".hub-modal")?.remove();
+ }catch(e){msg.textContent=e.message;msg.classList.add("is-error")}
+}
 function modal(title,type,item={}){
- const o=document.createElement("div");
- o.className="hub-modal";
+ const o=document.createElement("div");o.className="hub-modal";
  const fields=type==="child"
-  ? "<label>Name<input name='name' required maxlength='100' value='"+esc(item.name||"")+"'></label><label>Gender<input name='gender' maxlength='40' value='"+esc(item.gender||"")+"'></label><label>Date of birth<input name='date_of_birth' type='date' value='"+esc(item.date_of_birth||"")+"'></label>"
-  : "<label>Nickname<input name='nickname' maxlength='80' value='"+esc(item.nickname||"")+"' placeholder='Optional'></label><label>Due date<input name='due_date' type='date' value='"+esc(item.due_date||"")+"'></label>";
- o.innerHTML="<form class='hub-modal-card'><div class='admin-panel-head'><div><span class='eyebrow'>Family profile</span><h2>"+title+"</h2></div><button type='button' class='button button-soft' data-close>Close</button></div><div class='hub-form-grid'>"+fields+"</div><div class='hero-actions'><button class='button button-primary' type='submit'>Save</button></div><p data-msg class='library-message'></p></form>";
+  ? "<div class='child-avatar-field'><span class='form-field-label'>Profile photo</span><div class='child-avatar-editor'>"+avatarMarkup(item)+"<div class='child-avatar-copy'><label class='button button-soft avatar-upload-button'>Choose photo<input name='avatar' type='file' accept='image/jpeg,image/png,image/webp' hidden></label><small>JPG, PNG or WebP · up to 5 MB</small></div></div></div><label>Name<input name='name' required maxlength='100' value='"+esc(item.name||"')+"'></label><label>Gender<select name='gender'><option value=''>Prefer not to say</option><option value='Girl' "+(item.gender==="Girl"?"selected":"")+">Girl</option><option value='Boy' "+(item.gender==="Boy"?"selected":"")+">Boy</option><option value='Non-binary' "+(item.gender==="Non-binary"?"selected":"")+">Non-binary</option></select></label><label>Date of birth<input name='date_of_birth' type='date' value='"+esc(item.date_of_birth||"")+"'></label>"
+  : "<label>Nickname<input name='nickname' maxlength='80' value='"+esc(item.nickname||"")+"'' placeholder='Optional'></label><label>Due date<input name='due_date' type='date' value='"+esc(item.due_date||"")+"'></label>";
+ o.innerHTML="<form class='hub-modal-card'><div class='admin-panel-head'><div><span class='eyebrow'>Family profile</span><h2>"+title+"</h2></div><button type='button' class='button button-soft' data-close>Close</button></div><div class='hub-form-grid family-child-form'>"+fields+"</div><div class='hero-actions'><button class='button button-primary' type='submit'>Save</button></div><p data-msg class='library-message'></p></form>";
  document.body.appendChild(o);
- o.querySelector("[data-close]").onclick=()=>o.remove();
- o.onclick=e=>{if(e.target===o)o.remove()};
- o.querySelector("form").onsubmit=async e=>{
-  e.preventDefault();
-  const p=Object.fromEntries(new FormData(e.target));
-  p.action=type==="child"?"save_child":"save_bump";
-  if(item.id)p.id=item.id;
-  p.csrf=csrf;
-  const m=e.target.querySelector("[data-msg]");
+ o.querySelector("[data-close]").onclick=()=>o.remove();o.onclick=e=>{if(e.target===o)o.remove()};
+ const form=o.querySelector("form"),file=form.querySelector("input[name='avatar']");
+ form.onsubmit=async e=>{
+  e.preventDefault();const p=Object.fromEntries(new FormData(form));delete p.avatar;p.action=type==="child"?"save_child":"save_bump";if(item.id)p.id=item.id;p.csrf=csrf;
+  const m=form.querySelector("[data-msg]");
   try{
    const r=await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(p)});
-   const j=await r.json();
-   if(!r.ok||!j.ok)throw Error(j.message||j.error||"Could not save.");
-   o.remove();
-   await load();
+   const j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||j.error||"Could not save.");
+   if(type==="child"&&file?.files?.[0]){
+    const childId=j.id||item.id;if(!childId)throw Error("Child saved, but the photo could not be linked.");
+    await uploadAvatar(childId,file.files[0],form,m);return;
+   }
+   o.remove();await load();
   }catch(err){m.textContent=err.message;m.classList.add("is-error")}
  };
 }
@@ -74,7 +88,7 @@ function render(d){
    const secondaryStatus=secondaryOpenNow?(t.secondaryDays>0?"OPEN · "+t.secondaryDays+" days left":"CLOSES TODAY"):(t.secondaryDays>0?"Opens "+t.secondaryOpenText:"Closed");
    school="<div class='school-tracker'><span class='school-tracker-icon'>🎓</span><div><strong>School application tracker</strong><div class='school-tracker-row'><b>Primary · Sep "+t.primaryYear+"</b><span class='school-tracker-status'>"+esc(primaryStatus)+"</span></div><small>Opens "+esc(t.primaryOpenText)+" · closes "+esc(t.primaryCloseText)+"</small><div class='school-tracker-row'><b>Secondary · Sep "+t.secondaryYear+"</b><span class='school-tracker-status'>"+esc(secondaryStatus)+"</span></div><small>Opens "+esc(t.secondaryOpenText)+" · closes "+esc(t.secondaryCloseText)+"</small></div></div>";
   }
-  return "<article class='hub-family-card'><span>👶</span><div class='hub-family-main'><strong>"+esc(x.name)+"</strong><small>"+(x.date_of_birth?age(x.date_of_birth)+" · "+x.date_of_birth:"Date of birth not set")+"</small>"+school+"</div><button class='button button-soft' data-edit-child='"+x.id+"'>Edit</button></article>";
+  return "<article class='hub-family-card'>"+avatarMarkup(x)+"<div class='hub-family-main'><strong>"+esc(x.name)+"</strong><small>"+(x.date_of_birth?age(x.date_of_birth)+" · "+x.date_of_birth:"Date of birth not set")+"</small>"+school+"</div><button class='button button-soft' data-edit-child='"+x.id+"'>Edit</button></article>";
  }).join("")+b.map(x=>{
   const t=pregnancyTracker(x.due_date);
   let tracker="";
