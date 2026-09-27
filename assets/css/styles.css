@@ -2289,3 +2289,19 @@ img,svg,video{max-width:100%;height:auto}
 .page-heading .eyebrow{color:#ced7c7!important}
 
 .school-tracker{display:flex;gap:10px;align-items:flex-start;margin-top:10px;padding:10px 12px;border:1px solid var(--bh-border);border-radius:14px;background:var(--bh-bg)}.school-tracker-icon{font-size:20px;line-height:1}.school-tracker strong{display:block;color:var(--bh-primary);font-size:12px}.school-tracker small{display:block;margin-top:2px;color:var(--bh-secondary);font-weight:800;font-size:12px}.school-tracker p{margin:3px 0 0;color:var(--bh-text-muted);font-size:10px;line-height:1.4}.hub-family-main{min-width:0;flex:1}@media(max-width:600px){.school-tracker{padding:9px}.school-tracker p{font-size:9px}}
+
+
+/* Pregnancy and antenatal tracker */
+.pregnancy-tracker{display:flex;gap:10px;align-items:flex-start;margin-top:10px;padding:10px 12px;border:1px solid var(--bh-border);border-radius:14px;background:var(--bh-bg)}
+.pregnancy-tracker-icon{font-size:20px;line-height:1}
+.pregnancy-tracker strong{display:block;color:var(--bh-primary);font-size:12px}
+.pregnancy-due{display:flex;gap:10px;align-items:center;margin-top:3px}
+.pregnancy-due b{color:var(--bh-secondary);font-size:13px}
+.pregnancy-due span{font-size:11px;font-weight:800;color:var(--bh-text-muted)}
+.pregnancy-tracker small{display:block;margin-top:3px;color:var(--bh-text-muted);font-size:10px;line-height:1.4}
+.pregnancy-antenatal{display:grid;gap:2px;margin-top:8px;padding:8px;border-radius:10px;background:#fff}
+.pregnancy-antenatal b{font-size:11px!important;color:var(--bh-primary)!important}
+.pregnancy-antenatal span{font-size:10px;color:var(--bh-text-muted)}
+.pregnancy-antenatal small{margin-top:0}
+.baby-here-button{margin-top:9px!important;width:auto!important;min-height:36px!important;padding:7px 12px!important;font-size:11px!important}
+@media(max-width:600px){.pregnancy-tracker{padding:9px}.pregnancy-due{flex-wrap:wrap;gap:5px}}
