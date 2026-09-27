@@ -45,17 +45,17 @@ async function bhActivities(){
         id:s.id,
         day:["","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][Number(s.day_of_week)]||String(s.day_of_week||""),
         day_of_week:Number(s.day_of_week)||null,
-        start:s.start_time||"",
-        time:s.start_time||"",
-        end:s.end_time||"",
-        end_time:s.end_time||"",
+        start:bhFormatTime(s.start_time||""),
+        time:bhFormatTime(s.start_time||""),
+        end:bhFormatTime(s.end_time||""),
+        end_time:bhFormatTime(s.end_time||""),
         duration:s.duration_minutes?String(s.duration_minutes)+" mins":"",
         duration_minutes:s.duration_minutes,
         price:s.price!==null&&s.price!==undefined?"£"+Number(s.price).toFixed(2):"",
         price_value:s.price,
         term_time:s.term_time_only?"Term time":"",
         frequency:s.frequency||"",
-        start_date:s.start_date||"",
+        start_date:bhFormatDate(s.start_date||""),
         end_date:s.end_date||""
       });
     });
@@ -109,6 +109,17 @@ async function bhActivities(){
   return window.__bhActivities;
 }
 
+function bhFormatTime(value){
+  const raw=String(value||"").trim();
+  if(!raw)return "";
+  const m=raw.match(/^(\\d{1,2}):(\\d{2})(?::\\d{2})?$/);
+  return m ? String(m[1]).padStart(2,"0")+":"+m[2] : raw;
+}
+function bhFormatDate(value){
+  const raw=String(value||"").trim();
+  const m=raw.match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);
+  return m ? m[3]+"/"+m[2]+"/"+m[1] : raw;
+}
 function bhGet(key){try{const value=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(value)?value.map(String):[]}catch{return[]}}
 function bhSet(key,value){localStorage.setItem(key,JSON.stringify(value.map(String)))}
 function bhIsSaved(id){return bhGet(BH_KEYS.saved).includes(String(id))}
