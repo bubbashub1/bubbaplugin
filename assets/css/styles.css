@@ -1812,3 +1812,14 @@ body{background:#f5f3ed;color:var(--bh-ink);font-family:"Quicksand",sans-serif}
 
 /* Softer hero background */
 .hero::before{opacity:.34!important}
+
+/* Why Bubba Hub FAQ */
+.bh-faq-section{padding-top:76px;padding-bottom:86px}
+.bh-faq-intro{max-width:780px;margin:0 auto 30px;text-align:center}
+.bh-faq{max-width:900px;margin:0 auto;display:grid;gap:12px}
+.bh-faq details{background:#fff;border:1px solid var(--bh-line);border-radius:18px;padding:0 22px;box-shadow:0 8px 28px rgba(32,53,47,.05)}
+.bh-faq summary{cursor:pointer;list-style:none;font-weight:700;font-size:1.05rem;padding:21px 34px 21px 0;position:relative;color:var(--bh-ink)}
+.bh-faq summary::-webkit-details-marker{display:none}
+.bh-faq summary::after{content:'+';position:absolute;right:0;top:50%;transform:translateY(-50%);font-size:1.5rem;font-weight:500;color:var(--bh-secondary)}
+.bh-faq details[open] summary::after{content:'−'}
+.bh-faq details p{margin:0;padding:0 0 21px;max-width:760px;color:var(--bh-muted);line-height:1.7}
