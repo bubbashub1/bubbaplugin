@@ -584,3 +584,52 @@ td { font-size:14px; }
 
 
 .good-to-know-inline{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px}.good-to-know-pill{display:flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid var(--bh-border);border-radius:10px;background:#fff;font-size:12px;line-height:1.2}.good-to-know-pill-label{color:var(--bh-text-muted);font-weight:600}.good-to-know-pill strong{font-size:12px;font-weight:700}@media(max-width:620px){.good-to-know-inline{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.good-to-know-pill{justify-content:center;flex-direction:column;gap:2px;text-align:center}}
+
+
+/* Activity detail refinements — 2026-09-27 */
+.listing-page{width:min(1180px,calc(100% - 32px))}
+.listing-hero{grid-template-columns:minmax(0,1.18fr) minmax(320px,.82fr);align-items:stretch;gap:32px}
+.listing-gallery{display:block;min-height:480px;height:100%;overflow:hidden;border-radius:24px;background:var(--bh-bg)}
+.listing-gallery img,.listing-gallery-placeholder{width:100%;height:480px!important;min-height:480px;object-fit:cover;border-radius:24px}
+.listing-gallery img:not(:first-child){display:none}
+.listing-summary{display:flex;flex-direction:column;justify-content:center;align-items:flex-start}
+.listing-summary h1{margin:8px 0 16px}
+.listing-intro{margin:0}
+.listing-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.activity-action{min-height:46px;padding:10px 15px}
+.good-to-know-card{margin-bottom:0}
+.good-to-know-card h2{font-size:24px}
+.good-to-know-grid{display:flex;flex-wrap:wrap;gap:12px}
+.good-to-know-pill{display:flex;flex-direction:column;justify-content:center;min-width:150px;flex:1 1 150px;padding:15px 17px;border:1px solid rgba(65,102,81,.13);border-radius:16px;background:linear-gradient(180deg,#fff,#f7fbf8);box-shadow:0 5px 16px rgba(20,68,0,.05)}
+.good-to-know-pill-label{font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--bh-text-muted)}
+.good-to-know-pill strong{margin-top:3px;font-size:16px;color:var(--bh-primary)}
+.contact-modal-backdrop{position:fixed;inset:0;z-index:1200;display:grid;place-items:center;padding:18px;background:rgba(20,40,25,.5)}
+.contact-modal{position:relative;width:min(600px,100%);max-height:90vh;overflow:auto;padding:28px;background:#fff;border-radius:24px;box-shadow:0 25px 80px rgba(0,0,0,.22)}
+.contact-modal h2{margin:4px 0 8px}
+.contact-modal>p{margin:0 0 20px;color:var(--bh-text-muted)}
+.contact-modal-close{position:absolute;right:16px;top:14px;width:38px;height:38px;border:0;border-radius:50%;background:var(--bh-bg);color:var(--bh-primary);font-size:25px;line-height:1}
+#contactForm{display:flex;flex-direction:column;gap:13px}
+#contactForm label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:750}
+#contactForm input,#contactForm select,#contactForm textarea{width:100%;padding:12px 13px;border:1px solid var(--bh-border);border-radius:12px;background:#fbfdfb;color:var(--bh-text)}
+#contactForm textarea{resize:vertical}
+.contact-form-status{margin:0;color:var(--bh-secondary);font-size:13px}
+.contact-honeypot{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;opacity:0!important}
+@media(max-width:850px){
+  .listing-page{width:min(100% - 20px,680px);padding-top:10px}
+  .listing-hero{grid-template-columns:1fr;gap:20px}
+  .listing-gallery{min-height:340px;height:340px}
+  .listing-gallery img,.listing-gallery-placeholder{height:340px!important;min-height:340px}
+  .listing-summary{padding:0 4px}
+  .listing-summary h1{font-size:clamp(34px,9vw,48px)}
+  .listing-actions{width:100%}
+  .activity-action{flex:1 1 calc(50% - 10px)}
+}
+@media(max-width:520px){
+  .listing-page{width:calc(100% - 20px)}
+  .listing-gallery{min-height:270px;height:270px;border-radius:20px}
+  .listing-gallery img,.listing-gallery-placeholder{height:270px!important;min-height:270px;border-radius:20px}
+  .activity-action{flex:1 1 100%;width:100%}
+  .good-to-know-grid{display:grid;grid-template-columns:1fr 1fr}
+  .good-to-know-pill{min-width:0;padding:13px}
+  .contact-modal{padding:24px 18px;border-radius:20px}
+}
