@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="/beta/">
+<title>Organiser · Bubba Hub</title>
+<link rel="stylesheet" href="assets/css/styles.css?v=20260927-storefront1">
+</head><body>
+<header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="planner.html">My planner</a><a href="calendar.html">Calendar</a><a href="my-hub.html">My Hub</a><a class="active" href="leader.html">For class leaders</a><a href="admin.html">Admin</a></nav><div class="header-account-actions"><a class="button button-soft" href="account.html">My account</a><button class="button button-soft" id="siteLogout" type="button">Log out</button></div></header>
+<main class="app-shell"><div id="organiserState" class="listing-loading"><p>Loading organiser…</p></div></main>
+<footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
+<script src="assets/js/app.js?v=20260927-accountplanner1"></script>
+<script>
+document.addEventListener("DOMContentLoaded",async()=>{
+ const state=document.getElementById("organiserState");
+ try{
+  const items=await bhActivities(),parts=location.pathname.replace(/\/+$/,"").split("/"),slug=decodeURIComponent(parts.pop()||"");
+  const clean=s=>String(s||"").toLowerCase().trim().replace(/&/g,"and").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+  const groups=items.filter(a=>clean(a.organiser_slug||a.organiser_name||a.organiser||"")===clean(slug));
+  if(!groups.length){state.className="listing-page";state.innerHTML='<div class="admin-panel"><h2>Organiser not found</h2><p>We could not find this organiser on Bubba Hub.</p><a class="button button-primary" href="directory.html">Find activities</a></div>';return}
+  const first=groups[0],name=first.organiser_name||first.organiser||"Local organiser",avatar=first.organiser_avatar||"",website=first.organiser_website||"",email=first.email||"",location=first.region||first.town||"Devon & Cornwall",description=first.organiser_description||first.organiser_bio||"Local family activities and sessions listed on Bubba Hub.";
+  document.title=name+" · Bubba Hub"; state.className="listing-page organiser-storefront";
+  state.innerHTML='<section class="organiser-hero"><div class="organiser-avatar-large">'+(avatar?'<img src="'+bhEscape(avatar)+'" alt="'+bhEscape(name)+'">':'<span>'+bhEscape(name.slice(0,1).toUpperCase())+'</span>')+'</div><div class="organiser-hero-copy"><span class="eyebrow">Organiser</span><h1>'+bhEscape(name)+'</h1><p>'+bhEscape(description)+'</p><div class="organiser-meta"><span>📍 '+bhEscape(location)+'</span><span>✓ Listed on Bubba Hub</span></div><div class="organiser-hero-actions">'+(website?'<a class="button button-primary" target="_blank" rel="noopener" href="'+bhEscape(website)+'">Visit website</a>':"")+(email?'<a class="button button-soft" href="mailto:'+bhEscape(email)+'">Contact organiser</a>':"")+'</div></div></section><div class="storefront-heading"><div><span class="eyebrow">What they offer</span><h2>Activities from '+bhEscape(name)+'</h2></div><span class="storefront-count">'+groups.length+' '+(groups.length===1?'activity':'activities')+'</span></div><section class="storefront-grid">'+groups.map(a=>'<article class="storefront-card">'+(a.image_url?'<a href="'+bhEscape(bhActivityUrl(a))+'"><img src="'+bhEscape(a.image_url)+'" alt="'+bhEscape(a.title||"Activity")+'" loading="lazy">':'<div class="storefront-card-placeholder">Bubba Hub</div>')+'<div class="storefront-card-body"><span class="eyebrow">'+bhEscape((Array.isArray(a.category)?a.category:[a.category].filter(Boolean)).join(" · ")||"Family activity")+'</span><h3><a href="'+bhEscape(bhActivityUrl(a))+'">'+bhEscape(a.title||"Activity")+'</a></h3><p>'+bhEscape(a.region||a.town||"Devon & Cornwall")+'</p><div class="storefront-card-tags">'+(Array.isArray(a.age_range)?a.age_range:[a.age_range].filter(Boolean)).slice(0,3).map(x=>'<span>'+bhEscape(x)+'</span>').join("")+'</div><a class="button button-soft button-full" href="'+bhEscape(bhActivityUrl(a))+'">View activity</a></div></article>').join("")+'</section><div class="listing-bottom"><a class="button button-soft" href="directory.html">← Back to activities</a></div>';
+ }catch(e){state.innerHTML='<div class="admin-panel"><h2>Organiser unavailable</h2><p>We couldn’t load this organiser right now.</p><a class="button button-primary" href="directory.html">Back to activities</a></div>'}
+});
+</script></body></html>
