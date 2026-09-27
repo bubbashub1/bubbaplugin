@@ -142,7 +142,7 @@
       if(tl)tl.textContent=shortDate(todayISO);
       if(tml)tml.textContent=shortDate(tomorrowISO);
       const input=document.getElementById("personalDate");
-      if(input)input.value=state.targetDate.startsWith("__")?"":state.targetDate;
+      if(input){const target=String(state.targetDate||"");input.value=target.startsWith("__")?"":target;}
       const selected=document.getElementById("selectedWhen");
       if(selected)selected.textContent=state.targetDate==="__weekend__"?"This weekend":state.targetDate?shortDate(state.targetDate):state.day||"Any day";
     }
