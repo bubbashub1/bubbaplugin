@@ -41,13 +41,15 @@ curl_setopt_array($ch, [
 
 $raw = curl_exec($ch);
 $code = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+$curlError = curl_error($ch);
 curl_close($ch);
 
 if ($raw === false || $code < 200 || $code >= 300) {
     bh_schools_json(502, [
         'ok' => false,
         'error' => 'school_source_unavailable',
-        'message' => 'The school directory is temporarily unavailable.'
+        'message' => 'The school directory is temporarily unavailable.',
+        'debug' => $curlError !== '' ? $curlError : ('HTTP '.$code)
     ]);
 }
 
