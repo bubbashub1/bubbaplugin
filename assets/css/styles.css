@@ -1273,3 +1273,211 @@ body{background:linear-gradient(180deg,#f8fbf8 0%,#f4f8f4 100%);}
 .preferences-interest span{font-size:10px;font-weight:800}
 .preferences-loading{font-size:11px;color:var(--bh-text-muted)}
 @media(max-width:850px){.hub-brief-grid{grid-template-columns:1fr}.hub-brief-head{align-items:flex-start;flex-direction:column}.hub-brief-head .button{width:100%}}
+
+
+/* =========================================================
+   BUBBA HUB FAMILY THEME — 2.0 TEMPLATE LAYER
+   Visual-only overrides. Existing JS/API selectors are preserved.
+   Typography: Quicksand + existing Chewy display treatment.
+   ========================================================= */
+:root{
+  --bh-primary:#416651;
+  --bh-secondary:#3c8e96;
+  --bh-bg:#eef5ef;
+  --bh-surface:#fff;
+  --bh-sage:#dce8dc;
+  --bh-soft:#a9c2ad;
+  --bh-accent:#f4b86a;
+  --bh-coral:#ef8f7d;
+  --bh-lilac:#b9a9d8;
+  --bh-sky:#a8d4e8;
+  --bh-peach:#fff1eb;
+  --bh-text:#294136;
+  --bh-text-muted:#66756c;
+  --bh-border:rgba(65,102,81,.12);
+  --bh-shadow:0 10px 30px rgba(41,65,54,.07);
+  --bh-shadow-hover:0 16px 38px rgba(41,65,54,.11);
+  --bh-radius:22px;
+}
+body{background:#fbfcfa;color:var(--bh-text)}
+.site-header{
+  margin-top:14px;
+  min-height:68px;
+  padding:10px 16px;
+  border-radius:22px;
+  box-shadow:0 8px 28px rgba(41,65,54,.06);
+  backdrop-filter:blur(12px);
+}
+.brand-logo{width:52px;height:52px;border-radius:14px}
+.main-nav{gap:4px}
+.main-nav a{border-radius:999px;padding:10px 14px}
+.main-nav a:hover,.main-nav a.active{background:var(--bh-bg);color:var(--bh-primary)}
+.button{border-radius:999px;min-height:44px}
+.button-primary{background:var(--bh-primary);box-shadow:0 8px 18px rgba(65,102,81,.14)}
+.button-soft{background:#eef5ef;color:var(--bh-primary)}
+.button-teal{background:var(--bh-secondary)}
+.hero{
+  margin-top:16px;
+  min-height:500px;
+  padding:58px 44px 54px;
+  border-radius:32px;
+  background:#e8f1e9;
+  box-shadow:var(--bh-shadow);
+}
+.hero::before{opacity:.24}
+.hero::after{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(41,65,54,.08))}
+.hero h1{font-family:"Chewy",cursive;font-size:clamp(44px,6vw,68px)}
+.hero p{font-family:"Quicksand",sans-serif;font-size:18px;font-weight:600}
+.hero-search{
+  margin-top:38px;
+  padding:13px;
+  border-radius:24px;
+  box-shadow:0 18px 44px rgba(41,65,54,.13);
+}
+.hero-search-field select{border-radius:999px;background:#fbfcfa;min-height:48px}
+.hero-search-field label{font-size:10px}
+.hero-age-slider strong{background:var(--bh-peach);color:#b96858}
+.hero-search-button{min-height:48px}
+.hero-links{margin-top:18px}
+.section{padding:72px 0}
+.section h2,.page-heading h1,.page-heading h2,.admin-panel h2{font-family:"Chewy",cursive}
+.feature-grid{gap:18px}
+.feature-card{
+  border-radius:24px;
+  padding:25px;
+  box-shadow:var(--bh-shadow);
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+.feature-card:hover{transform:translateY(-3px);box-shadow:var(--bh-shadow-hover)}
+.feature-card:nth-child(4n+1) .feature-icon{background:var(--bh-peach);color:#c96d5d}
+.feature-card:nth-child(4n+2) .feature-icon{background:#e8f5f3;color:var(--bh-secondary)}
+.feature-card:nth-child(4n+3) .feature-icon{background:#fff5d9;color:#9b7625}
+.feature-card:nth-child(4n+4) .feature-icon{background:#f1ecfa;color:#77649e}
+.feature-icon{border-radius:15px}
+
+.directory-toolbar{
+  background:#f4f8f4;
+  border:1px solid var(--bh-border);
+  border-radius:24px;
+  padding:18px;
+  box-shadow:var(--bh-shadow);
+}
+.directory-toolbar .filter-input{
+  border-radius:999px;
+  min-height:48px;
+  background:#fff;
+}
+.directory-filter-label,.directory-search-field label,.filter-age label{font-weight:750}
+.activity-grid{gap:20px}
+.activity-card{
+  border-radius:24px;
+  border:1px solid var(--bh-border);
+  box-shadow:var(--bh-shadow);
+  transition:transform .2s ease,box-shadow .2s ease;
+}
+.activity-card:hover{transform:translateY(-4px);box-shadow:var(--bh-shadow-hover)}
+.activity-image{height:176px}
+.activity-body,.activity-card-body{padding:20px}
+.activity-card h3{font-size:21px;line-height:1.2}
+.activity-meta{color:var(--bh-secondary)}
+.listing-tags{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.listing-tags span{
+  display:inline-flex;align-items:center;
+  padding:6px 10px;border-radius:999px;
+  background:#f3f6f3;color:var(--bh-text);
+  font-size:12px;font-weight:700
+}
+.directory-viewbar{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;margin:18px 0;
+}
+.directory-views{display:flex;gap:6px;flex-wrap:wrap}
+.directory-view{
+  border:1px solid var(--bh-border);
+  background:#fff;color:var(--bh-text-muted);
+  border-radius:999px;padding:9px 14px;font-weight:750;
+}
+.directory-view.active{background:var(--bh-primary);color:#fff;border-color:var(--bh-primary)}
+.directory-count-control select{border-radius:999px;border:1px solid var(--bh-border);padding:8px 12px}
+
+.listing-card,.admin-panel{
+  border-radius:24px;
+  border:1px solid var(--bh-border);
+  box-shadow:var(--bh-shadow);
+}
+.page-heading{padding:56px 0 26px}
+.page-heading h1{font-size:clamp(40px,5vw,58px)}
+.listing-intro{color:var(--bh-text-muted)}
+.listing-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.venue-page-hero{
+  padding:38px;
+  background:linear-gradient(135deg,#f5faf5,#fff8f3);
+}
+.venue-activity-grid{margin-top:20px}
+.venue-activity-grid .activity-card{background:#fff}
+
+.personal-home-callout,.hub-personal-cta{
+  border:1px solid rgba(239,143,125,.22);
+  border-radius:26px;
+  background:linear-gradient(135deg,#fff5f0,#fffdf8);
+  box-shadow:var(--bh-shadow);
+}
+.personal-home-callout{width:min(var(--bh-max),calc(100% - 32px));margin:24px auto 0;padding:24px 28px}
+.personal-home-callout h2,.hub-personal-cta h2{font-family:"Chewy",cursive;font-weight:400;margin:3px 0 4px}
+.hub-personal-cta{padding:24px;margin:22px 0}
+.hub-dashboard-grid{gap:20px}
+.hub-tools-grid{gap:18px}
+
+.site-footer{
+  margin-top:54px;
+  padding-top:28px;
+  border-top-color:var(--bh-border);
+}
+
+/* Compact Good-to-know treatment on activity pages */
+.activity-good-to-know,.good-to-know,.listing-good-to-know{display:flex;flex-wrap:wrap;gap:7px}
+.activity-good-to-know span,.good-to-know span,.listing-good-to-know span{
+  display:inline-flex;align-items:center;
+  min-height:34px;padding:6px 11px;
+  border-radius:999px;background:#f3f6f3;
+  border:1px solid var(--bh-border);
+  font-size:12px;font-weight:750;
+}
+.activity-good-to-know span:nth-child(4n+1){background:var(--bh-peach)}
+.activity-good-to-know span:nth-child(4n+2){background:#eaf6f4}
+.activity-good-to-know span:nth-child(4n+3){background:#fff6db}
+.activity-good-to-know span:nth-child(4n+4){background:#f2edfa}
+
+/* Mobile-first shell */
+@media(max-width:700px){
+  .site-header{width:calc(100% - 20px);margin-top:10px;padding:9px 12px}
+  .brand-logo{width:46px;height:46px}
+  .main-nav{width:100%;order:3;overflow-x:auto;scrollbar-width:none;padding-bottom:1px}
+  .main-nav::-webkit-scrollbar{display:none}
+  .main-nav a{font-size:12px;padding:8px 11px}
+  .hero,.section,.app-shell,.site-footer{width:calc(100% - 20px)}
+  .hero{margin-top:10px;padding:28px 17px 30px;border-radius:26px}
+  .hero h1{font-size:40px}
+  .hero-search{margin-top:25px;border-radius:20px;padding:11px}
+  .hero-links{gap:8px 14px}
+  .personal-home-callout{width:calc(100% - 20px);padding:20px;margin-top:14px;border-radius:22px}
+  .directory-toolbar{padding:14px;border-radius:20px}
+  .directory-viewbar{align-items:flex-start;flex-direction:column}
+  .directory-views{width:100%;display:grid;grid-template-columns:repeat(4,1fr)}
+  .directory-view{padding:9px 5px;font-size:11px}
+  .activity-grid{grid-template-columns:1fr}
+  .activity-image{height:190px}
+  .venue-page-hero{padding:25px 20px}
+  .page-heading{padding:38px 0 20px}
+  .page-heading h1{font-size:42px}
+}
+@media(max-width:420px){
+  .hero h1{font-size:35px}
+  .directory-views{grid-template-columns:repeat(2,1fr)}
+}
+
+/* Respect reduced motion */
+@media(prefers-reduced-motion:reduce){
+  *{scroll-behavior:auto!important}
+  .feature-card,.activity-card{transition:none}
+}
