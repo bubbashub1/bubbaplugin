@@ -1609,3 +1609,141 @@ body{background:#f5f3ed;color:var(--bh-ink);font-family:"Quicksand",sans-serif}
 .planner-card.is-conflict{border-color:rgba(166,112,52,.35);background:#fffaf4}
 .planner-conflict{padding:3px 7px;border-radius:999px;background:#f6ead9;color:#875927;font-size:8px;font-weight:900;white-space:nowrap}
 @media(max-width:520px){.planner-heading-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.planner-heading-actions .button{width:100%;min-width:0}}
+
+
+/* =========================================================
+   BUBBA HUB — FULL WIDTH HERO / EDITORIAL HOME
+   ========================================================= */
+.site-header,
+.hero,
+.section,
+.page-heading,
+.directory-toolbar,
+.directory-viewbar,
+.activity-grid,
+.site-footer,
+.personal-home-callout,
+.app-shell{
+  width:100%;
+  max-width:none;
+}
+.site-header{
+  margin:0;
+  border-radius:0;
+  padding-left:clamp(18px,4vw,56px);
+  padding-right:clamp(18px,4vw,56px);
+}
+.hero{
+  width:100%;
+  max-width:none;
+  margin:0;
+  border-radius:0;
+  min-height:620px;
+  padding:72px clamp(24px,6vw,96px) 42px;
+  display:grid;
+  grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr);
+  grid-template-rows:auto auto auto;
+  column-gap:clamp(28px,5vw,80px);
+  align-items:center;
+}
+.hero::before,
+.hero::after{border-radius:0}
+.hero::before{
+  opacity:.08;
+  background-position:center;
+}
+.hero-copy{
+  width:auto;
+  max-width:720px;
+  grid-column:1;
+  grid-row:1;
+  align-self:end;
+}
+.hero h1{font-size:clamp(54px,7vw,92px)}
+.hero p{font-size:19px;max-width:650px}
+.hero-visual{
+  grid-column:2;
+  grid-row:1 / span 3;
+  width:100%;
+  height:100%;
+  min-height:430px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  z-index:1;
+}
+.hero-visual::before{
+  content:"";
+  position:absolute;
+  inset:7% 2% 7% 2%;
+  background:#fff;
+  border-radius:28px;
+  transform:rotate(2deg);
+  box-shadow:0 24px 70px rgba(32,53,47,.12);
+}
+.hero-visual img{
+  position:relative;
+  width:100%;
+  height:100%;
+  max-height:500px;
+  object-fit:cover;
+  border-radius:24px;
+  box-shadow:0 22px 60px rgba(32,53,47,.16);
+}
+.hero-search{
+  grid-column:1;
+  grid-row:2;
+  width:100%;
+  margin-top:34px;
+}
+.hero-links{
+  grid-column:1;
+  grid-row:3;
+  margin-top:14px;
+}
+.section{
+  padding-left:clamp(24px,6vw,96px);
+  padding-right:clamp(24px,6vw,96px);
+}
+.section > *{max-width:1400px;margin-left:auto;margin-right:auto}
+.personal-home-callout{
+  border-radius:0;
+  margin-top:0;
+  padding-left:clamp(24px,6vw,96px);
+  padding-right:clamp(24px,6vw,96px);
+}
+.personal-home-callout > *{max-width:1400px}
+.site-footer{
+  padding-left:clamp(24px,6vw,96px);
+  padding-right:clamp(24px,6vw,96px);
+}
+@media(max-width:900px){
+  .hero{
+    grid-template-columns:1fr;
+    grid-template-rows:auto auto auto auto;
+    min-height:0;
+    padding:52px 28px 34px;
+  }
+  .hero-copy{grid-column:1;grid-row:1}
+  .hero-visual{
+    grid-column:1;
+    grid-row:2;
+    min-height:300px;
+    height:340px;
+    margin-top:24px;
+  }
+  .hero-search{grid-column:1;grid-row:3}
+  .hero-links{grid-column:1;grid-row:4}
+}
+@media(max-width:650px){
+  .site-header{width:100%;border-radius:0}
+  .hero{width:100%;padding:34px 16px 24px}
+  .hero h1{font-size:45px}
+  .hero-visual{height:270px;min-height:270px}
+  .hero-visual img{max-height:270px;border-radius:18px}
+  .hero-visual::before{border-radius:20px}
+  .section{width:100%;padding-left:16px;padding-right:16px}
+  .personal-home-callout{width:100%;padding-left:16px;padding-right:16px}
+  .site-footer{width:100%;padding-left:16px;padding-right:16px}
+}
