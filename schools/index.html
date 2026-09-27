@@ -60,7 +60,9 @@
 <script>
 document.addEventListener("DOMContentLoaded",()=>{
  const list=document.getElementById("schoolList"),mapEl=document.getElementById("schoolMap"),status=document.getElementById("locationStatus"),count=document.getElementById("schoolCount"),locationInput=document.getElementById("schoolLocation"),phase=document.getElementById("schoolPhase");
- let schools=[],visibleSchools=[],map=null,markers=[],currentView="list";\nconst loadingOverlay=document.getElementById("bh-loading-overlay");\nfunction setLoading(active){if(!loadingOverlay)return;loadingOverlay.classList.toggle("is-active",active);loadingOverlay.setAttribute("aria-hidden",active?"false":"true");}
+ let schools=[],visibleSchools=[],map=null,markers=[],currentView="list";
+const loadingOverlay=document.getElementById("bh-loading-overlay");
+function setLoading(active){if(!loadingOverlay)return;loadingOverlay.classList.toggle("is-active",active);loadingOverlay.setAttribute("aria-hidden",active?"false":"true");}
  const esc=v=>window.bhEscape(v??"");
  const link=(url,label,cls="")=>url?'<a class="'+cls+'" href="'+esc(url)+'" target="_blank" rel="noopener">'+label+' ↗</a>':"";
  const ofsted=(s)=>s.ofsted_url?link(s.ofsted_url,"Ofsted report","button button-soft"):'<span class="school-ofsted-unavailable">Ofsted report not linked</span>';
@@ -103,6 +105,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   setTimeout(()=>map.invalidateSize(),150);
  };
  const setLocation=async value=>{
+  setLoading(true);
   value=String(value||"").trim(); if(value.length<3){status.textContent="Enter a town or postcode.";return}
   status.textContent="Locating "+value+"…";
   try{
@@ -110,7 +113,7 @@ document.addEventListener("DOMContentLoaded",()=>{
    const lat=Number(g?.lat),lon=Number(g?.lon);
    if(!Number.isFinite(lat)||!Number.isFinite(lon))throw Error("We could not locate that town or postcode.");
    await loadSchools(lat,lon,value);
-  }catch(e){status.textContent=e.message||"Location lookup failed."}
+  }catch(e){status.textContent=e.message||"Location lookup failed."}finally{setLoading(false)}
  };
  const loadSchools=async(lat,lon,label)=>{
    status.textContent="Finding schools near "+label+"…";
@@ -125,6 +128,7 @@ document.addEventListener("DOMContentLoaded",()=>{
    }catch(e){status.textContent=e.message||"Could not load schools."}
  };
  const useHome=async()=>{
+   setLoading(true);
    status.textContent="Loading your saved home area…";
    try{
     const r=await fetch("api/profile.php",{credentials:"same-origin",cache:"no-store"}),j=await r.json(),a=j?.user?.address||{};
@@ -139,7 +143,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     }
     if(!Number.isFinite(lat)||!Number.isFinite(lon))throw Error("We could not locate your saved home area.");
     await loadSchools(lat,lon,homeLocation);
-   }catch(e){status.textContent=e.message||"Unable to use your saved home area."}
+   }catch(e){status.textContent=e.message||"Unable to use your saved home area."}finally{setLoading(false)}
  };
  document.getElementById("searchSchools").onclick=()=>setLocation(locationInput.value);
  list.addEventListener("click",e=>{const b=e.target.closest(".school-google-search");if(b)searchSchool(Number(b.dataset.schoolIndex));});
