@@ -6,20 +6,24 @@ function modal(title,type,item={}){const o=document.createElement("div");o.class
 document.body.appendChild(o);o.querySelector("[data-close]").onclick=()=>o.remove();o.onclick=e=>{if(e.target===o)o.remove()};o.querySelector("form").onsubmit=async e=>{e.preventDefault();const p=Object.fromEntries(new FormData(e.target));p.action=type==="child"?"save_child":"save_bump";if(item.id)p.id=item.id;p.csrf=csrf;const m=e.target.querySelector("[data-msg]");try{const r=await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(p)}),j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||j.error||"Could not save.");o.remove();await load()}catch(err){m.textContent=err.message;m.classList.add("is-error")}}}
 function schoolTracker(dob){
  if(!dob)return null;
- const d=new Date(dob+"T00:00:00"),startYear=d.getFullYear()+5;
- const applicationDate=new Date(startYear,0,15),applicationOpen=new Date(startYear-1,10,1),startDate=new Date(startYear,8,1),now=new Date();
- const days=Math.ceil((applicationDate-now)/(1000*60*60*24));
- const fmt=x=>x.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
- return {startYear,applicationDate,applicationOpen,startDate,days,deadline:fmt(applicationDate),openDate:fmt(applicationOpen),start:fmt(startDate)};
+ const d=new Date(dob+"T00:00:00"),primaryYear=d.getFullYear()+5,secondaryYear=d.getFullYear()+11;
+ const now=new Date(),fmt=x=>x.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+ const primaryOpen=new Date(primaryYear-1,10,1),primaryClose=new Date(primaryYear,0,15);
+ const secondaryOpen=new Date(secondaryYear-1,8,1),secondaryClose=new Date(secondaryYear-1,9,31);
+ const primaryDays=Math.ceil((primaryClose-now)/(1000*60*60*24)),secondaryDays=Math.ceil((secondaryClose-now)/(1000*60*60*24));
+ return {primaryYear,secondaryYear,primaryOpen,primaryClose,secondaryOpen,secondaryClose,primaryDays,secondaryDays,primaryOpenText:fmt(primaryOpen),primaryCloseText:fmt(primaryClose),secondaryOpenText:fmt(secondaryOpen),secondaryCloseText:fmt(secondaryClose)};
 }
 function render(d){
  const c=d.children||[],b=d.bumps||[];
  list.innerHTML=c.concat(b).length?c.map(x=>{
-  const tracker=x.date_of_birth?schoolTracker(x.date_of_birth):null;
+  const t=x.date_of_birth?schoolTracker(x.date_of_birth):null;
   let school="";
-  if(tracker){
-   const isOpen=new Date()>=tracker.applicationOpen&&new Date()<=tracker.applicationDate;const countdown=isOpen?(tracker.days>0?"Applications are OPEN · "+tracker.days+" day"+(tracker.days===1?"":"s")+" left":"Applications close today"):(tracker.days>0?"Applications open "+tracker.openDate:(tracker.days===0?"Applications close today":"Application deadline has passed");
-   school="<div class='school-tracker'><span class='school-tracker-icon'>🎓</span><div><strong>Primary school tracker</strong><small class='school-tracker-status'>"+esc(countdown)+"</small><p>Reception place for September "+tracker.startYear+". Primary applications: "+esc(tracker.deadline)+"</p></div></div>";
+  if(t){
+   const primaryOpenNow=new Date()>=t.primaryOpen&&new Date()<=t.primaryClose;
+   const secondaryOpenNow=new Date()>=t.secondaryOpen&&new Date()<=t.secondaryClose;
+   const primaryStatus=primaryOpenNow?(t.primaryDays>0?"OPEN · "+t.primaryDays+" days left":"CLOSES TODAY"):(t.primaryDays>0?"Opens "+t.primaryOpenText:"Closed");
+   const secondaryStatus=secondaryOpenNow?(t.secondaryDays>0?"OPEN · "+t.secondaryDays+" days left":"CLOSES TODAY"):(t.secondaryDays>0?"Opens "+t.secondaryOpenText:"Closed");
+   school="<div class='school-tracker'><span class='school-tracker-icon'>🎓</span><div><strong>School application tracker</strong><div class='school-tracker-row'><b>Primary · Sep "+t.primaryYear+"</b><span class='school-tracker-status'>"+esc(primaryStatus)+"</span></div><small>Opens "+esc(t.primaryOpenText)+" · closes "+esc(t.primaryCloseText)+"</small><div class='school-tracker-row'><b>Secondary · Sep "+t.secondaryYear+"</b><span class='school-tracker-status'>"+esc(secondaryStatus)+"</span></div><small>Opens "+esc(t.secondaryOpenText)+" · closes "+esc(t.secondaryCloseText)+"</small></div></div>";
   }
   return "<article class='hub-family-card'><span>👶</span><div class='hub-family-main'><strong>"+esc(x.name)+"</strong><small>"+(x.date_of_birth?age(x.date_of_birth)+" · "+x.date_of_birth:"Date of birth not set")+"</small>"+school+"</div><button class='button button-soft' data-edit-child='"+x.id+"'>Edit</button></article>";
  }).join("")+b.map(x=>"<article class='hub-family-card'><span>🤰</span><div><strong>"+esc(x.nickname||"Baby")+"</strong><small>"+(x.due_date?"Due "+x.due_date:"Due date not set")+"</small></div><button class='button button-soft' data-edit-bump='"+x.id+"'>Edit</button></article>").join(""):"<div class='hub-empty'><strong>Your family profile is empty</strong><p>Add a child or bump profile to get started.</p></div>";
