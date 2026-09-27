@@ -2260,3 +2260,6 @@ img,svg,video{max-width:100%;height:auto}
 .account-signed-out{text-align:center;padding:36px 20px}.account-signed-out .feature-icon{margin:0 auto}.account-signed-out h3{margin:16px 0 5px}.account-signed-out p{color:var(--bh-text-muted);margin:0 0 18px}
 @media(max-width:800px){.account-profile-layout{grid-template-columns:1fr}.account-side-nav{position:static;display:grid;grid-template-columns:repeat(2,1fr)}.account-profile-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.account-side-nav{grid-template-columns:1fr}.account-profile-grid{grid-template-columns:1fr}.account-form-actions{display:grid;grid-template-columns:1fr}.account-form-actions .button{width:100%}}
+
+/* My Family */
+.account-family-panel{margin-bottom:0}.account-family-panel .admin-panel-head{align-items:flex-start}.account-family-tip{display:flex;gap:12px;margin-top:24px;padding:16px;border-radius:16px;background:var(--bh-bg);color:var(--bh-text-muted)}.account-family-tip span{font-size:20px}.account-family-tip strong{color:var(--bh-primary)}.account-family-tip p{margin:3px 0 0;font-size:12px}
