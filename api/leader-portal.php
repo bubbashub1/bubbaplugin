@@ -24,7 +24,18 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
  $a=$db->prepare("SELECT id,title,description,category,age_range,county,price_from,booking_url,image_path,status FROM bh_activities WHERE organiser_id=? AND status<>'archived' ORDER BY title");$a->execute([$oid]);$classes=$a->fetchAll();
  foreach($classes as &$c){$v=$db->prepare("SELECT id,venue_name,address,town,region,postcode,latitude,longitude,notes FROM bh_venues WHERE activity_id=? ORDER BY id");$v->execute([(int)$c['id']);$c['venues']=$v->fetchAll();foreach($c['venues'] as &$venue){$s=$db->prepare("SELECT id,day_of_week,start_time,end_time,price,term_time_only,frequency,start_date,end_date FROM bh_sessions WHERE venue_id=? ORDER BY day_of_week,start_time");$s->execute([(int)$venue['id']]);$venue['sessions']=$s->fetchAll();}}
  unset($c,$venue);
- $r=$db->prepare("SELECT br.id,br.status,br.quantity,br.created_at,bs.starts_at,bs.ends_at,bs.activity_id,bs.venue_id,a.title,v.venue_name,u.email FROM bh_booking_reservations br JOIN bh_booking_slots bs ON bs.id=br.slot_id JOIN bh_activities a ON a.id=bs.activity_id JOIN bh_venues v ON v.id=bs.venue_id JOIN bh_users u ON u.id=br.user_id WHERE a.organiser_id=? ORDER BY bs.starts_at DESC,br.id DESC");$r->execute([$oid]);$bookings=$r->fetchAll();
+ $bookings=[];
+ try {
+  $bookingCheck=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('bh_booking_reservations','bh_booking_slots','bh_users')");
+  if((int)$bookingCheck->fetchColumn()===3){
+   $r=$db->prepare("SELECT br.id,br.status,br.quantity,br.created_at,bs.starts_at,bs.ends_at,bs.activity_id,bs.venue_id,a.title,v.venue_name,u.email FROM bh_booking_reservations br JOIN bh_booking_slots bs ON bs.id=br.slot_id JOIN bh_activities a ON a.id=bs.activity_id JOIN bh_venues v ON v.id=bs.venue_id JOIN bh_users u ON u.id=br.user_id WHERE a.organiser_id=? ORDER BY bs.starts_at DESC,br.id DESC");
+   $r->execute([$oid]);
+   $bookings=$r->fetchAll();
+  }
+ } catch(Throwable $bookingError) {
+  // Booking data is optional for the leader dashboard. Do not prevent classes/venues loading.
+  $bookings=[];
+ }
  lp(200,['ok'=>true,'organisation'=>$org,'classes'=>$classes,'bookings'=>$bookings]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')lp(405,['ok'=>false,'error'=>'method_not_allowed']);
