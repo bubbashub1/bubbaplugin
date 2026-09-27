@@ -60,6 +60,7 @@ async function bhActivities(){
       ...a,
       id:String(a.id),
       category:a.category||"",
+      county:a.county||"",
       age_range:a.age_range?[String(a.age_range)]:[],
       price:a.price_from!==null&&a.price_from!==undefined?"£"+Number(a.price_from).toFixed(2):"",
       price_value:a.price_from,
