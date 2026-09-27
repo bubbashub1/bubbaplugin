@@ -195,3 +195,11 @@ function bhActivityBySlug(slug,items){const key=String(slug||"").toLowerCase();r
 function bhActivityUrl(activity){const slug=String(activity?.slug||"").trim();return slug?encodeURI(slug.replace(/^\/+|\/+$/g,"")+"/"):("activity.html?id="+encodeURIComponent(activity?.id||""))}
 
 void bhHydrateSaved();
+
+/* Bubba Hub site-wide authentication/navigation */
+(function(){
+  const s=document.createElement("script");
+  s.src="assets/js/site-auth.js?v=20260927-auth3";
+  s.defer=true;
+  document.head.appendChild(s);
+})();
