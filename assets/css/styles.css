@@ -2263,3 +2263,14 @@ img,svg,video{max-width:100%;height:auto}
 
 /* My Family */
 .account-family-panel{margin-bottom:0}.account-family-panel .admin-panel-head{align-items:flex-start}.account-family-tip{display:flex;gap:12px;margin-top:24px;padding:16px;border-radius:16px;background:var(--bh-bg);color:var(--bh-text-muted)}.account-family-tip span{font-size:20px}.account-family-tip strong{color:var(--bh-primary)}.account-family-tip p{margin:3px 0 0;font-size:12px}
+
+/* Account Notifications */
+.account-notifications-panel{margin-bottom:0}.account-notifications-panel .admin-panel-head{align-items:flex-start}
+.notification-channel-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:24px}
+.notification-choice{display:flex;align-items:flex-start;gap:11px;padding:16px;border:1px solid var(--bh-border);border-radius:16px;background:#fbfdfb;min-width:0}.notification-choice input{width:18px;height:18px;flex:0 0 auto;margin-top:2px;accent-color:var(--bh-primary)}.notification-choice strong,.notification-choice small{display:block}.notification-choice strong{color:var(--bh-primary);font-size:14px}.notification-choice small{margin-top:3px;color:var(--bh-text-muted);font-size:11px;line-height:1.45}
+.notification-section{padding:20px;margin-bottom:18px;border:1px solid var(--bh-border);border-radius:18px;background:#fff}.notification-section h3{margin:0 0 14px;font-size:17px}
+.notification-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}.notification-list label{display:flex;align-items:flex-start;gap:10px;padding:13px;border:1px solid var(--bh-border);border-radius:13px;background:#fbfdfb}.notification-list input{width:17px;height:17px;flex:0 0 auto;margin-top:2px;accent-color:var(--bh-primary)}.notification-list strong,.notification-list small{display:block}.notification-list strong{font-size:13px}.notification-list small{margin-top:2px;color:var(--bh-text-muted);font-size:11px}
+.notification-field{display:flex;flex-direction:column;gap:7px;max-width:520px;color:var(--bh-text-muted);font-size:12px;font-weight:800}.notification-field input{width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--bh-border);border-radius:12px;background:#fff;color:var(--bh-text)}.notification-marketing{margin-top:14px;max-width:700px}
+.notification-actions{display:flex;align-items:center;gap:12px;padding-top:4px}.notification-actions .library-message{margin:0;margin-right:auto}
+@media(max-width:900px){.notification-channel-grid{grid-template-columns:1fr 1fr}.notification-list{grid-template-columns:1fr}}
+@media(max-width:560px){.notification-channel-grid{grid-template-columns:1fr}.notification-section{padding:16px}.notification-actions{display:grid;grid-template-columns:1fr}.notification-actions .library-message{margin:0}.notification-actions .button{width:100%}}
