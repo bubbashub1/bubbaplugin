@@ -52,8 +52,19 @@ try {
         $user = $stmt->fetch();
 
         if (!$user || $user['status'] !== 'active') {
+            if ($adminAuthenticated) {
+                unset($_SESSION['bh_user_id']);
+                $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
+                bh_auth_response(200, [
+                    'ok' => true,
+                    'authenticated' => true,
+                    'is_admin' => true,
+                    'user' => ['id' => 0, 'email' => 'Admin access', 'role' => 'admin', 'status' => 'active'],
+                    'csrf' => $_SESSION['bh_csrf'],
+                ]);
+            }
             $_SESSION = [];
-            bh_auth_response(200, ['ok' => true, 'authenticated' => false, 'csrf' => $_SESSION['bh_csrf'] ?? null]);
+            bh_auth_response(200, ['ok' => true, 'authenticated' => false, 'is_admin' => false, 'csrf' => null]);
         }
 
         bh_auth_response(200, [
