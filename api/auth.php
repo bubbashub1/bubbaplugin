@@ -26,6 +26,8 @@ try {
     }
 
     $db = bh_mysql();
+    $configFile = __DIR__ . '/config.php';
+    $config = is_file($configFile) ? require $configFile : [];
     $action = trim((string)($_GET['action'] ?? 'me'));
 
     if (!isset($_SESSION['bh_csrf'])) {
