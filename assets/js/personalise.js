@@ -311,7 +311,7 @@
       }
       renderChoices();
       fillRegions();
-      renderDayChoices();
+      initWhenChoices();
       renderBudgetChoices();
       renderCategories();
       if($("manualAge"))$("manualAge").addEventListener("change",function(){state.manualAge=this.value});
