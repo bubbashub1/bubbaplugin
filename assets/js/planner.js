@@ -14,20 +14,21 @@ document.addEventListener("DOMContentLoaded",async()=>{
   let csrf="",signedIn=false,items=[];
 
   const auth=await fetch("api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}}).then(r=>r.json()).catch(()=>({ok:false,authenticated:false}));
-  signedIn=!!auth.authenticated;csrf=auth.csrf||"";
+  signedIn=!!auth.authenticated;adminOnly=!!auth.is_admin&&!auth.user?.id;csrf=auth.csrf||"";
 
   async function plannerGet(){
-    if(!signedIn)return null;
+    if(!signedIn||adminOnly)return null;
     try{const response=await fetch("api/planner.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});const payload=await response.json();if(!response.ok||!payload.ok)return null;csrf=payload.csrf||csrf;return payload}catch{return null}
   }
   async function plannerPost(body){
-    if(!signedIn||!csrf)return false;
+    if(!signedIn||adminOnly||!csrf)return false;
     try{const response=await fetch("api/planner.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({...body,csrf})});const payload=await response.json();return !!(response.ok&&payload.ok)}catch{return false}
   }
   const localPlanned=()=>bhGet(BH_KEYS.planner),localVisited=()=>getList(VISITED_KEY),localHidden=()=>getList(HIDE_KEY);
 
   async function syncAccount(){
     if(!signedIn){statusNote.innerHTML='Your planner is saved on this device. <a href="account.html?next=planner.html">Sign in</a> to keep it across devices.';return}
+    if(adminOnly){statusNote.textContent="Admin access — this planner is saved on this device.";return}
     const remote=await plannerGet();
     if(!remote){statusNote.textContent="Your account is signed in, but planner syncing is temporarily unavailable. Your local planner is still safe.";return}
     const localIds=localPlanned(),remoteIds=(remote.planned||[]).map(x=>String(x.id)),mergedIds=[...new Set([...remoteIds,...localIds])];
