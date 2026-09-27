@@ -65,6 +65,27 @@ try {
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        // Family page only needs child/bump data. Keep this path independent of
+        // optional saved/planner/booking tables so one missing optional table
+        // cannot leave the family page stuck loading.
+        if (($_GET['view'] ?? '') === 'family') {
+            $stmt = $db->prepare("SELECT id,name,gender,photo_path,date_of_birth,created_at,updated_at FROM bh_children WHERE user_id=? ORDER BY date_of_birth IS NULL,date_of_birth,name");
+            $stmt->execute([$userId]);
+            $children = $stmt->fetchAll();
+
+            $stmt = $db->prepare("SELECT id,nickname,photo_path,due_date,created_at,updated_at FROM bh_bumps WHERE user_id=? ORDER BY due_date IS NULL,due_date");
+            $stmt->execute([$userId]);
+            $bumps = $stmt->fetchAll();
+
+            bh_hub_json(200, [
+                'ok' => true,
+                'user' => ['id' => (int)$user['id'], 'email' => $user['email'], 'role' => $user['role']],
+                'children' => $children,
+                'bumps' => $bumps,
+                'csrf' => $_SESSION['bh_csrf'],
+            ]);
+        }
+
         $children = [];
         $stmt = $db->prepare("SELECT id,name,gender,photo_path,date_of_birth,created_at,updated_at FROM bh_children WHERE user_id=? ORDER BY date_of_birth IS NULL,date_of_birth,name");
         $stmt->execute([$userId]);
