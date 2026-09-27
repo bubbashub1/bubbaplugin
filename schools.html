@@ -130,7 +130,8 @@ document.addEventListener("DOMContentLoaded",()=>{
     await loadSchools(lat,lon,town||postcode);
    }catch(e){status.textContent=e.message||"Unable to use your saved home area."}
  };
- document.getElementById("searchSchools").onclick=()=>setLocation(locationInput.value);\n list.addEventListener("click",e=>{const b=e.target.closest(".school-google-search");if(b)searchSchool(Number(b.dataset.schoolIndex));});
+ document.getElementById("searchSchools").onclick=()=>setLocation(locationInput.value);
+ list.addEventListener("click",e=>{const b=e.target.closest(".school-google-search");if(b)searchSchool(Number(b.dataset.schoolIndex));});
  locationInput.addEventListener("keydown",e=>{if(e.key==="Enter")setLocation(locationInput.value)});
  document.getElementById("useHomeSchoolLocation").onclick=useHome;
  phase.onchange=()=>{const v=phase.value; if(!v){render();return} const all=schools; schools=all.filter(s=>String(s.phase||"").toLowerCase().includes(v));render();schools=all};
