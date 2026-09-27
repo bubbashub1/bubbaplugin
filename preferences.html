@@ -70,14 +70,25 @@
 </article>
 
 <article class="admin-panel">
-<div class="admin-panel-head"><div><span class="eyebrow">Discovery</span><h2>What should we show you?</h2></div></div>
+<div class="admin-panel-head"><div><span class="eyebrow">Discovery</span><h2>What should we show you?</h2></div><span class="status">Used for personalised ideas</span></div>
 <div class="preferences-two-col">
 <label class="preferences-field">Usual region
-<select id="region"><option value="">Any region</option><option>Torbay</option><option>South Hams</option><option>Teignbridge</option><option>Exeter &amp; East Devon</option><option>North Devon</option><option>Mid Devon</option><option>West Devon</option><option>North Cornwall</option><option>Mid Cornwall</option><option>South Cornwall</option><option>West Cornwall</option><option>East Cornwall</option><option>Plymouth</option></select>
+<select id="region"><option value="">Any region</option></select>
+</label>
+<label class="preferences-field">Usual town
+<select id="town" disabled><option value="">Any town</option></select>
 </label>
 <label class="preferences-field">Preferred day
 <select id="day"><option value="">Any day</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select>
 </label>
+<label class="preferences-field">Maximum session price
+<select id="maxPrice"><option value="">Any price</option><option value="0">Free</option><option value="5">Up to £5</option><option value="10">Up to £10</option><option value="15">Up to £15</option><option value="20">Up to £20</option><option value="30">Up to £30</option></select>
+</label>
+</div>
+<div class="preferences-subsection">
+<h3>Interests</h3>
+<p class="preferences-intro">Choose the types of activities your family tends to enjoy. Bubba Hub uses these to prioritise results, not block everything else.</p>
+<div id="interestChoices" class="preferences-interest-grid"><span class="preferences-loading">Loading activity types…</span></div>
 </div>
 <div class="preference-list">
 <label><input type="checkbox" data-pref="freeActivities"><span><strong>Show free activities first</strong><small>Prioritise activities with no charge when browsing.</small></span></label>
@@ -101,6 +112,6 @@
 </section>
 </main>
 <footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
-<script src="assets/js/preferences.js?v=20260925-1"></script>
+<script src="assets/js/app.js?v=20260927-preferences2"></script><script src="assets/js/preferences.js?v=20260927-preferences2"></script>
 </body>
 </html>
