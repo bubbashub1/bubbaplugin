@@ -32,13 +32,162 @@ async function loadDashboard(){
  }
 }
 
+let bhRegionData={regions:[],towns:[]};
+
+function normaliseTown(value){
+ return String(value||"").trim().toLowerCase().replace(/[’']/g,"'").replace(/\\s+/g," ");
+}
+function regionById(id){
+ return bhRegionData.regions.find(r=>String(r.id)===String(id))||null;
+}
+function findTownMatch(town){
+ const key=normaliseTown(town);
+ if(!key)return null;
+ return bhRegionData.towns.find(t=>normaliseTown(t.town)===key)||null;
+}
+function setRegionAndCounty(regionId){
+ const region=regionById(regionId);
+ const regionEl=document.querySelector("#activityRegion");
+ const countyEl=document.querySelector("#activityCounty");
+ if(!region)return;
+ if(regionEl)regionEl.value=String(region.id);
+ if(countyEl)countyEl.value=region.county||"";
+}
+function applyTownMatch(town){
+ const match=findTownMatch(town);
+ if(match){
+  setRegionAndCounty(match.region_id);
+  return true;
+ }
+ return false;
+}
+function populateRegionSelect(selected=""){
+ const select=document.querySelector("#activityRegion");
+ if(!select)return;
+ const groups={};
+ bhRegionData.regions.forEach(r=>{
+  const county=r.county||"Other";
+  (groups[county] ||= []).push(r);
+ });
+ select.innerHTML='<option value="">Select region</option>';
+ Object.entries(groups).forEach(([county,regions])=>{
+  const group=document.createElement("optgroup");
+  group.label=county;
+  regions.forEach(r=>{
+   const option=document.createElement("option");
+   option.value=r.id;
+   option.textContent=r.region;
+   group.appendChild(option);
+  });
+  select.appendChild(group);
+ });
+ if(selected!=="")select.value=String(selected);
+ updateCountyFromRegion();
+}
+function updateCountyFromRegion(){
+ const region=regionById(document.querySelector("#activityRegion")?.value);
+ const county=document.querySelector("#activityCounty");
+ if(county){
+  county.innerHTML='<option value="">Select county</option>';
+  [...new Set(bhRegionData.regions.map(r=>r.county).filter(Boolean))].forEach(name=>{
+   const option=document.createElement("option");option.value=name;option.textContent=name;county.appendChild(option);
+  });
+  if(region)county.value=region.county||"";
+ }
+}
+function populateTownList(){
+ const list=document.querySelector("#activityTownList");
+ if(!list)return;
+ list.innerHTML="";
+ bhRegionData.towns.forEach(t=>{
+  const option=document.createElement("option");
+  option.value=t.town;
+  option.label=(t.region||"")+" · "+(t.county||"");
+  list.appendChild(option);
+ });
+}
+async function loadRegionData(selectedRegion="", selectedTown=""){
+ try{
+  const r=await fetch("api/regions.php",{credentials:"same-origin",cache:"no-store"});
+  const d=await r.json();
+  if(!r.ok||!d.ok)throw new Error(d.error||"Could not load regions and towns.");
+  bhRegionData={regions:Array.isArray(d.regions)?d.regions:[],towns:Array.isArray(d.towns)?d.towns:[]};
+  populateRegionSelect(selectedRegion);
+  populateTownList();
+  if(selectedTown && !applyTownMatch(selectedTown) && selectedRegion){
+   const region=bhRegionData.regions.find(x=>String(x.id)===String(selectedRegion)||x.region===selectedRegion);
+   if(region)setRegionAndCounty(region.id);
+  }
+  document.querySelector("#statRegions").textContent=String(bhRegionData.regions.length);
+ }catch(error){
+  const select=document.querySelector("#activityRegion");
+  if(select)select.innerHTML='<option value="">Regions unavailable</option>';
+  console.error("Bubba Hub regions:",error);
+ }
+}
+function showTownMessage(message,error=false){
+ const el=document.querySelector("#townMessage");
+ if(!el)return;
+ el.textContent=message||"";
+ el.classList.toggle("is-error",!!error);
+}
+async function addNewTown(){
+ const input=document.querySelector("#activityTown");
+ const typed=(input?.value||"").trim();
+ if(!typed){showTownMessage("Enter the new town name first.",true);input?.focus();return;}
+ const existing=findTownMatch(typed);
+ if(existing){
+  setRegionAndCounty(existing.region_id);
+  showTownMessage(typed+" is already listed in "+existing.region+".");
+  return;
+ }
+ const currentRegion=regionById(document.querySelector("#activityRegion")?.value);
+ if(!currentRegion){
+  showTownMessage("Select the region for this new town first.",true);
+  document.querySelector("#activityRegion")?.focus();
+  return;
+ }
+ if(!window.confirm('Add "'+typed+'" to '+currentRegion.region+', '+currentRegion.county+'?'))return;
+ const button=document.querySelector("#addTownButton");
+ button.disabled=true;showTownMessage("Adding town…");
+ try{
+  const r=await fetch("api/regions.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({town:typed,region_id:currentRegion.id})});
+  const d=await r.json();
+  if(!r.ok||!d.ok)throw new Error(d.error||"Could not add town.");
+  bhRegionData.towns.push(d.town);
+  populateTownList();
+  input.value=d.town.town;
+  setRegionAndCounty(d.town.region_id);
+  showTownMessage("✓ "+d.town.town+" has been added and is now available for everyone.");
+ }catch(error){showTownMessage(error.message,true)}
+ finally{button.disabled=false}
+}
 function initAddressAutocomplete(){
  const input=document.querySelector("#activityAddress");
  const suggestions=document.querySelector("#addressSuggestions");
  if(!input||!suggestions)return;
  let timer=null,controller=null,cache=new Map();
  const hide=()=>{suggestions.hidden=true;suggestions.innerHTML=""};
- const REGION_TOWNS={\n  "Devon":{\n    "Exeter":["Exeter"],"Torridge":["Bideford","Great Torrington","Appledore","Westward Ho!","Northam","Clovelly","Holsworthy"],"North Devon":["Barnstaple","Ilfracombe","South Molton","Braunton","Combe Martin","Instow","Woolacombe","Croyde"],"Teignbridge":["Newton Abbot","Teignmouth","Dawlish","Ashburton","Bovey Tracey","Chudleigh","Kingsteignton","Shaldon"],"Mid Devon":["Tiverton","Crediton","Cullompton","Bradninch","Bampton","Hemyock"],"West Devon":["Okehampton","Tavistock","Bridestowe","Chagford","Yelverton"],"South Hams":["Plympton","Ivybridge","Totnes","Kingsbridge","Salcombe","Modbury","Dartmouth","South Brent","Ugborough"],"East Devon":["Exmouth","Sidmouth","Honiton","Seaton","Axminster","Budleigh Salterton","Ottery St Mary","Cranbrook"]\n  },\n  "Cornwall":{\n    "North Coast":["Newquay","Bude","Padstow","Wadebridge","Camelford","Port Isaac","Polzeath","St Agnes","Perranporth","St Ives","Hayle"],"South Coast":["Falmouth","Penryn","Truro","St Austell","Mevagissey","Fowey","Looe","Polperro","Penzance"],"West Cornwall":["Penzance","St Just","Marazion","Porthleven","Helston","St Ives","Hayle"],"Mid Cornwall":["Truro","St Austell","Bodmin","Lostwithiel","Wadebridge","Redruth","Camborne"],"Bodmin Moor & Inland":["Bodmin","Launceston","Camelford","Liskeard","Callington","St Columb Major"],"The Lizard":["Helston","Lizard","Mullion","Coverack","Cadgwith","Porthleven"]\n  },\n  "Torbay":{"Torbay":["Torquay","Paignton","Brixham"]},"Plymouth":{"Plymouth":["Plymouth"]}\n };\n function normaliseTown(value){return String(value||"").trim().toLowerCase().replace(/[’']/g,"'").replace(/\\s+/g," ");}\n function autoSelectRegionFromTown(town){const key=normaliseTown(town);if(!key)return;const region=document.querySelector("#activityRegion"),county=document.querySelector("#activityForm [name=county]");let match=null;Object.entries(REGION_TOWNS).some(([countyName,regions])=>Object.entries(regions).some(([regionName,towns])=>towns.some(t=>normaliseTown(t)===key)&&(match={county:countyName,region:regionName})));if(match){if(county)county.value=match.county;if(region)region.value=match.region;}}\n const fill=result=>{\n   const x=result.address||{};\n   const town=x.city||x.town||x.village||x.municipality||"";\n   input.value=[x.house_number,x.road].filter(Boolean).join(" ")||result.display_name||"";\n   document.querySelector("#activityTown").value=town;\n   document.querySelector("#activityPostcode").value=x.postcode||"";\n   document.querySelector("#activityLatitude").value=result.lat||"";\n   document.querySelector("#activityLongitude").value=result.lon||"";\n   const county=document.querySelector("#activityForm [name=county]");\n   const addressCounty=String(x.county||x.state||"").toLowerCase();\n   if(county){if(addressCounty.includes("cornwall"))county.value="Cornwall";else if(addressCounty.includes("devon"))county.value="Devon";else if(addressCounty.includes("torbay"))county.value="Torbay";else if(addressCounty.includes("plymouth"))county.value="Plymouth";}\n   autoSelectRegionFromTown(town);\n   hide();\n };
+ const fill=result=>{
+   const x=result.address||{};
+   const town=x.city||x.town||x.village||x.municipality||"";
+   input.value=[x.house_number,x.road].filter(Boolean).join(" ")||result.display_name||"";
+   document.querySelector("#activityTown").value=town;
+   document.querySelector("#activityPostcode").value=x.postcode||"";
+   document.querySelector("#activityLatitude").value=result.lat||"";
+   document.querySelector("#activityLongitude").value=result.lon||"";
+   if(!applyTownMatch(town)){
+    const county=document.querySelector("#activityCounty");
+    const addressCounty=String(x.county||x.state||"").toLowerCase();
+    if(county){
+     if(addressCounty.includes("cornwall"))county.value="Cornwall";
+     else if(addressCounty.includes("devon"))county.value="Devon";
+     else if(addressCounty.includes("torbay"))county.value="Torbay";
+     else if(addressCounty.includes("plymouth"))county.value="Plymouth";
+    }
+   }
+   hide();
+ };
  const search=async()=>{
    const q=input.value.trim();
    if(q.length<3){hide();return}
@@ -46,30 +195,36 @@ function initAddressAutocomplete(){
    if(controller)controller.abort();
    controller=new AbortController();
    try{
-     const r=await fetch("api/geocode.php?q="+encodeURIComponent(q),{credentials:"same-origin",signal:controller.signal,cache:"no-store"});
-     const d=await r.json();
-     if(!r.ok||!d.ok)throw new Error(d.error||"Address lookup failed");
-     cache.set(q,d.results||[]);render(d.results||[]);
+    const r=await fetch("api/geocode.php?q="+encodeURIComponent(q),{credentials:"same-origin",signal:controller.signal,cache:"no-store"});
+    const d=await r.json();
+    if(!r.ok||!d.ok)throw new Error(d.error||"Address lookup failed");
+    cache.set(q,d.results||[]);render(d.results||[]);
    }catch(e){if(e.name!=="AbortError")hide()}
  };
  const render=results=>{
-   suggestions.innerHTML="";
-   if(!results.length){hide();return}
-   results.slice(0,5).forEach((result,i)=>{
-     const b=document.createElement("button");
-     b.type="button";b.className="bh-address-suggestion";b.setAttribute("role","option");
-     b.innerHTML='<strong>'+escapeHtml(result.address?.house_number?((result.address.house_number+" "+(result.address.road||"")).trim()):result.display_name.split(",")[0])+'</strong><span>'+escapeHtml(result.display_name)+'</span>';
-     b.onclick=()=>{fill(result);setTimeout(()=>updateEditorMapFromFields(true),50)};suggestions.appendChild(b);
-   });
-   suggestions.hidden=false;
+  suggestions.innerHTML="";
+  if(!results.length){hide();return}
+  results.slice(0,5).forEach(result=>{
+   const b=document.createElement("button");
+   b.type="button";b.className="bh-address-suggestion";b.setAttribute("role","option");
+   b.innerHTML='<strong>'+escapeHtml(result.address?.house_number?((result.address.house_number+" "+(result.address.road||"")).trim()):result.display_name.split(",")[0])+'</strong><span>'+escapeHtml(result.display_name)+'</span>';
+   b.onclick=()=>{fill(result);setTimeout(()=>updateEditorMapFromFields(true),50)};
+   suggestions.appendChild(b);
+  });
+  suggestions.hidden=false;
  };
  input.addEventListener("input",()=>{clearTimeout(timer);timer=setTimeout(search,900)});
  input.addEventListener("focus",()=>{if(input.value.trim().length>=3)search()});
- document.querySelector("#activityTown")?.addEventListener("change",e=>autoSelectRegionFromTown(e.target.value));\n document.querySelector("#activityTown")?.addEventListener("blur",e=>autoSelectRegionFromTown(e.target.value));\n document.querySelector("#activityLatitude")?.addEventListener("change",()=>updateEditorMapFromFields(true));
+ document.querySelector("#activityTown")?.addEventListener("change",e=>applyTownMatch(e.target.value));
+ document.querySelector("#activityTown")?.addEventListener("blur",e=>applyTownMatch(e.target.value));
+ document.querySelector("#activityRegion")?.addEventListener("change",updateCountyFromRegion);
+ document.querySelector("#addTownButton")?.addEventListener("click",addNewTown);
+ document.querySelector("#activityLatitude")?.addEventListener("change",()=>updateEditorMapFromFields(true));
  document.querySelector("#activityLongitude")?.addEventListener("change",()=>updateEditorMapFromFields(true));
- document.querySelector("#useAddressLocation")?.addEventListener("click",()=>{updateEditorMapFromFields(true);});
+ document.querySelector("#useAddressLocation")?.addEventListener("click",()=>updateEditorMapFromFields(true));
  document.addEventListener("click",e=>{if(!input.parentElement.contains(e.target))hide()});
 }
+
 
 
 let editorMap=null,editorMarker=null;
@@ -100,14 +255,14 @@ function resetEditorMap(){
  if(editorMarker){editorMarker.remove();editorMarker=null;}
  if(editorMap){editorMap.remove();editorMap=null;}
 }
-function openEditor(){setEditorMode(!!editingActivityId);document.querySelector("#activityEditor").hidden=false;document.querySelector("#activityEditor").scrollIntoView({behavior:"smooth",block:"start"});setTimeout(initEditorMap,80)}
+function openEditor(){setEditorMode(!!editingActivityId);document.querySelector("#activityEditor").hidden=false;document.querySelector("#activityEditor").scrollIntoView({behavior:"smooth",block:"start"});loadRegionData().then(()=>{if(editingActivityId){const town=field("town")?.value||"";const region=field("region")?.value||"";applyTownMatch(town);if(region&&!regionById(region)){const match=bhRegionData.regions.find(x=>x.region===region);if(match)setRegionAndCounty(match.id);}}});setTimeout(initEditorMap,80)}
 function closeEditor(){editingActivityId=null;setEditorMode(false);document.querySelector("#activityEditor").hidden=true;document.querySelector("#activityForm").reset();document.querySelector("#sessionRows").innerHTML="";document.querySelector("#activityFormMessage").textContent="";resetEditorMap()}
 let editingActivityId=null;
 function field(name){return document.querySelector('#activityForm [name="'+name+'"]')}
 function addSessionRow(session={}){const wrap=document.querySelector('#sessionRows');if(!wrap)return;const row=document.createElement('div');row.className='admin-form-grid admin-session-row';row.innerHTML='<label>Day<select data-field="day_of_week"><option value="">No session</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="7">Sunday</option></select></label><label>Start<input data-field="start_time" type="time"></label><label>End<input data-field="end_time" type="time"></label><label>Session price (£)<input data-field="price" type="number" step="0.01" min="0"></label><label>Term time only<input data-field="term_time_only" type="checkbox"></label><label>Frequency<input data-field="frequency" type="text"></label><label>Start date<input data-field="start_date" type="date"></label><label>End date<input data-field="end_date" type="date"></label><button type="button" class="button button-soft remove-session">Remove</button>';wrap.appendChild(row);row.querySelector('[data-field="day_of_week"]').value=String(session.day_of_week||'');row.querySelector('[data-field="start_time"]').value=(session.start_time||'').slice(0,5);row.querySelector('[data-field="end_time"]').value=(session.end_time||'').slice(0,5);row.querySelector('[data-field="price"]').value=session.price??'';row.querySelector('[data-field="term_time_only"]').checked=!!Number(session.term_time_only||0);row.querySelector('[data-field="frequency"]').value=session.frequency||'weekly';row.querySelector('[data-field="start_date"]').value=session.start_date||'';row.querySelector('[data-field="end_date"]').value=session.end_date||'';row.querySelector('.remove-session').onclick=()=>row.remove()}
 function collectSessions(){return [...document.querySelectorAll('.admin-session-row')].map(row=>{const g=n=>row.querySelector('[data-field="'+n+'"]');return {day_of_week:Number(g('day_of_week').value||0),start_time:g('start_time').value,end_time:g('end_time').value,price:g('price').value,term_time_only:g('term_time_only').checked,frequency:g('frequency').value,start_date:g('start_date').value,end_date:g('end_date').value}}).filter(x=>x.day_of_week&&x.start_time)}
 function setEditorMode(edit){document.querySelector('#activityEditorTitle').textContent=edit?'Edit activity':'Add activity';document.querySelector('#activityEditorIntro').textContent=edit?'Update the complete listing, venue, image, pricing, age range and sessions.':'Create a real activity in the Bubba Hub MySQL database.';document.querySelector('#saveActivity').textContent=edit?'Save changes':'Save activity'}
-async function editActivity(id){const r=await fetch('api/admin-activities.php?id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Could not load activity.');const a=d.data;editingActivityId=String(a.id);const form=document.querySelector('#activityForm');form.reset();Object.entries({title:a.title,category:a.category,age_range:a.age_range,county:a.county||'',price_from:a.price_from??'',image_path:a.image_path||'',status:a.status||'published',description:a.description||'',booking_url:a.booking_url||'',organisation_name:a.organisation_name||'',email:a.email||'',phone:a.phone||'',website:a.website||'',venue_name:a.venue_name||'',address:a.address||'',town:a.town||'',region:a.region||'',postcode:a.postcode||'',latitude:a.latitude??'',longitude:a.longitude??''}).forEach(([k,v])=>{const el=field(k);if(el)el.value=v??''});\n autoSelectRegionFromTown(a.town||'');document.querySelector('#sessionRows').innerHTML='';(a.sessions||[]).forEach(addSessionRow);if(!(a.sessions||[]).length)addSessionRow();setEditorMode(true);openEditor();setTimeout(()=>updateEditorMapFromFields(true),160)}
+async function editActivity(id){const r=await fetch('api/admin-activities.php?id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Could not load activity.');const a=d.data;editingActivityId=String(a.id);const form=document.querySelector('#activityForm');form.reset();Object.entries({title:a.title,category:a.category,age_range:a.age_range,county:a.county||'',price_from:a.price_from??'',image_path:a.image_path||'',status:a.status||'published',description:a.description||'',booking_url:a.booking_url||'',organisation_name:a.organisation_name||'',email:a.email||'',phone:a.phone||'',website:a.website||'',venue_name:a.venue_name||'',address:a.address||'',town:a.town||'',region:a.region||'',postcode:a.postcode||'',latitude:a.latitude??'',longitude:a.longitude??''}).forEach(([k,v])=>{const el=field(k);if(el)el.value=v??''});\n applyTownMatch(a.town||'');document.querySelector('#sessionRows').innerHTML='';(a.sessions||[]).forEach(addSessionRow);if(!(a.sessions||[]).length)addSessionRow();setEditorMode(true);openEditor();setTimeout(()=>updateEditorMapFromFields(true),160)}
 
 async function createActivity(e){
  e.preventDefault();
