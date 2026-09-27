@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS bh_activities (
  description TEXT NULL,
  category VARCHAR(120) NULL,
  age_range VARCHAR(255) NULL,
+ county ENUM('Devon','Cornwall','Plymouth','Torbay') NULL,
  price_from DECIMAL(10,2) NULL,
  booking_url VARCHAR(500) NULL,
  image_path VARCHAR(500) NULL,
@@ -296,3 +297,6 @@ CREATE TABLE IF NOT EXISTS bh_booking_consent_snapshots (
  INDEX idx_consent_snapshot_reservation (reservation_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+
+ALTER TABLE bh_activities ADD COLUMN IF NOT EXISTS county ENUM('Devon','Cornwall','Plymouth','Torbay') NULL AFTER age_range;
