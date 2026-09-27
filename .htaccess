@@ -7,6 +7,11 @@ RewriteRule ^choose/?$ choose.html [L,QSA]
 # Keep the old personalised URL working and move it to /choose
 RewriteRule ^personalise(?:\.html)?/?$ /beta/choose [R=301,L]
 
+# Organiser storefront URLs: /beta/leader/{company-name}/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^leader/([^/]+)/?$ organiser.html [L,QSA]
+
 # Clean activity URLs: /beta/{activity-slug}/
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
