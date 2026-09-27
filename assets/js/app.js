@@ -86,6 +86,7 @@ async function bhActivities(){
       category:a.category||"",
       county:a.county||"",
       age_range:a.age_range?[String(a.age_range)]:[],
+      accessibility:Array.isArray(a.accessibility)?a.accessibility:[],
       price:a.price_from!==null&&a.price_from!==undefined?"£"+Number(a.price_from).toFixed(2):"",
       price_value:a.price_from,
       image_url:a.image_path||"",
