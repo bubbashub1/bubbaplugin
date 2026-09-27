@@ -6,7 +6,7 @@ function outj($s,$d){http_response_code($s);echo json_encode($d,JSON_UNESCAPED_S
 $name=trim((string)($_GET['name']??'')); $town=trim((string)($_GET['town']??''));
 if($name==='') outj(422,['ok'=>false,'error'=>'school_name_required']);
 $cfile=__DIR__.'/config.php'; $cfg=is_file($cfile)?require $cfile:[]; $g=is_array($cfg['google']??null)?$cfg['google']:[];
-$key=(string)($g['search_api_key']??$g['custom_search_api_key']??''); $cx=(string)($g['search_engine_id']??$g['cx']??'');
+$key=(string)($g['search_api_key']??$g['custom_search_api_key']??''); $cx=(string)($g['search_engine_id']??$g['cx']??'422b14c12fba84ec6');
 if($key===''||$cx==='') outj(503,['ok'=>false,'error'=>'google_search_not_configured']);
 $q=$name.($town!==''?' '.$town:'').' school official website';
 $url='https://www.googleapis.com/customsearch/v1?key='.rawurlencode($key).'&cx='.rawurlencode($cx).'&q='.rawurlencode($q).'&num=5&safe=active';
