@@ -76,6 +76,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let map = null;
     let markers = [];
     let currentView = localStorage.getItem("bh_directory_view") || "list";
+    let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let cardCount = Number(localStorage.getItem("bh_directory_cards") || 4);
     if (![2,3,4,5,6].includes(cardCount)) cardCount = 4;
     $("cardCount").value = String(cardCount);
@@ -135,6 +136,127 @@ document.addEventListener("DOMContentLoaded", async () => {
       } else {
         map.setView([50.42, -3.57], 10);
       }
+    };
+
+    const calendarDateKey = date => {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return y + "-" + m + "-" + d;
+    };
+
+    const parseLocalDate = value => {
+      if (!value) return null;
+      const parts = String(value).split("-").map(Number);
+      if (parts.length !== 3 || parts.some(Number.isNaN)) return null;
+      return new Date(parts[0], parts[1] - 1, parts[2]);
+    };
+
+    const addCalendarEvent = (events, date, activity, session) => {
+      const key = calendarDateKey(date);
+      if (!events[key]) events[key] = [];
+      const venue = bhVenues(activity).find(v => String(v.id) === String(session.venue_id));
+      events[key].push({
+        activity,
+        session,
+        venue,
+        time: session.start ? session.start.slice(0,5) : "",
+        end: session.end ? session.end.slice(0,5) : ""
+      });
+    };
+
+    const buildCalendarEvents = list => {
+      const events = {};
+      const year = calendarMonth.getFullYear();
+      const month = calendarMonth.getMonth();
+      const monthStart = new Date(year, month, 1);
+      const monthEnd = new Date(year, month + 1, 0);
+
+      list.forEach(activity => {
+        bhSessions(activity).forEach(session => {
+          const day = Number(session.day_of_week);
+          if (day < 1 || day > 7) return;
+
+          const sessionStart = parseLocalDate(session.start_date);
+          const sessionEnd = parseLocalDate(session.end_date);
+
+          for (let date = new Date(monthStart); date <= monthEnd; date.setDate(date.getDate() + 1)) {
+            const jsDay = date.getDay() === 0 ? 7 : date.getDay();
+            if (jsDay !== day) continue;
+            if (sessionStart && date < sessionStart) continue;
+            if (sessionEnd && date > sessionEnd) continue;
+            addCalendarEvent(events, new Date(date), activity, session);
+          }
+        });
+      });
+
+      return events;
+    };
+
+    const renderCalendar = list => {
+      const calendar = $("calendarView");
+      if (!calendar) return;
+
+      const events = buildCalendarEvents(list);
+      const year = calendarMonth.getFullYear();
+      const month = calendarMonth.getMonth();
+      const monthStart = new Date(year, month, 1);
+      const monthEnd = new Date(year, month + 1, 0);
+      const firstDay = monthStart.getDay() === 0 ? 6 : monthStart.getDay() - 1;
+      const daysInMonth = monthEnd.getDate();
+      const previousMonthDays = new Date(year, month, 0).getDate();
+      const cells = [];
+
+      for (let i = firstDay - 1; i >= 0; i--) {
+        cells.push({ date: new Date(year, month - 1, previousMonthDays - i), muted: true });
+      }
+      for (let day = 1; day <= daysInMonth; day++) {
+        cells.push({ date: new Date(year, month, day), muted: false });
+      }
+      while (cells.length % 7 !== 0) {
+        cells.push({ date: new Date(year, month, cells.length - firstDay - daysInMonth + 1), muted: true });
+      }
+
+      const monthLabel = monthStart.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+      const todayKey = calendarDateKey(new Date());
+
+      calendar.innerHTML = `
+        <div class="directory-calendar-head">
+          <div><strong>${escapeHtml(monthLabel)}</strong><span>${list.length} matching activit${list.length === 1 ? "y" : "ies"}</span></div>
+          <div class="directory-calendar-actions">
+            <button type="button" class="button button-soft" data-calendar-prev aria-label="Previous month">‹</button>
+            <button type="button" class="button button-soft" data-calendar-today>Today</button>
+            <button type="button" class="button button-soft" data-calendar-next aria-label="Next month">›</button>
+          </div>
+        </div>
+        <div class="directory-calendar-grid">
+          ${["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map(day => `<div class="directory-calendar-weekday">${day}</div>`).join("")}
+          ${cells.map(cell => {
+            const key = calendarDateKey(cell.date);
+            const dayEvents = events[key] || [];
+            return `<div class="directory-calendar-day${cell.muted ? " is-muted" : ""}${key === todayKey ? " is-today" : ""}">
+              <div class="directory-calendar-date">${cell.date.getDate()}</div>
+              <div class="directory-calendar-events">
+                ${dayEvents.slice(0, 4).map(event => `
+                  <a class="directory-calendar-event" href="${bhActivityUrl(event.activity)}">
+                    <span>${escapeHtml(event.time || "")}</span>
+                    <strong>${escapeHtml(event.activity.title)}</strong>
+                    <small>${escapeHtml(event.venue?.town || event.venue?.name || "")}</small>
+                  </a>`).join("")}
+                ${dayEvents.length > 4 ? `<span class="directory-calendar-more">+${dayEvents.length - 4} more</span>` : ""}
+              </div>
+            </div>`;
+          }).join("")}
+        </div>
+      `;
+
+      calendar.querySelector("[data-calendar-prev]").onclick = () => { calendarMonth = new Date(year, month - 1, 1); render(); };
+      calendar.querySelector("[data-calendar-next]").onclick = () => { calendarMonth = new Date(year, month + 1, 1); render(); };
+      calendar.querySelector("[data-calendar-today]").onclick = () => {
+        const now = new Date();
+        calendarMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        render();
+      };
     };
 
     const render = () => {
@@ -220,6 +342,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
       if (currentView === "map") setTimeout(() => renderMap(list), 0);
+      if (currentView === "calendar") renderCalendar(list);
     };
 
     const updateAge = source => {
@@ -278,8 +401,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         localStorage.setItem("bh_directory_view", currentView);
         document.querySelectorAll(".directory-view")
           .forEach(item => item.classList.toggle("active", item === button));
-        $("results").hidden = currentView === "map";
+        $("results").hidden = currentView === "map" || currentView === "calendar";
         $("mapView").hidden = currentView !== "map";
+        $("calendarView").hidden = currentView !== "calendar";
 
         if (currentView === "map") {
           render();
@@ -291,8 +415,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     document.querySelectorAll(".directory-view").forEach(button => button.classList.toggle("active", button.dataset.view === currentView));
-    $("results").hidden = currentView === "map";
+    $("results").hidden = currentView === "map" || currentView === "calendar";
     $("mapView").hidden = currentView !== "map";
+    $("calendarView").hidden = currentView !== "calendar";
     renderAgeTrack();
     render();
   } catch (error) {
