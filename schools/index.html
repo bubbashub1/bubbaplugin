@@ -10,51 +10,138 @@
 <nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="events">Events</a><a href="venues">Venues</a><a href="planner.html">My planner</a><a href="calendar.html">Calendar</a><a href="my-hub.html">My Hub</a><a href="leader.html">For class leaders</a><a href="admin.html">Admin</a></nav>
 <div class="header-account-actions"><a class="button button-soft" href="account.html">My account</a><button class="button button-soft" id="siteLogout" type="button">Log out</button></div></header>
 <main class="app-shell">
-<section class="page-heading"><div><span class="eyebrow">School applications · Local area</span><h1>Local schools</h1><p>See the 10 nearest schools to you, with contact details, website and Ofsted information where available.</p></div><a class="button button-soft" href="family.html">← My family</a></section>
+<section class="page-heading">
+  <div><span class="eyebrow">Family school finder</span><h1>Local schools</h1><p>Find schools near your saved home town or postcode, then explore them on the map.</p></div>
+  <a class="button button-soft" href="my-hub.html">← My Hub</a>
+</section>
+
 <section class="section schools-page">
-<div class="schools-location-bar"><div><strong id="locationTitle">Finding schools near you</strong><span id="locationStatus">Allow location access to find your nearest schools.</span></div><button class="button button-primary" id="locateBtn" type="button">Use my location</button></div>
-<div class="schools-viewbar"><span id="schoolCount">—</span><div class="school-view-controls" role="tablist" aria-label="School view"><button class="button button-soft active" data-view="list" type="button">List</button><button class="button button-soft" data-view="map" type="button">Map</button></div></div>
-<div id="schoolList" class="schools-list"><div class="schools-empty"><h2>Find your local schools</h2><p>We use your browser location to sort nearby schools by distance. Your location is only used for this search.</p><button class="button button-primary" id="locateBtn2" type="button">Find schools near me</button></div></div>
-<div id="schoolMap" class="schools-map" hidden></div>
-<p class="schools-source-note">School locations and contact details are sourced from OpenStreetMap. Ofsted links point to Ofsted's inspection service where a school URN is available. Ofsted information can change, so check the latest report before making decisions.</p>
-</section></main>
-<footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
-<script src="assets/js/app.js?v=20260927-schools1"></script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <div class="school-finder-panel">
+    <div class="school-finder-copy">
+      <span class="eyebrow">Find a school</span>
+      <h2>Schools near your family</h2>
+      <p id="locationStatus">Use your saved home area or enter a town/postcode.</p>
+    </div>
+    <div class="school-finder-controls">
+      <div class="school-search-row">
+        <label for="schoolLocation">Town or postcode</label>
+        <input id="schoolLocation" class="filter-input" type="text" placeholder="e.g. Paignton or TQ3 3XX" autocomplete="postal-code">
+        <button class="button button-primary" id="searchSchools" type="button">Find schools</button>
+      </div>
+      <button class="button button-soft" id="useHomeSchoolLocation" type="button">📍 Use my home</button>
+    </div>
+  </div>
+
+  <div class="school-filter-row">
+    <label for="schoolPhase">School type</label>
+    <select id="schoolPhase" class="filter-input">
+      <option value="">All schools</option>
+      <option value="primary">Primary</option>
+      <option value="secondary">Secondary</option>
+      <option value="special">Special</option>
+      <option value="nursery">Nursery</option>
+    </select>
+    <span id="schoolCount" class="school-result-count">Search for a location</span>
+    <div class="school-view-controls" role="tablist" aria-label="School view">
+      <button class="button button-soft active" data-view="list" type="button">List</button>
+      <button class="button button-soft" data-view="map" type="button">Map</button>
+    </div>
+  </div>
+
+  <div id="schoolList" class="schools-list">
+    <div class="schools-empty"><h2>Find your local schools</h2><p>Start with your saved home location or enter a town/postcode above.</p></div>
+  </div>
+  <div id="schoolMap" class="schools-map" hidden></div>
+
+  <p class="schools-source-note">School locations are mapped with OpenStreetMap. School establishment information can be checked against the Department for Education's Get Information about Schools service, while Google Search can be used to find the school's own website and current public information. Always check the school's latest information directly.</p>
+</section>
+</main><script src="assets/js/app.js?v=20260927-schools2"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded",()=>{
- const list=document.getElementById("schoolList"),mapEl=document.getElementById("schoolMap"),status=document.getElementById("locationStatus"),title=document.getElementById("locationTitle"),count=document.getElementById("schoolCount");
- let schools=[],map=null,markers=[];
+ const list=document.getElementById("schoolList"),mapEl=document.getElementById("schoolMap"),status=document.getElementById("locationStatus"),count=document.getElementById("schoolCount"),locationInput=document.getElementById("schoolLocation"),phase=document.getElementById("schoolPhase");
+ let schools=[],map=null,markers=[],currentView="list";
  const esc=v=>window.bhEscape(v??"");
- const link=(url,label,cls="")=>url?'<a class="school-link '+cls+'" href="'+esc(url)+'" target="_blank" rel="noopener">'+label+' ↗</a>':"";
+ const link=(url,label,cls="")=>url?'<a class="'+cls+'" href="'+esc(url)+'" target="_blank" rel="noopener">'+label+' ↗</a>':"";
  const render=()=>{
-  if(!schools.length){list.innerHTML='<div class="schools-empty"><h2>No nearby schools found</h2><p>Try again from another location.</p></div>';return}
-  count.textContent=schools.length+" nearest "+(schools.length===1?"school":"schools");
-  list.innerHTML=schools.map((s,i)=>{
-   const address=s.address||"Address not listed";
-   const rating=s.ofsted_rating?esc(s.ofsted_rating):"See latest report";
-   return '<article class="school-card"><div class="school-card-number">'+(i+1)+'</div><div class="school-card-main"><div class="school-card-heading"><div><span class="eyebrow">'+esc(s.distance_miles)+' miles away</span><h2>'+esc(s.name)+'</h2></div><span class="school-ofsted">Ofsted · '+rating+'</span></div><p class="school-address">📍 '+esc(address)+'</p><div class="school-details">'+(s.phone?'<a href="tel:'+esc(s.phone)+'">☎ '+esc(s.phone)+'</a>':'')+(s.postcode?'<span>Postcode · '+esc(s.postcode)+'</span>':'')+'</div><div class="school-actions">'+link(s.website,"Website","button button-soft")+link(s.open_days_url,"Open days","button button-soft")+link(s.ofsted_url,"Ofsted","button button-soft")+'</div></div></article>'
-  }).join("");
+   if(!visibleSchools.length){
+     count.textContent=schools.length?"No schools match that type":"No schools found";
+     list.innerHTML='<div class="schools-empty"><h2>'+(schools.length?"No schools match":"No schools found")+'</h2><p>'+(schools.length?"Try another school type.":"Try a nearby town or postcode.")+'</p></div>';
+     return;
+   }
+   count.textContent=visibleSchools.length+" school"+(visibleSchools.length===1?"":"s")+" found";
+   list.innerHTML=visibleSchools.map((s,i)=>{
+    const phaseText=s.phase||s.school_type||"School";
+    return '<article class="school-card"><div class="school-card-number">'+(i+1)+'</div><div class="school-card-main"><div class="school-card-heading"><div><span class="eyebrow">'+esc(s.distance_miles)+' miles away · '+esc(phaseText)+'</span><h2>'+esc(s.name)+'</h2></div></div><p class="school-address">📍 '+esc(s.address||"Address not listed")+'</p><div class="school-details">'+(s.postcode?'<span>Postcode · '+esc(s.postcode)+'</span>':"")+'</div><div class="school-actions">'+link(s.website,"School website","button button-soft")+link(s.ofsted_url,"Ofsted","button button-soft")+"<button class=\"button button-soft school-google-search\" data-school-index=\""+i+"\" type=\"button\">Search online</button>"+'</div></div></article>';
+   }).join("");
+ };
+ const searchSchool=async index=>{
+   const school=visibleSchools[index]; if(!school)return;
+   const card=list.querySelectorAll(".school-card")[index]; const btn=card?.querySelector(".school-google-search");
+   if(btn){btn.disabled=true;btn.textContent="Searching…";}
+   try{
+    const r=await fetch("api/school-search.php?name="+encodeURIComponent(school.name)+"&town="+encodeURIComponent(school.city||school.town||""),{cache:"no-store"}),j=await r.json();
+    if(!r.ok||!j.ok)throw Error(j.error||"Search unavailable.");
+    const result=j.results?.[0];
+    if(!result)throw Error("No online result found.");
+    const actions=card?.querySelector(".school-actions");
+    if(actions){const a=document.createElement("a");a.className="button button-soft";a.href=result.url;a.target="_blank";a.rel="noopener";a.textContent="Open online result ↗";actions.appendChild(a);}
+    if(btn)btn.textContent="Searched";
+   }catch(e){if(btn){btn.disabled=false;btn.textContent="Search again";}status.textContent=e.message||"Online search failed."}
  };
  const renderMap=()=>{
-  if(!window.L)return;
+  if(!window.L||!visibleSchools.length)return;
   if(!map)map=L.map(mapEl).setView([50.42,-3.57],11);
   if(!map._bhTiles)L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors"}).addTo(map),map._bhTiles=true;
   markers.forEach(x=>x.remove());markers=[];
-  schools.forEach(s=>{const m=L.marker([s.latitude,s.longitude]).addTo(map).bindPopup('<strong>'+esc(s.name)+'</strong><br>'+esc(s.distance_miles)+' miles away');markers.push(m)});
-  if(schools.length)map.fitBounds(L.latLngBounds(schools.map(s=>[s.latitude,s.longitude])),{padding:[30,30],maxZoom:14});
+  visibleSchools.forEach(s=>{const m=L.marker([s.latitude,s.longitude]).addTo(map).bindPopup("<strong>"+esc(s.name)+"</strong><br>"+esc(s.distance_miles)+" miles away");markers.push(m)});
+  map.fitBounds(L.latLngBounds(visibleSchools.map(s=>[s.latitude,s.longitude])),{padding:[30,30],maxZoom:14});
   setTimeout(()=>map.invalidateSize(),50);
  };
- const load=()=>{
-  if(!navigator.geolocation){status.textContent="Location is not available in this browser.";return}
-  status.textContent="Requesting your location…";
-  navigator.geolocation.getCurrentPosition(async pos=>{
-   const lat=pos.coords.latitude,lon=pos.coords.longitude;
-   status.textContent="Loading the nearest schools…";
-   try{const r=await fetch("api/schools.php?lat="+encodeURIComponent(lat)+"&lon="+encodeURIComponent(lon),{cache:"no-store"}),j=await r.json();if(!r.ok||!j.ok)throw Error(j.error||"Could not load schools.");schools=j.data||[];title.textContent="Schools nearest to you";status.textContent="Sorted by distance from your current location.";render()}catch(e){list.innerHTML='<div class="schools-empty"><h2>Schools unavailable</h2><p>'+esc(e.message)+'</p></div>';status.textContent="Please try again."}
-  },()=>{status.textContent="Location access was declined. Please allow location access and try again."},{enableHighAccuracy:false,maximumAge:300000,timeout:10000});
+ const setLocation=async value=>{
+  value=String(value||"").trim(); if(value.length<3){status.textContent="Enter a town or postcode.";return}
+  status.textContent="Locating "+value+"…";
+  try{
+   const gr=await fetch("api/geocode.php?q="+encodeURIComponent(value+", UK"),{cache:"no-store"}),gj=await gr.json(),g=gj?.results?.[0];
+   const lat=Number(g?.lat),lon=Number(g?.lon);
+   if(!Number.isFinite(lat)||!Number.isFinite(lon))throw Error("We could not locate that town or postcode.");
+   await loadSchools(lat,lon,value);
+  }catch(e){status.textContent=e.message||"Location lookup failed."}
  };
- document.getElementById("locateBtn").onclick=load;document.getElementById("locateBtn2").onclick=load;
- document.querySelectorAll("[data-view]").forEach(btn=>btn.onclick=()=>{document.querySelectorAll("[data-view]").forEach(x=>x.classList.toggle("active",x===btn));const isMap=btn.dataset.view==="map";list.hidden=isMap;mapEl.hidden=!isMap;if(isMap&&schools.length)renderMap()});
+ const loadSchools=async(lat,lon,label)=>{
+   status.textContent="Finding schools near "+label+"…";
+   try{
+    const r=await fetch("api/schools.php?lat="+encodeURIComponent(lat)+"&lon="+encodeURIComponent(lon),{cache:"no-store"}),j=await r.json();
+    if(!r.ok||!j.ok)throw Error(j.message||j.error||"Could not load schools.");
+    schools=j.data||[];
+    visibleSchools=schools;
+    phase.value="";
+    status.textContent="Showing schools near "+label+".";
+    render(); if(currentView==="map")renderMap();
+   }catch(e){status.textContent=e.message||"Could not load schools."}
+ };
+ const useHome=async()=>{
+   status.textContent="Loading your saved home area…";
+   try{
+    const r=await fetch("api/profile.php",{credentials:"same-origin",cache:"no-store"}),j=await r.json(),a=j?.user?.address||{};
+    const town=String(a.city||"").trim(),postcode=String(a.postcode||"").trim();
+    if(!town&&!postcode)throw Error("Add your home town or postcode in My account first.");
+    locationInput.value=town||postcode;
+    let lat=Number(a.latitude),lon=Number(a.longitude);
+    if(!Number.isFinite(lat)||!Number.isFinite(lon)){
+      const gr=await fetch("api/geocode.php?q="+encodeURIComponent((town||postcode)+", UK"),{cache:"no-store"}),gj=await gr.json(),g=gj?.results?.[0];
+      lat=Number(g?.lat);lon=Number(g?.lon);
+    }
+    if(!Number.isFinite(lat)||!Number.isFinite(lon))throw Error("We could not locate your saved home area.");
+    await loadSchools(lat,lon,town||postcode);
+   }catch(e){status.textContent=e.message||"Unable to use your saved home area."}
+ };
+ document.getElementById("searchSchools").onclick=()=>setLocation(locationInput.value);
+ list.addEventListener("click",e=>{const b=e.target.closest(".school-google-search");if(b)searchSchool(Number(b.dataset.schoolIndex));});
+ locationInput.addEventListener("keydown",e=>{if(e.key==="Enter")setLocation(locationInput.value)});
+ document.getElementById("useHomeSchoolLocation").onclick=useHome;
+ phase.onchange=()=>{const v=String(phase.value||"").toLowerCase();visibleSchools=v?schools.filter(s=>String(s.phase||"").toLowerCase()===v):schools;render();if(currentView==="map")renderMap()};
+ document.querySelectorAll("[data-view]").forEach(btn=>btn.onclick=()=>{currentView=btn.dataset.view;document.querySelectorAll("[data-view]").forEach(x=>x.classList.toggle("active",x===btn));const isMap=currentView==="map";list.hidden=isMap;mapEl.hidden=!isMap;if(isMap)renderMap()});
  document.getElementById("siteLogout")?.addEventListener("click",async()=>{try{await fetch("api/auth.php?action=logout",{credentials:"same-origin"})}finally{location.href="index.html"}});
 });
 </script></body></html>
