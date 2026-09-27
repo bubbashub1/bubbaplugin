@@ -322,7 +322,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (calendar) calendar.innerHTML = '<div class="admin-panel"><p>Checking school holiday dates…</p></div>';
     };
 
+    const updateViewVisibility = () => {
+      const results = $("results");
+      const mapView = $("mapView");
+      const calendarView = $("calendarView");
+      if (results) results.hidden = currentView === "map" || currentView === "calendar";
+      if (mapView) mapView.hidden = currentView !== "map";
+      if (calendarView) calendarView.hidden = currentView !== "calendar";
+    };
+
     const render = () => {
+      updateViewVisibility();
       const search = $("search").value.trim().toLowerCase();
       const category = $("category").value;
       const region = $("area").value;
@@ -473,9 +483,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         updateCardCountVisibility();
         document.querySelectorAll(".directory-view")
           .forEach(item => item.classList.toggle("active", item === button));
-        $("results").hidden = currentView === "map" || currentView === "calendar";
-        $("mapView").hidden = currentView !== "map";
-        $("calendarView").hidden = currentView !== "calendar";
+        updateViewVisibility();
 
         if (currentView === "map") {
           render();
@@ -487,9 +495,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     document.querySelectorAll(".directory-view").forEach(button => button.classList.toggle("active", button.dataset.view === currentView));
-    $("results").hidden = currentView === "map" || currentView === "calendar";
-    $("mapView").hidden = currentView !== "map";
-    $("calendarView").hidden = currentView !== "calendar";
+    updateViewVisibility();
     renderAgeTrack();
     render();
   } catch (error) {
