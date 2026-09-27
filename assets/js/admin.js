@@ -18,6 +18,7 @@ async function loadVenueSuggestions(){
   });
  }catch{}
 }
+function validateSessions(){const rows=[...document.querySelectorAll(".admin-session-row")];for(const row of rows){const day=row.querySelector('[data-field="day_of_week"]')?.value,start=row.querySelector('[data-field="start_time"]')?.value,end=row.querySelector('[data-field="end_time"]')?.value;if(!day&&!start&&!end)continue;if(!day||!start)return "Each session needs a day and start time.";if(end&&end===start)return "Session end time must be different from the start time.";}return ""}
 const setAuthMessage=(m,e=false)=>{const x=document.querySelector("#adminAuthMessage");x.textContent=m;x.classList.toggle("is-error",e)};
 async function logout(){try{await fetch("admin-auth.php?action=logout",{credentials:"same-origin",cache:"no-store"});}finally{location.reload()}}
 const escapeHtml=v=>String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
@@ -38,8 +39,8 @@ async function loadDashboard(){
   document.querySelector(".admin-stats article:last-child strong").textContent="Live";
   const render=()=>{
    const q=document.querySelector("#adminSearch").value.trim().toLowerCase();
-   const list=all.filter(a=>`${a.title??""} ${a.category??""} ${a.organisation_name??""}`.toLowerCase().includes(q));
-   table.innerHTML=list.map(a=>`<tr><td><strong>${escapeHtml(a.title)}</strong><small>${escapeHtml(a.organisation_name||"")}</small></td><td>${escapeHtml(a.category)}</td><td>${escapeHtml(a.venue_count)} venue${Number(a.venue_count)===1?"":"s"}</td><td>—</td><td>${a.price_from!==null&&a.price_from!==undefined?"£"+Number(a.price_from).toFixed(2):"—"}</td><td><span class="admin-status">${escapeHtml(a.status)}</span></td><td><button type="button" class="button button-soft admin-edit-activity" data-id="${escapeHtml(a.id)}">Edit</button></td></tr>`).join("")||'<tr><td colspan="7">No activities found.</td></tr>';
+   const list=all.filter(a=>String([a.title,a.category,a.organisation_name,a.county,a.town,a.region].filter(Boolean).join(" ")).toLowerCase().includes(q));
+   table.innerHTML=list.map(a=>{const price=a.price_from!==null&&a.price_from!==undefined?"£"+Number(a.price_from).toFixed(2):"—";const status=a.status==="published"?"Published":"Draft";return '<tr><td><strong>'+escapeHtml(a.title)+'</strong><small>'+escapeHtml(a.organisation_name||"")+'</small></td><td>'+escapeHtml(a.category)+'</td><td>'+escapeHtml(a.town||a.county||"—")+'</td><td>'+escapeHtml(a.session_summary||"—")+'</td><td>'+price+'</td><td><span class="admin-status admin-status-'+escapeHtml(a.status)+'">'+status+'</span></td><td><button type="button" class="button button-soft admin-edit-activity" data-id="'+escapeHtml(a.id)+'">Edit</button></td></tr>';}).join("")||'<tr><td colspan="7">No activities found.</td></tr>';
   };
   document.querySelector("#adminSearch").oninput=render;
   render();
@@ -337,6 +338,8 @@ function setEditorMode(edit){document.querySelector('#activityEditorTitle').text
 async function editActivity(id){const r=await fetch('api/admin-activities.php?id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Could not load activity.');const a=d.data;editingActivityId=String(a.id);const form=document.querySelector('#activityForm');form.reset();Object.entries({title:a.title,category:a.category,age_range:a.age_range,county:a.county||'',price_from:a.price_from??'',image_path:a.image_path||'',status:a.status||'published',description:a.description||'',booking_url:a.booking_url||'',organisation_name:a.organisation_name||'',email:a.email||'',phone:a.phone||'',website:a.website||'',venue_name:a.venue_name||'',address:a.address||'',town:a.town||'',region:a.region||'',postcode:a.postcode||'',latitude:a.latitude??'',longitude:a.longitude??''}).forEach(([k,v])=>{const el=field(k);if(el)el.value=v??''});
  applyTownMatch(a.town||'');document.querySelector('#sessionRows').innerHTML='';(a.sessions||[]).forEach(addSessionRow);if(!(a.sessions||[]).length)addSessionRow();setEditorMode(true);openEditor();setTimeout(()=>updateEditorMapFromFields(true),160)}
 
+function statusMessage(message,error=false){const el=document.querySelector("#activityFormMessage");if(el){el.textContent=message;el.classList.toggle("is-error",error)}}
+
 async function createActivity(e){
  e.preventDefault();
  const form=e.currentTarget,fd=new FormData(form);
@@ -345,7 +348,7 @@ async function createActivity(e){
  body.county=document.querySelector("#activityCounty")?.value||"";
  const selectedRegion=regionById(body.region);
  if(selectedRegion){body.region=selectedRegion.region;body.county=selectedRegion.county||body.county||"";}
- body.sessions=collectSessions();body.id=editingActivityId||null;
+ const sessionError=validateSessions();if(sessionError){statusMessage(sessionError,true);return;}body.sessions=collectSessions();body.id=editingActivityId||null;
  const status=document.querySelector("#activityFormMessage"),button=form.querySelector('button[type="submit"]');
  button.disabled=true;status.textContent=editingActivityId?"Saving changes…":"Publishing…";status.classList.remove("is-error");
  try{
