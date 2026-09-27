@@ -34,7 +34,13 @@ if($hasOrgUserId){
 if(!$org)lp(403,['ok'=>false,'error'=>'organiser_required','message'=>'Your account is not linked to a class leader organisation yet.']);
 $oid=(int)$org['id'];
 if($_SERVER['REQUEST_METHOD']==='GET'){
- $a=$db->prepare("SELECT * FROM bh_activities WHERE organiser_id=? AND status<>'archived' ORDER BY title");$a->execute([$oid]);$classes=$a->fetchAll();
+ $classes=[];
+ try{
+  $a=$db->prepare("SELECT * FROM bh_activities WHERE organiser_id=? AND status<>'archived' ORDER BY title");
+  $a->execute([$oid]);$classes=$a->fetchAll();
+ }catch(Throwable $activityError){
+  lp(500,['ok'=>false,'error'=>'classes_query_failed','message'=>$activityError->getMessage()]);
+ }
  foreach($classes as &$c){$v=$db->prepare("SELECT * FROM bh_venues WHERE activity_id=? ORDER BY id");$v->execute([(int)$c['id']);$c['venues']=$v->fetchAll();foreach($c['venues'] as &$venue){$s=$db->prepare("SELECT * FROM bh_sessions WHERE venue_id=? ORDER BY day_of_week,start_time");$s->execute([(int)$venue['id']);$venue['sessions']=$s->fetchAll();}}
  unset($c,$venue); $bookings=[];
  try {
@@ -60,8 +66,22 @@ if($action==='create_listing'){
  if($venueName===''||$town==='')lp(422,['ok'=>false,'error'=>'venue_required']);
  $db->beginTransaction();
  try{
-  $q=$db->prepare("INSERT INTO bh_activities (title,description,category,age_range,county,price_from,booking_url,status,organiser_id) VALUES (?,?,?,?,?,?,?,?,?)");
-  $q->execute([$title,$description,$category,$age,'',$price,$url,'draft',$oid]);$activityId=(int)$db->lastInsertId();
+  // Build a unique slug because live databases may require this column.
+  $baseSlug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-', $title),'-'));
+  if($baseSlug==='')$baseSlug='class';
+  $slug=$baseSlug;$suffix=2;
+  $slugCheck=$db->prepare("SELECT id FROM bh_activities WHERE slug=? LIMIT 1");
+  while(true){$slugCheck->execute([$slug]);if(!$slugCheck->fetch())break;$slug=$baseSlug.'-'.$suffix++;}
+  $countyExists=false;
+  try{$cc=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='county'");$cc->execute();$countyExists=((int)$cc->fetchColumn())>0;}catch(Throwable $ignored){}
+  if($countyExists){
+   $q=$db->prepare("INSERT INTO bh_activities (title,slug,description,category,age_range,county,price_from,booking_url,status,organiser_id) VALUES (?,?,?,?,?,?,?,?,?,?)");
+   $q->execute([$title,$slug,$description,$category,$age,'',$price,$url,'draft',$oid]);
+  }else{
+   $q=$db->prepare("INSERT INTO bh_activities (title,slug,description,category,age_range,price_from,booking_url,status,organiser_id) VALUES (?,?,?,?,?,?,?,?,?)");
+   $q->execute([$title,$slug,$description,$category,$age,$price,$url,'draft',$oid]);
+  }
+  $activityId=(int)$db->lastInsertId();
   $v=$db->prepare("INSERT INTO bh_venues (venue_name,address,town,region,postcode,latitude,longitude,notes,activity_id) VALUES (?,?,?,?,?,?,?,?,?)");
   $v->execute([$venueName,$address,$town,$region,$postcode,$lat===''?null:$lat,$lng===''?null:$lng,'',$activityId]);
   $db->commit();
