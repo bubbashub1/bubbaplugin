@@ -224,6 +224,35 @@ try {
         bh_hub_json(200, ['ok' => true, 'id' => $id]);
     }
 
+    if ($action === 'convert_bump_to_child') {
+        $bumpId = (int)($body['id'] ?? 0);
+        $name = trim((string)($body['name'] ?? ''));
+        $gender = trim((string)($body['gender'] ?? ''));
+        $dob = trim((string)($body['date_of_birth'] ?? date('Y-m-d')));
+        if ($bumpId < 1) bh_hub_json(422, ['ok' => false, 'error' => 'bump_required']);
+        if ($name === '') bh_hub_json(422, ['ok' => false, 'error' => 'child_name_required']);
+        $d = DateTime::createFromFormat('Y-m-d', $dob);
+        if (!$d || $d->format('Y-m-d') !== $dob) bh_hub_json(422, ['ok' => false, 'error' => 'invalid_date_of_birth']);
+
+        $stmt = $db->prepare("SELECT id,nickname FROM bh_bumps WHERE id=? AND user_id=? LIMIT 1");
+        $stmt->execute([$bumpId,$userId]);
+        if (!$stmt->fetch()) bh_hub_json(404, ['ok' => false, 'error' => 'bump_not_found']);
+
+        $db->beginTransaction();
+        try {
+            $stmt = $db->prepare("INSERT INTO bh_children (user_id,name,gender,date_of_birth) VALUES (?,?,?,?)");
+            $stmt->execute([$userId,$name,$gender ?: null,$dob]);
+            $childId = (int)$db->lastInsertId();
+            $stmt = $db->prepare("DELETE FROM bh_bumps WHERE id=? AND user_id=?");
+            $stmt->execute([$bumpId,$userId]);
+            $db->commit();
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) $db->rollBack();
+            throw $e;
+        }
+        bh_hub_json(200, ['ok' => true, 'id' => $childId]);
+    }
+
     if ($action === 'delete_bump') {
         $id = (int)($body['id'] ?? 0);
         $stmt = $db->prepare("DELETE FROM bh_bumps WHERE id=? AND user_id=?");
