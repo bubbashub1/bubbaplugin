@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Venues · Bubba Hub</title>
+<base href="/beta/">
+<link rel="stylesheet" href="assets/css/styles.css?v=20260927-sections1">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a>
+  <nav class="main-nav" aria-label="Main navigation">
+    <a href="directory.html">Find activities</a><a href="events">Events</a><a class="active" href="venues">Venues</a>
+    <a href="planner.html">My planner</a><a href="calendar.html">Calendar</a><a href="my-hub.html">My Hub</a><a href="leader.html">For class leaders</a><a href="admin.html">Admin</a>
+  </nav>
+  <div class="header-account-actions"><a class="button button-soft" href="account.html">My account</a><button class="button button-soft" id="siteLogout" type="button">Log out</button></div>
+</header>
+<main class="app-shell">
+  <section class="page-heading">
+    <div><span class="eyebrow">Find your local places</span><h1>Venues</h1><p>Explore the places where Bubba Hub groups and classes meet.</p></div>
+    <a class="button button-primary" href="directory.html">Find activities</a>
+  </section>
+  <section class="section venues-page-section">
+    <div class="venues-toolbar"><label class="venue-search-label">Search venues<input id="venueSearch" type="search" placeholder="Try a venue, town or postcode"></label><span class="status" id="venueCount"></span></div>
+    <div id="venueGrid" class="venues-grid" aria-live="polite"><div class="listing-loading"><p>Loading venues…</p></div></div>
+  </section>
+</main>
+<footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
+<script src="assets/js/app.js?v=20260927-sections1"></script>
+<script>
+document.addEventListener("DOMContentLoaded",async()=>{
+ const grid=document.getElementById("venueGrid"),search=document.getElementById("venueSearch"),count=document.getElementById("venueCount");
+ const esc=v=>bhEscape(v??"");
+ try{
+   const r=await fetch("api/venues.php",{cache:"no-store",headers:{Accept:"application/json"}}),d=await r.json();
+   if(!r.ok||!d.ok)throw new Error(d.error||"Could not load venues.");
+   const venues=Array.isArray(d.data)?d.data:[];
+   const render=()=>{
+     const q=search.value.trim().toLowerCase();
+     const rows=venues.filter(v=>[v.name,v.address,v.town,v.region,v.postcode].join(" ").toLowerCase().includes(q));
+     count.textContent=rows.length+" "+(rows.length===1?"venue":"venues");
+     if(!rows.length){grid.innerHTML='<div class="empty-state"><h3>No venues found</h3><p>Try a different search.</p></div>';return}
+     grid.innerHTML=rows.map(v=>{
+       const address=[v.address,v.town,v.postcode].filter(Boolean).join(" · ");
+       const map=v.latitude&&v.longitude?"https://www.openstreetmap.org/?mlat="+encodeURIComponent(v.latitude)+"&mlon="+encodeURIComponent(v.longitude)+"#map=16/"+encodeURIComponent(v.latitude)+"/"+encodeURIComponent(v.longitude):"https://www.openstreetmap.org/search?query="+encodeURIComponent(address||v.name);
+       return '<article class="venue-directory-card"><div class="venue-card-top"><span class="venue-icon">⌂</span><span class="venue-count">'+Number(v.activity_count||0)+' '+(Number(v.activity_count||0)===1?"activity":"activities")+'</span></div><h2>'+esc(v.name)+'</h2><p>'+esc(address||"Local venue")+'</p><div class="venue-card-actions"><a class="button button-primary" href="venue.html?id='+encodeURIComponent(v.id)+'">View venue</a><a class="button button-soft" href="'+map+'" target="_blank" rel="noopener">Map</a></div></article>';
+     }).join("");
+   };
+   search.addEventListener("input",render);render();
+ }catch(e){grid.innerHTML='<div class="empty-state"><h3>Venues unavailable</h3><p>'+esc(e.message||"Could not load venues.")+'</p><a class="button button-primary" href="directory.html">Find activities</a></div>'}
+ const logout=document.getElementById("siteLogout");if(logout)logout.addEventListener("click",async()=>{try{await fetch("api/auth.php?action=logout",{credentials:"same-origin"});}finally{location.href="index.html"}});
+});
+</script>
+</body></html>
