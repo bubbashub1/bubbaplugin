@@ -147,3 +147,8 @@
 .my-hub-page .hub-main-dashboard > .hub-dashboard-grid{display:contents}
 .my-hub-page .hub-main-dashboard > .hub-brief{height:100%}
 @media(max-width:700px){.my-hub-page .hub-main-dashboard{grid-template-columns:1fr}}
+
+/* Top stat icons: keep each icon inside a defined box */
+.my-hub-page .hub-stat{position:relative}
+.my-hub-page .hub-stat>span{width:40px;height:40px;margin:0 0 10px;padding:0;display:grid;place-items:center;border:1px solid var(--bh-border);border-radius:12px;background:var(--bh-bg);box-sizing:border-box}
+.my-hub-page .hub-stat strong{line-height:1.05}
