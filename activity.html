@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const listKey=key=>{try{const v=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(v)?v.map(String):[]}catch{return[]}};
   const hasKey=(key,id)=>listKey(key).includes(String(id));
   const toggleKey=(key,id)=>{const list=listKey(key),value=String(id),i=list.indexOf(value);i>=0?list.splice(i,1):list.push(value);localStorage.setItem(key,JSON.stringify(list));return i<0};
-  function refresh(){save.textContent=bhIsSaved(a.id)?"✓ Saved":"♡ Saved";plan.textContent=bhIsPlanned(a.id)?"✓ My Planner":"+ My Planner";visited.textContent=hasKey(BH_VISITED_KEY,a.id)?"✓ Visited":"○ Visited";compare.textContent=hasKey(BH_COMPARE_KEY,a.id)?"✓ Compared":"＋ Compare";[save,plan,visited,compare].forEach(btn=>btn.setAttribute("aria-pressed",String(btn.textContent.indexOf("✓")===0)))}
+  function refresh(){save.textContent=bhIsSaved(a.id)?"✓ Saved":"♡ Save";plan.textContent=bhIsPlanned(a.id)?"✓ My Planner":"+ My Planner";visited.textContent=hasKey(BH_VISITED_KEY,a.id)?"✓ Visited":"○ Visited";compare.textContent=hasKey(BH_COMPARE_KEY,a.id)?"✓ Compared":"＋ Compare";[save,plan,visited,compare].forEach(btn=>btn.setAttribute("aria-pressed",String(btn.textContent.indexOf("✓")===0)))}
   save.onclick=()=>{bhToggleSaved(a.id);refresh()};plan.onclick=()=>{bhTogglePlanned(a.id);refresh()};visited.onclick=()=>{toggleKey(BH_VISITED_KEY,a.id);refresh()};compare.onclick=()=>{toggleKey(BH_COMPARE_KEY,a.id);refresh()};refresh();
   const bookingBox=document.getElementById("bookingSchedule");
   const bookingMode=a.booking_mode|| (a.booking_url?"external":"reserve");
