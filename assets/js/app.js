@@ -128,6 +128,7 @@ async function bhSavedPersist(activityId,saved){
   try{
     const auth=await bhAuthSession();
     if(!auth?.authenticated||!auth.csrf)return false;
+    if(auth.is_admin&&!auth.user?.id)return false;
     const response=await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"set_saved",activity_id:Number(activityId),saved:!!saved,csrf:auth.csrf})});
     if(!response.ok)return false;
     const data=await response.json();
@@ -138,6 +139,7 @@ async function bhHydrateSaved(){
   try{
     const auth=await bhAuthSession();
     if(!auth?.authenticated||!auth.csrf)return false;
+    if(auth.is_admin&&!auth.user?.id)return false;
     const response=await fetch("api/my-hub.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
     const data=await response.json();
     if(!response.ok||!data.ok||!Array.isArray(data.saved))return false;
@@ -171,6 +173,7 @@ async function bhPlannerPersist(activityId,planned){
   try{
     const auth=await bhAuthSession();
     if(!auth?.authenticated||!auth.csrf)return false;
+    if(auth.is_admin&&!auth.user?.id)return false;
     const visited=bhGet("bhVisitedActivities").includes(String(activityId));
     const response=await fetch("api/planner.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"set_activity",activity_id:Number(activityId),planned:!!planned,visited})});
     return response.ok && (await response.json()).ok;
