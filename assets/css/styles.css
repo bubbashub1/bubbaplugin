@@ -2287,3 +2287,5 @@ img,svg,video{max-width:100%;height:auto}
 .page-heading h1,.page-heading h2{color:#ced7c7!important}
 .page-heading p{color:#ced7c7!important}
 .page-heading .eyebrow{color:#ced7c7!important}
+
+.school-tracker{display:flex;gap:10px;align-items:flex-start;margin-top:10px;padding:10px 12px;border:1px solid var(--bh-border);border-radius:14px;background:var(--bh-bg)}.school-tracker-icon{font-size:20px;line-height:1}.school-tracker strong{display:block;color:var(--bh-primary);font-size:12px}.school-tracker small{display:block;margin-top:2px;color:var(--bh-secondary);font-weight:800;font-size:12px}.school-tracker p{margin:3px 0 0;color:var(--bh-text-muted);font-size:10px;line-height:1.4}.hub-family-main{min-width:0;flex:1}@media(max-width:600px){.school-tracker{padding:9px}.school-tracker p{font-size:9px}}
