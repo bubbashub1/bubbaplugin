@@ -83,6 +83,30 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
 if($_SERVER['REQUEST_METHOD']!=='POST')lp(405,['ok'=>false,'error'=>'method_not_allowed']);
 $b=json_decode(file_get_contents('php://input'),true);if(!is_array($b))lp(400,['ok'=>false,'error'=>'invalid_json']);
 $action=$b['action']??'';
+if($action==='save_account'){
+ $name=trim((string)($b['name']??''));$email=strtolower(trim((string)($b['email']??'')));
+ if($name==='')lp(422,['ok'=>false,'error'=>'name_required']);
+ if(!filter_var($email,FILTER_VALIDATE_EMAIL))lp(422,['ok'=>false,'error'=>'invalid_email']);
+ $u=$db->prepare("UPDATE bh_users SET email=? WHERE id=?");$u->execute([$email,$userId]);
+ $updated=false;
+ foreach(['name','display_name','organisation_name'] as $col){
+  try{$db->prepare("UPDATE bh_organisers SET $col=? WHERE id=?")->execute([$name,$oid]);$updated=true;break;}catch(Throwable $ignored){}
+ }
+ lp(200,['ok'=>true,'message'=>'Account details saved.']);
+}
+if($action==='change_password'){
+ $current=(string)($b['current_password']??'');$new=(string)($b['new_password']??'');$confirm=(string)($b['confirm_password']??'');
+ if(strlen($new)<8)lp(422,['ok'=>false,'error'=>'password_too_short','message'=>'Choose a password with at least 8 characters.']);
+ if($new!==$confirm)lp(422,['ok'=>false,'error'=>'password_mismatch','message'=>'The passwords do not match.']);
+ $q=$db->prepare("SELECT password_hash FROM bh_users WHERE id=? LIMIT 1");$q->execute([$userId]);$u=$q->fetch();
+ if(!$u || !password_verify($current,(string)$u['password_hash']))lp(403,['ok'=>false,'error'=>'current_password_invalid','message'=>'Your current password is not correct.']);
+ $db->prepare("UPDATE bh_users SET password_hash=? WHERE id=?")->execute([password_hash($new,PASSWORD_DEFAULT),$userId]);
+ session_regenerate_id(true);$_SESSION['bh_user_id']=$userId;$_SESSION['bh_csrf']=bin2hex(random_bytes(24));
+ lp(200,['ok'=>true,'csrf'=>$_SESSION['bh_csrf'],'message'=>'Password changed successfully.']);
+}
+
+$b=json_decode(file_get_contents('php://input'),true);if(!is_array($b))lp(400,['ok'=>false,'error'=>'invalid_json']);
+$action=$b['action']??'';
 if($action==='create_listing'){
  $title=trim((string)($b['title']??''));$description=trim((string)($b['description']??''));$category=trim((string)($b['category']??''));$age=trim((string)($b['age_range']??''));$price=($b['price_from']??'')===''?null:(float)$b['price_from'];$url=trim((string)($b['booking_url']??''));
  $venueName=trim((string)($b['venue_name']??''));$address=trim((string)($b['address']??''));$town=trim((string)($b['town']??''));$region=trim((string)($b['region']??''));$postcode=trim((string)($b['postcode']??''));$lat=trim((string)($b['latitude']??''));$lng=trim((string)($b['longitude']??''));
