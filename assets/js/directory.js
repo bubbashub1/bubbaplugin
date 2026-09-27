@@ -204,22 +204,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     };
 
-    const buildCalendarEvents = list => {
+    const buildCalendarEvents = (list, rangeStart, rangeEnd) => {
       const events = {};
-      const year = calendarMonth.getFullYear();
-      const month = calendarMonth.getMonth();
-      const monthStart = new Date(year, month, 1);
-      const monthEnd = new Date(year, month + 1, 0);
-
       list.forEach(activity => {
         bhSessions(activity).forEach(session => {
           const day = Number(session.day_of_week);
           if (day < 1 || day > 7) return;
-
           const sessionStart = parseLocalDate(session.start_date);
           const sessionEnd = parseLocalDate(session.end_date);
-
-          for (let date = new Date(monthStart); date <= monthEnd; date.setDate(date.getDate() + 1)) {
+          for (let date = new Date(rangeStart); date <= rangeEnd; date.setDate(date.getDate() + 1)) {
             const jsDay = date.getDay() === 0 ? 7 : date.getDay();
             if (jsDay !== day) continue;
             if (sessionStart && date < sessionStart) continue;
@@ -228,7 +221,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         });
       });
-
       return events;
     };
 
@@ -236,7 +228,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       const calendar = $("calendarView");
       if (!calendar) return;
 
-      const events = buildCalendarEvents(list);
       const baseDate = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
       const weekStart = new Date(baseDate);
       const dayOffset = (weekStart.getDay() + 6) % 7;
@@ -247,6 +238,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         date.setDate(weekStart.getDate() + index);
         return date;
       });
+      const events = buildCalendarEvents(list, days[0], days[6]);
 
       const weekLabel = days[0].toLocaleDateString("en-GB", {day:"numeric", month:"short"}) +
         " – " + days[6].toLocaleDateString("en-GB", {day:"numeric", month:"short", year:"numeric"});
