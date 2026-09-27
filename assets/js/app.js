@@ -35,7 +35,10 @@ async function bhActivities(){
         duration_minutes:s.duration_minutes,
         price:s.price!==null&&s.price!==undefined?"£"+Number(s.price).toFixed(2):"",
         price_value:s.price,
-        term_time:s.term_time_only?"Term time":""
+        term_time:s.term_time_only?"Term time":"",
+        frequency:s.frequency||"",
+        start_date:s.start_date||"",
+        end_date:s.end_date||""
       });
     });
 
