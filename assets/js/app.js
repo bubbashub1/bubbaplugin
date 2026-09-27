@@ -127,12 +127,26 @@ async function bhSavedPersist(activityId,saved){
   try{
     const auth=await bhAuthSession();
     if(!auth?.authenticated||!auth.csrf)return false;
-    const current=bhGet(BH_KEYS.saved);
-    const response=await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"sync_saved",saved:current,csrf:auth.csrf})});
+    const response=await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"set_saved",activity_id:Number(activityId),saved:!!saved,csrf:auth.csrf})});
     if(!response.ok)return false;
     const data=await response.json();
-    if(data.ok&&Array.isArray(data.saved))bhSet(BH_KEYS.saved,data.saved);
     return !!data.ok;
+  }catch(e){return false}
+}
+async function bhHydrateSaved(){
+  try{
+    const auth=await bhAuthSession();
+    if(!auth?.authenticated||!auth.csrf)return false;
+    const response=await fetch("api/my-hub.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+    const data=await response.json();
+    if(!response.ok||!data.ok||!Array.isArray(data.saved))return false;
+    const local=bhGet(BH_KEYS.saved);
+    const merged=[...new Set([...data.saved.map(String),...local])];
+    if(merged.length!==data.saved.length){
+      await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"sync_saved",saved:merged,csrf:auth.csrf})});
+    }
+    bhSet(BH_KEYS.saved,merged);
+    return true;
   }catch(e){return false}
 }
 function bhToggleSaved(id){
@@ -175,3 +189,5 @@ function bhEscape(value){return String(value??"").replace(/[&<>"']/g,ch=>({"&":"
 
 function bhActivityBySlug(slug,items){const key=String(slug||"").toLowerCase();return items.find(x=>String(x.slug||"").toLowerCase()===key)||null}
 function bhActivityUrl(activity){const slug=String(activity?.slug||"").trim();return slug?encodeURI(slug.replace(/^\/+|\/+$/g,"")+"/"):("activity.html?id="+encodeURIComponent(activity?.id||""))}
+
+void bhHydrateSaved();
