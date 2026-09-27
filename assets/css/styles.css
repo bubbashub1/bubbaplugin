@@ -2244,3 +2244,19 @@ img,svg,video{max-width:100%;height:auto}
   .personal-result-card{grid-template-columns:82px minmax(0,1fr)!important}
   .personal-result-body{padding:13px!important}
 }
+
+/* My Account profile */
+.account-profile-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px;align-items:start;margin-bottom:60px}
+.account-side-nav{display:flex;flex-direction:column;gap:7px;position:sticky;top:20px}
+.account-side-nav a{display:flex;align-items:center;gap:10px;padding:13px 14px;border:1px solid var(--bh-border);border-radius:14px;background:#fff;color:var(--bh-text-muted);font-weight:750;transition:.18s}
+.account-side-nav a:hover,.account-side-nav a.active{background:var(--bh-bg);color:var(--bh-primary);border-color:transparent}
+.account-profile-panel{margin-bottom:0}.account-profile-panel .admin-panel-head{align-items:flex-start}
+.account-profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.account-profile-grid label{display:flex;flex-direction:column;gap:7px;font-size:12px;font-weight:800;color:var(--bh-text-muted)}
+.account-profile-grid input{max-width:none!important;width:100%!important}.account-profile-grid input[readonly]{background:#f2f5f2;color:var(--bh-text-muted)}
+.account-profile-note{display:flex;gap:12px;align-items:flex-start;margin-top:20px;padding:15px 16px;border-radius:15px;background:var(--bh-bg);color:var(--bh-text-muted)}
+.account-profile-note span{font-size:18px}.account-profile-note strong{display:block;color:var(--bh-primary);font-size:13px}.account-profile-note p{margin:2px 0 0;font-size:12px}
+.account-form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px;padding-top:20px;border-top:1px solid var(--bh-border)}
+.account-signed-out{text-align:center;padding:36px 20px}.account-signed-out .feature-icon{margin:0 auto}.account-signed-out h3{margin:16px 0 5px}.account-signed-out p{color:var(--bh-text-muted);margin:0 0 18px}
+@media(max-width:800px){.account-profile-layout{grid-template-columns:1fr}.account-side-nav{position:static;display:grid;grid-template-columns:repeat(2,1fr)}.account-profile-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.account-side-nav{grid-template-columns:1fr}.account-profile-grid{grid-template-columns:1fr}.account-form-actions{display:grid;grid-template-columns:1fr}.account-form-actions .button{width:100%}}
