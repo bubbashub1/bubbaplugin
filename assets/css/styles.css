@@ -833,3 +833,10 @@ body{background:linear-gradient(180deg,#f8fbf8 0%,#f4f8f4 100%);}
  .where-card .venue-card p{font-size:11px}
  .where-card .venue-directions{padding:6px 9px;font-size:11px}
 }
+
+/* Database-backed town selector */
+.bh-town-row{display:flex;gap:.6rem;align-items:stretch}
+.bh-town-row input{flex:1;min-width:0}
+.bh-town-row .button{white-space:nowrap}
+.bh-town-field .library-message{margin:.35rem 0 0;font-size:.82rem}
+@media (max-width:700px){.bh-town-row{flex-direction:column}.bh-town-row .button{width:100%}}
