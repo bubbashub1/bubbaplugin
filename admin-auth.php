@@ -39,7 +39,12 @@ if($a==='login'){
     respond(200,['ok'=>true]);
 }
 
-if($a==='logout'){$_SESSION=[];session_destroy();respond(200,['ok'=>true]);}
+if($a==='logout'){
+    // Admin authentication is separate from the family account. Remove only
+    // the admin flag so My Hub/family session remains signed in.
+    unset($_SESSION['bh_admin_authenticated']);
+    respond(200,['ok'=>true]);
+}
 
 if(empty($_SESSION['bh_admin_authenticated']))respond(401,['ok'=>false,'error'=>'Admin login required.']);
 respond(200,['ok'=>true]);
