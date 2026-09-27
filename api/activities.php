@@ -7,6 +7,7 @@ header('Cache-Control: no-store');
 try {
     require __DIR__ . '/db.php';
     $db = bh_mysql();
+    try{$db->exec("ALTER TABLE bh_activities ADD COLUMN accessibility TEXT NULL");}catch(Throwable $ignored){}
 
     $page = max(1, (int)($_GET['page'] ?? 1));
     $perPage = (int)($_GET['per_page'] ?? 12);
