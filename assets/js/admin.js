@@ -207,9 +207,18 @@ function initAddressAutocomplete(){
    if(controller)controller.abort();
    controller=new AbortController();
    try{
-    const r=await fetch("api/geocode.php?q="+encodeURIComponent(q),{credentials:"same-origin",signal:controller.signal,cache:"no-store"});
-    const d=await r.json();
-    if(!r.ok||!d.ok)throw new Error(d.error||"Address lookup failed");
+    let d=null;
+    try{
+      const r=await fetch("api/geocode.php?q="+encodeURIComponent(q),{credentials:"same-origin",signal:controller.signal,cache:"no-store"});
+      d=await r.json();
+      if(!r.ok||!d.ok)throw new Error(d.error||"Address lookup failed");
+    }catch(serverError){
+      if(serverError.name==="AbortError")throw serverError;
+      const fallback=await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&countrycodes=gb&q="+encodeURIComponent(q),{signal:controller.signal,cache:"no-store"});
+      if(!fallback.ok)throw serverError;
+      const results=await fallback.json();
+      d={ok:true,results:Array.isArray(results)?results:[]};
+    }
     cache.set(q,d.results||[]);render(d.results||[]);
    }catch(e){
     if(e.name!=="AbortError"){
