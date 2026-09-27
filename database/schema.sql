@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS bh_users (
  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
  email VARCHAR(190) NOT NULL UNIQUE,
  password_hash VARCHAR(255) NOT NULL,
- role ENUM('family','organiser','admin') NOT NULL DEFAULT 'family',
+ role ENUM('family','leader','organiser','admin') NOT NULL DEFAULT 'family',
  status ENUM('active','pending','suspended') NOT NULL DEFAULT 'active',
  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
