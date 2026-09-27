@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Profile · Bubba Hub</title>
+<meta name="description" content="Manage your Bubba Hub profile details.">
+<link rel="stylesheet" href="assets/css/styles.css?v=20260927-profile1">
+</head>
+<body>
+<header class="site-header">
+<a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a>
+<nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="planner.html">My planner</a><a href="my-hub.html">My Hub</a></nav>
+<a class="button button-soft active" href="account.html">My account</a>
+</header>
+<main class="app-shell account-page">
+<div class="page-heading"><div><span class="eyebrow">My Account · Profile</span><h1>My profile</h1><p>Keep your personal details up to date. Your family information stays separate in My Family.</p></div><a class="button button-soft" href="account.html">← Account</a></div>
+<section class="account-profile-layout">
+<aside class="account-side-nav" aria-label="Account sections">
+<a class="active" href="account-profile.html">👤 <span>Profile</span></a>
+<a href="my-hub.html#family">👨‍👩‍👧 <span>My family</span></a>
+<a href="preferences.html">✓ <span>Preferences</span></a>
+<a href="directory.html?saved=1">♡ <span>Saved activities</span></a>
+<a href="planner.html">📅 <span>Planner &amp; bookings</span></a>
+<a href="consent.html">🔒 <span>Privacy &amp; consent</span></a>
+<a href="help-support.html">💛 <span>Help &amp; support</span></a>
+</aside>
+<section class="admin-panel account-profile-panel" id="profilePanel">
+<div class="admin-panel-head"><div><span class="eyebrow">Personal details</span><h2>About you</h2><p>These details are used to identify your family account.</p></div><span class="status" id="profileStatus">Loading…</span></div>
+<form id="profileForm" class="account-profile-form" hidden>
+<div class="account-profile-grid">
+<label>First name<input name="first_name" type="text" autocomplete="given-name" maxlength="80" placeholder="First name"></label>
+<label>Last name<input name="last_name" type="text" autocomplete="family-name" maxlength="80" placeholder="Last name"></label>
+<label>Email address<input name="email" type="email" autocomplete="email" readonly></label>
+<label>Phone number<input name="phone" type="tel" autocomplete="tel" maxlength="40" placeholder="Optional"></label>
+</div>
+<div class="account-profile-note"><span>🔒</span><div><strong>Your email is your sign-in</strong><p>For security, changing your sign-in email will be handled separately.</p></div></div>
+<div class="account-form-actions"><a class="button button-soft" href="account.html">Cancel</a><button class="button button-primary" type="submit">Save changes</button></div>
+<p class="library-message" id="profileMessage" aria-live="polite"></p>
+</form>
+<div id="profileSignedOut" class="account-signed-out" hidden><span class="feature-icon">👤</span><h3>Sign in to manage your profile</h3><p>Your profile details are available once you're signed in.</p><a class="button button-primary" href="account.html#profile">Sign in</a></div>
+</section>
+</section>
+</main>
+<footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
+<script src="assets/js/app.js?v=20260927-profile1"></script><script src="assets/js/account-profile.js?v=20260927-profile1"></script>
+</body></html>
