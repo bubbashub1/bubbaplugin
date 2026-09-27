@@ -8,7 +8,14 @@ session_start();
 register_shutdown_function(function(){
  $e=error_get_last();
  if($e && in_array($e['type'],[E_ERROR,E_PARSE,E_CORE_ERROR,E_COMPILE_ERROR],true)){
-  if(!headers_sent()) header('Content-Type: application/json; charset=utf-8');
+  if(!$adminOnly){
+ $roleStmt=$db->prepare("SELECT role,status FROM bh_users WHERE id=? LIMIT 1");
+ $roleStmt->execute([$userId]);
+ $roleUser=$roleStmt->fetch();
+ if(!$roleUser || $roleUser['status']!=='active') lp(403,['ok'=>false,'error'=>'account_not_active','message'=>'This account is not active.']);
+ if(($roleUser['role']??'')!=='leader') lp(403,['ok'=>false,'error'=>'leader_role_required','message'=>'Please sign in with your class leader account to access the leader portal.']);
+}
+if(!headers_sent()) header('Content-Type: application/json; charset=utf-8');
   http_response_code(500);
   echo json_encode(['ok'=>false,'error'=>'leader_portal_fatal','message'=>$e['message']],JSON_UNESCAPED_SLASHES);
  }
