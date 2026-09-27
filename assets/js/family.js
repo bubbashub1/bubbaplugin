@@ -18,8 +18,8 @@ function render(d){
   const tracker=x.date_of_birth?schoolTracker(x.date_of_birth):null;
   let school="";
   if(tracker){
-   const countdown=tracker.days>0?"Apply in "+tracker.days+" day"+(tracker.days===1?"":"s"):(tracker.days===0?"Apply today":"Application deadline has passed");
-   school="<div class='school-tracker'><span class='school-tracker-icon'>🎓</span><div><strong>Primary school tracker</strong><small>"+esc(countdown)+"</small><p>Reception place for September "+tracker.startYear+". Typical England application deadline: "+esc(tracker.deadline)+"</p></div></div>";
+   const openStart=new Date(tracker.applicationDate.getFullYear()-1,8,1),isOpen=new Date()>=openStart&&new Date()<=tracker.applicationDate;const countdown=isOpen?(tracker.days>0?"Applications are OPEN · "+tracker.days+" day"+(tracker.days===1?"":"s")+" left":"Applications close today"):(tracker.days>0?"Applications open 1 September "+(tracker.applicationDate.getFullYear()-1):(tracker.days===0?"Applications close today":"Application deadline has passed");
+   school="<div class='school-tracker'><span class='school-tracker-icon'>🎓</span><div><strong>Primary school tracker</strong><small class='school-tracker-status'>"+esc(countdown)+"</small><p>Reception place for September "+tracker.startYear+". Typical England application deadline: "+esc(tracker.deadline)+"</p></div></div>";
   }
   return "<article class='hub-family-card'><span>👶</span><div class='hub-family-main'><strong>"+esc(x.name)+"</strong><small>"+(x.date_of_birth?age(x.date_of_birth)+" · "+x.date_of_birth:"Date of birth not set")+"</small>"+school+"</div><button class='button button-soft' data-edit-child='"+x.id+"'>Edit</button></article>";
  }).join("")+b.map(x=>"<article class='hub-family-card'><span>🤰</span><div><strong>"+esc(x.nickname||"Baby")+"</strong><small>"+(x.due_date?"Due "+x.due_date:"Due date not set")+"</small></div><button class='button button-soft' data-edit-bump='"+x.id+"'>Edit</button></article>").join(""):"<div class='hub-empty'><strong>Your family profile is empty</strong><p>Add a child or bump profile to get started.</p></div>";
