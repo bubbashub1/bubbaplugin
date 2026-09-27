@@ -26,6 +26,18 @@ try {
     $minAge = isset($_GET['min_age']) && $_GET['min_age'] !== '' ? max(0, (float)$_GET['min_age']) : null;
     $maxAge = isset($_GET['max_age']) && $_GET['max_age'] !== '' ? max(0, (float)$_GET['max_age']) : null;
 
+    // The public directory must keep working even if the county migration has not yet
+    // been applied to an older live database. Detect the column and fall back to NULL.
+    $countyColumn = false;
+    try {
+        $columnCheck = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bh_activities' AND COLUMN_NAME = 'county'");
+        $columnCheck->execute();
+        $countyColumn = ((int)$columnCheck->fetchColumn()) > 0;
+    } catch (Throwable $ignored) {
+        $countyColumn = false;
+    }
+
+    $countySelect = $countyColumn ? 'a.county' : 'NULL AS county';
     $where = ["a.status = 'published'"];
     $params = [];
 
@@ -84,7 +96,7 @@ try {
             a.description,
             a.category,
             a.age_range,
-            a.county,
+            $countySelect,
             a.price_from,
             a.booking_url,
             a.image_path,
