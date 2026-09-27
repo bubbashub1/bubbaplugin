@@ -2552,3 +2552,38 @@ img,svg,video{max-width:100%;height:auto}
 
 /* Sign in with Apple */
 .apple-signin-button{width:100%;min-height:50px;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;border:1px solid #000;border-radius:12px;background:#000;color:#fff;font-family:var(--bh-font);font-size:1rem;font-weight:750;cursor:pointer;transition:.18s}.apple-signin-button:hover{background:#222;box-shadow:0 2px 8px rgba(0,0,0,.14)}.apple-signin-button:disabled{opacity:.6;cursor:wait}.apple-mark{font-size:1rem;line-height:1;color:#fff}
+
+
+/* My Hub family profiles — expanded single-container layout */
+.hub-family-panel{grid-column:1/-1}
+.hub-family-expanded{display:grid;gap:14px}
+.hub-family-expanded-card{display:flex!important;align-items:flex-start;gap:18px;padding:22px!important;border:1px solid var(--bh-border);border-radius:20px;background:#fff;box-shadow:none}
+.hub-family-expanded-card .family-avatar{width:76px;height:76px;flex:0 0 76px}
+.hub-family-expanded-card .hub-family-main{flex:1;min-width:0}
+.hub-family-title{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.hub-family-title .eyebrow{display:block;margin-bottom:3px;color:var(--bh-secondary)}
+.hub-family-title strong{display:block;font-size:23px;color:var(--bh-primary)}
+.hub-family-title small{display:block;margin-top:4px;color:var(--bh-text-muted);font-size:13px}
+.school-tracker{margin-top:16px;padding:16px;border-radius:16px;background:var(--bh-bg);border:1px solid var(--bh-border)}
+.school-tracker-head{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.school-tracker-head span{font-size:20px}.school-tracker-head strong{color:var(--bh-primary);font-size:15px}
+.school-tracker-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.school-tracker-grid>div{padding:12px;border-radius:13px;background:#fff}
+.school-tracker-grid b{display:block;color:var(--bh-primary);font-size:13px}
+.school-tracker-grid small{display:block;margin-top:4px;color:var(--bh-secondary);font-weight:800;font-size:12px}
+.school-tracker-grid p{margin:4px 0 0;color:var(--bh-text-muted);font-size:11px;line-height:1.4}
+.school-tracker-link{margin-top:12px}
+.hub-family-footer{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;padding-top:16px;border-top:1px solid var(--bh-border)}
+@media(max-width:650px){
+ .hub-family-expanded-card{padding:17px!important;gap:12px}
+ .hub-family-expanded-card .family-avatar{width:62px;height:62px;flex-basis:62px}
+ .hub-family-title{flex-direction:column;gap:10px}
+ .hub-family-title .button{width:100%}
+ .hub-family-title strong{font-size:21px}
+ .school-tracker-grid{grid-template-columns:1fr}
+ .hub-family-footer .button{flex:1 1 100%;justify-content:center}
+}
+
+/* Account profile: simple name + date of birth */
+.account-profile-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:650px){.account-profile-grid{grid-template-columns:1fr}}
