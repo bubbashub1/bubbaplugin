@@ -116,10 +116,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       const advancedFieldEls=[...advancedWrap.querySelectorAll("input,select")];
       toggle.textContent="Advanced search ＋";
       toggle.setAttribute("aria-expanded","false");
-      toolbar.hidden=true;
+      advancedWrap.hidden=true;
       toggle.onclick=()=>{
-        const open=!toolbar.hidden;
-        toolbar.hidden=!open;
+        const open=!advancedWrap.hidden;
+        advancedWrap.hidden=!open;
         toggle.setAttribute("aria-expanded",String(open));
         toggle.innerHTML=open?"Advanced search −":"Advanced search ＋";
       };
