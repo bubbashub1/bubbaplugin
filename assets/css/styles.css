@@ -1234,3 +1234,18 @@ body{background:linear-gradient(180deg,#f8fbf8 0%,#f4f8f4 100%);}
  .personal-actions{justify-content:stretch}
  .personal-actions .button{flex:1}
 }
+
+
+/* Personalised flow entry points */
+.personal-home-callout,.hub-personal-cta{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:20px 22px;margin:0 auto 16px;max-width:1200px;border:1px solid rgba(60,142,150,.14);border-radius:20px;background:linear-gradient(135deg,#f4faf8,#eef7f8);box-shadow:0 8px 24px rgba(20,68,0,.035)}
+.personal-home-callout h2,.hub-personal-cta h2{margin:2px 0 4px;font-family:"Chewy",cursive;font-weight:400;font-size:28px;line-height:1}
+.personal-home-callout p,.hub-personal-cta p{margin:0;max-width:650px;color:var(--bh-text-muted);font-size:11px;line-height:1.5}
+.personal-home-callout .button,.hub-personal-cta .button{white-space:nowrap}
+.hub-personal-cta{max-width:none;margin:0 0 18px}
+.page-heading{align-items:flex-end}
+.page-heading>.button{white-space:nowrap}
+@media(max-width:650px){
+ .personal-home-callout,.hub-personal-cta{align-items:flex-start;flex-direction:column;padding:17px}
+ .personal-home-callout .button,.hub-personal-cta .button,.page-heading>.button{width:100%}
+ .hub-personal-cta h2{font-size:25px}
+}
