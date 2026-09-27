@@ -55,7 +55,7 @@ async function bhActivities(){
         price_value:s.price,
         term_time:s.term_time_only?"Term time":"",
         frequency:s.frequency||"",
-        start_date:bhFormatDate(s.start_date||""),
+        start_date:s.start_date||"",
         end_date:s.end_date||""
       });
     });
