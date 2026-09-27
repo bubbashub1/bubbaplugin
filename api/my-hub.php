@@ -143,6 +143,62 @@ try {
         bh_hub_json(405, ['ok' => false, 'error' => 'method_not_allowed']);
     }
 
+    // Avatar uploads use multipart/form-data, so handle them before JSON parsing.
+    if (!empty($_POST['action']) && $_POST['action'] === 'upload_child_avatar') {
+        if (empty($_FILES['avatar']) || !is_array($_FILES['avatar'])) {
+            bh_hub_json(422, ['ok' => false, 'error' => 'avatar_required']);
+        }
+        $childId = (int)($_POST['id'] ?? 0);
+        $csrfPost = (string)($_POST['csrf'] ?? '');
+        if (!$childId || !hash_equals((string)($_SESSION['bh_csrf'] ?? ''), $csrfPost)) {
+            bh_hub_json(403, ['ok' => false, 'error' => 'invalid_request']);
+        }
+        $stmt = $db->prepare("SELECT id FROM bh_children WHERE id=? AND user_id=? LIMIT 1");
+        $stmt->execute([$childId, $userId]);
+        if (!$stmt->fetch()) bh_hub_json(404, ['ok' => false, 'error' => 'child_not_found']);
+
+        $file = $_FILES['avatar'];
+        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            bh_hub_json(422, ['ok' => false, 'error' => 'avatar_upload_failed']);
+        }
+        if ((int)($file['size'] ?? 0) > 5 * 1024 * 1024) {
+            bh_hub_json(422, ['ok' => false, 'error' => 'avatar_too_large', 'message' => 'Please choose an image smaller than 5 MB.']);
+        }
+        $tmp = (string)$file['tmp_name'];
+        $mime = (new finfo(FILEINFO_MIME_TYPE))->file($tmp);
+        $allowed = ['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp'];
+        if (!isset($allowed[$mime])) {
+            bh_hub_json(422, ['ok' => false, 'error' => 'avatar_type_not_allowed', 'message' => 'Please upload a JPG, PNG or WebP image.']);
+        }
+
+        $root = dirname(__DIR__);
+        $dir = $root . '/uploads/children';
+        if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
+            bh_hub_json(500, ['ok' => false, 'error' => 'avatar_storage_unavailable']);
+        }
+        $filename = 'child-' . $childId . '-' . bin2hex(random_bytes(8)) . '.' . $allowed[$mime];
+        $destination = $dir . '/' . $filename;
+        if (!move_uploaded_file($tmp, $destination)) {
+            bh_hub_json(500, ['ok' => false, 'error' => 'avatar_upload_failed']);
+        }
+
+        $publicPath = 'uploads/children/' . $filename;
+        $oldStmt = $db->prepare("SELECT photo_path FROM bh_children WHERE id=? AND user_id=? LIMIT 1");
+        $oldStmt->execute([$childId, $userId]);
+        $oldPath = (string)($oldStmt->fetchColumn() ?: '');
+        $stmt = $db->prepare("UPDATE bh_children SET photo_path=? WHERE id=? AND user_id=?");
+        $stmt->execute([$publicPath, $childId, $userId]);
+
+        if ($oldPath && strpos($oldPath, 'uploads/children/') === 0) {
+            $oldFile = $root . '/' . ltrim($oldPath, '/');
+            if (is_file($oldFile)) @unlink($oldFile);
+        }
+        bh_hub_json(200, ['ok' => true, 'photo_path' => $publicPath]);
+    }
+
+
+    }
+
     $body = json_decode((string)file_get_contents('php://input'), true);
     if (!is_array($body)) bh_hub_json(400, ['ok' => false, 'error' => 'invalid_json']);
 
@@ -214,58 +270,6 @@ try {
             $id = (int)$db->lastInsertId();
         }
         bh_hub_json(200, ['ok' => true, 'id' => $id]);
-    }
-
-    if ($action === 'upload_child_avatar') {
-        if (empty($_FILES['avatar']) || !is_array($_FILES['avatar'])) {
-            bh_hub_json(422, ['ok' => false, 'error' => 'avatar_required']);
-        }
-        $childId = (int)($_POST['id'] ?? 0);
-        $csrfPost = (string)($_POST['csrf'] ?? '');
-        if (!$childId || !hash_equals((string)($_SESSION['bh_csrf'] ?? ''), $csrfPost)) {
-            bh_hub_json(403, ['ok' => false, 'error' => 'invalid_request']);
-        }
-        $stmt = $db->prepare("SELECT id FROM bh_children WHERE id=? AND user_id=? LIMIT 1");
-        $stmt->execute([$childId, $userId]);
-        if (!$stmt->fetch()) bh_hub_json(404, ['ok' => false, 'error' => 'child_not_found']);
-
-        $file = $_FILES['avatar'];
-        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-            bh_hub_json(422, ['ok' => false, 'error' => 'avatar_upload_failed']);
-        }
-        if ((int)($file['size'] ?? 0) > 5 * 1024 * 1024) {
-            bh_hub_json(422, ['ok' => false, 'error' => 'avatar_too_large', 'message' => 'Please choose an image smaller than 5 MB.']);
-        }
-        $tmp = (string)$file['tmp_name'];
-        $mime = (new finfo(FILEINFO_MIME_TYPE))->file($tmp);
-        $allowed = ['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp'];
-        if (!isset($allowed[$mime])) {
-            bh_hub_json(422, ['ok' => false, 'error' => 'avatar_type_not_allowed', 'message' => 'Please upload a JPG, PNG or WebP image.']);
-        }
-
-        $root = dirname(__DIR__);
-        $dir = $root . '/uploads/children';
-        if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
-            bh_hub_json(500, ['ok' => false, 'error' => 'avatar_storage_unavailable']);
-        }
-        $filename = 'child-' . $childId . '-' . bin2hex(random_bytes(8)) . '.' . $allowed[$mime];
-        $destination = $dir . '/' . $filename;
-        if (!move_uploaded_file($tmp, $destination)) {
-            bh_hub_json(500, ['ok' => false, 'error' => 'avatar_upload_failed']);
-        }
-
-        $publicPath = 'uploads/children/' . $filename;
-        $oldStmt = $db->prepare("SELECT photo_path FROM bh_children WHERE id=? AND user_id=? LIMIT 1");
-        $oldStmt->execute([$childId, $userId]);
-        $oldPath = (string)($oldStmt->fetchColumn() ?: '');
-        $stmt = $db->prepare("UPDATE bh_children SET photo_path=? WHERE id=? AND user_id=?");
-        $stmt->execute([$publicPath, $childId, $userId]);
-
-        if ($oldPath && strpos($oldPath, 'uploads/children/') === 0) {
-            $oldFile = $root . '/' . ltrim($oldPath, '/');
-            if (is_file($oldFile)) @unlink($oldFile);
-        }
-        bh_hub_json(200, ['ok' => true, 'photo_path' => $publicPath]);
     }
 
     if ($action === 'delete_child') {
