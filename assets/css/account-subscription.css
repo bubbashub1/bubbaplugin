@@ -3,3 +3,7 @@
 .subscription-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:900px){.subscription-grid{grid-template-columns:1fr 1fr}.subscription-grid .subscription-card:last-child{grid-column:1/-1}}
 @media(max-width:750px){.subscription-grid{grid-template-columns:1fr}.subscription-grid .subscription-card:last-child{grid-column:auto}}
+
+/* Subscription plans: 2 x 2 desktop grid, stacked on mobile */
+.subscription-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+@media(max-width:750px){.subscription-grid{grid-template-columns:1fr!important}.subscription-grid .subscription-card:last-child{grid-column:auto!important}}
