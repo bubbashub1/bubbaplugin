@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Events · Bubba Hub</title>
+<base href="/beta/">
+<link rel="stylesheet" href="assets/css/styles.css?v=20260927-sections1">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a>
+  <nav class="main-nav" aria-label="Main navigation">
+    <a href="directory.html">Find activities</a>
+    <a href="events">Events</a>
+    <a href="venues">Venues</a>
+    <a href="planner.html">My planner</a>
+    <a href="calendar.html">Calendar</a>
+    <a href="my-hub.html">My Hub</a>
+    <a href="leader.html">For class leaders</a>
+    <a href="admin.html">Admin</a>
+  </nav>
+  <div class="header-account-actions">
+    <a class="button button-soft" href="account.html">My account</a>
+    <button class="button button-soft" id="siteLogout" type="button">Log out</button>
+  </div>
+</header>
+<main class="app-shell">
+  <section class="page-heading">
+    <div>
+      <span class="eyebrow">What’s happening locally</span>
+      <h1>Events &amp; sessions</h1>
+      <p>See upcoming family sessions pulled from the Bubba Hub activity directory.</p>
+    </div>
+    <a class="button button-primary" href="directory.html">Find activities</a>
+  </section>
+
+  <section class="section events-page-section">
+    <div class="events-toolbar">
+      <label>Day
+        <select id="eventDay">
+          <option value="">Any day</option>
+          <option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option>
+          <option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="7">Sunday</option>
+        </select>
+      </label>
+      <label>Town
+        <select id="eventTown"><option value="">All towns</option></select>
+      </label>
+      <label>Category
+        <select id="eventCategory"><option value="">All categories</option></select>
+      </label>
+    </div>
+    <div class="events-heading">
+      <div><span class="eyebrow">Next 90 days</span><h2 id="eventsTitle">Upcoming</h2></div>
+      <span class="status" id="eventsCount"></span>
+    </div>
+    <div id="eventsList" class="events-grid" aria-live="polite"><div class="listing-loading"><p>Loading sessions…</p></div></div>
+  </section>
+</main>
+<footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
+<script src="assets/js/app.js?v=20260927-sections1"></script>
+<script>
+document.addEventListener("DOMContentLoaded",async()=>{
+  const list=document.getElementById("eventsList"),count=document.getElementById("eventsCount");
+  const day=document.getElementById("eventDay"),town=document.getElementById("eventTown"),category=document.getElementById("eventCategory");
+  const esc=v=>bhEscape(v??"");
+  const money=v=>v===null||v===undefined||v===""?"":("£"+Number(v).toFixed(2));
+  const fmtDate=d=>new Intl.DateTimeFormat("en-GB",{weekday:"long",day:"numeric",month:"long"}).format(d);
+  const fmtTime=v=>bhFormatTime(v);
+  const nextOccurrence=(s)=>{
+    const now=new Date(); now.setHours(0,0,0,0);
+    const target=Math.max(1,Math.min(7,Number(s.day_of_week)||1));
+    const start=s.start_date?new Date(String(s.start_date)+"T00:00:00"):null;
+    const end=s.end_date?new Date(String(s.end_date)+"T23:59:59"):null;
+    let d=new Date(now);
+    const diff=(target-(d.getDay()||7)+7)%7;
+    d.setDate(d.getDate()+diff);
+    if(start&&d<start){d=new Date(start);const delta=(target-(d.getDay()||7)+7)%7;d.setDate(d.getDate()+delta)}
+    if(end&&d>end)return null;
+    return d;
+  };
+  try{
+    const activities=await bhActivities();
+    const sessions=[];
+    const towns=new Set(),cats=new Set();
+    activities.forEach(a=>{
+      (a.venues||[]).forEach(v=>{if(v.town)towns.add(v.town)});
+      if(a.category)cats.add(a.category);
+      (a.sessions||[]).forEach(s=>{
+        const venue=(a.venues||[]).find(v=>Number(v.id)===Number(s.venue_id))||(a.venues||[])[0];
+        const date=nextOccurrence(s); if(!date)return;
+        sessions.push({activity:a,session:s,venue,date});
+      });
+    });
+    [...towns].sort().forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;town.appendChild(o)});
+    [...cats].sort().forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;category.appendChild(o)});
+    const render=()=>{
+      const maxDate=new Date();maxDate.setDate(maxDate.getDate()+90);
+      const rows=sessions.filter(x=>
+        x.date<=maxDate &&
+        (!day.value||String(x.session.day_of_week)===day.value) &&
+        (!town.value||x.venue?.town===town.value) &&
+        (!category.value||x.activity.category===category.value)
+      ).sort((a,b)=>a.date-b.date||String(a.session.start_time||"").localeCompare(String(b.session.start_time||""))).slice(0,100);
+      count.textContent=rows.length+" "+(rows.length===1?"session":"sessions");
+      if(!rows.length){list.innerHTML='<div class="empty-state"><h3>No sessions match those filters</h3><p>Try another day, town or category, or browse all activities.</p><a class="button button-primary" href="directory.html">Browse activities</a></div>';return}
+      list.innerHTML=rows.map(x=>{
+        const a=x.activity,v=x.venue||{},s=x.session;
+        const img=a.image_path?'<img src="'+esc(a.image_path)+'" alt="">':'<div class="event-card-placeholder">Bubba Hub</div>';
+        const loc=[v.name,v.town].filter(Boolean).join(" · ");
+        return '<article class="event-card">'+
+          '<a class="event-card-image" href="activity.html?slug='+encodeURIComponent(a.slug||"")+'">'+img+'</a>'+
+          '<div class="event-card-body"><div class="event-date">'+esc(fmtDate(x.date))+'</div>'+
+          '<h3><a href="activity.html?slug='+encodeURIComponent(a.slug||"")+'">'+esc(a.title)+'</a></h3>'+
+          '<p class="event-time">'+esc(fmtTime(s.start_time))+(s.end_time?" – "+esc(fmtTime(s.end_time)):"")+'</p>'+
+          '<p class="event-location">'+esc(loc||"Local venue")+'</p>'+
+          '<div class="listing-tags">'+(a.category?'<span>'+esc(a.category)+'</span>':"")+(a.age_range?'<span>'+esc(a.age_range)+'</span>':"")+(s.price!==null&&s.price!==undefined?'<span>'+money(s.price)+'</span>':"")+'</div>'+
+          '<a class="button button-soft button-full" href="activity.html?slug='+encodeURIComponent(a.slug||"")+'">View activity</a></div></article>';
+      }).join("");
+    };
+    [day,town,category].forEach(el=>el.addEventListener("change",render));
+    render();
+  }catch(e){list.innerHTML='<div class="empty-state"><h3>Events unavailable</h3><p>'+esc(e.message||"Could not load sessions.")+'</p><a class="button button-primary" href="directory.html">Find activities</a></div>'}
+  const logout=document.getElementById("siteLogout");
+  if(logout)logout.addEventListener("click",async()=>{try{await fetch("api/auth.php?action=logout",{credentials:"same-origin"});}finally{location.href="index.html"}});
+});
+</script>
+</body></html>
