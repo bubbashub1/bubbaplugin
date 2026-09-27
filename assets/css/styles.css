@@ -1842,3 +1842,8 @@ body{background:#f5f3ed;color:var(--bh-ink);font-family:"Quicksand",sans-serif}
 
 /* Keep personalised recommendations on the parent section background */
 .familiar-section .personal-home-callout{background:transparent!important;box-shadow:none!important;border:0!important}
+
+/* Site-wide full-width section framework */
+main.site-main,.site-main{width:100%!important;max-width:none!important;padding-left:0!important;padding-right:0!important}
+.site-main > section,.site-main > .section,.site-main > .container{width:100%!important;max-width:none!important}
+.site-main > section > .container,.site-main > .section > .container{width:100%!important;max-width:1400px;margin-left:auto;margin-right:auto}
