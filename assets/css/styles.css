@@ -1920,3 +1920,56 @@ img,svg,video{max-width:100%;height:auto}
 .admin-check-grid label{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--bh-line);border-radius:12px;background:#fff;font-weight:600}
 @media(max-width:900px){.admin-check-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.admin-check-grid{grid-template-columns:1fr}}
+
+
+/* Site-wide content container + page title treatment */
+:root{--bh-container-pad:50px}
+
+.section,.app-shell{
+  width:100%!important;
+  max-width:none!important;
+  padding-left:var(--bh-container-pad)!important;
+  padding-right:var(--bh-container-pad)!important;
+}
+
+.hero{
+  width:100%!important;
+  max-width:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+}
+
+.listing-page{
+  width:100%!important;
+  max-width:none!important;
+  padding-left:var(--bh-container-pad)!important;
+  padding-right:var(--bh-container-pad)!important;
+}
+
+.site-footer{
+  width:100%!important;
+  max-width:none!important;
+  padding-left:var(--bh-container-pad)!important;
+  padding-right:var(--bh-container-pad)!important;
+}
+
+.page-heading{
+  background:var(--bh-bg);
+  border:1px solid var(--bh-border);
+  border-radius:24px;
+  padding:42px 32px 30px!important;
+  margin:34px 0 24px;
+  box-shadow:0 8px 26px rgba(20,68,0,.04);
+}
+
+@media(max-width:900px){
+  :root{--bh-container-pad:24px}
+  .hero{padding-left:24px!important;padding-right:24px!important}
+  .page-heading{padding:34px 24px 26px!important}
+}
+
+@media(max-width:650px){
+  :root{--bh-container-pad:16px}
+  .hero{padding-left:16px!important;padding-right:16px!important}
+  .page-heading{padding:28px 18px 22px!important;border-radius:20px}
+}
