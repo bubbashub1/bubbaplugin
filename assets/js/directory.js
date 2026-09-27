@@ -75,7 +75,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let map = null;
     let markers = [];
-    let currentView = "list";
+    let currentView = localStorage.getItem("bh_directory_view") || "list";
+    let cardCount = Number(localStorage.getItem("bh_directory_cards") || 4);
+    if (![2,3,4,5,6].includes(cardCount)) cardCount = 4;
+    $("cardCount").value = String(cardCount);
 
     const renderAgeTrack = () => {
       const min = Number($("ageMin").value);
@@ -180,6 +183,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         `${list.length} activit${list.length === 1 ? "y" : "ies"} found` +
         (params.get("saved") ? " · Saved" : "");
 
+      $("results").className = `activity-grid directory-view-${currentView} directory-cards-${cardCount}`;
       $("results").innerHTML = list.map(activity => {
         const venues = bhVenues(activity);
         const sessions = bhSessions(activity);
@@ -261,9 +265,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       $("filterToggle").setAttribute("aria-expanded", String(open));
     });
 
+    $("cardCount").addEventListener("change", () => {
+      cardCount = Number($("cardCount").value);
+      if (![2,3,4,5,6].includes(cardCount)) cardCount = 4;
+      localStorage.setItem("bh_directory_cards", String(cardCount));
+      render();
+    });
+
     document.querySelectorAll(".directory-view").forEach(button => {
       button.onclick = () => {
         currentView = button.dataset.view;
+        localStorage.setItem("bh_directory_view", currentView);
         document.querySelectorAll(".directory-view")
           .forEach(item => item.classList.toggle("active", item === button));
         $("results").hidden = currentView === "map";
@@ -278,6 +290,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       };
     });
 
+    document.querySelectorAll(".directory-view").forEach(button => button.classList.toggle("active", button.dataset.view === currentView));
+    $("results").hidden = currentView === "map";
+    $("mapView").hidden = currentView !== "map";
     renderAgeTrack();
     render();
   } catch (error) {
