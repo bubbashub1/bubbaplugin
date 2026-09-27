@@ -7,13 +7,31 @@ async function bhActivities(){
   apiUrl.searchParams.set("page","1");
   apiUrl.searchParams.set("per_page","50");
 
-  const response=await fetch(apiUrl.toString(),{cache:"no-store",headers:{Accept:"application/json"}});
-  if(!response.ok)throw new Error("Could not load activities");
+  const fetchPage=async page=>{
+    const url=new URL(apiUrl.toString());
+    url.searchParams.set("page",String(page));
+    const response=await fetch(url.toString(),{cache:"no-store",headers:{Accept:"application/json"}});
+    if(!response.ok)throw new Error("Could not load activities");
+    const payload=await response.json();
+    if(!payload.ok)throw new Error(payload.error||"Could not load activities");
+    return payload;
+  };
 
-  const payload=await response.json();
-  if(!payload.ok)throw new Error(payload.error||"Could not load activities");
+  const firstPayload=await fetchPage(1);
+  const firstRows=Array.isArray(firstPayload.data)?firstPayload.data:[];
+  const totalPages=Number(firstPayload.pagination?.pages||1);
+  let rows=firstRows;
 
-  const rows=Array.isArray(payload.data)?payload.data:[];
+  // The API is paginated for performance. The directory needs the complete
+  // published set so filtering, map pins and the calendar work across 1,000+
+  // activities rather than silently stopping at the first 50.
+  for(let start=2;start<=totalPages;start+=4){
+    const pages=Array.from({length:Math.min(4,totalPages-start+1)},(_,i)=>start+i);
+    const payloads=await Promise.all(pages.map(fetchPage));
+    payloads.forEach(payload=>{
+      if(Array.isArray(payload.data)) rows=rows.concat(payload.data);
+    });
+  }
 
   window.__bhActivities=rows.map(a=>{
     const venues=Array.isArray(a.venues)?a.venues:[];
@@ -42,6 +60,12 @@ async function bhActivities(){
       });
     });
 
+    const coordinate=raw=>{
+      if(raw===null||raw===undefined||raw==="") return null;
+      const n=Number(String(raw).trim().replace(",","."));
+      return Number.isFinite(n)?n:null;
+    };
+
     const normalizedVenues=venues.map(v=>({
       id:v.id,
       name:v.name||"Venue",
@@ -49,10 +73,10 @@ async function bhActivities(){
       town:v.town||"",
       region:v.region||"",
       postcode:v.postcode||"",
-      lat:v.latitude,
-      long:v.longitude,
-      latitude:v.latitude,
-      longitude:v.longitude,
+      lat:coordinate(v.latitude),
+      long:coordinate(v.longitude),
+      latitude:coordinate(v.latitude),
+      longitude:coordinate(v.longitude),
       sessions:sessionByVenue[String(v.id)]||[]
     }));
 
