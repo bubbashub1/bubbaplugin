@@ -113,7 +113,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       toolbar.appendChild(advancedWrap);
       if (clear) advancedWrap.appendChild(clear);
 
-      const advancedFieldEls=[...advancedWrap.querySelectorAll("input,select")];
       toggle.textContent="Advanced search ＋";
       toggle.setAttribute("aria-expanded","false");
       advancedWrap.hidden=true;
@@ -123,10 +122,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         toggle.setAttribute("aria-expanded",String(open));
         toggle.innerHTML=open?"Advanced search −":"Advanced search ＋";
       };
-      advancedFieldEls.forEach(el=>{
-        el.addEventListener("input",render);
-        el.addEventListener("change",render);
-      });
     };
 
     setupAdvancedSearch();
