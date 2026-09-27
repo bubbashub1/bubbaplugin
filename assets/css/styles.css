@@ -1133,3 +1133,15 @@ body{background:linear-gradient(180deg,#f8fbf8 0%,#f4f8f4 100%);}
  .hub-family-card .button{margin-left:auto}
  .my-hub-message{text-align:left}
 }
+
+
+.my-hub-page .hub-welcome{padding:20px 0 16px}
+.hub-welcome h2{margin:0;font-family:"Chewy",cursive;font-weight:400;font-size:32px;line-height:1}
+.hub-welcome p{margin:5px 0 0;color:var(--bh-text-muted);font-size:13px}
+.hub-tools-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px}
+.hub-tools-grid .feature-card{padding:18px;transition:transform .15s ease,box-shadow .15s ease}
+.hub-tools-grid .feature-card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(20,68,0,.07)}
+.hub-tools-grid .feature-card h3{margin:13px 0 5px;font-size:17px}
+.hub-tools-grid .feature-card p{font-size:12px}
+@media(max-width:850px){.hub-tools-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.hub-tools-grid{grid-template-columns:1fr}}
