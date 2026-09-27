@@ -3,30 +3,38 @@ declare(strict_types=1);
 
 /**
  * Bubba Hub MySQL connection.
- * Uses the existing /public_html/beta/config.php.
- * Database credentials remain server-side and are never stored in GitHub.
+ * Uses the existing beta/config.php without exposing credentials.
  */
 
 function bh_mysql(): PDO {
     static $pdo = null;
     if ($pdo instanceof PDO) return $pdo;
 
-    $candidates = [
-        dirname(__DIR__) . '/config.php',
-        ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/beta/config.php',
-        '/public_html/beta/config.php',
-    ];
+    $candidates = [];
+
+    if (!empty($_SERVER['DOCUMENT_ROOT'])) {
+        $candidates[] = rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . '/beta/config.php';
+        $candidates[] = rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . '/config.php';
+    }
+
+    $candidates[] = dirname(__DIR__) . '/config.php';
+
+    // Resolve relative to this API file as an additional server-safe fallback.
+    $apiDir = realpath(__DIR__);
+    if ($apiDir !== false) {
+        $candidates[] = dirname($apiDir) . '/config.php';
+    }
 
     $configFile = null;
-    foreach ($candidates as $candidate) {
-        if ($candidate !== '' && is_file($candidate)) {
+    foreach (array_unique($candidates) as $candidate) {
+        if (is_file($candidate)) {
             $configFile = $candidate;
             break;
         }
     }
 
     if ($configFile === null) {
-        throw new RuntimeException('Server database configuration is missing.');
+        throw new RuntimeException('Server database configuration is missing. Checked: ' . implode(' | ', array_unique($candidates)));
     }
 
     $config = require $configFile;
