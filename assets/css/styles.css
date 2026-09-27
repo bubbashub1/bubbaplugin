@@ -2548,3 +2548,7 @@ img,svg,video{max-width:100%;height:auto}
 
 /* Password reset */
 .auth-forgot{text-align:right;margin:-8px 0 16px}.auth-forgot a{color:var(--bh-primary);font-weight:750;text-decoration:underline;text-underline-offset:3px}.reset-card{max-width:560px;margin:0 auto}.reset-card form{display:grid;gap:16px}.reset-card label{display:grid;gap:7px;font-weight:750}.reset-card input{width:100%;padding:13px 14px;border:1px solid var(--bh-border);border-radius:14px;background:#fff;color:var(--bh-text)}.reset-card .library-message{min-height:24px}.reset-success{padding:14px 16px;border-radius:16px;background:var(--bh-bg);border:1px solid var(--bh-border);font-weight:650}
+
+
+/* Sign in with Apple */
+.apple-signin-button{width:100%;min-height:50px;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;border:1px solid #000;border-radius:12px;background:#000;color:#fff;font-family:var(--bh-font);font-size:1rem;font-weight:750;cursor:pointer;transition:.18s}.apple-signin-button:hover{background:#222;box-shadow:0 2px 8px rgba(0,0,0,.14)}.apple-signin-button:disabled{opacity:.6;cursor:wait}.apple-mark{font-size:1rem;line-height:1;color:#fff}
