@@ -2673,3 +2673,42 @@ img,svg,video{max-width:100%;height:auto}
   .newsletter-section h3{font-size:18px}
   .newsletter-section .notification-choice{padding:14px}
 }
+
+/* Site-wide signed-in / signed-out navigation */
+.main-nav .bh-auth-link,
+.main-nav .bh-logout-link,
+.site-footer-nav a {
+  color: var(--bh-text-muted);
+  text-decoration: none;
+  font-weight: 750;
+  transition: color .18s ease, background .18s ease;
+}
+.main-nav .bh-auth-link:hover,
+.main-nav .bh-logout-link:hover,
+.site-footer-nav a:hover {
+  color: var(--bh-primary);
+}
+.main-nav .bh-logout-link {
+  cursor: pointer;
+}
+.site-footer-nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.site-footer-nav a {
+  padding: 4px 0;
+}
+.header-account-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.bh-logout-button {
+  cursor: pointer;
+}
+@media (max-width:620px) {
+  .site-footer-nav { gap: 14px; }
+}
