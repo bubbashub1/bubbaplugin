@@ -101,10 +101,7 @@ try {
     $db->exec("CREATE TABLE IF NOT EXISTS bh_user_preferences (
       user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
       email_enabled TINYINT(1) NOT NULL DEFAULT 1,
-      sms_enabled TINYINT(1) NOT NULL DEFAULT 0,
       push_enabled TINYINT(1) NOT NULL DEFAULT 0,
-      phone VARCHAR(80) NULL,
-      sms_marketing TINYINT(1) NOT NULL DEFAULT 0,
       planner_reminders TINYINT(1) NOT NULL DEFAULT 1,
       booking_updates TINYINT(1) NOT NULL DEFAULT 1,
       saved_searches TINYINT(1) NOT NULL DEFAULT 0,
