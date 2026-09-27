@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en-GB">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Notifications · Bubba Hub</title>
+<meta name="description" content="Choose which Bubba Hub reminders and updates you receive.">
+<link rel="stylesheet" href="assets/css/styles.css?v=20260927-account3">
+</head>
+<body>
+<header class="site-header">
+<a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a>
+<nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="planner.html">My planner</a><a href="my-hub.html">My Hub</a></nav>
+<a class="button button-soft active" href="account.html">My account</a>
+</header>
+<main class="app-shell account-page">
+<div class="page-heading"><div><span class="eyebrow">My account</span><h1>Notifications</h1><p>Choose the reminders and updates you want from Bubba Hub.</p></div></div>
+<div class="account-profile-layout">
+<aside class="account-side-nav" aria-label="Account sections">
+<a href="account.html">🏠 Account home</a><a href="account-profile.html">👤 Profile</a><a href="family.html">👶 My family</a><a href="preferences.html">✓ Preferences</a><a href="notifications.html" class="active" aria-current="page">🔔 Notifications</a><a href="directory.html?saved=1">♡ Saved activities</a><a href="planner.html">🗓️ Planner &amp; bookings</a>
+</aside>
+<section class="admin-panel account-notifications-panel">
+<div class="admin-panel-head"><div><span class="eyebrow">Your notification choices</span><h2>Stay in the loop, your way.</h2><p>Essential account and booking messages may still be sent when needed. Optional reminders can be switched off here.</p></div><span class="status" id="notificationStatus">Loading…</span></div>
+
+<div class="notification-channel-grid">
+<label class="notification-choice"><input type="checkbox" id="emailEnabled"><span><strong>✉️ Email</strong><small>Receive useful Bubba Hub updates by email.</small></span></label>
+<label class="notification-choice"><input type="checkbox" id="smsEnabled"><span><strong>💬 Text messages</strong><small>Use SMS for reminders and important booking updates when available.</small></span></label>
+<label class="notification-choice"><input type="checkbox" id="pushEnabled"><span><strong>🔔 Push notifications</strong><small>Receive reminders on your phone or device when push is connected.</small></span></label>
+</div>
+
+<div class="notification-section">
+<h3>What would you like reminders about?</h3>
+<div class="notification-list">
+<label><input type="checkbox" data-pref="plannerReminders"><span><strong>Planner reminders</strong><small>Reminders about activities you have added to your planner.</small></span></label>
+<label><input type="checkbox" data-pref="bookingUpdates"><span><strong>Booking updates</strong><small>Reservation confirmations, changes and cancellations.</small></span></label>
+<label><input type="checkbox" data-pref="savedSearches"><span><strong>Saved activity alerts</strong><small>Updates when relevant new activities are added.</small></span></label>
+<label><input type="checkbox" data-pref="supportReplies"><span><strong>Support replies</strong><small>Let me know when someone replies to a private support question.</small></span></label>
+<label><input type="checkbox" data-pref="eventReminders"><span><strong>Event reminders</strong><small>Reminders about family events you have saved or planned.</small></span></label>
+</div>
+</div>
+
+<div class="notification-section">
+<h3>Mobile number</h3>
+<label class="notification-field">Mobile number
+<input id="phone" type="tel" autocomplete="tel" placeholder="e.g. 07123 456789">
+</label>
+<label class="notification-choice notification-marketing"><input type="checkbox" id="smsMarketing"><span><strong>Occasional Bubba Hub news</strong><small>New features, family events and occasional community updates. This is separate from essential account messages.</small></span></label>
+</div>
+
+<div class="notification-actions">
+<span id="notificationMessage" class="library-message" aria-live="polite"></span>
+<button class="button button-primary" id="saveNotifications" type="button">Save notification settings</button>
+</div>
+</section>
+</div>
+</main>
+<footer class="site-footer"><strong>Bubba Hub</strong><span>Find · Plan · Book family activities</span><span>Devon &amp; Cornwall</span></footer>
+<script src="assets/js/app.js?v=20260927-account3"></script><script src="assets/js/account-notifications.js?v=20260927-account3"></script>
+</body></html>
