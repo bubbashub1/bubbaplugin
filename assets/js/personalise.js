@@ -9,8 +9,10 @@
     const state={step:1,children:[],activities:[],day:"",region:"",town:"",budget:"",category:"",manualAge:""};
     const pref=(()=>{try{return JSON.parse(localStorage.getItem("bhPreferences")||"{}")}catch{return{}}})();
     state.region=pref.region||"";
+    state.town=pref.town||"";
     state.day=pref.day||"";
-    state.budget=pref.freeActivities?"0":"";
+    state.budget=pref.maxPrice!==undefined?String(pref.maxPrice||""):(pref.freeActivities?"0":"");
+    state.category=(Array.isArray(pref.categories)&&pref.categories.length)?pref.categories[0]:"";
     const $=id=>document.getElementById(id);
 
     function setStep(n){
@@ -228,11 +230,25 @@
       const auth=window.bhAuthSession?await bhAuthSession():null;
       if(auth?.authenticated){
         const hub=await fetch("api/my-hub.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}).then(r=>r.json()).catch(()=>null);
-        if(hub?.ok){
-          state.children=Array.isArray(hub.children)?hub.children:[];
+        if(hub?.ok) state.children=Array.isArray(hub.children)?hub.children:[];
+        const prefResponse=await fetch("api/preferences.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}).then(r=>r.json()).catch(()=>null);
+        if(prefResponse?.ok&&prefResponse.preferences){
+          const saved=prefResponse.preferences;
+          state.region=saved.region||state.region;
+          state.town=saved.town||state.town;
+          state.day=saved.day||state.day;
+          state.budget=saved.maxPrice!==undefined?String(saved.maxPrice||""):(saved.freeActivities?"0":state.budget);
+          const preferred=Array.isArray(saved.categories)?saved.categories:[];
+          state.category=preferred[0]||state.category;
+          localStorage.setItem("bhPreferences",JSON.stringify(saved));
+          $("personalRegion").value=state.region||"";
         }
       }
       renderChoices();
+      fillRegions();
+      renderDayChoices();
+      renderBudgetChoices();
+      renderCategories();
       if($("manualAge"))$("manualAge").addEventListener("change",function(){state.manualAge=this.value});
     }catch(e){
       root.innerHTML="<section class='admin-panel personal-error'><h2>We couldn't load your activity ideas</h2><p>"+esc(e.message||"Please try again.")+"</p><a class='button button-primary' href='directory.html'>Browse the directory</a></section>";
