@@ -19,8 +19,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const cats=Array.isArray(a.category)?a.category:[a.category].filter(Boolean),ages=Array.isArray(a.age_range)?a.age_range:[a.age_range].filter(Boolean);
   state.className="listing-page";
   state.innerHTML=
-   '<section class="activity-title-header"><span class="eyebrow">Activity</span><h1>'+bhEscape(a.title)+'</h1></section>'+
-   '<section class="listing-hero">'+
+   '<section class="listing-hero activity-hero">'+
     '<div class="listing-gallery">'+(images.length?images.map((src,i)=>'<img src="'+bhEscape(src)+'" alt="'+bhEscape(a.title)+'"'+(i?' loading="lazy"':'')+'>').join(""):'<div class="listing-gallery-placeholder">Bubba Hub activity</div>')+'</div>'+
     '<div class="listing-summary"><span class="eyebrow">'+bhEscape(cats.join(" · ")||"Family activity")+'</span><p class="listing-intro">'+bhEscape(a.short_description||a.summary||"A local family activity listed on Bubba Hub.")+'</p>'+
     '<div class="listing-tags">'+ages.map(x=>'<span>'+bhEscape(x)+'</span>').join("")+(a.region?'<span>'+bhEscape(a.region)+'</span>':"")+'</div>'+
