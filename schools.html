@@ -129,15 +129,16 @@ document.addEventListener("DOMContentLoaded",()=>{
    try{
     const r=await fetch("api/profile.php",{credentials:"same-origin",cache:"no-store"}),j=await r.json(),a=j?.user?.address||{};
     const town=String(a.city||"").trim(),postcode=String(a.postcode||"").trim();
-    if(!town&&!postcode)throw Error("Add your home town or postcode in My account first.");
-    locationInput.value=town||postcode;
+    if(!postcode&&!town)throw Error("Add your home postcode in My account first.");
+    const homeLocation=postcode||town;
+    locationInput.value=homeLocation;
     let lat=Number(a.latitude),lon=Number(a.longitude);
     if(!Number.isFinite(lat)||!Number.isFinite(lon)){
-      const gr=await fetch("api/geocode.php?q="+encodeURIComponent((town||postcode)+", UK"),{cache:"no-store"}),gj=await gr.json(),g=gj?.results?.[0];
+      const gr=await fetch("api/geocode.php?q="+encodeURIComponent(homeLocation+", UK"),{cache:"no-store"}),gj=await gr.json(),g=gj?.results?.[0];
       lat=Number(g?.lat);lon=Number(g?.lon);
     }
     if(!Number.isFinite(lat)||!Number.isFinite(lon))throw Error("We could not locate your saved home area.");
-    await loadSchools(lat,lon,town||postcode);
+    await loadSchools(lat,lon,homeLocation);
    }catch(e){status.textContent=e.message||"Unable to use your saved home area."}
  };
  document.getElementById("searchSchools").onclick=()=>setLocation(locationInput.value);
