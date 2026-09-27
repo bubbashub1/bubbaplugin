@@ -5,7 +5,7 @@
 <base href="/beta/">
 <link rel="stylesheet" href="assets/css/styles.css?v=20260927-schools1">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-</head><body>
+</head><body><div id="bh-loading-overlay" class="bh-loading-overlay" aria-hidden="true"><div class="bh-loading-cog" role="status" aria-label="Loading"></div></div>
 <header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a>
 <nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="events">Events</a><a href="venues">Venues</a><a href="planner.html">My planner</a><a href="calendar.html">Calendar</a><a href="my-hub.html">My Hub</a><a href="leader.html">For class leaders</a><a href="admin.html">Admin</a></nav>
 <div class="header-account-actions"><a class="button button-soft" href="account.html">My account</a><button class="button button-soft" id="siteLogout" type="button">Log out</button></div></header>
@@ -60,7 +60,7 @@
 <script>
 document.addEventListener("DOMContentLoaded",()=>{
  const list=document.getElementById("schoolList"),mapEl=document.getElementById("schoolMap"),status=document.getElementById("locationStatus"),count=document.getElementById("schoolCount"),locationInput=document.getElementById("schoolLocation"),phase=document.getElementById("schoolPhase");
- let schools=[],visibleSchools=[],map=null,markers=[],currentView="list";
+ let schools=[],visibleSchools=[],map=null,markers=[],currentView="list";\nconst loadingOverlay=document.getElementById("bh-loading-overlay");\nfunction setLoading(active){if(!loadingOverlay)return;loadingOverlay.classList.toggle("is-active",active);loadingOverlay.setAttribute("aria-hidden",active?"false":"true");}
  const esc=v=>window.bhEscape(v??"");
  const link=(url,label,cls="")=>url?'<a class="'+cls+'" href="'+esc(url)+'" target="_blank" rel="noopener">'+label+' ↗</a>':"";
  const ofsted=(s)=>s.ofsted_url?link(s.ofsted_url,"Ofsted report","button button-soft"):'<span class="school-ofsted-unavailable">Ofsted report not linked</span>';
