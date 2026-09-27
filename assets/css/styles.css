@@ -1601,3 +1601,11 @@ body{background:#f5f3ed;color:var(--bh-ink);font-family:"Quicksand",sans-serif}
  .bh-bottom-nav a span:first-child{font-size:17px}.bh-bottom-nav a.active{background:#eef3ee;color:var(--bh-primary)}
 }
 @media(max-width:420px){.hero h1{font-size:39px}.section h2{font-size:34px}}
+
+
+/* Planner session intelligence */
+.planner-heading-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.planner-date{display:block!important;margin-top:2px;color:var(--bh-text-muted)!important;font-size:9px!important;font-weight:700!important}
+.planner-card.is-conflict{border-color:rgba(166,112,52,.35);background:#fffaf4}
+.planner-conflict{padding:3px 7px;border-radius:999px;background:#f6ead9;color:#875927;font-size:8px;font-weight:900;white-space:nowrap}
+@media(max-width:520px){.planner-heading-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.planner-heading-actions .button{width:100%;min-width:0}}
