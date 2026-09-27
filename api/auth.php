@@ -33,8 +33,18 @@ try {
     }
 
     if ($action === 'me') {
+        $adminAuthenticated = !empty($_SESSION['bh_admin_authenticated']);
         if (empty($_SESSION['bh_user_id'])) {
-            bh_auth_response(200, ['ok' => true, 'authenticated' => false, 'csrf' => $_SESSION['bh_csrf']]);
+            if ($adminAuthenticated) {
+                bh_auth_response(200, [
+                    'ok' => true,
+                    'authenticated' => true,
+                    'is_admin' => true,
+                    'user' => ['id' => 0, 'email' => 'Admin access', 'role' => 'admin', 'status' => 'active'],
+                    'csrf' => $_SESSION['bh_csrf'],
+                ]);
+            }
+            bh_auth_response(200, ['ok' => true, 'authenticated' => false, 'is_admin' => false, 'csrf' => $_SESSION['bh_csrf']]);
         }
 
         $stmt = $db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");
@@ -49,6 +59,7 @@ try {
         bh_auth_response(200, [
             'ok' => true,
             'authenticated' => true,
+            'is_admin' => $adminAuthenticated,
             'user' => [
                 'id' => (int)$user['id'],
                 'email' => $user['email'],
@@ -149,6 +160,11 @@ try {
     }
 
     if ($action === 'logout') {
+        if (!empty($_SESSION['bh_admin_authenticated'])) {
+            unset($_SESSION['bh_user_id']);
+            $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
+            bh_auth_response(200, ['ok' => true, 'authenticated' => true, 'is_admin' => true]);
+        }
         $_SESSION = [];
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
