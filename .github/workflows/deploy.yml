@@ -56,6 +56,13 @@ jobs:
           : > "$SFTP_BATCH"
           printf 'cd "%s"\n' "$REMOTE_PATH" >> "$SFTP_BATCH"
           find . -maxdepth 1 -type f ! -name '.gitignore' ! -name 'README.md' -printf 'put "%p"\n' >> "$SFTP_BATCH"
+          # OneSignal requires this worker at the public site root; upload it explicitly as a safety check.
+          if [ -f "OneSignalSDKWorker.js" ]; then
+            printf 'put "OneSignalSDKWorker.js"\n' >> "$SFTP_BATCH"
+          else
+            echo "ERROR: OneSignalSDKWorker.js is missing from the repository root." >&2
+            exit 1
+          fi
           for dir in api assets data library images; do
             if [ -d "$dir" ]; then
               find "$dir" -type d -print | while IFS= read -r folder; do
@@ -70,6 +77,7 @@ jobs:
           echo "Deployment upload finished."
           printf 'cd "%s"\n' "$REMOTE_PATH" > "$RUNNER_TEMP/verify.sftp"
           printf 'ls -l index.html\n' >> "$RUNNER_TEMP/verify.sftp"
+          printf 'ls -l OneSignalSDKWorker.js\n' >> "$RUNNER_TEMP/verify.sftp"
           printf 'ls -l assets/css/styles.css\n' >> "$RUNNER_TEMP/verify.sftp"
           printf 'ls -l assets/js/app.js\n' >> "$RUNNER_TEMP/verify.sftp"
           printf 'ls -l data/activities.json\n' >> "$RUNNER_TEMP/verify.sftp"
