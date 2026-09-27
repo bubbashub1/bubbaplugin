@@ -23,7 +23,9 @@ try{
         session_start();
     }
     $userId=(int)($_SESSION['bh_user_id']??0);
-    if($userId<1) bh_preferences_json(401,['ok'=>false,'error'=>'login_required','message'=>'Please sign in to save your preferences.']);
+    $adminOnly=!empty($_SESSION['bh_admin_authenticated'])&&$userId<1;
+    if($userId<1&&!$adminOnly) bh_preferences_json(401,['ok'=>false,'error'=>'login_required','message'=>'Please sign in to save your preferences.']);
+    if($adminOnly&&!isset($_SESSION['bh_csrf'])) $_SESSION['bh_csrf']=bin2hex(random_bytes(24));
     $db=bh_mysql();
     $user=$db->prepare("SELECT id,status FROM bh_users WHERE id=? LIMIT 1");
     $user->execute([$userId]);
@@ -60,6 +62,7 @@ try{
     $row=$stmt->fetch();
 
     if($_SERVER['REQUEST_METHOD']==='GET'){
+        if($adminOnly) bh_preferences_json(200,['ok'=>true,'admin_mode'=>true,'preferences'=>bh_preferences_default(),'csrf'=>$_SESSION['bh_csrf']]);
         $p=bh_preferences_default();
         if($row){
             $p=array_merge($p,[
@@ -78,6 +81,7 @@ try{
     }
 
     if($_SERVER['REQUEST_METHOD']!=='POST') bh_preferences_json(405,['ok'=>false,'error'=>'method_not_allowed']);
+    if($adminOnly) bh_preferences_json(200,['ok'=>true,'admin_mode'=>true,'preferences'=>bh_preferences_default(),'csrf'=>$_SESSION['bh_csrf']]);
     $body=json_decode((string)file_get_contents('php://input'),true);
     if(!is_array($body)) bh_preferences_json(400,['ok'=>false,'error'=>'invalid_json']);
     $csrf=(string)($body['csrf']??'');
