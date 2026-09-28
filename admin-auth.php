@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
-$secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+$secure = (
+    (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off')
+    || strtolower((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https'
+);
 session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);
 session_start();
 header('Content-Type: application/json; charset=utf-8');
@@ -8,7 +11,11 @@ header('Cache-Control: no-store');
 
 function respond(int $s,array $d):never{http_response_code($s);echo json_encode($d);exit;}
 
+// The beta app is deployed from /public_html/beta. Keep the server-only
+// configuration one level above the app and resolve it from this file's
+// location rather than relying on the web server's DOCUMENT_ROOT.
 $configCandidates = array_filter([
+    dirname(__DIR__) . '/github-deploy-config.php',
     dirname($_SERVER['DOCUMENT_ROOT'] ?? '') . '/github-deploy-config.php',
     ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/github-deploy-config.php',
     '/github-deploy-config.php'
