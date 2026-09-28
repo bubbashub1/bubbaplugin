@@ -374,6 +374,41 @@ async function createActivity(e){
  finally{button.disabled=false}
 }
 
+const BH_ADVANCED_FILTER_DEFAULTS={category:true,region:true,town:true,nearby:true,age:true,day:true,price:true,session_length:true,sen:true,term_time:true,booking:true,accessibility:true,free:true};
+async function loadAdvancedFilterSettings(){
+ const status=document.querySelector("#advancedFilterSettingsStatus");
+ const box=document.querySelector("#advancedFilterSettings");
+ if(!status||!box)return;
+ try{
+  const r=await fetch("api/search-settings.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});
+  const d=await r.json();
+  if(!r.ok||!d.ok)throw new Error(d.error||"Could not load filter settings.");
+  const settings={...BH_ADVANCED_FILTER_DEFAULTS,...(d.data||{})};
+  box.querySelectorAll("[data-filter-setting]").forEach(el=>el.checked=settings[el.dataset.filterSetting]!==false);
+  status.textContent="Choose the filters you want families to see, then select Save filter settings.";
+  status.classList.remove("is-error");
+ }catch(e){
+  status.textContent=e.message||"Could not load filter settings.";
+  status.classList.add("is-error");
+ }
+}
+async function saveAdvancedFilterSettings(){
+ const status=document.querySelector("#advancedFilterSettingsStatus");
+ const button=document.querySelector("#saveAdvancedFilterSettings");
+ const box=document.querySelector("#advancedFilterSettings");
+ if(!status||!button||!box)return;
+ const filters={};
+ box.querySelectorAll("[data-filter-setting]").forEach(el=>filters[el.dataset.filterSetting]=el.checked);
+ button.disabled=true;status.textContent="Saving…";status.classList.remove("is-error");
+ try{
+  const r=await fetch("api/search-settings.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({filters})});
+  const d=await r.json();
+  if(!r.ok||!d.ok)throw new Error(d.error||"Could not save filter settings.");
+  status.textContent="✓ Advanced filter settings saved.";
+ }catch(e){status.textContent=e.message||"Could not save filter settings.";status.classList.add("is-error");}
+ finally{button.disabled=false;}
+}
+
 async function login(){
  const u=document.querySelector("#adminUsername"),p=document.querySelector("#adminPassword"),username=u.value.trim(),password=p.value;
  if(!username||!password){setAuthMessage("Enter your username and password.",true);return}
@@ -385,6 +420,7 @@ async function login(){
 }
 
 document.querySelector("#saveAdminLogin").addEventListener("click",login);
+document.querySelector("#saveAdvancedFilterSettings")?.addEventListener("click",saveAdvancedFilterSettings);
 document.querySelector("#adminLogout").addEventListener("click",logout);
 
 document.querySelector("#deployLatest").addEventListener("click",async()=>{
