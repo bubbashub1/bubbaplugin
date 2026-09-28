@@ -73,60 +73,37 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (params.get("free")) $("free").checked = true;
     if (params.get("max_price")) $("maxPrice").value = params.get("max_price");
 
-    // Basic vs advanced search: keep the common fields visible and move deeper filters into a collapsible panel.
+    // Search/filter layout: desktop keeps filters in a left sidebar; mobile opens them as a drawer.
     const setupAdvancedSearch = () => {
-      const toolbar = $("directoryFilters");
+      const panel = $("directoryFilters");
       const toggle = $("filterToggle");
-      if (!toolbar || !toggle) return;
+      const openSearch = $("openSearchFilters");
+      if (!panel || !toggle) return;
 
-      const basicIds = ["search","category","area","town"];
-      const advancedIds = ["ageMin","day","maxPrice","free"];
-      const advancedWrap = document.createElement("div");
-      advancedWrap.className = "directory-advanced-fields";
-      advancedWrap.id = "advancedFields";
-
-      advancedIds.forEach(id => {
-        const el = $(id);
-        if (!el) return;
-        const field = el.closest("div, label") || el.parentElement;
-        if (field && !advancedWrap.contains(field)) advancedWrap.appendChild(field);
-      });
-
-      const accessibilityOptions=[["","Any accessibility"],["step_free","Step-free access"],["accessible_toilet","Accessible toilet"],["accessible_parking","Accessible parking"],["wheelchair_space","Wheelchair space"],["baby_changing","Baby changing"],["quiet_space","Quiet / low-sensory space"],["hearing_support","Hearing support"],["visual_support","Visual support"],["assistance_dog","Assistance dogs welcome"]];
-      const accessibilityWrap=document.createElement("div");
-      accessibilityWrap.innerHTML='<label class="directory-filter-label" for="accessibility">Accessibility</label><select class="filter-input" id="accessibility">'+accessibilityOptions.map(o=>'<option value="'+o[0]+'">'+o[1]+'</option>').join("")+'</select>';
-      advancedWrap.appendChild(accessibilityWrap);
-
-      const extras = [
-        ["sessionLength","Session length",[["","Any length"],["60","Up to 1 hour"],["120","1–2 hours"],["180","2–3 hours"],["181","3+ hours"]]],
-        ["sen","SEN friendly",[["","Any"],["yes","Yes"],["no","No"]]],
-        ["termTime","Term time",[["","Any"],["yes","Term time only"],["no","Not term time only"]]],
-        ["booking","Booking",[["","Any"],["yes","Bookable online"],["no","No online booking"]]]
-      ];
-      extras.forEach(([id,label,options]) => {
-        const wrap=document.createElement("div");
-        wrap.innerHTML='<label class="directory-filter-label" for="'+id+'">'+label+'</label><select class="filter-input" id="'+id+'">'+options.map(o=>'<option value="'+o[0]+'">'+o[1]+'</option>').join("")+'</select>';
-        advancedWrap.appendChild(wrap);
-      });
-
-      const heading=document.createElement("div");
-      heading.className="advanced-search-heading";
-      heading.innerHTML='<span class="eyebrow">Refine your search</span><strong>Find something that fits your family</strong><span>Age, day, price and practical details.</span>';
-
-      const clear=$( "clear" );
-      toolbar.insertBefore(heading, toolbar.firstChild);
-      toolbar.appendChild(advancedWrap);
-      if (clear) advancedWrap.appendChild(clear);
-
-      toggle.textContent="Advanced search ＋";
-      toggle.setAttribute("aria-expanded","false");
-      advancedWrap.hidden=true;
-      toggle.onclick=()=>{
-        const open=!advancedWrap.hidden;
-        advancedWrap.hidden=!open;
-        toggle.setAttribute("aria-expanded",String(open));
-        toggle.innerHTML=open?"Advanced search −":"Advanced search ＋";
+      const setOpen = open => {
+        panel.classList.toggle("is-open", open);
+        toggle.setAttribute("aria-expanded", String(open));
+        toggle.innerHTML = open ? "Close search <span aria-hidden=\"true\">×</span>" : "Advanced search <span aria-hidden=\"true\">＋</span>";
+        document.body.classList.toggle("directory-filter-open", open && window.innerWidth <= 900);
       };
+
+      toggle.onclick = () => setOpen(!panel.classList.contains("is-open"));
+      if (openSearch) openSearch.onclick = () => setOpen(true);
+
+      panel.addEventListener("click", event => {
+        if (window.innerWidth <= 900 && event.target === panel) setOpen(false);
+      });
+
+      window.addEventListener("resize", () => {
+        if (window.innerWidth > 900) {
+          panel.classList.add("is-open");
+          panel.removeAttribute("hidden");
+          document.body.classList.remove("directory-filter-open");
+        }
+      });
+
+      if (window.innerWidth > 900) setOpen(true);
+      else setOpen(false);
     };
 
     setupAdvancedSearch();
