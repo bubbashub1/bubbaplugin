@@ -292,3 +292,70 @@ void bhHydrateSaved();
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",initMobileNav);
   else initMobileNav();
 })();
+
+/* Mobile navigation styling is injected here so every page using app.js gets the same menu. */
+(function(){
+  const style=document.createElement("style");
+  style.textContent=`
+    .mobile-nav-toggle{display:none}
+    @media (max-width:620px){
+      .site-header{display:flex;align-items:center;flex-wrap:nowrap;gap:10px;min-height:64px;position:relative}
+      .site-header .brand{margin-right:auto;flex:0 1 auto}
+      .site-header .brand-logo{width:46px;height:46px}
+      .site-header>.button,.site-header>.header-account-actions{display:none!important}
+      .mobile-nav-toggle{
+        display:flex!important;
+        flex:0 0 44px;
+        width:44px;height:44px;
+        padding:0;
+        border:1px solid var(--bh-border);
+        border-radius:12px;
+        background:#fff;
+        color:var(--bh-primary);
+        align-items:center;
+        justify-content:center;
+        flex-direction:column;
+        gap:5px;
+        cursor:pointer;
+        z-index:12;
+      }
+      .mobile-nav-toggle span{display:block;width:20px;height:2px;background:currentColor;border-radius:2px;transition:transform .2s ease,opacity .2s ease}
+      .site-header.mobile-menu-open .mobile-nav-toggle span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+      .site-header.mobile-menu-open .mobile-nav-toggle span:nth-child(2){opacity:0}
+      .site-header.mobile-menu-open .mobile-nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+      .main-nav{
+        display:none!important;
+        position:absolute;
+        top:calc(100% + 8px);
+        left:0;
+        right:0;
+        width:100%!important;
+        max-height:calc(100vh - 90px);
+        overflow-y:auto!important;
+        overflow-x:hidden!important;
+        padding:8px;
+        background:#fff;
+        border:1px solid var(--bh-border);
+        border-radius:16px;
+        box-shadow:0 18px 40px rgba(20,68,0,.16);
+        z-index:20;
+        flex-direction:column!important;
+        align-items:stretch!important;
+        gap:3px!important;
+      }
+      .site-header.mobile-menu-open .main-nav{display:flex!important}
+      .main-nav a{
+        display:flex!important;
+        width:100%;
+        min-height:46px;
+        align-items:center;
+        padding:11px 13px!important;
+        border-radius:11px;
+        font-size:15px!important;
+        white-space:normal!important;
+      }
+      .main-nav a:hover,.main-nav a.active{background:var(--bh-bg)}
+    }
+  `;
+  document.head.appendChild(style);
+})();
