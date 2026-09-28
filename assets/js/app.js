@@ -230,7 +230,7 @@ void bhHydrateSaved();
             <a href="venues.html">Venues</a>
             <a href="planner.html">Planner</a>
             <a href="calendar.html">Calendar</a>
-            <a href="admin.html">Admin</a>
+            <a href="admin/admin.html">Admin</a>
           </nav>
         </div>
         <div class="site-footer-column">
