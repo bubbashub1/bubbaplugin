@@ -22,9 +22,6 @@ async function bhActivities(){
   const totalPages=Number(firstPayload.pagination?.pages||1);
   let rows=firstRows;
 
-  // The API is paginated for performance. The directory needs the complete
-  // published set so filtering, map pins and the calendar work across 1,000+
-  // activities rather than silently stopping at the first 50.
   for(let start=2;start<=totalPages;start+=4){
     const pages=Array.from({length:Math.min(4,totalPages-start+1)},(_,i)=>start+i);
     const payloads=await Promise.all(pages.map(fetchPage));
@@ -62,7 +59,7 @@ async function bhActivities(){
 
     const coordinate=raw=>{
       if(raw===null||raw===undefined||raw==="") return null;
-      const n=Number(String(raw).trim().replace(",","."));
+      const n=Number(String(raw).trim().replace(",",".")); 
       return Number.isFinite(n)?n:null;
     };
 
@@ -196,7 +193,6 @@ function bhActivityUrl(activity){const slug=String(activity?.slug||"").trim();re
 
 void bhHydrateSaved();
 
-/* Bubba Hub site-wide authentication/navigation */
 (function(){
   const s=document.createElement("script");
   s.src="assets/js/site-auth.js?v=20260927-auth3";
@@ -204,7 +200,6 @@ void bhHydrateSaved();
   document.head.appendChild(s);
 })();
 
-/* Bubba Hub site-wide footer */
 (function(){
   const footerHTML = `
     <footer class="site-footer">
@@ -254,4 +249,46 @@ void bhHydrateSaved();
   const existing=document.querySelector(".site-footer");
   if(existing) existing.outerHTML=footerHTML;
   else document.body.insertAdjacentHTML("beforeend",footerHTML);
+})();
+
+/* Mobile navigation: replace the crowded desktop nav with an accessible menu button. */
+(function(){
+  function initMobileNav(){
+    const headers=document.querySelectorAll(".site-header");
+    headers.forEach(header=>{
+      const nav=header.querySelector(".main-nav");
+      if(!nav || header.querySelector(".mobile-nav-toggle")) return;
+
+      const toggle=document.createElement("button");
+      toggle.type="button";
+      toggle.className="mobile-nav-toggle";
+      toggle.setAttribute("aria-expanded","false");
+      toggle.setAttribute("aria-controls","mobile-main-menu");
+      toggle.setAttribute("aria-label","Open menu");
+      toggle.innerHTML="<span></span><span></span><span></span>";
+
+      nav.id="mobile-main-menu";
+      header.insertBefore(toggle,nav);
+
+      const closeMenu=()=>{
+        header.classList.remove("mobile-menu-open");
+        toggle.setAttribute("aria-expanded","false");
+        toggle.setAttribute("aria-label","Open menu");
+      };
+      toggle.addEventListener("click",()=>{
+        const open=header.classList.toggle("mobile-menu-open");
+        toggle.setAttribute("aria-expanded",String(open));
+        toggle.setAttribute("aria-label",open?"Close menu":"Open menu");
+      });
+      nav.addEventListener("click",e=>{
+        if(e.target.closest("a")) closeMenu();
+      });
+      document.addEventListener("click",e=>{
+        if(!header.contains(e.target)) closeMenu();
+      });
+    });
+  }
+
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",initMobileNav);
+  else initMobileNav();
 })();
