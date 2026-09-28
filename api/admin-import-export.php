@@ -56,9 +56,22 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
 }
 
 if($_SERVER['REQUEST_METHOD']!=='POST'){http_response_code(405);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>'POST or GET required.']);exit;}
-if(empty($_FILES['csv']) || $_FILES['csv']['error']!==UPLOAD_ERR_OK){http_response_code(422);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>'Please choose a CSV file.']);exit;}
-if($_FILES['csv']['size']>10*1024*1024){http_response_code(422);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>'CSV files must be 10 MB or smaller.']);exit;}
-$fh=fopen($_FILES['csv']['tmp_name'],'rb'); if(!$fh){http_response_code(422);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>'Could not read the CSV file.']);exit;}
+$csvTmp=null;
+$csvUrl=trim((string)($_POST['csv_url']??''));
+if($csvUrl!==''){
+  $parts=parse_url($csvUrl);$host=strtolower((string)($parts['host']??''));
+  if(strtolower((string)($parts['scheme']??''))!=='https'||!in_array($host,['docs.google.com','docs.googleusercontent.com'],true)){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'For security, CSV links must be HTTPS Google Sheets links.']);exit;}
+  if($host==='docs.google.com'&&preg_match('~/spreadsheets/d/([a-zA-Z0-9_-]+)~',$parts['path']??'',$m)){parse_str((string)($parts['query']??''),$qp);$csvUrl='https://docs.google.com/spreadsheets/d/'.rawurlencode($m[1]).'/export?format=csv'.(!empty($qp['gid'])&&preg_match('/^[0-9]+$/',(string)$qp['gid'])?'&gid='.rawurlencode((string)$qp['gid']):'');}
+  $ch=curl_init($csvUrl);curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>10,CURLOPT_TIMEOUT=>30,CURLOPT_USERAGENT=>'Bubba Hub CSV importer/1.0']);$body=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$err=curl_error($ch);curl_close($ch);
+  if($body===false||$err!==''){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'Could not fetch the Google Sheets CSV link.']);exit;}
+  if($http<200||$http>=300){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'Google Sheets returned HTTP '.$http.'. Check that the sheet is accessible to anyone with the link.']);exit;}
+  if(strlen($body)>10*1024*1024){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'CSV files must be 10 MB or smaller.']);exit;}
+  $csvTmp=tempnam(sys_get_temp_dir(),'bhcsv_');if($csvTmp===false||file_put_contents($csvTmp,$body)===false){http_response_code(500);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'Could not prepare the downloaded CSV.']);exit;}$fh=fopen($csvTmp,'rb');
+}else{
+  if(empty($_FILES['csv'])||$_FILES['csv']['error']!==UPLOAD_ERR_OK){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'Choose a CSV file or paste a Google Sheets link.']);exit;}
+  if($_FILES['csv']['size']>10*1024*1024){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'CSV files must be 10 MB or smaller.']);exit;}$fh=fopen($_FILES['csv']['tmp_name'],'rb');
+}
+if(!$fh){if($csvTmp)@unlink($csvTmp);http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'Could not read the CSV.']);exit;}
 $headers=fgetcsv($fh); if(!$headers || count($headers)<1){http_response_code(422);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>'The CSV has no header row.']);exit;}
 $headers=array_map('clean_header',$headers); $rows=[]; while(($r=fgetcsv($fh))!==false){if(count(array_filter($r,fn($x)=>trim((string)$x)!==''))===0)continue;$r=array_pad($r,count($headers),'');$row=[];foreach($headers as $i=>$h){$row[$h]=trim((string)($r[$i]??''));}$rows[]=$row;} fclose($fh);
 $mode=($_POST['mode']??'update')==='skip'?'skip':'update';
