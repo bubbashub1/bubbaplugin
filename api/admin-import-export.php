@@ -67,14 +67,32 @@ if($csvUrl!==''){
   if(!$isPublished || strtolower((string)($qp['output']??''))!=='csv'){
     http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'Please use the published Google Sheets CSV link: File → Share → Publish to web → CSV.']);exit;
   }
-  // Google can return one or more redirects before serving a published CSV.
-  // Follow them, then verify the final destination is still a Google HTTPS host.
-  $ch=curl_init($csvUrl);
-  curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>true,CURLOPT_MAXREDIRS=>4,CURLOPT_CONNECTTIMEOUT=>10,CURLOPT_TIMEOUT=>30,CURLOPT_USERAGENT=>'Bubba Hub published Google Sheets importer/1.0']);
-  $body=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$err=curl_error($ch);$finalUrl=(string)curl_getinfo($ch,CURLINFO_EFFECTIVE_URL);curl_close($ch);
-  $finalParts=parse_url($finalUrl);$finalScheme=strtolower((string)($finalParts['scheme']??''));$finalHost=strtolower((string)($finalParts['host']??''));
-  $safeFinal=$finalScheme==='https' && in_array($finalHost,['docs.google.com','docs.googleusercontent.com','googleusercontent.com'],true);
-  if($body===false||$err!==''||$http<200||$http>=300||!$safeFinal){
+  // Google can return redirects (including relative Location headers) before serving the CSV.
+  // Follow only HTTPS redirects that remain on Google's published-sheet hosts.
+  $currentUrl=$csvUrl;$body=false;$http=0;$err='';$redirects=0;
+  while($redirects<5){
+    $ch=curl_init($currentUrl);
+    curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_HEADER=>true,CURLOPT_CONNECTTIMEOUT=>10,CURLOPT_TIMEOUT=>30,CURLOPT_USERAGENT=>'Bubba Hub published Google Sheets importer/1.0']);
+    $raw=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$err=curl_error($ch);$headerSize=(int)curl_getinfo($ch,CURLINFO_HEADER_SIZE);curl_close($ch);
+    if($raw===false||$err!=='')break;
+    $headers=substr($raw,0,$headerSize);$responseBody=substr($raw,$headerSize);
+    if($http>=200&&$http<300){$body=$responseBody;break;}
+    if(!in_array($http,[301,302,303,307,308],true))break;
+    if(!preg_match('/^Location:\s*(.+)$/mi',$headers,$lm))break;
+    $location=trim($lm[1]);
+    if($location==='')break;
+    if(str_starts_with($location,'/')){
+      $base=parse_url($currentUrl);
+      $location='https://'.($base['host']??'docs.google.com').$location;
+    }elseif(!preg_match('~^https://~i',$location)){
+      break;
+    }
+    $next=parse_url($location);
+    $nextScheme=strtolower((string)($next['scheme']??''));$nextHost=strtolower((string)($next['host']??''));
+    if($nextScheme!=='https'||!in_array($nextHost,['docs.google.com','docs.googleusercontent.com','googleusercontent.com'],true))break;
+    $currentUrl=$location;$redirects++;
+  }
+  if($body===false){
     http_response_code(422);header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['ok'=>false,'error'=>'Could not fetch the published Google Sheets CSV link. Google returned HTTP '.$http.'. Please check that the sheet is still published as CSV.']);exit;
   }
