@@ -452,19 +452,11 @@ verifyAdmin().then(()=>{document.querySelector("#adminAccess").hidden=true;docum
 
 
 async function importActivityCsv(){
- const file=document.querySelector("#activityCsvFile")?.files?.[0],status=document.querySelector("#activityImportStatus"),button=document.querySelector("#importActivityCsv");
- if(!file){status.textContent="Choose a CSV file first.";status.classList.add("is-error");return;}
- if(!/\\.csv$/i.test(file.name)){status.textContent="Please choose a .csv file.";status.classList.add("is-error");return;}
- button.disabled=true;status.classList.remove("is-error");status.textContent="Importing CSV…";
- try{
-  const fd=new FormData();fd.append("csv",file);fd.append("mode",document.querySelector("#activityCsvMode")?.value||"update");
-  const r=await fetch("api/admin-import-export.php",{method:"POST",credentials:"same-origin",body:fd});
-  const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"CSV import failed.");
-  const parts=["✓ Import complete.",d.created+" created",d.updated+" updated",d.skipped+" skipped",d.failed+" failed."];
-  status.textContent=parts.join(" ");
-  if(d.errors?.length)status.textContent+=" "+d.errors.join(" ");
-  await loadDashboard();
- }catch(e){status.textContent=e.message||"CSV import failed.";status.classList.add("is-error");}
- finally{button.disabled=false;}
+ const file=document.querySelector("#activityCsvFile")?.files?.[0],url=document.querySelector("#activityCsvUrl")?.value.trim(),status=document.querySelector("#activityImportStatus"),button=document.querySelector("#importActivityCsv");
+ if(!file&&!url){status.textContent="Paste a Google Sheets link or choose a CSV file first.";status.classList.add("is-error");return;}
+ if(file&&url){status.textContent="Use either the Google Sheets link or the CSV upload, not both.";status.classList.add("is-error");return;}
+ if(file&&!/\\.csv$/i.test(file.name)){status.textContent="Please choose a .csv file.";status.classList.add("is-error");return;}
+ button.disabled=true;status.classList.remove("is-error");status.textContent=url?"Fetching Google Sheet…":"Importing CSV…";
+ try{const fd=new FormData();if(file)fd.append("csv",file);if(url)fd.append("csv_url",url);fd.append("mode",document.querySelector("#activityCsvMode")?.value||"update");const r=await fetch("api/admin-import-export.php",{method:"POST",credentials:"same-origin",body:fd});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"CSV import failed.");status.textContent="✓ Import complete. "+d.created+" created, "+d.updated+" updated, "+d.skipped+" skipped, "+d.failed+" failed.";if(d.errors?.length)status.textContent+=" "+d.errors.join(" ");await loadDashboard();}catch(e){status.textContent=e.message||"CSV import failed.";status.classList.add("is-error");}finally{button.disabled=false;}
 }
 document.querySelector("#importActivityCsv")?.addEventListener("click",importActivityCsv);
