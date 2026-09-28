@@ -4,6 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 try {
 require_once __DIR__.'/db.php';
+require_once __DIR__.'/onesignal-email.php';
 session_start();
 register_shutdown_function(function(){
  $e=error_get_last();
@@ -40,6 +41,8 @@ if($hasOrgUserId){
 }
 if(!$org)lp(403,['ok'=>false,'error'=>'organiser_required','message'=>'Your account is not linked to a class leader organisation yet.']);
 $oid=(int)$org['id'];
+$leaderEmail='';
+try{$eq=$db->prepare("SELECT email FROM bh_users WHERE id=? LIMIT 1");$eq->execute([$userId]);$leaderEmail=strtolower(trim((string)$eq->fetchColumn()));}catch(Throwable $ignored){$leaderEmail=strtolower(trim((string)($org['email']??'')));}
 if($_SERVER['REQUEST_METHOD']==='GET'){
  $classes=[];
  try{
@@ -135,6 +138,26 @@ if($action==='create_listing'){
   $v=$db->prepare("INSERT INTO bh_venues (venue_name,address,town,region,postcode,latitude,longitude,notes,activity_id) VALUES (?,?,?,?,?,?,?,?,?)");
   $v->execute([$venueName,$address,$town,$region,$postcode,$lat===''?null:$lat,$lng===''?null:$lng,'',$activityId]);
   $db->commit();
+
+  // Send the listing confirmation after the database transaction succeeds.
+  // Email delivery is non-fatal: a OneSignal/config problem must never make
+  // the listing submission itself fail.
+  if($leaderEmail!==''){
+   $safeTitle=htmlspecialchars($title,ENT_QUOTES,'UTF-8');
+   $safeOrg=htmlspecialchars((string)($org['organisation_name']??''),ENT_QUOTES,'UTF-8');
+   $html='<div style="font-family:Arial,sans-serif;line-height:1.6;color:#26352b;max-width:640px;margin:0 auto">'
+        .'<h1 style="color:#617261">Welcome to Bubba Hub</h1>'
+        .'<p>Hi'.($safeOrg!==''?' '.$safeOrg:'').',</p>'
+        .'<p>Thanks for adding <strong>'.$safeTitle.'</strong> to Bubba Hub.</p>'
+        .'<p>Your listing has been submitted and is currently awaiting review. We will let you know when there is an update.</p>'
+        .'<p>You can sign in to your Class Leader account at any time to manage your listings.</p>'
+        .'<p>Thanks for being part of the Bubba Hub community 💚</p>'
+        .'<p>The Bubba Hub team</p>'
+        .'</div>';
+   $plain="Welcome to Bubba Hub\n\nThanks for adding {$title} to Bubba Hub.\n\nYour listing has been submitted and is currently awaiting review. We will let you know when there is an update.\n\nThe Bubba Hub team";
+   try{bh_send_onesignal_email($leaderEmail,'Welcome to Bubba Hub – your listing has been submitted',$html,$plain);}catch(Throwable $ignored){}
+  }
+
   lp(201,['ok'=>true,'id'=>$activityId]);
  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
 }
