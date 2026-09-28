@@ -58,7 +58,7 @@
     });
   }
 
-  function updateFooter(auth){
+  function updateFooter(auth,menus){
     document.querySelectorAll(".site-footer").forEach(footer=>{
       let nav=footer.querySelector(".site-footer-nav");
       if(!nav){nav=document.createElement("nav");nav.className="site-footer-nav";nav.setAttribute("aria-label","Site navigation");footer.appendChild(nav);}
