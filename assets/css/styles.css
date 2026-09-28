@@ -3217,3 +3217,12 @@ body.advanced-search-open{overflow:hidden;}
   .hero-advanced-actions{flex-direction:column;}
   .hero-advanced-actions .button{width:100%;}
 }
+
+.directory-advanced-filter-field[hidden]{display:none!important;}
+.admin-advanced-filter-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 14px;}
+.admin-advanced-filter-grid label{display:flex;align-items:center;gap:9px;padding:12px 14px;background:var(--bh-bg);border-radius:12px;font-weight:700;}
+.admin-advanced-filter-grid input{width:18px;height:18px;accent-color:var(--bh-primary);}
+.hero-advanced-age-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;}
+.hero-advanced-age-row select{min-width:0;}
+@media(max-width:700px){.admin-advanced-filter-grid{grid-template-columns:1fr 1fr;}.hero-advanced-age-row{grid-template-columns:1fr;}.hero-advanced-age-row span{text-align:center;}}
+@media(max-width:420px){.admin-advanced-filter-grid{grid-template-columns:1fr;}}
