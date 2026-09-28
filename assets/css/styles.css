@@ -2806,3 +2806,113 @@ input,select,textarea{box-sizing:border-box;max-width:100%;font:inherit}
     width:100%;
   }
 }
+
+
+/* ==========================================================================
+   BUBBA HUB — FULL-WIDTH PAGE FRAME
+   Final shell authority: full browser width with consistent 50px desktop
+   breathing room around the actual content containers.
+   ========================================================================== */
+:root{
+  --bh-page-gutter:50px;
+  --bh-content-width:1440px;
+}
+
+/* Full-width outer shell, with the page gutter creating the breathing room. */
+.site-header,
+.hero,
+.app-shell,
+.section,
+.page-heading,
+.directory-layout,
+.listing-page,
+.bh-leader-page{
+  width:calc(100% - (var(--bh-page-gutter) * 2));
+  max-width:var(--bh-content-width);
+  margin-left:auto;
+  margin-right:auto;
+  box-sizing:border-box;
+}
+
+/* Do not let the directory become a narrow fixed-width island. */
+.directory-layout{
+  display:grid;
+  grid-template-columns:280px minmax(0,1fr);
+  gap:28px;
+  align-items:start;
+}
+
+/* The page heading/banner uses the full available content rail. */
+.page-heading{
+  padding-left:0;
+  padding-right:0;
+}
+
+/* Search + listings share the same full-width results column. */
+.directory-results-column{
+  min-width:0;
+  width:100%;
+}
+
+/* Main search bar is a real full-width control above the results. */
+.directory-search-main{
+  width:100%;
+  max-width:none;
+}
+
+/* Keep cards from being artificially squeezed by older rules. */
+.activity-grid{
+  width:100%;
+  max-width:none;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+
+/* Desktop: containers retain clear breathing room rather than touching edges. */
+@media(min-width:901px){
+  .site-header{margin-top:14px;}
+  .hero{margin-top:18px;}
+  .page-heading{padding-top:42px;padding-bottom:24px;}
+  .directory-layout{margin-top:0;}
+}
+
+/* Tablet and mobile use smaller gutters while retaining the same full-width
+   container principle. */
+@media(max-width:900px){
+  :root{--bh-page-gutter:24px;}
+  .site-header,
+  .hero,
+  .app-shell,
+  .section,
+  .page-heading,
+  .directory-layout,
+  .listing-page,
+  .bh-leader-page{
+    width:calc(100% - (var(--bh-page-gutter) * 2));
+    max-width:none;
+  }
+}
+
+@media(max-width:620px){
+  :root{--bh-page-gutter:10px;}
+  .site-header,
+  .hero,
+  .app-shell,
+  .section,
+  .page-heading,
+  .directory-layout,
+  .listing-page,
+  .bh-leader-page{
+    width:calc(100% - (var(--bh-page-gutter) * 2));
+    max-width:none;
+  }
+
+  .page-heading{padding-top:30px;padding-bottom:18px;}
+  .activity-grid{grid-template-columns:1fr;}
+}
+
+/* Prevent nested shells from adding a second artificial narrow rail. */
+.app-shell > .directory-layout,
+.app-shell > .page-heading{
+  width:100%;
+  max-width:none;
+}
