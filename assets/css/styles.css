@@ -2712,3 +2712,75 @@ img,svg,video{max-width:100%;height:auto}
 @media (max-width:620px) {
   .site-footer-nav { gap: 14px; }
 }
+
+/* Site-wide four-column footer */
+.site-footer{
+  width:100%;
+  max-width:none;
+  margin:64px 0 0;
+  padding:56px max(16px,calc((100% - var(--bh-max)) / 2)) 22px;
+  border-top:1px solid var(--bh-border);
+  background:var(--bh-primary);
+  color:#fff;
+  display:block;
+  font-size:14px;
+}
+.site-footer-grid{
+  width:100%;
+  max-width:var(--bh-max);
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:minmax(230px,1.35fr) repeat(3,minmax(150px,1fr));
+  gap:44px;
+}
+.site-footer-brand{
+  display:flex;
+  align-items:flex-start;
+  gap:16px;
+  min-width:0;
+}
+.site-footer-logo{
+  width:62px;height:62px;flex:0 0 62px;overflow:hidden;border-radius:16px;
+  background:#fff;display:block;
+}
+.site-footer-logo img{width:100%;height:100%;object-fit:contain}
+.site-footer-brand-copy{min-width:0}
+.site-footer-title{
+  display:inline-block;color:#fff;font-size:24px;font-weight:800;letter-spacing:-.03em;
+}
+.site-footer-brand p{
+  max-width:290px;margin:7px 0 0;color:rgba(255,255,255,.78);line-height:1.55;
+}
+.site-footer-column h2{
+  margin:2px 0 14px;color:#fff;font-size:14px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+}
+.site-footer-links{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.site-footer-links a{
+  padding:2px 0;color:rgba(255,255,255,.78);font-weight:650;text-decoration:none;
+  transition:color .18s ease,transform .18s ease;
+}
+.site-footer-links a:hover{color:#fff;transform:translateX(2px)}
+.site-footer-bottom{
+  width:100%;max-width:var(--bh-max);margin:42px auto 0;padding-top:18px;
+  border-top:1px solid rgba(255,255,255,.16);display:flex;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;color:rgba(255,255,255,.58);font-size:12px;
+}
+@media(max-width:900px){
+  .site-footer-grid{grid-template-columns:1.4fr 1fr 1fr;gap:32px}
+  .site-footer-brand{grid-row:span 2}
+}
+@media(max-width:650px){
+  .site-footer{margin-top:44px;padding:40px 20px 20px}
+  .site-footer-grid{grid-template-columns:1fr 1fr;gap:32px 24px}
+  .site-footer-brand{grid-column:1/-1;grid-row:auto}
+  .site-footer-brand p{max-width:420px}
+  .site-footer-bottom{margin-top:30px}
+}
+@media(max-width:430px){
+  .site-footer-grid{grid-template-columns:1fr}
+  .site-footer-column h2{margin-bottom:8px}
+  .site-footer-links{gap:6px}
+  .site-footer-bottom{display:block}
+  .site-footer-bottom span{display:block}
+  .site-footer-bottom span+span{margin-top:4px}
+}
