@@ -22,20 +22,20 @@
   }
   function leaderAuthTarget(){const u=new URL("leader-auth.html",document.baseURI);u.searchParams.set("next",nextUrl());return u.href;}
 
-  function updateHeader(auth){
+  function updateHeader(auth,menus){
     document.querySelectorAll(".site-header").forEach(header=>{
       const nav=header.querySelector(".main-nav");
       if(nav){
         nav.innerHTML="";
-        const links=[
-          ["Find activities",new URL("directory.html",document.baseURI).href],
-          ["Events",new URL("events",document.baseURI).href],
-          ["Venues",new URL("venues",document.baseURI).href],
-          ["Calendar",new URL("calendar.html",document.baseURI).href],
-          ["My Hub",new URL("my-hub.html",document.baseURI).href],
-          ["Support & Guidance",new URL("help-support.html",document.baseURI).href]
-        ];
-        links.forEach(x=>nav.appendChild(makeLink(x[0],x[1])));
+        const configured=(menus&&Array.isArray(menus.main)&&menus.main.length?menus.main: [
+          {label:"Find activities",url:"directory.html"},
+          {label:"Events",url:"events.html"},
+          {label:"Venues",url:"venues.html"},
+          {label:"Calendar",url:"calendar.html"},
+          {label:"My Hub",url:"my-hub.html"},
+          {label:"Support & Guidance",url:"help-support.html"}
+        ]).filter(item=>item&&item.visible!==false&&item.label&&item.url);
+        configured.forEach(item=>nav.appendChild(makeLink(item.label,new URL(item.url,document.baseURI).href)));
         const leader=makeLink(auth.authenticated&&auth.user&&auth.user.role==="leader"?"Class Leaders":"Class Leaders",auth.authenticated&&auth.user&&auth.user.role==="leader"?new URL("leader.html",document.baseURI).href:leaderAuthTarget(),"bh-leader-nav-button");
         leader.setAttribute("data-bh-auth-link","leader");nav.appendChild(leader);
         const accountHref=auth.authenticated&&auth.user&&auth.user.role==="leader"?new URL("leader-account.html",document.baseURI).href:new URL("account.html",document.baseURI).href;
@@ -63,7 +63,10 @@
       let nav=footer.querySelector(".site-footer-nav");
       if(!nav){nav=document.createElement("nav");nav.className="site-footer-nav";nav.setAttribute("aria-label","Site navigation");footer.appendChild(nav);}
       nav.innerHTML="";
-      [["Find activities","directory.html"],["Events","events"],["Venues","venues"],["Calendar","calendar.html"],["Help & Support","help-support.html"],["Privacy","privacy.html"],["Terms","terms.html"]].forEach(x=>nav.appendChild(makeLink(x[0],new URL(x[1],document.baseURI).href)));
+      const groups=[menus?.footer_main||[],menus?.footer_tools||[],menus?.footer_legal||[]];
+      const configured=groups.flat().filter(item=>item&&item.visible!==false&&item.label&&item.url);
+      const fallback=[["Find activities","directory.html"],["Events","events.html"],["Venues","venues.html"],["Calendar","calendar.html"],["Help & Support","help-support.html"],["Privacy","privacy.html"],["Terms","terms.html"]];
+      (configured.length?configured.map(item=>[item.label,item.url]):fallback).forEach(x=>nav.appendChild(makeLink(x[0],new URL(x[1],document.baseURI).href)));
       if(auth.authenticated)nav.appendChild(makeLink("Log out","#","bh-logout-link"));
       else {nav.appendChild(makeLink("Sign in",buildAuthTarget(),"bh-auth-link"));nav.appendChild(makeLink("Register",buildAuthTarget()+"&mode=register","bh-auth-link"));}
     });
@@ -88,7 +91,13 @@
     try{const r=await fetch(new URL("api/auth.php?action=me",document.baseURI),{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});if(r.ok)auth=await r.json();}catch(e){}
     if(isLeaderPage()&&(!auth.authenticated||(auth.user&&auth.user.role!=="leader"&&!auth.is_admin))){location.replace(leaderAuthTarget());return;}
     if(isRestricted()&&!auth.authenticated&&!auth.is_admin){location.replace(buildAuthTarget());return;}
-    updateHeader(auth);updateFooter(auth);window.bhSiteAuth=auth;
+    let menus=null;
+    try{
+      const mr=await fetch(new URL("api/menu.php",document.baseURI),{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+      const md=await mr.json();
+      if(mr.ok&&md.ok)menus=md.data||null;
+    }catch(e){}
+    updateHeader(auth,menus);updateFooter(auth,menus);window.bhSiteAuth=auth;
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else void init();
 })();
