@@ -4,8 +4,8 @@ window.__bubbaOneSignalPromise = new Promise((resolve, reject) => {
     try {
       await OneSignal.init({
         appId: "0c4e3bc3-2049-413a-b19c-cb7823a1c861",
-        serviceWorkerPath: "OneSignalSDKWorker.js",
-        serviceWorkerParam: { scope: "./" }
+        serviceWorkerPath: "/beta/OneSignalSDKWorker.js",
+        serviceWorkerParam: { scope: "/beta/" }
       });
       resolve(OneSignal);
     } catch (error) {
