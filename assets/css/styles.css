@@ -3000,3 +3000,91 @@ main > .section{
     display:flex!important;
   }
 }
+
+
+/* ==========================================================================
+   HOME — HYBRID ACTIVITY SEARCH
+   Inspired by the interaction pattern of major marketplace/travel searches:
+   one prominent simple search with optional deeper filters.
+   ========================================================================== */
+.hero-search-hybrid{
+  grid-template-columns:minmax(250px,1.8fr) minmax(150px,1fr) minmax(140px,.9fr) minmax(120px,.8fr) minmax(130px,.8fr) auto;
+  align-items:end;
+}
+.hero-search-hybrid .hero-search-field input,
+.hero-search-hybrid .hero-search-field select{
+  width:100%;
+  min-height:52px;
+  padding:12px 14px;
+  border:1px solid rgba(65,102,81,.18);
+  border-radius:12px;
+  background:#fff;
+  color:var(--bh-text);
+  outline:none;
+}
+.hero-search-hybrid .hero-search-field input:focus,
+.hero-search-hybrid .hero-search-field select:focus{
+  border-color:var(--bh-primary);
+  box-shadow:0 0 0 3px rgba(65,102,81,.12);
+}
+.hero-search-hybrid .hero-search-button{
+  min-height:52px;
+  white-space:nowrap;
+}
+.hero-search-hybrid .hero-more-filters{
+  grid-column:1/-1;
+  justify-self:start;
+  border:0;
+  background:transparent;
+  color:var(--bh-primary);
+  font-weight:800;
+  padding:4px 4px 0;
+  cursor:pointer;
+}
+.hero-advanced-search{
+  grid-column:1/-1;
+  display:flex;
+  align-items:center;
+  gap:18px;
+  padding:12px 4px 2px;
+  border-top:1px solid var(--bh-border);
+}
+.hero-advanced-search[hidden]{display:none;}
+.hero-advanced-label{
+  color:var(--bh-text-muted);
+  font-size:13px;
+  font-weight:700;
+}
+.hero-advanced-link{
+  color:var(--bh-primary);
+  font-weight:800;
+  text-decoration:underline;
+}
+.hero-search-hybrid .hero-free{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:0;
+  color:var(--bh-text);
+  font-weight:750;
+  font-size:14px;
+}
+@media(max-width:1100px){
+  .hero-search-hybrid{
+    grid-template-columns:1.5fr 1fr 1fr 1fr;
+  }
+  .hero-search-hybrid .hero-keyword-field{grid-column:span 2;}
+  .hero-search-hybrid .hero-search-button{grid-column:span 2;}
+}
+@media(max-width:700px){
+  .hero-search-hybrid{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+  .hero-search-hybrid .hero-keyword-field,
+  .hero-search-hybrid .hero-search-button{
+    grid-column:auto;
+  }
+  .hero-search-hybrid .hero-search-button{width:100%;}
+  .hero-advanced-search{flex-direction:column;align-items:flex-start;gap:8px;}
+}
