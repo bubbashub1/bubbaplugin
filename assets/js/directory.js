@@ -553,20 +553,22 @@ document.addEventListener("DOMContentLoaded", async () => {
           activity.description,
           activity.category,
           activity.organiser_name,
-          ...venues.flatMap(v => [v.name, v.town, v.region, v.address])
+          activity.county,
+          activity.age_range,
+          ...venues.flatMap(v => [v.name, v.town, v.region, v.address, v.postcode])
         ].filter(Boolean).join(" ").toLowerCase();
 
-        const locationMatch = venues.some(v =>
-          (!region || (v.region || activity.region) === region) &&
-          (!town || (v.town || activity.town) === town)
+        const locationMatch = (!region && !town) || venues.some(v =>
+          (!region || String(v.region || activity.region || "").toLowerCase() === String(region).toLowerCase()) &&
+          (!town || String(v.town || activity.town || "").toLowerCase() === String(town).toLowerCase())
         );
 
         const sessionMatch = sessions.some(session => !day || session.day === day);
         const price = Number(activity.price_value ?? sessions[0]?.price_value ?? 0);
         const priceMatch = !maxPrice || price <= Number(maxPrice);
-        const freeMatch = !freeOnly || price === 0;
+        const freeMatch = !freeOnly || price === 0 || String(activity.price || "").toLowerCase().includes("free");
         const duration = sessions.map(x => Number(x.duration_minutes || 0)).filter(Boolean);
-        const durationMatch = !sessionLength || (sessionLength === "181" ? duration.some(x => x >= 181) : duration.some(x => x > (Number(sessionLength)-60) && x <= Number(sessionLength)));
+        const durationMatch = !sessionLength || (sessionLength === "181" ? duration.some(x => x >= 181) : sessionLength === "60" ? duration.some(x => x <= 60) : sessionLength === "120" ? duration.some(x => x > 60 && x <= 120) : duration.some(x => x > 120 && x <= 180));
         const senValue = String(activity.sen_friendly ?? activity.sen_friendly_flag ?? "").toLowerCase();
         const senMatch = !sen || (sen === "yes" ? ["yes","1","true"].includes(senValue) : !["yes","1","true"].includes(senValue));
         const termMatch = !termTime || (termTime === "yes" ? sessions.some(x => !!x.term_time) : !sessions.some(x => !!x.term_time));
@@ -669,6 +671,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     if ($("mainSearchButton")) $("mainSearchButton").addEventListener("click", render);
+    if ($("search")) $("search").addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); render(); } });
 
     ["search", "category", "area", "town", "day", "maxPrice", "free", "sessionLength", "sen", "termTime", "bookingRequired", "accessibility"].forEach(id => {
       $(id).addEventListener("input", render);
