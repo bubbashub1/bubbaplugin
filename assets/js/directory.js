@@ -75,6 +75,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (params.get("day")) $("day").value = params.get("day");
     if (params.get("free")) $("free").checked = true;
     if (params.get("max_price")) $("maxPrice").value = params.get("max_price");
+    if (params.get("sessionLength")) $("sessionLength").value = params.get("sessionLength");
+    if (params.get("sen")) $("sen").value = params.get("sen");
+    if (params.get("termTime")) $("termTime").value = params.get("termTime");
+    if (params.get("bookingRequired")) $("bookingRequired").checked = params.get("bookingRequired") === "1";
+    if (params.get("accessibility")) $("accessibility").value = params.get("accessibility");
 
     // Main filters stay simple; all other filters live inside Advanced search.
     const setupAdvancedSearch = () => {
@@ -119,7 +124,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       else setMobileOpen(false);
     };
 
+    const advancedFilterDefaults = {category:true,region:true,town:true,nearby:true,age:true,day:true,price:true,session_length:true,sen:true,term_time:true,booking:true,accessibility:true,free:true};
+    const applyAdvancedFilterSettings = async () => {
+      try {
+        const response = await fetch("api/search-settings.php",{cache:"no-store",headers:{Accept:"application/json"}});
+        const payload = await response.json();
+        const settings = response.ok && payload.ok ? {...advancedFilterDefaults,...(payload.data||{})} : advancedFilterDefaults;
+        document.querySelectorAll(".directory-advanced-filter-field[data-filter-key]").forEach(el => {
+          el.hidden = settings[el.dataset.filterKey] === false;
+        });
+      } catch (_) {}
+    };
     setupAdvancedSearch();
+    void applyAdvancedFilterSettings();
 
     let map = null;
     let markers = [];
@@ -662,6 +679,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("ageMax").addEventListener("input", () => updateAge("max"));
 
     $("useHomeLocation").onclick = loadHomeLocation;
+    if (params.get("nearby") === "1") void loadHomeLocation();
 
     $("clear").onclick = () => {
       ["search", "category", "area", "town", "day", "maxPrice", "sessionLength", "sen", "termTime", "accessibility"].forEach(id => { if ($(id)) $(id).value = ""; });
