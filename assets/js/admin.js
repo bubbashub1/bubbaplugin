@@ -415,7 +415,7 @@ async function login(){
  try{
   const r=await fetch("admin-auth.php?action=login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,password})});
   const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"Login failed.");
-  u.value="";p.value="";document.querySelector("#adminAccess").hidden=true;document.querySelector("#adminContent").hidden=false;await loadDashboard();
+  u.value="";p.value="";document.querySelector("#adminAccess").hidden=true;document.querySelector("#adminContent").hidden=false;await loadDashboard();await loadAdvancedFilterSettings();
  }catch(e){setAuthMessage(e.message,true)}
 }
 
