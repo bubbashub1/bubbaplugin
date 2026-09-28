@@ -2880,3 +2880,14 @@ input,select,textarea{box-sizing:border-box;max-width:100%;font:inherit}
  .button-full,.listing-actions .button,.consent-actions .button{width:100%;justify-content:center}
  .directory-view,.calendar-view{min-height:44px}
 }
+
+
+/* STEP 3K — final conflict guards */
+/* Keep legacy selectors from reintroducing horizontal overflow at narrow widths. */
+@media(max-width:620px){
+ .feature-grid,.activity-grid,.saved-activity-grid,.image-library-grid{width:100%;max-width:100%;min-width:0}
+ .feature-grid>*,.activity-grid>*,.saved-activity-grid>*,.image-library-grid>*{min-width:0;max-width:100%}
+ .site-header .main-nav{box-sizing:border-box}
+ .directory-viewbar,.directory-toolbar{min-width:0;max-width:100%;box-sizing:border-box}
+}
+/* Legacy --bh-max remains as a compatibility token; authoritative content rail uses --bh-content-width. */
