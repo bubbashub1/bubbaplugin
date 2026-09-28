@@ -458,7 +458,12 @@ async function importActivityCsv(){
  const url=document.querySelector("#activityCsvUrl")?.value.trim(),status=document.querySelector("#activityImportStatus"),button=document.querySelector("#importActivityCsv");
  if(!url){status.textContent="Paste the published Google Sheets CSV link first.";status.classList.add("is-error");return;}
  let publishedUrl;
- try{\n  publishedUrl=new URL(url);\n  const pathOk=/^\\/spreadsheets\\/d\\/e\\/[A-Za-z0-9_-]+\\/pub$/.test(publishedUrl.pathname);\n  const outputOk=(publishedUrl.searchParams.get("output")||"").toLowerCase()==="csv";\n  if(publishedUrl.protocol!=="https:"||publishedUrl.hostname!=="docs.google.com"||!pathOk||!outputOk)throw new Error("invalid");\n }catch(_){status.textContent="Please use the published Google Sheets CSV link from File → Share → Publish to web → CSV.";status.classList.add("is-error");return;}
+ try{
+  publishedUrl=new URL(url);
+  const pathOk=/^\/spreadsheets\/d\/e\/[A-Za-z0-9_-]+\/pub$/.test(publishedUrl.pathname);
+  const outputOk=(publishedUrl.searchParams.get("output")||"").toLowerCase()==="csv";
+  if(publishedUrl.protocol!=="https:"||publishedUrl.hostname!=="docs.google.com"||!pathOk||!outputOk)throw new Error("invalid");
+ }catch(_){status.textContent="Please use the published Google Sheets CSV link from File → Share → Publish to web → CSV.";status.classList.add("is-error");return;}
  button.disabled=true;status.classList.remove("is-error");status.textContent="Fetching published Google Sheet…";
  try{const fd=new FormData();fd.append("csv_url",url);fd.append("mode",document.querySelector("#activityCsvMode")?.value||"update");const r=await fetch("api/admin-import-export.php",{method:"POST",credentials:"same-origin",body:fd});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"Google Sheets import failed.");status.textContent="✓ Import complete. "+d.created+" created, "+d.updated+" updated, "+d.skipped+" skipped, "+d.failed+" failed.";if(d.errors?.length)status.textContent+=" "+d.errors.join(" ");await loadDashboard();}catch(e){status.textContent=e.message||"Google Sheets import failed.";status.classList.add("is-error");}finally{button.disabled=false;}
 }
