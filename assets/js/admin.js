@@ -449,3 +449,22 @@ document.querySelector("#activityForm").addEventListener("submit",createActivity
 initAddressAutocomplete();
 loadVenueSuggestions();
 verifyAdmin().then(()=>{document.querySelector("#adminAccess").hidden=true;document.querySelector("#adminContent").hidden=false;loadDashboard()}).catch(()=>{});
+
+
+async function importActivityCsv(){
+ const file=document.querySelector("#activityCsvFile")?.files?.[0],status=document.querySelector("#activityImportStatus"),button=document.querySelector("#importActivityCsv");
+ if(!file){status.textContent="Choose a CSV file first.";status.classList.add("is-error");return;}
+ if(!/\\.csv$/i.test(file.name)){status.textContent="Please choose a .csv file.";status.classList.add("is-error");return;}
+ button.disabled=true;status.classList.remove("is-error");status.textContent="Importing CSV…";
+ try{
+  const fd=new FormData();fd.append("csv",file);fd.append("mode",document.querySelector("#activityCsvMode")?.value||"update");
+  const r=await fetch("api/admin-import-export.php",{method:"POST",credentials:"same-origin",body:fd});
+  const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"CSV import failed.");
+  const parts=["✓ Import complete.",d.created+" created",d.updated+" updated",d.skipped+" skipped",d.failed+" failed."];
+  status.textContent=parts.join(" ");
+  if(d.errors?.length)status.textContent+=" "+d.errors.join(" ");
+  await loadDashboard();
+ }catch(e){status.textContent=e.message||"CSV import failed.";status.classList.add("is-error");}
+ finally{button.disabled=false;}
+}
+document.querySelector("#importActivityCsv")?.addEventListener("click",importActivityCsv);
