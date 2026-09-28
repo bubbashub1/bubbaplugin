@@ -6,13 +6,13 @@ This repository is intentionally independent of WordPress, Directorist, ACF, Nin
 
 ## Status
 
-Standalone front-end foundation with directory, activity detail, My Planner, My Hub, account preferences and admin shell.
+Standalone beta application with directory, activity detail, My Planner, My Hub, account/preferences, class leader and admin areas, backed by the current API layer.
 
 ## Deployment
 
 GitHub Actions deployment workflow is included in `.github/workflows/deploy.yml` and publishes the standalone app to eWebAll over SFTP.
 
-The next production stage is a real API/database for authenticated admin, organiser, family, booking and planner data.
+The beta currently uses the standalone API layer and is being prepared for full production database-backed family, organiser, booking and planner workflows.
 ## File Manager
 
 The File Manager is available at `/library/` and manages the repository image folders:
@@ -32,9 +32,9 @@ The File Manager sends uploads through the existing server-side GitHub token, so
 
 ## Class Leader Portal
 
-The standalone Class Leader Portal is at `/organiser-portal.html`.
+The standalone Class Leader Portal is at `/leader.html`.
 
-The data model is prepared as:
+The data model is organised as:
 
 **Organiser → Activity → Venue → Session**
 
