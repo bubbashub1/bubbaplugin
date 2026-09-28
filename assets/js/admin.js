@@ -413,8 +413,11 @@ async function login(){
  const u=document.querySelector("#adminUsername"),p=document.querySelector("#adminPassword"),username=u.value.trim(),password=p.value;
  if(!username||!password){setAuthMessage("Enter your username and password.",true);return}
  try{
-  const r=await fetch("admin-auth.php?action=login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,password})});
-  const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"Login failed.");
+  const r=await fetch("admin-auth.php?action=login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},cache:"no-store",body:JSON.stringify({username,password})});
+  const raw=await r.text();
+  let d={};
+  try{d=JSON.parse(raw)}catch(_){throw new Error("Admin login returned an invalid server response (HTTP "+r.status+"). Please refresh the page and try again.");}
+  if(!r.ok||!d.ok)throw new Error(d.error||("Login failed (HTTP "+r.status+")."));
   u.value="";p.value="";document.querySelector("#adminAccess").hidden=true;document.querySelector("#adminContent").hidden=false;await loadDashboard();await loadAdvancedFilterSettings();
  }catch(e){setAuthMessage(e.message,true)}
 }
