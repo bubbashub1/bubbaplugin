@@ -7,8 +7,6 @@ header('Cache-Control: no-store');
 try {
     require __DIR__ . '/db.php';
     $db = bh_mysql();
-    try{$db->exec("ALTER TABLE bh_activities ADD COLUMN accessibility TEXT NULL");}catch(Throwable $ignored){}
-
     $page = max(1, (int)($_GET['page'] ?? 1));
     $perPage = (int)($_GET['per_page'] ?? 12);
     $perPage = max(1, min(50, $perPage));
@@ -38,7 +36,17 @@ try {
         $countyColumn = false;
     }
 
+    $accessibilityColumn = false;
+    try {
+        $accessibilityCheck = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bh_activities' AND COLUMN_NAME = 'accessibility'");
+        $accessibilityCheck->execute();
+        $accessibilityColumn = ((int)$accessibilityCheck->fetchColumn()) > 0;
+    } catch (Throwable $ignored) {
+        $accessibilityColumn = false;
+    }
+
     $countySelect = $countyColumn ? 'a.county' : 'NULL AS county';
+    $accessibilitySelect = $accessibilityColumn ? 'a.accessibility' : 'NULL AS accessibility';
     $where = ["a.status = 'published'"];
     $params = [];
 
@@ -97,7 +105,7 @@ try {
             a.description,
             a.category,
             a.age_range,
-            a.accessibility,
+            $accessibilitySelect,
             $countySelect,
             a.price_from,
             a.booking_url,
