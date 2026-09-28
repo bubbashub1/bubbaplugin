@@ -73,37 +73,47 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (params.get("free")) $("free").checked = true;
     if (params.get("max_price")) $("maxPrice").value = params.get("max_price");
 
-    // Search/filter layout: desktop keeps filters in a left sidebar; mobile opens them as a drawer.
+    // Main filters stay simple; all other filters live inside Advanced search.
     const setupAdvancedSearch = () => {
+      const advancedToggle = $("advancedToggle");
+      const advancedFields = $("advancedFields");
+      const mobileToggle = $("filterToggle");
       const panel = $("directoryFilters");
-      const toggle = $("filterToggle");
       const openSearch = $("openSearchFilters");
-      if (!panel || !toggle) return;
 
-      const setOpen = open => {
+      if (advancedToggle && advancedFields) {
+        advancedToggle.onclick = () => {
+          const open = advancedFields.hidden;
+          advancedFields.hidden = !open;
+          advancedToggle.setAttribute("aria-expanded", String(open));
+          advancedToggle.innerHTML = open
+            ? "Advanced search <span aria-hidden=\"true\">−</span>"
+            : "Advanced search <span aria-hidden=\"true\">＋</span>";
+        };
+      }
+
+      const setMobileOpen = open => {
+        if (!panel || !mobileToggle) return;
         panel.classList.toggle("is-open", open);
-        toggle.setAttribute("aria-expanded", String(open));
-        toggle.innerHTML = open ? "Close search <span aria-hidden=\"true\">×</span>" : "Advanced search <span aria-hidden=\"true\">＋</span>";
+        mobileToggle.setAttribute("aria-expanded", String(open));
+        mobileToggle.innerHTML = open
+          ? "Close search <span aria-hidden=\"true\">×</span>"
+          : "Advanced search <span aria-hidden=\"true\">＋</span>";
         document.body.classList.toggle("directory-filter-open", open && window.innerWidth <= 900);
       };
 
-      toggle.onclick = () => setOpen(!panel.classList.contains("is-open"));
-      if (openSearch) openSearch.onclick = () => setOpen(true);
-
-      panel.addEventListener("click", event => {
-        if (window.innerWidth <= 900 && event.target === panel) setOpen(false);
-      });
+      if (mobileToggle) mobileToggle.onclick = () => setMobileOpen(!panel.classList.contains("is-open"));
+      if (openSearch) openSearch.onclick = () => setMobileOpen(true);
 
       window.addEventListener("resize", () => {
-        if (window.innerWidth > 900) {
+        if (window.innerWidth > 900 && panel) {
           panel.classList.add("is-open");
-          panel.removeAttribute("hidden");
           document.body.classList.remove("directory-filter-open");
         }
       });
 
-      if (window.innerWidth > 900) setOpen(true);
-      else setOpen(false);
+      if (window.innerWidth > 900 && panel) panel.classList.add("is-open");
+      else setMobileOpen(false);
     };
 
     setupAdvancedSearch();
