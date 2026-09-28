@@ -41,7 +41,7 @@
         const accountHref=auth.authenticated&&auth.user&&auth.user.role==="leader"?new URL("leader-account.html",document.baseURI).href:new URL("account.html",document.baseURI).href;
         const account=makeLink(auth.authenticated?"My account":"My account",auth.authenticated?accountHref:buildAuthTarget(),"bh-auth-link");
         account.setAttribute("data-bh-auth-link","account");nav.appendChild(account);
-        nav.appendChild(makeLink("Admin",new URL("admin.html",document.baseURI).href));
+        nav.appendChild(makeLink("Admin",new URL("admin/admin.html",document.baseURI).href));
         if(auth.authenticated)nav.appendChild(makeLink("Log out","#","bh-logout-link"));
       }
 
