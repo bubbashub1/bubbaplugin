@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en-GB">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Import & Export · Admin · Bubba Hub</title>
+<link rel="stylesheet" href="assets/css/styles.css?v=20260928-shell2"><link rel="stylesheet" href="assets/css/admin-settings.css?v=20260928-adminsettings1">
+</head>
+<body>
+<header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="leader.html">Class Leaders</a><a href="admin.html">Admin</a></nav><a class="button button-soft" href="account.html">My account</a></header>
+<main class="admin-subpage-shell"><div class="admin-back"><a href="admin-activities.html">← Activities & listings</a></div>
+<div class="admin-subpage-head"><div><span class="eyebrow">Bulk directory tools</span><h1>Import & Export</h1><p>Move activities between Bubba Hub and Google Sheets using CSV.</p></div><div class="admin-setting-actions"><button class="button button-soft" type="button" data-admin-logout>Sign out of admin</button></div></div>
+<section class="admin-panel"><div class="admin-panel-head"><div><span class="eyebrow">Import</span><h2>Import published Google Sheet</h2><p>Publish your Google Sheet as CSV, then paste the published link below.</p></div></div>
+<label>Google Sheets published CSV link<input id="activityCsvUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?...&output=csv"></label>
+<small class="bh-address-help">Google Sheets: <strong>File → Share → Publish to web</strong> → choose CSV. Use the published <strong>/spreadsheets/d/e/.../pub</strong> link.</small>
+<label>When an activity already exists<select id="activityCsvMode"><option value="update">Update the existing listing</option><option value="skip">Skip the existing listing</option></select></label>
+<button class="button button-primary" id="importActivityCsv" type="button">Import published Google Sheet</button>
+<p class="library-message" id="activityImportStatus" role="status"></p></section>
+<section class="admin-panel"><div class="admin-panel-head"><div><span class="eyebrow">Export</span><h2>Download current activities</h2><p>Export the current directory as a CSV file for editing in Google Sheets or Excel.</p></div></div>
+<a class="button button-primary" href="api/admin-import-export.php?mode=export">Download current activities</a></section>
+<section class="admin-panel"><div class="admin-panel-head"><div><span class="eyebrow">Template</span><h2>Google Sheets columns</h2><p>Use these column names for a clean import.</p></div></div>
+<div class="admin-csv-fields"><span>title</span><span>category</span><span>description</span><span>age_range</span><span>county</span><span>price_from</span><span>booking_url</span><span>image_path</span><span>status</span><span>organisation_name</span><span>email</span><span>phone</span><span>website</span><span>venue_name</span><span>address</span><span>town</span><span>region</span><span>postcode</span><span>latitude</span><span>longitude</span><span>accessibility</span><span>sessions</span></div>
+<p class="bh-address-help">Required: <strong>title, category, organisation_name, venue_name, town</strong>. Sessions can be entered like <strong>Mon 09:30-10:30; Tue 10:00-11:00</strong>.</p></section>
+</main>
+<footer class="site-footer"><div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div></footer>
+<script src="assets/js/admin-settings.js?v=20260928-adminsettings1"></script>
+<script src="assets/js/admin-import-export.js?v=20260928-import1"></script>
+</body></html>
