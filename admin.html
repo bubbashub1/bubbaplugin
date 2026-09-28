@@ -13,13 +13,11 @@
 <section class="admin-panel admin-import-export-panel">
 <div class="admin-panel-head"><div><span class="eyebrow">Bulk directory tools</span><h2>Import &amp; Export</h2><p>Move activities between Bubba Hub and Google Sheets using a standard CSV file.</p></div></div>
 <div class="admin-import-export-grid">
- <div class="admin-import-card"><h3>Import Google CSV</h3><p>Paste a Google Sheets link and Bubba Hub will fetch the CSV for you, or upload a CSV file.</p>
-  <label>Google Sheets link<input id="activityCsvUrl" type="url" inputmode="url" placeholder="https://docs.google.com/spreadsheets/d/…/edit?gid=0"></label>
-  <small class="bh-address-help">Set the sheet to <strong>Anyone with the link → Viewer</strong>. A normal Google Sheets URL is fine.</small>
-  <div class="admin-import-or">or upload a CSV</div>
-  <label>CSV file<input id="activityCsvFile" type="file" accept=".csv,text/csv"></label>
+ <div class="admin-import-card"><h3>Import Google CSV</h3><p>Paste the published CSV link from Google Sheets. Bubba Hub will fetch the published sheet directly.</p>
+  <label>Google Sheets link<input id="activityCsvUrl" type="url" inputmode="url" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?gid=…&single=true&output=csv"></label>
+  <small class="bh-address-help">Use Google Sheets <strong>File → Share → Publish to web</strong>, then choose CSV and paste the published <strong>/spreadsheets/d/e/.../pub?...&output=csv</strong> link here.</small>
   <label>When an activity already exists<select id="activityCsvMode"><option value="update">Update the existing listing</option><option value="skip">Skip the existing listing</option></select></label>
-  <button class="button button-primary" id="importActivityCsv" type="button">Import CSV</button>
+  <button class="button button-primary" id="importActivityCsv" type="button">Import published Google Sheet</button>
   <a class="button button-soft" href="api/admin-import-export.php?mode=export">Download current activities</a>
   <p class="library-message" id="activityImportStatus" role="status"></p>
  </div>
