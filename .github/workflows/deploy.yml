@@ -63,7 +63,7 @@ jobs:
             echo "ERROR: OneSignalSDKWorker.js is missing from the repository root." >&2
             exit 1
           fi
-          for dir in api assets data library images; do
+          for dir in api assets data library images schools; do
             if [ -d "$dir" ]; then
               find "$dir" -type d -print | while IFS= read -r folder; do
                 printf -- '-mkdir "%s"\n' "$folder" >> "$SFTP_BATCH"
@@ -82,5 +82,6 @@ jobs:
           printf 'ls -l assets/js/app.js\n' >> "$RUNNER_TEMP/verify.sftp"
           printf 'ls -l data/activities.json\n' >> "$RUNNER_TEMP/verify.sftp"
           printf 'ls -l images/home\n' >> "$RUNNER_TEMP/verify.sftp"
+          printf 'ls -l schools/index.html\n' >> "$RUNNER_TEMP/verify.sftp"
           sftp -b "$RUNNER_TEMP/verify.sftp" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
           echo "Deployment completed and remote files verified successfully."
