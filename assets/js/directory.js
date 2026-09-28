@@ -67,6 +67,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       "All towns"
     );
 
+    if ($("search") && params.get("search")) $("search").value = params.get("search");
+    if ($("search") && params.get("q")) $("search").value = params.get("q");
+
     if (params.get("age_min") !== null) $("ageMin").value = params.get("age_min");
     if (params.get("age_max") !== null) $("ageMax").value = params.get("age_max");
     if (params.get("day")) $("day").value = params.get("day");
