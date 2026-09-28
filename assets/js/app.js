@@ -306,3 +306,22 @@ void bhHydrateSaved();
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",initMobileNav);
   else initMobileNav();
 })();
+
+/* Central editable navigation */
+(async function(){
+  try{
+    const response=await fetch("api/menu.php",{cache:"no-store",headers:{Accept:"application/json"}});
+    const payload=await response.json();
+    if(!response.ok||!payload.ok)return;
+    const menus=payload.data||{};
+    const apply=(el,items)=>{
+      if(!el||!Array.isArray(items))return;
+      el.innerHTML=items.filter(x=>x&&x.visible!==false&&x.label&&x.url).map(x=>'<a href="'+bhEscape(x.url)+'">'+bhEscape(x.label)+'</a>').join("");
+    };
+    apply(document.querySelector(".site-header .main-nav"),menus.main);
+    const cols=document.querySelectorAll(".site-footer .site-footer-column");
+    apply(cols[0]?.querySelector(".site-footer-links"),menus.footer_main);
+    apply(cols[1]?.querySelector(".site-footer-links"),menus.footer_tools);
+    apply(cols[2]?.querySelector(".site-footer-links"),menus.footer_legal);
+  }catch(e){}
+})();
