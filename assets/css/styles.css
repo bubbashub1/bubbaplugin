@@ -2784,3 +2784,70 @@ img,svg,video{max-width:100%;height:auto}
   .site-footer-bottom span{display:block}
   .site-footer-bottom span+span{margin-top:4px}
 }
+
+
+/* Directory search redesign: desktop sidebar + mobile filter drawer */
+.directory-mobile-actions{display:none}
+.directory-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:28px;align-items:start}
+.directory-filters-panel{
+  position:sticky;top:20px;align-self:start;
+  background:#fff;border:1px solid var(--bh-border);border-radius:22px;
+  padding:20px;box-shadow:var(--bh-shadow);min-width:0;z-index:4;
+}
+.directory-filters-heading{padding:2px 2px 16px;border-bottom:1px solid var(--bh-border);margin-bottom:16px}
+.directory-filters-heading .eyebrow{margin-bottom:5px}
+.directory-filters-heading h2{margin:0;color:var(--bh-primary);font-size:25px}
+.directory-filters-heading p{margin:5px 0 0;color:var(--bh-text-muted);font-size:13px;line-height:1.4}
+.directory-filter-fields{display:grid;gap:14px}
+.directory-filter-fields>div,.directory-filter-fields>label{min-width:0}
+.directory-filter-fields .directory-search-field{display:grid;gap:6px}
+.directory-filter-fields label,.directory-filter-label{display:block;color:var(--bh-text-muted);font-size:11px;font-weight:800;letter-spacing:.02em}
+.directory-filter-fields .filter-input{max-width:none;width:100%;min-height:44px}
+.directory-filter-fields .directory-nearby-control{display:grid;grid-template-columns:1fr;gap:6px;align-items:stretch}
+.directory-filter-fields .directory-nearby-control label{position:static;opacity:1}
+.directory-filter-fields .directory-nearby-button{width:100%}
+.directory-filter-fields .directory-nearby-status{min-height:16px}
+.directory-filter-fields .filter-free{display:flex;align-items:center;gap:8px;padding:2px 0;font-size:12px}
+.directory-filter-fields .filter-free input{width:17px;height:17px;accent-color:var(--bh-primary)}
+.directory-clear{width:100%;margin-top:2px}
+.directory-results-column{min-width:0}
+.directory-search-main{display:none}
+.directory-viewbar{margin-top:0}
+.directory-filter-toggle{display:none}
+.directory-filters-panel .age-range-dual{margin-top:5px}
+.directory-filters-panel .age-range-labels{display:flex;justify-content:space-between;color:var(--bh-text-muted);font-size:9px;font-weight:700}
+.directory-filters-panel .age-range-track{background:var(--bh-soft)}
+.directory-filters-panel .age-range-fill{position:absolute;top:15px;height:7px;border-radius:999px;background:var(--bh-primary);z-index:1}
+@media(max-width:900px){
+  .directory-layout{display:block}
+  .directory-mobile-actions{display:flex;justify-content:flex-end;margin:-8px 0 14px}
+  .directory-filter-toggle{display:inline-flex;min-height:44px}
+  .directory-filters-panel{
+    position:fixed;inset:0 auto 0 0;width:min(360px,88vw);max-width:100%;
+    height:100dvh;overflow-y:auto;border-radius:0 24px 24px 0;
+    padding:24px 20px 32px;transform:translateX(-105%);
+    transition:transform .22s ease;z-index:1001;
+    box-shadow:18px 0 45px rgba(20,68,0,.18);
+  }
+  .directory-filters-panel.is-open{transform:translateX(0)}
+  .directory-filters-panel::after{
+    content:"";position:fixed;left:100%;top:0;width:100vw;height:100dvh;
+    background:rgba(20,68,0,.22);opacity:0;pointer-events:none;transition:opacity .22s ease;
+  }
+  .directory-filters-panel.is-open::after{opacity:1;pointer-events:auto}
+  .directory-results-column{width:100%}
+  .directory-search-main{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 14px;padding:14px 16px;background:var(--bh-bg);border-radius:18px}
+  .directory-search-main>label{color:var(--bh-primary);font-weight:800;font-size:14px}
+  .directory-search-display{display:flex;align-items:center;gap:8px}
+  .directory-search-display span{display:none}
+  .directory-search-display .button{min-height:40px;padding:8px 12px;font-size:12px}
+  .directory-filter-fields{gap:16px}
+  .directory-viewbar{margin-top:8px}
+}
+@media(max-width:620px){
+  .directory-mobile-actions{margin:0 0 10px}
+  .directory-filter-toggle{width:100%;justify-content:space-between}
+  .directory-search-main{padding:12px 13px}
+  .directory-viewbar{align-items:flex-start;flex-direction:column}
+  .directory-view-controls{width:100%;justify-content:space-between}
+}
