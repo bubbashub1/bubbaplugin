@@ -2777,88 +2777,7 @@ body{background:#f5f3ed;color:var(--bh-ink);font-family:"Quicksand",sans-serif}
 }
 
 
-/* Shared mobile navigation
-   Kept in the stylesheet rather than injected by JavaScript. */
-.mobile-nav-toggle{display:none}
 
-@media (max-width:620px){
-  .site-header{
-    display:flex;
-    align-items:center;
-    flex-wrap:nowrap;
-    gap:10px;
-    min-height:64px;
-    position:relative;
-  }
-  .site-header .brand{margin-right:auto;flex:0 1 auto}
-  .site-header .brand-logo{width:46px;height:46px}
-  .site-header>.button,
-  .site-header>.header-account-actions{display:none!important}
-
-  .mobile-nav-toggle{
-    display:flex;
-    flex:0 0 44px;
-    width:44px;
-    height:44px;
-    padding:0;
-    border:1px solid var(--bh-border,#d7e0d9);
-    border-radius:12px;
-    background:#fff;
-    color:var(--bh-primary,#416651);
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
-    gap:5px;
-    cursor:pointer;
-    z-index:12;
-  }
-  .mobile-nav-toggle span{
-    display:block;
-    width:20px;
-    height:2px;
-    background:currentColor;
-    border-radius:2px;
-    transition:transform .2s ease,opacity .2s ease;
-  }
-  .site-header.mobile-menu-open .mobile-nav-toggle span:nth-child(1){transform:translateY(7px) rotate(45deg)}
-  .site-header.mobile-menu-open .mobile-nav-toggle span:nth-child(2){opacity:0}
-  .site-header.mobile-menu-open .mobile-nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-
-  /* Progressive enhancement: without JS the normal nav remains usable. */
-  .js-enabled .site-header .main-nav{
-    display:none!important;
-    position:absolute;
-    top:calc(100% + 8px);
-    left:0;
-    right:0;
-    width:100%!important;
-    max-height:calc(100vh - 90px);
-    overflow-y:auto!important;
-    overflow-x:hidden!important;
-    padding:8px;
-    background:#fff;
-    border:1px solid var(--bh-border,#d7e0d9);
-    border-radius:16px;
-    box-shadow:0 18px 40px rgba(20,68,0,.16);
-    z-index:20;
-    flex-direction:column!important;
-    align-items:stretch!important;
-    gap:3px!important;
-  }
-  .js-enabled .site-header.mobile-menu-open .main-nav{display:flex!important}
-  .js-enabled .main-nav a{
-    display:flex!important;
-    width:100%;
-    min-height:46px;
-    align-items:center;
-    padding:11px 13px!important;
-    border-radius:11px;
-    font-size:15px!important;
-    white-space:normal!important;
-  }
-  .js-enabled .main-nav a:hover,
-  .js-enabled .main-nav a.active{background:var(--bh-bg,#d8e6db)}
-}
 
 /* ==========================================================================
    BUBBA HUB CSS CLEANUP — STEP 3
@@ -2972,6 +2891,37 @@ main{width:100%;min-height:calc(100vh - 170px);overflow:visible}
 /* Mobile */
 @media(max-width:620px){
   :root{--bh-page-gutter:10px}
+  .site-header{display:flex;align-items:center;flex-wrap:nowrap}
+  .site-header .brand{margin-right:auto}
+  .site-header>.button,.site-header>.header-account-actions{display:none!important}
+  .mobile-nav-toggle{
+    display:flex;flex:0 0 44px;width:44px;height:44px;padding:0;
+    align-items:center;justify-content:center;flex-direction:column;gap:5px;
+    border:1px solid var(--bh-border,#d7e0d9);border-radius:12px;
+    background:#fff;color:var(--bh-primary,#416651);cursor:pointer;z-index:210;
+  }
+  .mobile-nav-toggle span{
+    display:block;width:20px;height:2px;background:currentColor;border-radius:2px;
+    transition:transform .2s ease,opacity .2s ease;
+  }
+  .site-header.mobile-menu-open .mobile-nav-toggle span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+  .site-header.mobile-menu-open .mobile-nav-toggle span:nth-child(2){opacity:0}
+  .site-header.mobile-menu-open .mobile-nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+  .js-enabled .site-header .main-nav{
+    display:none!important;position:absolute;top:calc(100% + 8px);left:0;right:0;width:100%;
+    max-height:calc(100dvh - 86px);margin:0;padding:8px;overflow-x:hidden;overflow-y:auto;
+    flex-direction:column;align-items:stretch;justify-content:flex-start;gap:3px;
+    background:#fff;border:1px solid var(--bh-border);border-radius:16px;
+    box-shadow:0 18px 40px rgba(20,68,0,.16);z-index:200;
+  }
+  .js-enabled .site-header.mobile-menu-open .main-nav{display:flex!important}
+  .js-enabled .site-header .main-nav a{
+    width:100%;min-height:46px;justify-content:flex-start;padding:11px 13px;
+    border-radius:11px;font-size:15px;white-space:normal;
+  }
+  .js-enabled .site-header .main-nav a:hover,
+  .js-enabled .site-header .main-nav a.active{background:var(--bh-bg)}
+
   .site-header{
     width:calc(100% - 20px);min-height:62px;margin-top:8px;padding:8px 10px;
     gap:8px;border-radius:15px;
