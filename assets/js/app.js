@@ -227,6 +227,7 @@ void bhHydrateSaved();
           <h2>Explore &amp; tools</h2>
           <nav class="site-footer-links" aria-label="Footer explore and tools">
             <a href="events.html">Events</a>
+            <a href="venues.html">Venues</a>
             <a href="planner.html">Planner</a>
             <a href="calendar.html">Calendar</a>
             <a href="admin.html">Admin</a>
