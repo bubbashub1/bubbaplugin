@@ -1819,16 +1819,7 @@ body{background:#f5f3ed;color:var(--bh-ink);font-family:"Quicksand",sans-serif}
 .bh-faq details{height:fit-content}
 @media(max-width:760px){.bh-faq{grid-template-columns:1fr}}
 
-/* Hero background opacity: 60% */
-.hero::before{opacity:.60!important}
 
-/* Hero background opacity: 75% */
-.hero::before{opacity:.75!important}
-
-/* Consistent larger navigation typography across the site */
-.site-header .main-nav a,.site-header .header-actions a,.site-header .leader-cta{font-size:1.02rem!important;font-weight:650!important;line-height:1.2}
-.site-header .main-nav{gap:24px}
-@media(max-width:900px){.site-header .main-nav a,.site-header .header-actions a,.site-header .leader-cta{font-size:1rem!important}}
 
 /* Keep personalised recommendations on the parent section background */
 .familiar-section .personal-home-callout{background:transparent!important;box-shadow:none!important;border:0!important}
@@ -1836,58 +1827,6 @@ body{background:#f5f3ed;color:var(--bh-ink);font-family:"Quicksand",sans-serif}
 
 
 
-
-/* Site-wide content container + page title treatment */
-:root{--bh-container-pad:50px}
-
-.section,.app-shell{
-  width:100%!important;
-  max-width:none!important;
-  padding-left:var(--bh-container-pad)!important;
-  padding-right:var(--bh-container-pad)!important;
-}
-
-.hero{
-  width:100%!important;
-  max-width:none!important;
-  margin-left:0!important;
-  margin-right:0!important;
-}
-
-.listing-page{
-  width:100%!important;
-  max-width:none!important;
-  padding-left:var(--bh-container-pad)!important;
-  padding-right:var(--bh-container-pad)!important;
-}
-
-.site-footer{
-  width:100%!important;
-  max-width:none!important;
-  padding-left:var(--bh-container-pad)!important;
-  padding-right:var(--bh-container-pad)!important;
-}
-
-.page-heading{
-  background:var(--bh-bg);
-  border:1px solid var(--bh-border);
-  border-radius:24px;
-  padding:42px 32px 30px!important;
-  margin:34px 0 24px;
-  box-shadow:0 8px 26px rgba(20,68,0,.04);
-}
-
-@media(max-width:900px){
-  :root{--bh-container-pad:24px}
-  .hero{padding-left:24px!important;padding-right:24px!important}
-  .page-heading{padding:34px 24px 26px!important}
-}
-
-@media(max-width:650px){
-  :root{--bh-container-pad:16px}
-  .hero{padding-left:16px!important;padding-right:16px!important}
-  .page-heading{padding:28px 18px 22px!important;border-radius:20px}
-}
 
 
 /* Choose page visual refresh */
