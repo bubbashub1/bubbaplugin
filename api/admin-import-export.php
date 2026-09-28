@@ -99,15 +99,15 @@ $created=$updated=$skipped=$failed=0;$errors=[];
 foreach($rows as $idx=>$row){
   $line=$idx+2;
   try{
-    $title=firstv($row,['title','activity_title','name']);$category=firstv($row,['category','type']);$org=firstv($row,['organisation_name','organisation','organizer','organiser','company']);
-    $venue=firstv($row,['venue_name','venue','location']);$town=firstv($row,['town','village_town_or_city','city']);
-    if($title===''||$category===''||$org===''||$venue===''||$town==='')throw new RuntimeException('Required fields: title, category, organisation, venue and town.');
-    $desc=firstv($row,['description']);$age=firstv($row,['age_range','ages']);$county=firstv($row,['county','area']);
+    $title=firstv($row,['title','activity_title','activity_name','activity','class_name','class','name']);$category=firstv($row,['category','activity_category','type','class_type']);$org=firstv($row,['organisation_name','organisation','organization','organizer','organiser','company','company_name','provider','provider_name','leader','leader_name']);
+    $venue=firstv($row,['venue_name','venue','venue_name_location','location','location_name','venue_location','address_name']);$town=firstv($row,['town','village_town_or_city','village_town_city','village_town_or_city_name','city','town_city','town_or_city','village','location_town']);
+    if($title===''||$category===''||$org===''||$venue===''||$town===''){ $missing=[]; if($title==='')$missing[]='title'; if($category==='')$missing[]='category'; if($org==='')$missing[]='organisation'; if($venue==='')$missing[]='venue'; if($town==='')$missing[]='town'; throw new RuntimeException('Required fields missing: '.implode(', ',$missing).'.'); }
+    $desc=firstv($row,['description','activity_description','details']);$age=firstv($row,['age_range','ages','age','age_group','age_groups']);$county=firstv($row,['county','area','county_area']);
     if(!in_array($county,['Devon','Cornwall','Plymouth','Torbay'],true))$county='';
     $price=firstv($row,['price_from','price','cost']);$price=$price===''?null:(float)preg_replace('/[^0-9.\-]/','',$price);
     $status=bool_status(firstv($row,['status'],'published'));$booking=firstv($row,['booking_url','booking','booking_link']);$image=firstv($row,['image_path','image','image_url']);
-    $email=firstv($row,['email']);$phone=firstv($row,['phone','telephone']);$website=firstv($row,['website','website_url']);
-    $address=firstv($row,['address','venue_address']);$region=firstv($row,['region','area_region']);$postcode=firstv($row,['postcode','post_code']);
+    $email=firstv($row,['email','email_address','contact_email']);$phone=firstv($row,['phone','telephone','phone_number','contact_phone']);$website=firstv($row,['website','website_url','web','url']);
+    $address=firstv($row,['address','venue_address','full_address','street_address']);$region=firstv($row,['region','area_region','locality','district']);$postcode=firstv($row,['postcode','post_code','postal_code','zip']);
     $lat=firstv($row,['latitude','lat']);$lat=$lat===''?null:(float)$lat;$lng=firstv($row,['longitude','lng','lon']);$lng=$lng===''?null:(float)$lng;
     $accessRaw=firstv($row,['accessibility','accessibility_options']);$access=[];
     foreach(preg_split('/\s*[;,|]\s*/',$accessRaw) as $v){$v=trim($v);if($v!=='')$access[]=$v;}
