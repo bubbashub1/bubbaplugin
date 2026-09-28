@@ -3226,3 +3226,28 @@ body.advanced-search-open{overflow:hidden;}
 .hero-advanced-age-row select{min-width:0;}
 @media(max-width:700px){.admin-advanced-filter-grid{grid-template-columns:1fr 1fr;}.hero-advanced-age-row{grid-template-columns:1fr;}.hero-advanced-age-row span{text-align:center;}}
 @media(max-width:420px){.admin-advanced-filter-grid{grid-template-columns:1fr;}}
+
+/* Full-bleed page title banners: background reaches both viewport edges while
+   the heading content keeps the normal page gutter. */
+.page-heading{
+  width:100%;
+  max-width:none;
+  margin-left:0;
+  margin-right:0;
+  padding-left:var(--bh-page-gutter);
+  padding-right:var(--bh-page-gutter);
+  box-sizing:border-box;
+}
+.page-heading > *{
+  max-width:var(--bh-content-width);
+  margin-left:auto;
+  margin-right:auto;
+}
+@media(max-width:900px){
+  .page-heading{
+    width:100%;
+    max-width:none;
+    padding-left:var(--bh-page-gutter);
+    padding-right:var(--bh-page-gutter);
+  }
+}
