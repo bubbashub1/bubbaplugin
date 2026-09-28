@@ -59,33 +59,22 @@ if($_SERVER['REQUEST_METHOD']!=='POST'){http_response_code(405);header('Content-
 $csvTmp=null;
 $csvUrl=trim((string)($_POST['csv_url']??''));
 if($csvUrl!==''){
-  $parts=parse_url($csvUrl);$host=strtolower((string)($parts['host']??''));
-  if(strtolower((string)($parts['scheme']??''))!=='https'||!in_array($host,['docs.google.com','docs.googleusercontent.com'],true)){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'For security, CSV links must be HTTPS Google Sheets links.']);exit;}
-  $sheetId=null;$gid=null;
-  if($host==='docs.google.com'&&preg_match('~/spreadsheets/d/([a-zA-Z0-9_-]+)~',$parts['path']??'',$m)){
-    $sheetId=$m[1];
-    parse_str((string)($parts['query']??''),$qp);
-    if(!empty($qp['gid'])&&preg_match('/^[0-9]+$/',(string)$qp['gid']))$gid=(string)$qp['gid'];
-    if(!$gid&&!empty($parts['fragment'])&&preg_match('/(?:^|&)gid=([0-9]+)/',(string)$parts['fragment'],$fm))$gid=$fm[1];
-    $csvUrl='https://docs.google.com/spreadsheets/d/'.rawurlencode($sheetId).'/export?format=csv'.($gid!==null?'&gid='.rawurlencode($gid):'');
+  // Bubba Hub only accepts Google Sheets' published CSV endpoint:
+  // https://docs.google.com/spreadsheets/d/e/.../pub?...&output=csv
+  $parts=parse_url($csvUrl);$host=strtolower((string)($parts['host']??''));$path=(string)($parts['path']??'');
+  $isPublished=$host==='docs.google.com' && (bool)preg_match('~/spreadsheets/d/e/[a-zA-Z0-9_-]+/pub$~',$path) && strtolower((string)($parts['scheme']??''))==='https';
+  parse_str((string)($parts['query']??''),$qp);
+  if(!$isPublished || strtolower((string)($qp['output']??''))!=='csv'){
+    http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'Please use the published Google Sheets CSV link: File → Share → Publish to web → CSV.']);exit;
   }
-  $fetchGoogleCsv=function(string $url): array {
-    $ch=curl_init($url);
-    curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>10,CURLOPT_TIMEOUT=>30,CURLOPT_USERAGENT=>'Bubba Hub CSV importer/1.0']);
-    $body=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$err=curl_error($ch);curl_close($ch);
-    return [$body,$http,$err];
-  };
-  [$body,$http,$err]=$fetchGoogleCsv($csvUrl);
-  if(($body===false||$err!=='')&&$sheetId!==null){$body=null;$http=0;$err='fetch failed';}
-  if(($http<200||$http>=300)&&$sheetId!==null){
-    $fallback='https://docs.google.com/spreadsheets/d/'.rawurlencode($sheetId).'/gviz/tq?tqx=out:csv'.($gid!==null?'&gid='.rawurlencode($gid):'');
-    [$body2,$http2,$err2]=$fetchGoogleCsv($fallback);
-    if($err2===''&&$body2!==false&&$http2>=200&&$http2<300){$body=$body2;$http=$http2;$err='';}
-  }
-  if($body===false||$err!==''){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'Could not fetch the Google Sheets CSV link.']);exit;}
-  if($http<200||$http>=300){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'Google Sheets returned HTTP '.$http.'. Make sure the sheet is shared as Anyone with the link → Viewer, or use File → Share → Publish to web if your Google Workspace blocks public link exports.']);exit;}
+  $ch=curl_init($csvUrl);
+  curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>10,CURLOPT_TIMEOUT=>30,CURLOPT_USERAGENT=>'Bubba Hub published Google Sheets importer/1.0']);
+  $body=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$err=curl_error($ch);curl_close($ch);
+  if($body===false||$err!==''){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'Could not fetch the published Google Sheets CSV link.']);exit;}
+  if($http<200||$http>=300){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'The published Google Sheets link returned HTTP '.$http.'. Re-publish the sheet as CSV and try again.']);exit;}
   if(strlen($body)>10*1024*1024){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'CSV files must be 10 MB or smaller.']);exit;}
   $csvTmp=tempnam(sys_get_temp_dir(),'bhcsv_');if($csvTmp===false||file_put_contents($csvTmp,$body)===false){http_response_code(500);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'Could not prepare the downloaded CSV.']);exit;}$fh=fopen($csvTmp,'rb');
+
 }else{
   if(empty($_FILES['csv'])||$_FILES['csv']['error']!==UPLOAD_ERR_OK){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'Choose a CSV file or paste a Google Sheets link.']);exit;}
   if($_FILES['csv']['size']>10*1024*1024){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'CSV files must be 10 MB or smaller.']);exit;}$fh=fopen($_FILES['csv']['tmp_name'],'rb');
