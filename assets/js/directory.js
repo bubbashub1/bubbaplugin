@@ -522,7 +522,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const sessionLength = $("sessionLength")?.value || "";
       const sen = $("sen")?.value || "";
       const termTime = $("termTime")?.value || "";
-      const booking = $("booking")?.value || "";
+      const bookingRequired = $("bookingRequired")?.checked || false;
       const accessibility = $("accessibility")?.value || "";
 
       let list = activities.filter(activity => {
@@ -550,7 +550,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const senValue = String(activity.sen_friendly ?? activity.sen_friendly_flag ?? "").toLowerCase();
         const senMatch = !sen || (sen === "yes" ? ["yes","1","true"].includes(senValue) : !["yes","1","true"].includes(senValue));
         const termMatch = !termTime || (termTime === "yes" ? sessions.some(x => !!x.term_time) : !sessions.some(x => !!x.term_time));
-        const bookingMatch = !booking || (booking === "yes" ? !!activity.booking_url : !activity.booking_url);
+        const bookingMatch = !bookingRequired || !!activity.booking_url;
         const accessibilityMatch = !accessibility || (Array.isArray(activity.accessibility) && activity.accessibility.includes(accessibility));
 
         return (!search || text.includes(search)) &&
@@ -648,7 +648,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       render();
     };
 
-    ["search", "category", "area", "town", "day", "maxPrice", "free", "sessionLength", "sen", "termTime", "booking", "accessibility"].forEach(id => {
+    ["search", "category", "area", "town", "day", "maxPrice", "free", "sessionLength", "sen", "termTime", "bookingRequired", "accessibility"].forEach(id => {
       $(id).addEventListener("input", render);
       $(id).addEventListener("change", render);
     });
@@ -659,10 +659,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("useHomeLocation").onclick = loadHomeLocation;
 
     $("clear").onclick = () => {
-      ["search", "category", "area", "town", "day", "maxPrice", "sessionLength", "sen", "termTime", "booking", "accessibility"].forEach(id => { if ($(id)) $(id).value = ""; });
+      ["search", "category", "area", "town", "day", "maxPrice", "sessionLength", "sen", "termTime", "accessibility"].forEach(id => { if ($(id)) $(id).value = ""; });
       $("ageMin").value = 0;
       $("ageMax").value = 9;
       $("free").checked = false;
+      if ($("bookingRequired")) $("bookingRequired").checked = false;
       homeLocation = null;
       setNearbyStatus("");
 
