@@ -3251,3 +3251,15 @@ body.advanced-search-open{overflow:hidden;}
     padding-right:var(--bh-page-gutter);
   }
 }
+
+/* Admin CSV import/export */
+.admin-import-export-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.admin-import-card{padding:22px;border:1px solid rgba(65,102,81,.14);border-radius:18px;background:var(--bh-bg)}
+.admin-import-card h3{margin:0 0 8px;font-family:"Chewy",cursive;font-size:28px;font-weight:400}
+.admin-import-card p{line-height:1.55;color:var(--bh-text-muted)}
+.admin-import-card label{display:grid;gap:7px;margin:14px 0;font-size:13px;font-weight:800;color:var(--bh-text)}
+.admin-import-card input[type=file],.admin-import-card select{min-height:48px;padding:10px;border:1px solid rgba(65,102,81,.18);border-radius:12px;background:#fff;box-sizing:border-box}
+.admin-import-card .button{margin:4px 8px 4px 0}
+.admin-csv-fields{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0}
+.admin-csv-fields span{padding:6px 9px;border-radius:999px;background:#fff;border:1px solid #d8e6db;font-size:12px;font-weight:700}
+@media(max-width:760px){.admin-import-export-grid{grid-template-columns:1fr}}
