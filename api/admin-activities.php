@@ -4,7 +4,9 @@ header('Content-Type: application/json; charset=utf-8'); header('Cache-Control: 
 $secure=(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off'); session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']); session_start();
 function bh_admin_response(int $status,array $data): never{http_response_code($status);echo json_encode($data,JSON_UNESCAPED_SLASHES);exit;}
 if(empty($_SESSION['bh_admin_authenticated']))bh_admin_response(401,['ok'=>false,'error'=>'Admin login required.']);
-try{require __DIR__.'/db.php';$db=bh_mysql();\n try{$db->exec("ALTER TABLE bh_activities ADD COLUMN accessibility TEXT NULL");}catch(Throwable $ignored){}
+try{require __DIR__.'/db.php';$db=bh_mysql();
+ $accessibilityColumn=false;
+ try{$ac=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='accessibility'");$accessibilityColumn=((int)$ac->fetchColumn())>0;}catch(Throwable $ignored){}
  if($_SERVER['REQUEST_METHOD']==='GET'){
   $id=isset($_GET['id'])?(int)$_GET['id']:0;
   if($id>0){
@@ -12,7 +14,7 @@ try{require __DIR__.'/db.php';$db=bh_mysql();\n try{$db->exec("ALTER TABLE bh_ac
    try{$cc=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='county'");$countyColumn=((int)$cc->fetchColumn())>0;}catch(Throwable $ignored){}
    $countySelect=$countyColumn?'a.county':'NULL AS county';
    $q=$db->prepare("SELECT a.*,$countySelect,o.organisation_name,o.email,o.phone,o.website,v.id venue_id,v.venue_name,v.address,v.town,v.region,v.postcode,v.latitude,v.longitude FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_venues v ON v.activity_id=a.id WHERE a.id=? ORDER BY v.id LIMIT 1");$q->execute([$id]);$a=$q->fetch();if(!$a)bh_admin_response(404,['ok'=>false,'error'=>'Activity not found.']);
-   $q=$db->prepare("SELECT id,venue_name,address,town,region,postcode,latitude,longitude FROM bh_venues WHERE activity_id=? ORDER BY id");$q->execute([$id]);$a['venues']=$q->fetchAll();$a['sessions']=[];foreach($a['venues'] as $vi=>$venue){$sq=$db->prepare("SELECT id,venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date FROM bh_sessions WHERE venue_id=? ORDER BY day_of_week,start_time");$sq->execute([(int)$venue['id']]);foreach($sq->fetchAll() as $session){$session['venue_index']=$vi;$a['sessions'][]=$session;}}$a['id']=(int)$a['id'];$a['price_from']=$a['price_from']!==null?(float)$a['price_from']:null;$a['latitude']=$a['latitude']!==null?(float)$a['latitude']:null;$a['longitude']=$a['longitude']!==null?(float)$a['longitude']:null;
+   $q=$db->prepare("SELECT id,venue_name,address,town,region,postcode,latitude,longitude FROM bh_venues WHERE activity_id=? ORDER BY id");$q->execute([$id]);$a['venues']=$q->fetchAll();$a['accessibility']=[];if($accessibilityColumn&&array_key_exists('accessibility',$a)){$decoded=json_decode((string)$a['accessibility'],true);$a['accessibility']=is_array($decoded)?$decoded:[];}$a['sessions']=[];foreach($a['venues'] as $vi=>$venue){$sq=$db->prepare("SELECT id,venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date FROM bh_sessions WHERE venue_id=? ORDER BY day_of_week,start_time");$sq->execute([(int)$venue['id']]);foreach($sq->fetchAll() as $session){$session['venue_index']=$vi;$a['sessions'][]=$session;}}$a['id']=(int)$a['id'];$a['price_from']=$a['price_from']!==null?(float)$a['price_from']:null;$a['latitude']=$a['latitude']!==null?(float)$a['latitude']:null;$a['longitude']=$a['longitude']!==null?(float)$a['longitude']:null;
    bh_admin_response(200,['ok'=>true,'data'=>$a]);
   }
   $countyColumn=false;
