@@ -648,6 +648,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       render();
     };
 
+    if ($("mainSearchButton")) $("mainSearchButton").addEventListener("click", render);
+
     ["search", "category", "area", "town", "day", "maxPrice", "free", "sessionLength", "sen", "termTime", "bookingRequired", "accessibility"].forEach(id => {
       $(id).addEventListener("input", render);
       $(id).addEventListener("change", render);
