@@ -2916,3 +2916,87 @@ input,select,textarea{box-sizing:border-box;max-width:100%;font:inherit}
   width:100%;
   max-width:none;
 }
+
+
+/* ==========================================================================
+   FINAL WIDTH / SHELL CORRECTIONS
+   Full-width visual bands with consistent inner page breathing room.
+   ========================================================================== */
+
+/* The desktop mobile-menu control must never appear as a stray button. */
+.mobile-nav-toggle{display:none!important;}
+
+/* Directory shell: full browser width; the 50px gutter is the inner breathing room. */
+.app-shell{
+  width:100%;
+  max-width:none;
+  margin-left:0;
+  margin-right:0;
+  padding-left:var(--bh-page-gutter);
+  padding-right:var(--bh-page-gutter);
+  box-sizing:border-box;
+}
+.app-shell > .page-heading,
+.app-shell > .directory-layout{
+  width:100%;
+  max-width:none;
+  margin-left:0;
+  margin-right:0;
+}
+
+/* The green directory title banner spans the full available page rail. */
+.app-shell > .page-heading{
+  box-sizing:border-box;
+}
+
+/* Home hero is a true full-width visual band, with content kept comfortably inset. */
+main > .hero{
+  width:100%;
+  max-width:none;
+  margin-left:0;
+  margin-right:0;
+  box-sizing:border-box;
+  border-radius:0;
+  padding-left:var(--bh-page-gutter);
+  padding-right:var(--bh-page-gutter);
+}
+
+/* Keep the search panel and hero copy aligned with the page gutter. */
+main > .hero .hero-copy,
+main > .hero .hero-search,
+main > .hero .hero-links{
+  width:100%;
+  max-width:none;
+}
+
+/* Full-width home sections; their internal content remains padded. */
+main > .section{
+  width:100%;
+  max-width:none;
+  box-sizing:border-box;
+  padding-left:var(--bh-page-gutter);
+  padding-right:var(--bh-page-gutter);
+}
+
+/* Mobile navigation control is intentionally restored only at mobile widths. */
+@media(max-width:620px){
+  .app-shell{
+    width:100%;
+    padding-left:10px;
+    padding-right:10px;
+  }
+  main > .hero{
+    width:100%;
+    padding-left:10px;
+    padding-right:10px;
+    border-radius:0;
+  }
+  main > .section{
+    width:100%;
+    padding-left:10px;
+    padding-right:10px;
+  }
+  .mobile-nav-toggle{
+    display:flex!important;
+  }
+}
