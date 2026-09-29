@@ -288,3 +288,10 @@
     margin-bottom:16px;
   }
 }
+
+/* Sticky map alongside directory listings on desktop */
+@media (min-width: 901px){
+  .bh-directory .directory-layout{align-items:start}
+  .bh-directory .directory-results-column{min-width:0}
+  .bh-directory #mapView{position:sticky;top:24px;align-self:start;height:min(72vh,720px);min-height:520px}
+}
