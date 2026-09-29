@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en-GB">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Notifications · Bubba Hub</title>
+<meta name="description" content="Choose which Bubba Hub reminders and updates you receive.">
+<link rel="stylesheet" href="../assets/css/styles.css?v=20260928-shell2">
+  <link rel="stylesheet" href="../assets/css/bold-theme.css?v=20260929-bold1">\n<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>\n<script src="../assets/js/onesignal.js?v=20260927-onesignal1" defer></script>
+</head>
+<body>
+<header class="site-header"><a class="brand" href="../index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="../images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="../directory.html">Find activities</a><a href="../events.html">Events</a><a href="../venues.html">Venues</a><a href="../planner.html">My planner</a><a href="../calendar.html">Calendar</a><a href="../my-hub.html">My Hub</a><a href="../leader.html">For class leaders</a><a href="../admin.html">Admin</a></nav><a class="button button-soft" href="../account.html">My account</a></header>
+<main class="app-shell account-page">
+<div class="page-heading"><div><span class="eyebrow">My account</span><h1>Notifications</h1><p>Choose the reminders and updates you want from Bubba Hub.</p></div></div>
+<div class="account-profile-layout">
+<aside class="account-side-nav" aria-label="Account sections">
+<a href="../account.html">🏠 <span>Account home</span></a>
+<a href="account-profile.html" >👤 <span>Profile</span></a>
+<a href="family.html" >👶 <span>My family</span></a>
+<a href="preferences.html" >✓ <span>Preferences</span></a>
+<a href="notifications.html" class="active" aria-current="page">🔔 <span>Notifications</span></a>
+<a href="saved-activities.html" >♡ <span>Saved activities</span></a>
+<a href="account-planner.html" >📅 <span>Planner &amp; bookings</span></a>
+<a href="privacy.html" >🔒 <span>Privacy &amp; consent</span></a>
+<a href="subscription.html" >⭐ <span>Subscription &amp; Pro</span></a>
+</aside>
+<section class="admin-panel account-notifications-panel">
+<div class="admin-panel-head"><div><span class="eyebrow">Your notification choices</span><h2>Stay in the loop, your way.</h2><p>Essential account and booking messages may still be sent when needed. Optional reminders can be switched off here.</p></div><span class="status" id="notificationStatus">Loading…</span></div>
+
+<div class="notification-channel-grid">
+<label class="notification-choice"><input type="checkbox" id="emailEnabled"><span><strong>✉️ Email</strong><small>Receive useful Bubba Hub updates by email.</small></span></label>
+<label class="notification-choice"><input type="checkbox" id="pushEnabled"><span><strong>🔔 Push notifications</strong><small>Receive reminders on your phone or device. When enabled, your browser will ask for permission to send Bubba Hub notifications.</small></span></label>
+<p class="preferences-help" id="pushStatus">Push notifications are currently switched off.</p>
+</div>
+
+<div class="notification-section">
+<h3>What would you like reminders about?</h3>
+<div class="notification-list">
+<label><input type="checkbox" data-pref="plannerReminders"><span><strong>Planner reminders</strong><small>Reminders about activities you have added to your planner.</small></span></label>
+<label><input type="checkbox" data-pref="bookingUpdates"><span><strong>Booking updates</strong><small>Reservation confirmations, changes and cancellations.</small></span></label>
+<label><input type="checkbox" data-pref="savedSearches"><span><strong>Saved activity alerts</strong><small>Updates when relevant new activities are added.</small></span></label>
+<label><input type="checkbox" data-pref="supportReplies"><span><strong>Support replies</strong><small>Let me know when someone replies to a private support question.</small></span></label>
+<label><input type="checkbox" data-pref="eventReminders"><span><strong>Event reminders</strong><small>Reminders about family events you have saved or planned.</small></span></label>
+</div>
+</div>
+
+
+<div class="notification-section newsletter-section">
+<h3>📰 Bubba Hub Round Up</h3>
+<p class="preferences-intro">Get a friendly email with new activities, upcoming sessions and useful things happening on Bubba Hub.</p>
+<label class="notification-choice"><input type="checkbox" id="newsletterEnabled"><span><strong>Send me the Bubba Hub Round Up</strong><small>This is optional and separate from essential account or booking messages.</small></span></label>
+<label class="notification-field">How often would you like it?
+<select id="newsletterFrequency">
+<option value="daily">Daily</option>
+<option value="weekly">Weekly</option>
+<option value="monthly">Monthly</option>
+</select>
+</label>
+<p class="preferences-help" id="newsletterStatus">Choose a frequency and save your notification settings.</p>
+</div>
+
+
+<div class="notification-actions">
+<span id="notificationMessage" class="library-message" aria-live="polite"></span>
+<button class="button button-primary" id="saveNotifications" type="button">Save notification settings</button>
+</div>
+</section>
+</div>
+</main>
+<footer class="site-footer"><div class="site-footer-grid"><div class="site-footer-brand"><a href="../index.html" class="site-footer-logo" aria-label="Bubba Hub home"><img src="../images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><div class="site-footer-brand-copy"><a href="../index.html" class="site-footer-title">Bubba Hub</a><p>Find, plan &amp; book family activities across Devon &amp; Cornwall.</p></div></div><div class="site-footer-column"><h2>Main menu</h2><nav class="site-footer-links" aria-label="Footer main menu"><a href="../directory.html">Find activities</a><a href="../my-hub.html">My Hub</a><a href="../help-support.html">Support &amp; Guidance</a><a href="../leader.html">Class Leaders</a><a href="../account.html">Account</a></nav></div><div class="site-footer-column"><h2>Explore &amp; tools</h2><nav class="site-footer-links" aria-label="Footer explore and tools"><a href="../events.html">Events</a><a href="../venues.html">Venues</a><a href="../planner.html">Planner</a><a href="../calendar.html">Calendar</a></nav></div><div class="site-footer-column"><h2>Legal &amp; contact</h2><nav class="site-footer-links" aria-label="Footer legal and contact"><a href="privacy.html">Privacy</a><a href="../terms.html">Terms &amp; Conditions</a><a href="mailto:contact@bubbahub.co.uk">Contact Bubba Hub</a></nav></div></div><div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div></footer>
+<script src="../assets/js/app.js?v=20260928-shell2"></script><script src="../assets/js/account-notifications.js?v=20260927-onesignal1"></script>
+</body></html>
