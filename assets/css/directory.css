@@ -406,3 +406,37 @@
 @media(max-width:900px){
   .bh-directory #mapView{position:relative;top:auto;height:480px;min-height:0}
 }
+
+/* Hero calendar CTA — match homepage primary buttons */
+.bh-directory .directory-calendar-hero-button{
+  min-height:46px;
+  padding:11px 20px;
+  border:1px solid rgba(20,68,0,.08);
+  border-radius:14px;
+  background:var(--bh-site-teal,#3c8e96);
+  color:#fff;
+  font-weight:850;
+  font-size:14px;
+  line-height:1;
+  box-shadow:0 6px 16px rgba(20,68,0,.12);
+  text-decoration:none;
+  transition:transform .15s ease,box-shadow .15s ease,background .15s ease;
+}
+.bh-directory .directory-calendar-hero-button:hover{
+  background:var(--bh-site-dark,#144400);
+  color:#fff;
+  transform:translateY(-1px);
+  box-shadow:0 9px 20px rgba(20,68,0,.16);
+}
+.bh-directory .directory-calendar-hero-button:focus-visible{
+  outline:3px solid rgba(60,142,150,.28);
+  outline-offset:3px;
+}
+@media(max-width:700px){
+  .bh-directory .directory-calendar-hero-button{
+    min-height:48px;
+    padding:12px 18px;
+    border-radius:13px;
+    font-size:14px;
+  }
+}
