@@ -745,8 +745,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         const category = button.dataset.category || "";
         const select = $("category");
         const heroSelect = $("heroCategory");
-        const option = select && [...select.options].find(o => o.value === category || o.textContent.trim() === category);
-        const heroOption = heroSelect && [...heroSelect.options].find(o => o.value === category || o.textContent.trim() === category);
+        const words = category.toLowerCase().split(/\s+/).filter(Boolean);
+        const option = select && [...select.options].find(o =>
+          o.value === category ||
+          o.textContent.trim().toLowerCase() === category.toLowerCase() ||
+          words.some(word => word.length > 3 && o.textContent.toLowerCase().includes(word))
+        );
+        const heroOption = heroSelect && [...heroSelect.options].find(o =>
+          o.value === category ||
+          o.textContent.trim().toLowerCase() === category.toLowerCase() ||
+          words.some(word => word.length > 3 && o.textContent.toLowerCase().includes(word))
+        );
         if (select && option) select.value = option.value;
         if (heroSelect && heroOption) heroSelect.value = heroOption.value;
         if ($("search")) $("search").value = "";
