@@ -23,42 +23,120 @@ Purpose: establish the canonical HTML page map before rebuilding CSS, JavaScript
 | `/events.html` | Events |
 | `/venues.html` | Venue directory |
 | `/venue.html?id=...` | Venue detail |
-| `/organiser/[business_name]` | Public organiser profile |
-| `/schools/` | School information/search |
+| `/childcare/` | Public childcare directory |
+| `/organiser/[business_name]` | Public organiser storefront/profile |
 | `/faq.html` | Frequently asked questions |
-| `/auth.html` | Family sign in / sign up |
-| `/forgot-password.html` | Password reset request |
-| `/reset-password.html` | Set new password |
+| `/about.html` | About Bubba Hub |
+| `/contact.html` | Contact Bubba Hub |
 | `/choose.html` | Choose family/leader journey |
 | `/personalise.html` | New-family personalisation |
-| `/consent.html` | Booking/child consent |
-| `/privacy.html` | Privacy |
-| `/terms.html` | Terms |
+| `/privacy.html` | Legacy compatibility/privacy entry point |
+| `/terms.html` | Legacy compatibility/terms entry point |
 
-## Canonical family/account pages
+**Important distinction:** Schools are not a public directory section. Childcare is the public directory area for nurseries, pre-schools, childminders, before/after-school care, holiday childcare, SEND/specialist childcare and school nursery provision. School research/tracking lives inside My Hub at `/account/schools.html`.
+
+## My Hub — family area
+
+The visible product name for the family account area is **My Hub**. The `/account/` path is the technical route namespace.
 
 | Route | Purpose |
 |---|---|
-| `/account/` | Family account dashboard |
+| `/account/` | **My Hub dashboard** — family overview and entry point |
 | `/account/profile.html` | Parent/member profile |
-| `/account/family.html` | Children and family details |
-| `/account/planner.html` | Family planner |
-| `/account/saved-activities.html` | Saved activities |
-| `/account/preferences.html` | Directory/personalisation preferences |
+| `/account/family.html` | **Children and child profiles** |
+| `/account/planner.html` | **Family planner** — calendar/list/day/week/month and family activities |
+| `/account/saved-activities.html` | Saved/bookmarked activities |
+| `/account/schools.html` | **School research/tracker**; separate from public Childcare |
+| `/account/preferences.html` | Personalisation and directory preferences |
 | `/account/notifications.html` | Notification preferences/history |
 | `/account/privacy.html` | Privacy, consent and permissions |
 | `/account/subscription.html` | Membership/subscription |
 | `/account/payment-details.html` | Saved payment methods and billing details |
 | `/account/logout.html` | Sign-out endpoint/page if required by auth flow |
 
-The account area is the single source of truth. Root duplicates such as `account.html`, `account-profile.html` and `account-planner.html` are legacy compatibility files and will be removed/redirected only after references are migrated.
+The My Hub dashboard should make children, planner, saved activities and schools prominent rather than behaving like a generic settings page.
+
+Child profiles may include name, nickname, photo, date of birth, gender, age, preferences, activity suitability and consent/permission settings as the relevant features are implemented.
+
+## Booking system
+
+| Route | Purpose |
+|---|---|
+| `/book/` | Booking journey entry |
+| `/book/activity.html` | Activity/session selection |
+| `/book/consent.html` | Child and organiser consent/permissions |
+| `/book/confirmation.html` | Server-verified booking confirmation |
+| `/book/manage.html` | Booking management |
+
+The booking architecture supports both Bubba Hub checkout and external organiser booking. Payment is a step in the internal booking flow but does not need a separate public payment page.
+
+## Authentication
+
+| Route | Purpose |
+|---|---|
+| `/auth/login.html` | Family/leader sign in |
+| `/auth/register.html` | Account registration |
+| `/auth/forgot-password.html` | Password reset request |
+| `/auth/reset-password.html` | Set new password |
+
+Legacy `auth.html`, `forgot-password.html`, `reset-password.html` remain compatibility files until references are migrated.
+
+## Family website help
+
+These pages explain **how to use Bubba Hub**, and are separate from family-life Support.
+
+| Route | Purpose |
+|---|---|
+| `/help/` | Help hub |
+| `/help/families/` | Family user guide |
+| `/help/families/getting-started.html` | Getting started |
+| `/help/families/account.html` | Using My Hub/account |
+| `/help/families/directory.html` | Finding activities |
+| `/help/families/planner.html` | Using the planner |
+| `/help/families/bookings.html` | Booking help |
+| `/help/families/troubleshooting.html` | Troubleshooting |
+
+## Leader website help
+
+These pages explain **how leaders use Bubba Hub**, and are separate from the authenticated Leader Hub itself.
+
+| Route | Purpose |
+|---|---|
+| `/help/leaders/` | Leader user guide |
+| `/help/leaders/getting-started.html` | Getting started |
+| `/help/leaders/listings.html` | Managing listings |
+| `/help/leaders/schedules.html` | Managing schedules |
+| `/help/leaders/bookings.html` | Booking help |
+| `/help/leaders/payments.html` | Payment help |
+| `/help/leaders/profile.html` | Business profile help |
+| `/help/leaders/support.html` | Support/expertise help |
+
+## Family Help & Support
+
+This area is for **family life, wellbeing and support information**, not instructions for using the website.
+
+| Route | Purpose |
+|---|---|
+| `/support/families/` | Family Support hub |
+| `/support/families/pregnancy.html` | Pregnancy |
+| `/support/families/baby-health.html` | Baby and child health |
+| `/support/families/feeding.html` | Feeding |
+| `/support/families/sleep.html` | Sleep |
+| `/support/families/development.html` | Child development |
+| `/support/families/parenting.html` | Parenting |
+| `/support/families/wellbeing.html` | Family wellbeing |
+| `/support/families/send.html` | SEND |
+| `/support/families/financial-support.html` | Financial support |
+| `/support/families/local-support.html` | Local support |
+| `/support/families/urgent-help.html` | Urgent help |
+| `/support/families/apps.html` | Suggested apps and digital resources |
 
 ## Canonical leader pages
 
 | Route | Purpose |
 |---|---|
-| `/leader/` | Leader dashboard |
-| `/leader/profile.html` | Business/leader profile |
+| `/leader/` | Leader Hub dashboard |
+| `/leader/profile.html` | Business/leader profile, including Business Name |
 | `/leader/classes.html` | Classes/listings; add/edit listing uses a modal/wizard |
 | `/leader/schedule.html` | Sessions and availability; add/edit session uses a modal |
 | `/leader/venues.html` | Venues; add/edit venue uses a modal |
@@ -66,25 +144,13 @@ The account area is the single source of truth. Root duplicates such as `account
 | `/leader/payments.html` | Payments and fees |
 | `/leader/statistics.html` | Statistics |
 | `/leader/faqs.html` | Public FAQs |
-| `/leader/support.html` | Leader support and expertise |
+| `/leader/support.html` | Leader support and private family-support expertise |
 | `/leader/blog.html` | Leader news/blog |
+| `/leader/advertising.html` | Leader advertising campaigns |
 
-Public organiser profiles are separate from the authenticated leader portal.
-
-## Family help & support
-
-These are deliberately separate from the website user guides under `/help/`.
-
-| Route | Purpose |
-|---|---|
-| `/support/families/apps.html` | Suggested apps and digital resources for families |
-
-Family support content can grow later into topic pages, but only pages with agreed content should be added to the product. The suggested-apps page is the current agreed support addition.
-
+Public organiser profiles are separate from the authenticated Leader Hub and use `/organiser/[business_name]`.
 
 ## Canonical admin pages
-
-The current 30+ thin admin shells are reduced to a smaller feature set. Each page owns a feature area instead of having one HTML file per tiny setting.
 
 | Route | Purpose |
 |---|---|
@@ -97,50 +163,88 @@ The current 30+ thin admin shells are reduced to a smaller feature set. Each pag
 | `/admin/regions.html` | Counties, regions, towns and location mapping |
 | `/admin/content.html` | Site content and media |
 | `/admin/notifications.html` | Newsletter, email and push |
+| `/admin/listing-watch.html` | Directory monitoring/discovery, potential listings, duplicates and review queue |
+| `/admin/advertising.html` | Advertising campaign management and approval |
 | `/admin/system.html` | Health, deployment and system tools |
 | `/admin/import-export.html` | CSV/import/export tools |
 
-The old `admin-navigation*.html` pages are deliberately excluded from the first rebuild because main navigation is hard-coded during this phase.
+Admin navigation is hard-coded during this rebuild. The old dynamic main-menu editor is not part of the first rebuild.
 
-## Future feature areas already captured in the development backlog
+## Legal and policy pages
 
-The current `FUTURE_DEVELOPMENT.md` backlog contains four feature groups that are already accounted for and should not be forgotten during the HTML foundation rebuild:
+The legal area reserves the full policy set identified in `FUTURE_DEVELOPMENT.md`.
 
-- **FD-001 Advertising** — future leader advertising campaigns across Site Wide, My Hub, My Hub & Directory, and Home Page zones. Likely persistent workspaces: `leader/advertising.html` and `admin/advertising.html` when this feature is approved for implementation.
-- **FD-002 Central payments** — shared payment infrastructure for bookings, advertising and Pro subscriptions. This is primarily backend/payment architecture rather than another large family-facing page set.
-- **FD-003 Booking payments + 2% Bubba Hub fee** — booking checkout, payment status, leader payouts and admin reconciliation. This extends the existing booking journey rather than creating unrelated pages.
-- **FD-004 Legal/privacy/policy set** — the backlog already identifies the required legal pages and contextual links. These should be added when the legal-content work is approved and the actual data/payment flows are known.
+| Route | Purpose |
+|---|---|
+| `/legal/` | Legal/policy hub |
+| `/legal/privacy.html` | Privacy Notice |
+| `/legal/terms.html` | Terms & Conditions |
+| `/legal/booking-terms.html` | Booking Terms |
+| `/legal/refunds.html` | Refund & Cancellation Policy |
+| `/legal/payment-terms.html` | Payment Terms |
+| `/legal/leader-terms.html` | Leader Terms |
+| `/legal/pro-terms.html` | Pro Terms |
+| `/legal/advertising-terms.html` | Advertising Terms |
+| `/legal/cookies.html` | Cookie Policy |
+| `/legal/acceptable-use.html` | Acceptable Use |
+| `/legal/community-guidelines.html` | Community/Content Guidelines |
+| `/legal/complaints.html` | Complaints |
+| `/legal/data-retention.html` | Data Retention |
+| `/legal/data-rights.html` | Data Subject Rights/privacy requests |
+| `/legal/child-family-data.html` | Child & Family Data |
+| `/legal/consent.html` | Consent and Permissions |
+| `/legal/accessibility.html` | Accessibility |
+| `/legal/disclaimer.html` | Disclaimer |
 
-No additional product feature is currently identified by the backlog beyond these four groups and the agreed core product areas in this architecture.
+The legal pages should receive professional legal/data-protection review before final publication.
 
-## Operational systems included in the HTML foundation
+## Future feature architecture already captured
 
-The operational/future systems are now represented by canonical foundation routes so the product architecture includes them from the start rather than treating them as later surprises.
+### Advertising — FD-001
+Four campaign zones:
+1. Site Wide
+2. My Hub Only
+3. My Hub & Directory
+4. Home Page Only
 
-### Booking
-- `/book/` — booking journey entry
-- `/book/activity.html` — activity/session selection
-- `/book/consent.html` — child and consent step
-- `/book/confirmation.html` — server-verified confirmation
-- `/book/manage.html` — booking management
-- Online and external organiser booking remain supported.
+Campaigns may use an existing Bubba Hub listing or leader storefront. One-off and recurring 30-day campaigns are planned. Admin approval, lifecycle, payment state, expiry, cancellation and display/rotation rules belong to the advertising implementation.
 
-### Advertising
-- `/leader/advertising.html` — leader campaign workspace
-- `/admin/advertising.html` — admin campaign management
-- Four planned zones: Site Wide, My Hub Only, My Hub & Directory, Home Page Only.
-- Payment/display automation remains dependent on the central payment implementation.
+### Central payments — FD-002
+A reusable payment abstraction supports bookings, advertising and Pro subscriptions, with planned PayPal, Stripe and bank transfer support. It tracks pending, successful, failed, cancelled and refunded states without storing raw card details.
 
-### Directory operations
-- `/admin/listing-watch.html` — listing monitoring/review workspace for potential new listings, duplicates, checks and create/update actions.
+### Booking payments + 2% Bubba Hub fee — FD-003
+Internal booking checkout will support the agreed customer-paid 2% Bubba Hub booking fee, organiser proceeds/payouts, payment status, refunds, webhooks, reconciliation and duplicate prevention. Financial success must be verified server-side.
 
-### My Hub school tracker
-- `/account/schools.html` — family school research/tracker utility.
-- This is deliberately separate from the public Childcare directory.
+### Legal/privacy/policy — FD-004
+The full policy set above is reserved in the architecture. Final wording and data/payment details require appropriate legal/data-protection review.
 
-These are HTML foundation pages now. They are not presented as fully live payment/monitoring integrations until the API, provider and data layers are implemented and tested.
+## Operational systems
+
+### Listing Watch
+`/admin/listing-watch.html` is the directory operations centre. It can later connect to Google/web monitoring or alert sources and should support:
+- potential new listings
+- possible duplicates
+- needs checking
+- recently checked
+- ignored
+- create/update listing
+- monitoring groups
+
+Monitoring groups can include childcare, baby/toddler groups, children's activities, sports/swimming, classes, new businesses and other agreed directory categories.
+
+### My Hub Schools
+`/account/schools.html` is a family research/tracking utility. It is not a public school directory and is not part of Childcare. It can later support Google Custom Search-style discovery, saved schools, location/name search, notes and tracking.
+
+## Pro
+
+No separate `/pro/` portal is required at this stage.
+
+- Family subscription management → `/account/subscription.html`
+- Pro legal terms → `/legal/pro-terms.html`
+- Admin/payment handling → relevant admin/payment systems
 
 ## Pages being merged/retired after migration
+
 
 - `account.html` → `account/`
 - `account-profile.html` → `account/profile.html`
