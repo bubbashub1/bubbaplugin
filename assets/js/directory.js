@@ -307,7 +307,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const time = [session.day, session.start && session.start.slice(0,5)].filter(Boolean).join(" · ");
         const image = activity.image_url
           ? '<img class="bh-map-popup-image" src="' + escapeHtml(activity.image_url) + '" alt="' + escapeHtml(activity.title) + '">'
-          : '<div class="bh-map-popup-image bh-map-popup-placeholder">Bubba Hub</div>';
+          : '<img class="bh-map-popup-image" src="images/logos/gemini_generated_image_1dzezm1dzezm1dze-20260929-213630-1f8496.jpeg" alt="" aria-hidden="true">';
         return '<article class="bh-map-popup-card">' +
           image +
           '<div class="bh-map-popup-body">' +
