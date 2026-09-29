@@ -113,6 +113,33 @@ The current `FUTURE_DEVELOPMENT.md` backlog contains four feature groups that ar
 
 No additional product feature is currently identified by the backlog beyond these four groups and the agreed core product areas in this architecture.
 
+## Operational systems included in the HTML foundation
+
+The operational/future systems are now represented by canonical foundation routes so the product architecture includes them from the start rather than treating them as later surprises.
+
+### Booking
+- `/book/` — booking journey entry
+- `/book/activity.html` — activity/session selection
+- `/book/consent.html` — child and consent step
+- `/book/confirmation.html` — server-verified confirmation
+- `/book/manage.html` — booking management
+- Online and external organiser booking remain supported.
+
+### Advertising
+- `/leader/advertising.html` — leader campaign workspace
+- `/admin/advertising.html` — admin campaign management
+- Four planned zones: Site Wide, My Hub Only, My Hub & Directory, Home Page Only.
+- Payment/display automation remains dependent on the central payment implementation.
+
+### Directory operations
+- `/admin/listing-watch.html` — listing monitoring/review workspace for potential new listings, duplicates, checks and create/update actions.
+
+### My Hub school tracker
+- `/account/schools.html` — family school research/tracker utility.
+- This is deliberately separate from the public Childcare directory.
+
+These are HTML foundation pages now. They are not presented as fully live payment/monitoring integrations until the API, provider and data layers are implemented and tested.
+
 ## Pages being merged/retired after migration
 
 - `account.html` → `account/`
