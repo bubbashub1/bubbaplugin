@@ -29,21 +29,14 @@
       const nav=header.querySelector(".main-nav");
       if(nav){
         nav.innerHTML="";
-        const configured=(menus&&Array.isArray(menus.main)&&menus.main.length?menus.main: [
+        const configured=[
           {label:"Find activities",url:"directory.html"},
-          {label:"Events",url:"events.html"},
-          {label:"Venues",url:"venues.html"},
-          {label:"Calendar",url:"calendar.html"},
           {label:"My Hub",url:"my-hub.html"},
-          {label:"Support & Guidance",url:"help-support.html"}
-        ]).filter(item=>item&&item.visible!==false&&item.label&&item.url);
-        configured.forEach(item=>nav.appendChild(makeLink(item.label,new URL(item.url,document.baseURI).href)));
-        const leader=makeLink(auth.authenticated&&auth.user&&auth.user.role==="leader"?"Class Leaders":"Class Leaders",auth.authenticated&&auth.user&&auth.user.role==="leader"?rootUrl("leader.html").href:leaderAuthTarget(),"bh-leader-nav-button");
-        leader.setAttribute("data-bh-auth-link","leader");nav.appendChild(leader);
-        const accountHref=auth.authenticated&&auth.user&&auth.user.role==="leader"?rootUrl("leader-account.html").href:rootUrl("account.html").href;
-        const account=makeLink(auth.authenticated?"My account":"My account",auth.authenticated?accountHref:buildAuthTarget(),"bh-auth-link");
-        account.setAttribute("data-bh-auth-link","account");nav.appendChild(account);
-        nav.appendChild(makeLink("Admin",rootUrl("admin/admin.html").href));
+          {label:"Support & Guidance",url:"help-support.html"},
+          {label:"Class Leaders",url:"leader.html"},
+          {label:"My Account",url:"account.html"}
+        ];
+        configured.forEach(item=>nav.appendChild(makeLink(item.label,rootUrl(item.url).href)));
         if(auth.authenticated)nav.appendChild(makeLink("Log out","#","bh-logout-link"));
       }
 
