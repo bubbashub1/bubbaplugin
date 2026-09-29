@@ -161,7 +161,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let map = null;
     let markers = [];
-    let currentView = localStorage.getItem("bh_directory_view") || "grid";
+    const storedView = localStorage.getItem("bh_directory_view");
+    let currentView = storedView === "list" ? "grid" : (storedView || "grid");
     let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let cardCount = Number(localStorage.getItem("bh_directory_cards") || 3);
     let homeLocation = null;
@@ -730,7 +731,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     $("cardCount").addEventListener("change", () => {
       cardCount = Number($("cardCount").value);
-      if (![2,3,4,5,6].includes(cardCount)) cardCount = 4;
+      if (![2,3,4,5,6].includes(cardCount)) cardCount = 3;
       localStorage.setItem("bh_directory_cards", String(cardCount));
       render();
     });
