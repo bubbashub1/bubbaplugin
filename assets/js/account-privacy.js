@@ -3,9 +3,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
  const esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])));
  let csrf="";
  try{
-  const auth=await fetch("api/auth.php?action=me",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}).then(r=>r.json());
-  if(!auth.authenticated){msg.innerHTML='<strong>Sign in required.</strong> <a href="account.html?next=privacy.html">Sign in to manage privacy choices.</a>';form.style.display="none";return;}
-  const r=await fetch("api/preferences.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}),data=await r.json();
+  const auth=await fetch("../api/auth.php?action=me",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}).then(r=>r.json());
+  if(!auth.authenticated){msg.innerHTML='<strong>Sign in required.</strong> <a href="../auth.html?next=%2Fbeta%2Faccount%2Fprivacy.html">Sign in to manage privacy choices.</a>';form.style.display="none";return;}
+  const r=await fetch("../api/preferences.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}),data=await r.json();
   if(!r.ok||!data.ok)throw new Error(data.message||"Could not load privacy settings.");
   csrf=data.csrf||auth.csrf||"";
   const p=data.preferences||{};
@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
  form.addEventListener("submit",async e=>{
   e.preventDefault();status.textContent="Saving…";
   try{
-   const r=await fetch("api/preferences.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({
+   const r=await fetch("../api/preferences.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({
     csrf,
     privacy:{
       personalisation:form.elements.personalisation.checked,
