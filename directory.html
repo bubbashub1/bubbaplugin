@@ -8,6 +8,28 @@
   </nav></header><main class="app-shell"><div class="directory-mobile-actions">
 <button type="button" class="directory-filter-toggle button button-soft" id="filterToggle" aria-expanded="false" aria-controls="directoryFilters">Filters <span aria-hidden="true">＋</span></button>
 </div>
+<div class="directory-hero-fullwidth">
+<form class="home-search directory-hero-search" id="directoryHeroSearch" action="directory.html" method="get">
+  <h2>Find your next family adventure...</h2>
+  <div class="home-search-fields directory-hero-search-fields">
+    <label><span>⌕</span><input id="search" name="keyword" type="search" placeholder="Keyword" aria-label="Keyword"></label>
+    <label><span>⌖</span><select id="heroRegion" name="region"><option value="">Region</option></select></label>
+    <label><span>♟</span><select id="heroCategory" name="category"><option value="">Category</option></select></label>
+    <label><span>♙</span><select id="heroAge" name="age_preset"><option value="">Age Range</option><option value="baby">Baby · 0–1</option><option value="toddler">Toddler · 1–3</option><option value="preschool">Preschool · 3–5</option><option value="school">School age · 5–9</option></select></label>
+    <button class="button button-primary" type="submit">Search</button>
+  </div>
+  <button type="button" class="home-advanced-link directory-search-advanced-link" id="openSearchFilters">More filters →</button>
+  <div class="directory-popular" aria-label="Popular categories">
+    <span class="directory-popular-label">Popular:</span>
+    <button type="button" class="directory-popular-chip" data-category="Baby classes">🍼 Baby classes</button>
+    <button type="button" class="directory-popular-chip" data-category="Toddler groups">👣 Toddler groups</button>
+    <button type="button" class="directory-popular-chip" data-category="Music &amp; movement">🎵 Music &amp; movement</button>
+    <button type="button" class="directory-popular-chip" data-category="Swimming">🏊 Swimming</button>
+    <button type="button" class="directory-popular-chip" data-category="Soft play">🧸 Soft play</button>
+    <button type="button" class="directory-popular-chip" data-category="Family activities">👨‍👩‍👧 Family activities</button>
+  </div>
+</form>
+</div>
 <div class="directory-layout">
 <aside class="directory-filters-panel" id="directoryFilters" aria-label="Advanced search">
 <div class="directory-filters-header"><div><span class="eyebrow">Refine your search</span><h2>Advanced search</h2></div><button type="button" class="directory-filters-close" id="closeSearchFilters" aria-label="Close advanced search">×</button></div>
@@ -32,27 +54,7 @@
 <button class="button button-primary directory-clear" id="clear">Clear filters</button>
 </div>
 </aside>
-<div class="directory-results-column">
-<form class="home-search directory-hero-search" id="directoryHeroSearch" action="directory.html" method="get">
-  <h2>Find your next family adventure...</h2>
-  <div class="home-search-fields directory-hero-search-fields">
-    <label><span>⌕</span><input id="search" name="keyword" type="search" placeholder="Keyword" aria-label="Keyword"></label>
-    <label><span>⌖</span><select id="heroRegion" name="region"><option value="">Region</option></select></label>
-    <label><span>♟</span><select id="heroCategory" name="category"><option value="">Category</option></select></label>
-    <label><span>♙</span><select id="heroAge" name="age_preset"><option value="">Age Range</option><option value="baby">Baby · 0–1</option><option value="toddler">Toddler · 1–3</option><option value="preschool">Preschool · 3–5</option><option value="school">School age · 5–9</option></select></label>
-    <button class="button button-primary" type="submit">Search</button>
-  </div>
-  <button type="button" class="home-advanced-link directory-search-advanced-link" id="openSearchFilters">More filters →</button>
-  <div class="directory-popular" aria-label="Popular categories">
-    <span class="directory-popular-label">Popular:</span>
-    <button type="button" class="directory-popular-chip" data-category="Baby classes">🍼 Baby classes</button>
-    <button type="button" class="directory-popular-chip" data-category="Toddler groups">👣 Toddler groups</button>
-    <button type="button" class="directory-popular-chip" data-category="Music &amp; movement">🎵 Music &amp; movement</button>
-    <button type="button" class="directory-popular-chip" data-category="Swimming">🏊 Swimming</button>
-    <button type="button" class="directory-popular-chip" data-category="Soft play">🧸 Soft play</button>
-    <button type="button" class="directory-popular-chip" data-category="Family activities">👨‍👩‍👧 Family activities</button>
-  </div>
-</form>
+
 <div class="directory-results-heading"><div><p id="count"></p></div><div class="directory-viewbar"><button type="button" class="button button-soft directory-filter-button" id="desktopFilterButton" aria-controls="directoryFilters" aria-expanded="false">Filters <span aria-hidden="true">☰</span></button><div class="directory-view-controls"><div class="directory-views" role="tablist" aria-label="Listing view"><button type="button" class="directory-view active" data-view="grid">Grid</button><button type="button" class="directory-view" data-view="list">List</button><button type="button" class="directory-view" data-view="map">Map</button><button type="button" class="directory-view" data-view="calendar">Calendar</button></div><label class="directory-count-control">Cards <select id="cardCount" aria-label="Cards per row"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></label></div></div>
 <section class="activity-grid" id="results"></section><section id="mapView" class="listing-map" hidden aria-label="Map of activities"></section><section id="calendarView" class="directory-calendar" hidden aria-label="Calendar of activities"></section>
 </div>
