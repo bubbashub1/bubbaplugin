@@ -818,3 +818,7 @@
   .bh-directory #mapView[hidden]{display:none}
 }
 @media(max-width:900px){.bh-directory .directory-results-column{display:block}}
+
+/* Calendar CTA — homepage yellow/orange and wide enough for one-line text */
+.bh-directory .directory-calendar-hero-button{background:#f6c84a!important;color:#144400!important;min-width:168px;padding-left:24px;padding-right:24px;white-space:nowrap;font-weight:900}
+.bh-directory .directory-calendar-hero-button:hover{background:#f1b92e!important;color:#144400!important}
