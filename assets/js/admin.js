@@ -41,7 +41,8 @@ async function loadDashboard(){
   if(!r.ok)throw new Error(payload.error||("Could not load activities (HTTP "+r.status+")."));
   if(!payload.ok)throw new Error(payload.error||"Could not load activities.");
   const all=Array.isArray(payload.data)?payload.data:[];
-  document.querySelector("#statActivities").textContent=all.filter(a=>a.status==="published").length;
+  const publishedCount=all.filter(a=>["published","publish"].includes(String(a.status||"").trim().toLowerCase())).length;
+   document.querySelector("#statActivities").textContent=publishedCount;
   document.querySelector("#statRegions").textContent="—";
   document.querySelector("#statSaved").textContent=String(all.length);
   document.querySelector(".admin-stats article:last-child strong").textContent="Live";
