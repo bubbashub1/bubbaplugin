@@ -5,14 +5,14 @@
 .bh-directory .directory-results-column{min-width:0;display:grid;grid-template-columns:minmax(240px,280px) minmax(0,1fr);column-gap:28px;align-items:start}
 
 /* Search */
-.bh-directory .directory-hero-search{grid-column:1 / -1;margin:0 0 22px;padding:25px 28px;background:linear-gradient(135deg,#dceee1 0%,#d6e8ea 100%);border:0;border-radius:26px;box-shadow:0 10px 28px rgba(18,63,49,.07)}
-.bh-directory .directory-hero-search h2{margin:0 0 15px;color:var(--bh-site-dark);font-size:clamp(29px,3.5vw,40px)}
-.bh-directory .directory-hero-search-fields{display:grid;grid-template-columns:1.55fr 1fr 1fr 1fr auto;gap:10px;align-items:end}
-.bh-directory .directory-hero-search-fields label{display:block;min-width:0}
-.bh-directory .directory-hero-search-fields label>span{display:block;font-size:11px;font-weight:900;color:var(--bh-site-muted);margin:0 0 5px 4px}
-.bh-directory .directory-hero-search input,.bh-directory .directory-hero-search select{width:100%;min-height:47px;padding:9px 13px}
-.bh-directory .directory-hero-search .button{min-height:47px}
-.bh-directory .directory-search-advanced-link{display:inline-block;margin-top:11px;padding:0;border:0;background:none;color:var(--bh-site-dark);font-size:12px;font-weight:900}
+.bh-directory .directory-hero-search{grid-column:1 / -1;margin:0 0 22px;padding:24px 26px;background:linear-gradient(135deg,#e4f2e8 0%,#dcecef 100%);border:1px solid rgba(13,59,50,.07);border-radius:24px;box-shadow:0 8px 22px rgba(18,63,49,.06)}
+.bh-directory .directory-hero-search h2{margin:0 0 13px;color:var(--bh-site-dark);font-size:clamp(27px,3vw,36px);line-height:1.05}
+.bh-directory .directory-hero-search-fields{display:grid;grid-template-columns:minmax(220px,1.6fr) repeat(3,minmax(145px,1fr)) 104px;gap:8px;align-items:center}
+.bh-directory .directory-hero-search-fields label{display:flex;align-items:center;min-width:0;background:#fff;border:1px solid rgba(13,59,50,.08);border-radius:14px;min-height:46px;padding:0 12px;box-shadow:0 2px 8px rgba(18,63,49,.04)}
+.bh-directory .directory-hero-search-fields label>span{display:inline-flex;align-items:center;justify-content:center;width:20px;flex:0 0 20px;font-size:15px;font-weight:900;color:var(--bh-site-teal);margin:0 6px 0 0}
+.bh-directory .directory-hero-search input,.bh-directory .directory-hero-search select{width:100%;min-height:42px;padding:8px 2px;border:0;background:transparent;box-shadow:none;outline:0;font-size:13px}
+.bh-directory .directory-hero-search .button{min-height:46px;width:104px;border-radius:14px;padding:0 15px}
+.bh-directory .directory-search-advanced-link{display:inline-block;margin-top:10px;padding:0;border:0;background:none;color:var(--bh-site-dark);font-size:12px;font-weight:900}
 
 /* Results toolbar */
 .bh-directory .directory-results-heading{grid-column:1;display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;gap:14px;margin:0;padding:18px 0 0;min-width:0}
@@ -90,9 +90,9 @@
  .bh-directory .listing-map{height:480px}
 }
 /* Popular category shortcuts */
-.bh-directory .directory-popular{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bh-directory .directory-popular{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:11px}
 .bh-directory .directory-popular-label{font-size:12px;font-weight:900;color:var(--bh-site-dark);margin-right:2px}
-.bh-directory .directory-popular-chip{border:1px solid rgba(13,59,50,.12);background:rgba(255,255,255,.78);color:var(--bh-site-dark);border-radius:999px;padding:8px 13px;font:800 12px "Quicksand",sans-serif;cursor:pointer;transition:transform .15s ease,background .15s ease,border-color .15s ease}
+.bh-directory .directory-popular-chip{border:1px solid rgba(13,59,50,.10);background:rgba(255,255,255,.72);color:var(--bh-site-dark);border-radius:999px;padding:7px 11px;font:800 12px "Quicksand",sans-serif;cursor:pointer;transition:transform .15s ease,background .15s ease,border-color .15s ease}
 .bh-directory .directory-popular-chip:hover{transform:translateY(-1px);background:#fff;border-color:var(--bh-site-teal)}
 .bh-directory .directory-popular-chip.active{background:var(--bh-site-teal);border-color:var(--bh-site-teal);color:#fff}
 @media(max-width:700px){.bh-directory .directory-popular{gap:6px}.bh-directory .directory-popular-chip{padding:7px 10px;font-size:11px}}
