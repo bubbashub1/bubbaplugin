@@ -797,8 +797,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       render();
     };
 
-    $("filterToggle").addEventListener("click", () => {
+    if ($("filterToggle")) $("filterToggle").addEventListener("click", () => {
       const filters = $("directoryFilters");
+      if (!filters) return;
       const open = filters.classList.toggle("is-open");
       $("filterToggle").setAttribute("aria-expanded", String(open));
     });
