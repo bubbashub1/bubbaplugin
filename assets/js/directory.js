@@ -532,13 +532,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       const mapView = $("mapView");
       const calendarView = $("calendarView");
 
-      // Only one primary directory view is ever visible at a time.
+      const desktopSplit = window.innerWidth > 900;
       if (results) {
-        results.hidden = currentView === "map" || currentView === "calendar";
+        results.hidden = currentView === "calendar";
         results.setAttribute("aria-hidden", results.hidden ? "true" : "false");
       }
       if (mapView) {
-        mapView.hidden = currentView !== "map";
+        mapView.hidden = desktopSplit ? currentView === "calendar" : currentView !== "map";
         mapView.setAttribute("aria-hidden", mapView.hidden ? "true" : "false");
       }
       if (calendarView) {
