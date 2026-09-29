@@ -24,13 +24,13 @@ function fillAreas(activities,p){
 async function loadRemote(){
  const auth=await bhAuthSession();
  if(!auth?.authenticated)return {preferences:null,csrf:""};
- const r=await fetch("api/preferences.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+ const r=await fetch("../api/preferences.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
  const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.message||j.error||"Could not load preferences.");
  return {preferences:j.preferences||{},csrf:j.csrf||auth.csrf||""};
 }
 async function saveRemote(p,csrf){
  if(!csrf)return false;
- const r=await fetch("api/preferences.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({...p,action:"save",csrf})});
+ const r=await fetch("../api/preferences.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({...p,action:"save",csrf})});
  const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.message||j.error||"Could not save preferences.");return true;
 }
 document.addEventListener("DOMContentLoaded",async()=>{
