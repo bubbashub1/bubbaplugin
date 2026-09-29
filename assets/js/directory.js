@@ -103,8 +103,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           advancedFields.hidden = !open;
           advancedToggle.setAttribute("aria-expanded", String(open));
           advancedToggle.innerHTML = open
-            ? "Advanced search <span aria-hidden=\"true\">−</span>"
-            : "Advanced search <span aria-hidden=\"true\">＋</span>";
+            ? "More filters <span aria-hidden=\"true\">−</span>"
+            : "More filters <span aria-hidden=\"true\">＋</span>";
         };
       }
 
@@ -113,8 +113,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         panel.classList.toggle("is-open", open);
         mobileToggle.setAttribute("aria-expanded", String(open));
         mobileToggle.innerHTML = open
-          ? "Close search <span aria-hidden=\"true\">×</span>"
-          : "Advanced search <span aria-hidden=\"true\">＋</span>";
+          ? "Close filters <span aria-hidden=\"true\">×</span>"
+          : "Filters <span aria-hidden=\"true\">＋</span>";
         document.body.classList.toggle("directory-filter-open", open && window.innerWidth <= 900);
       };
 
@@ -148,9 +148,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let map = null;
     let markers = [];
-    let currentView = localStorage.getItem("bh_directory_view") || "list";
+    let currentView = localStorage.getItem("bh_directory_view") || "grid";
     let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    let cardCount = Number(localStorage.getItem("bh_directory_cards") || 4);
+    let cardCount = Number(localStorage.getItem("bh_directory_cards") || 3);
     let homeLocation = null;
     let homeLocationLoading = false;
 
@@ -235,7 +235,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
 
-    if (![2,3,4,5,6].includes(cardCount)) cardCount = 4;
+    if (![2,3,4,5,6].includes(cardCount)) cardCount = 3;
     $("cardCount").value = String(cardCount);
     const updateCardCountVisibility = () => {
       const control = document.querySelector(".directory-count-control");
