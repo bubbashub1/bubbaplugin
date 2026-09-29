@@ -588,7 +588,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       const bookingRequired = $("bookingRequired")?.checked || false;
       const accessibility = $("accessibility")?.value || "";
 
-      let list = activities.filter(activity => {
+      const hasActiveDirectoryFilters = !!(
+        search || category || region || town || day || maxPrice || freeOnly ||
+        sessionLength || sen || termTime || bookingRequired || accessibility ||
+        minAge > 0 || maxAge < 9 || params.get("saved")
+      );
+
+      // A completely fresh directory must show every published activity returned
+      // by the API. Only run the detailed matcher when the visitor has actually
+      // selected a filter. This prevents default form values from hiding listings.
+      let list = hasActiveDirectoryFilters ? activities.filter(activity => {
         const venues = bhVenues(activity);
         const sessions = bhSessions(activity);
         const text = [
@@ -631,7 +640,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           bookingMatch &&
           accessibilityMatch &&
           (!params.get("saved") || bhIsSaved(activity.id));
-      });
+      }) : [...activities];
 
       if (homeLocation) {
         list = list
