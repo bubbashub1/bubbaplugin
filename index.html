@@ -3,600 +3,144 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Bubba Hub · Find, Plan & Book Family Activities</title>
-  <meta name="description" content="Find, save and plan pregnancy, baby, toddler and family activities across Devon and Cornwall.">
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-  <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <title>Bubba Hub · Find, Plan &amp; Book Family Activities</title>
+  <meta name="description" content="Find, plan and book family activities, groups, classes and support across Devon & Cornwall.">
   <link rel="canonical" href="https://www.bubbahub.co.uk/beta/">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
-  
-  <!-- Core Styles -->
+  <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css">
   <link rel="stylesheet" href="assets/css/bold-theme.css">
-  <!-- Advanced Search Modal → Separate File -->
-  <link rel="stylesheet" href="assets/css/advanced-modal.css">
 </head>
-<body>
-<header class="site-header">
-  <a class="brand" href="index.html" aria-label="Bubba Hub home">
+<body class="bh-home">
+<header class="site-header home-header">
+  <a class="brand home-brand" href="index.html" aria-label="Bubba Hub home">
     <img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub">
   </a>
   <nav class="main-nav" aria-label="Main navigation">
     <a href="directory.html">Find activities</a>
-    <a href="events.html">Events</a>
-    <a href="venues.html">Venues</a>
-    <a href="planner.html">My planner</a>
-    <a href="calendar.html">Calendar</a>
     <a href="my-hub.html">My Hub</a>
-    <a href="leader.html">For class leaders</a>
-    <a href="admin/admin.html">Admin</a>
+    <a href="help-support.html">Support &amp; Guidance</a>
+    <a href="leader.html">Class Leaders</a>
+    <a href="account.html">My Account</a>
   </nav>
-  <a class="button button-soft" href="account.html">My account</a>
+  <a class="home-header-search" href="directory.html" aria-label="Search activities">⌕</a>
 </header>
 
 <main>
-  <section class="hero">
-    <div class="hero-copy">
-      <span class="eyebrow">Your family activity hub</span>
-      <h1>Your<br><em>Bubba Buddy.</em></h1>
-      <p>Discover pregnancy, baby, toddler and family groups, classes and activities across Devon &amp; Cornwall.</p>
+  <section class="home-hero">
+    <div class="home-hero-image" aria-hidden="true"></div>
+    <div class="home-hero-copy">
+      <span class="home-brush">Your Family Hub<br>for Finding, Planning &amp;<br>Booking Family Activities</span>
+      <p>Local groups, classes, services and events<br>for pregnancy, babies and toddlers across<br>Devon &amp; Cornwall.</p>
     </div>
 
-    <form class="hero-search hero-search-hybrid" id="heroSearch" action="directory.html" method="get">
-      <div class="hero-search-field">
-        <label for="heroRegion">Where?</label>
-        <select id="heroRegion" name="region">
-          <option value="">Anywhere in Devon &amp; Cornwall</option>
-        </select>
+    <form class="home-search" id="heroSearch" action="directory.html" method="get">
+      <h2>Find your next family adventure...</h2>
+      <div class="home-search-fields">
+        <label><span>⌕</span><input name="keyword" type="search" placeholder="Keyword" aria-label="Keyword"></label>
+        <label><span>⌖</span><select id="heroRegion" name="region"><option value="">Region</option></select></label>
+        <label><span>♟</span><select id="heroCategory" name="category"><option value="">Category</option></select></label>
+        <label><span>♙</span><select id="heroAge" name="age_preset"><option value="">Age Range</option><option value="baby">Baby · 0–1</option><option value="toddler">Toddler · 1–3</option><option value="preschool">Preschool · 3–5</option><option value="school">School age · 5–9</option></select></label>
+        <button class="button button-primary" type="submit">Search</button>
       </div>
-      <div class="hero-search-field">
-        <label for="heroTown">Town</label>
-        <select id="heroTown" name="town" disabled>
-          <option value="">Any town</option>
-        </select>
-      </div>
-      <div class="hero-search-field">
-        <label for="heroDay">When?</label>
-        <select id="heroDay" name="day">
-          <option value="">Any day</option>
-          <option>Monday</option>
-          <option>Tuesday</option>
-          <option>Wednesday</option>
-          <option>Thursday</option>
-          <option>Friday</option>
-          <option>Saturday</option>
-          <option>Sunday</option>
-        </select>
-      </div>
-      <div class="hero-search-field hero-age-select">
-        <label for="heroAge">Age</label>
-        <select id="heroAge" name="age_preset">
-          <option value="">Any age</option>
-          <option value="baby">Baby · 0–1</option>
-          <option value="toddler">Toddler · 1–3</option>
-          <option value="preschool">Preschool · 3–5</option>
-          <option value="school">School age · 5–9</option>
-        </select>
-      </div>
-      <button class="button button-primary hero-search-button" type="submit">Search activities</button>
-      <button class="hero-more-filters" type="button" id="heroMoreFilters" aria-label="Open advanced search" title="Advanced search" aria-expanded="false" aria-controls="heroAdvancedModal">☷</button>
+      <a class="home-advanced-link" href="directory.html">Advanced search</a>
     </form>
+  </section>
 
-    <!-- ADVANCED SEARCH MODAL -->
-    <div class="hero-advanced-modal" id="heroAdvancedModal" hidden aria-hidden="true">
-      <div class="hero-advanced-backdrop" data-close-advanced></div>
-      <section class="hero-advanced-dialog" role="dialog" aria-modal="true" aria-labelledby="heroAdvancedTitle">
-        <button type="button" class="hero-advanced-close" id="heroAdvancedClose" aria-label="Close advanced search">×</button>
-        
-        <span class="eyebrow">Refine your search</span>
-        <h2 id="heroAdvancedTitle">Advanced search</h2>
-        <p>Choose the details that matter to your family. Bubba Hub will take you straight to matching activities.</p>
-        
-        <form action="directory.html" method="get" class="hero-advanced-form" id="heroAdvancedForm">
-          <div class="advanced-filters-grid">
-            <div class="advanced-filter-field" data-filter-key="category">
-              <label for="advancedCategory">Category</label>
-              <select id="advancedCategory" name="category">
-                <option value="">All categories</option>
-              </select>
-            </div>
+  <section class="home-category-row" aria-label="Explore Bubba Hub">
+    <a href="directory.html?category=Groups%20%26%20Classes"><span class="home-category-icon pink">♟</span><strong>Groups<br>&amp; Classes</strong></a>
+    <a href="events.html"><span class="home-category-icon teal">♧</span><strong>Activities<br>&amp; Events</strong></a>
+    <a href="help-support.html"><span class="home-category-icon green">✚</span><strong>Services<br>&amp; Support</strong></a>
+    <a href="planner.html"><span class="home-category-icon purple">⌗</span><strong>Plan Your<br>Family Life</strong></a>
+    <a href="leader.html"><span class="home-category-icon yellow">♙</span><strong>Connect<br>with Leaders</strong></a>
+  </section>
 
-            <div class="advanced-filter-field" data-filter-key="region">
-              <label for="advancedRegion">Region</label>
-              <select id="advancedRegion" name="region">
-                <option value="">Anywhere in Devon &amp; Cornwall</option>
-              </select>
-            </div>
-
-            <div class="advanced-filter-field" data-filter-key="town">
-              <label for="advancedTown">Town</label>
-              <select id="advancedTown" name="town">
-                <option value="">Any town</option>
-              </select>
-            </div>
-
-            <div class="advanced-filter-field" data-filter-key="nearby">
-              <label for="advancedNearby">Nearby</label>
-              <select id="advancedNearby" name="nearby">
-                <option value="">Anywhere</option>
-                <option value="1">Near my home</option>
-              </select>
-            </div>
-
-            <div class="advanced-filter-field" data-filter-key="age">
-              <label>Age range</label>
-              <div class="hero-advanced-age-row">
-                <select id="advancedAgeMin" name="age_min" aria-label="Minimum age">
-                  <option value="0">0 months</option>
-                  <option value="0.25">3 months</option>
-                  <option value="0.5">6 months</option>
-                  <option value="0.75">9 months</option>
-                  <option value="1">1 year</option>
-                  <option value="1.5">1½ years</option>
-                  <option value="2">2 years</option>
-                  <option value="2.5">2½ years</option>
-                  <option value="3">3 years</option>
-                  <option value="3.5">3½ years</option>
-                  <option value="4">4 years</option>
-                  <option value="4.5">4½ years</option>
-                  <option value="5">5 years</option>
-                  <option value="5.5">5½ years</option>
-                  <option value="6">6 years</option>
-                  <option value="6.5">6½ years</option>
-                  <option value="7">7 years</option>
-                  <option value="7.5">7½ years</option>
-                  <option value="8">8 years</option>
-                  <option value="8.5">8½ years</option>
-                  <option value="9">9 years</option>
-                </select>
-                <span>to</span>
-                <select id="advancedAgeMax" name="age_max" aria-label="Maximum age">
-                  <option value="9" selected>9 years</option>
-                  <option value="8.5">8½ years</option>
-                  <option value="8">8 years</option>
-                  <option value="7.5">7½ years</option>
-                  <option value="7">7 years</option>
-                  <option value="6.5">6½ years</option>
-                  <option value="6">6 years</option>
-                  <option value="5.5">5½ years</option>
-                  <option value="5">5 years</option>
-                  <option value="4.5">4½ years</option>
-                  <option value="4">4 years</option>
-                  <option value="3.5">3½ years</option>
-                  <option value="3">3 years</option>
-                  <option value="2.5">2½ years</option>
-                  <option value="2">2 years</option>
-                  <option value="1.5">1½ years</option>
-                  <option value="1">1 year</option>
-                  <option value="0.75">9 months</option>
-                  <option value="0.5">6 months</option>
-                  <option value="0.25">3 months</option>
-                  <option value="0">0 months</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="advanced-filter-field" data-filter-key="day">
-              <label for="advancedDay">Day</label>
-              <select id="advancedDay" name="day">
-                <option value="">Any day</option>
-                <option>Monday</option>
-                <option>Tuesday</option>
-                <option>Wednesday</option>
-                <option>Thursday</option>
-                <option>Friday</option>
-                <option>Saturday</option>
-                <option>Sunday</option>
-              </select>
-            </div>
-
-            <div class="advanced-filter-field" data-filter-key="price">
-              <label for="advancedPrice">Maximum price</label>
-              <select id="advancedPrice" name="max_price">
-                <option value="">Any price</option>
-                <option value="0">Free</option>
-                <option value="5">Up to £5</option>
-                <option value="10">Up to £10</option>
-                <option value="15">Up to £15</option>
-                <option value="20">Up to £20</option>
-                <option value="30">Up to £30</option>
-              </select>
-            </div>
-
-            <div class="advanced-filter-field" data-filter-key="session_length">
-              <label for="advancedSessionLength">Session length</label>
-              <select id="advancedSessionLength" name="sessionLength">
-                <option value="">Any length</option>
-                <option value="60">Up to 1 hour</option>
-                <option value="120">1–2 hours</option>
-                <option value="180">2–3 hours</option>
-                <option value="181">3+ hours</option>
-              </select>
-            </div>
-
-            <div class="advanced-filter-field" data-filter-key="sen">
-              <label for="advancedSen">SEN friendly</label>
-              <select id="advancedSen" name="sen">
-                <option value="">Any</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-              </select>
-            </div>
-
-            <div class="advanced-filter-field" data-filter-key="term_time">
-              <label for="advancedTermTime">Term time</label>
-              <select id="advancedTermTime" name="termTime">
-                <option value="">Any</option>
-                <option value="yes">Term time only</option>
-                <option value="no">Not term time only</option>
-              </select>
-            </div>
-
-            <div class="advanced-filter-field" data-filter-key="booking">
-              <label for="advancedBooking">Booking</label>
-              <select id="advancedBooking" name="bookingRequired">
-                <option value="">Any</option>
-                <option value="1">Bookable online</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="advanced-check-row">
-            <label class="hero-advanced-check">
-              <input type="checkbox" id="advancedAccessibility" name="accessibility" value="1">
-              Accessibility friendly
-            </label>
-            <label class="hero-advanced-check">
-              <input type="checkbox" id="advancedFree" name="free" value="1">
-              Free activities only
-            </label>
-          </div>
-
-          <div class="hero-advanced-actions">
-            <button class="button button-soft" type="button" id="heroAdvancedClear">Clear</button>
-            <button class="button button-primary" type="submit">Search activities</button>
-          </div>
-        </form>
-      </section>
+  <section class="home-section">
+    <div class="home-section-heading">
+      <div><span class="eyebrow">Discover something nearby</span><h2>Popular Activities Near You</h2></div>
+      <a href="directory.html" class="home-view-all">View all →</a>
     </div>
-
-    <div class="hero-links">
-      <a class="button button-primary" href="choose">✨ What should we do?</a>
-      <a class="button button-green-alt" href="directory.html">Browse all activities →</a>
-      <a class="button button-green-alt" href="planner.html">Open my planner →</a>
+    <div class="home-activity-grid">
+      <a class="home-activity-card" href="activity.html?id=baby-sensory-torquay">
+        <div class="home-card-image"><img src="images/home/gemini_generated_image_dbeql8dbeql8dbeq-20260927-181224-80709b.jpeg" alt="Baby activity"></div>
+        <span class="home-age-badge">0–3</span><button class="home-heart" type="button" aria-label="Save Baby Sensory">♡</button>
+        <div class="home-card-body"><h3>Baby Sensory</h3><p>⌖ Torquay</p><p>♟ Group Class</p><p>◷ £8 per session</p></div>
+      </a>
+      <a class="home-activity-card" href="directory.html">
+        <div class="home-card-image"><img src="images/home/gemini_generated_image_fi5el2fi5el2fi5e-20260927-181228-89394c.jpeg" alt="Children enjoying a group activity"></div>
+        <span class="home-age-badge pink">3–5</span><button class="home-heart" type="button" aria-label="Save activity">♡</button>
+        <div class="home-card-body"><h3>Diddi Dance</h3><p>⌖ Exeter</p><p>♟ Weekly Class</p><p>◷ £6 per session</p></div>
+      </a>
+      <a class="home-activity-card" href="directory.html">
+        <div class="home-card-image"><img src="images/home/gemini_generated_image_khj2knkhj2knkhj2-20260927-181226-769ff1.jpeg" alt="Messy play activity"></div>
+        <span class="home-age-badge purple">2–4</span><button class="home-heart" type="button" aria-label="Save activity">♡</button>
+        <div class="home-card-body"><h3>Messy Play</h3><p>⌖ Paignton</p><p>♟ Group Class</p><p>◷ £4 per session</p></div>
+      </a>
+      <a class="home-activity-card" href="directory.html">
+        <div class="home-card-image home-card-image-nature"><img src="images/home/gemini_generated_image_fi5el2fi5el2fi5e-20260927-181228-89394c.jpeg" alt="Family nature activity"></div>
+        <span class="home-age-badge teal">All Ages</span><button class="home-heart" type="button" aria-label="Save activity">♡</button>
+        <div class="home-card-body"><h3>Nature Walks</h3><p>⌖ South Hams</p><p>♧ Outdoor Group</p><p>◷ Free</p></div>
+      </a>
     </div>
   </section>
 
-  <!-- Rest of page content unchanged -->
-  <section class="familiar-section section">
-    <div class="familiar-intro">
-      <span class="eyebrow">Does This Sound Familiar?</span>
-      <h2>Struggling &amp; Lost in the Web?</h2>
-    </div>
-    <div class="familiar-list">
-      <article>
-        <span>🗂️</span>
-        <div>
-          <h3>Endless Tab Overload</h3>
-          <p>Jumping between a million browser tabs trying to find the right local baby group or class schedule in Devon and Cornwall.</p>
-        </div>
-      </article>
-      <article>
-        <span>🧩</span>
-        <div>
-          <h3>Fragmented Planning</h3>
-          <p>Trying to sync messy school calendars, baby sensory sessions, and toddler playdates without a unified weekly planner.</p>
-        </div>
-      </article>
-      <article>
-        <span>🎟️</span>
-        <div>
-          <h3>Scattered Bookings</h3>
-          <p>Losing track of where you booked, what subscriptions are active, or how to reach your class leaders.</p>
-        </div>
-      </article>
-      <article>
-        <span>💛</span>
-        <div>
-          <h3>Decision Fatigue</h3>
-          <p>Feeling overwhelmed by generic advice when you just want a warm, trusted, local community that gets family life.</p>
-        </div>
-      </article>
-    </div>
-    <section class="personal-home-callout">
-      <div>
-        <span class="eyebrow">Not sure what to choose?</span>
-        <h2>Let Bubba Hub narrow it down.</h2>
-        <p>Pick who is coming, when you're free, where you normally go and what you fancy. We'll bring relevant activities to the top.</p>
-      </div>
-      <a class="button button-soft" href="choose">Get my ideas →</a>
-    </section>
+  <section class="home-plan-band">
+    <div class="home-plan-photo"><img src="images/home/gemini_generated_image_dbeql8dbeql8dbeq-20260927-181224-80709b.jpeg" alt="Happy family enjoying an activity"></div>
+    <div class="home-plan-copy"><span class="eyebrow">Your family, your week</span><h2>Plan ahead, make<br>amazing memories</h2><p>Save your favourite groups, add to your planner and book with ease.</p><a class="button button-primary" href="account.html">Join Bubba Hub today →</a></div>
+    <ul class="home-plan-benefits">
+      <li><span>▦</span>Keep your planner organised</li>
+      <li><span>♥</span>Save your favourite activities</li>
+      <li><span>♟</span>Get the latest updates</li>
+      <li><span>♧</span>Be part of a supportive community</li>
+    </ul>
   </section>
 
-  <section class="build-section section">
-    <div class="build-copy">
-      <span class="eyebrow">What We Build Together</span>
-      <p>Navigating early parenthood and finding trusted local support across Devon and Cornwall shouldn't feel like an isolating maze, and you certainly shouldn't have to figure it all out alone.</p>
-      <p>Bubba Hub exists to bring families, local baby groups, and community services together in one welcoming place—reducing parental isolation and making everyday life feel more connected, supported, and a whole lot easier.</p>
-      <p>A way of organising your family days that truly sustains you for the long run—powered by our trusted local directory, weekly planners, and seamless bookings—helping you feel more balanced, focused, and at ease.</p>
-      <p>Through simple, meaningful connections with local groups and leaders, you'll gently return to a supportive community rhythm, creating small daily rituals that bring warmth, inclusion, and true connection to your parenting journey.</p>
-    </div>
-    <div class="build-images">
-      <img src="images/home/gemini_generated_image_dbeql8dbeql8dbeq-20260927-181224-80709b.jpeg" alt="Family activities in Devon and Cornwall">
-      <img src="images/home/gemini_generated_image_fi5el2fi5el2fi5e-20260927-181228-89394c.jpeg" alt="Parents and children enjoying local groups">
-      <img src="images/home/gemini_generated_image_khj2knkhj2knkhj2-20260927-181226-769ff1.jpeg" alt="Bubba Hub community">
-    </div>
-  </section>
+  <section class="home-lower-grid">
+    <article class="home-lower-card home-planner-preview">
+      <div class="home-lower-heading"><div><span class="eyebrow">Your week</span><h2>My Planner</h2></div><a href="planner.html">View Calendar →</a></div>
+      <div class="home-week"><strong>29 Sep – 5 Oct 2026</strong><span>›</span></div>
+      <div class="home-day-row"><b>Tue<br><small>29</small></b><span>Wed<br><small>30</small></span><span>Thu<br><small>1</small></span><span>Fri<br><small>2</small></span><span>Sat<br><small>3</small></span><span>Sun<br><small>4</small></span><span>Mon<br><small>5</small></span></div>
+      <div class="home-mini-event"><span class="home-mini-thumb"></span><div><b>Messy Play</b><small>Paignton · 10:00 – 11:30</small></div><em>♡</em></div>
+      <div class="home-mini-event"><span class="home-mini-thumb second"></span><div><b>Diddi Dance</b><small>Exeter · 14:00 – 15:00</small></div><em>♥</em></div>
+      <div class="home-mini-event"><span class="home-mini-thumb third"></span><div><b>Nature Walks</b><small>South Hams · 10:00 – 12:00</small></div><em>♡</em></div>
+      <a class="button button-primary home-full-button" href="directory.html">＋ Add Activity</a>
+    </article>
 
-  <section class="about-gina-section section">
-    <div class="gina-photo">
-      <img src="images/home/ginaprofile-20260927-181708-c9842b.jpg" alt="Gina, founder of Bubba Hub">
-    </div>
-    <div class="gina-copy">
-      <span class="eyebrow">The person behind the screen</span>
-      <h2>Hi, I'm Gina. I'm a mum on a mission to help families build a connected, supported life that actually feels good.</h2>
-      <p>Bubba Hub exists because as a mum of two, I know firsthand how difficult it is to find groups and manage your week. I wanted to change that—bringing families, local baby groups, and community services together in one welcoming, connected place to make everyday family life feel supported and a whole lot easier.</p>
-      <p>Through our trusted local directory, weekly planners, and seamless bookings, we help you build a calmer, steadier family rhythm that truly sustains you for the long run. It's all about creating small daily rituals and meaningful local connections that bring warmth, inclusion, and true community to your parenting journey.</p>
-      <div class="gina-values">
-        <span>Connecting People</span>
-        <span>Building a Virtual Village</span>
-        <span>Support</span>
-      </div>
-    </div>
-  </section>
+    <article class="home-lower-card home-account-preview">
+      <div class="home-lower-heading"><div><span class="eyebrow">Your family space</span><h2>My Account</h2></div></div>
+      <div class="home-profile-row"><span class="home-avatar">SJ</span><div><strong>Sarah Johnson</strong><small>Member since 2026</small></div><a href="account/profile.html">Edit Profile</a></div>
+      <nav class="home-account-links">
+        <a href="account/profile.html">♟ My Details</a><a href="account/family.html">♧ My Children</a><a href="account/planner.html">▦ My Planner</a><a href="account/notifications.html">♩ Notifications</a><a href="account/privacy.html">◉ Consent Forms</a><a href="help-support.html">? Help &amp; Support</a>
+      </nav>
+      <a class="home-logout" href="account.html">Log Out</a>
+    </article>
 
-  <section class="section bh-faq-section">
-    <div class="bh-faq-intro">
-      <span class="eyebrow">Why Bubba Hub?</span>
-      <h2>Everything family life needs, in one place.</h2>
-      <p>Bubba Hub brings discovery, planning, bookings and local community together — so families can spend less time searching and more time enjoying their week.</p>
-    </div>
-    <div class="bh-faq">
-      <details>
-        <summary>What is Bubba Hub?</summary>
-        <p>Bubba Hub is an all-in-one family platform that connects parents and carers with local groups, classes, activities and family services. It brings finding, saving, planning and booking together in one simple place.</p>
-      </details>
-      <details>
-        <summary>How does finding activities work?</summary>
-        <p>Search and filter activities by location, town, age range, category, day and cost. You can switch between list and map views to discover what is available nearby.</p>
-      </details>
-      <details>
-        <summary>Can Bubba Hub help me organise our week?</summary>
-        <p>Yes. The Family Planner helps you build a weekly routine around the people, activities and plans that matter to your family. Saved activities and bookings can sit alongside your plans.</p>
-      </details>
-      <details>
-        <summary>Can I book activities through Bubba Hub?</summary>
-        <p>Where a group offers online booking through Bubba Hub, you can see available sessions and ticket options and book directly. Payment options can include secure providers such as Stripe or PayPal, depending on the organiser.</p>
-      </details>
-      <details>
-        <summary>Is Bubba Hub just a directory?</summary>
-        <p>No. The directory is the starting point. Bubba Hub is designed to help families discover local activities, save favourites, plan their time, manage bookings and stay connected with the groups and services they use.</p>
-      </details>
-      <details>
-        <summary>Who is Bubba Hub for?</summary>
-        <p>Bubba Hub is for parents, carers and families across Devon and Cornwall, from pregnancy and the early years through childhood. It is built around real local family life.</p>
-      </details>
-      <details>
-        <summary>Can I save activities for later?</summary>
-        <p>Yes. Save activities you like to your Bubba Hub so you can easily return to them when you are ready to decide or add them to your plans.</p>
-      </details>
-      <details>
-        <summary>Can I find activities on a map?</summary>
-        <p>Yes. Switch to map view to see activities and venues geographically, making it easier to discover options close to home or in a place you are visiting.</p>
-      </details>
-      <details>
-        <summary>Can I find support services as well as activities?</summary>
-        <p>Yes. Bubba Hub is designed to include local family support, community services and useful resources alongside groups, classes and activities.</p>
-      </details>
-      <details>
-        <summary>Will there be a Pro account for families?</summary>
-        <p>Yes. Bubba Hub is being designed to offer an optional Pro account for parents and carers, with enhanced family tools and features alongside the core Bubba Hub experience. The exact benefits and pricing will be clearly shown before you choose to upgrade.</p>
-      </details>
-      <details>
-        <summary>Will there be a Pro account for group leaders?</summary>
-        <p>Yes. Local groups, classes and activity providers will be able to access an optional Pro account with additional tools to help manage their Bubba Hub presence, activities and bookings. Features and pricing will be clearly explained before subscribing.</p>
-      </details>
-      <details>
-        <summary>Can group leaders join Bubba Hub?</summary>
-        <p>Yes. Local group leaders and providers can have a presence on Bubba Hub so families can discover their sessions, information and booking options.</p>
-      </details>
-      <details>
-        <summary>Can I suggest a local group or activity?</summary>
-        <p>Absolutely. Local recommendations help us build a useful, community-led directory and make it easier for families to discover great things happening nearby.</p>
-      </details>
-      <details>
-        <summary>How do I get help or get involved?</summary>
-        <p>Whether you are a parent, group leader, local service or community organisation, you can get in touch with the Bubba Hub team and start a conversation.</p>
-        <p><a class="button button-primary" href="mailto:contact@bubbahub.co.uk">Email Bubba Hub →</a></p>
-      </details>
-    </div>
+    <article class="home-lower-card home-leader-preview">
+      <div class="home-lower-heading"><div><span class="eyebrow">For class leaders</span><h2>Leader / Organiser Portal</h2></div></div>
+      <img src="images/home/gemini_generated_image_khj2knkhj2knkhj2-20260927-181226-769ff1.jpeg" alt="Leader supporting families">
+      <h3>Share your skills,<br>make a difference</h3><p>Manage your listings, bookings, availability and more from your leader portal.</p>
+      <a class="button button-primary" href="leader.html">Go to Leader Portal →</a>
+      <div class="home-leader-icons"><span>▦<small>Manage Listings</small></span><span>▣<small>View Bookings</small></span><span>▥<small>Statistics</small></span></div>
+    </article>
+
+    <article class="home-lower-card home-admin-preview">
+      <div class="home-lower-heading"><div><span class="eyebrow">Bubba Hub Admin</span><h2>Admin Dashboard</h2></div><a href="admin.html">Admin →</a></div>
+      <div class="home-admin-layout"><aside><strong>♡ Bubba Hub</strong><a>Dashboard</a><a>Listings</a><a>Bookings</a><a>Users</a><a>Reports</a><a>Settings</a><a>Support</a></aside><div class="home-admin-main"><h3>Welcome back, Admin</h3><div class="home-admin-stats"><b>248<small>Total Listings</small></b><b>12<small>Pending Bookings</small></b><b>8<small>New Users</small></b><b>View<small>Reports</small></b></div><h4>Recent Activity</h4><p>New listing submitted · Booking received · New user registered</p></div></div>
+    </article>
   </section>
 </main>
 
-<footer class="site-footer">
+<footer class="site-footer home-footer">
   <div class="site-footer-grid">
-    <div class="site-footer-brand">
-      <a href="index.html" class="site-footer-logo" aria-label="Bubba Hub home">
-        <img src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub">
-      </a>
-      <div class="site-footer-brand-copy">
-        <a href="index.html" class="site-footer-title">Bubba Hub</a>
-        <p>Find, plan &amp; book family activities across Devon &amp; Cornwall.</p>
-      </div>
-    </div>
-    <div class="site-footer-column">
-      <h2>Main menu</h2>
-      <nav class="site-footer-links" aria-label="Footer main menu">
-        <a href="directory.html">Find activities</a>
-        <a href="my-hub.html">My Hub</a>
-        <a href="help-support.html">Support &amp; Guidance</a>
-        <a href="leader.html">Class Leaders</a>
-        <a href="account.html">Account</a>
-      </nav>
-    </div>
-    <div class="site-footer-column">
-      <h2>Explore &amp; tools</h2>
-      <nav class="site-footer-links" aria-label="Footer explore and tools">
-        <a href="events.html">Events</a>
-        <a href="venues.html">Venues</a>
-        <a href="planner.html">Planner</a>
-        <a href="calendar.html">Calendar</a>
-      </nav>
-    </div>
-    <div class="site-footer-column">
-      <h2>Legal &amp; contact</h2>
-      <nav class="site-footer-links" aria-label="Footer legal and contact">
-        <a href="privacy.html">Privacy</a>
-        <a href="terms.html">Terms &amp; Conditions</a>
-        <a href="mailto:contact@bubbahub.co.uk">Contact Bubba Hub</a>
-      </nav>
-    </div>
+    <div class="site-footer-brand"><a href="index.html" class="site-footer-logo"><img src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><div class="site-footer-brand-copy"><a href="index.html" class="site-footer-title">Bubba Hub</a><p>Find · Plan · Book<br>Supporting families across Devon &amp; Cornwall.</p></div></div>
+    <div class="site-footer-column"><h2>Quick Links</h2><nav class="site-footer-links"><a href="index.html">Home</a><a href="directory.html">Directory</a><a href="planner.html">Planner</a><a href="my-hub.html">My Hub</a><a href="leader.html">Leader</a><a href="help-support.html">Support</a></nav></div>
+    <div class="site-footer-column"><h2>Regions</h2><nav class="site-footer-links"><a>Devon &amp; Cornwall</a><a>Exeter</a><a>North Cornwall</a><a>South Cornwall</a><a>Torbay</a><a>and more...</a></nav></div>
+    <div class="site-footer-column home-newsletter"><h2>Stay Connected</h2><p>Join our newsletter</p><form><input type="email" placeholder="Your email address" aria-label="Email address"><button type="submit">→</button></form></div>
   </div>
-  <div class="site-footer-bottom">
-    <span>&copy; 2026 Bubba Hub</span>
-    <span>Devon &amp; Cornwall</span>
-  </div>
+  <div class="site-footer-bottom"><span>© 2026 Bubba Hub. Supporting families across Devon &amp; Cornwall.</span><span>Privacy Policy &nbsp; Terms &amp; Conditions &nbsp; Accessibility</span></div>
 </footer>
 
 <script src="assets/js/app.js"></script>
-<script src="assets/js/hero-search.js"></script>
-
-<script>
-document.addEventListener("DOMContentLoaded", async () => {
-  // --- SHARED AGE RANGE LOGIC ---
-  const ageRanges = {
-    baby:     ["0", "1"],
-    toddler:  ["1", "3"],
-    preschool:["3", "5"],
-    school:   ["5", "9"]
-  };
-
-  // Inject hidden min/max fields from preset
-  function injectAgeFields(formEl, presetValue) {
-    const range = ageRanges[presetValue];
-    if (!range) return;
-    
-    for (const [name, value] of [["age_min", range[0]], ["age_max", range[1]]]) {
-      let input = formEl.querySelector(`input[name="${name}"]`);
-      if (!input) {
-        input = document.createElement("input");
-        input.type = "hidden";
-        input.name = name;
-        formEl.appendChild(input);
-      }
-      input.value = value;
-    }
-  }
-
-  // --- DROPDOWN DATA & POPULATION ---
-  let activities = [];
-  const addOption = (el, value, label) => {
-    const o = document.createElement("option");
-    o.value = String(value ?? "");
-    o.textContent = String(label ?? value ?? "");
-    el.appendChild(o);
-  };
-
-  try {
-    activities = await window.bhActivities?.() || [];
-  } catch (e) {
-    console.warn("Could not load activity data:", e);
-  }
-
-  // Populate dropdowns if we have data
-  if (activities.length > 0) {
-    const regions = [...new Set(activities.map(x => x.region).filter(Boolean))].sort();
-    const categories = [...new Set(activities.map(x => x.category).filter(Boolean))].sort();
-
-    const heroRegion = document.getElementById("heroRegion");
-    const heroTown = document.getElementById("heroTown");
-    regions.forEach(v => addOption(heroRegion, v, v));
-
-    const advCat = document.getElementById("advancedCategory");
-    const advRegion = document.getElementById("advancedRegion");
-    const advTown = document.getElementById("advancedTown");
-    categories.forEach(v => addOption(advCat, v, v));
-    regions.forEach(v => addOption(advRegion, v, v));
-
-    function refreshTowns(regionSelect, townSelect) {
-      townSelect.innerHTML = "";
-      addOption(townSelect, "", "Any town");
-      const filtered = activities.filter(x => !regionSelect.value || x.region === regionSelect.value);
-      const towns = [...new Set(filtered.map(x => x.town).filter(Boolean))].sort();
-      towns.forEach(v => addOption(townSelect, v, v));
-      townSelect.disabled = towns.length === 0;
-    }
-
-    heroRegion?.addEventListener("change", () => refreshTowns(heroRegion, heroTown));
-    advRegion?.addEventListener("change", () => refreshTowns(advRegion, advTown));
-    refreshTowns(heroRegion, heroTown);
-  } else {
-    document.getElementById("heroTown").disabled = false;
-    document.getElementById("heroTown").innerHTML = '<option value="">Currently unavailable</option>';
-    const advTown = document.getElementById("advancedTown");
-    if (advTown) advTown.innerHTML = '<option value="">Currently unavailable</option>';
-  }
-
-  // --- MODAL CONTROLS ---
-  const modal = document.getElementById("heroAdvancedModal");
-  const openBtn = document.getElementById("heroMoreFilters");
-  const closeBtn = document.getElementById("heroAdvancedClose");
-
-  function openModal() {
-    if (!modal) return;
-    modal.hidden = false;
-    modal.setAttribute("aria-hidden", "false");
-    openBtn?.setAttribute("aria-expanded", "true");
-    document.body.classList.add("advanced-search-open");
-    setTimeout(() => closeBtn?.focus(), 50);
-  }
-
-  function closeModal() {
-    if (!modal) return;
-    modal.hidden = true;
-    modal.setAttribute("aria-hidden", "true");
-    openBtn?.setAttribute("aria-expanded", "false");
-    document.body.classList.remove("advanced-search-open");
-    openBtn?.focus();
-  }
-
-  openBtn?.addEventListener("click", openModal);
-  closeBtn?.addEventListener("click", closeModal);
-  modal?.querySelector("[data-close-advanced]")?.addEventListener("click", closeModal);
-
-  document.addEventListener("keydown", e => {
-    if (e.key === "Escape" && !modal?.hidden) closeModal();
-  });
-
-  modal?.addEventListener("click", e => {
-    if (e.target.matches(".hero-advanced-backdrop")) closeModal();
-  });
-
-  // --- FORM SUBMISSION ---
-  const heroForm = document.getElementById("heroSearch");
-  heroForm?.addEventListener("submit", () => {
-    const preset = document.getElementById("heroAge")?.value;
-    injectAgeFields(heroForm, preset);
-  });
-
-  const advForm = document.getElementById("heroAdvancedForm");
-  advForm?.addEventListener("submit", () => {
-    const preset = advForm.querySelector('[name="age_preset"]')?.value;
-    if (preset) injectAgeFields(advForm, preset);
-    closeModal();
-  });
-
-  // --- CLEAR BUTTON ---
-  document.getElementById("heroAdvancedClear")?.addEventListener("click", () => {
-    advForm?.reset();
-    if (activities.length > 0) {
-      refreshTowns(document.getElementById("advancedRegion"), document.getElementById("advancedTown"));
-    }
-  });
-});
-</script>
-
 </body>
 </html>
