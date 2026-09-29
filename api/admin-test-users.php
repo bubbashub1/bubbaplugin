@@ -38,21 +38,25 @@ try {
         $body = json_decode((string)file_get_contents('php://input'), true);
         $body = is_array($body) ? $body : [];
         $requestedPassword = (string)($body['password'] ?? '');
+        $role = strtolower(trim((string)($body['role'] ?? 'family')));
+        if (!in_array($role, ['family', 'leader'], true)) {
+            bh_test_user_response(422, ['ok'=>false,'error'=>'Test user role must be family or leader.']);
+        }
         if ($requestedPassword !== '' && strlen($requestedPassword) < 8) {
             bh_test_user_response(422, ['ok'=>false,'error'=>'Password must be at least 8 characters.']);
         }
 
-        $email = 'test+' . date('YmdHis') . '-' . bin2hex(random_bytes(3)) . '@bubbahub.co.uk';
+        $email = 'test+' . $role . '-' . date('YmdHis') . '-' . bin2hex(random_bytes(3)) . '@bubbahub.co.uk';
         $password = $requestedPassword !== '' ? $requestedPassword : ('Test!' . bin2hex(random_bytes(5)));
-        $stmt = $db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?, 'family','active')");
-        $stmt->execute([$email, password_hash($password, PASSWORD_DEFAULT)]);
+        $stmt = $db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,?,'active')");
+        $stmt->execute([$email, password_hash($password, PASSWORD_DEFAULT), $role]);
         $id = (int)$db->lastInsertId();
 
         bh_test_user_response(201, [
             'ok'=>true,
-            'user'=>['id'=>$id,'email'=>$email,'role'=>'family','status'=>'active'],
+            'user'=>['id'=>$id,'email'=>$email,'role'=>$role,'status'=>'active'],
             'password'=>$password,
-            'message'=>'Test family account created. Save the password now; it is only shown once.'
+            'message'=>'Test ' . $role . ' account created. Save the password now; it is only shown once.'
         ]);
     }
 
