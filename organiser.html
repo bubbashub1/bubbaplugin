@@ -12,9 +12,16 @@
 document.addEventListener("DOMContentLoaded",async()=>{
  const state=document.getElementById("organiserState");
  try{
-  const items=await bhActivities(),parts=location.pathname.replace(/\/+$/,"").split("/"),slug=decodeURIComponent(parts.pop()||"");
+  const items=await bhActivities();
+  const params=new URLSearchParams(location.search);
+  const organiserId=params.get("id");
+  const slug=params.get("slug");
+  const parts=location.pathname.replace(/\\/+$/, "").split("/");
+  const pathValue=decodeURIComponent(parts.pop()||"");
   const clean=s=>String(s||"").toLowerCase().trim().replace(/&/g,"and").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
-  const groups=items.filter(a=>clean(a.organiser_slug||a.organiser_name||a.organiser||"")===clean(slug));
+  const groups=organiserId
+   ? items.filter(a=>String(a.organiser_id||"")===String(organiserId))
+   : items.filter(a=>clean(a.organiser_slug||a.organiser_name||a.organiser||"")===clean(slug||pathValue));
   if(!groups.length){state.className="listing-page";state.innerHTML='<div class="admin-panel"><h2>Organiser not found</h2><p>We could not find this organiser on Bubba Hub.</p><a class="button button-primary" href="directory.html">Find activities</a></div>';return}
   const first=groups[0],name=first.organiser_name||first.organiser||"Local organiser",avatar=first.organiser_avatar||"",website=first.organiser_website||"",email=first.email||"",location=first.region||first.town||"Devon & Cornwall",description=first.organiser_description||first.organiser_bio||"Local family activities and sessions listed on Bubba Hub.";
   document.title=name+" · Bubba Hub"; state.className="listing-page organiser-storefront";
