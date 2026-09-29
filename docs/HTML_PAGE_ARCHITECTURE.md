@@ -48,6 +48,7 @@ Purpose: establish the canonical HTML page map before rebuilding CSS, JavaScript
 | `/account/notifications.html` | Notification preferences/history |
 | `/account/privacy.html` | Privacy, consent and permissions |
 | `/account/subscription.html` | Membership/subscription |
+| `/account/payment-details.html` | Saved payment methods and billing details |
 | `/account/logout.html` | Sign-out endpoint/page if required by auth flow |
 
 The account area is the single source of truth. Root duplicates such as `account.html`, `account-profile.html` and `account-planner.html` are legacy compatibility files and will be removed/redirected only after references are migrated.
