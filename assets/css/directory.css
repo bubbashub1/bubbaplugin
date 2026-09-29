@@ -195,3 +195,13 @@
 .bh-directory .directory-filters-close{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;margin:-2px -2px 0 0;border:1px solid var(--bh-site-border);border-radius:50%;background:#f7fbf8;color:var(--bh-site-dark);font-size:27px;font-weight:500;line-height:1;cursor:pointer;transition:background .15s ease,transform .15s ease}
 .bh-directory .directory-filters-close:hover{background:#e7f1ea;transform:scale(1.04)}
 .bh-directory .directory-filters-close:focus-visible{outline:3px solid rgba(60,142,150,.25);outline-offset:2px}
+
+/* Accessibility expandable options */
+.bh-directory .directory-accessibility-fieldset{border:0;margin:0;padding:0;min-width:0}
+.bh-directory .directory-accessibility-expand{border:1px solid var(--bh-site-border);border-radius:14px;background:#f7fbf8;overflow:hidden}
+.bh-directory .directory-accessibility-expand summary{padding:11px 13px;color:var(--bh-site-dark);font-size:13px;font-weight:850;cursor:pointer;list-style:none}
+.bh-directory .directory-accessibility-expand summary::-webkit-details-marker{display:none}
+.bh-directory .directory-accessibility-expand summary:after{content:"＋";float:right;font-size:17px;line-height:1}
+.bh-directory .directory-accessibility-expand[open] summary:after{content:"−"}
+.bh-directory .directory-accessibility-options{padding:4px 13px 9px;border-top:1px solid var(--bh-site-border);background:#fff}
+.bh-directory .directory-accessibility-options .filter-check{padding:8px 0}
