@@ -225,6 +225,145 @@ Create booking payment processing where the leader receives the booking payment 
 
 ---
 
+
+## FD-004 — [OPEN] Detailed Legal, Privacy, Refund and Policy Pages
+
+**Goal:**  
+Create a complete, clearly organised set of public-facing legal and policy pages for Bubba Hub, covering families/users, leaders/organisers, bookings, payments, advertising, accounts and the handling of personal and child-related information.
+
+**Important:**  
+These pages should be written as practical website policies and then reviewed by an appropriate UK legal/data-protection professional before being treated as final legal advice. Privacy content should reflect the actual data flows and providers used by the finished application.
+
+**Core pages:**
+- Privacy Notice
+- Terms & Conditions
+- Booking Terms
+- Refund & Cancellation Policy
+- Payment Terms
+- Leader/Organiser Terms
+- Pro Account Terms
+- Advertising Terms
+- Cookie Policy
+- Acceptable Use Policy
+- Community/Content Guidelines
+- Complaints Policy
+- Data Retention Policy / retention information
+- Data Subject Rights / privacy requests
+- Child and family data information
+- Consent and permissions information
+- Accessibility statement
+- Website disclaimer
+- Contact/legal information
+
+**Privacy/data coverage should address:**
+- Family accounts and profiles
+- Children's names, dates of birth, photos and other profile information
+- Booking information
+- Consent records
+- Medical/health information supplied through booking or consent processes
+- Leader/organiser information
+- Payment and transaction information
+- Advertising campaign information
+- My Hub and planner data
+- Saved activities/preferences
+- Notifications, email and future push messaging
+- Analytics/cookies
+- Third-party services and processors
+- Data sharing between Bubba Hub, leaders/organisers and relevant service providers
+- International transfers where applicable
+- Data retention/deletion
+- User rights and privacy requests
+- Data breach/contact procedures
+- Marketing preferences and withdrawal of consent
+
+**Booking/refund rules to document:**
+- Bubba Hub facilitates bookings/payment functionality where applicable.
+- The relevant organiser is responsible for the activity/service being booked.
+- Refunds are handled directly between the customer and the relevant organiser, according to the organiser's applicable terms.
+- Bubba Hub's 1.5% booking fee should be clearly explained as a customer-paid platform booking fee when the booking-payment system is implemented.
+- Payment-provider fees and payment processing arrangements should be explained accurately once the final provider setup is confirmed.
+
+**Advertising terms should cover:**
+- Four advertising zones
+- 30-day campaigns
+- One-off and recurring campaigns
+- Listing vs storefront advertising
+- Pricing/payment
+- Approval/rejection
+- Prohibited advertising
+- Campaign cancellation
+- Expiry
+- Recurring renewal
+- Advert content responsibility
+- Intellectual property
+- Misleading claims
+- Suspension/removal
+- Refund/cancellation rules for advertising
+
+**Leader terms should cover:**
+- Listing accuracy
+- Safeguarding responsibilities
+- Activity/service responsibility
+- Venue information
+- Booking responsibility
+- Customer communication
+- Child/family information received by organisers
+- Appropriate handling of sensitive information
+- Cancellation policies
+- Payment/payout obligations
+- Advertising
+- Pro accounts
+- Suspension/removal
+- Complaints and disputes
+
+**Acceptance criteria:**
+- [ ] All required legal/policy pages exist as separate, clearly accessible pages.
+- [ ] Pages are linked from the main/footer navigation where appropriate.
+- [ ] Relevant policies are linked contextually during account creation, booking, payment, advertising and leader onboarding.
+- [ ] Privacy information reflects actual application data flows rather than generic template wording.
+- [ ] Child/family and sensitive information receives appropriate privacy explanations.
+- [ ] Booking, payment, refund and organiser responsibilities are clearly separated.
+- [ ] Advertising terms cover one-off and recurring 30-day campaigns.
+- [ ] Cookie information identifies necessary vs optional cookies/technologies where applicable.
+- [ ] Users can find how to make privacy requests and complaints.
+- [ ] Policy version/effective-date information is displayed.
+- [ ] Policy changes can be tracked and updated without breaking application links.
+- [ ] Pages are mobile-friendly and match the Bubba Hub visual design.
+- [ ] Legal links are available before relevant consent, booking or payment actions.
+- [ ] Final wording is reviewed for consistency with the actual implemented system before launch.
+
+**Likely files/areas:**
+- Existing `privacy.html` and `terms.html`
+- New legal/policy HTML pages
+- Footer/navigation/menu system
+- Account registration and consent flows
+- Booking/payment flows
+- Leader onboarding/account pages
+- Advertising purchase flow
+- Cookie/consent implementation
+- Admin content/navigation management
+- Database only where policy versioning/acknowledgement records are required
+
+**Dependencies / questions:**
+- Confirm the legal entity/name and contact details that should appear on the policies.
+- Confirm whether Bubba Hub will operate as a CIC/company and the exact registered details once available.
+- Confirm final payment providers and third-party processors before finalising payment/privacy wording.
+- Confirm final data retention periods.
+- Confirm cookie/analytics tools actually used.
+- Confirm whether leaders are independent service providers and how that relationship should be described.
+- Confirm the final booking/refund responsibilities and organiser terms.
+- Legal/data-protection review should take place before the pages are treated as final.
+
+**Implementation notes:**
+- Do not copy generic legal templates without checking them against Bubba Hub's real features and data flows.
+- Keep legal content separate from application logic where practical so policies can be updated easily.
+- Include effective date and version information.
+- Avoid promising rights, refunds, security measures or processing arrangements that the application does not actually provide.
+- Privacy wording should follow current UK guidance and be reviewed when the application's data processing changes.
+
+**Status:** OPEN
+
+
 # Development History
 
 _No requests have been closed yet._
