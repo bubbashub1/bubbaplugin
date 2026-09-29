@@ -927,3 +927,225 @@
   .bh-home .home-hero{min-height:590px}
   .bh-home .home-brush{font-size:27px}
 }
+
+
+/* DIRECTORY — use the homepage visual language without changing home itself */
+.bh-directory main.app-shell{
+  width:min(var(--bh-home-width),calc(100% - var(--bh-home-gutter)*2));
+  max-width:none;
+  margin:0 auto;
+  padding:34px 0 50px;
+}
+.bh-directory .directory-layout{
+  display:grid;
+  grid-template-columns:255px minmax(0,1fr);
+  gap:22px;
+  align-items:start;
+}
+.bh-directory .directory-results-column{min-width:0}
+.bh-directory .directory-hero-search{
+  position:relative;
+  left:auto;
+  right:auto;
+  bottom:auto;
+  width:100%;
+  margin:0 0 22px;
+}
+.bh-directory .directory-search-advanced-link{
+  appearance:none;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  width:auto;
+  margin:7px 4px 0 auto;
+}
+.bh-directory .directory-filters-panel{
+  position:sticky;
+  top:18px;
+  padding:18px;
+  background:#fff;
+  border:1px solid rgba(18,63,49,.08);
+  border-radius:22px;
+  box-shadow:0 8px 25px rgba(18,63,49,.06);
+}
+.bh-directory .directory-filter-fields{gap:4px}
+.bh-directory .directory-filter-fields>div,
+.bh-directory .directory-filter-fields>label{
+  padding:9px 0;
+  border-bottom:1px solid rgba(18,63,49,.08);
+}
+.bh-directory .directory-filter-fields>label:last-of-type{border-bottom:0}
+.bh-directory .directory-filter-label,
+.bh-directory .directory-filter-fields label{
+  color:#416651;
+  font-size:11px;
+  font-weight:850;
+}
+.bh-directory .filter-input{
+  min-height:42px;
+  margin-top:5px;
+  border:1px solid rgba(18,63,49,.12)!important;
+  border-radius:12px!important;
+  background:#f8fbf8!important;
+}
+.bh-directory .directory-advanced-section{padding-top:8px}
+.bh-directory .directory-advanced-toggle{
+  color:#416651;
+}
+.bh-directory .directory-results-heading{
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:18px;
+  margin:4px 0 12px;
+}
+.bh-directory .directory-results-heading h1{
+  margin:0;
+  color:#123f31;
+  font-family:"Chewy",cursive;
+  font-size:32px;
+  font-weight:400;
+  line-height:1;
+}
+.bh-directory .directory-viewbar{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:8px;
+  margin:0;
+}
+.bh-directory .directory-viewbar #count{
+  margin:0;
+  color:#617261;
+  font-size:12px;
+  font-weight:800;
+}
+.bh-directory .directory-views{
+  background:#fff;
+  border:1px solid rgba(18,63,49,.08);
+  border-radius:999px;
+  padding:3px;
+}
+.bh-directory .directory-view{
+  border:0;
+  border-radius:999px;
+  background:transparent;
+  color:#617261;
+  padding:7px 11px;
+  font-size:11px;
+  font-weight:800;
+}
+.bh-directory .directory-view.active{
+  background:#d8e6db;
+  color:#123f31;
+}
+.bh-directory .directory-count-control{
+  display:none;
+}
+.bh-directory .activity-grid.directory-view-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:15px!important;
+  margin-top:8px;
+}
+.bh-directory .activity-grid.directory-view-grid .activity-card{
+  position:relative;
+  display:block!important;
+  overflow:hidden!important;
+  min-width:0;
+  background:#fff!important;
+  border:1px solid rgba(18,63,49,.09)!important;
+  border-radius:17px!important;
+  box-shadow:0 8px 25px rgba(18,63,49,.06)!important;
+  transform:none;
+}
+.bh-directory .activity-grid.directory-view-grid .activity-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 14px 30px rgba(18,63,49,.10)!important;
+}
+.bh-directory .activity-grid.directory-view-grid .activity-image{
+  height:158px!important;
+  min-height:158px!important;
+  background:#dceee1!important;
+}
+.bh-directory .activity-grid.directory-view-grid .activity-image img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+}
+.bh-directory .activity-grid.directory-view-grid .activity-body{
+  padding:17px 14px 15px!important;
+  background:#fff!important;
+}
+.bh-directory .activity-grid.directory-view-grid .activity-meta{
+  color:#3c8e96!important;
+  font-size:10px!important;
+  font-weight:900!important;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.bh-directory .activity-grid.directory-view-grid .activity-card h3{
+  margin:0 0 8px!important;
+  color:#123f31!important;
+  font-size:18px!important;
+  line-height:1.15!important;
+}
+.bh-directory .activity-grid.directory-view-grid .activity-card p{
+  margin:5px 0!important;
+  color:#5c7067!important;
+  font-size:11px!important;
+  line-height:1.35!important;
+  font-weight:650!important;
+}
+.bh-directory .activity-grid.directory-view-grid .activity-footer{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+  margin-top:10px!important;
+  padding-top:10px!important;
+  border-top:1px solid rgba(18,63,49,.07);
+}
+.bh-directory .activity-grid.directory-view-grid .text-link{
+  color:#416651!important;
+  font-size:11px;
+  font-weight:850;
+}
+.bh-directory .activity-grid.directory-view-grid .bh-save{
+  min-height:34px!important;
+  padding:5px 10px!important;
+  border-radius:999px!important;
+  font-size:10px!important;
+}
+.bh-directory .directory-mobile-actions{display:none}
+@media(max-width:1000px){
+  .bh-directory .directory-layout{grid-template-columns:220px minmax(0,1fr)}
+  .bh-directory .activity-grid.directory-view-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:760px){
+  .bh-directory main.app-shell{width:calc(100% - 28px);padding-top:20px}
+  .bh-directory .directory-layout{display:block}
+  .bh-directory .directory-mobile-actions{display:flex;margin-bottom:10px}
+  .bh-directory .directory-filter-toggle{width:100%;justify-content:space-between}
+  .bh-directory .directory-filters-panel{
+    position:fixed;
+    top:12px;
+    left:12px;
+    bottom:12px;
+    width:min(340px,calc(100vw - 24px));
+    z-index:10000;
+    overflow:auto;
+    transform:translateX(-120%);
+    transition:transform .22s ease;
+  }
+  .bh-directory .directory-filters-panel.is-open{transform:translateX(0)}
+  .bh-directory .directory-results-heading{align-items:flex-start;flex-direction:column}
+  .bh-directory .directory-viewbar{align-items:flex-start;width:100%}
+  .bh-directory .directory-hero-search{border-radius:22px}
+}
+@media(max-width:560px){
+  .bh-directory .directory-hero-search{padding:15px}
+  .bh-directory .home-search-fields{grid-template-columns:1fr}
+  .bh-directory .home-search-fields .button{width:100%}
+  .bh-directory .activity-grid.directory-view-grid{grid-template-columns:1fr!important}
+  .bh-directory .directory-results-heading h1{font-size:28px}
+}
