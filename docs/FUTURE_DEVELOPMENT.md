@@ -159,16 +159,16 @@ Build a reusable Bubba Hub payment system that can support payments for bookings
 
 ---
 
-## FD-003 — [OPEN] Booking Payments and 1.5% Bubba Hub Booking Fee
+## FD-003 — [OPEN] Booking Payments and 2% Bubba Hub Booking Fee
 
 **Goal:**  
-Create booking payment processing where the leader receives the booking payment directly and Bubba Hub automatically receives a **1.5% booking fee** from each transaction.
+Create booking payment processing where the leader receives the booking payment directly and Bubba Hub automatically receives a **2% booking fee** from each transaction.
 
 **Payment flow:**
 1. User books an activity.
 2. User chooses an available payment method: PayPal, Stripe or bank transfer.
 3. The booking payment is attributed to the relevant leader.
-4. Bubba Hub receives a 1.5% booking fee per transaction.
+4. Bubba Hub receives a 2% booking fee per transaction.
 5. The booking and payment records are linked.
 6. Leader can see booking/payment status and their payable amount.
 7. Bubba Hub admin can see transaction, commission and reconciliation information.
@@ -176,7 +176,7 @@ Create booking payment processing where the leader receives the booking payment 
 **Scope:**
 - Leader payment-account/onboarding configuration.
 - Booking checkout/payment flow.
-- 1.5% booking-fee calculation.
+- 2% booking-fee calculation.
 - Leader payout/payment routing.
 - Bubba Hub commission ledger.
 - Stripe/PayPal marketplace or connected-account capability where applicable.
@@ -189,8 +189,8 @@ Create booking payment processing where the leader receives the booking payment 
 - Protection against duplicate charges and duplicate webhook processing.
 
 **Acceptance criteria:**
-- [ ] Booking checkout calculates the booking total and 1.5% Bubba Hub booking fee correctly.
-- [ ] The 1.5% fee is recorded as Bubba Hub commission for every eligible transaction.
+- [ ] Booking checkout calculates the booking total and 2% Bubba Hub booking fee correctly.
+- [ ] The 2% fee is recorded as Bubba Hub commission for every eligible transaction.
 - [ ] Leader receives the booking proceeds through the supported payment flow.
 - [ ] User can choose an enabled payment method.
 - [ ] Stripe booking payments work end-to-end.
@@ -206,9 +206,9 @@ Create booking payment processing where the leader receives the booking payment 
 - [ ] The system prevents duplicate payment/commission records.
 
 **Dependencies / questions:**
-- **Confirmed:** the 1.5% Bubba Hub booking fee is paid by the customer, so the leader does not lose money from the platform booking fee.
-- Confirm whether the 1.5% applies to bank-transfer bookings and manually confirmed bookings.
-- Provider processing fees still need to be defined separately from the 1.5% Bubba Hub booking fee.
+- **Confirmed:** the 2% Bubba Hub booking fee is paid by the customer, so the leader does not lose money from the platform booking fee.
+- Confirm whether the 2% applies to bank-transfer bookings and manually confirmed bookings.
+- Provider processing fees still need to be defined separately from the 2% Bubba Hub booking fee.
 - **Confirmed for the current project plan:** no VAT is required for the booking fee.
 - Confirm the payment provider's marketplace/connect requirements for paying leaders directly.
 - Payout timing remains to be defined based on the selected payment provider and leader payment setup.
@@ -280,7 +280,7 @@ These pages should be written as practical website policies and then reviewed by
 - Bubba Hub facilitates bookings/payment functionality where applicable.
 - The relevant organiser is responsible for the activity/service being booked.
 - Refunds are handled directly between the customer and the relevant organiser, according to the organiser's applicable terms.
-- Bubba Hub's 1.5% booking fee should be clearly explained as a customer-paid platform booking fee when the booking-payment system is implemented.
+- Bubba Hub's 2% booking fee should be clearly explained as a customer-paid platform booking fee when the booking-payment system is implemented.
 - Payment-provider fees and payment processing arrangements should be explained accurately once the final provider setup is confirmed.
 
 **Advertising terms should cover:**
