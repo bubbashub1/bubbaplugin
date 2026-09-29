@@ -47,7 +47,9 @@ try {
 
     $countySelect = $countyColumn ? 'a.county' : 'NULL AS county';
     $accessibilitySelect = $accessibilityColumn ? 'a.accessibility' : 'NULL AS accessibility';
-    $where = ["a.status = 'published'"];
+    // Treat both common published values as live listings. Older imports/WordPress
+    // data can use 'publish', while Bubba Hub admin uses 'published'. Drafts remain excluded.
+    $where = ["LOWER(TRIM(COALESCE(a.status, ''))) IN ('published', 'publish')"];
     $params = [];
 
     if ($search !== '') {
