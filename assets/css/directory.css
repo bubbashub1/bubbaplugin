@@ -96,3 +96,94 @@
 .bh-directory .directory-popular-chip:hover{transform:translateY(-1px);background:#fff;border-color:var(--bh-site-teal)}
 .bh-directory .directory-popular-chip.active{background:var(--bh-site-teal);border-color:var(--bh-site-teal);color:#fff}
 @media(max-width:700px){.bh-directory .directory-popular{gap:6px}.bh-directory .directory-popular-chip{padding:7px 10px;font-size:11px}}
+
+
+/* FINAL DIRECTORY LAYOUT CLEANUP — keep heading above listings, not beside them */
+.bh-directory .directory-results-column{
+  display:block;
+  min-width:0;
+}
+.bh-directory .directory-hero-search{
+  width:100%;
+  margin:0 0 24px;
+  padding:20px 22px 16px;
+}
+.bh-directory .directory-hero-search h2{
+  margin:0 0 12px;
+  font-size:clamp(25px,2.6vw,32px);
+}
+.bh-directory .directory-hero-search-fields{
+  display:grid;
+  grid-template-columns:minmax(0,1.7fr) repeat(3,minmax(120px,1fr)) 104px;
+  gap:8px;
+}
+.bh-directory .directory-search-advanced-link{
+  margin:9px 0 0;
+}
+.bh-directory .directory-popular{
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid rgba(13,59,50,.07);
+}
+.bh-directory .directory-results-heading{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:18px;
+  margin:0 0 12px;
+  padding:0;
+}
+.bh-directory .directory-results-heading>div:first-child{
+  min-width:0;
+}
+.bh-directory .directory-results-heading .eyebrow{
+  margin-bottom:4px;
+}
+.bh-directory .directory-results-heading h1{
+  margin:0;
+  font-size:clamp(32px,3.4vw,44px);
+}
+.bh-directory .directory-results-heading #count{
+  margin:5px 0 0;
+}
+.bh-directory .directory-viewbar{
+  flex:0 0 auto;
+  align-items:flex-end;
+}
+.bh-directory .directory-filter-button{
+  display:none;
+}
+.bh-directory .activity-grid.directory-view-grid{
+  grid-column:auto;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  width:100%;
+  margin-top:0;
+}
+.bh-directory .listing-map,
+.bh-directory .directory-calendar{
+  grid-column:auto;
+  width:100%;
+}
+
+@media(max-width:1100px){
+  .bh-directory .directory-hero-search-fields{
+    grid-template-columns:1fr 1fr;
+  }
+  .bh-directory .directory-hero-search-fields .button{
+    width:100%;
+  }
+}
+@media(max-width:760px){
+  .bh-directory .directory-results-heading{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:10px;
+  }
+  .bh-directory .directory-viewbar{
+    width:100%;
+    align-items:flex-start;
+  }
+  .bh-directory .directory-filter-button{
+    display:inline-flex;
+  }
+}
