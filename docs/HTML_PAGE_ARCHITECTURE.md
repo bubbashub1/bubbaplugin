@@ -25,7 +25,7 @@ Purpose: establish the canonical HTML page map before rebuilding CSS, JavaScript
 | `/venue.html?id=...` | Venue detail |
 | `/organiser/[business_name]` | Public organiser profile |
 | `/schools/` | School information/search |
-| `/help-support.html` | Family support and guidance |
+| `/faq.html` | Frequently asked questions |
 | `/auth.html` | Family sign in / sign up |
 | `/forgot-password.html` | Password reset request |
 | `/reset-password.html` | Set new password |
@@ -108,6 +108,7 @@ The old `admin-navigation*.html` pages are deliberately excluded from the first 
 - `my-hub.html`, `planner.html`, `calendar.html` → consolidate into the account planner/My Hub experience after the new account HTML is stable
 - `booking-manager.html` → leader/admin booking area after ownership is clarified
 - `organiser.html` → public organiser route
+- `how-it-works.html` → replaced by `faq.html`
 - `library/index.html` → internal/legacy library area; not part of the family-facing product
 - `schools.html` → consolidate with `schools/`
 
