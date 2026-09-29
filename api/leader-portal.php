@@ -11,21 +11,13 @@ function lpEnsureExpertise(PDO $db): void{
  try{$db->exec("CREATE TABLE IF NOT EXISTS bh_leader_expertise (organiser_id BIGINT UNSIGNED NOT NULL, topic_key VARCHAR(80) NOT NULL, enabled TINYINT(1) NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, PRIMARY KEY (organiser_id,topic_key), INDEX idx_leader_expertise_topic (topic_key)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");}catch(Throwable $ignored){}
 }
 $expertiseTopics=[
- 'baby-development'=>'Baby development',
- 'toddler-development'=>'Toddler development',
- 'sleep'=>'Baby & toddler sleep',
- 'feeding'=>'Feeding & weaning',
- 'breastfeeding'=>'Breastfeeding support',
- 'bottle-feeding'=>'Bottle feeding',
- 'postnatal'=>'Postnatal support',
- 'pregnancy'=>'Pregnancy & antenatal',
- 'parenting'=>'Parenting & family life',
- 'special-educational-needs'=>'SEND & additional needs',
- 'babywearing'=>'Babywearing',
- 'first-aid'=>'Baby & child first aid',
- 'mental-wellbeing'=>'Parent wellbeing',
- 'physical-activity'=>'Family movement & physical activity',
- 'local-services'=>'Local family services'
+ 'baby-child-health'=>'Baby & child health',
+ 'feeding-weaning'=>'Feeding & weaning',
+ 'sleep'=>'Sleep',
+ 'pregnancy-new-parents'=>'Pregnancy & new parents',
+ 'family-wellbeing'=>'Family wellbeing',
+ 'activities-classes'=>'Activities & classes',
+ 'specialist-send'=>'SEND & additional needs'
 ];
 $adminOnly=!empty($_SESSION['bh_admin_authenticated'])&&empty($_SESSION['bh_user_id']);
 if(empty($_SESSION['bh_user_id'])&&!$adminOnly) lp(401,['ok'=>false,'error'=>'login_required']);
