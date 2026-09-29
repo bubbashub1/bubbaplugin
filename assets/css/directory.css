@@ -805,3 +805,6 @@
   box-shadow:0 5px 14px rgba(20,68,0,.12);
 }
 .bh-directory #mapView.is-map-modal .directory-map-modal-close{display:grid;place-items:center}
+
+/* Keep the calendar CTA text on one line */
+.bh-directory .directory-calendar-hero-button{white-space:nowrap;}
