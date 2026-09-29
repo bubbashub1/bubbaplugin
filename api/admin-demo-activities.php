@@ -79,6 +79,12 @@ try {
       $organiserId = (int)$db->lastInsertId();
     }
 
+    $countyColumn = false;
+    try {
+      $check = $db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='county'");
+      $countyColumn = ((int)$check->fetchColumn()) > 0;
+    } catch (Throwable $ignored) {}
+
     foreach ($demoActivities as $demo) {
       if ($published + count($created) >= $target) break;
 
@@ -95,8 +101,13 @@ try {
         $slug = $demo['slug'].'-'.$n++;
       }
 
-      $q = $db->prepare("INSERT INTO bh_activities (organiser_id,title,slug,description,category,age_range,county,price_from,status) VALUES (?,?,?,?,?,?,?,?,'published')");
-      $q->execute([$organiserId,$demo['title'],$slug,$demo['description'],$demo['category'],$demo['age'],$demo['county'],$demo['price']]);
+      if ($countyColumn) {
+        $q = $db->prepare("INSERT INTO bh_activities (organiser_id,title,slug,description,category,age_range,county,price_from,status) VALUES (?,?,?,?,?,?,?,?,'published')");
+        $q->execute([$organiserId,$demo['title'],$slug,$demo['description'],$demo['category'],$demo['age'],$demo['county'],$demo['price']]);
+      } else {
+        $q = $db->prepare("INSERT INTO bh_activities (organiser_id,title,slug,description,category,age_range,price_from,status) VALUES (?,?,?,?,?,?,?,'published')");
+        $q->execute([$organiserId,$demo['title'],$slug,$demo['description'],$demo['category'],$demo['age'],$demo['price']]);
+      }
       $activityId = (int)$db->lastInsertId();
 
       $q = $db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes) VALUES (?,?,?,?,?,?,?,?,?)");
