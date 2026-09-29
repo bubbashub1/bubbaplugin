@@ -155,6 +155,7 @@ try {
                 'organiser' => [
                     'id' => $row['organiser_id'] !== null ? (int)$row['organiser_id'] : null,
                     'name' => $row['organisation_name'] ?: 'Bubba Hub organiser',
+                    'slug' => strtolower(trim(preg_replace('/[^a-z0-9]+/i', '-', (string)($row['organisation_name'] ?: 'organiser')), '-')),
                 ],
                 'venues' => [],
                 'sessions' => [],
