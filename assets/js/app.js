@@ -280,20 +280,23 @@ void bhHydrateSaved();
     const headers=document.querySelectorAll(".site-header");
     headers.forEach((header,index)=>{
       const nav=header.querySelector(".main-nav");
-      if(!nav || header.querySelector(".mobile-nav-toggle")) return;
+      if(!nav) return;
 
       const navId=nav.id || "mobile-main-menu-"+(index+1);
       nav.id=navId;
 
-      const toggle=document.createElement("button");
-      toggle.type="button";
-      toggle.className="mobile-nav-toggle";
+      let toggle=header.querySelector(".mobile-nav-toggle");
+      if(!toggle){
+        toggle=document.createElement("button");
+        toggle.type="button";
+        toggle.className="mobile-nav-toggle";
+        toggle.innerHTML="<span></span><span></span><span></span>";
+        header.insertBefore(toggle,nav);
+      }
+
       toggle.setAttribute("aria-expanded","false");
       toggle.setAttribute("aria-controls",navId);
       toggle.setAttribute("aria-label","Open menu");
-      toggle.innerHTML="<span></span><span></span><span></span>";
-
-      header.insertBefore(toggle,nav);
 
       const closeMenu=()=>{
         header.classList.remove("mobile-menu-open");
@@ -306,17 +309,22 @@ void bhHydrateSaved();
         toggle.setAttribute("aria-label","Close menu");
       };
 
-      toggle.addEventListener("click",()=>{
+      if(toggle.dataset.bhMenuBound==="true") return;
+      toggle.dataset.bhMenuBound="true";
+
+      toggle.addEventListener("click",event=>{
+        event.preventDefault();
+        event.stopPropagation();
         header.classList.contains("mobile-menu-open") ? closeMenu() : openMenu();
       });
-      nav.addEventListener("click",e=>{
-        if(e.target.closest("a")) closeMenu();
+      nav.addEventListener("click",event=>{
+        if(event.target.closest("a")) closeMenu();
       });
-      document.addEventListener("click",e=>{
-        if(!header.contains(e.target)) closeMenu();
+      document.addEventListener("click",event=>{
+        if(!header.contains(event.target)) closeMenu();
       });
-      document.addEventListener("keydown",e=>{
-        if(e.key==="Escape") closeMenu();
+      document.addEventListener("keydown",event=>{
+        if(event.key==="Escape") closeMenu();
       });
     });
   }
