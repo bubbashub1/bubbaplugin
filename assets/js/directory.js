@@ -119,7 +119,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       };
 
       if (mobileToggle) mobileToggle.onclick = () => setMobileOpen(!panel.classList.contains("is-open"));
-      if (openSearch) openSearch.onclick = () => setMobileOpen(true);
+      if (openSearch) openSearch.onclick = () => {
+        if (advancedFields) {
+          advancedFields.hidden = false;
+          if (advancedToggle) {
+            advancedToggle.setAttribute("aria-expanded", "true");
+            advancedToggle.innerHTML = 'More filters <span aria-hidden="true">−</span>';
+          }
+        }
+        setMobileOpen(true);
+        requestAnimationFrame(() => {
+          const target = advancedFields || panel;
+          target?.scrollIntoView({behavior:"smooth", block:"nearest"});
+        });
+      };
 
       window.addEventListener("resize", () => {
         if (window.innerWidth > 900 && panel) {
