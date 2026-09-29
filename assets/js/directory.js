@@ -722,7 +722,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
       });
 
-      if (currentView === "map") setTimeout(() => renderMap(list), 0);
+      if (window.innerWidth > 900) { setTimeout(() => { renderMap(list); if (map) map.invalidateSize(); }, 0); } else if (currentView === "map") { setTimeout(() => { renderMap(list); if (map) map.invalidateSize(); }, 0); }
       if (currentView === "calendar") {
         calendarRenderToken++;
         const token = calendarRenderToken;
