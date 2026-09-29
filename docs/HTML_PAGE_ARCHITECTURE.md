@@ -59,9 +59,9 @@ The account area is the single source of truth. Root duplicates such as `account
 |---|---|
 | `/leader/` | Leader dashboard |
 | `/leader/profile.html` | Business/leader profile |
-| `/leader/classes.html` | Classes/listings |
-| `/leader/schedule.html` | Sessions and availability |
-| `/leader/venues.html` | Venues |
+| `/leader/classes.html` | Classes/listings; add/edit listing uses a modal/wizard |
+| `/leader/schedule.html` | Sessions and availability; add/edit session uses a modal |
+| `/leader/venues.html` | Venues; add/edit venue uses a modal |
 | `/leader/bookings.html` | Bookings/reservations |
 | `/leader/payments.html` | Payments and fees |
 | `/leader/statistics.html` | Statistics |
@@ -159,3 +159,16 @@ Only after route/reference testing:
 ## Definition of done for the HTML foundation
 
 Every canonical route exists, has a consistent semantic structure, uses the same header/footer conventions, has working internal links, is mobile-safe at the markup level, and contains no page-specific styling hacks. Functionality can remain mocked/placeholder until the page structure is approved.
+
+
+## Interaction rule — modals vs pages
+
+Leader actions that are short create/edit workflows should use modals or multi-step modals rather than creating extra HTML pages.
+
+- Add/edit listing → modal wizard launched from `leader/classes.html`
+- Add/edit session → modal launched from `leader/schedule.html`
+- Add/edit venue → modal launched from `leader/venues.html`
+- Add/edit FAQ → modal launched from `leader/faqs.html`
+- Add payment method → modal launched from `account/payment-details.html`
+
+A dedicated page is used when the user needs a persistent workspace, dashboard, history, settings area or substantial workflow.
