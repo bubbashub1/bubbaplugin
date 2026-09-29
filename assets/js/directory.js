@@ -667,7 +667,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         return `<article class="activity-card">
           <div class="activity-image">${activity.image_url
             ? `<img src="${escapeHtml(activity.image_url)}" alt="${escapeHtml(activity.title)}" loading="lazy">`
-            : "Activity image"}</div>
+            : `<img src="images/logos/gemini_generated_image_1dzezm1dzezm1dze-20260929-213630-1f8496.jpeg" alt="" aria-hidden="true" loading="lazy">`}</div>
           <div class="activity-body">
             <div class="activity-meta">${escapeHtml(categoryMap[activity.category] || activity.category || "Family activity")}</div>
             <h3>${escapeHtml(activity.title)}</h3>
