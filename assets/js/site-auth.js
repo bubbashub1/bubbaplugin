@@ -6,7 +6,9 @@
   const RESTRICTED_PAGES=new Set(["my-hub.html","account.html","account-profile.html","account-planner.html","preferences.html","family.html","notifications.html","saved-activities.html","planner.html","choose.html","consent.html","privacy.html","subscription.html"]);
   const LEADER_PAGES=new Set(["leader.html","booking-manager.html","leader-account.html"]);
   const pageName=(location.pathname.split("/").filter(Boolean).pop()||"index.html").toLowerCase();
-  const authUrl=new URL("auth.html",document.baseURI);
+  const nestedRoot=/\/(account|admin)\//i.test(location.pathname)?"../":"./";
+  const rootUrl=(path)=>new URL(nestedRoot+path,document.baseURI);
+  const authUrl=rootUrl("auth.html");
   const nextUrl=()=>location.pathname+location.search+location.hash;
   const isRestricted=()=>RESTRICTED_PAGES.has(pageName);
   const isLeaderPage=()=>LEADER_PAGES.has(pageName);
@@ -20,7 +22,7 @@
     if(next&&!/\/auth\.html$/i.test(location.pathname))u.searchParams.set("next",next);
     return u.href;
   }
-  function leaderAuthTarget(){const u=new URL("leader-auth.html",document.baseURI);u.searchParams.set("next",nextUrl());return u.href;}
+  function leaderAuthTarget(){const u=rootUrl("leader-auth.html");u.searchParams.set("next",nextUrl());return u.href;}
 
   function updateHeader(auth,menus){
     document.querySelectorAll(".site-header").forEach(header=>{
@@ -36,12 +38,12 @@
           {label:"Support & Guidance",url:"help-support.html"}
         ]).filter(item=>item&&item.visible!==false&&item.label&&item.url);
         configured.forEach(item=>nav.appendChild(makeLink(item.label,new URL(item.url,document.baseURI).href)));
-        const leader=makeLink(auth.authenticated&&auth.user&&auth.user.role==="leader"?"Class Leaders":"Class Leaders",auth.authenticated&&auth.user&&auth.user.role==="leader"?new URL("leader.html",document.baseURI).href:leaderAuthTarget(),"bh-leader-nav-button");
+        const leader=makeLink(auth.authenticated&&auth.user&&auth.user.role==="leader"?"Class Leaders":"Class Leaders",auth.authenticated&&auth.user&&auth.user.role==="leader"?rootUrl("leader.html").href:leaderAuthTarget(),"bh-leader-nav-button");
         leader.setAttribute("data-bh-auth-link","leader");nav.appendChild(leader);
-        const accountHref=auth.authenticated&&auth.user&&auth.user.role==="leader"?new URL("leader-account.html",document.baseURI).href:new URL("account.html",document.baseURI).href;
+        const accountHref=auth.authenticated&&auth.user&&auth.user.role==="leader"?rootUrl("leader-account.html").href:rootUrl("account.html").href;
         const account=makeLink(auth.authenticated?"My account":"My account",auth.authenticated?accountHref:buildAuthTarget(),"bh-auth-link");
         account.setAttribute("data-bh-auth-link","account");nav.appendChild(account);
-        nav.appendChild(makeLink("Admin",new URL("admin/admin.html",document.baseURI).href));
+        nav.appendChild(makeLink("Admin",rootUrl("admin/admin.html").href));
         if(auth.authenticated)nav.appendChild(makeLink("Log out","#","bh-logout-link"));
       }
 
@@ -53,7 +55,7 @@
         }else existing.appendChild(makeLink("Sign in",buildAuthTarget(),"button button-soft bh-signin-button"));
       }else{
         const account=header.querySelector(":scope > a.button[href*='account']");
-        if(account){account.textContent=auth.authenticated?"My account":"Sign in";account.href=auth.authenticated?(auth.user&&auth.user.role==="leader"?new URL("leader-account.html",document.baseURI).href:new URL("account.html",document.baseURI).href):buildAuthTarget();account.classList.add("bh-account-link");}
+        if(account){account.textContent=auth.authenticated?"My account":"Sign in";account.href=auth.authenticated?(auth.user&&auth.user.role==="leader"?rootUrl("leader-account.html").href:rootUrl("account.html").href):buildAuthTarget();account.classList.add("bh-account-link");}
       }
     });
   }
@@ -74,11 +76,11 @@
 
   async function logout(){
     try{
-      const r=await fetch(new URL("api/auth.php?action=me",document.baseURI),{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+      const r=await fetch(rootUrl("api/auth.php?action=me"),{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
       const d=await r.json();
-      if(d.authenticated)await fetch(new URL("api/auth.php?action=logout",document.baseURI),{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({csrf:d.csrf||""})});
+      if(d.authenticated)await fetch(rootUrl("api/auth.php?action=logout"),{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({csrf:d.csrf||""})});
     }catch(e){}
-    location.href=new URL("index.html",document.baseURI).href;
+    location.href=rootUrl("index.html").href;
   }
 
   document.addEventListener("click",e=>{
@@ -93,7 +95,7 @@
     if(isRestricted()&&!auth.authenticated&&!auth.is_admin){location.replace(buildAuthTarget());return;}
     let menus=null;
     try{
-      const mr=await fetch(new URL("api/menu.php",document.baseURI),{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+      const mr=await fetch(rootUrl("api/menu.php"),{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
       const md=await mr.json();
       if(mr.ok&&md.ok)menus=md.data||null;
     }catch(e){}
