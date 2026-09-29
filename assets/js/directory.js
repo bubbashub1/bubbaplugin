@@ -842,6 +842,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       };
     });
 
+    document.querySelectorAll(".directory-mobile-view").forEach(button => {
+      button.addEventListener("click", () => {
+        const view = button.dataset.mobileView;
+        currentView = view;
+        document.querySelectorAll(".directory-mobile-view").forEach(item => {
+          const active = item.dataset.mobileView === view;
+          item.classList.toggle("is-active", active);
+          item.setAttribute("aria-pressed", String(active));
+        });
+        updateViewVisibility();
+        render();
+        if (view === "map") setTimeout(() => map && map.invalidateSize(), 80);
+      });
+    });
+
     setupMapModal();
     document.querySelectorAll(".directory-view").forEach(button => button.classList.toggle("active", button.dataset.view === currentView));
     updateViewVisibility();
