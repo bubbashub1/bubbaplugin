@@ -868,3 +868,33 @@
 @media(max-width:900px){
   .bh-directory #results .activity-card{width:100%}
 }
+
+/* Mobile-only Listings | Map toggle */
+.directory-mobile-view-toggle{display:none}
+@media(max-width:900px){
+  .bh-directory .directory-mobile-view-toggle{
+    display:flex;
+    width:100%;
+    margin:0 0 18px;
+    padding:4px;
+    gap:4px;
+    background:#e7f1ea;
+    border-radius:16px;
+    box-sizing:border-box;
+  }
+  .bh-directory .directory-mobile-view{
+    flex:1;
+    border:0;
+    border-radius:12px;
+    padding:11px 14px;
+    background:transparent;
+    color:var(--bh-site-dark);
+    font:700 15px/1.2 "Quicksand",sans-serif;
+    cursor:pointer;
+  }
+  .bh-directory .directory-mobile-view.is-active{
+    background:#fff;
+    box-shadow:0 4px 12px rgba(18,63,49,.10);
+    font-weight:900;
+  }
+}
