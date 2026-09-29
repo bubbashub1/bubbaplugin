@@ -89,17 +89,17 @@ if($_SERVER['REQUEST_METHOD']!=='POST')lp(405,['ok'=>false,'error'=>'method_not_
 $b=json_decode(file_get_contents('php://input'),true);if(!is_array($b))lp(400,['ok'=>false,'error'=>'invalid_json']);
 $action=$b['action']??'';
 if($action==='save_account'){
- $name=trim((string)($b['name']??''));$email=strtolower(trim((string)($b['email']??'')));
- if($name==='')lp(422,['ok'=>false,'error'=>'name_required']);
+ $businessName=trim((string)($b['business_name']??''));$name=trim((string)($b['name']??''));$email=strtolower(trim((string)($b['email']??'')));
+ if($businessName==='')lp(422,['ok'=>false,'error'=>'business_name_required']);
  if(!filter_var($email,FILTER_VALIDATE_EMAIL))lp(422,['ok'=>false,'error'=>'invalid_email']);
  $u=$db->prepare("UPDATE bh_users SET email=? WHERE id=?");$u->execute([$email,$userId]);
- $updated=false;
- foreach(['name','display_name','organisation_name'] as $col){
-  try{$db->prepare("UPDATE bh_organisers SET $col=? WHERE id=?")->execute([$name,$oid]);$updated=true;break;}catch(Throwable $ignored){}
+ try{$db->prepare("UPDATE bh_organisers SET organisation_name=? WHERE id=?")->execute([$businessName,$oid]);}catch(Throwable $ignored){}
+ if($name!==''){
+  foreach(['name','display_name','contact_name'] as $col){
+   try{$db->prepare("UPDATE bh_organisers SET $col=? WHERE id=?")->execute([$name,$oid]);break;}catch(Throwable $ignored){}
+  }
  }
- lp(200,['ok'=>true,'message'=>'Account details saved.']);
-}
-if($action==='change_password'){
+ lp(200,['ok'=>true,'message'=>'Account details saved.']);n==='change_password'){
  $current=(string)($b['current_password']??'');$new=(string)($b['new_password']??'');$confirm=(string)($b['confirm_password']??'');
  if(strlen($new)<8)lp(422,['ok'=>false,'error'=>'password_too_short','message'=>'Choose a password with at least 8 characters.']);
  if($new!==$confirm)lp(422,['ok'=>false,'error'=>'password_mismatch','message'=>'The passwords do not match.']);
