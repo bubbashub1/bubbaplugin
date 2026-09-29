@@ -295,3 +295,67 @@
   .bh-directory .directory-results-column{min-width:0}
   .bh-directory #mapView{position:sticky;top:24px;align-self:start;height:min(72vh,720px);min-height:520px}
 }
+
+
+/* Mobile directory hero polish */
+@media(max-width:700px){
+  .bh-directory .directory-hero-search{
+    min-height:0;
+    padding:24px 15px 17px;
+    margin-bottom:20px;
+    border-radius:20px;
+    box-shadow:0 8px 22px rgba(20,68,0,.08);
+  }
+  .bh-directory .directory-hero-search::before{
+    background-position:center;
+    opacity:.20;
+  }
+  .bh-directory .directory-hero-search h2{
+    max-width:330px;
+    font-size:clamp(30px,9vw,38px);
+    line-height:1.03;
+    margin:0 0 14px;
+  }
+  .bh-directory .directory-hero-search-fields{
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+  .bh-directory .directory-hero-search-fields label{
+    width:100%;
+  }
+  .bh-directory .directory-hero-search-fields label input,
+  .bh-directory .directory-hero-search-fields label select,
+  .bh-directory .directory-hero-search-fields .button{
+    width:100%;
+    min-height:48px;
+  }
+  .bh-directory .directory-search-advanced-link{
+    display:block;
+    width:100%;
+    margin:10px 0 0;
+    padding:7px 0;
+    text-align:left;
+  }
+  .bh-directory .directory-popular{
+    margin-top:7px;
+    padding-top:9px;
+    gap:6px;
+  }
+  .bh-directory .directory-popular-label{
+    width:100%;
+    margin:0 0 1px;
+  }
+  .bh-directory .directory-popular-chip{
+    padding:7px 10px;
+    font-size:11px;
+  }
+}
+@media(max-width:420px){
+  .bh-directory .directory-hero-search{
+    padding:21px 12px 15px;
+    border-radius:18px;
+  }
+  .bh-directory .directory-hero-search h2{
+    font-size:30px;
+  }
+}
