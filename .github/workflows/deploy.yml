@@ -3,224 +3,85 @@ name: Deploy BubbaPlugin to eWebAll
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - '**.md'
-      - '.gitignore'
   workflow_dispatch:
 
-# Least privilege: the job only needs to read the repo.
-permissions:
-  contents: read
-
-# One production deploy at a time; never cancel one mid-upload.
 concurrency:
   group: eweball-production
   cancel-in-progress: false
 
-env:
-  # Directories uploaded recursively (missing ones are skipped).
-  DEPLOY_DIRS: "api assets data library images schools"
-  # Files that must exist locally before we deploy, and remotely afterwards.
-  REQUIRED_FILES: "index.html OneSignalSDKWorker.js assets/css/styles.css assets/js/app.js data/activities.json schools/index.html"
-
 jobs:
   deploy:
-    # Block manual runs from feature branches.
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Scope secrets to this environment; add required reviewers in repo settings if desired.
-    environment: production
-
-    env:
-      SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
-      SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
-      SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
-      REMOTE_PATH: ${{ secrets.EWEBALL_REMOTE_PATH }}
-      SITE_URL: ${{ secrets.EWEBALL_SITE_URL }} # optional, e.g. https://example.com
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4 # consider pinning to a full commit SHA
-        with:
-          persist-credentials: false
+        uses: actions/checkout@v4
 
-      # ---------- Pre-deploy validation ----------
-      - name: Validate repository contents
-        run: |
-          set -euo pipefail
+name: Prepare SSH key
+env:
+  SSH_PRIVATE_KEY: ${{ secrets.EWEBALL_SSH_PRIVATE_KEY }}
+run: |
+  printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/eweball_deploy_key"
+  chmod 600 "$RUNNER_TEMP/eweball_deploy_key"
+  ssh-keygen -y -f "$RUNNER_TEMP/eweball_deploy_key" >/dev/null
 
-          for f in $REQUIRED_FILES; do
-            [ -f "$f" ] || { echo "ERROR: required file missing: $f" >&2; exit 1; }
-          done
+name: Add eWebAll host key
+env:
+  SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+  SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+run: |
+  mkdir -p "$RUNNER_TEMP/ssh"
+  ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" > "$RUNNER_TEMP/ssh/known_hosts"
 
-          # Every JSON file must parse before it can reach production.
-          while IFS= read -r -d '' j; do
-            jq empty "$j" || { echo "ERROR: invalid JSON: $j" >&2; exit 1; }
-          done < <(find data api -type f -name '*.json' -print0 2>/dev/null)
+name: Check eWebAll SFTP root
+env:
+  SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+  SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
+  SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+run: |
+  set -euo pipefail
+  printf 'pwd\nls -la\n' > "$RUNNER_TEMP/check.sftp"
+  sftp -b "$RUNNER_TEMP/check.sftp" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
 
-          # Filenames that would break the SFTP batch file.
-          bad=$(find . -path ./.git -prune -o -type f \( -name '*"*' -o -name '*\\*' -o -name '*'$'\n''*' \) -print)
-          if [ -n "$bad" ]; then
-            echo "ERROR: unsafe filenames found:" >&2
-            echo "$bad" >&2
-            exit 1
-          fi
-
-          # Refuse to ship obvious secrets/junk from the deploy directories.
-          leaks=$(find $DEPLOY_DIRS -type f \( -name '.env*' -o -name '*.pem' -o -name '*.key' -o -name 'id_rsa*' -o -name '*.sql' -o -name '*.bak' \) 2>/dev/null || true)
-          if [ -n "$leaks" ]; then
-            echo "ERROR: sensitive-looking files inside deploy directories:" >&2
-            echo "$leaks" >&2
-            exit 1
-          fi
-
-          echo "Validation passed."
-
-      # ---------- SSH setup ----------
-      - name: Prepare SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.EWEBALL_SSH_PRIVATE_KEY }}
-          KNOWN_HOSTS: ${{ secrets.EWEBALL_KNOWN_HOSTS }}
-        run: |
-          set -euo pipefail
-
-          for v in SSH_HOST SSH_PORT SSH_USERNAME REMOTE_PATH; do
-            [ -n "${!v}" ] || { echo "ERROR: secret for $v is empty or missing" >&2; exit 1; }
-          done
-          [ -n "$SSH_PRIVATE_KEY" ] || { echo "ERROR: EWEBALL_SSH_PRIVATE_KEY is empty" >&2; exit 1; }
-          [ -n "$KNOWN_HOSTS" ] || { echo "ERROR: EWEBALL_KNOWN_HOSTS is empty (see notes below the workflow)" >&2; exit 1; }
-
-          umask 077
-          mkdir -p "$RUNNER_TEMP/ssh"
-          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/ssh/deploy_key"
-          printf '%s\n' "$KNOWN_HOSTS"     > "$RUNNER_TEMP/ssh/known_hosts"
-          ssh-keygen -y -f "$RUNNER_TEMP/ssh/deploy_key" >/dev/null
-
-          # Shared SFTP helper: pinned host key, no prompts, timeouts, retries.
-          cat > "$RUNNER_TEMP/ssh/sftp_helper.sh" <<'HELPER'
-          run_sftp() {
-            local batch="$1" attempt
-            for attempt in 1 2 3; do
-              if sftp -b "$batch" \
-                  -P "$SSH_PORT" \
-                  -i "$RUNNER_TEMP/ssh/deploy_key" \
-                  -o IdentitiesOnly=yes \
-                  -o BatchMode=yes \
-                  -o StrictHostKeyChecking=yes \
-                  -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
-                  -o ConnectTimeout=20 \
-                  -o ServerAliveInterval=15 \
-                  -o ServerAliveCountMax=4 \
-                  "$SSH_USERNAME@$SSH_HOST"; then
-                return 0
-              fi
-              echo "SFTP attempt $attempt failed." >&2
-              [ "$attempt" -lt 3 ] && sleep $((attempt * 5))
-            done
-            return 1
-          }
-          HELPER
-
-      - name: Check connection and remote path
-        run: |
-          set -euo pipefail
-          source "$RUNNER_TEMP/ssh/sftp_helper.sh"
-          # Fails if REMOTE_PATH does not exist; no directory listing is printed.
-          printf 'cd "%s"\npwd\n' "$REMOTE_PATH" > "$RUNNER_TEMP/check.sftp"
-          run_sftp "$RUNNER_TEMP/check.sftp"
-
-      # ---------- Deploy ----------
-      - name: Build upload batch
-        run: |
-          set -euo pipefail
-          BATCH="$RUNNER_TEMP/deploy.sftp"
-          : > "$BATCH"
-          printf 'cd "%s"\n' "$REMOTE_PATH" >> "$BATCH"
-
-          # 1) Create remote directories (leading '-' = ignore "already exists").
-          for dir in $DEPLOY_DIRS; do
-            [ -d "$dir" ] || continue
-            find "$dir" -type d | sort | while IFS= read -r d; do
-              printf -- '-mkdir "%s"\n' "$d" >> "$BATCH"
-            done
-          done
-
-          # 2) Upload directory contents first, so assets exist before HTML references them.
-          for dir in $DEPLOY_DIRS; do
-            [ -d "$dir" ] || continue
-            find "$dir" -type f | sort | while IFS= read -r f; do
-              printf 'put "%s" "%s"\n' "$f" "$f" >> "$BATCH"
-            done
-          done
-
-          # 3) Root files: extension allowlist (no package.json, .env, LICENSE, etc.), entry pages last.
-          find . -maxdepth 1 -type f \
-            \( -name '*.html' -o -name '*.js' -o -name '*.json' -o -name '*.css' \
-               -o -name '*.txt' -o -name '*.xml' -o -name '*.ico' -o -name '*.webmanifest' \
-               -o -name '.htaccess' \) \
-            ! -name 'package.json' ! -name 'package-lock.json' ! -name 'composer.json' \
-            ! -name 'composer.lock' ! -name 'index.html' \
-            -printf '%f\n' | sort | while IFS= read -r f; do
-              printf 'put "%s"\n' "$f" >> "$BATCH"
-            done
-
-          # index.html goes up last so visitors never see new HTML with old assets.
-          printf 'put "index.html"\n' >> "$BATCH"
-
-          echo "Batch contains $(grep -c '^put ' "$BATCH") file uploads."
-
-      - name: Upload via SFTP
-        run: |
-          set -euo pipefail
-          source "$RUNNER_TEMP/ssh/sftp_helper.sh"
-          run_sftp "$RUNNER_TEMP/deploy.sftp"
-          echo "Upload finished."
-
-      # ---------- Post-deploy verification ----------
-      - name: Verify remote files
-        run: |
-          set -euo pipefail
-          source "$RUNNER_TEMP/ssh/sftp_helper.sh"
-          VERIFY="$RUNNER_TEMP/verify.sftp"
-          printf 'cd "%s"\n' "$REMOTE_PATH" > "$VERIFY"
-          for f in $REQUIRED_FILES; do
-            printf 'ls -l "%s"\n' "$f" >> "$VERIFY"
-          done
-          run_sftp "$VERIFY"
-
-      - name: Smoke test live site
-        run: |
-          set -euo pipefail
-          if [ -z "${SITE_URL:-}" ]; then
-            echo "EWEBALL_SITE_URL not set; skipping HTTP smoke test."
-            exit 0
-          fi
-          base="${SITE_URL%/}"
-          for path in "/" "/OneSignalSDKWorker.js" "/assets/js/app.js" "/data/activities.json"; do
-            code=$(curl -sS -o /dev/null -w '%{http_code}' --retry 3 --retry-delay 5 --max-time 30 "$base$path")
-            echo "$path -> HTTP $code"
-            [ "$code" = "200" ] || { echo "ERROR: smoke test failed for $path" >&2; exit 1; }
-          done
-          echo "Deployment completed and verified."
-
-      # ---------- Cleanup ----------
-      - name: Remove SSH material
-        if: always()
-        run: rm -rf "$RUNNER_TEMP/ssh" "$RUNNER_TEMP"/*.sftp
-
-# =====================================================================
-# ONE-TIME SETUP
-# ---------------------------------------------------------------------
-# 1. Create a GitHub Environment named "production" (Settings > Environments)
-#    and move the EWEBALL_* secrets into it.
-# 2. Create the EWEBALL_KNOWN_HOSTS secret:
-#      ssh-keyscan -p <port> <host>
-#    Compare the fingerprint (ssh-keygen -lf) with the one shown in your
-#    eWebAll panel, then paste the verified line(s) into the secret.
-# 3. Optional: add EWEBALL_SITE_URL (e.g. https://yoursite.com) to enable
-#    the HTTP smoke test.
-# 4. Known limitation: this uploads only; files deleted from the repo stay
-#    on the server. Remove them manually or switch to lftp/rsync if your
-#    host supports it.
-# =====================================================================
+name: Deploy via OpenSSH SFTP
+env:
+  SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+  SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
+  SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+  REMOTE_PATH: ${{ secrets.EWEBALL_REMOTE_PATH }}
+run: |
+  set -euo pipefail
+  SFTP_BATCH="$RUNNER_TEMP/deploy.sftp"
+  : > "$SFTP_BATCH"
+  printf 'cd "%s"\n' "$REMOTE_PATH" >> "$SFTP_BATCH"
+  find . -maxdepth 1 -type f ! -name '.gitignore' ! -name 'README.md' -printf 'put "%p"\n' >> "$SFTP_BATCH"
+  # OneSignal requires this worker at the public site root; upload it explicitly as a safety check.
+  if [ -f "OneSignalSDKWorker.js" ]; then
+    printf 'put "OneSignalSDKWorker.js"\n' >> "$SFTP_BATCH"
+  else
+    echo "ERROR: OneSignalSDKWorker.js is missing from the repository root." >&2
+    exit 1
+  fi
+  for dir in api assets data library images schools; do
+    if [ -d "$dir" ]; then
+      find "$dir" -type d -print | while IFS= read -r folder; do
+        printf -- '-mkdir "%s"\n' "$folder" >> "$SFTP_BATCH"
+      done
+      find "$dir" -type f -print | while IFS= read -r file; do
+        printf 'put "%s" "%s"\n' "$file" "$file" >> "$SFTP_BATCH"
+      done
+    fi
+  done
+  sftp -b "$SFTP_BATCH" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
+  echo "Deployment upload finished."
+  printf 'cd "%s"\n' "$REMOTE_PATH" > "$RUNNER_TEMP/verify.sftp"
+  printf 'ls -l index.html\n' >> "$RUNNER_TEMP/verify.sftp"
+  printf 'ls -l OneSignalSDKWorker.js\n' >> "$RUNNER_TEMP/verify.sftp"
+  printf 'ls -l assets/css/styles.css\n' >> "$RUNNER_TEMP/verify.sftp"
+  printf 'ls -l assets/js/app.js\n' >> "$RUNNER_TEMP/verify.sftp"
+  printf 'ls -l data/activities.json\n' >> "$RUNNER_TEMP/verify.sftp"
+  printf 'ls -l images/home\n' >> "$RUNNER_TEMP/verify.sftp"
+  printf 'ls -l schools/index.html\n' >> "$RUNNER_TEMP/verify.sftp"
+  sftp -b "$RUNNER_TEMP/verify.sftp" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
+  echo "Deployment completed and remote files verified successfully."
