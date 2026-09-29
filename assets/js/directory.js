@@ -754,6 +754,22 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     }
 
+    document.querySelectorAll(".directory-popular-chip").forEach(button => {
+      button.addEventListener("click", () => {
+        const category = button.dataset.category || "";
+        const select = $("category");
+        const heroSelect = $("heroCategory");
+        const option = select && [...select.options].find(o => o.value === category || o.textContent.trim() === category);
+        const heroOption = heroSelect && [...heroSelect.options].find(o => o.value === category || o.textContent.trim() === category);
+        if (select && option) select.value = option.value;
+        if (heroSelect && heroOption) heroSelect.value = heroOption.value;
+        if ($("search")) $("search").value = "";
+        render();
+        document.querySelectorAll(".directory-popular-chip").forEach(x => x.classList.remove("active"));
+        button.classList.add("active");
+      });
+    });
+
     // Age is intentionally a simple dropdown rather than a slider.
 
     $("useHomeLocation").onclick = loadHomeLocation;
