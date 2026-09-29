@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const items=await bhActivities();
   const params=new URLSearchParams(location.search);
   const organiserId=params.get("id");
-  const slug=params.get("slug");
+  const slug=params.get("slug")||decodeURIComponent(location.pathname.split("/").filter(Boolean).pop()||"");
   const parts=location.pathname.replace(/\\/+$/, "").split("/");
   const pathValue=decodeURIComponent(parts.pop()||"");
   const clean=s=>String(s||"").toLowerCase().trim().replace(/&/g,"and").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
