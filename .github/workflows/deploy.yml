@@ -63,7 +63,7 @@ jobs:
             echo "ERROR: OneSignalSDKWorker.js is missing from the repository root." >&2
             exit 1
           fi
-          for dir in api assets data library images schools; do
+          for dir in api assets data library images schools account; do
             if [ -d "$dir" ]; then
               find "$dir" -type d -print | while IFS= read -r folder; do
                 printf -- '-mkdir "%s"\n' "$folder" >> "$SFTP_BATCH"
