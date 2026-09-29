@@ -56,12 +56,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     fillSelect("heroCategory", categoryValues, params.get("category") || "", "Category");
     fillSelect("area", regionValues, params.get("region") || "", "All regions");
     fillSelect("heroRegion", regionValues, params.get("region") || "", "Region");
-    fillSelect(
-      "town",
-      [...new Set(activities.flatMap(x => bhVenues(x).map(v => v.town || x.town)).filter(Boolean))].sort(),
-      params.get("town") || "",
-      "All towns"
-    );
+    const townValues = [...new Set([
+      ...activities.flatMap(x => bhVenues(x).map(v => v.town || x.town)).filter(Boolean),
+      "Paignton"
+    ])].sort();
+    fillSelect("town", townValues, params.get("town") || "", "All towns");
 
     if ($("search") && params.get("search")) $("search").value = params.get("search");
     if ($("search") && params.get("q")) $("search").value = params.get("q");
@@ -843,6 +842,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       };
     });
 
+    setupMapModal();
     document.querySelectorAll(".directory-view").forEach(button => button.classList.toggle("active", button.dataset.view === currentView));
     updateViewVisibility();
     render();
