@@ -4,14 +4,14 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const root=document.getElementById("bookingResults");
   const esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])));
   try{
-    const auth=await fetch("api/auth.php?action=me",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}).then(r=>r.json());
+    const auth=await fetch("../api/auth.php?action=me",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}).then(r=>r.json());
     if(!auth.authenticated){
       count.textContent="Sign in required";
       bookingCount.textContent="Sign in required";
-      root.innerHTML='<div class="hub-empty"><strong>Sign in to view your bookings</strong><p>Your planner and booking history are connected to your Bubba Hub account.</p><a class="button button-primary" href="account.html?next=account-planner.html">Sign in</a></div>';
+      root.innerHTML='<div class="hub-empty"><strong>Sign in to view your bookings</strong><p>Your planner and booking history are connected to your Bubba Hub account.</p><a class="button button-primary" href="../auth.html?next="+encodeURIComponent(location.pathname+location.search+location.hash)>Sign in</a></div>';
       return;
     }
-    const data=await fetch("api/my-hub.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}).then(r=>r.json());
+    const data=await fetch("../api/my-hub.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}).then(r=>r.json());
     if(!data.ok)throw new Error(data.message||"Could not load your account data.");
     count.textContent=(data.planner||[]).length+" planned";
     const bookings=Array.isArray(data.bookings)?data.bookings:[];
