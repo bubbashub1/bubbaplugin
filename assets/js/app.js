@@ -349,3 +349,31 @@ void bhHydrateSaved();
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",applyMainNav,{once:true});
   else applyMainNav();
 })();
+
+/* Homepage search: keep the front door simple — keyword, region and town. */
+(function(){
+  const form=document.getElementById("heroSearch");
+  if(!form)return;
+  const region=document.getElementById("heroRegion");
+  const town=document.getElementById("heroTown");
+  const category=document.getElementById("heroCategory");
+  const age=document.getElementById("heroAge");
+  if(category) category.closest("label")?.remove();
+  if(age) age.closest("label")?.remove();
+  if(!town){
+    const label=document.createElement("label");
+    label.innerHTML='<span>⌖</span><select id="heroTown" name="town" aria-label="Town"><option value="">Town</option></select>';
+    const fields=form.querySelector(".home-search-fields");
+    const button=fields?.querySelector("button");
+    if(fields&&button) fields.insertBefore(label,button); else fields?.appendChild(label);
+  }
+  const townEl=document.getElementById("heroTown");
+  fetch("api/activities.php?page=1&per_page=100",{cache:"no-store",headers:{Accept:"application/json"}})
+    .then(r=>r.json()).then(payload=>{
+      const items=Array.isArray(payload.data)?payload.data:[];
+      const regions=[...new Set(items.flatMap(a=>(a.venues||[]).map(v=>v.region||a.region)).filter(Boolean))].sort();
+      const towns=[...new Set([...items.flatMap(a=>(a.venues||[]).map(v=>v.town||a.town)), "Paignton"].filter(Boolean))].sort();
+      if(region) regions.forEach(v=>region.add(new Option(v,v)));
+      if(townEl) towns.forEach(v=>townEl.add(new Option(v,v)));
+    }).catch(()=>{});
+})();
