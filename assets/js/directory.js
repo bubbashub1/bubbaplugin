@@ -265,19 +265,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
     updateCardCountVisibility();
 
-    const renderAgeTrack = () => {
-      const min = Number($("ageMin").value);
-      const max = Number($("ageMax").value);
-      const fill = $("ageFill");
-      if (fill) {
-        fill.style.left = `${(min / 9) * 100}%`;
-        fill.style.width = `${((max - min) / 9) * 100}%`;
-      }
-      $("ageValue").textContent = min === 0 && max === 9
-        ? "Any age"
-        : `${ageText(min)} – ${ageText(max)}`;
-    };
-
     const initMap = () => {
       if (map || !window.L) return;
       map = L.map("mapView").setView([50.42, -3.57], 10);
@@ -727,8 +714,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       $("ageMin").value = min;
       $("ageMax").value = max;
-      renderAgeTrack();
-      render();
+        render();
     };
 
     if ($("mainSearchButton")) $("mainSearchButton").addEventListener("click", render);
@@ -790,7 +776,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         clean.searchParams.delete(key)
       );
       history.replaceState({}, "", clean);
-      updateAge("min");
+      render();
     };
 
     $("filterToggle").addEventListener("click", () => {
