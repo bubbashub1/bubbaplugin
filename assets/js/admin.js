@@ -380,24 +380,25 @@ async function loadTestUsers(){
   const r=await fetch("api/admin-test-users.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});
   const d=await r.json(); if(!r.ok||!d.ok)throw new Error(d.error||"Could not load test users.");
   const users=Array.isArray(d.data)?d.data:[];
-  box.innerHTML=users.length?users.map(u=>'<div class="test-user-row"><div><strong>'+escapeHtml(u.email)+'</strong><small>ID '+escapeHtml(u.id)+' · '+escapeHtml(u.status)+'</small></div><div><a class="button button-soft" href="auth.html?email='+encodeURIComponent(u.email)+'">Open login</a><button type="button" class="button button-soft test-user-delete" data-id="'+escapeHtml(u.id)+'">Delete</button></div></div>').join(""):'<p>No test accounts have been created yet.</p>';
+  box.innerHTML=users.length?users.map(u=>'<div class="test-user-row"><div><strong>'+escapeHtml(u.email)+'</strong><small>'+escapeHtml(u.role)+' · ID '+escapeHtml(u.id)+' · '+escapeHtml(u.status)+'</small></div><div><a class="button button-soft" href="auth.html?email='+encodeURIComponent(u.email)+'">Open login</a><button type="button" class="button button-soft test-user-delete" data-id="'+escapeHtml(u.id)+'">Delete</button></div></div>').join(""):'<p>No test accounts have been created yet.</p>';
  }catch(e){box.innerHTML='<p class="is-error">'+escapeHtml(e.message||"Could not load test users.")+'</p>';}
 }
-async function createTestUser(){
- const button=document.querySelector("#createTestUser"),message=document.querySelector("#testUserMessage"),password=document.querySelector("#testUserPassword")?.value||"",credentials=document.querySelector("#testUserCredentials");
+async function createTestUser(role){
+ const button=document.querySelector(role==="leader"?"#createTestLeader":"#createTestFamily"),message=document.querySelector("#testUserMessage"),password=document.querySelector("#testUserPassword")?.value||"",credentials=document.querySelector("#testUserCredentials");
  if(!button||!message)return;
- button.disabled=true;message.textContent="Creating test account…";message.classList.remove("is-error");
+ button.disabled=true;message.textContent="Creating test "+role+" account…";message.classList.remove("is-error");
  try{
-  const r=await fetch("api/admin-test-users.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({password})});
+  const r=await fetch("api/admin-test-users.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({password,role})});
   const d=await r.json(); if(!r.ok||!d.ok)throw new Error(d.error||"Could not create test account.");
-  credentials.hidden=false;credentials.innerHTML='<strong>Test account ready</strong><br>Email: <code>'+escapeHtml(d.user.email)+'</code><br>Password: <code>'+escapeHtml(d.password)+'</code><br><small>'+escapeHtml(d.message)+'</small>';
-  message.textContent="✓ Test family account created.";
+  credentials.hidden=false;credentials.innerHTML='<strong>Test '+escapeHtml(role)+' account ready</strong><br>Email: <code>'+escapeHtml(d.user.email)+'</code><br>Password: <code>'+escapeHtml(d.password)+'</code><br><small>'+escapeHtml(d.message)+'</small>';
+  message.textContent="✓ Test "+role+" account created.";
   document.querySelector("#testUserPassword").value="";
   await loadTestUsers();
  }catch(e){message.textContent=e.message||"Could not create test account.";message.classList.add("is-error");}
  finally{button.disabled=false;}
 }
-document.querySelector("#createTestUser")?.addEventListener("click",createTestUser);
+document.querySelector("#createTestFamily")?.addEventListener("click",()=>createTestUser("family"));
+document.querySelector("#createTestLeader")?.addEventListener("click",()=>createTestUser("leader"));
 document.querySelector("#testUserList")?.addEventListener("click",async e=>{
  const button=e.target.closest(".test-user-delete"); if(!button)return;
  if(!confirm("Delete this dummy test account?"))return;
