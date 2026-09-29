@@ -55,7 +55,7 @@ async function loadDashboard(){
   document.querySelector("#adminSearch").oninput=render;
   render();
  }catch(error){
-  table.innerHTML='<tr><td colspan="7"><strong>Activities could not be loaded.</strong><br><small>'+escapeHtml(error.message)+'</small><br><button type="button" class="button button-soft" id="retryActivities">Try again</button></td></tr>';
+  if(table)table.innerHTML='<tr><td colspan="7"><strong>Activities could not be loaded.</strong><br><small>'+escapeHtml(error.message)+'</small><br><button type="button" class="button button-soft" id="retryActivities">Try again</button></td></tr>';
   document.querySelector("#statActivities").textContent="—";
   document.querySelector("#statSaved").textContent="—";
   document.querySelector("#retryActivities")?.addEventListener("click",loadDashboard);
