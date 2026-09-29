@@ -5,8 +5,8 @@
     <a href="help-support.html">Support &amp; Guidance</a>
     <a href="leader.html">Class Leaders</a>
     <a href="account.html">My Account</a>
-  </nav><a class="button button-soft" href="account.html">My account</a></header><main class="app-shell"><div class="page-heading"><div><span class="eyebrow">Explore local activities</span><h1>Find something for your family</h1><p>Search by age, place, day or category.</p></div><a class="button button-soft" href="choose.html">✨ What should we do?</a></div><div class="directory-mobile-actions">
-<button type="button" class="directory-filter-toggle button button-soft" id="filterToggle" aria-expanded="false" aria-controls="directoryFilters">Advanced search <span aria-hidden="true">＋</span></button>
+  </nav><a class="button button-soft" href="account.html">My account</a></header><main class="app-shell"><div class="directory-mobile-actions">
+<button type="button" class="directory-filter-toggle button button-soft" id="filterToggle" aria-expanded="false" aria-controls="directoryFilters">Filters <span aria-hidden="true">＋</span></button>
 </div>
 <div class="directory-layout">
 <aside class="directory-filters-panel" id="directoryFilters" aria-label="Search filters">
@@ -17,7 +17,7 @@
 <div class="directory-advanced-filter-field" data-filter-key="town"><label class="directory-filter-label" for="town">Town</label><select class="filter-input" id="town"><option value="">All towns</option></select></div>
 <label class="filter-free directory-advanced-filter-field" data-filter-key="free"><input type="checkbox" id="free"> Free only</label>
 <div class="directory-advanced-section">
-<button type="button" class="directory-advanced-toggle" id="advancedToggle" aria-expanded="false">Advanced search <span aria-hidden="true">＋</span></button>
+<button type="button" class="directory-advanced-toggle" id="advancedToggle" aria-expanded="false">More filters <span aria-hidden="true">＋</span></button>
 <div class="directory-advanced-fields" id="advancedFields" hidden>
 <div class="directory-nearby-control directory-advanced-filter-field" data-filter-key="nearby"><label>Nearby</label><button type="button" class="button button-soft directory-nearby-button" id="useHomeLocation">📍 Use my home</button><span id="nearbyStatus" class="directory-nearby-status" aria-live="polite"></span></div>
 <div class="filter-age directory-advanced-filter-field" data-filter-key="age"><label for="ageMin">Age range: <strong id="ageValue">Any age</strong></label><div class="age-range-dual"><div class="age-range-track"></div><div class="age-range-fill" id="ageFill"></div><input id="ageMin" type="range" min="0" max="9" step="0.25" value="0" aria-label="Minimum age"><input id="ageMax" type="range" min="0" max="9" step="0.25" value="9" aria-label="Maximum age"></div><div class="age-range-labels"><span>0 months</span><span>9 years</span></div></div>
@@ -42,7 +42,7 @@
     <label><span>♙</span><select id="heroAge" name="age_preset"><option value="">Age Range</option><option value="baby">Baby · 0–1</option><option value="toddler">Toddler · 1–3</option><option value="preschool">Preschool · 3–5</option><option value="school">School age · 5–9</option></select></label>
     <button class="button button-primary" type="submit">Search</button>
   </div>
-  <button type="button" class="directory-search-advanced-link" id="openSearchFilters">Advanced filters <span>→</span></button>
+  <button type="button" class="directory-search-advanced-link" id="openSearchFilters">More filters <span>→</span></button>
 </form>
 <div class="directory-viewbar"><p id="count"></p><div class="directory-view-controls"><div class="directory-views" role="tablist" aria-label="Listing view"><button type="button" class="directory-view" data-view="grid">Grid</button><button type="button" class="directory-view active" data-view="list">List</button><button type="button" class="directory-view" data-view="map">Map</button><button type="button" class="directory-view" data-view="calendar">Calendar</button></div><label class="directory-count-control">Cards <select id="cardCount" aria-label="Cards per row"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></label></div></div>
 <section class="activity-grid" id="results"></section><section id="mapView" class="listing-map" hidden aria-label="Map of activities"></section><section id="calendarView" class="directory-calendar" hidden aria-label="Calendar of activities"></section>
