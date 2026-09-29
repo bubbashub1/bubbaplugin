@@ -48,18 +48,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (values.includes(selected)) el.value = selected;
     };
 
-    fillSelect(
-      "category",
-      [...new Set(activities.map(x => categoryMap[x.category] || x.category).filter(Boolean))].sort(),
-      params.get("category") || "",
-      "All categories"
-    );
-    fillSelect(
-      "area",
-      [...new Set(activities.flatMap(x => bhVenues(x).map(v => v.region || x.region)).filter(Boolean))].sort(),
-      params.get("region") || "",
-      "All regions"
-    );
+    const categoryValues = [...new Set(activities.map(x => categoryMap[x.category] || x.category).filter(Boolean))].sort();
+    const regionValues = [...new Set(activities.flatMap(x => bhVenues(x).map(v => v.region || x.region)).filter(Boolean))].sort();
+
+    fillSelect("category", categoryValues, params.get("category") || "", "All categories");
+    fillSelect("heroCategory", categoryValues, params.get("category") || "", "Category");
+    fillSelect("area", regionValues, params.get("region") || "", "All regions");
+    fillSelect("heroRegion", regionValues, params.get("region") || "", "Region");
     fillSelect(
       "town",
       [...new Set(activities.flatMap(x => bhVenues(x).map(v => v.town || x.town)).filter(Boolean))].sort(),
@@ -69,7 +64,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if ($("search") && params.get("search")) $("search").value = params.get("search");
     if ($("search") && params.get("q")) $("search").value = params.get("q");
+    if ($("search") && params.get("keyword")) $("search").value = params.get("keyword");
 
+    const agePresets = {
+      baby: [0, 1],
+      toddler: [1, 3],
+      preschool: [3, 5],
+      school: [5, 9]
+    };
+    const agePreset = agePresets[params.get("age_preset") || ""];
+    if (agePreset) {
+      $("ageMin").value = String(agePreset[0]);
+      $("ageMax").value = String(agePreset[1]);
+      if ($("heroAge")) $("heroAge").value = params.get("age_preset");
+    }
     if (params.get("age_min") !== null) $("ageMin").value = params.get("age_min");
     if (params.get("age_max") !== null) $("ageMax").value = params.get("age_max");
     if (params.get("day")) $("day").value = params.get("day");
