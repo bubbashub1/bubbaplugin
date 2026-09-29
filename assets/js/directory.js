@@ -659,8 +659,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         `${list.length} activit${list.length === 1 ? "y" : "ies"} found` +
         (params.get("saved") ? " · Saved" : "");
 
-      $("results").className = `activity-grid directory-view-${currentView} directory-cards-${cardCount}`;
-      $("results").innerHTML = list.map(activity => {
+      const resultsEl = $("results");
+      if (!resultsEl) return;
+      resultsEl.className = `activity-grid directory-view-${currentView} directory-cards-${cardCount}`;
+      resultsEl.innerHTML = list.map(activity => {
         const venues = bhVenues(activity);
         const sessions = bhSessions(activity);
         const firstSession = sessions[0];
@@ -708,21 +710,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     };
 
-    const updateAge = source => {
-      let min = Number($("ageMin").value);
-      let max = Number($("ageMax").value);
-
-      if (min > max) {
-        if (source === "min") min = max;
-        else max = min;
-      }
-
-      $("ageMin").value = min;
-      $("ageMax").value = max;
-        render();
-    };
-
-    if ($("mainSearchButton")) $("mainSearchButton").addEventListener("click", render);
+        if ($("mainSearchButton")) $("mainSearchButton").addEventListener("click", render);
     if ($("search")) $("search").addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); render(); } });
 
     ["search", "category", "area", "town", "day", "maxPrice", "free", "sessionLength", "sen", "termTime", "bookingRequired"].forEach(id => {
