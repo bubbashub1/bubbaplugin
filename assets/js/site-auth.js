@@ -34,7 +34,7 @@
           {label:"My Hub",url:"my-hub.html"},
           {label:"Support & Guidance",url:"help-support.html"},
           {label:"Class Leaders",url:"leader.html"},
-          {label:"My Account",url:"account.html"}
+          {label:"Account",url:"account.html"}
         ];
         configured.forEach(item=>nav.appendChild(makeLink(item.label,rootUrl(item.url).href)));
         if(auth.authenticated)nav.appendChild(makeLink("Log out","#","bh-logout-link"));
