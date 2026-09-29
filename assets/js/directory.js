@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (params.get("sen")) $("sen").value = params.get("sen");
     if (params.get("termTime")) $("termTime").value = params.get("termTime");
     if (params.get("bookingRequired")) $("bookingRequired").checked = params.get("bookingRequired") === "1";
-    if (params.get("accessibility") && $("accessibility")) $("accessibility").checked = params.get("accessibility") === "1";
+    if (params.get("accessibility")) { document.querySelectorAll(".accessibility-option").forEach(el => el.checked = params.get("accessibility").split(",").includes(el.value)); }
 
     // Main filters stay simple; all other filters live inside Advanced search.
     const setupAdvancedSearch = () => {
@@ -584,7 +584,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const sen = $("sen")?.value || "";
       const termTime = $("termTime")?.value || "";
       const bookingRequired = $("bookingRequired")?.checked || false;
-      const accessibility = $("accessibility")?.checked ? "1" : "";
+      const accessibility = [...document.querySelectorAll(".accessibility-option:checked")].map(el => el.value);
 
       const hasActiveDirectoryFilters = !!(
         search || category || region || town || day || maxPrice || freeOnly ||
@@ -623,7 +623,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         const senMatch = !sen || (sen === "yes" ? ["yes","1","true"].includes(senValue) : !["yes","1","true"].includes(senValue));
         const termMatch = !termTime || (termTime === "yes" ? sessions.some(x => !!x.term_time) : !sessions.some(x => !!x.term_time));
         const bookingMatch = !bookingRequired || !!activity.booking_url;
-        const accessibilityMatch = !accessibility || (Array.isArray(activity.accessibility) && activity.accessibility.length > 0);
+        const activityAccessibility = Array.isArray(activity.accessibility) ? activity.accessibility.map(String) : [];
+        const accessibilityMatch = !accessibility.length || accessibility.every(option => activityAccessibility.includes(option));
 
         return (!search || text.includes(search)) &&
           (!category || (categoryMap[activity.category] || activity.category) === category) &&
@@ -722,13 +723,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     if ($("mainSearchButton")) $("mainSearchButton").addEventListener("click", render);
     if ($("search")) $("search").addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); render(); } });
 
-    ["search", "category", "area", "town", "day", "maxPrice", "free", "sessionLength", "sen", "termTime", "bookingRequired", "accessibility"].forEach(id => {
+    ["search", "category", "area", "town", "day", "maxPrice", "free", "sessionLength", "sen", "termTime", "bookingRequired"].forEach(id => {
       if (!$(id)) return;
       $(id).addEventListener("input", render);
       $(id).addEventListener("change", render);
     });
 
-    if ($("ageRange")) {
+    document.querySelectorAll(".accessibility-option").forEach(option => {\n      option.addEventListener("change", render);\n    });\n\n    if ($("ageRange")) {
       $("ageRange").addEventListener("change", () => {
         const preset = agePresets[$("ageRange").value];
         if (preset) {
@@ -773,7 +774,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (params.get("nearby") === "1") void loadHomeLocation();
 
     $("clear").onclick = () => {
-      ["search", "category", "area", "town", "day", "maxPrice", "sessionLength", "sen", "termTime", "accessibility"].forEach(id => { if ($(id)) $(id).value = ""; });
+      ["search", "category", "area", "town", "day", "maxPrice", "sessionLength", "sen", "termTime"].forEach(id => { if ($(id)) $(id).value = ""; });
+      document.querySelectorAll(".accessibility-option").forEach(el => el.checked = false);
       $("ageMin").value = 0;
       $("ageMax").value = 9;
       if ($("ageRange")) $("ageRange").value = "";
