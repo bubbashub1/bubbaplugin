@@ -49,6 +49,7 @@ async function loadDashboard(){
   const render=()=>{
    const q=document.querySelector("#adminSearch").value.trim().toLowerCase();
    const list=all.filter(a=>String([a.title,a.category,a.organisation_name,a.county,a.town,a.region].filter(Boolean).join(" ")).toLowerCase().includes(q));
+   if(!table)return;
    table.innerHTML=list.map(a=>{const price=a.price_from!==null&&a.price_from!==undefined?"£"+Number(a.price_from).toFixed(2):"—";const status=a.status==="published"?"Published":"Draft";return '<tr><td><strong>'+escapeHtml(a.title)+'</strong><small>'+escapeHtml(a.organisation_name||"")+'</small></td><td>'+escapeHtml(a.category)+'</td><td>'+escapeHtml(a.town||a.county||"—")+'</td><td>'+escapeHtml(a.session_summary||"—")+'</td><td>'+price+'</td><td><span class="admin-status admin-status-'+escapeHtml(a.status)+'">'+status+'</span></td><td><button type="button" class="button button-soft admin-edit-activity" data-id="'+escapeHtml(a.id)+'">Edit</button></td></tr>';}).join("")||'<tr><td colspan="7">No activities found.</td></tr>';
   };
   document.querySelector("#adminSearch").oninput=render;
