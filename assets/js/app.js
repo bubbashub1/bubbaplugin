@@ -195,7 +195,7 @@ void bhHydrateSaved();
 
 (function(){
   const s=document.createElement("script");
-  s.src="assets/js/site-auth.js?v=20260927-auth3";
+  s.src="assets/js/site-auth.js";
   s.defer=true;
   document.head.appendChild(s);
 })();
@@ -248,8 +248,7 @@ void bhHydrateSaved();
       </div>
     </footer>`;
   const existing=document.querySelector(".site-footer");
-  if(existing) existing.outerHTML=footerHTML;
-  else document.body.insertAdjacentHTML("beforeend",footerHTML);
+  if(!existing) document.body.insertAdjacentHTML("beforeend",footerHTML);
 })();
 
 /* Shared shell enhancements. CSS lives in styles.css so the UI does not depend on JavaScript injecting styles. */
