@@ -62,3 +62,18 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
  .bh-leader-modal,.booking-modal-backdrop,.contact-modal-backdrop,.hub-modal,.hero-advanced-modal{padding:12px!important}
  .bh-leader-modal-card,.booking-modal,.contact-modal,.hub-modal-card,.hero-advanced-dialog{max-height:calc(100dvh - 24px)!important;padding:22px 18px!important;border-radius:22px!important}
 }
+
+
+/* =========================================================
+   HOMEPAGE SHOWCASE VISUAL TREATMENT
+   ========================================================= */
+.bh-home .site-header{border-radius:0;max-width:1400px;width:100%;margin:0 auto;box-shadow:0 4px 18px rgba(18,63,49,.08)}
+.bh-home .main-nav{gap:2px}.bh-home .main-nav a{font-size:12px;padding:9px 11px}
+.bh-home .home-header-search{color:var(--bh-dark)}
+.bh-home .home-category-row{background:rgba(255,255,255,.98)}
+.bh-home .home-activity-card:hover,.bh-home .home-lower-card:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(18,63,49,.1)}
+.bh-home .home-plan-band{background:linear-gradient(135deg,#eef7e8,#e0f0e9)}
+.bh-home .home-footer{background:#0d3b32;color:#fff;border-radius:0 0 24px 24px}
+.bh-home .home-footer .site-footer-column h2,.bh-home .home-footer .site-footer-title{color:#fff}
+.bh-home .home-footer .site-footer-links a{color:rgba(255,255,255,.85)}
+.bh-home .home-footer .site-footer-links a:hover{color:#f6c84a}
