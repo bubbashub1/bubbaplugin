@@ -821,7 +821,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.querySelectorAll(".directory-view").forEach(button => button.classList.toggle("active", button.dataset.view === currentView));
     updateViewVisibility();
-    renderAgeTrack();
     render();
   } catch (error) {
     const results = $("results");
