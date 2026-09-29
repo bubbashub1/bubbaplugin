@@ -206,13 +206,13 @@ Create booking payment processing where the leader receives the booking payment 
 - [ ] The system prevents duplicate payment/commission records.
 
 **Dependencies / questions:**
-- Confirm whether the 1.5% is charged to the customer, deducted from the leader's booking proceeds, or handled another way.
+- **Confirmed:** the 1.5% Bubba Hub booking fee is paid by the customer, so the leader does not lose money from the platform booking fee.
 - Confirm whether the 1.5% applies to bank-transfer bookings and manually confirmed bookings.
-- Define whether provider processing fees are paid by Bubba Hub, the leader, or the customer.
-- Confirm the legal/tax/VAT treatment of the booking fee.
+- Provider processing fees still need to be defined separately from the 1.5% Bubba Hub booking fee.
+- **Confirmed for the current project plan:** no VAT is required for the booking fee.
 - Confirm the payment provider's marketplace/connect requirements for paying leaders directly.
-- Define payout timing: immediate, scheduled, or provider-controlled.
-- Define refund policy and how the 1.5% fee is treated on refunds.
+- Payout timing remains to be defined based on the selected payment provider and leader payment setup.
+- **Confirmed:** refunds are handled directly between the customer and the related organiser; Bubba Hub does not manage the refund itself.
 - Define whether leaders must complete identity/business verification before accepting online payments.
 
 **Implementation notes:**
