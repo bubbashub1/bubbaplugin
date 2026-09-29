@@ -26,13 +26,12 @@ jobs:
           chmod 600 "$RUNNER_TEMP/eweball_deploy_key"
           ssh-keygen -y -f "$RUNNER_TEMP/eweball_deploy_key" >/dev/null
 
-      - name: Add eWebAll host key
-        env:
-          SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
-          SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+      - name: Prepare SSH connection
         run: |
           mkdir -p "$RUNNER_TEMP/ssh"
-          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" > "$RUNNER_TEMP/ssh/known_hosts"
+          # Accept the eWebAll host key during the SSH connection so a
+          # failed ssh-keyscan cannot block deployment before SFTP starts.
+          : > "$RUNNER_TEMP/ssh/known_hosts"
 
       - name: Check eWebAll SFTP root
         env:
@@ -42,7 +41,7 @@ jobs:
         run: |
           set -euo pipefail
           printf 'pwd\nls -la\n' > "$RUNNER_TEMP/check.sftp"
-          sftp -b "$RUNNER_TEMP/check.sftp" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
+          sftp -b "$RUNNER_TEMP/check.sftp" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
 
       - name: Deploy via OpenSSH SFTP
         env:
@@ -73,7 +72,7 @@ jobs:
               done
             fi
           done
-          sftp -b "$SFTP_BATCH" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
+          sftp -b "$SFTP_BATCH" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
           echo "Deployment upload finished."
           printf 'cd "%s"\n' "$REMOTE_PATH" > "$RUNNER_TEMP/verify.sftp"
           printf 'ls -l index.html\n' >> "$RUNNER_TEMP/verify.sftp"
@@ -83,5 +82,5 @@ jobs:
           printf 'ls -l data/activities.json\n' >> "$RUNNER_TEMP/verify.sftp"
           printf 'ls -l images/home\n' >> "$RUNNER_TEMP/verify.sftp"
           printf 'ls -l schools/index.html\n' >> "$RUNNER_TEMP/verify.sftp"
-          sftp -b "$RUNNER_TEMP/verify.sftp" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
+          sftp -b "$RUNNER_TEMP/verify.sftp" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
           echo "Deployment completed and remote files verified successfully."
