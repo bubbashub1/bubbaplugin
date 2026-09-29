@@ -562,3 +562,40 @@
   .bh-directory .directory-results-column{display:block}
   .bh-directory .activity-grid.directory-view-grid{grid-template-columns:1fr!important}
 }
+
+
+/* Full-bleed directory hero — background spans the viewport while content keeps site alignment */
+.bh-directory .directory-hero-fullwidth{
+  width:100vw;
+  max-width:none;
+  margin-left:calc(50% - 50vw);
+  margin-right:0;
+  margin-bottom:30px;
+}
+.bh-directory .directory-hero-fullwidth .directory-hero-search{
+  width:100%;
+  margin:0;
+  box-sizing:border-box;
+  padding-left:max(48px,calc((100vw - 1380px)/2 + 32px));
+  padding-right:max(48px,calc((100vw - 1380px)/2 + 32px));
+  border-left:0;
+  border-right:0;
+  border-radius:0;
+}
+@media(max-width:700px){
+  .bh-directory .directory-hero-fullwidth{
+    margin-left:calc(50% - 50vw);
+    margin-right:0;
+  }
+  .bh-directory .directory-hero-fullwidth .directory-hero-search{
+    padding-left:27px;
+    padding-right:27px;
+    border-radius:0;
+  }
+}
+@media(max-width:420px){
+  .bh-directory .directory-hero-fullwidth .directory-hero-search{
+    padding-left:24px;
+    padding-right:24px;
+  }
+}
