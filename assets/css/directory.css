@@ -757,3 +757,51 @@
   .bh-directory .directory-map-modal{padding:10px}
   .bh-directory .directory-map-modal-inner{width:100%;height:92vh;border-radius:18px}
 }
+
+
+/* Full-screen map modal using the existing Leaflet map */
+.bh-directory.directory-map-modal-open{overflow:hidden}
+@media(min-width:701px){
+  .bh-directory #mapView.is-map-modal{
+    position:fixed!important;
+    inset:5vh 5vw!important;
+    z-index:12000!important;
+    width:90vw!important;
+    height:90vh!important;
+    min-height:0!important;
+    margin:0!important;
+    border-radius:24px!important;
+    box-shadow:0 30px 90px rgba(13,59,50,.32)!important;
+  }
+}
+@media(max-width:700px){
+  .bh-directory #mapView.is-map-modal{
+    position:fixed!important;
+    inset:10px!important;
+    z-index:12000!important;
+    width:auto!important;
+    height:calc(100vh - 20px)!important;
+    min-height:0!important;
+    margin:0!important;
+    border-radius:18px!important;
+  }
+}
+.bh-directory #mapView.is-map-modal .directory-map-expand{display:none}
+.bh-directory #mapView .directory-map-modal-close{
+  display:none;
+  position:absolute;
+  top:14px;
+  right:14px;
+  z-index:1001;
+  width:42px;
+  height:42px;
+  border:1px solid rgba(20,68,0,.12);
+  border-radius:50%;
+  background:#fff;
+  color:var(--bh-site-dark);
+  font-size:25px;
+  line-height:1;
+  cursor:pointer;
+  box-shadow:0 5px 14px rgba(20,68,0,.12);
+}
+.bh-directory #mapView.is-map-modal .directory-map-modal-close{display:grid;place-items:center}
