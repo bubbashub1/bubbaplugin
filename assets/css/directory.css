@@ -87,3 +87,10 @@
  .bh-directory .directory-view{flex:1;padding:8px 7px}
  .bh-directory .listing-map{height:480px}
 }
+/* Popular category shortcuts */
+.bh-directory .directory-popular{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bh-directory .directory-popular-label{font-size:12px;font-weight:900;color:var(--bh-site-dark);margin-right:2px}
+.bh-directory .directory-popular-chip{border:1px solid rgba(13,59,50,.12);background:rgba(255,255,255,.78);color:var(--bh-site-dark);border-radius:999px;padding:8px 13px;font:800 12px "Quicksand",sans-serif;cursor:pointer;transition:transform .15s ease,background .15s ease,border-color .15s ease}
+.bh-directory .directory-popular-chip:hover{transform:translateY(-1px);background:#fff;border-color:var(--bh-site-teal)}
+.bh-directory .directory-popular-chip.active{background:var(--bh-site-teal);border-color:var(--bh-site-teal);color:#fff}
+@media(max-width:700px){.bh-directory .directory-popular{gap:6px}.bh-directory .directory-popular-chip{padding:7px 10px;font-size:11px}}
