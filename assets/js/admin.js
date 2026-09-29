@@ -374,6 +374,20 @@ async function createActivity(e){
  finally{button.disabled=false}
 }
 
+async function ensureThreeActivities(){
+ const button=document.querySelector("#ensureThreeActivities"),message=document.querySelector("#directoryTestMessage");
+ if(!button||!message)return;
+ button.disabled=true;message.textContent="Checking published activities…";message.classList.remove("is-error");
+ try{
+  const r=await fetch("api/admin-demo-activities.php",{method:"POST",credentials:"same-origin",headers:{"Accept":"application/json"}});
+  const d=await r.json();
+  if(!r.ok||!d.ok)throw new Error(d.error||"Could not prepare directory test listings.");
+  message.textContent="✓ "+d.message+" Published activities: "+d.published_count+".";
+  await loadDashboard();
+ }catch(e){message.textContent=e.message||"Could not prepare directory test listings.";message.classList.add("is-error");}
+ finally{button.disabled=false;}
+}
+document.querySelector("#ensureThreeActivities")?.addEventListener("click",ensureThreeActivities);
 async function loadTestUsers(){
  const box=document.querySelector("#testUserList"); if(!box)return;
  try{
