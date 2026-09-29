@@ -2,9 +2,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
  const root=document.getElementById("savedResults"),count=document.getElementById("savedCount");
  const esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])));
  try{
-  const auth=await fetch("api/auth.php?action=me",{credentials:"same-origin",cache:"no-store"}).then(r=>r.json());
-  if(!auth.authenticated){location.href="account.html?next="+encodeURIComponent("saved-activities.html");return}
-  const data=await fetch("api/my-hub.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}).then(r=>r.json());
+  const auth=await fetch("../api/auth.php?action=me",{credentials:"same-origin",cache:"no-store"}).then(r=>r.json());
+  if(!auth.authenticated){location.href="../account.html?next="+encodeURIComponent("saved-activities.html");return}
+  const data=await fetch("../api/my-hub.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}).then(r=>r.json());
   if(!data.ok)throw new Error(data.message||"Could not load saved activities.");
   const ids=new Set((data.saved||[]).map(String));
   const activities=await bhActivities();
@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
    const id=String(btn.dataset.id);const next=(data.saved||[]).map(String).filter(x=>x!==id);
    btn.disabled=true;
    try{
-    const r=await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"sync_saved",saved:next,csrf:auth.csrf||""})});
+    const r=await fetch("../api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"sync_saved",saved:next,csrf:auth.csrf||""})});
     const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.message||j.error||"Could not remove saved activity.");
     bhSet(BH_KEYS.saved,(j.saved||next).map(String));location.reload();
    }catch(e){btn.disabled=false;alert(e.message||"Could not remove saved activity.")}
