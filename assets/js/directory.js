@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (desktopToggle) desktopToggle.innerHTML = open
           ? "Close filters <span aria-hidden=\"true\">×</span>"
           : "Filters <span aria-hidden=\"true\">☰</span>";
-        document.body.classList.toggle("directory-filter-open", open && window.innerWidth <= 900);
+        document.body.classList.toggle("directory-filter-open", open);
       };
 
       const desktopToggle = $("desktopFilterButton");
@@ -634,7 +634,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const senMatch = !sen || (sen === "yes" ? ["yes","1","true"].includes(senValue) : !["yes","1","true"].includes(senValue));
         const termMatch = !termTime || (termTime === "yes" ? sessions.some(x => !!x.term_time) : !sessions.some(x => !!x.term_time));
         const bookingMatch = !bookingRequired || !!activity.booking_url;
-        const accessibilityMatch = !accessibility || (Array.isArray(activity.accessibility) && activity.accessibility.includes(accessibility));
+        const accessibilityMatch = !accessibility || (Array.isArray(activity.accessibility) && activity.accessibility.length > 0);
 
         return (!search || text.includes(search)) &&
           (!category || (categoryMap[activity.category] || activity.category) === category) &&
