@@ -122,7 +122,7 @@ try {
             v.longitude,
             v.notes AS venue_notes
         FROM bh_activities a
-        INNER JOIN bh_organisers o ON o.id = a.organiser_id AND o.status = 'published'
+        LEFT JOIN bh_organisers o ON o.id = a.organiser_id
         LEFT JOIN bh_venues v ON v.activity_id = a.id
         WHERE " . implode(' AND ', $where) . "
         ORDER BY a.title ASC, a.id ASC
@@ -151,8 +151,8 @@ try {
                 'booking_url' => $row['booking_url'],
                 'image_path' => $row['image_path'],
                 'organiser' => [
-                    'id' => (int)$row['organiser_id'],
-                    'name' => $row['organisation_name'],
+                    'id' => $row['organiser_id'] !== null ? (int)$row['organiser_id'] : null,
+                    'name' => $row['organisation_name'] ?: 'Bubba Hub organiser',
                 ],
                 'venues' => [],
                 'sessions' => [],
