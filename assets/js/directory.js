@@ -588,7 +588,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const hasActiveDirectoryFilters = !!(
         search || category || region || town || day || maxPrice || freeOnly ||
-        sessionLength || sen || termTime || bookingRequired || accessibility ||
+        sessionLength || sen || termTime || bookingRequired || accessibility.length ||
         minAge > 0 || maxAge < 9 || params.get("saved")
       );
 
