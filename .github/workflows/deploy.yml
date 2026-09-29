@@ -18,70 +18,70 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-name: Prepare SSH key
-env:
-  SSH_PRIVATE_KEY: ${{ secrets.EWEBALL_SSH_PRIVATE_KEY }}
-run: |
-  printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/eweball_deploy_key"
-  chmod 600 "$RUNNER_TEMP/eweball_deploy_key"
-  ssh-keygen -y -f "$RUNNER_TEMP/eweball_deploy_key" >/dev/null
+      - name: Prepare SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EWEBALL_SSH_PRIVATE_KEY }}
+        run: |
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/eweball_deploy_key"
+          chmod 600 "$RUNNER_TEMP/eweball_deploy_key"
+          ssh-keygen -y -f "$RUNNER_TEMP/eweball_deploy_key" >/dev/null
 
-name: Add eWebAll host key
-env:
-  SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
-  SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
-run: |
-  mkdir -p "$RUNNER_TEMP/ssh"
-  ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" > "$RUNNER_TEMP/ssh/known_hosts"
+      - name: Add eWebAll host key
+        env:
+          SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+          SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/ssh"
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" > "$RUNNER_TEMP/ssh/known_hosts"
 
-name: Check eWebAll SFTP root
-env:
-  SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
-  SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
-  SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
-run: |
-  set -euo pipefail
-  printf 'pwd\nls -la\n' > "$RUNNER_TEMP/check.sftp"
-  sftp -b "$RUNNER_TEMP/check.sftp" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
+      - name: Check eWebAll SFTP root
+        env:
+          SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
+          SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+        run: |
+          set -euo pipefail
+          printf 'pwd\nls -la\n' > "$RUNNER_TEMP/check.sftp"
+          sftp -b "$RUNNER_TEMP/check.sftp" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
 
-name: Deploy via OpenSSH SFTP
-env:
-  SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
-  SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
-  SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
-  REMOTE_PATH: ${{ secrets.EWEBALL_REMOTE_PATH }}
-run: |
-  set -euo pipefail
-  SFTP_BATCH="$RUNNER_TEMP/deploy.sftp"
-  : > "$SFTP_BATCH"
-  printf 'cd "%s"\n' "$REMOTE_PATH" >> "$SFTP_BATCH"
-  find . -maxdepth 1 -type f ! -name '.gitignore' ! -name 'README.md' -printf 'put "%p"\n' >> "$SFTP_BATCH"
-  # OneSignal requires this worker at the public site root; upload it explicitly as a safety check.
-  if [ -f "OneSignalSDKWorker.js" ]; then
-    printf 'put "OneSignalSDKWorker.js"\n' >> "$SFTP_BATCH"
-  else
-    echo "ERROR: OneSignalSDKWorker.js is missing from the repository root." >&2
-    exit 1
-  fi
-  for dir in api assets data library images schools; do
-    if [ -d "$dir" ]; then
-      find "$dir" -type d -print | while IFS= read -r folder; do
-        printf -- '-mkdir "%s"\n' "$folder" >> "$SFTP_BATCH"
-      done
-      find "$dir" -type f -print | while IFS= read -r file; do
-        printf 'put "%s" "%s"\n' "$file" "$file" >> "$SFTP_BATCH"
-      done
-    fi
-  done
-  sftp -b "$SFTP_BATCH" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
-  echo "Deployment upload finished."
-  printf 'cd "%s"\n' "$REMOTE_PATH" > "$RUNNER_TEMP/verify.sftp"
-  printf 'ls -l index.html\n' >> "$RUNNER_TEMP/verify.sftp"
-  printf 'ls -l OneSignalSDKWorker.js\n' >> "$RUNNER_TEMP/verify.sftp"
-  printf 'ls -l assets/css/styles.css\n' >> "$RUNNER_TEMP/verify.sftp"
-  printf 'ls -l assets/js/app.js\n' >> "$RUNNER_TEMP/verify.sftp"
-  printf 'ls -l data/activities.json\n' >> "$RUNNER_TEMP/verify.sftp"
-  printf 'ls -l images/home\n' >> "$RUNNER_TEMP/verify.sftp"
-  printf 'ls -l schools/index.html\n' >> "$RUNNER_TEMP/verify.sftp"
-  sftp -b "$RUNNER_TEMP/verify.sftp" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
-  echo "Deployment completed and remote files verified successfully."
+      - name: Deploy via OpenSSH SFTP
+        env:
+          SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
+          SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+          REMOTE_PATH: ${{ secrets.EWEBALL_REMOTE_PATH }}
+        run: |
+          set -euo pipefail
+          SFTP_BATCH="$RUNNER_TEMP/deploy.sftp"
+          : > "$SFTP_BATCH"
+          printf 'cd "%s"\n' "$REMOTE_PATH" >> "$SFTP_BATCH"
+          find . -maxdepth 1 -type f ! -name '.gitignore' ! -name 'README.md' -printf 'put "%p"\n' >> "$SFTP_BATCH"
+          # OneSignal requires this worker at the public site root; upload it explicitly as a safety check.
+          if [ -f "OneSignalSDKWorker.js" ]; then
+            printf 'put "OneSignalSDKWorker.js"\n' >> "$SFTP_BATCH"
+          else
+            echo "ERROR: OneSignalSDKWorker.js is missing from the repository root." >&2
+            exit 1
+          fi
+          for dir in api assets data library images schools; do
+            if [ -d "$dir" ]; then
+              find "$dir" -type d -print | while IFS= read -r folder; do
+                printf -- '-mkdir "%s"\n' "$folder" >> "$SFTP_BATCH"
+              done
+              find "$dir" -type f -print | while IFS= read -r file; do
+                printf 'put "%s" "%s"\n' "$file" "$file" >> "$SFTP_BATCH"
+              done
+            fi
+          done
+          sftp -b "$SFTP_BATCH" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
+          echo "Deployment upload finished."
+          printf 'cd "%s"\n' "$REMOTE_PATH" > "$RUNNER_TEMP/verify.sftp"
+          printf 'ls -l index.html\n' >> "$RUNNER_TEMP/verify.sftp"
+          printf 'ls -l OneSignalSDKWorker.js\n' >> "$RUNNER_TEMP/verify.sftp"
+          printf 'ls -l assets/css/styles.css\n' >> "$RUNNER_TEMP/verify.sftp"
+          printf 'ls -l assets/js/app.js\n' >> "$RUNNER_TEMP/verify.sftp"
+          printf 'ls -l data/activities.json\n' >> "$RUNNER_TEMP/verify.sftp"
+          printf 'ls -l images/home\n' >> "$RUNNER_TEMP/verify.sftp"
+          printf 'ls -l schools/index.html\n' >> "$RUNNER_TEMP/verify.sftp"
+          sftp -b "$RUNNER_TEMP/verify.sftp" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
+          echo "Deployment completed and remote files verified successfully."
