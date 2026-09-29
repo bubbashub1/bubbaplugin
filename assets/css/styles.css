@@ -3395,3 +3395,58 @@ main > .admin-panel:last-of-type .admin-links > div{padding:16px;background:#fff
 @media(max-width:950px){.home-search-fields{grid-template-columns:1fr 1fr}.home-search-fields .button{grid-column:1/-1}.home-category-row{grid-template-columns:repeat(3,1fr)}.home-category-row a:nth-child(3){border-right:0}.home-activity-grid{grid-template-columns:repeat(2,1fr)}.home-plan-band{grid-template-columns:130px 1fr}.home-plan-benefits{grid-column:1/-1;grid-template-columns:repeat(2,1fr)}.home-lower-grid{grid-template-columns:1fr 1fr}.home-admin-preview{grid-column:1/-1}}
 @media(max-width:650px){.home-header{width:calc(100% - 12px)}.home-brand .brand-logo{max-width:180px;height:48px}.home-header-search{margin-left:auto}.home-hero{width:calc(100% - 12px);min-height:610px}.home-hero-image{border-radius:0 0 22px 22px;background-position:58% center}.home-hero-copy{width:100%;padding:28px 14px 330px}.home-brush{font-size:30px;padding:20px 22px}.home-hero-copy p{font-size:13px}.home-search{left:10px;right:10px;bottom:-125px;padding:15px;border-radius:20px}.home-search-fields{grid-template-columns:1fr}.home-search-fields .button{grid-column:auto}.home-category-row{margin-top:155px;grid-template-columns:1fr 1fr;padding:8px}.home-category-row a{border-right:0;border-bottom:1px solid var(--bh-border);justify-content:flex-start}.home-category-row a:last-child{grid-column:1/-1;border-bottom:0}.home-section{padding:20px 0}.home-activity-grid{grid-template-columns:1fr 1fr}.home-card-image{height:125px}.home-age-badge{top:108px}.home-heart{top:130px}.home-plan-band{grid-template-columns:1fr;padding:22px}.home-plan-photo{margin:auto}.home-plan-benefits{grid-template-columns:1fr}.home-lower-grid{grid-template-columns:1fr}.home-admin-preview{grid-column:auto}.home-admin-layout{grid-template-columns:95px 1fr}.home-admin-stats{grid-template-columns:1fr 1fr}.home-footer{width:calc(100% - 12px)}}
 @media(max-width:420px){.home-activity-grid{grid-template-columns:1fr}.home-category-row{grid-template-columns:1fr}.home-category-row a:last-child{grid-column:auto}}
+
+/* ==========================================================================
+   DIRECTORY — FINAL HEADER / SEARCH AUTHORITY
+   Keeps the directory search visible directly beneath the header while
+   scrolling and restores a readable desktop navigation size.
+   ========================================================================== */
+
+@media (min-width: 901px) {
+  .bh-directory .directory-hero-search {
+    position: sticky;
+    top: 92px;
+    z-index: 50;
+    align-self: flex-start;
+  }
+}
+
+.bh-directory .site-header .main-nav {
+  gap: 8px;
+}
+
+.bh-directory .site-header .main-nav a {
+  min-height: 44px;
+  padding: 10px 14px;
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.bh-directory .site-header > .button,
+.bh-directory .site-header > .header-account-actions {
+  font-size: 14px;
+}
+
+@media (max-width: 1100px) and (min-width: 901px) {
+  .bh-directory .site-header .main-nav {
+    gap: 3px;
+  }
+
+  .bh-directory .site-header .main-nav a {
+    padding-inline: 9px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 900px) {
+  .bh-directory .directory-hero-search {
+    position: relative;
+    top: auto;
+    z-index: 5;
+  }
+
+  .bh-directory .site-header .main-nav a {
+    font-size: 15px;
+  }
+}
