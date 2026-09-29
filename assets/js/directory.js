@@ -98,6 +98,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const mobileToggle = $("filterToggle");
       const panel = $("directoryFilters");
       const openSearch = $("openSearchFilters");
+      const closeSearch = $("closeSearchFilters");
 
       if (advancedToggle && advancedFields) {
         advancedToggle.onclick = () => {
@@ -127,6 +128,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const desktopToggle = $("desktopFilterButton");
       if (mobileToggle) mobileToggle.onclick = () => setMobileOpen(!panel.classList.contains("is-open"));
       if (desktopToggle) desktopToggle.onclick = () => setMobileOpen(!panel.classList.contains("is-open"));
+      if (closeSearch) closeSearch.onclick = () => setMobileOpen(false);
       if (openSearch) openSearch.onclick = () => {
         if (advancedFields) {
           advancedFields.hidden = false;
