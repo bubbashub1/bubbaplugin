@@ -358,3 +358,15 @@ CREATE TABLE IF NOT EXISTS bh_push_notifications (
  UNIQUE KEY uq_push_notification (user_id,slot_id,notification_type),
  INDEX idx_push_notification_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- Leader support expertise. These choices are used for private family support matching.
+CREATE TABLE IF NOT EXISTS bh_leader_expertise (
+ organiser_id BIGINT UNSIGNED NOT NULL,
+ topic_key VARCHAR(80) NOT NULL,
+ enabled TINYINT(1) NOT NULL DEFAULT 1,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ PRIMARY KEY (organiser_id, topic_key),
+ INDEX idx_leader_expertise_topic (topic_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
