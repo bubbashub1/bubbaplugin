@@ -359,3 +359,39 @@
     font-size:30px;
   }
 }
+
+/* Hero calendar action */
+.bh-directory .directory-hero-actions{
+  position:relative;
+  z-index:2;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+.bh-directory .directory-hero-actions .directory-search-advanced-link{
+  margin:0;
+}
+.bh-directory .directory-calendar-hero-button{
+  min-height:38px;
+  padding:8px 15px;
+  font-size:12px;
+  border:1px solid rgba(13,59,50,.10);
+  background:rgba(255,255,255,.82);
+}
+.bh-directory .directory-calendar-hero-button:hover{
+  background:#fff;
+}
+@media(max-width:700px){
+  .bh-directory .directory-hero-actions{
+    align-items:stretch;
+    flex-direction:column;
+    gap:5px;
+  }
+  .bh-directory .directory-calendar-hero-button,
+  .bh-directory .directory-search-advanced-link{
+    width:100%;
+    text-align:left;
+  }
+}
