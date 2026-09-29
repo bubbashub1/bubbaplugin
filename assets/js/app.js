@@ -325,21 +325,19 @@ void bhHydrateSaved();
   else initMobileNav();
 })();
 
-/* Central editable navigation */
-(async function(){
-  try{
-    const response=await fetch("api/menu.php",{cache:"no-store",headers:{Accept:"application/json"}});
-    const payload=await response.json();
-    if(!response.ok||!payload.ok)return;
-    const menus=payload.data||{};
-    const apply=(el,items)=>{
-      if(!el||!Array.isArray(items))return;
-      el.innerHTML=items.filter(x=>x&&x.visible!==false&&x.label&&x.url).map(x=>'<a href="'+bhEscape(x.url)+'">'+bhEscape(x.label)+'</a>').join("");
-    };
-    apply(document.querySelector(".site-header .main-nav"),menus.main);
-    const cols=document.querySelectorAll(".site-footer .site-footer-column");
-    apply(cols[0]?.querySelector(".site-footer-links"),menus.footer_main);
-    apply(cols[1]?.querySelector(".site-footer-links"),menus.footer_tools);
-    apply(cols[2]?.querySelector(".site-footer-links"),menus.footer_legal);
-  }catch(e){}
+/* Main navigation is intentionally fixed site-wide.
+   The Admin menu editor must not override the public header navigation. */
+(function(){
+  const MAIN_NAV=[
+    {label:"Find activities",url:"directory.html"},
+    {label:"My Hub",url:"my-hub.html"},
+    {label:"Support & Guidance",url:"help-support.html"},
+    {label:"Class Leaders",url:"leader.html"},
+    {label:"Account",url:"account.html"}
+  ];
+  const applyMainNav=()=>document.querySelectorAll(".site-header .main-nav").forEach(nav=>{
+    nav.innerHTML=MAIN_NAV.map(x=>'<a href="'+bhEscape(x.url)+'">'+bhEscape(x.label)+'</a>').join("");
+  });
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",applyMainNav,{once:true});
+  else applyMainNav();
 })();
