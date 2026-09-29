@@ -13,6 +13,7 @@ try {
     $offset = ($page - 1) * $perPage;
 
     $search = trim((string)($_GET['search'] ?? ''));
+    $slug = trim((string)($_GET['slug'] ?? ''));
     $category = trim((string)($_GET['category'] ?? ''));
     $town = trim((string)($_GET['town'] ?? ''));
     $region = trim((string)($_GET['region'] ?? ''));
@@ -51,6 +52,11 @@ try {
     // data can use 'publish', while Bubba Hub admin uses 'published'. Drafts remain excluded.
     $where = ["LOWER(TRIM(COALESCE(a.status, ''))) IN ('published', 'publish')"];
     $params = [];
+
+    if ($slug !== '') {
+        $where[] = "a.slug = :slug";
+        $params[':slug'] = $slug;
+    }
 
     if ($search !== '') {
         $where[] = "(a.title LIKE :search_title OR a.description LIKE :search_description OR a.category LIKE :search_category OR o.organisation_name LIKE :search_organisation OR v.venue_name LIKE :search_venue OR v.town LIKE :search_town)";
