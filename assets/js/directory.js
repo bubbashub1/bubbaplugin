@@ -72,11 +72,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       preschool: [3, 5],
       school: [5, 9]
     };
-    const agePreset = agePresets[params.get("age_preset") || ""];
+    const agePresetKey = params.get("age_preset") || "";
+    const agePreset = agePresets[agePresetKey];
     if (agePreset) {
       $("ageMin").value = String(agePreset[0]);
       $("ageMax").value = String(agePreset[1]);
-      if ($("heroAge")) $("heroAge").value = params.get("age_preset");
+      if ($("ageRange")) $("ageRange").value = agePresetKey;
+      if ($("heroAge")) $("heroAge").value = agePresetKey;
     }
     if (params.get("age_min") !== null) $("ageMin").value = params.get("age_min");
     if (params.get("age_max") !== null) $("ageMax").value = params.get("age_max");
@@ -87,7 +89,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (params.get("sen")) $("sen").value = params.get("sen");
     if (params.get("termTime")) $("termTime").value = params.get("termTime");
     if (params.get("bookingRequired")) $("bookingRequired").checked = params.get("bookingRequired") === "1";
-    if (params.get("accessibility")) $("accessibility").value = params.get("accessibility");
+    if (params.get("accessibility") && $("accessibility")) $("accessibility").checked = params.get("accessibility") === "1";
 
     // Main filters stay simple; all other filters live inside Advanced search.
     const setupAdvancedSearch = () => {
@@ -111,14 +113,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       const setMobileOpen = open => {
         if (!panel || !mobileToggle) return;
         panel.classList.toggle("is-open", open);
-        mobileToggle.setAttribute("aria-expanded", String(open));
-        mobileToggle.innerHTML = open
+        mobileToggle?.setAttribute("aria-expanded", String(open));
+        if (mobileToggle) mobileToggle.innerHTML = open
           ? "Close filters <span aria-hidden=\"true\">×</span>"
           : "Filters <span aria-hidden=\"true\">＋</span>";
+        desktopToggle?.setAttribute("aria-expanded", String(open));
+        if (desktopToggle) desktopToggle.innerHTML = open
+          ? "Close filters <span aria-hidden=\"true\">×</span>"
+          : "Filters <span aria-hidden=\"true\">☰</span>";
         document.body.classList.toggle("directory-filter-open", open && window.innerWidth <= 900);
       };
 
+      const desktopToggle = $("desktopFilterButton");
       if (mobileToggle) mobileToggle.onclick = () => setMobileOpen(!panel.classList.contains("is-open"));
+      if (desktopToggle) desktopToggle.onclick = () => setMobileOpen(!panel.classList.contains("is-open"));
       if (openSearch) openSearch.onclick = () => {
         if (advancedFields) {
           advancedFields.hidden = false;
@@ -135,13 +143,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       };
 
       window.addEventListener("resize", () => {
-        if (window.innerWidth > 900 && panel) {
-          panel.classList.add("is-open");
+        if (window.innerWidth > 900 && panel && panel.classList.contains("is-open")) {
+          panel.classList.remove("is-open");
           document.body.classList.remove("directory-filter-open");
         }
       });
 
-      if (window.innerWidth > 900 && panel) panel.classList.add("is-open");
+      if (window.innerWidth > 900 && panel) setMobileOpen(false);
       else setMobileOpen(false);
     };
 
@@ -564,11 +572,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       if ($("sessionLength")) $("sessionLength").value = "";
       if ($("sen")) $("sen").value = "";
       if ($("termTime")) $("termTime").value = "";
-      if ($("accessibility")) $("accessibility").value = "";
+      if ($("accessibility")) $("accessibility").checked = false;
       if ($("bookingRequired")) $("bookingRequired").checked = false;
       if ($("free")) $("free").checked = false;
       if ($("ageMin")) $("ageMin").value = "0";
       if ($("ageMax")) $("ageMax").value = "9";
+      if ($("ageRange")) $("ageRange").value = "";
     }
 
     const render = () => {
@@ -586,7 +595,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const sen = $("sen")?.value || "";
       const termTime = $("termTime")?.value || "";
       const bookingRequired = $("bookingRequired")?.checked || false;
-      const accessibility = $("accessibility")?.value || "";
+      const accessibility = $("accessibility")?.checked ? "1" : "";
 
       const hasActiveDirectoryFilters = !!(
         search || category || region || town || day || maxPrice || freeOnly ||
@@ -726,12 +735,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     if ($("search")) $("search").addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); render(); } });
 
     ["search", "category", "area", "town", "day", "maxPrice", "free", "sessionLength", "sen", "termTime", "bookingRequired", "accessibility"].forEach(id => {
+      if (!$(id)) return;
       $(id).addEventListener("input", render);
       $(id).addEventListener("change", render);
     });
 
-    $("ageMin").addEventListener("input", () => updateAge("min"));
-    $("ageMax").addEventListener("input", () => updateAge("max"));
+    if ($("ageRange")) {
+      $("ageRange").addEventListener("change", () => {
+        const preset = agePresets[$("ageRange").value];
+        if (preset) {
+          $("ageMin").value = String(preset[0]);
+          $("ageMax").value = String(preset[1]);
+        } else {
+          $("ageMin").value = "0";
+          $("ageMax").value = "9";
+        }
+        render();
+      });
+    }
+
+    // Age is intentionally a simple dropdown rather than a slider.
 
     $("useHomeLocation").onclick = loadHomeLocation;
     if (params.get("nearby") === "1") void loadHomeLocation();
@@ -740,6 +763,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       ["search", "category", "area", "town", "day", "maxPrice", "sessionLength", "sen", "termTime", "accessibility"].forEach(id => { if ($(id)) $(id).value = ""; });
       $("ageMin").value = 0;
       $("ageMax").value = 9;
+      if ($("ageRange")) $("ageRange").value = "";
       $("free").checked = false;
       if ($("bookingRequired")) $("bookingRequired").checked = false;
       homeLocation = null;
