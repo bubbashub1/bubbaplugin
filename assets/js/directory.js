@@ -550,6 +550,27 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     };
 
+    // A plain directory URL must always open unfiltered. This prevents browser
+    // autofill/restored form state from silently reducing the initial results.
+    const directoryFilterKeys = ["search","q","keyword","category","region","town","age_min","age_max","age_preset","day","max_price","free","sessionLength","sen","termTime","bookingRequired","accessibility","saved"];
+    const hasUrlFilters = directoryFilterKeys.some(key => params.has(key) && params.get(key) !== "");
+    if (!hasUrlFilters) {
+      if ($("search")) $("search").value = "";
+      if ($("category")) $("category").value = "";
+      if ($("area")) $("area").value = "";
+      if ($("town")) $("town").value = "";
+      if ($("day")) $("day").value = "";
+      if ($("maxPrice")) $("maxPrice").value = "";
+      if ($("sessionLength")) $("sessionLength").value = "";
+      if ($("sen")) $("sen").value = "";
+      if ($("termTime")) $("termTime").value = "";
+      if ($("accessibility")) $("accessibility").value = "";
+      if ($("bookingRequired")) $("bookingRequired").checked = false;
+      if ($("free")) $("free").checked = false;
+      if ($("ageMin")) $("ageMin").value = "0";
+      if ($("ageMax")) $("ageMax").value = "9";
+    }
+
     const render = () => {
       updateViewVisibility();
       const search = $("search").value.trim().toLowerCase();
