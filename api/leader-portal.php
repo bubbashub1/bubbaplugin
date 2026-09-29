@@ -66,7 +66,7 @@ if($action==='change_password'){
  $current=(string)($b['current_password']??'');$new=(string)($b['new_password']??'');$confirm=(string)($b['confirm_password']??'');
  if(strlen($new)<8)lp(422,['ok'=>false,'error'=>'password_too_short','message'=>'Choose a password with at least 8 characters.']);if($new!==$confirm)lp(422,['ok'=>false,'error'=>'password_mismatch','message'=>'The passwords do not match.']);
  $q=$db->prepare("SELECT password_hash FROM bh_users WHERE id=? LIMIT 1");$q->execute([$userId]);$u=$q->fetch();if(!$u||!password_verify($current,(string)$u['password_hash']))lp(403,['ok'=>false,'error'=>'current_password_invalid','message'=>'Your current password is not correct.']);
- $db->prepare("UPDATE bh_users SET password_hash=? WHERE id=?")->execute([password_hash($new,PASSWORD_DEFAULT),$userId]);session_regenerate_id(true);$_SESSION['bh_user_id']=$userId];lp(200,['ok'=>true,'csrf'=>$_SESSION['bh_csrf']??'','message'=>'Password changed successfully.']);
+ $db->prepare("UPDATE bh_users SET password_hash=? WHERE id=?")->execute([password_hash($new,PASSWORD_DEFAULT),$userId]);session_regenerate_id(true);$_SESSION['bh_user_id']=$userId;$_SESSION['bh_csrf']=bin2hex(random_bytes(24));lp(200,['ok'=>true,'csrf'=>$_SESSION['bh_csrf']??'','message'=>'Password changed successfully.']);
 }
 if($action==='save_expertise'){
  $keys=is_array($b['topics']??null)?$b['topics']:[];$keys=array_values(array_filter(array_map('strval',$keys),fn($k)=>isset($expertiseTopics[$k])));
