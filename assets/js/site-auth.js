@@ -11,7 +11,7 @@
   const authUrl=rootUrl("auth.html");
   const nextUrl=()=>location.pathname+location.search+location.hash;
   const isRestricted=()=>RESTRICTED_PAGES.has(pageName);
-  const isLeaderPage=()=>LEADER_PAGES.has(pageName);
+  const isLeaderPage=()=>LEADER_PAGES.has(pageName)||/\/leader\//i.test(location.pathname);
 
   function makeLink(label,href,className){
     const a=document.createElement("a"); a.textContent=label; a.href=href;
