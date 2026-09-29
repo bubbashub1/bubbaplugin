@@ -260,7 +260,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     if (![2,3,4,5,6].includes(cardCount)) cardCount = 3;
-    $("cardCount").value = String(cardCount);
+    const cardCountEl = $("cardCount");
+    if (cardCountEl) cardCountEl.value = String(cardCount);
     const updateCardCountVisibility = () => {
       const control = document.querySelector(".directory-count-control");
       if (control) control.hidden = currentView !== "grid";
@@ -803,7 +804,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     $("cardCount").addEventListener("change", () => {
-      cardCount = Number($("cardCount").value);
+      if ($("cardCount")) cardCount = Number($("cardCount").value);
       if (![2,3,4,5,6].includes(cardCount)) cardCount = 3;
       localStorage.setItem("bh_directory_cards", String(cardCount));
       render();
