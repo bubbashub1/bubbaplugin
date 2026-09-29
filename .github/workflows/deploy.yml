@@ -54,22 +54,17 @@ jobs:
           SFTP_BATCH="$RUNNER_TEMP/deploy.sftp"
           : > "$SFTP_BATCH"
           printf 'cd "%s"\n' "$REMOTE_PATH" >> "$SFTP_BATCH"
+          # Upload root files first, then each top-level directory recursively.
+          # This avoids hundreds of individual SFTP mkdir/put operations, which
+          # can trigger eWebAll SFTP disconnects during large deployments.
           find . -maxdepth 1 -type f ! -name '.gitignore' ! -name 'README.md' -printf 'put "%p"\n' >> "$SFTP_BATCH"
-          # OneSignal requires this worker at the public site root; upload it explicitly as a safety check.
-          if [ -f "OneSignalSDKWorker.js" ]; then
-            printf 'put "OneSignalSDKWorker.js"\n' >> "$SFTP_BATCH"
-          else
+          if [ ! -f "OneSignalSDKWorker.js" ]; then
             echo "ERROR: OneSignalSDKWorker.js is missing from the repository root." >&2
             exit 1
           fi
           for dir in api assets data library images schools account; do
             if [ -d "$dir" ]; then
-              find "$dir" -type d -print | while IFS= read -r folder; do
-                printf -- '-mkdir "%s"\n' "$folder" >> "$SFTP_BATCH"
-              done
-              find "$dir" -type f -print | while IFS= read -r file; do
-                printf 'put "%s" "%s"\n' "$file" "$file" >> "$SFTP_BATCH"
-              done
+              printf 'put -r "%s"\n' "$dir" >> "$SFTP_BATCH"
             fi
           done
           sftp -b "$SFTP_BATCH" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
