@@ -119,6 +119,110 @@ The setup should clearly show the chosen zone, content, duration and cost before
 - Completed: —
 - Commit: —
 
+
+## FD-002 — [OPEN] Central Payment System
+
+**Goal:**  
+Build a reusable Bubba Hub payment system that can support payments for bookings, advertising campaigns and Pro account subscriptions.
+
+**Scope:**
+- Create a central payment abstraction rather than separate payment code for each feature.
+- Support payment methods/providers: PayPal, Stripe and bank transfer.
+- Provide payment status tracking, transaction records and reconciliation.
+- Support one-off and recurring payments where the provider allows it.
+- Integrate with bookings, advertising campaigns and Pro accounts.
+- Provide admin visibility of transactions and payment states.
+- Handle successful, failed, pending, cancelled and refunded payments.
+- Store only the payment information necessary for the application; do not store raw card details.
+
+**Acceptance criteria:**
+- [ ] A single payment architecture can be reused by bookings, ads and Pro accounts.
+- [ ] User can select an available payment method.
+- [ ] Stripe payments work end-to-end.
+- [ ] PayPal payments work end-to-end.
+- [ ] Bank-transfer payments can be recorded and reconciled.
+- [ ] Payment status is visible to the relevant user and admin.
+- [ ] Failed, cancelled and refunded states are handled.
+- [ ] Recurring billing can be supported where required.
+- [ ] Payment records can be linked to the relevant booking, campaign or subscription.
+- [ ] Admin can review transaction history.
+- [ ] Webhook/callback processing is secure and idempotent.
+
+**Dependencies / questions:**
+- Confirm Stripe and PayPal account/business setup.
+- Decide whether bank transfer is manual confirmation or automated bank-payment integration.
+- Define currency, tax/VAT handling and refund rules.
+- Define exactly which Pro account tiers are paid through this system.
+- Define whether platform fees are separate from provider processing fees.
+
+**Status:** OPEN
+
+---
+
+## FD-003 — [OPEN] Booking Payments and 1.5% Bubba Hub Booking Fee
+
+**Goal:**  
+Create booking payment processing where the leader receives the booking payment directly and Bubba Hub automatically receives a **1.5% booking fee** from each transaction.
+
+**Payment flow:**
+1. User books an activity.
+2. User chooses an available payment method: PayPal, Stripe or bank transfer.
+3. The booking payment is attributed to the relevant leader.
+4. Bubba Hub receives a 1.5% booking fee per transaction.
+5. The booking and payment records are linked.
+6. Leader can see booking/payment status and their payable amount.
+7. Bubba Hub admin can see transaction, commission and reconciliation information.
+
+**Scope:**
+- Leader payment-account/onboarding configuration.
+- Booking checkout/payment flow.
+- 1.5% booking-fee calculation.
+- Leader payout/payment routing.
+- Bubba Hub commission ledger.
+- Stripe/PayPal marketplace or connected-account capability where applicable.
+- Bank-transfer booking workflow.
+- Payment confirmation and webhooks.
+- Refund/cancellation handling.
+- Failed/pending payment handling.
+- Admin reconciliation and reporting.
+- Clear customer receipts/payment records.
+- Protection against duplicate charges and duplicate webhook processing.
+
+**Acceptance criteria:**
+- [ ] Booking checkout calculates the booking total and 1.5% Bubba Hub booking fee correctly.
+- [ ] The 1.5% fee is recorded as Bubba Hub commission for every eligible transaction.
+- [ ] Leader receives the booking proceeds through the supported payment flow.
+- [ ] User can choose an enabled payment method.
+- [ ] Stripe booking payments work end-to-end.
+- [ ] PayPal booking payments work end-to-end where supported by the marketplace/platform integration.
+- [ ] Bank-transfer bookings can be recorded and reconciled.
+- [ ] Booking status cannot be incorrectly marked paid from an unverified client-side response.
+- [ ] Provider webhooks/callbacks are verified and idempotent.
+- [ ] Refunds correctly update booking and commission records.
+- [ ] Admin can reconcile gross booking amount, Bubba Hub fee, provider fees where available, refunds and leader amount.
+- [ ] Leaders can see relevant payment/payout status without accessing another leader's financial data.
+- [ ] Customers receive a clear payment/booking confirmation.
+- [ ] No raw card/bank credentials are stored by Bubba Hub.
+- [ ] The system prevents duplicate payment/commission records.
+
+**Dependencies / questions:**
+- Confirm whether the 1.5% is charged to the customer, deducted from the leader's booking proceeds, or handled another way.
+- Confirm whether the 1.5% applies to bank-transfer bookings and manually confirmed bookings.
+- Define whether provider processing fees are paid by Bubba Hub, the leader, or the customer.
+- Confirm the legal/tax/VAT treatment of the booking fee.
+- Confirm the payment provider's marketplace/connect requirements for paying leaders directly.
+- Define payout timing: immediate, scheduled, or provider-controlled.
+- Define refund policy and how the 1.5% fee is treated on refunds.
+- Define whether leaders must complete identity/business verification before accepting online payments.
+
+**Implementation notes:**
+- FD-003 should build on FD-002 rather than creating a separate payment system.
+- The payment architecture must distinguish customer payment, provider processing fee, Bubba Hub booking fee, leader proceeds and refunds.
+- Financial calculations should be server-side and auditable.
+- Do not treat a client-side success page as proof of payment.
+
+**Status:** OPEN
+
 ---
 
 # Development History
