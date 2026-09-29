@@ -15,7 +15,7 @@ RewriteRule ^personalise(?:\.html)?/?$ /beta/choose [R=301,L]
 # Organiser storefront URLs: /beta/leader/{company-name}/
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^leader/([^/]+)/?$ organiser.html [L,QSA]
+RewriteRule ^organiser/([^/]+)/?$ organiser.html?slug=$1 [L,QSA]
 
 # Clean activity URLs: /beta/{activity-slug}/
 RewriteCond %{REQUEST_FILENAME} !-f
