@@ -34,3 +34,31 @@ input,select,textarea{border-radius:14px}input:focus,select:focus,textarea:focus
 .site-footer{margin-top:60px;padding:48px 0 24px;background:var(--bh-dark);border-top:0;border-radius:30px 30px 0 0;color:#fff;box-shadow:0 -14px 40px rgba(18,63,49,.08)}.site-footer-grid{padding:0 24px}.site-footer-title{font-size:25px}.site-footer-links a:hover{color:var(--bh-yellow)}.site-footer-bottom{padding-left:24px;padding-right:24px}
 .mobile-nav-toggle{border:1px solid rgba(60,142,150,.18)!important;border-radius:14px!important;background:#e9f3ee!important;color:var(--bh-primary)!important;box-shadow:0 5px 14px rgba(18,63,49,.08)}.js-enabled .site-header .main-nav{border-radius:18px;box-shadow:0 18px 40px rgba(18,63,49,.18)}.js-enabled .site-header .main-nav a{border-radius:13px}
 @media(max-width:650px){.site-header{width:calc(100% - 16px);margin-top:8px;border-radius:18px}.brand strong{font-size:18px}.hero{width:calc(100% - 16px);padding:30px 15px 30px;border-radius:26px}.hero h1{font-size:39px}.hero-search{border-radius:19px}.section{padding:52px 0}.feature-card,.activity-card{border-radius:20px}.site-footer{width:calc(100% - 16px);margin-top:42px;border-radius:24px 24px 0 0;padding-top:38px}}
+
+
+/* Modal system — Bold Bubba Hub refresh */
+.bh-leader-modal,.booking-modal-backdrop,.contact-modal-backdrop,.hub-modal,.hero-advanced-modal{
+  position:fixed!important;inset:0!important;z-index:9999!important;
+  display:grid!important;place-items:center!important;
+  width:100vw!important;height:100dvh!important;
+  box-sizing:border-box!important;padding:20px!important;
+  background:rgba(215,231,220,.82)!important;
+  backdrop-filter:blur(6px)!important;
+  -webkit-backdrop-filter:blur(6px)!important;
+}
+.bh-leader-modal-card,.booking-modal,.contact-modal,.hub-modal-card,.hero-advanced-dialog{
+  position:relative!important;z-index:1!important;
+  width:min(720px,100%)!important;max-width:720px!important;
+  max-height:calc(100dvh - 40px)!important;overflow:auto!important;
+  box-sizing:border-box!important;padding:28px!important;
+  margin:0!important;border:2px solid rgba(65,102,81,.12)!important;
+  border-radius:28px!important;background:#f7fbf7!important;
+  box-shadow:0 28px 80px rgba(18,63,49,.22)!important;
+}
+.bh-leader-modal-card h2,.booking-modal h2,.contact-modal h2,.hub-modal-card h2,.hero-advanced-dialog h2{color:var(--bh-dark)}
+.bh-leader-modal-card .button-soft,.booking-modal-close,.contact-modal-close,.hero-advanced-close{background:#e1efe5!important;color:var(--bh-primary)!important}
+body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-modal-backdrop),body:has(.hub-modal),body:has(.hero-advanced-modal:not([hidden])){overflow:hidden}
+@media(max-width:650px){
+ .bh-leader-modal,.booking-modal-backdrop,.contact-modal-backdrop,.hub-modal,.hero-advanced-modal{padding:12px!important}
+ .bh-leader-modal-card,.booking-modal,.contact-modal,.hub-modal-card,.hero-advanced-dialog{max-height:calc(100dvh - 24px)!important;padding:22px 18px!important;border-radius:22px!important}
+}
