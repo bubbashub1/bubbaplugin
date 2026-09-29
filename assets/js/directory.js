@@ -729,7 +729,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       $(id).addEventListener("change", render);
     });
 
-    document.querySelectorAll(".accessibility-option").forEach(option => {\n      option.addEventListener("change", render);\n    });\n\n    if ($("ageRange")) {
+    document.querySelectorAll(".accessibility-option").forEach(option => {
+      option.addEventListener("change", render);
+    });
+
+    if ($("ageRange")) {
       $("ageRange").addEventListener("change", () => {
         const preset = agePresets[$("ageRange").value];
         if (preset) {
