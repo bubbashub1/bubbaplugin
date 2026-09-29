@@ -269,6 +269,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
     updateCardCountVisibility();
 
+    const setupMapModal = () => {
+      const mapEl = $("mapView");
+      const openBtn = $("openMapModal");
+      if (!mapEl || !openBtn) return;
+      if (!document.getElementById("closeMapModal")) {
+        const closeBtn = document.createElement("button");
+        closeBtn.type = "button";
+        closeBtn.id = "closeMapModal";
+        closeBtn.className = "directory-map-modal-close";
+        closeBtn.setAttribute("aria-label", "Close map");
+        closeBtn.textContent = "×";
+        mapEl.appendChild(closeBtn);
+        closeBtn.addEventListener("click", () => {
+          mapEl.classList.remove("is-map-modal");
+          document.body.classList.remove("directory-map-modal-open");
+          if (map) setTimeout(() => map.invalidateSize(), 50);
+        });
+      }
+      openBtn.addEventListener("click", () => {
+        mapEl.classList.add("is-map-modal");
+        document.body.classList.add("directory-map-modal-open");
+        if (map) setTimeout(() => map.invalidateSize(), 50);
+      });
+    };
+
     const initMap = () => {
       if (map || !window.L) return;
       map = L.map("mapView").setView([50.42, -3.57], 10);
