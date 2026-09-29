@@ -1,5 +1,5 @@
 <!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Find Activities · Bubba Hub</title><link rel="stylesheet" href="assets/css/styles.css">
-  <link rel="stylesheet" href="assets/css/directory.css?v=20260929-4"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script></head><body class="bh-directory"><header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main menu">
+  <link rel="stylesheet" href="assets/css/directory.css?v=20260929-5"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script></head><body class="bh-directory"><header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main menu">
     <a href="directory.html">Find activities</a>
     <a href="my-hub.html">My Hub</a>
     <a href="help-support.html">Support &amp; Guidance</a>
@@ -43,6 +43,15 @@
     <button class="button button-primary" type="submit">Search</button>
   </div>
   <button type="button" class="home-advanced-link directory-search-advanced-link" id="openSearchFilters">More filters →</button>
+  <div class="directory-popular" aria-label="Popular categories">
+    <span class="directory-popular-label">Popular:</span>
+    <button type="button" class="directory-popular-chip" data-category="Baby classes">🍼 Baby classes</button>
+    <button type="button" class="directory-popular-chip" data-category="Toddler groups">👣 Toddler groups</button>
+    <button type="button" class="directory-popular-chip" data-category="Music &amp; movement">🎵 Music &amp; movement</button>
+    <button type="button" class="directory-popular-chip" data-category="Swimming">🏊 Swimming</button>
+    <button type="button" class="directory-popular-chip" data-category="Soft play">🧸 Soft play</button>
+    <button type="button" class="directory-popular-chip" data-category="Family activities">👨‍👩‍👧 Family activities</button>
+  </div>
 </form>
 <div class="directory-results-heading"><div><span class="eyebrow">Discover something nearby</span><h1>Find Family Activities</h1><p id="count"></p></div><div class="directory-viewbar"><button type="button" class="button button-soft directory-filter-button" id="desktopFilterButton" aria-controls="directoryFilters" aria-expanded="false">Filters <span aria-hidden="true">☰</span></button><div class="directory-view-controls"><div class="directory-views" role="tablist" aria-label="Listing view"><button type="button" class="directory-view active" data-view="grid">Grid</button><button type="button" class="directory-view" data-view="list">List</button><button type="button" class="directory-view" data-view="map">Map</button><button type="button" class="directory-view" data-view="calendar">Calendar</button></div><label class="directory-count-control">Cards <select id="cardCount" aria-label="Cards per row"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></label></div></div>
 <section class="activity-grid" id="results"></section><section id="mapView" class="listing-map" hidden aria-label="Map of activities"></section><section id="calendarView" class="directory-calendar" hidden aria-label="Calendar of activities"></section>
