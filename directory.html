@@ -4,7 +4,7 @@
 </div>
 <div class="directory-layout">
 <aside class="directory-filters-panel" id="directoryFilters" aria-label="Search filters">
-<div class="directory-filters-heading"><span class="eyebrow">Refine your results</span><h2>Advanced search</h2><p>Narrow your results by category, place, age, day and more.</p></div>
+
 <div class="directory-filter-fields">
 <div class="directory-advanced-filter-field" data-filter-key="category"><label class="directory-filter-label" for="category">Category</label><select class="filter-input" id="category"><option value="">All categories</option></select></div>
 <div class="directory-advanced-filter-field" data-filter-key="region"><label class="directory-filter-label" for="area">Region</label><select class="filter-input" id="area"><option value="">All regions</option></select></div>
@@ -27,15 +27,17 @@
 </div>
 </aside>
 <div class="directory-results-column">
-<div class="directory-search-main">
-  <label for="search">Find activities</label>
-  <div class="directory-search-box">
-    <span class="directory-search-icon" aria-hidden="true">🔎</span>
-    <input class="filter-input" id="search" placeholder="Search activities, classes, venues or places…" aria-label="Search activities, classes, venues or places">
-    <button type="button" class="button button-primary" id="mainSearchButton">Search</button>
+<form class="directory-hero-search" id="directoryHeroSearch" action="directory.html" method="get">
+  <h2>Find your next family adventure...</h2>
+  <div class="directory-hero-search-fields">
+    <label><span>⌕</span><input id="search" name="keyword" type="search" placeholder="Keyword" aria-label="Keyword"></label>
+    <label><span>⌖</span><select id="heroRegion" name="region"><option value="">Region</option></select></label>
+    <label><span>♟</span><select id="heroCategory" name="category"><option value="">Category</option></select></label>
+    <label><span>♙</span><select id="heroAge" name="age_preset"><option value="">Age Range</option><option value="baby">Baby · 0–1</option><option value="toddler">Toddler · 1–3</option><option value="preschool">Preschool · 3–5</option><option value="school">School age · 5–9</option></select></label>
+    <button class="button button-primary" type="submit">Search</button>
   </div>
-  <button type="button" class="button button-soft directory-mobile-search-filters" id="openSearchFilters">Advanced search</button>
-</div>
+  <button type="button" class="directory-search-advanced-link" id="openSearchFilters">Advanced filters <span>→</span></button>
+</form>
 <div class="directory-viewbar"><p id="count"></p><div class="directory-view-controls"><div class="directory-views" role="tablist" aria-label="Listing view"><button type="button" class="directory-view" data-view="grid">Grid</button><button type="button" class="directory-view active" data-view="list">List</button><button type="button" class="directory-view" data-view="map">Map</button><button type="button" class="directory-view" data-view="calendar">Calendar</button></div><label class="directory-count-control">Cards <select id="cardCount" aria-label="Cards per row"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></label></div></div>
 <section class="activity-grid" id="results"></section><section id="mapView" class="listing-map" hidden aria-label="Map of activities"></section><section id="calendarView" class="directory-calendar" hidden aria-label="Calendar of activities"></section>
 </div>
