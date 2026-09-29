@@ -822,3 +822,49 @@
 /* Calendar CTA — homepage yellow/orange and wide enough for one-line text */
 .bh-directory .directory-calendar-hero-button{background:#f6c84a!important;color:#144400!important;min-width:168px;padding-left:24px;padding-right:24px;white-space:nowrap;font-weight:900}
 .bh-directory .directory-calendar-hero-button:hover{background:#f1b92e!important;color:#144400!important}
+
+/* Final desktop directory layout: 60% activity list / 40% map. Cards stay in list view. */
+@media(min-width:901px){
+  .bh-directory .directory-results-column{
+    display:grid!important;
+    grid-template-columns:minmax(0,60%) minmax(0,40%)!important;
+    column-gap:24px!important;
+    align-items:start!important;
+  }
+  .bh-directory .directory-results-heading{
+    grid-column:1!important;
+    grid-row:1!important;
+  }
+  .bh-directory #results{
+    grid-column:1!important;
+    grid-row:2!important;
+    display:flex!important;
+    flex-direction:column!important;
+    gap:16px!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  .bh-directory #results .activity-card{
+    width:100%!important;
+    display:grid!important;
+    grid-template-columns:220px minmax(0,1fr)!important;
+    min-height:180px!important;
+  }
+  .bh-directory #mapView{
+    grid-column:2!important;
+    grid-row:1 / span 2!important;
+    display:block!important;
+    position:sticky!important;
+    top:24px!important;
+    width:100%!important;
+    height:min(72vh,720px)!important;
+    min-height:520px!important;
+    margin:0!important;
+    border-radius:22px!important;
+    overflow:hidden!important;
+  }
+  .bh-directory #mapView[hidden]{display:block!important}
+}
+@media(max-width:900px){
+  .bh-directory #results .activity-card{width:100%}
+}
