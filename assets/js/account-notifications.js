@@ -20,10 +20,10 @@ document.addEventListener("DOMContentLoaded",async()=>{
       pushStatus.textContent="Push notifications are switched off.";
     }
   };
-  const loadNewsletter=async()=>{const statusEl=document.getElementById("newsletterStatus");try{const response=await fetch("api/newsletter.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}),data=await response.json();if(!response.ok||!data.ok)throw new Error(data.message||"Could not load Round Up settings.");const x=data.newsletter||{};document.getElementById("newsletterEnabled").checked=!!x.enabled;document.getElementById("newsletterFrequency").value=["daily","weekly","monthly"].includes(x.frequency)?x.frequency:"weekly";statusEl.textContent=x.lastSentAt?"Last sent: "+new Date(x.lastSentAt.replace(" ","T")).toLocaleString("en-GB"):"No Round Up sent yet.";csrf=data.csrf||csrf}catch(e){statusEl.textContent=e.message||"Round Up settings unavailable."}};
+  const loadNewsletter=async()=>{const statusEl=document.getElementById("newsletterStatus");try{const response=await fetch("../api/newsletter.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}),data=await response.json();if(!response.ok||!data.ok)throw new Error(data.message||"Could not load Round Up settings.");const x=data.newsletter||{};document.getElementById("newsletterEnabled").checked=!!x.enabled;document.getElementById("newsletterFrequency").value=["daily","weekly","monthly"].includes(x.frequency)?x.frequency:"weekly";statusEl.textContent=x.lastSentAt?"Last sent: "+new Date(x.lastSentAt.replace(" ","T")).toLocaleString("en-GB"):"No Round Up sent yet.";csrf=data.csrf||csrf}catch(e){statusEl.textContent=e.message||"Round Up settings unavailable."}};
   try{
-    const response=await fetch("api/preferences.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}),data=await response.json();
-    if(response.status===401||data.error==="login_required"){location.href="account.html?next="+encodeURIComponent("notifications.html");return;}
+    const response=await fetch("../api/preferences.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}),data=await response.json();
+    if(response.status===401||data.error==="login_required"){location.href="../auth.html?next="+encodeURIComponent(location.pathname+location.search+location.hash);return;}
     if(!response.ok||!data.ok)throw new Error(data.message||"Could not load notification settings.");
     csrf=data.csrf||"";apply({...defaults,...(data.preferences||{})});
     try{const OneSignal=await syncOneSignalUser(data);const optedIn=!!OneSignal.User.PushSubscription.optedIn;document.getElementById("pushEnabled").checked=optedIn;pushStatus.textContent=optedIn?"Push notifications are enabled on this device.":"Push notifications are currently switched off.";}catch(e){pushStatus.textContent="Push notifications are ready to be enabled.";}
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     try{
       const p=collect();
       p.csrf=csrf;
-      const response=await fetch("api/preferences.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(p)}),data=await response.json();
+      const response=await fetch("../api/preferences.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(p)}),data=await response.json();
       if(!response.ok||!data.ok)throw new Error(data.message||"Could not save notification settings.");
       csrf=data.csrf||csrf;
       try{
@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       }catch(pushError){
         pushStatus.textContent=pushError.message||"Push could not be enabled on this device.";
       }
-      const nResponse=await fetch("api/newsletter.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({csrf,enabled:document.getElementById("newsletterEnabled").checked,frequency:document.getElementById("newsletterFrequency").value})}),nData=await nResponse.json();
+      const nResponse=await fetch("../api/newsletter.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({csrf,enabled:document.getElementById("newsletterEnabled").checked,frequency:document.getElementById("newsletterFrequency").value})}),nData=await nResponse.json();
       if(!nResponse.ok||!nData.ok)throw new Error(nData.message||"Could not save Round Up settings.");
       csrf=nData.csrf||csrf;
       status.textContent="Saved to your account";
