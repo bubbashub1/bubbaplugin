@@ -251,6 +251,25 @@ void bhHydrateSaved();
   if(!existing) document.body.insertAdjacentHTML("beforeend",footerHTML);
 })();
 
+
+/* Load the approved homepage visual system across the site. */
+(function(){
+  try{
+    const base=document.querySelector('link[href*="assets/css/styles.css"]');
+    if(!base)return;
+    const url=new URL(base.href,document.baseURI);
+    url.pathname=url.pathname.replace(/\/styles\.css$/,'/sitewide-home.css');
+    url.search='v=20260929-2';
+    if(!document.querySelector('link[data-bh-sitewide-theme]')){
+      const link=document.createElement('link');
+      link.rel='stylesheet';
+      link.href=url.toString();
+      link.dataset.bhSitewideTheme='true';
+      document.head.appendChild(link);
+    }
+  }catch(e){}
+})();
+
 /* Shared shell enhancements. CSS lives in styles.css so the UI does not depend on JavaScript injecting styles. */
 (function(){
   document.documentElement.classList.add("js-enabled");
