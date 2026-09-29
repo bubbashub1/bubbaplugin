@@ -1,0 +1,35 @@
+name: Apply Bubba Hub bold theme on main
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  apply-theme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add bold theme stylesheet to all HTML pages
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          changed=[]
+          for p in Path(".").rglob("*.html"):
+              if ".git" in p.parts: continue
+              s=p.read_text(encoding="utf-8")
+              if "assets/css/styles.css" not in s or "bold-theme.css" in s: continue
+              href="../assets/css/bold-theme.css?v=20260929-bold1" if len(p.parts)>1 else "assets/css/bold-theme.css?v=20260929-bold1"
+              href = "../assets/css/bold-theme.css?v=20260929-bold1" if len(p.parts)>1 else "assets/css/bold-theme.css?v=20260929-bold1"
+              ns,n=re.subn(r'(<link[^>]+href="[^"]*assets/css/styles\.css[^"]*"[^>]*>)',r'\1\n  <link rel="stylesheet" href="'+href+'">',s,count=1)
+              if n:
+                  p.write_text(ns,encoding="utf-8"); changed.append(str(p))
+          print("Updated",len(changed),"HTML files")
+      - name: Commit theme links
+        run: |
+          git config user.name "Bubba Hub"
+          git config user.email "hello@bubbahub.co.uk"
+          git add '*.html'
+          git diff --cached --quiet && exit 0
+          git commit -m "Apply bold Bubba Hub theme across pages"
+          git push
