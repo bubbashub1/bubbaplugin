@@ -1,0 +1,147 @@
+/* =============================================
+   Advanced Search Modal — Bubba Hub
+   File: assets/css/advanced-modal.css
+============================================= */
+
+/* Backdrop overlay */
+.hero-advanced-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 99;
+}
+
+/* Modal outer container */
+.hero-advanced-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* Dialog box */
+.hero-advanced-dialog {
+  background: #f4f9f4;
+  border-radius: 1.25rem;
+  padding: 2rem;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-sizing: border-box;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+}
+
+/* Close button */
+.hero-advanced-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #fff;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: background 0.2s ease;
+}
+.hero-advanced-close:hover {
+  background: #f0f0f0;
+}
+
+/* Heading text styles */
+.hero-advanced-dialog .eyebrow {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #3c886e;
+}
+.hero-advanced-dialog h2 {
+  font-size: 1.8rem;
+  margin: 0.25rem 0 0.5rem;
+  color: #1a3a2f;
+}
+.hero-advanced-dialog > p {
+  color: #445;
+  margin-bottom: 0.5rem;
+}
+
+/* 2-column filter grid */
+.advanced-filters-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+
+/* Labels & selects */
+.advanced-filter-field label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #334;
+}
+.advanced-filter-field select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #c8d6c8;
+  border-radius: 0.5rem;
+  background: #fff;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+/* Age range row layout */
+.hero-advanced-age-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Checkbox row */
+.advanced-check-row {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0 1.5rem;
+}
+.hero-advanced-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  color: #334;
+}
+
+/* Action buttons */
+.hero-advanced-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+/* Responsive — stack to single column on small screens */
+@media (max-width: 600px) {
+  .advanced-filters-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero-advanced-actions {
+    flex-direction: column-reverse;
+  }
+  .hero-advanced-dialog {
+    padding: 1.5rem;
+  }
+}
