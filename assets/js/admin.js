@@ -374,6 +374,40 @@ async function createActivity(e){
  finally{button.disabled=false}
 }
 
+async function loadTestUsers(){
+ const box=document.querySelector("#testUserList"); if(!box)return;
+ try{
+  const r=await fetch("api/admin-test-users.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});
+  const d=await r.json(); if(!r.ok||!d.ok)throw new Error(d.error||"Could not load test users.");
+  const users=Array.isArray(d.data)?d.data:[];
+  box.innerHTML=users.length?users.map(u=>'<div class="test-user-row"><div><strong>'+escapeHtml(u.email)+'</strong><small>ID '+escapeHtml(u.id)+' · '+escapeHtml(u.status)+'</small></div><div><a class="button button-soft" href="auth.html?email='+encodeURIComponent(u.email)+'">Open login</a><button type="button" class="button button-soft test-user-delete" data-id="'+escapeHtml(u.id)+'">Delete</button></div></div>').join(""):'<p>No test accounts have been created yet.</p>';
+ }catch(e){box.innerHTML='<p class="is-error">'+escapeHtml(e.message||"Could not load test users.")+'</p>';}
+}
+async function createTestUser(){
+ const button=document.querySelector("#createTestUser"),message=document.querySelector("#testUserMessage"),password=document.querySelector("#testUserPassword")?.value||"",credentials=document.querySelector("#testUserCredentials");
+ if(!button||!message)return;
+ button.disabled=true;message.textContent="Creating test account…";message.classList.remove("is-error");
+ try{
+  const r=await fetch("api/admin-test-users.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({password})});
+  const d=await r.json(); if(!r.ok||!d.ok)throw new Error(d.error||"Could not create test account.");
+  credentials.hidden=false;credentials.innerHTML='<strong>Test account ready</strong><br>Email: <code>'+escapeHtml(d.user.email)+'</code><br>Password: <code>'+escapeHtml(d.password)+'</code><br><small>'+escapeHtml(d.message)+'</small>';
+  message.textContent="✓ Test family account created.";
+  document.querySelector("#testUserPassword").value="";
+  await loadTestUsers();
+ }catch(e){message.textContent=e.message||"Could not create test account.";message.classList.add("is-error");}
+ finally{button.disabled=false;}
+}
+document.querySelector("#createTestUser")?.addEventListener("click",createTestUser);
+document.querySelector("#testUserList")?.addEventListener("click",async e=>{
+ const button=e.target.closest(".test-user-delete"); if(!button)return;
+ if(!confirm("Delete this dummy test account?"))return;
+ button.disabled=true;
+ try{
+  const r=await fetch("api/admin-test-users.php",{method:"DELETE",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({id:Number(button.dataset.id)})});
+  const d=await r.json(); if(!r.ok||!d.ok)throw new Error(d.error||"Could not delete test account.");
+  await loadTestUsers();
+ }catch(err){alert(err.message||"Could not delete test account.");}finally{button.disabled=false;}
+});
 const BH_ADVANCED_FILTER_DEFAULTS={category:true,region:true,town:true,nearby:true,age:true,day:true,price:true,session_length:true,sen:true,term_time:true,booking:true,accessibility:true,free:true};
 async function loadAdvancedFilterSettings(){
  const status=document.querySelector("#advancedFilterSettingsStatus");
@@ -451,7 +485,7 @@ document.querySelector("#cancelActivity2").addEventListener("click",closeEditor)
 document.querySelector("#activityForm").addEventListener("submit",createActivity);document.querySelector("#addSession").addEventListener("click",()=>addSessionRow());document.querySelector("#adminActivities").addEventListener("click",async e=>{const b=e.target.closest(".admin-edit-activity");if(!b)return;try{await editActivity(b.dataset.id)}catch(err){alert(err.message)}});
 initAddressAutocomplete();
 loadVenueSuggestions();
-verifyAdmin().then(()=>{document.querySelector("#adminAccess").hidden=true;document.querySelector("#adminContent").hidden=false;loadDashboard()}).catch(()=>{});
+verifyAdmin().then(()=>{document.querySelector("#adminAccess").hidden=true;document.querySelector("#adminContent").hidden=false;loadDashboard();loadTestUsers()}).catch(()=>{});
 
 
 async function importActivityCsv(){
