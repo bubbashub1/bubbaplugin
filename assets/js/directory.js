@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const fillSelect = (id, values, selected, label) => {
       const el = $(id);
+      if (!el) return;
       el.innerHTML = `<option value="">${label}</option>` +
         values.map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("");
       if (values.includes(selected)) el.value = selected;
@@ -75,20 +76,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     const agePresetKey = params.get("age_preset") || "";
     const agePreset = agePresets[agePresetKey];
     if (agePreset) {
-      $("ageMin").value = String(agePreset[0]);
-      $("ageMax").value = String(agePreset[1]);
+      if ($("ageMin")) $("ageMin").value = String(agePreset[0]);
+      if ($("ageMax")) $("ageMax").value = String(agePreset[1]);
       if ($("ageRange")) $("ageRange").value = agePresetKey;
       if ($("heroAge")) $("heroAge").value = agePresetKey;
     }
-    if (params.get("age_min") !== null) $("ageMin").value = params.get("age_min");
-    if (params.get("age_max") !== null) $("ageMax").value = params.get("age_max");
-    if (params.get("day")) $("day").value = params.get("day");
-    if (params.get("free")) $("free").checked = true;
-    if (params.get("max_price")) $("maxPrice").value = params.get("max_price");
-    if (params.get("sessionLength")) $("sessionLength").value = params.get("sessionLength");
-    if (params.get("sen")) $("sen").value = params.get("sen");
-    if (params.get("termTime")) $("termTime").value = params.get("termTime");
-    if (params.get("bookingRequired")) $("bookingRequired").checked = params.get("bookingRequired") === "1";
+    if (params.get("age_min") !== null && $("ageMin")) $("ageMin").value = params.get("age_min");
+    if (params.get("age_max") !== null && $("ageMax")) $("ageMax").value = params.get("age_max");
+    if (params.get("day") && $("day")) $("day").value = params.get("day");
+    if (params.get("free") && $("free")) $("free").checked = true;
+    if (params.get("max_price") && $("maxPrice")) $("maxPrice").value = params.get("max_price");
+    if (params.get("sessionLength") && $("sessionLength")) $("sessionLength").value = params.get("sessionLength");
+    if (params.get("sen") && $("sen")) $("sen").value = params.get("sen");
+    if (params.get("termTime") && $("termTime")) $("termTime").value = params.get("termTime");
+    if (params.get("bookingRequired") && $("bookingRequired")) $("bookingRequired").checked = params.get("bookingRequired") === "1";
     if (params.get("accessibility")) { document.querySelectorAll(".accessibility-option").forEach(el => el.checked = params.get("accessibility").split(",").includes(el.value)); }
 
     // Main filters stay simple; all other filters live inside Advanced search.
@@ -425,15 +426,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       // The calendar is intentionally opt-in: with 1,000+ listings we only
       // show sessions after the visitor has narrowed the directory results.
       const hasCalendarFilter = () => {
-        const search = $("search").value.trim();
-        const category = $("category").value;
-        const region = $("area").value;
-        const town = $("town").value;
-        const minAge = Number($("ageMin").value);
-        const maxAge = Number($("ageMax").value);
-        const day = $("day").value;
-        const maxPrice = $("maxPrice").value;
-        const freeOnly = $("free").checked;
+        const search = $("search")?.value.trim() || "";
+        const category = $("category")?.value || "";
+        const region = $("area")?.value || "";
+        const town = $("town")?.value || "";
+        const minAge = Number($("ageMin")?.value ?? 0);
+        const maxAge = Number($("ageMax")?.value ?? 9);
+        const day = $("day")?.value || "";
+        const maxPrice = $("maxPrice")?.value || "";
+        const freeOnly = $("free")?.checked || false;
         return !!(search || category || region || town || day || maxPrice || freeOnly || minAge > 0 || maxAge < 9);
       };
 
@@ -572,15 +573,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const render = () => {
       updateViewVisibility();
-      const search = $("search").value.trim().toLowerCase();
-      const category = $("category").value;
-      const region = $("area").value;
-      const town = $("town").value;
-      const minAge = Number($("ageMin").value);
-      const maxAge = Number($("ageMax").value);
-      const day = $("day").value;
-      const maxPrice = $("maxPrice").value;
-      const freeOnly = $("free").checked;
+      const search = $("search")?.value.trim().toLowerCase() || "";
+      const category = $("category")?.value || "";
+      const region = $("area")?.value || "";
+      const town = $("town")?.value || "";
+      const minAge = Number($("ageMin")?.value ?? 0);
+      const maxAge = Number($("ageMax")?.value ?? 9);
+      const day = $("day")?.value || "";
+      const maxPrice = $("maxPrice")?.value || "";
+      const freeOnly = $("free")?.checked || false;
       const sessionLength = $("sessionLength")?.value || "";
       const sen = $("sen")?.value || "";
       const termTime = $("termTime")?.value || "";
@@ -654,7 +655,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           .map(item => item.activity);
       }
 
-      $("count").textContent =
+      if ($("count")) $("count").textContent =
         `${list.length} activit${list.length === 1 ? "y" : "ies"} found` +
         (params.get("saved") ? " · Saved" : "");
 
@@ -775,10 +776,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Age is intentionally a simple dropdown rather than a slider.
 
-    $("useHomeLocation").onclick = loadHomeLocation;
+    if ($("useHomeLocation")) $("useHomeLocation").onclick = loadHomeLocation;
     if (params.get("nearby") === "1") void loadHomeLocation();
 
-    $("clear").onclick = () => {
+    if ($("clear")) $("clear").onclick = () => {
       ["search", "category", "area", "town", "day", "maxPrice", "sessionLength", "sen", "termTime"].forEach(id => { if ($(id)) $(id).value = ""; });
       document.querySelectorAll(".accessibility-option").forEach(el => el.checked = false);
       $("ageMin").value = 0;
@@ -804,7 +805,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       $("filterToggle").setAttribute("aria-expanded", String(open));
     });
 
-    $("cardCount").addEventListener("change", () => {
+    if ($("cardCount")) $("cardCount").addEventListener("change", () => {
       if ($("cardCount")) cardCount = Number($("cardCount").value);
       if (![2,3,4,5,6].includes(cardCount)) cardCount = 3;
       localStorage.setItem("bh_directory_cards", String(cardCount));
