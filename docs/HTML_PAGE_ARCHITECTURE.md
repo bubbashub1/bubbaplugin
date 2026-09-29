@@ -71,6 +71,17 @@ The account area is the single source of truth. Root duplicates such as `account
 
 Public organiser profiles are separate from the authenticated leader portal.
 
+## Family help & support
+
+These are deliberately separate from the website user guides under `/help/`.
+
+| Route | Purpose |
+|---|---|
+| `/support/families/apps.html` | Suggested apps and digital resources for families |
+
+Family support content can grow later into topic pages, but only pages with agreed content should be added to the product. The suggested-apps page is the current agreed support addition.
+
+
 ## Canonical admin pages
 
 The current 30+ thin admin shells are reduced to a smaller feature set. Each page owns a feature area instead of having one HTML file per tiny setting.
@@ -90,6 +101,17 @@ The current 30+ thin admin shells are reduced to a smaller feature set. Each pag
 | `/admin/import-export.html` | CSV/import/export tools |
 
 The old `admin-navigation*.html` pages are deliberately excluded from the first rebuild because main navigation is hard-coded during this phase.
+
+## Future feature areas already captured in the development backlog
+
+The current `FUTURE_DEVELOPMENT.md` backlog contains four feature groups that are already accounted for and should not be forgotten during the HTML foundation rebuild:
+
+- **FD-001 Advertising** — future leader advertising campaigns across Site Wide, My Hub, My Hub & Directory, and Home Page zones. Likely persistent workspaces: `leader/advertising.html` and `admin/advertising.html` when this feature is approved for implementation.
+- **FD-002 Central payments** — shared payment infrastructure for bookings, advertising and Pro subscriptions. This is primarily backend/payment architecture rather than another large family-facing page set.
+- **FD-003 Booking payments + 2% Bubba Hub fee** — booking checkout, payment status, leader payouts and admin reconciliation. This extends the existing booking journey rather than creating unrelated pages.
+- **FD-004 Legal/privacy/policy set** — the backlog already identifies the required legal pages and contextual links. These should be added when the legal-content work is approved and the actual data/payment flows are known.
+
+No additional product feature is currently identified by the backlog beyond these four groups and the agreed core product areas in this architecture.
 
 ## Pages being merged/retired after migration
 
