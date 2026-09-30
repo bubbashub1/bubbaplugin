@@ -1035,3 +1035,48 @@
     grid-template-columns:minmax(180px,1.7fr) repeat(4,minmax(105px,1fr)) 104px!important;
   }
 }
+
+
+/* FINAL DIRECTORY MOBILE VIEW CONTROL */
+@media (max-width:900px){
+  .bh-directory .directory-results-heading{
+    width:100%;
+  }
+  .bh-directory .directory-mobile-view-toggle{
+    display:flex!important;
+    width:100%;
+    margin:0 0 14px;
+    padding:4px;
+    gap:4px;
+    background:#e7f1ea;
+    border-radius:14px;
+    box-sizing:border-box;
+  }
+  .bh-directory .directory-mobile-view{
+    flex:1;
+    min-height:44px;
+    border:0;
+    border-radius:11px;
+    background:transparent;
+    color:#144400;
+    font:800 14px/1.2 "Quicksand",sans-serif;
+  }
+  .bh-directory .directory-mobile-view.is-active{
+    background:#fff;
+    box-shadow:0 3px 10px rgba(18,63,49,.10);
+  }
+  .bh-directory #results[hidden],
+  .bh-directory #mapView[hidden]{display:none!important}
+}
+@media (min-width:901px){
+  .bh-directory .directory-mobile-view-toggle{display:none!important}
+  .bh-directory .directory-results-column{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  }
+  .bh-directory #mapView{
+    display:block!important;
+  }
+  .bh-directory #mapView[hidden]{
+    display:block!important;
+  }
+}
