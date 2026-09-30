@@ -33,17 +33,16 @@ jobs:
           # failed ssh-keyscan cannot block deployment before SFTP starts.
           : > "$RUNNER_TEMP/ssh/known_hosts"
 
-      - name: Check eWebAll SFTP root
+      - name: Check eWebAll SSH connection
         env:
           SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
           SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
           SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
         run: |
           set -euo pipefail
-          printf 'pwd\nls -la\n' > "$RUNNER_TEMP/check.sftp"
-          sftp -b "$RUNNER_TEMP/check.sftp" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
+          ssh -p "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST" 'pwd && ls -la'
 
-      - name: Deploy via OpenSSH SFTP
+      - name: Deploy via legacy SCP
         env:
           SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
           SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
@@ -51,31 +50,38 @@ jobs:
           REMOTE_PATH: ${{ secrets.EWEBALL_REMOTE_PATH }}
         run: |
           set -euo pipefail
-          SFTP_BATCH="$RUNNER_TEMP/deploy.sftp"
-          : > "$SFTP_BATCH"
-          printf 'cd "%s"\n' "$REMOTE_PATH" >> "$SFTP_BATCH"
-          # Upload root files first, then each top-level directory recursively.
-          # This avoids hundreds of individual SFTP mkdir/put operations, which
-          # can trigger eWebAll SFTP disconnects during large deployments.
-          find . -maxdepth 1 -type f ! -name '.gitignore' ! -name 'README.md' -printf 'put "%p"\n' >> "$SFTP_BATCH"
           if [ ! -f "OneSignalSDKWorker.js" ]; then
             echo "ERROR: OneSignalSDKWorker.js is missing from the repository root." >&2
             exit 1
           fi
+
+          DEST="$SSH_USERNAME@$SSH_HOST:$REMOTE_PATH"
+
+          # eWebAll is accepting SSH but closing the SFTP subsystem with
+          # exit 255. Force OpenSSH's legacy SCP protocol instead of SFTP.
+          find . -maxdepth 1 -type f ! -name '.gitignore' ! -name 'README.md' -print0 |
+            while IFS= read -r -d '' file; do
+              scp -O -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" \
+                -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+                -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
+                "$file" "$DEST/"
+            done
+
           for dir in api assets data library images schools account; do
             if [ -d "$dir" ]; then
-              printf 'put -r "%s"\n' "$dir" >> "$SFTP_BATCH"
+              scp -O -r -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" \
+                -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+                -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
+                "$dir" "$DEST/"
             fi
           done
-          sftp -b "$SFTP_BATCH" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
+
           echo "Deployment upload finished."
-          printf 'cd "%s"\n' "$REMOTE_PATH" > "$RUNNER_TEMP/verify.sftp"
-          printf 'ls -l index.html\n' >> "$RUNNER_TEMP/verify.sftp"
-          printf 'ls -l OneSignalSDKWorker.js\n' >> "$RUNNER_TEMP/verify.sftp"
-          printf 'ls -l assets/css/styles.css\n' >> "$RUNNER_TEMP/verify.sftp"
-          printf 'ls -l assets/js/app.js\n' >> "$RUNNER_TEMP/verify.sftp"
-          printf 'ls -l data/activities.json\n' >> "$RUNNER_TEMP/verify.sftp"
-          printf 'ls -l images/home\n' >> "$RUNNER_TEMP/verify.sftp"
-          printf 'ls -l schools/index.html\n' >> "$RUNNER_TEMP/verify.sftp"
-          sftp -b "$RUNNER_TEMP/verify.sftp" -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST"
+
+          ssh -p "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" \
+            -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
+            "$SSH_USERNAME@$SSH_HOST" \
+            "cd \"$REMOTE_PATH\" && ls -l index.html OneSignalSDKWorker.js assets/css/styles.css assets/js/app.js data/activities.json schools/index.html"
+
           echo "Deployment completed and remote files verified successfully."
