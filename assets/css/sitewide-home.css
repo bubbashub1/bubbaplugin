@@ -1210,3 +1210,10 @@ body:not(.bh-home) .listing-layout{
   padding-left:0!important;
   padding-right:0!important;
 }
+
+/* Final footer layout: edge-to-edge, no boxed shell or redundant bottom navigation. */
+.site-footer{width:100%!important;max-width:none!important;margin:48px 0 0!important;border-radius:0!important;box-sizing:border-box!important;padding-left:clamp(24px,5vw,72px)!important;padding-right:clamp(24px,5vw,72px)!important}
+.site-footer-logo img{width:110px!important;height:auto!important;max-width:100%!important;max-height:90px!important;object-fit:contain!important;border-radius:0!important}
+.site-footer-nav{display:none!important}
+.site-footer-bottom{max-width:1400px!important;margin-left:auto!important;margin-right:auto!important}
+@media(max-width:650px){.site-footer{width:100%!important;margin-top:36px!important;border-radius:0!important}.site-footer-grid{grid-template-columns:1fr!important}}
