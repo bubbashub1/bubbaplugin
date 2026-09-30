@@ -177,7 +177,18 @@
 }
 
 /* Desktop: true 50/50 listings + map — explicit grid areas prevent overlap */
+/* The advanced filters are a modal/drawer, so they must not reserve a
+   desktop grid column when closed. The visible directory content owns the
+   full page width. */
+.bh-directory .directory-layout{
+  display:block;
+  width:100%;
+  max-width:none;
+  min-width:0;
+  margin:0;
+}
 .bh-directory .directory-results-column{
+
   display:grid;
   width:100%;
   max-width:none;
