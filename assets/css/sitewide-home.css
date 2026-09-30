@@ -1144,3 +1144,45 @@ body:not(.bh-home) .activity-hero{
     padding-right:16px!important;
   }
 }
+
+
+/* ==========================================================================
+   LOGO SIZE — final desktop sizing
+   ========================================================================== */
+body .site-header{
+  min-height:110px!important;
+  height:110px!important;
+}
+
+body .site-header .brand-logo{
+  height:100px!important;
+  max-height:100px!important;
+  max-width:320px!important;
+  width:auto!important;
+  flex:0 0 auto!important;
+  object-fit:contain!important;
+}
+
+@media(max-width:900px){
+  body .site-header{
+    min-height:86px!important;
+    height:86px!important;
+  }
+  body .site-header .brand-logo{
+    height:76px!important;
+    max-height:76px!important;
+    max-width:240px!important;
+  }
+}
+
+@media(max-width:650px){
+  body .site-header{
+    min-height:64px!important;
+    height:auto!important;
+  }
+  body .site-header .brand-logo{
+    height:58px!important;
+    max-height:58px!important;
+    max-width:180px!important;
+  }
+}
