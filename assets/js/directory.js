@@ -732,16 +732,33 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (event.target.closest("a, button")) return;
           const activityId = String(card.dataset.activityId || "");
           const marker = markers.find(item => String(item._bhActivityId) === activityId);
-          if (!marker || !map) return;
+          if (!map) {
+            const mapToggle = document.querySelector(".directory-mobile-view[data-mobile-view='map']");
+            currentView = "map";
+            document.querySelectorAll(".directory-mobile-view").forEach(item => {
+              const active = item.dataset.mobileView === "map";
+              item.classList.toggle("is-active", active);
+              item.setAttribute("aria-pressed", String(active));
+            });
+            updateViewVisibility();
+            render();
+            setTimeout(() => {
+              const target = markers.find(item => String(item._bhActivityId) === activityId);
+              if (!target || !map) return;
+              map.setView(target.getLatLng(), Math.max(map.getZoom(), 14), { animate: true });
+              target.openPopup();
+              map.invalidateSize();
+            }, 120);
+            return;
+          }
+
+          if (!marker) return;
 
           map.setView(marker.getLatLng(), Math.max(map.getZoom(), 14), { animate: true });
           marker.openPopup();
 
           if (window.innerWidth > 900) {
             document.querySelector("#mapView")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-          } else {
-            const mapToggle = document.querySelector(".directory-mobile-view[data-mobile-view='map']");
-            if (mapToggle) mapToggle.click();
           }
         });
       });
