@@ -1430,3 +1430,17 @@
     display:none;
   }
 }
+
+
+/* FINAL logo sizing — keep the Bubba Hub header compact */
+.bh-home .home-brand .brand-logo{
+  height:44px!important;
+  max-width:190px!important;
+  width:auto!important;
+}
+@media(max-width:650px){
+  body.bh-home .home-brand .brand-logo{
+    height:38px!important;
+    max-width:165px!important;
+  }
+}
