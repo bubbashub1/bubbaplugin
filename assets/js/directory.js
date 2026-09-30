@@ -147,6 +147,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       };
 
       window.addEventListener("resize", () => {
+      const wasDesktop = window.__bhDirectoryDesktop;
+      const isDesktop = window.innerWidth > 900;
+      if (wasDesktop !== undefined && wasDesktop !== isDesktop) {
+        currentView = isDesktop ? "grid" : "grid";
+        updateViewVisibility();
+      }
+      window.__bhDirectoryDesktop = isDesktop;
         if (window.innerWidth > 900 && panel && panel.classList.contains("is-open")) {
           panel.classList.remove("is-open");
           document.body.classList.remove("directory-filter-open");
@@ -175,7 +182,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     let map = null;
     let markers = [];
     const storedView = localStorage.getItem("bh_directory_view");
-    let currentView = storedView === "list" ? "grid" : (storedView || "grid");
+    // Desktop must always open in the listings + map split. A previous mobile
+    // "Map" choice must never hide the desktop listings.
+    let currentView = window.innerWidth > 900 ? "grid" : (storedView === "map" ? "map" : "grid");
     let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let cardCount = Number(localStorage.getItem("bh_directory_cards") || 3);
     let homeLocation = null;
@@ -911,6 +920,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       };
     });
 
+    window.__bhDirectoryDesktop = window.innerWidth > 900;
     setupMapModal();
     document.querySelectorAll(".directory-view").forEach(button => button.classList.toggle("active", button.dataset.view === currentView));
     updateViewVisibility();
