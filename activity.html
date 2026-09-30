@@ -22,6 +22,7 @@
     </nav>
     <a class="button button-primary activity-sign-in" href="auth.html">Sign in</a>
   </div>
+  <button class="activity-search-toggle" id="activitySearchToggle" type="button" aria-expanded="true" aria-controls="activityHeaderSearch">Search options <span aria-hidden="true">⌄</span></button>
   <form class="activity-header-search" id="activityHeaderSearch" action="directory.html" method="get" role="search" aria-label="Find activities">
     <label class="activity-search-field activity-search-keyword"><span aria-hidden="true">⌕</span><input id="activitySearchKeyword" name="keyword" type="search" placeholder="Keyword" aria-label="Keyword"></label>
     <label class="activity-search-field"><span aria-hidden="true">⌖</span><select id="activitySearchRegion" name="region" aria-label="Region"><option value="">Region</option></select></label>
@@ -68,6 +69,15 @@ document.addEventListener("DOMContentLoaded",async()=>{
     set("activitySearchCategory","category");
     set("activitySearchDay","day");
   }catch(error){}
+  const searchToggle=document.getElementById("activitySearchToggle");
+  const searchForm=document.getElementById("activityHeaderSearch");
+  if(searchToggle&&searchForm){
+    searchToggle.addEventListener("click",()=>{
+      const hidden=searchForm.classList.toggle("is-collapsed");
+      searchToggle.setAttribute("aria-expanded",String(!hidden));
+      searchToggle.querySelector("span").textContent=hidden?"⌄":"⌃";
+    });
+  }
 });
 </script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
