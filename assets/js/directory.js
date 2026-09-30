@@ -576,9 +576,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         button.addEventListener("click", () => {
           const requested = button.dataset.view === "map" ? "map" : "grid";
           currentView = requested;
-          localStorage.setItem("bh_directory_view", requested === "grid" ? "list" : requested);
+          localStorage.setItem("bh_directory_view", requested === "grid" ? "list" : "map");
           buttons.forEach(b => {
-            const active = b === button;
+            const active = (b.dataset.view === "map" ? "map" : "grid") === currentView;
             b.classList.toggle("is-active", active);
             b.setAttribute("aria-pressed", String(active));
           });
@@ -921,7 +921,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       setNearbyStatus("");
 
       const clean = new URL(location.href);
-      ["saved", "category", "region", "town", "age_min", "age_max", "day", "max_price"].forEach(key =>
+      ["saved", "search", "q", "keyword", "category", "region", "town", "age_min", "age_max", "age_preset", "day", "max_price", "free", "sessionLength", "sen", "termTime", "bookingRequired", "accessibility", "nearby"].forEach(key =>
         clean.searchParams.delete(key)
       );
       history.replaceState({}, "", clean);
