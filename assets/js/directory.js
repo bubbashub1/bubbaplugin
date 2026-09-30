@@ -282,7 +282,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const setupMapModal = () => {
       const mapEl = $("mapView");
       const openBtn = $("openMapModal");
-      if (!mapEl || !openBtn) return;
+      if (!mapEl || !openBtn || openBtn.tagName === "A") return;
       if (!document.getElementById("closeMapModal")) {
         const closeBtn = document.createElement("button");
         closeBtn.type = "button";
