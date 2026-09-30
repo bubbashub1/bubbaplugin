@@ -2542,6 +2542,28 @@ main{width:100%;min-height:calc(100vh - 170px);overflow:visible}
   .site-footer-brand{grid-row:span 2}
 }
 
+/* Keep the main directory navigation on one line */
+.site-header .main-nav{
+  flex-wrap:nowrap;
+  white-space:nowrap;
+}
+.site-header .main-nav a{
+  flex:0 0 auto;
+  white-space:nowrap;
+}
+@media(min-width:621px){
+  .site-header .main-nav{
+    overflow:visible;
+  }
+}
+
+/* Mobile: navigation lives inside the hamburger dropdown */
+@media(max-width:620px){
+  .site-header .main-nav{
+    flex-wrap:nowrap;
+  }
+}
+
 /* Mobile */
 @media(max-width:620px){
   :root{--bh-page-gutter:10px}
