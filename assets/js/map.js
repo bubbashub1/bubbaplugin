@@ -38,7 +38,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     if ($("mapRegion")) $("mapRegion").value=params.get("region")||"";
     if ($("mapTown")) $("mapTown").value=params.get("town")||"";
     if ($("mapCategory")) $("mapCategory").value=params.get("category")||"";
-    if ($("mapAge")) $("mapAge").value=params.get("age_preset")||"";\n    if ($("mapAgeAdvanced")) $("mapAgeAdvanced").value=params.get("age_preset")||"";
+    if ($("mapAge")) $("mapAge").value=params.get("age_preset")||"";
+    if ($("mapAgeAdvanced")) $("mapAgeAdvanced").value=params.get("age_preset")||"";
     if ($("mapDay")) $("mapDay").value=params.get("day")||"";
     if ($("mapPrice")) $("mapPrice").value=params.get("max_price")||"";
 
