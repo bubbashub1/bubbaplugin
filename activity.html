@@ -1830,7 +1830,263 @@ body:not(.bh-home) .activity-header-search .activity-search-button{
     max-height:none!important;
   }
 }
-</style></head><body>
+</style><style id="activity-schedule-hero-final-fix">
+/* Final activity hero + schedule correction */
+body:not(.bh-home) .activity-hero{
+  background:#1B4D3E!important;
+  padding:24px clamp(60px,6vw,90px) 28px!important;
+  min-height:0!important;
+  height:auto!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary,
+body:not(.bh-home) .activity-hero .listing-summary h1,
+body:not(.bh-home) .activity-hero .listing-summary .listing-intro,
+body:not(.bh-home) .activity-hero .listing-summary .listing-tags,
+body:not(.bh-home) .activity-hero .listing-summary .listing-tags span,
+body:not(.bh-home) .activity-hero .listing-summary .listing-tags span::before{
+  color:#fff!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary .eyebrow{
+  background:#d9eadf!important;
+  color:#1B4D3E!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary .listing-intro{
+  color:rgba(255,255,255,.94)!important;
+}
+body:not(.bh-home) .activity-hero .listing-tags span::before{
+  color:#d9eadf!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:10px!important;
+  margin:16px 0 18px!important;
+  width:100%!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts>span{
+  min-width:0!important;
+  min-height:66px!important;
+  padding:11px 13px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  gap:4px!important;
+  box-sizing:border-box!important;
+  border:1px solid rgba(255,255,255,.25)!important;
+  border-radius:13px!important;
+  background:rgba(255,255,255,.10)!important;
+  color:#fff!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts strong{
+  color:#d9eadf!important;
+  font-size:11px!important;
+  line-height:1.1!important;
+  font-weight:800!important;
+  letter-spacing:.06em!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts b{
+  color:#fff!important;
+  font-size:13px!important;
+  line-height:1.25!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions{
+  display:flex!important;
+  flex-flow:row wrap!important;
+  align-items:center!important;
+  gap:8px!important;
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-action,
+body:not(.bh-home) .activity-hero .listing-actions #visited,
+body:not(.bh-home) .activity-hero .activity-book-button{
+  display:inline-flex!important;
+  flex:0 1 auto!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:118px!important;
+  min-height:42px!important;
+  width:auto!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:9px 15px!important;
+  border-radius:50px!important;
+  box-sizing:border-box!important;
+  font-size:12px!important;
+  line-height:1.2!important;
+  font-weight:800!important;
+  white-space:nowrap!important;
+  cursor:pointer!important;
+  transition:transform .18s ease,background-color .18s ease,border-color .18s ease,box-shadow .18s ease,color .18s ease!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-action{
+  background:#f3f8f4!important;
+  color:#1B4D3E!important;
+  border:1px solid #d9eadf!important;
+  box-shadow:none!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-action:hover,
+body:not(.bh-home) .activity-hero .listing-actions .activity-action:focus-visible{
+  background:#fff!important;
+  color:#123d30!important;
+  border-color:#b9d8c5!important;
+  box-shadow:0 5px 14px rgba(18,61,48,.14)!important;
+  transform:translateY(-1px)!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions #visited{
+  display:inline-flex!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions #planner{
+  background:#d9eadf!important;
+  color:#1B4D3E!important;
+  border-color:#d9eadf!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{
+  background:#b9d8c5!important;
+  color:#123d30!important;
+  border:1px solid #b9d8c5!important;
+  box-shadow:0 5px 14px rgba(18,61,48,.16)!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-book-button:hover,
+body:not(.bh-home) .activity-hero .listing-actions .activity-book-button:focus-visible{
+  background:#d9eadf!important;
+  border-color:#d9eadf!important;
+  transform:translateY(-1px)!important;
+}
+
+/* Put About first, then Schedule & hours directly underneath it.
+   Keep the venue/map/contact column alongside both sections. */
+body:not(.bh-home) .listing-layout{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0 clamp(60px,6vw,90px)!important;
+  box-sizing:border-box!important;
+  grid-template-columns:minmax(0,1fr) minmax(320px,.75fr)!important;
+  grid-template-rows:auto auto!important;
+  column-gap:46px!important;
+  row-gap:0!important;
+  align-items:start!important;
+}
+body:not(.bh-home) .listing-main{display:contents!important}
+body:not(.bh-home) .activity-reference-about{
+  grid-column:1!important;
+  grid-row:1!important;
+  min-width:0!important;
+  padding:34px 0 26px!important;
+  margin:0!important;
+}
+body:not(.bh-home) .activity-reference-schedule{
+  grid-column:1!important;
+  grid-row:2!important;
+  min-width:0!important;
+  padding:0 0 34px!important;
+  margin:0!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+body:not(.bh-home) .activity-reference-contact{
+  grid-column:2!important;
+  grid-row:1 / span 2!important;
+  min-width:0!important;
+  padding:34px 0!important;
+  margin:0!important;
+}
+body:not(.bh-home) .activity-reference-schedule .schedule-list{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  width:100%!important;
+  margin-top:16px!important;
+  border:1px solid #d9e5dc!important;
+  border-radius:14px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule{
+  display:block!important;
+  visibility:visible!important;
+  padding:18px!important;
+  color:#144400!important;
+  border-bottom:1px solid #d9e5dc!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule:last-child{border-bottom:0!important}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule h3{
+  color:#144400!important;
+  margin:0 0 4px!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule p{
+  color:#53685a!important;
+  margin:0!important;
+}
+body:not(.bh-home) .activity-reference-schedule .session-list{
+  display:block!important;
+  width:100%!important;
+  margin-top:12px!important;
+  border-top:1px solid #e4ece6!important;
+}
+body:not(.bh-home) .activity-reference-schedule .session-row{
+  display:grid!important;
+  visibility:visible!important;
+  grid-template-columns:minmax(90px,1fr) minmax(120px,1.3fr) minmax(70px,.7fr) minmax(70px,.7fr)!important;
+  gap:10px!important;
+  padding:11px 0!important;
+  color:#144400!important;
+  border-bottom:1px solid #edf2ee!important;
+}
+body:not(.bh-home) .activity-reference-schedule .session-row strong,
+body:not(.bh-home) .activity-reference-schedule .session-row span{
+  color:#31563d!important;
+}
+body:not(.bh-home) .activity-reference-schedule .session-row strong{font-weight:800!important}
+
+@media(max-width:950px){
+  body:not(.bh-home) .activity-hero{
+    grid-template-columns:1fr!important;
+    padding:24px 60px 28px!important;
+  }
+  body:not(.bh-home) .activity-hero .hero-quick-facts{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  body:not(.bh-home) .listing-layout{
+    grid-template-columns:1fr!important;
+    padding-left:60px!important;
+    padding-right:60px!important;
+  }
+  body:not(.bh-home) .activity-reference-about{grid-column:1!important;grid-row:1!important}
+  body:not(.bh-home) .activity-reference-schedule{grid-column:1!important;grid-row:2!important}
+  body:not(.bh-home) .activity-reference-contact{grid-column:1!important;grid-row:3!important;padding:0 0 30px!important}
+}
+@media(max-width:650px){
+  body:not(.bh-home) .activity-hero{padding:20px 24px 24px!important}
+  body:not(.bh-home) .activity-hero .hero-quick-facts{
+    grid-template-columns:1fr 1fr!important;
+    gap:7px!important;
+    margin:14px 0 16px!important;
+  }
+  body:not(.bh-home) .activity-hero .hero-quick-facts>span{min-height:62px!important;padding:10px!important}
+  body:not(.bh-home) .activity-hero .listing-actions{gap:7px!important}
+  body:not(.bh-home) .activity-hero .listing-actions .activity-action,
+  body:not(.bh-home) .activity-hero .listing-actions #visited,
+  body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{
+    flex:1 1 calc(50% - 7px)!important;
+    min-width:0!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{flex-basis:100%!important}
+  body:not(.bh-home) .listing-layout{
+    padding-left:24px!important;
+    padding-right:24px!important;
+  }
+  body:not(.bh-home) .activity-reference-about{padding:28px 0 22px!important}
+  body:not(.bh-home) .activity-reference-schedule{padding-bottom:28px!important}
+  body:not(.bh-home) .activity-reference-schedule .session-row{grid-template-columns:1fr 1fr!important}
+}
+</style>
+</head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
     <a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png" alt="Bubba Hub"></a>
