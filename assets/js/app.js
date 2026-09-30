@@ -407,7 +407,7 @@ void bhHydrateSaved();
   const resolveImage=(path)=>{
     const value=String(path||"").trim();
     if(!value)return "";
-    if(/^https?:\\/\\//i.test(value)||value.startsWith("/"))return value;
+    if(/^https?:\/\//i.test(value)||value.startsWith("/"))return value;
     return value.replace(/^\.\//,"");
   };
   const ageText=(a)=>{
