@@ -1247,7 +1247,16 @@ body:not(.bh-home) .activity-reference-schedule .session-row span{min-width:0!im
   body:not(.bh-home) .activity-reference-schedule .session-row{grid-template-columns:1fr 1fr!important}
 }
 </style>
-</head><body>
+<style id="activity-schedule-readability-fix">
+body:not(.bh-home) .activity-reference-schedule .venue-schedule,
+body:not(.bh-home) .activity-reference-schedule .venue-schedule p,
+body:not(.bh-home) .activity-reference-schedule .session-row,
+body:not(.bh-home) .activity-reference-schedule .session-row strong,
+body:not(.bh-home) .activity-reference-schedule .session-row span{
+  font-size:12px!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule h3{font-size:18px!important}
+</style></head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
     <a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png" alt="Bubba Hub"></a>
@@ -1354,7 +1363,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       (bhSessions(a).some(s=>s.term_time)?'<span>Term time</span>':"")+
     '</div></section>'+
     '<section class="activity-reference-contact"><div id="listingMap" class="listing-map activity-reference-contact-map" aria-label="Activity venue map"></div><div class="activity-reference-addresses">'+(venues||[]).map(v=>'<article class="activity-address-row"><div class="activity-address-icon">⌖</div><div><strong>'+bhEscape(v.name||"Venue")+'</strong><span>'+[v.address,v.town,v.postcode].filter(Boolean).map(x=>bhEscape(x)).join(", ")+'</span></div><a class="button button-soft" target="_blank" rel="noopener" href="'+(v.lat&&v.long?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.lat+","+v.long):"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.address||v.town||v.name||""))+'">Directions</a></article>').join("")+'</div></section>'+
-    '<section class="listing-card activity-reference-schedule"><span class="eyebrow">When</span><h2>Schedule &amp; hours</h2><div class="schedule-list">'+venues.map(v=>'<article class="venue-schedule"><div><h3>'+bhEscape(v.name||"Venue")+'</h3><p>'+bhEscape(v.address||v.town||v.region||"")+'</p></div><div class="session-list">'+(v.sessions||[]).map(s=>'<div class="session-row"><strong>'+bhEscape(s.day||"Session")+'</strong><span>'+bhEscape(bhFormatTime(s.start||s.time||""))+((s.end||s.end_time)?" – "+bhEscape(bhFormatTime(s.end||s.end_time)):"")+'</span><span>'+bhEscape(s.duration||"")+'</span><span>'+((s.price!==undefined&&s.price!=="")?bhEscape(String(s.price).startsWith("£")?s.price:"£"+s.price):"")+'</span></div>').join("")+'</div></article>').join("")+'</div></section>'+
+    '<section class="listing-card activity-reference-schedule"><span class="eyebrow">When</span><h2>Schedule &amp; hours</h2><div class="schedule-list">'+venues.map(v=>'<article class="venue-schedule"><div><h3>'+bhEscape(v.name||"Venue")+(v.town?", "+bhEscape(v.town):"")+"</h3><p>'+bhEscape(v.address||v.town||v.region||"")+'</p></div><div class="session-list">'+(v.sessions||[]).map(s=>'<div class="session-row"><strong>'+bhEscape(s.day||"Session")+'</strong><span>'+bhEscape(bhFormatTime(s.start||s.time||""))+((s.end||s.end_time)?" – "+bhEscape(bhFormatTime(s.end||s.end_time)):"")+'</span><span>'+bhEscape(s.duration||"")+'</span><span>'+((s.price!==undefined&&s.price!=="")?bhEscape(String(s.price).startsWith("£")?s.price:"£"+s.price):"")+'</span></div>').join("")+'</div></article>').join("")+'</div></section>'+
 '</div><aside class="listing-side">'+
     '<section class="listing-card organiser-card"><span class="eyebrow">Organiser</span><div class="organiser-profile"><div class="organiser-avatar">'+(a.organiser_avatar?'<img src="'+bhEscape(a.organiser_avatar)+'" alt="'+bhEscape(a.organiser_name||"Organiser")+'">':'<span>BH</span>')+'</div><div><h2>'+bhEscape(a.organiser_name||a.organiser||"Activity organiser")+'</h2></div></div><div class="organiser-links"><a class="button button-soft organiser-icon-link" href="organiser/'+encodeURIComponent(a.organiser_slug||a.organiser_name||"organiser")+'/">🏪 <span>View organiser</span></a>'+(a.organiser_website?'<a class="organiser-icon-link" title="Business website" aria-label="Business website" target="_blank" rel="noopener" href="'+bhEscape(a.organiser_website)+'">🌐</a>':"")+(a.email?'<a class="organiser-icon-link" title="Email organiser" aria-label="Email organiser" href="mailto:'+bhEscape(a.email)+'">✉</a>':"")+'</div></section>'+
     '<section class="listing-card booking-card"><span class="eyebrow">Join in</span><h2>Book or reserve</h2><div id="bookingSchedule"><p>Loading booking options…</p></div></section>'+    '<section class="listing-card contact-card"><span class="eyebrow">Contact</span><h2>Contact organiser</h2><p>Have a question about the activity, venue or sessions?</p><button class="button button-soft button-full" id="contactOrganiser" type="button">Contact organiser</button></section>'+
