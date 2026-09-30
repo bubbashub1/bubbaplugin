@@ -1,0 +1,25 @@
+.bh-map-page{background:var(--bh-site-bg,#f7fbf8)}
+.bh-map-page .map-page-shell{padding:24px 0 40px}
+.map-page-heading{position:relative;margin:0 0 16px}
+.map-back-link{display:inline-flex;margin-bottom:14px;color:var(--bh-site-teal);font-weight:900;text-decoration:none}
+.map-page-heading .eyebrow{display:block;margin-bottom:5px;color:var(--bh-site-teal);font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.map-page-heading h1{margin:0;color:var(--bh-site-dark);font-size:clamp(30px,4vw,48px);line-height:1.05}
+.map-page-heading p{margin:8px 0 0;color:var(--bh-site-muted)}
+.map-page-map{position:relative;width:100%;height:min(72vh,760px);min-height:520px;border:1px solid var(--bh-site-border);border-radius:24px;overflow:hidden;box-shadow:var(--bh-site-shadow);background:#dfeae3}
+.map-page-status{margin:12px 2px 0;color:var(--bh-site-muted);font-size:12px;font-weight:750}
+.bh-map-page .bh-map-popup-card{max-width:310px;overflow:hidden;border-radius:14px;background:#fff}
+.bh-map-page .bh-map-popup-image{display:block;width:100%;height:130px;object-fit:cover}
+.bh-map-page .bh-map-popup-body{padding:13px}
+.bh-map-page .bh-map-popup-category{font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:var(--bh-site-teal)}
+.bh-map-page .bh-map-popup-body h3{margin:4px 0 6px;color:var(--bh-site-dark);font-size:18px;line-height:1.15}
+.bh-map-page .bh-map-popup-location{margin:0 0 8px;color:var(--bh-site-muted);font-size:12px}
+.bh-map-page .bh-map-popup-meta{display:flex;flex-wrap:wrap;gap:6px 10px;margin-bottom:10px;color:var(--bh-site-muted);font-size:11px}
+.bh-map-page .bh-map-popup-link{display:flex;width:100%;justify-content:center;box-sizing:border-box;text-decoration:none}
+@media(max-width:700px){
+ .bh-map-page .map-page-shell{width:calc(100% - 20px);padding:16px 0 28px}
+ .map-page-heading{margin-bottom:12px}
+ .map-page-heading h1{font-size:32px}
+ .map-page-heading p{font-size:13px}
+ .map-page-map{height:calc(100vh - 245px);min-height:460px;border-radius:18px}
+ .map-page-status{margin-top:8px}
+}
