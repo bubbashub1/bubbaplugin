@@ -1389,6 +1389,74 @@ body:not(.bh-home) .activity-header-search .activity-search-button{
   body:not(.bh-home) .activity-header-search .activity-search-button{width:100%!important}
 }
 </style>
+<style id="activity-logo-layout-final">
+body:not(.bh-home) .activity-reference-header .activity-header-top{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  width:100%!important;
+  min-width:0!important;
+  gap:18px!important;
+}
+body:not(.bh-home) .activity-reference-header .brand{
+  display:flex!important;
+  flex:0 0 auto!important;
+  align-items:center!important;
+  width:auto!important;
+  min-width:0!important;
+  margin:0 auto 0 0!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+body:not(.bh-home) .activity-reference-header .brand-logo{
+  display:block!important;
+  flex:0 0 auto!important;
+  width:auto!important;
+  height:56px!important;
+  max-width:190px!important;
+  min-width:0!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+body:not(.bh-home) .activity-reference-header .brand strong,
+body:not(.bh-home) .activity-reference-header .brand small{display:none!important}
+body:not(.bh-home) .activity-reference-header .main-nav{
+  display:flex!important;
+  flex:0 1 auto!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  width:auto!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+@media(max-width:1050px){
+  body:not(.bh-home) .activity-reference-header .activity-header-top{gap:10px!important}
+  body:not(.bh-home) .activity-reference-header .brand-logo{height:50px!important;max-width:165px!important}
+  body:not(.bh-home) .activity-reference-header .main-nav a{padding:7px 8px!important;font-size:12px!important}
+}
+@media(max-width:850px){
+  body:not(.bh-home) .activity-reference-header .activity-header-top{flex-wrap:wrap!important}
+  body:not(.bh-home) .activity-reference-header .main-nav{
+    order:3!important;
+    flex:1 0 100%!important;
+    width:100%!important;
+    justify-content:flex-start!important;
+    overflow-x:auto!important;
+  }
+  body:not(.bh-home) .activity-reference-header .brand-logo{height:48px!important;max-width:155px!important}
+}
+</style>
 </style></head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
