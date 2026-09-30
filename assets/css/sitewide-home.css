@@ -362,8 +362,8 @@ body:not(.bh-home) .hero{
     gap:3px;
     overflow-x:hidden;
     overflow-y:auto;
-    background:#fff;
-    border:1px solid var(--bh-site-border);
+    background:#d8e6db;
+    border:1px solid rgba(20,68,0,.12);
     border-radius:16px;
     box-shadow:0 18px 40px rgba(20,68,0,.16);
     z-index:200;
@@ -392,8 +392,8 @@ body:not(.bh-home) .hero{
     gap:5px;
     border:1px solid var(--bh-site-border);
     border-radius:12px;
-    background:#fff;
-    color:var(--bh-site-dark);
+    background:#d8e6db;
+    color:#144400;
     cursor:pointer;
     z-index:210;
   }
