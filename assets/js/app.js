@@ -416,7 +416,54 @@ void bhHydrateSaved();
       const items=await bhActivities();
       if(!Array.isArray(items)||!items.length)return;
 
-      const selected=items.filter(a=>a&&a.id).slice(0,4);
+      const available=items.filter(a=>a&&a.id);
+      const readStoredPreferences=()=>{
+        try{
+          const raw=localStorage.getItem("bhPreferences");
+          const parsed=raw?JSON.parse(raw):{};
+          return parsed&&typeof parsed==="object"?parsed:{};
+        }catch(e){return {}}
+      };
+      const stored=readStoredPreferences();
+      let preferences=stored;
+      try{
+        const auth=await bhAuthSession();
+        if(auth?.authenticated){
+          const response=await fetch("api/preferences.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+          if(response.ok){
+            const payload=await response.json();
+            if(payload?.ok&&payload.preferences){
+              preferences={...stored,...payload.preferences};
+              localStorage.setItem("bhPreferences",JSON.stringify(preferences));
+            }
+          }
+        }
+      }catch(e){}
+
+      const preferredTown=String(preferences.town||"").trim().toLowerCase();
+      const preferredRegion=String(preferences.region||"").trim().toLowerCase();
+      const venueTown=a=>Array.isArray(a?.venues)
+        ?a.venues.map(v=>String(v?.town||"").trim()).filter(Boolean)
+        :[];
+      const venueRegion=a=>Array.isArray(a?.venues)
+        ?a.venues.map(v=>String(v?.region||"").trim()).filter(Boolean)
+        :[];
+
+      const townMatches=preferredTown
+        ?available.filter(a=>venueTown(a).some(t=>t.toLowerCase()===preferredTown))
+        :[];
+      const regionMatches=preferredRegion
+        ?available.filter(a=>venueRegion(a).some(r=>r.toLowerCase()===preferredRegion))
+        :[];
+
+      // Personalise the front door using the user's saved usual town.
+      // Matching is against VENUE town, never the activity title/category.
+      // If there are fewer than four local matches, fill the remaining cards
+      // from the wider directory so the homepage never looks empty.
+      const selected=[...townMatches,...regionMatches,...available]
+        .filter((a,index,self)=>self.findIndex(x=>String(x.id)===String(a.id))===index)
+        .slice(0,4);
+
       if(!selected.length)return;
 
       grid.innerHTML="";
