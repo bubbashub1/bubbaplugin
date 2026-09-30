@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if ($("mapRegion")) $("mapRegion").value=params.get("region")||"";
     if ($("mapTown")) $("mapTown").value=params.get("town")||"";
     if ($("mapCategory")) $("mapCategory").value=params.get("category")||"";
-    if ($("mapAge")) $("mapAge").value=params.get("age_preset")||"";
+    if ($("mapAge")) $("mapAge").value=params.get("age_preset")||"";\n    if ($("mapAgeAdvanced")) $("mapAgeAdvanced").value=params.get("age_preset")||"";
     if ($("mapDay")) $("mapDay").value=params.get("day")||"";
     if ($("mapPrice")) $("mapPrice").value=params.get("max_price")||"";
 
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       markers.forEach(m=>m.remove());markers=[];
       const search=($("mapSearch")?.value||"").trim().toLowerCase();
       const category=$("mapCategory")?.value||"",region=$("mapRegion")?.value||"",town=$("mapTown")?.value||"";
-      const agePreset=$("mapAge")?.value||"";
+      const agePreset=$("mapAge")?.value||$("mapAgeAdvanced")?.value||"";
       const age=agePresets[agePreset]||[Number(params.get("age_min")||0),Number(params.get("age_max")||9)];
       const day=$("mapDay")?.value||"",maxPrice=$("mapPrice")?.value||"";
       const free=params.get("free")||"",sessionLength=params.get("sessionLength")||"",sen=params.get("sen")||"",termTime=params.get("termTime")||"",bookingRequired=params.get("bookingRequired")||"",accessibility=(params.get("accessibility")||"").split(",").filter(Boolean),saved=params.get("saved")||"";
@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
     const syncUrl=()=>{
       const p=new URLSearchParams();
-      const vals={keyword:$("mapSearch")?.value.trim()||"",region:$("mapRegion")?.value||"",town:$("mapTown")?.value||"",category:$("mapCategory")?.value||"",age_preset:$("mapAge")?.value||"",day:$("mapDay")?.value||"",max_price:$("mapPrice")?.value||""};
+      const vals={keyword:$("mapSearch")?.value.trim()||"",region:$("mapRegion")?.value||"",town:$("mapTown")?.value||"",category:$("mapCategory")?.value||"",age_preset:$("mapAge")?.value||$("mapAgeAdvanced")?.value||"",day:$("mapDay")?.value||"",max_price:$("mapPrice")?.value||$("mapPriceAdvanced")?.value||""};
       Object.entries(vals).forEach(([k,v])=>{if(v)p.set(k,v)});
       ["age_min","age_max","free","sessionLength","sen","termTime","bookingRequired","accessibility","saved"].forEach(k=>{const v=params.get(k);if(v)p.set(k,v)});
       history.replaceState({}, "", p.toString()?"map.html?"+p.toString():"map.html");
@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (advancedMapFields.category) $("mapCategory").value = advancedMapFields.category.value;
       if (advancedMapFields.region) $("mapRegion").value = advancedMapFields.region.value;
       if (advancedMapFields.town) $("mapTown").value = advancedMapFields.town.value;
-      if (advancedMapFields.age) $("mapAge").value = advancedMapFields.age.value;
+      if (advancedMapFields.age) { if ($("mapAge")) $("mapAge").value = advancedMapFields.age.value; params.set("age_preset",advancedMapFields.age.value); }
       if (advancedMapFields.day) $("mapDay").value = advancedMapFields.day.value;
       if (advancedMapFields.price) $("mapPrice").value = advancedMapFields.price.value;
       if(advancedMapFields.sessionLength?.value) params.set("sessionLength",advancedMapFields.sessionLength.value); else params.delete("sessionLength");
