@@ -611,6 +611,21 @@ body:not(.bh-home) .activity-reference-header .main-nav a,
 body:not(.bh-home) .activity-reference-header .activity-sign-in{
   font-weight:600!important;
 }
+</style><style id="activity-organiser-edit">
+body:not(.bh-home) .activity-organiser-edit-wrap{margin-top:14px;display:flex;justify-content:flex-end}
+body:not(.bh-home) .activity-organiser-edit-button{min-height:36px;padding:8px 14px;border-radius:999px;border:1px solid #9fb7a5;background:#fff;color:#144400;font-weight:700;font-size:12px;cursor:pointer}
+body:not(.bh-home) .activity-organiser-edit-button:hover{background:#e7f1ea}
+body:not(.bh-home) .activity-organiser-edit-modal-backdrop{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:20px;background:rgba(20,68,0,.35)}
+body:not(.bh-home) .activity-organiser-edit-modal{width:min(520px,100%);max-height:min(720px,calc(100vh - 40px));overflow:auto;background:#fff;border-radius:22px;padding:28px;box-shadow:0 24px 70px rgba(20,68,0,.22);position:relative;color:#144400}
+body:not(.bh-home) .activity-organiser-edit-modal h2{margin:0 0 8px;font-size:26px;color:#144400}
+body:not(.bh-home) .activity-organiser-edit-modal p{margin:0 0 20px;color:#3c8e96;line-height:1.5}
+body:not(.bh-home) .activity-organiser-edit-modal label{display:block;margin:14px 0 6px;font-size:13px;font-weight:700;color:#144400}
+body:not(.bh-home) .activity-organiser-edit-modal select{width:100%;min-height:46px;padding:10px 12px;border:1px solid #c8d8cc;border-radius:12px;background:#fff;color:#144400;font:inherit}
+body:not(.bh-home) .activity-organiser-edit-modal .edit-note{font-size:12px;margin-top:8px}
+body:not(.bh-home) .activity-organiser-edit-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
+body:not(.bh-home) .activity-organiser-edit-close{position:absolute;top:14px;right:16px;border:0;background:transparent;color:#416651;font-size:28px;cursor:pointer}
+body:not(.bh-home) .activity-organiser-edit-status{min-height:20px;margin-top:12px;font-size:13px;color:#416651}
+@media(max-width:650px){body:not(.bh-home) .activity-organiser-edit-modal{padding:22px}.activity-organiser-edit-actions{flex-direction:column-reverse}.activity-organiser-edit-actions .button{width:100%}}
 </style></head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
@@ -725,7 +740,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     '<section class="listing-card booking-card"><span class="eyebrow">Join in</span><h2>Book or reserve</h2><div id="bookingSchedule"><p>Loading booking options…</p></div></section>'+    '<section class="listing-card contact-card"><span class="eyebrow">Contact</span><h2>Contact organiser</h2><p>Have a question about the activity, venue or sessions?</p><button class="button button-soft button-full" id="contactOrganiser" type="button">Contact organiser</button></section>'+
     ''+
    '</aside></div>'+
-   '<div class="activity-reference-organiser"><div class="activity-organiser-left"><div class="activity-organiser-icon">♧</div><div class="activity-organiser-copy"><small>Organiser</small><strong>'+bhEscape(a.organiser_name||a.organiser||"Activity organiser")+'</strong></div></div><a class="activity-organiser-link" href="organiser/'+encodeURIComponent(a.organiser_slug||a.organiser_name||"organiser")+'/">View organiser profile ›</a></div>'+
+   '<div class="activity-reference-organiser"><div class="activity-organiser-left"><div class="activity-organiser-icon">♧</div><div class="activity-organiser-copy"><small>Organiser</small><strong>'+bhEscape(a.organiser_name||a.organiser||"Activity organiser")+'</strong></div></div><a class="activity-organiser-link" href="organiser/'+encodeURIComponent(a.organiser_slug||a.organiser_name||"organiser")+'/">View organiser profile ›</a></div>+'<div id="activityOrganiserEditMount"></div>'+
    '<div class="listing-bottom"><a class="button button-soft" href="directory.html">← Back to activities</a></div>';
   const save=document.getElementById("save"),plan=document.getElementById("planner"),visited=document.getElementById("visited"),compare=document.getElementById("compare");
 
@@ -798,4 +813,60 @@ document.addEventListener("DOMContentLoaded",async()=>{
   }
  }catch(e){state.innerHTML='<div class="admin-panel"><h2>Activity unavailable</h2><p>We couldn’t load this activity right now.</p><a class="button button-primary" href="directory.html">Back to activities</a></div>'}
 });
+</script><script id="activity-organiser-edit-script">
+(async function initActivityOrganiserEditor(){
+  const mount=document.getElementById("activityOrganiserEditMount");
+  if(!mount||!window.bhAuthSession)return;
+  try{
+    const response=await fetch("api/listing-organiser.php?activity_id="+encodeURIComponent(String(a.id)),{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+    const data=await response.json();
+    if(!response.ok||!data.ok||!data.permission?.can_edit)return;
+
+    const button=document.createElement("button");
+    button.type="button";
+    button.className="activity-organiser-edit-button";
+    button.textContent="✎ Edit organiser";
+    button.setAttribute("aria-label","Edit assigned organiser");
+    mount.className="activity-organiser-edit-wrap";
+    mount.appendChild(button);
+
+    button.addEventListener("click",()=>{
+      const backdrop=document.createElement("div");
+      backdrop.className="activity-organiser-edit-modal-backdrop";
+      backdrop.innerHTML='<div class="activity-organiser-edit-modal" role="dialog" aria-modal="true" aria-labelledby="activityOrganiserEditTitle"><button type="button" class="activity-organiser-edit-close" aria-label="Close">×</button><h2 id="activityOrganiserEditTitle">Edit assigned organiser</h2><p>Choose the organiser assigned to this listing.</p><form id="activityOrganiserEditForm"><label for="activityOrganiserSelect">Assigned organiser</label><select id="activityOrganiserSelect" name="organiser_id" required></select><p class="edit-note">'+(data.permission.is_admin?"Administrators can transfer this listing to any active organiser.":"You can edit this listing, but only an administrator can transfer it to another organiser.")+'</p><div class="activity-organiser-edit-actions"><button type="button" class="button button-soft" id="activityOrganiserCancel">Cancel</button><button type="submit" class="button button-primary">Save organiser</button></div><p class="activity-organiser-edit-status" aria-live="polite"></p></form></div>';
+      document.body.appendChild(backdrop);
+      const select=backdrop.querySelector("#activityOrganiserSelect");
+      const currentId=String(data.activity?.organiser_id||"");
+      (data.organisers||[]).forEach(org=>{
+        const option=new Option(org.organisation_name||"Organiser",String(org.id),String(org.id)===currentId,String(org.id)===currentId);
+        if(org.email)option.title=org.email;
+        select.add(option);
+      });
+      if(!data.permission.is_admin)select.disabled=true;
+      const close=()=>backdrop.remove();
+      backdrop.querySelector(".activity-organiser-edit-close").onclick=close;
+      backdrop.querySelector("#activityOrganiserCancel").onclick=close;
+      backdrop.addEventListener("click",event=>{if(event.target===backdrop)close()});
+      document.addEventListener("keydown",function esc(event){if(event.key==="Escape"){close();document.removeEventListener("keydown",esc)}},{once:true});
+      backdrop.querySelector("form").addEventListener("submit",async event=>{
+        event.preventDefault();
+        const status=backdrop.querySelector(".activity-organiser-edit-status");
+        const save=backdrop.querySelector('button[type="submit"]');
+        status.textContent="Saving…";save.disabled=true;
+        try{
+          const payload={activity_id:Number(a.id),organiser_id:Number(select.value),csrf:data.csrf||""};
+          const res=await fetch("api/listing-organiser.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(payload)});
+          const result=await res.json();
+          if(!res.ok||!result.ok)throw new Error(result.message||result.error||"Could not update the organiser.");
+          status.textContent="Assigned organiser updated.";
+          setTimeout(()=>location.reload(),500);
+        }catch(error){
+          status.textContent=error.message||"Could not update the organiser.";
+          save.disabled=false;
+        }
+      });
+      select.focus();
+    });
+  }catch(error){}
+})();
 </script></body></html>
