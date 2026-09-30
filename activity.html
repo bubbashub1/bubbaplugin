@@ -1625,7 +1625,103 @@ body:not(.bh-home) .app-shell > .listing-page .activity-hero{
     margin-bottom:24px!important;
   }
 }
-</style></head><body>
+</style>
+<style id="activity-search-final-clean">
+/* Final activity search: same six-field directory search, with natural wrapping. */
+body:not(.bh-home) .activity-reference-header .activity-header-search,
+body:not(.bh-home) form.activity-header-search{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-auto-rows:minmax(46px,auto)!important;
+  gap:10px!important;
+  width:100%!important;
+  max-width:1400px!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:18px auto 0!important;
+  padding:0!important;
+  position:relative!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+  align-items:stretch!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field,
+body:not(.bh-home) .activity-header-search .activity-search-button{
+  width:100%!important;
+  min-width:0!important;
+  min-height:46px!important;
+  height:auto!important;
+  max-height:none!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field{
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  padding:0 14px!important;
+  background:#fff!important;
+  border:1px solid #d8e6db!important;
+  border-radius:14px!important;
+  overflow:visible!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field input,
+body:not(.bh-home) .activity-header-search .activity-search-field select{
+  width:100%!important;
+  min-width:0!important;
+  min-height:42px!important;
+  height:auto!important;
+  max-height:none!important;
+  padding:9px 0!important;
+  border:0!important;
+  outline:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#123f31!important;
+  font-size:13px!important;
+  line-height:1.3!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field span{
+  flex:0 0 auto!important;
+  color:#3c8e96!important;
+  font-size:16px!important;
+  line-height:1!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-button{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:10px 18px!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:#3c8e96!important;
+  color:#fff!important;
+  font-size:13px!important;
+  font-weight:800!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+}
+body:not(.bh-home) .activity-reference-header{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+@media(max-width:900px){
+  body:not(.bh-home) .activity-reference-header .activity-header-search,
+  body:not(.bh-home) form.activity-header-search{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:560px){
+  body:not(.bh-home) .activity-reference-header .activity-header-search,
+  body:not(.bh-home) form.activity-header-search{
+    grid-template-columns:1fr!important;
+  }
+}
+</style>
+</head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
     <a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png" alt="Bubba Hub"></a>
