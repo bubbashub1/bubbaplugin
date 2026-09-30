@@ -1,0 +1,2696 @@
+/* Bubba Hub Activity Detail
+   Consolidated activity-page CSS. Rule order is preserved from the former
+   inline style blocks so the current approved visual design remains unchanged.
+*/
+
+/* ========================================================================
+   activity-dashboard-reference
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Baby Rockers / activity detail showcase */
+body:not(.bh-home) .listing-page{
+  width:100%;
+  max-width:none;
+  margin:0;
+  padding:0 0 28px;
+}
+body:not(.bh-home) .activity-hero{
+  display:grid;
+  grid-template-columns:minmax(360px,440px) minmax(0,1fr);
+  gap:38px;
+  align-items:center;
+  width:100%;
+  min-height:340px;
+  height:auto;
+  margin:0;
+  padding:32px max(32px,calc((100vw - 1400px)/2 + 12px));
+  background:#416651;
+  border-radius:0;
+  box-shadow:none;
+}
+body:not(.bh-home) .activity-hero .listing-gallery{
+  width:100%;
+  height:280px;
+  min-height:280px;
+  display:block;
+  padding:0;
+  background:transparent;
+  border-radius:18px;
+  overflow:hidden;
+}
+body:not(.bh-home) .activity-hero .listing-gallery img,
+body:not(.bh-home) .activity-hero .listing-gallery-placeholder{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  height:100%!important;
+  max-height:none!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  background:#eaf4ed;
+  border-radius:18px;
+}
+body:not(.bh-home) .activity-hero .listing-gallery picture{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery > *{
+  box-sizing:border-box;
+}
+body:not(.bh-home) .activity-hero .listing-gallery img:not(:first-child){display:none}
+body:not(.bh-home) .activity-hero .listing-summary{
+  min-height:280px;
+  padding:26px 28px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  background:#e7f1ea;
+  border:0;
+  border-radius:18px;
+  box-shadow:none;
+}
+body:not(.bh-home) .activity-hero .listing-summary .eyebrow{
+  width:max-content;
+  margin:0 0 12px;
+  padding:8px 15px;
+  border-radius:999px;
+  background:#e7f1ea;
+  color:#144400;
+  font-size:12px;
+  letter-spacing:0;
+  text-transform:none;
+}
+body:not(.bh-home) .activity-hero .listing-summary h1{
+  margin:0;
+  color:#144400;
+  font-family:"Quicksand",sans-serif;
+  font-size:clamp(34px,4vw,52px);
+  line-height:1.05;
+  font-weight:800;
+}
+body:not(.bh-home) .activity-hero .listing-intro{
+  margin:10px 0 0;
+  color:#144400;
+  font-size:18px;
+  line-height:1.45;
+  font-weight:550;
+}
+body:not(.bh-home) .activity-hero .listing-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:22px;
+  margin-top:22px;
+}
+body:not(.bh-home) .activity-hero .listing-tags span{
+  padding:0;
+  background:none;
+  color:#144400;
+  border-radius:0;
+  font-size:15px;
+  font-weight:650;
+}
+body:not(.bh-home) .activity-hero .listing-tags span::before{
+  content:"•";
+  margin-right:8px;
+  color:#d8e6db;
+}
+body:not(.bh-home) .activity-hero .listing-actions{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin-top:24px;
+}
+body:not(.bh-home) .activity-hero .listing-actions .button{
+  min-height:42px;
+  padding:8px 16px;
+  font-size:14px;
+  border-radius:999px;
+}
+body:not(.bh-home) .activity-hero .listing-actions #save,
+body:not(.bh-home) .activity-hero .listing-actions #visited,
+body:not(.bh-home) .activity-hero .listing-actions #compare{display:none}
+body:not(.bh-home) .activity-hero .listing-actions #planner{
+  background:transparent;
+  color:#fff;
+  box-shadow:none;
+  padding-left:0;
+}
+body:not(.bh-home) .activity-hero .listing-actions #planner::first-letter{font-size:24px}
+body:not(.bh-home) .activity-book-button{
+  align-self:flex-end;
+  width:200px;
+  min-height:62px!important;
+  margin-top:-66px;
+  margin-bottom:0;
+  border-radius:999px;
+  background:#e7f1ea;
+  color:#144400;
+  font-size:18px;
+  font-weight:800;
+  box-shadow:none;
+}
+body:not(.bh-home) .activity-book-button:hover{background:#f2f8f3;color:#144400}
+body:not(.bh-home) .listing-layout{
+  width:min(1400px,calc(100% - 64px));
+  max-width:1400px;
+  margin:0 auto;
+  padding-top:0;
+  grid-template-columns:minmax(0,1fr) minmax(360px,.9fr);
+  gap:56px;
+}
+body:not(.bh-home) .listing-main,
+body:not(.bh-home) .listing-side{display:contents}
+body:not(.bh-home) .listing-main .good-to-know-card,
+body:not(.bh-home) .listing-main .listing-card:nth-of-type(3),
+body:not(.bh-home) .listing-main .where-card,
+body:not(.bh-home) .listing-side .organiser-card,
+body:not(.bh-home) .listing-side .booking-card,
+body:not(.bh-home) .listing-side .contact-card{display:none}
+body:not(.bh-home) .listing-main .listing-card:nth-of-type(2){
+  grid-column:1;
+  grid-row:1;
+  padding:42px 0 34px;
+  background:transparent;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+}
+body:not(.bh-home) .listing-main .listing-card:nth-of-type(2) .eyebrow{display:none}
+body:not(.bh-home) .listing-main .listing-card:nth-of-type(2) h2{
+  margin:0 0 16px;
+  color:#144400;
+  font-family:"Quicksand",sans-serif;
+  font-size:30px;
+  font-weight:800;
+}
+body:not(.bh-home) .listing-description{
+  color:#3c8e96;
+  font-size:18px;
+  line-height:1.55;
+  max-width:680px;
+}
+body:not(.bh-home) .activity-reference-contact{
+  grid-column:2;
+  grid-row:1;
+  padding:42px 0 34px 56px;
+  border-left:1px solid #9fb7a5;
+}
+body:not(.bh-home) .activity-reference-contact-map{width:100%;height:250px;margin:0 0 18px;border-radius:14px;overflow:hidden;background:#eaf4ed}
+body:not(.bh-home) .activity-reference-addresses{display:flex;flex-direction:column;gap:10px}
+body:not(.bh-home) .activity-address-row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #d8e6db}
+body:not(.bh-home) .activity-address-icon{width:26px;height:26px;display:grid;place-items:center;color:#144400;font-size:18px}
+body:not(.bh-home) .activity-address-row strong,
+body:not(.bh-home) .activity-address-row span{display:block}
+body:not(.bh-home) .activity-address-row strong{color:#144400;font-size:13px}
+body:not(.bh-home) .activity-address-row span{color:#3c8e96;font-size:12px;margin-top:2px}
+body:not(.bh-home) .activity-address-row .button{min-height:34px;padding:7px 11px;font-size:11px;border-radius:999px}
+body:not(.bh-home) .activity-reference-contact h2{
+  margin:0 0 20px;
+  color:#144400;
+  font-family:"Quicksand",sans-serif;
+  font-size:30px;
+  font-weight:800;
+}
+body:not(.bh-home) .activity-contact-row{
+  display:grid;
+  grid-template-columns:42px 110px minmax(0,1fr);
+  align-items:center;
+  gap:10px;
+  margin:16px 0;
+  color:#3c8e96;
+  font-size:17px;
+}
+body:not(.bh-home) .activity-contact-icon{
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  color:#144400;
+  font-size:22px;
+}
+body:not(.bh-home) .activity-contact-label{color:#144400}
+body:not(.bh-home) .activity-contact-value{overflow-wrap:anywhere}
+body:not(.bh-home) .activity-contact-value a{color:#3c8e96}
+body:not(.bh-home) .activity-reference-organiser{
+  width:min(1400px,calc(100% - 64px));
+  margin:0 auto;
+  padding:18px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  background:#e7f1ea;
+  border-radius:18px;
+  color:#144400;
+}
+body:not(.bh-home) .activity-organiser-left{display:flex;align-items:center;gap:16px}
+body:not(.bh-home) .activity-organiser-icon{
+  width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:#d8e6db;color:#144400;font-size:25px;
+}
+body:not(.bh-home) .activity-organiser-copy small,
+body:not(.bh-home) .activity-organiser-copy strong{display:block}
+body:not(.bh-home) .activity-organiser-copy small{font-size:12px;font-weight:800}
+body:not(.bh-home) .activity-organiser-copy strong{font-size:16px;margin-top:2px}
+body:not(.bh-home) .activity-organiser-link{font-size:14px;font-weight:700}
+body:not(.bh-home) .listing-bottom{
+  width:min(1400px,calc(100% - 64px));
+  margin:0 auto;
+  padding:20px 0 0;
+}
+@media(max-width:950px){
+  body:not(.bh-home) .activity-hero{
+    grid-template-columns:1fr;
+    padding:24px 24px 30px;
+    gap:20px;
+  }
+  body:not(.bh-home) .activity-hero .listing-gallery{
+    height:230px;
+    min-height:230px;
+  }
+  body:not(.bh-home) .activity-book-button{
+    justify-self:end;
+    margin-top:-62px;
+  }
+  body:not(.bh-home) .activity-reference-organiser{width:calc(100% - 40px)}
+  body:not(.bh-home) .listing-layout{
+    width:calc(100% - 40px);
+    grid-template-columns:1fr;
+    gap:0;
+  }
+  body:not(.bh-home) .activity-reference-contact{
+    grid-column:1;
+    grid-row:2;
+    border-left:0;
+    border-top:1px solid #9fb7a5;
+    padding:32px 0;
+  }
+  body:not(.bh-home) .listing-main .listing-card:nth-of-type(2){grid-column:1;grid-row:1}
+}
+@media(max-width:650px){
+  body:not(.bh-home) .activity-hero{padding:18px 16px 26px}
+  body:not(.bh-home) .activity-hero .listing-gallery{height:190px;min-height:190px}
+  body:not(.bh-home) .activity-hero .listing-summary{min-height:0}
+  body:not(.bh-home) .activity-hero .listing-summary h1{font-size:34px}
+  body:not(.bh-home) .activity-hero .listing-intro{font-size:15px}
+  body:not(.bh-home) .activity-hero .listing-tags{gap:10px 16px}
+  body:not(.bh-home) .activity-book-button{
+    width:170px;
+    min-height:52px!important;
+    margin-top:0;
+    font-size:15px;
+  }
+  body:not(.bh-home) .listing-layout{width:calc(100% - 32px)}
+  body:not(.bh-home) .activity-reference-contact{padding:28px 0}
+  body:not(.bh-home) .activity-reference-contact-map{height:210px}
+  body:not(.bh-home) .activity-address-row{grid-template-columns:28px minmax(0,1fr);align-items:start}
+  body:not(.bh-home) .activity-address-row .button{grid-column:2;justify-self:start}
+  body:not(.bh-home) .activity-contact-row{grid-template-columns:34px 90px minmax(0,1fr);font-size:15px}
+  body:not(.bh-home) .activity-reference-organiser{width:calc(100% - 32px);padding:15px 17px}
+  body:not(.bh-home) .listing-description{font-size:16px}
+}
+
+
+/* ========================================================================
+   activity-gemini-reference-final
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Activity detail visual reference — keep the menu pale green while adopting the Gemini layout. */
+body:not(.bh-home) .activity-reference-header{
+  width:100%!important;max-width:none!important;margin:0 0 18px!important;padding:12px max(28px,calc((100vw - 1320px)/2)) 14px!important;
+  display:block!important;box-sizing:border-box!important;background:#d8e6db!important;border:0!important;border-radius:0 0 18px 18px!important;
+  box-shadow:0 5px 20px rgba(18,63,49,.12)!important;
+}
+body:not(.bh-home) .activity-reference-header .activity-header-top{
+  width:100%;max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:16px;min-height:54px;
+}
+body:not(.bh-home) .activity-reference-header .brand{margin-right:auto!important}
+body:not(.bh-home) .activity-reference-header .brand-logo{content:url("images/logos/mainlogo-20260924-221429-7e305d.jpg")!important;width:auto!important;height:88px!important;max-width:250px!important;border-radius:0!important}
+body:not(.bh-home) .activity-reference-header .main-nav{display:flex!important;align-items:center;justify-content:flex-end;gap:6px!important;overflow:visible!important}
+body:not(.bh-home) .activity-reference-header .main-nav a{
+  min-height:38px!important;padding:8px 14px!important;border-radius:999px!important;
+  background:#eaf4ed!important;color:#144400!important;border:0!important;font-size:12px!important;font-weight:750!important;
+}
+body:not(.bh-home) .activity-reference-header .main-nav a:hover,
+body:not(.bh-home) .activity-reference-header .main-nav a.active{background:#f3f8f4!important;color:#144400!important}
+body:not(.bh-home) .activity-reference-header .activity-sign-in{
+  min-height:38px!important;padding:8px 17px!important;border-radius:999px!important;background:#144400!important;color:#fff!important;font-size:12px!important;
+}
+body:not(.bh-home) .activity-header-search{
+  width:100%;max-width:1320px;margin:10px auto 0;display:grid;grid-template-columns:minmax(0,1.65fr) minmax(170px,.8fr) minmax(145px,.7fr) auto;gap:8px;align-items:center;
+}
+body:not(.bh-home) .activity-search-field{
+  min-width:0;min-height:38px;display:flex;align-items:center;gap:7px;padding:0 13px;background:#fff;border-radius:999px;color:#3c8e96;
+}
+body:not(.bh-home) .activity-search-field span{font-size:14px;font-weight:900}
+body:not(.bh-home) .activity-search-field input,
+body:not(.bh-home) .activity-search-field select{
+  width:100%;min-width:0;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;color:#123f31!important;font-size:11px!important;padding:7px 0!important;
+}
+body:not(.bh-home) .activity-search-button{min-height:38px!important;padding:8px 19px!important;border-radius:999px!important;font-size:11px!important;white-space:nowrap}
+body:not(.bh-home) .activity-hero{
+  grid-template-columns:minmax(320px,440px) minmax(0,1fr)!important;gap:30px!important;min-height:300px!important;
+  padding:30px max(28px,calc((100vw - 1320px)/2))!important;background:#245c4a!important;border-radius:0!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery{height:250px!important;min-height:250px!important;border-radius:12px!important}
+body:not(.bh-home) .activity-hero .listing-summary{min-height:250px!important;padding:24px 28px!important;background:#e7f1ea!important;border-radius:18px!important}
+body:not(.bh-home) .activity-hero .listing-summary h1{font-size:clamp(34px,3.7vw,50px)!important;color:#144400!important}
+body:not(.bh-home) .activity-hero .listing-intro{font-size:15px!important;color:#144400!important}
+body:not(.bh-home) .activity-hero .listing-tags{gap:16px!important;margin-top:18px!important}
+body:not(.bh-home) .activity-hero .listing-tags span{font-size:12px!important;color:#144400!important}
+body:not(.bh-home) .activity-book-button{width:150px!important;min-height:48px!important;margin-top:-52px!important;font-size:14px!important}
+@media(max-width:900px){
+  body:not(.bh-home) .activity-reference-header{padding:10px 14px 12px!important}
+  body:not(.bh-home) .activity-reference-header .activity-header-top{flex-wrap:wrap}
+  body:not(.bh-home) .activity-reference-header .main-nav{order:3;width:100%;justify-content:flex-start;overflow-x:auto!important}
+  body:not(.bh-home) .activity-header-search{grid-template-columns:1fr 1fr}
+  body:not(.bh-home) .activity-search-button{grid-column:1/-1}
+}
+@media(max-width:650px){
+  body:not(.bh-home) .activity-reference-header .brand-logo{height:58px!important;max-width:180px!important}
+  body:not(.bh-home) .activity-reference-header .main-nav a{padding:7px 10px!important;font-size:11px!important}
+  body:not(.bh-home) .activity-header-search{grid-template-columns:1fr}
+  body:not(.bh-home) .activity-search-button{grid-column:auto;width:100%}
+}
+
+
+/* ========================================================================
+   activity-reference-data-layout
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+body:not(.bh-home) .listing-layout{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(360px,.9fr)!important;gap:0 46px!important}
+body:not(.bh-home) .listing-main,body:not(.bh-home) .listing-side{display:contents!important}
+body:not(.bh-home) .activity-reference-about{grid-column:1!important;grid-row:1!important}
+body:not(.bh-home) .activity-reference-contact{grid-column:2!important;grid-row:1!important}
+body:not(.bh-home) .listing-main .listing-card:nth-of-type(3),
+body:not(.bh-home) .listing-main .where-card,
+body:not(.bh-home) .listing-side .organiser-card,
+body:not(.bh-home) .listing-side .booking-card,
+body:not(.bh-home) .listing-side .contact-card{display:none!important}
+body:not(.bh-home) .activity-reference-about{padding:38px 0 28px!important}
+body:not(.bh-home) .activity-reference-about .listing-description{max-width:680px!important;font-size:15px!important;line-height:1.55!important;color:#3c8e96!important}
+body:not(.bh-home) .activity-reference-facts{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
+body:not(.bh-home) .activity-reference-facts span{padding:6px 12px;border-radius:999px;background:#e7f1ea;color:#3c8e96;font-size:11px;font-weight:700}
+body:not(.bh-home) .activity-reference-contact{padding:38px 0 28px 46px!important}
+body:not(.bh-home) .activity-reference-contact h2{font-size:23px!important;margin-bottom:18px!important}
+body:not(.bh-home) .activity-contact-row{grid-template-columns:30px 86px minmax(0,1fr)!important;font-size:12px!important;margin:13px 0!important}
+body:not(.bh-home) .activity-contact-icon{width:26px;height:26px;font-size:17px}
+body:not(.bh-home) .activity-contact-label{font-weight:700}
+body:not(.bh-home) .activity-reference-organiser{margin-top:0!important}
+@media(max-width:950px){
+ body:not(.bh-home) .listing-layout{grid-template-columns:1fr!important}
+ body:not(.bh-home) .activity-reference-about{grid-column:1!important;grid-row:1!important}
+ body:not(.bh-home) .activity-reference-contact{grid-column:1!important;grid-row:2!important;border-left:0!important;border-top:1px solid #9fb7a5!important;padding:28px 0!important}
+}
+
+
+/* ========================================================================
+   activity-modern-overrides
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Modern activity detail polish */
+body:not(.bh-home) .activity-hero{
+  background:linear-gradient(180deg,#f8fbf8 0%,#eef6f0 100%)!important;
+  padding:28px max(28px,calc((100vw - 1320px)/2))!important;
+  gap:34px!important;
+  min-height:320px!important;
+  border-bottom:1px solid rgba(65,102,81,.12)!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery{
+  height:270px!important;
+  min-height:270px!important;
+  background:#fff!important;
+  border:1px solid rgba(65,102,81,.12)!important;
+  border-radius:22px!important;
+  box-shadow:0 14px 34px rgba(20,68,0,.08)!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery img,
+body:not(.bh-home) .activity-hero .listing-gallery-placeholder{
+  background:#fff!important;
+  border-radius:21px!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary{
+  min-height:270px!important;
+  padding:30px 32px!important;
+  background:#fff!important;
+  border:1px solid rgba(65,102,81,.12)!important;
+  border-radius:22px!important;
+  box-shadow:0 14px 34px rgba(20,68,0,.07)!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary .eyebrow{
+  background:#e7f1ea!important;
+  color:#416651!important;
+  border:1px solid #d8e6db!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary h1,
+body:not(.bh-home) .activity-hero .listing-intro,
+body:not(.bh-home) .activity-hero .listing-tags span{color:#144400!important}
+body:not(.bh-home) .activity-hero .listing-tags span::before{color:#9fb7a5!important}
+body:not(.bh-home) .activity-hero .listing-actions{margin-top:20px!important}
+body:not(.bh-home) .activity-hero .listing-actions #planner{
+  color:#416651!important;
+  padding-left:0!important;
+}
+body:not(.bh-home) .activity-book-button{
+  width:auto!important;
+  min-width:150px!important;
+  min-height:48px!important;
+  margin-top:-50px!important;
+  padding:12px 24px!important;
+  background:var(--bh-primary)!important;
+  color:#fff!important;
+  box-shadow:0 8px 18px rgba(65,102,81,.18)!important;
+}
+body:not(.bh-home) .activity-book-button:hover{
+  background:#355844!important;
+  color:#fff!important;
+  transform:translateY(-1px);
+}
+body:not(.bh-home) .listing-layout{
+  width:min(1320px,calc(100% - 56px))!important;
+  grid-template-columns:minmax(0,1fr) minmax(390px,.9fr)!important;
+  gap:0 56px!important;
+  align-items:start!important;
+}
+body:not(.bh-home) .activity-reference-about{
+  grid-column:1!important;
+  grid-row:1 / span 2!important;
+  padding:44px 0 38px!important;
+}
+body:not(.bh-home) .activity-keyword-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:0 0 16px;
+}
+body:not(.bh-home) .activity-keyword-tags:empty{display:none}
+body:not(.bh-home) .activity-keyword-tags span{
+  display:inline-flex;
+  align-items:center;
+  min-height:30px;
+  padding:5px 11px;
+  border-radius:999px;
+  background:#e7f1ea;
+  color:#416651;
+  border:1px solid #d8e6db;
+  font-size:11px;
+  font-weight:750;
+}
+body:not(.bh-home) .activity-reference-about h2{
+  margin:0 0 15px!important;
+  color:#144400!important;
+  font-size:30px!important;
+  letter-spacing:-.02em;
+}
+body:not(.bh-home) .activity-reference-contact{
+  grid-column:2!important;
+  grid-row:2!important;
+  padding:0 0 34px 42px!important;
+  border-left:1px solid #d8e6db!important;
+}
+body:not(.bh-home) .activity-reference-contact-map{
+  margin:0 0 14px!important;
+  height:245px!important;
+  border-radius:18px!important;
+  border:1px solid rgba(65,102,81,.12);
+  box-shadow:0 10px 25px rgba(20,68,0,.06);
+}
+body:not(.bh-home) .activity-reference-schedule{
+  display:block!important;
+  grid-column:2!important;
+  grid-row:1!important;
+  padding:38px 0 22px 42px!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+body:not(.bh-home) .activity-reference-schedule .eyebrow{
+  display:block!important;
+  margin-bottom:6px!important;
+  color:#617261!important;
+  font-size:11px!important;
+  font-weight:800!important;
+  letter-spacing:.08em!important;
+  text-transform:uppercase!important;
+}
+body:not(.bh-home) .activity-reference-schedule h2{
+  margin:0 0 14px!important;
+  color:#144400!important;
+  font-size:23px!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule{
+  padding:12px 0!important;
+  border-top:1px solid #d8e6db!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule:last-child{border-bottom:1px solid #d8e6db!important}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule h3{
+  color:#416651!important;
+  font-size:13px!important;
+  margin:0 0 2px!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule p{
+  color:#617261!important;
+  font-size:11px!important;
+  margin:0 0 7px!important;
+}
+body:not(.bh-home) .activity-reference-schedule .session-row{
+  display:flex!important;
+  flex-wrap:wrap;
+  gap:7px 14px;
+  align-items:center;
+  padding:7px 10px;
+  margin-top:5px;
+  background:#f4f8f5;
+  border-radius:10px;
+  color:#617261;
+  font-size:11px;
+}
+body:not(.bh-home) .activity-reference-schedule .session-row strong{color:#144400}
+body:not(.bh-home) .activity-reference-organiser{
+  width:min(1320px,calc(100% - 56px))!important;
+  margin:8px auto 0!important;
+  background:#e7f1ea!important;
+  border:1px solid #d8e6db!important;
+  box-shadow:none!important;
+}
+@media(max-width:950px){
+  body:not(.bh-home) .activity-hero{padding:20px!important;gap:18px!important}
+  body:not(.bh-home) .listing-layout{width:calc(100% - 40px)!important;grid-template-columns:1fr!important}
+  body:not(.bh-home) .activity-reference-about{grid-column:1!important;grid-row:1!important;padding:30px 0!important}
+  body:not(.bh-home) .activity-reference-schedule{grid-column:1!important;grid-row:2!important;padding:0 0 26px!important}
+  body:not(.bh-home) .activity-reference-contact{grid-column:1!important;grid-row:3!important;padding:0 0 28px!important;border-left:0!important;border-top:1px solid #d8e6db!important}
+  body:not(.bh-home) .activity-reference-contact-map{margin-top:22px!important}
+  body:not(.bh-home) .activity-reference-organiser{width:calc(100% - 40px)!important}
+}
+@media(max-width:650px){
+  body:not(.bh-home) .activity-hero{padding:14px!important}
+  body:not(.bh-home) .activity-hero .listing-gallery{height:200px!important;min-height:200px!important}
+  body:not(.bh-home) .activity-hero .listing-summary{min-height:0!important;padding:24px 20px!important}
+  body:not(.bh-home) .listing-layout{width:calc(100% - 28px)!important}
+  body:not(.bh-home) .activity-reference-about h2{font-size:25px!important}
+  body:not(.bh-home) .activity-book-button{width:100%!important;margin-top:12px!important}
+  body:not(.bh-home) .activity-reference-organiser{width:calc(100% - 28px)!important}
+}
+
+
+/* ========================================================================
+   activity-listing-final-requirements
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+body:not(.bh-home) .activity-hero .listing-gallery{background:#fff!important}
+body:not(.bh-home) .activity-hero .listing-gallery img.listing-gallery-fallback{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important;display:block!important}
+body:not(.bh-home) .hero-quick-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:20px 0 0}
+body:not(.bh-home) .hero-quick-facts span{min-width:0;display:flex;flex-direction:column;gap:4px;padding:12px 13px;background:#f7faf7;border:1px solid #dfe9e1;border-radius:14px}
+body:not(.bh-home) .hero-quick-facts strong{color:#617261;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+body:not(.bh-home) .hero-quick-facts b{color:#144400;font-size:13px;line-height:1.25;overflow-wrap:anywhere}
+body:not(.bh-home) .activity-hero .listing-actions{display:flex!important;flex-wrap:wrap;align-items:center;gap:9px!important;margin-top:16px!important}
+body:not(.bh-home) .activity-hero .listing-actions .activity-action{display:inline-flex!important;align-items:center;justify-content:center;min-height:40px!important;padding:9px 15px!important;border:1px solid #d8e6db!important;background:#fff!important;color:#416651!important;border-radius:999px!important;box-shadow:none!important;font-size:13px!important;font-weight:750!important}
+body:not(.bh-home) .activity-hero .listing-actions #planner{background:#617261!important;border-color:#617261!important;color:#fff!important;padding-left:16px!important}
+body:not(.bh-home) .activity-hero .listing-actions #visited{display:none!important}
+body:not(.bh-home) .activity-hero .listing-actions #save,body:not(.bh-home) .activity-hero .listing-actions #compare{display:inline-flex!important}
+body:not(.bh-home) .activity-hero .listing-actions .activity-action:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(20,68,0,.08)!important}
+body:not(.bh-home) .listing-layout,body:not(.bh-home) .listing-main,body:not(.bh-home) .listing-side,body:not(.bh-home) .activity-reference-about,body:not(.bh-home) .activity-reference-contact{background:#fff!important}
+body:not(.bh-home) .listing-main .good-to-know-card{display:none!important}
+@media(max-width:950px){body:not(.bh-home) .hero-quick-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){body:not(.bh-home) .hero-quick-facts{grid-template-columns:1fr 1fr;gap:7px}body:not(.bh-home) .hero-quick-facts span{padding:10px}body:not(.bh-home) .hero-quick-facts b{font-size:12px}body:not(.bh-home) .activity-hero .listing-actions .activity-action{flex:1 1 auto}}
+
+
+/* ========================================================================
+   activity-header-final-requirements
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+body:not(.bh-home) .activity-reference-header{
+  background:transparent!important;
+  box-shadow:none!important;
+}
+body:not(.bh-home) .activity-reference-header .brand-logo{
+  width:200px!important;
+  height:auto!important;
+  max-width:200px!important;
+}
+body:not(.bh-home) .activity-reference-header .main-nav a,
+body:not(.bh-home) .activity-reference-header .activity-sign-in{
+  font-weight:600!important;
+}
+
+
+/* ========================================================================
+   activity-organiser-edit
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+body:not(.bh-home) .activity-organiser-edit-wrap{margin-top:14px;display:flex;justify-content:flex-end}
+body:not(.bh-home) .activity-organiser-edit-button{min-height:36px;padding:8px 14px;border-radius:999px;border:1px solid #9fb7a5;background:#fff;color:#144400;font-weight:700;font-size:12px;cursor:pointer}
+body:not(.bh-home) .activity-organiser-edit-button:hover{background:#e7f1ea}
+body:not(.bh-home) .activity-organiser-edit-modal-backdrop{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:20px;background:rgba(20,68,0,.35)}
+body:not(.bh-home) .activity-organiser-edit-modal{width:min(520px,100%);max-height:min(720px,calc(100vh - 40px));overflow:auto;background:#fff;border-radius:22px;padding:28px;box-shadow:0 24px 70px rgba(20,68,0,.22);position:relative;color:#144400}
+body:not(.bh-home) .activity-organiser-edit-modal h2{margin:0 0 8px;font-size:26px;color:#144400}
+body:not(.bh-home) .activity-organiser-edit-modal p{margin:0 0 20px;color:#3c8e96;line-height:1.5}
+body:not(.bh-home) .activity-organiser-edit-modal label{display:block;margin:14px 0 6px;font-size:13px;font-weight:700;color:#144400}
+body:not(.bh-home) .activity-organiser-edit-modal select{width:100%;min-height:46px;padding:10px 12px;border:1px solid #c8d8cc;border-radius:12px;background:#fff;color:#144400;font:inherit}
+body:not(.bh-home) .activity-organiser-edit-modal .edit-note{font-size:12px;margin-top:8px}
+body:not(.bh-home) .activity-organiser-edit-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
+body:not(.bh-home) .activity-organiser-edit-close{position:absolute;top:14px;right:16px;border:0;background:transparent;color:#416651;font-size:28px;cursor:pointer}
+body:not(.bh-home) .activity-organiser-edit-status{min-height:20px;margin-top:12px;font-size:13px;color:#416651}
+@media(max-width:650px){body:not(.bh-home) .activity-organiser-edit-modal{padding:22px}.activity-organiser-edit-actions{flex-direction:column-reverse}.activity-organiser-edit-actions .button{width:100%}}
+
+
+/* ========================================================================
+   activity-layout-30-70-final
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Listing page: contained 30/70 hero with clean page spacing */
+body:not(.bh-home){
+  box-sizing:border-box;
+  padding-left:clamp(16px,3vw,50px)!important;
+  padding-right:clamp(16px,3vw,50px)!important;
+  overflow-x:hidden!important;
+}
+body:not(.bh-home) .activity-reference-header,
+body:not(.bh-home) .activity-reference-main,
+body:not(.bh-home) .activity-reference-contact,
+body:not(.bh-home) .activity-reference-schedule,
+body:not(.bh-home) .activity-reference-about,
+body:not(.bh-home) .activity-reference-organiser,
+body:not(.bh-home) .activity-reference-footer{
+  width:100%!important;
+  max-width:1400px!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-hero{
+  width:100%!important;
+  max-width:1400px!important;
+  margin:0 auto!important;
+  box-sizing:border-box!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,30%) minmax(0,70%)!important;
+  gap:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery,
+body:not(.bh-home) .activity-hero .listing-summary{
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery{
+  width:100%!important;
+  height:100%!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery img,
+body:not(.bh-home) .activity-hero .listing-gallery-fallback{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary{
+  width:100%!important;
+  padding:clamp(22px,3vw,42px)!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary > *{
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-hero .listing-title,
+body:not(.bh-home) .activity-hero .listing-description,
+body:not(.bh-home) .activity-hero .listing-meta,
+body:not(.bh-home) .activity-hero .listing-actions,
+body:not(.bh-home) .activity-hero .hero-quick-facts{
+  min-width:0!important;
+  max-width:100%!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:10px!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions > *{
+  max-width:100%!important;
+  min-width:0!important;
+}
+body:not(.bh-home) .listing-layout,
+body:not(.bh-home) .listing-main,
+body:not(.bh-home) .listing-side{
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+@media (max-width:900px){
+  body:not(.bh-home){
+    padding-left:20px!important;
+    padding-right:20px!important;
+  }
+  body:not(.bh-home) .activity-hero{
+    grid-template-columns:minmax(0,1fr) minmax(0,2.333333fr)!important;
+  }
+}
+@media (max-width:700px){
+  body:not(.bh-home){
+    padding-left:14px!important;
+    padding-right:14px!important;
+  }
+  body:not(.bh-home) .activity-hero{
+    grid-template-columns:1fr!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-gallery{
+    height:auto!important;
+    aspect-ratio:16/10!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-summary{
+    padding:22px 18px!important;
+  }
+}
+
+
+/* ========================================================================
+   schedule-hours-hybrid
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Schedule & Hours — Bubba Hub hybrid hours card */
+body:not(.bh-home) .schedule-hours-card{
+  width:100%; max-width:100%; box-sizing:border-box; margin:0;
+  background:#fff; border:1px solid #d7e2d9; border-radius:18px;
+  box-shadow:0 8px 28px rgba(20,68,0,.08); overflow:hidden; color:#144400;
+}
+body:not(.bh-home) .schedule-hours-header{
+  display:flex; align-items:center; gap:12px; padding:18px 20px;
+  border-bottom:1px solid #e3ebe5; background:#f8fbf8;
+}
+body:not(.bh-home) .schedule-hours-icon{
+  width:38px; height:38px; display:grid; place-items:center; flex:0 0 38px;
+  border-radius:50%; background:#617261; color:#ced7c7; font-size:19px;
+}
+body:not(.bh-home) .schedule-hours-title{
+  margin:0; color:#144400; font-size:20px; font-weight:700; line-height:1.2;
+}
+body:not(.bh-home) .schedule-hours-list{padding:4px 20px 8px;}
+body:not(.bh-home) .schedule-hours-row{
+  display:grid; grid-template-columns:minmax(105px,1fr) minmax(120px,auto);
+  align-items:center; gap:18px; min-height:48px; padding:7px 0;
+  border-bottom:1px solid #edf2ee; box-sizing:border-box;
+}
+body:not(.bh-home) .schedule-hours-row:last-child{border-bottom:0;}
+body:not(.bh-home) .schedule-hours-day{font-weight:650; color:#31563d;}
+body:not(.bh-home) .schedule-hours-time{text-align:right; color:#144400; font-weight:600; white-space:normal;}
+body:not(.bh-home) .schedule-hours-closed{color:#6e7f73; font-weight:600;}
+body:not(.bh-home) .schedule-hours-status{
+  display:flex; align-items:center; gap:8px; margin:6px 20px 18px;
+  padding:9px 12px; width:max-content; max-width:calc(100% - 40px);
+  border-radius:999px; background:#e7f1ea; color:#144400;
+  font-size:11px; font-weight:800; letter-spacing:.04em;
+}
+body:not(.bh-home) .schedule-hours-status-dot{
+  width:8px; height:8px; border-radius:50%; background:#617261; flex:0 0 8px;
+}
+body:not(.bh-home) .schedule-hours-status.is-closed{background:#f0f3f0;color:#53645a;}
+body:not(.bh-home) .schedule-hours-status.is-closed .schedule-hours-status-dot{background:#89968d;}
+@media(max-width:700px){
+  body:not(.bh-home) .schedule-hours-header{padding:16px;}
+  body:not(.bh-home) .schedule-hours-list{padding:4px 16px 8px;}
+  body:not(.bh-home) .schedule-hours-row{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; min-height:46px;
+  }
+  body:not(.bh-home) .schedule-hours-time{text-align:right; overflow-wrap:anywhere;}
+  body:not(.bh-home) .schedule-hours-status{margin-left:16px;margin-right:16px;max-width:calc(100% - 32px);}
+}
+@media(max-width:390px){
+  body:not(.bh-home) .schedule-hours-row{grid-template-columns:1fr;gap:2px;padding:9px 0;}
+  body:not(.bh-home) .schedule-hours-time{text-align:left;}
+}
+
+
+/* ========================================================================
+   navigation-clean-flex-final
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Final activity header navigation: stable desktop row, no wrapping or collision. */
+body:not(.bh-home) .activity-reference-header .activity-header-top{
+  width:100%!important;
+  max-width:1320px!important;
+  min-width:0!important;
+  margin:0 auto!important;
+  display:flex!important;
+  flex-flow:row nowrap!important;
+  align-items:center!important;
+  gap:12px!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-reference-header .brand{
+  flex:0 0 auto!important;
+  min-width:0!important;
+  margin:0!important;
+}
+body:not(.bh-home) .activity-reference-header .brand-logo{
+  display:block!important;
+  width:200px!important;
+  max-width:200px!important;
+  height:auto!important;
+  object-fit:contain!important;
+}
+body:not(.bh-home) .activity-reference-header .main-nav{
+  flex:1 1 auto!important;
+  min-width:0!important;
+  margin-left:auto!important;
+  display:flex!important;
+  flex-flow:row nowrap!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:5px!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+}
+body:not(.bh-home) .activity-reference-header .main-nav a{
+  flex:0 0 auto!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:0!important;
+  min-height:36px!important;
+  height:36px!important;
+  margin:0!important;
+  padding:7px 10px!important;
+  border:0!important;
+  border-radius:999px!important;
+  background:#eaf4ed!important;
+  color:#144400!important;
+  font-size:12px!important;
+  font-weight:600!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-reference-header .main-nav a:hover,
+body:not(.bh-home) .activity-reference-header .main-nav a.active{
+  background:#f3f8f4!important;
+  color:#144400!important;
+}
+body:not(.bh-home) .activity-reference-header .activity-sign-in{
+  flex:0 0 auto!important;
+  min-width:max-content!important;
+  min-height:36px!important;
+  height:36px!important;
+  margin:0!important;
+  padding:7px 14px!important;
+  border-radius:999px!important;
+  font-size:12px!important;
+  font-weight:600!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  box-sizing:border-box!important;
+}
+/* The activity header is a compact desktop row; let the nav tighten before the
+   mobile breakpoint rather than allowing the logo/sign-in to collide. */
+@media (max-width:1180px) and (min-width:851px){
+  body:not(.bh-home) .activity-reference-header .activity-header-top{gap:8px!important}
+  body:not(.bh-home) .activity-reference-header .brand-logo{
+    width:170px!important;
+    max-width:170px!important;
+  }
+  body:not(.bh-home) .activity-reference-header .main-nav{gap:3px!important}
+  body:not(.bh-home) .activity-reference-header .main-nav a{
+    padding-left:7px!important;
+    padding-right:7px!important;
+    font-size:11px!important;
+  }
+  body:not(.bh-home) .activity-reference-header .activity-sign-in{
+    padding-left:10px!important;
+    padding-right:10px!important;
+    font-size:11px!important;
+  }
+}
+@media (max-width:850px){
+  body:not(.bh-home) .activity-reference-header .activity-header-top{
+    flex-wrap:wrap!important;
+    gap:8px!important;
+  }
+  body:not(.bh-home) .activity-reference-header .brand-logo{
+    width:180px!important;
+    max-width:180px!important;
+  }
+  body:not(.bh-home) .activity-reference-header .main-nav{
+    order:3!important;
+    flex:1 0 100%!important;
+    width:100%!important;
+    margin:0!important;
+    justify-content:flex-start!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    padding:2px 0 4px!important;
+    scrollbar-width:none!important;
+  }
+  body:not(.bh-home) .activity-reference-header .main-nav::-webkit-scrollbar{display:none!important}
+}
+
+
+/* ========================================================================
+   activity-layout-safety-fix
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Final activity layout guard: desktop hero is exactly 30% gallery / 70% details. */
+html, body { max-width: 100%; overflow-x: hidden; }
+*, *::before, *::after { box-sizing: border-box; }
+
+body:not(.bh-home) .activity-hero {
+  width: 100% !important;
+  max-width: none !important;
+  display: grid !important;
+  grid-template-columns: 30% 70% !important;
+  gap: 0 !important;
+  align-items: stretch !important;
+  min-width: 0 !important;
+  padding: 28px max(28px, calc((100vw - 1320px) / 2)) !important;
+  overflow: hidden !important;
+}
+
+body:not(.bh-home) .activity-hero > .listing-gallery,
+body:not(.bh-home) .activity-hero > .listing-summary {
+  min-width: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+}
+
+body:not(.bh-home) .activity-hero > .listing-gallery {
+  padding-right: 17px !important;
+}
+
+body:not(.bh-home) .activity-hero > .listing-summary {
+  padding-left: 17px !important;
+  overflow: hidden !important;
+}
+
+body:not(.bh-home) .activity-hero .listing-gallery img,
+body:not(.bh-home) .activity-hero .listing-gallery picture,
+body:not(.bh-home) .activity-hero .listing-gallery-placeholder {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  overflow: hidden !important;
+}
+
+body:not(.bh-home) .listing-layout {
+  width: min(1400px, calc(100% - 64px)) !important;
+  max-width: 1400px !important;
+  margin-inline: auto !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 46px !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+
+body:not(.bh-home) .listing-main,
+body:not(.bh-home) .listing-side {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+body:not(.bh-home) .activity-reference-about,
+body:not(.bh-home) .activity-reference-contact,
+body:not(.bh-home) .activity-reference-schedule,
+body:not(.bh-home) .listing-card,
+body:not(.bh-home) .listing-side > * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+body:not(.bh-home) .activity-reference-contact-map,
+body:not(.bh-home) #listingMap,
+body:not(.bh-home) .listing-map {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: 250px !important;
+  overflow: hidden !important;
+  border-radius: 14px;
+}
+
+body:not(.bh-home) .activity-reference-addresses,
+body:not(.bh-home) .activity-address-row,
+body:not(.bh-home) .activity-contact-row,
+body:not(.bh-home) .session-row {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+body:not(.bh-home) .activity-address-row {
+  grid-template-columns: 30px minmax(0, 1fr) auto !important;
+}
+
+body:not(.bh-home) .activity-address-row > * {
+  min-width: 0 !important;
+}
+
+body:not(.bh-home) .activity-address-row span,
+body:not(.bh-home) .activity-contact-value,
+body:not(.bh-home) .listing-description {
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+}
+
+body:not(.bh-home) .activity-reference-organiser,
+body:not(.bh-home) .listing-bottom {
+  width: min(1400px, calc(100% - 64px)) !important;
+  max-width: 1400px !important;
+  margin-inline: auto !important;
+  min-width: 0 !important;
+}
+
+body:not(.bh-home) .activity-reference-organiser {
+  overflow: hidden !important;
+}
+
+@media (max-width: 950px) {
+  body:not(.bh-home) .activity-hero {
+    grid-template-columns: 1fr !important;
+    padding: 22px 24px 28px !important;
+  }
+
+  body:not(.bh-home) .activity-hero > .listing-gallery,
+  body:not(.bh-home) .activity-hero > .listing-summary {
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  body:not(.bh-home) .listing-layout {
+    width: calc(100% - 40px) !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0 !important;
+  }
+
+  body:not(.bh-home) .activity-reference-organiser,
+  body:not(.bh-home) .listing-bottom {
+    width: calc(100% - 40px) !important;
+  }
+}
+
+@media (max-width: 650px) {
+  body:not(.bh-home) .activity-hero {
+    padding-inline: 16px !important;
+  }
+
+  body:not(.bh-home) .listing-layout {
+    width: calc(100% - 32px) !important;
+  }
+
+  body:not(.bh-home) .activity-reference-organiser,
+  body:not(.bh-home) .listing-bottom {
+    width: calc(100% - 32px) !important;
+  }
+
+  body:not(.bh-home) .activity-address-row {
+    grid-template-columns: 28px minmax(0, 1fr) !important;
+  }
+
+  body:not(.bh-home) .activity-address-row .button {
+    grid-column: 2 !important;
+    justify-self: start !important;
+  }
+}
+
+
+/* ========================================================================
+   activity-hero-actions-fix
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+body:not(.bh-home) .activity-hero .hero-quick-facts{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;width:100%;min-width:0;margin:22px 0 20px}
+body:not(.bh-home) .activity-hero .hero-quick-facts>span{display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0;padding:13px 14px;border:1px solid rgba(255,255,255,.22);border-radius:14px;background:rgba(255,255,255,.10);overflow:hidden}
+body:not(.bh-home) .activity-hero .hero-quick-facts strong{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.82}
+body:not(.bh-home) .activity-hero .hero-quick-facts b{min-width:0;font-size:.94rem;line-height:1.25;overflow-wrap:anywhere}
+body:not(.bh-home) .activity-hero .listing-actions{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:10px!important;width:100%!important;min-width:0!important;margin:0!important}
+body:not(.bh-home) .activity-hero .listing-actions .activity-action{flex:1 1 120px!important;min-width:0!important;width:auto!important;max-width:none!important;white-space:nowrap!important}
+body:not(.bh-home) .activity-hero .activity-book-button{flex:1 1 150px!important;min-width:140px!important;width:auto!important;max-width:none!important;margin:0!important;white-space:nowrap!important}
+body:not(.bh-home) .activity-hero .listing-summary,.activity-hero .listing-summary *{min-width:0}
+@media(max-width:950px){body:not(.bh-home) .activity-hero .hero-quick-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){body:not(.bh-home) .activity-hero .listing-actions{display:grid!important;grid-template-columns:1fr 1fr!important}body:not(.bh-home) .activity-hero .listing-actions .activity-action,body:not(.bh-home) .activity-hero .activity-book-button{width:100%!important;min-width:0!important}body:not(.bh-home) .activity-hero .activity-book-button{grid-column:1/-1}}
+
+
+/* ========================================================================
+   activity-target-design-final
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Target single-listing design */
+body:not(.bh-home) .activity-hero{
+  background:#1B4D3E!important;
+  grid-template-columns:30% 70%!important;
+  gap:0!important;
+  align-items:stretch!important;
+  padding:34px max(34px,calc((100vw - 1400px)/2 + 12px))!important;
+  min-height:0!important;
+}
+body:not(.bh-home) .activity-hero>.listing-gallery{
+  width:100%!important;
+  height:100%!important;
+  min-height:360px!important;
+  padding:18px!important;
+  background:rgba(255,255,255,.08)!important;
+  border-radius:18px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+body:not(.bh-home) .activity-hero>.listing-gallery img,
+body:not(.bh-home) .activity-hero>.listing-gallery picture,
+body:not(.bh-home) .activity-hero>.listing-gallery-placeholder{
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:420px!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  background:#fff!important;
+  border-radius:12px!important;
+}
+body:not(.bh-home) .activity-hero>.listing-summary{
+  min-width:0!important;
+  padding:12px 0 12px 34px!important;
+  background:transparent!important;
+  color:#fff!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary .eyebrow{
+  display:inline-flex!important;
+  width:max-content;
+  max-width:100%;
+  margin:0 0 12px!important;
+  padding:7px 13px!important;
+  border-radius:999px!important;
+  background:#d9eadf!important;
+  color:#1B4D3E!important;
+  font-size:.74rem!important;
+  font-weight:800!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary h1{
+  margin:0 0 10px!important;
+  color:#fff!important;
+  font-size:clamp(34px,4vw,58px)!important;
+  line-height:1.02!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary .listing-description{
+  max-width:760px!important;
+  margin:0 0 18px!important;
+  color:rgba(255,255,255,.9)!important;
+  font-size:16px!important;
+  line-height:1.55!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:8px!important;
+  margin:18px 0 22px!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts>span{
+  flex:1 1 145px!important;
+  min-width:125px!important;
+  padding:10px 12px!important;
+  border:1px solid rgba(255,255,255,.24)!important;
+  border-radius:12px!important;
+  background:rgba(255,255,255,.09)!important;
+  color:#fff!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts strong{color:#d9eadf!important}
+body:not(.bh-home) .activity-hero .hero-quick-facts b{color:#fff!important}
+body:not(.bh-home) .activity-hero .listing-actions{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:10px!important;
+  margin:0!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-action,
+body:not(.bh-home) .activity-hero .activity-book-button{
+  flex:0 1 auto!important;
+  min-height:44px!important;
+  width:auto!important;
+  min-width:132px!important;
+  padding:10px 18px!important;
+  border-radius:999px!important;
+  white-space:nowrap!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-action{
+  background:#f3f8f4!important;
+  color:#1B4D3E!important;
+  border:1px solid #d9eadf!important;
+}
+body:not(.bh-home) .activity-hero .activity-book-button{
+  background:#b9d8c5!important;
+  color:#123d30!important;
+  border:1px solid #b9d8c5!important;
+}
+body:not(.bh-home) .activity-reference-about,
+body:not(.bh-home) .activity-reference-schedule{
+  padding:38px!important;
+  margin-bottom:28px!important;
+  border-radius:20px!important;
+  overflow:hidden!important;
+}
+body:not(.bh-home) .activity-reference-about .listing-description{
+  max-width:820px!important;
+  line-height:1.7!important;
+}
+body:not(.bh-home) .activity-reference-schedule .schedule-list{
+  width:100%!important;
+  margin-top:20px!important;
+  border:1px solid #d9e5dc!important;
+  border-radius:14px!important;
+  overflow:hidden!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule{
+  display:block!important;
+  padding:20px!important;
+  border-bottom:1px solid #d9e5dc!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule:last-child{border-bottom:0!important}
+body:not(.bh-home) .activity-reference-schedule .session-list{
+  width:100%!important;
+  margin-top:14px!important;
+  border-top:1px solid #e4ece6!important;
+}
+body:not(.bh-home) .activity-reference-schedule .session-row{
+  display:grid!important;
+  grid-template-columns:minmax(100px,1.1fr) minmax(130px,1.5fr) minmax(70px,.7fr) minmax(70px,.7fr)!important;
+  gap:12px!important;
+  align-items:center!important;
+  padding:13px 0!important;
+  border-bottom:1px solid #edf2ee!important;
+}
+body:not(.bh-home) .activity-reference-schedule .session-row:last-child{border-bottom:0!important}
+body:not(.bh-home) .activity-reference-schedule .session-row span{min-width:0!important;overflow-wrap:anywhere}
+@media(max-width:950px){
+  body:not(.bh-home) .activity-hero{grid-template-columns:1fr!important}
+  body:not(.bh-home) .activity-hero>.listing-gallery{min-height:300px!important}
+  body:not(.bh-home) .activity-hero>.listing-summary{padding:24px 0 0!important}
+}
+@media(max-width:650px){
+  body:not(.bh-home) .activity-hero{padding:22px 18px!important}
+  body:not(.bh-home) .activity-hero>.listing-gallery{min-height:240px!important;padding:10px!important}
+  body:not(.bh-home) .activity-hero .hero-quick-facts{display:grid!important;grid-template-columns:1fr 1fr!important}
+  body:not(.bh-home) .activity-reference-about,
+  body:not(.bh-home) .activity-reference-schedule{padding:24px 20px!important}
+  body:not(.bh-home) .activity-reference-schedule .session-row{grid-template-columns:1fr 1fr!important}
+}
+
+
+/* ========================================================================
+   activity-schedule-readability-fix
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+body:not(.bh-home) .activity-reference-schedule .venue-schedule,
+body:not(.bh-home) .activity-reference-schedule .venue-schedule p,
+body:not(.bh-home) .activity-reference-schedule .session-row,
+body:not(.bh-home) .activity-reference-schedule .session-row strong,
+body:not(.bh-home) .activity-reference-schedule .session-row span{
+  font-size:12px!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule h3{font-size:18px!important}
+<style id="activity-directory-search-and-header-final">
+/* Single listing: use the same six-field search component as directory.html. */
+body:not(.bh-home) .activity-reference-header{
+  width:100%!important;
+  max-width:1400px!important;
+  margin:0 auto 18px!important;
+  padding:12px 18px 16px!important;
+  background:#d8e6db!important;
+  border:0!important;
+  border-radius:0 0 18px 18px!important;
+  box-shadow:none!important;
+}
+body:not(.bh-home) .activity-reference-header .activity-header-top{
+  width:100%!important;
+  max-width:none!important;
+  margin:0 auto!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:16px!important;
+}
+body:not(.bh-home) .activity-reference-header .brand{
+  background:transparent!important;
+  box-shadow:none!important;
+  border:0!important;
+}
+body:not(.bh-home) .activity-reference-header .brand-logo{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+body:not(.bh-home) .activity-reference-header .main-nav{
+  background:transparent!important;
+  box-shadow:none!important;
+  border:0!important;
+  gap:6px!important;
+}
+body:not(.bh-home) .activity-reference-header .main-nav a{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  color:#144400!important;
+  border-radius:8px!important;
+  padding:8px 11px!important;
+}
+body:not(.bh-home) .activity-reference-header .main-nav a:hover,
+body:not(.bh-home) .activity-reference-header .main-nav a.active{
+  background:rgba(255,255,255,.35)!important;
+  color:#144400!important;
+}
+body:not(.bh-home) .activity-reference-header .activity-sign-in{
+  background:#3c8e96!important;
+  color:#fff!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+body:not(.bh-home) .activity-header-search{
+  width:100%!important;
+  max-width:none!important;
+  margin:10px auto 0!important;
+  display:grid!important;
+  grid-template-columns:minmax(220px,1.6fr) repeat(4,minmax(120px,1fr)) 104px!important;
+  gap:8px!important;
+  align-items:center!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field{
+  display:flex!important;
+  align-items:center!important;
+  min-width:0!important;
+  min-height:46px!important;
+  padding:0 12px!important;
+  background:#fff!important;
+  border:1px solid rgba(13,59,50,.08)!important;
+  border-radius:14px!important;
+  box-shadow:0 2px 8px rgba(18,63,49,.04)!important;
+  color:#3c8e96!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field>span{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:20px!important;
+  flex:0 0 20px!important;
+  margin:0 6px 0 0!important;
+  font-size:15px!important;
+  font-weight:900!important;
+  color:#3c8e96!important;
+}
+body:not(.bh-home) .activity-header-search input,
+body:not(.bh-home) .activity-header-search select{
+  width:100%!important;
+  min-width:0!important;
+  min-height:42px!important;
+  padding:8px 2px!important;
+  border:0!important;
+  outline:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#0d3b32!important;
+  font-size:13px!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-button{
+  min-height:46px!important;
+  width:104px!important;
+  padding:0 15px!important;
+  border-radius:14px!important;
+  background:#3c8e96!important;
+  color:#fff!important;
+  box-shadow:none!important;
+  border:0!important;
+}
+@media(max-width:1100px){
+  body:not(.bh-home) .activity-header-search{grid-template-columns:1fr 1fr!important}
+  body:not(.bh-home) .activity-header-search .activity-search-button{width:100%!important}
+}
+@media(max-width:850px){
+  body:not(.bh-home) .activity-reference-header .activity-header-top{flex-wrap:wrap!important}
+  body:not(.bh-home) .activity-reference-header .main-nav{
+    order:3!important;
+    flex:1 0 100%!important;
+    width:100%!important;
+    overflow-x:auto!important;
+  }
+}
+@media(max-width:700px){
+  body:not(.bh-home) .activity-reference-header{padding:10px 14px 14px!important}
+  body:not(.bh-home) .activity-header-search{grid-template-columns:1fr!important}
+  body:not(.bh-home) .activity-header-search .activity-search-button{width:100%!important}
+}
+
+
+/* ========================================================================
+   activity-logo-layout-final
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+body:not(.bh-home) .activity-reference-header .activity-header-top{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  width:100%!important;
+  min-width:0!important;
+  gap:18px!important;
+}
+body:not(.bh-home) .activity-reference-header .brand{
+  display:flex!important;
+  flex:0 0 auto!important;
+  align-items:center!important;
+  width:auto!important;
+  min-width:0!important;
+  margin:0 auto 0 0!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+body:not(.bh-home) .activity-reference-header .brand-logo{
+  display:block!important;
+  flex:0 0 auto!important;
+  width:auto!important;
+  height:100px!important;
+  max-width:190px!important;
+  min-width:0!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+body:not(.bh-home) .activity-reference-header .brand strong,
+body:not(.bh-home) .activity-reference-header .brand small{display:none!important}
+body:not(.bh-home) .activity-reference-header .main-nav{
+  display:flex!important;
+  flex:0 1 auto!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  width:auto!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+@media(max-width:1050px){
+  body:not(.bh-home) .activity-reference-header .activity-header-top{gap:10px!important}
+  body:not(.bh-home) .activity-reference-header .brand-logo{height:50px!important;max-width:165px!important}
+  body:not(.bh-home) .activity-reference-header .main-nav a{padding:7px 8px!important;font-size:12px!important}
+}
+@media(max-width:850px){
+  body:not(.bh-home) .activity-reference-header .activity-header-top{flex-wrap:wrap!important}
+  body:not(.bh-home) .activity-reference-header .main-nav{
+    order:3!important;
+    flex:1 0 100%!important;
+    width:100%!important;
+    justify-content:flex-start!important;
+    overflow-x:auto!important;
+  }
+  body:not(.bh-home) .activity-reference-header .brand-logo{height:48px!important;max-width:155px!important}
+}
+
+
+/* ========================================================================
+   activity-stack-alignment-final
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Final stacking and container alignment */
+body:not(.bh-home) .activity-reference-header{
+  position:relative!important;
+  z-index:10!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0 0 28px!important;
+  padding-left:clamp(60px,6vw,90px)!important;
+  padding-right:clamp(60px,6vw,90px)!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-reference-header .activity-header-top,
+body:not(.bh-home) .activity-reference-header .activity-header-search{
+  position:relative!important;
+  z-index:11!important;
+}
+body:not(.bh-home) .activity-header-search{
+  position:relative!important;
+  margin:18px auto 0!important;
+  width:100%!important;
+  max-width:1400px!important;
+  box-sizing:border-box!important;
+  clear:both!important;
+}
+body:not(.bh-home) .app-shell{
+  position:relative!important;
+  z-index:1!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .app-shell > .listing-page{
+  position:relative!important;
+  z-index:1!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0 0 40px!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .app-shell > .listing-page .activity-hero{
+  position:relative!important;
+  z-index:1!important;
+  width:100%!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .app-shell > .listing-page > *:not(.activity-hero){
+  box-sizing:border-box!important;
+}
+@media(max-width:700px){
+  body:not(.bh-home) .activity-reference-header{
+    margin-bottom:20px!important;
+    padding-left:20px!important;
+    padding-right:20px!important;
+  }
+}
+
+
+/* ========================================================================
+   activity-full-width-heroes-final
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Full-width title / hero sections */
+body:not(.bh-home) .listing-page,
+body:not(.bh-home) .listing-page > .activity-hero,
+body:not(.bh-home) .listing-page > .activity-title,
+body:not(.bh-home) .listing-page > .activity-title-banner,
+body:not(.bh-home) .listing-page > .page-title,
+body:not(.bh-home) .listing-page > .hero,
+body:not(.bh-home) .listing-page > .hero-banner{
+  width:100%!important;
+  max-width:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .app-shell,
+body:not(.bh-home) .app-shell > .listing-page{
+  width:100%!important;
+  max-width:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  padding-left:0!important;
+  padding-right:0!important;
+}
+body:not(.bh-home) .app-shell > .listing-page .activity-hero{
+  width:100vw!important;
+  max-width:none!important;
+  margin-left:calc(50% - 50vw)!important;
+  margin-right:calc(50% - 50vw)!important;
+}
+body:not(.bh-home) .app-shell > .listing-page .activity-hero > *{
+  box-sizing:border-box!important;
+}
+@media(max-width:700px){
+  body:not(.bh-home) .app-shell > .listing-page .activity-hero{
+    width:100vw!important;
+    margin-left:calc(50% - 50vw)!important;
+    margin-right:calc(50% - 50vw)!important;
+  }
+}
+
+
+/* ========================================================================
+   activity-search-natural-wrap-final
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Natural-height search and hero layout — no clipping or forced heights */
+body:not(.bh-home) .activity-reference-header,
+body:not(.bh-home) .activity-reference-header .activity-header-top,
+body:not(.bh-home) .activity-reference-header .activity-header-search,
+body:not(.bh-home) .activity-header-search{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  position:relative!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-reference-header{
+  margin-bottom:32px!important;
+}
+body:not(.bh-home) .activity-header-search{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:10px!important;
+  width:100%!important;
+  max-width:1400px!important;
+  margin:18px auto 0!important;
+  align-items:stretch!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field,
+body:not(.bh-home) .activity-header-search .activity-search-button{
+  width:100%!important;
+  min-width:0!important;
+  min-height:46px!important;
+  height:auto!important;
+  max-height:none!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-button{
+  justify-self:stretch!important;
+}
+body:not(.bh-home) .activity-header-search input,
+body:not(.bh-home) .activity-header-search select{
+  height:auto!important;
+  min-height:42px!important;
+  max-height:none!important;
+}
+body:not(.bh-home) .app-shell,
+body:not(.bh-home) .app-shell > .listing-page,
+body:not(.bh-home) .app-shell > .listing-page .activity-hero{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  position:relative!important;
+  overflow:visible!important;
+}
+body:not(.bh-home) .app-shell > .listing-page .activity-hero{
+  margin-top:0!important;
+}
+@media(max-width:900px){
+  body:not(.bh-home) .activity-header-search{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:560px){
+  body:not(.bh-home) .activity-header-search{
+    grid-template-columns:1fr!important;
+  }
+  body:not(.bh-home) .activity-reference-header{
+    margin-bottom:24px!important;
+  }
+}
+
+
+/* ========================================================================
+   activity-search-final-clean
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Final activity search: same six-field directory search, with natural wrapping. */
+body:not(.bh-home) .activity-reference-header .activity-header-search,
+body:not(.bh-home) form.activity-header-search{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-auto-rows:minmax(46px,auto)!important;
+  gap:10px!important;
+  width:100%!important;
+  max-width:1400px!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:18px auto 0!important;
+  padding:0!important;
+  position:relative!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+  align-items:stretch!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field,
+body:not(.bh-home) .activity-header-search .activity-search-button{
+  width:100%!important;
+  min-width:0!important;
+  min-height:46px!important;
+  height:auto!important;
+  max-height:none!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field{
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  padding:0 14px!important;
+  background:#fff!important;
+  border:1px solid #d8e6db!important;
+  border-radius:14px!important;
+  overflow:visible!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field input,
+body:not(.bh-home) .activity-header-search .activity-search-field select{
+  width:100%!important;
+  min-width:0!important;
+  min-height:42px!important;
+  height:auto!important;
+  max-height:none!important;
+  padding:9px 0!important;
+  border:0!important;
+  outline:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#123f31!important;
+  font-size:13px!important;
+  line-height:1.3!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field span{
+  flex:0 0 auto!important;
+  color:#3c8e96!important;
+  font-size:16px!important;
+  line-height:1!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-button{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:10px 18px!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:#3c8e96!important;
+  color:#fff!important;
+  font-size:13px!important;
+  font-weight:800!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+}
+body:not(.bh-home) .activity-reference-header{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+@media(max-width:900px){
+  body:not(.bh-home) .activity-reference-header .activity-header-search,
+  body:not(.bh-home) form.activity-header-search{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:560px){
+  body:not(.bh-home) .activity-reference-header .activity-header-search,
+  body:not(.bh-home) form.activity-header-search{
+    grid-template-columns:1fr!important;
+  }
+}
+
+
+/* ========================================================================
+   activity-search-single-line-final
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Compact single-line activity search — match directory presentation. */
+body:not(.bh-home) .activity-reference-header .activity-header-search,
+body:not(.bh-home) form.activity-header-search{
+  display:grid!important;
+  grid-template-columns:minmax(180px,1.65fr) minmax(105px,.9fr) minmax(105px,.9fr) minmax(115px,1fr) minmax(95px,.8fr) 92px!important;
+  grid-template-rows:46px!important;
+  grid-auto-rows:46px!important;
+  flex-wrap:nowrap!important;
+  gap:8px!important;
+  width:100%!important;
+  max-width:1400px!important;
+  height:46px!important;
+  min-height:46px!important;
+  max-height:46px!important;
+  margin:18px auto 0!important;
+  padding:0!important;
+  position:relative!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+  align-items:stretch!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field,
+body:not(.bh-home) .activity-header-search .activity-search-button{
+  width:100%!important;
+  min-width:0!important;
+  height:46px!important;
+  min-height:46px!important;
+  max-height:46px!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field{
+  display:flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  padding:0 11px!important;
+  border-radius:999px!important;
+  overflow:hidden!important;
+  white-space:nowrap!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field input,
+body:not(.bh-home) .activity-header-search .activity-search-field select{
+  width:100%!important;
+  min-width:0!important;
+  height:42px!important;
+  min-height:42px!important;
+  max-height:42px!important;
+  padding:8px 0!important;
+  border:0!important;
+  outline:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#123f31!important;
+  font-size:12px!important;
+  line-height:1.2!important;
+  text-overflow:ellipsis!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field span{
+  flex:0 0 auto!important;
+  font-size:14px!important;
+  line-height:1!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-button{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:8px 14px!important;
+  border-radius:999px!important;
+  font-size:12px!important;
+  white-space:nowrap!important;
+}
+@media(max-width:900px){
+  body:not(.bh-home) .activity-reference-header .activity-header-search,
+  body:not(.bh-home) form.activity-header-search{
+    grid-template-columns:minmax(150px,1.5fr) repeat(4,minmax(82px,1fr)) 82px!important;
+    gap:6px!important;
+  }
+  body:not(.bh-home) .activity-header-search .activity-search-field{padding:0 8px!important}
+  body:not(.bh-home) .activity-header-search .activity-search-field input,
+  body:not(.bh-home) .activity-header-search .activity-search-field select{font-size:11px!important}
+}
+@media(max-width:700px){
+  body:not(.bh-home) .activity-reference-header .activity-header-search,
+  body:not(.bh-home) form.activity-header-search{
+    grid-template-columns:repeat(6,minmax(0,1fr))!important;
+    gap:5px!important;
+  }
+  body:not(.bh-home) .activity-header-search .activity-search-field{padding:0 6px!important}
+  body:not(.bh-home) .activity-header-search .activity-search-field span{display:none!important}
+  body:not(.bh-home) .activity-header-search .activity-search-field input,
+  body:not(.bh-home) .activity-header-search .activity-search-field select,
+  body:not(.bh-home) .activity-header-search .activity-search-button{font-size:10px!important}
+}
+@media(max-width:520px){
+  body:not(.bh-home) .activity-reference-header .activity-header-search,
+  body:not(.bh-home) form.activity-header-search{
+    grid-template-columns:1fr!important;
+    grid-template-rows:auto!important;
+    height:auto!important;
+    max-height:none!important;
+  }
+  body:not(.bh-home) .activity-header-search .activity-search-field,
+  body:not(.bh-home) .activity-header-search .activity-search-button{
+    height:42px!important;
+    min-height:42px!important;
+    max-height:none!important;
+  }
+}
+
+
+/* ========================================================================
+   activity-schedule-hero-final-fix
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Final activity hero + schedule correction */
+body:not(.bh-home) .activity-hero{
+  background:#1B4D3E!important;
+  padding:24px clamp(60px,6vw,90px) 28px!important;
+  min-height:0!important;
+  height:auto!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary,
+body:not(.bh-home) .activity-hero .listing-summary h1,
+body:not(.bh-home) .activity-hero .listing-summary .listing-intro,
+body:not(.bh-home) .activity-hero .listing-summary .listing-tags,
+body:not(.bh-home) .activity-hero .listing-summary .listing-tags span,
+body:not(.bh-home) .activity-hero .listing-summary .listing-tags span::before{
+  color:#fff!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary .eyebrow{
+  background:#d9eadf!important;
+  color:#1B4D3E!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary .listing-intro{
+  color:rgba(255,255,255,.94)!important;
+}
+body:not(.bh-home) .activity-hero .listing-tags span::before{
+  color:#d9eadf!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:10px!important;
+  margin:16px 0 18px!important;
+  width:100%!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts>span{
+  min-width:0!important;
+  min-height:66px!important;
+  padding:11px 13px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  gap:4px!important;
+  box-sizing:border-box!important;
+  border:1px solid rgba(255,255,255,.25)!important;
+  border-radius:13px!important;
+  background:rgba(255,255,255,.10)!important;
+  color:#fff!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts strong{
+  color:#d9eadf!important;
+  font-size:11px!important;
+  line-height:1.1!important;
+  font-weight:800!important;
+  letter-spacing:.06em!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts b{
+  color:#fff!important;
+  font-size:13px!important;
+  line-height:1.25!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions{
+  display:flex!important;
+  flex-flow:row wrap!important;
+  align-items:center!important;
+  gap:8px!important;
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-action,
+body:not(.bh-home) .activity-hero .listing-actions #visited,
+body:not(.bh-home) .activity-hero .activity-book-button{
+  display:inline-flex!important;
+  flex:0 1 auto!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:118px!important;
+  min-height:42px!important;
+  width:auto!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:9px 15px!important;
+  border-radius:50px!important;
+  box-sizing:border-box!important;
+  font-size:12px!important;
+  line-height:1.2!important;
+  font-weight:800!important;
+  white-space:nowrap!important;
+  cursor:pointer!important;
+  transition:transform .18s ease,background-color .18s ease,border-color .18s ease,box-shadow .18s ease,color .18s ease!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-action{
+  background:#f3f8f4!important;
+  color:#1B4D3E!important;
+  border:1px solid #d9eadf!important;
+  box-shadow:none!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-action:hover,
+body:not(.bh-home) .activity-hero .listing-actions .activity-action:focus-visible{
+  background:#fff!important;
+  color:#123d30!important;
+  border-color:#b9d8c5!important;
+  box-shadow:0 5px 14px rgba(18,61,48,.14)!important;
+  transform:translateY(-1px)!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions #visited{
+  display:inline-flex!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions #planner{
+  background:#d9eadf!important;
+  color:#1B4D3E!important;
+  border-color:#d9eadf!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{
+  background:#b9d8c5!important;
+  color:#123d30!important;
+  border:1px solid #b9d8c5!important;
+  box-shadow:0 5px 14px rgba(18,61,48,.16)!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-book-button:hover,
+body:not(.bh-home) .activity-hero .listing-actions .activity-book-button:focus-visible{
+  background:#d9eadf!important;
+  border-color:#d9eadf!important;
+  transform:translateY(-1px)!important;
+}
+
+/* Put About first, then Schedule & hours directly underneath it.
+   Keep the venue/map/contact column alongside both sections. */
+body:not(.bh-home) .listing-layout{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0 clamp(60px,6vw,90px)!important;
+  box-sizing:border-box!important;
+  grid-template-columns:minmax(0,1fr) minmax(320px,.75fr)!important;
+  grid-template-rows:auto auto!important;
+  column-gap:46px!important;
+  row-gap:0!important;
+  align-items:start!important;
+}
+body:not(.bh-home) .listing-main{display:contents!important}
+body:not(.bh-home) .activity-reference-about{
+  grid-column:1!important;
+  grid-row:1!important;
+  min-width:0!important;
+  padding:34px 0 26px!important;
+  margin:0!important;
+}
+body:not(.bh-home) .activity-reference-schedule{
+  grid-column:1!important;
+  grid-row:2!important;
+  min-width:0!important;
+  padding:0 0 34px!important;
+  margin:0!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+body:not(.bh-home) .activity-reference-contact{
+  grid-column:2!important;
+  grid-row:1 / span 2!important;
+  min-width:0!important;
+  padding:34px 0!important;
+  margin:0!important;
+}
+body:not(.bh-home) .activity-reference-schedule .schedule-list{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  width:100%!important;
+  margin-top:16px!important;
+  border:1px solid #d9e5dc!important;
+  border-radius:14px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule{
+  display:block!important;
+  visibility:visible!important;
+  padding:18px!important;
+  color:#144400!important;
+  border-bottom:1px solid #d9e5dc!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule:last-child{border-bottom:0!important}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule h3{
+  color:#144400!important;
+  margin:0 0 4px!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule p{
+  color:#53685a!important;
+  margin:0!important;
+}
+body:not(.bh-home) .activity-reference-schedule .session-list{
+  display:block!important;
+  width:100%!important;
+  margin-top:12px!important;
+  border-top:1px solid #e4ece6!important;
+}
+body:not(.bh-home) .activity-reference-schedule .session-row{
+  display:grid!important;
+  visibility:visible!important;
+  grid-template-columns:minmax(90px,1fr) minmax(120px,1.3fr) minmax(70px,.7fr) minmax(70px,.7fr)!important;
+  gap:10px!important;
+  padding:11px 0!important;
+  color:#144400!important;
+  border-bottom:1px solid #edf2ee!important;
+}
+body:not(.bh-home) .activity-reference-schedule .session-row strong,
+body:not(.bh-home) .activity-reference-schedule .session-row span{
+  color:#31563d!important;
+}
+body:not(.bh-home) .activity-reference-schedule .session-row strong{font-weight:800!important}
+
+@media(max-width:950px){
+  body:not(.bh-home) .activity-hero{
+    grid-template-columns:1fr!important;
+    padding:24px 60px 28px!important;
+  }
+  body:not(.bh-home) .activity-hero .hero-quick-facts{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  body:not(.bh-home) .listing-layout{
+    grid-template-columns:1fr!important;
+    padding-left:60px!important;
+    padding-right:60px!important;
+  }
+  body:not(.bh-home) .activity-reference-about{grid-column:1!important;grid-row:1!important}
+  body:not(.bh-home) .activity-reference-schedule{grid-column:1!important;grid-row:2!important}
+  body:not(.bh-home) .activity-reference-contact{grid-column:1!important;grid-row:3!important;padding:0 0 30px!important}
+}
+@media(max-width:650px){
+  body:not(.bh-home) .activity-hero{padding:20px 24px 24px!important}
+  body:not(.bh-home) .activity-hero .hero-quick-facts{
+    grid-template-columns:1fr 1fr!important;
+    gap:7px!important;
+    margin:14px 0 16px!important;
+  }
+  body:not(.bh-home) .activity-hero .hero-quick-facts>span{min-height:62px!important;padding:10px!important}
+  body:not(.bh-home) .activity-hero .listing-actions{gap:7px!important}
+  body:not(.bh-home) .activity-hero .listing-actions .activity-action,
+  body:not(.bh-home) .activity-hero .listing-actions #visited,
+  body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{
+    flex:1 1 calc(50% - 7px)!important;
+    min-width:0!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{flex-basis:100%!important}
+  body:not(.bh-home) .listing-layout{
+    padding-left:24px!important;
+    padding-right:24px!important;
+  }
+  body:not(.bh-home) .activity-reference-about{padding:28px 0 22px!important}
+  body:not(.bh-home) .activity-reference-schedule{padding-bottom:28px!important}
+  body:not(.bh-home) .activity-reference-schedule .session-row{grid-template-columns:1fr 1fr!important}
+}
+
+
+/* ========================================================================
+   footer-full-width-final
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Full-width professional footer */
+.site-footer{
+  width:100%!important;
+  max-width:none!important;
+  margin:48px 0 0!important;
+  padding:44px clamp(24px,5vw,72px) 20px!important;
+  border-radius:0!important;
+  box-sizing:border-box!important;
+}
+.site-footer-grid{
+  width:100%!important;
+  max-width:1400px!important;
+  margin:0 auto!important;
+}
+.site-footer-bottom{
+  width:100%!important;
+  max-width:1400px!important;
+  margin:28px auto 0!important;
+  box-sizing:border-box!important;
+}
+.site-footer-logo img{
+  width:110px!important;
+  height:auto!important;
+  max-width:100%!important;
+  max-height:90px!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+  border-radius:0!important;
+}
+.site-footer-nav{display:none!important}
+@media(max-width:650px){
+  .site-footer{
+    width:100%!important;
+    margin-top:36px!important;
+    padding:36px 20px 18px!important;
+    border-radius:0!important;
+  }
+  .site-footer-grid{grid-template-columns:1fr!important}
+}
+
+
+/* ========================================================================
+   activity-main-content-grid-final
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Final activity body grid: About + Schedule on the left, map/venue panel on the right. */
+body:not(.bh-home) .listing-page > .listing-layout{
+  display:grid!important;
+  grid-template-columns:minmax(0,2fr) minmax(320px,1fr)!important;
+  grid-template-rows:auto auto!important;
+  column-gap:48px!important;
+  row-gap:0!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0 clamp(60px,6vw,90px)!important;
+  box-sizing:border-box!important;
+  align-items:start!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout > .listing-main,
+body:not(.bh-home) .listing-page > .listing-layout > .listing-side{
+  display:contents!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-about{
+  grid-column:1!important;
+  grid-row:1!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:36px 0 28px!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-schedule{
+  grid-column:1!important;
+  grid-row:2!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0 0 38px!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact{
+  grid-column:2!important;
+  grid-row:1 / span 2!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:36px 0 38px 36px!important;
+  box-sizing:border-box!important;
+  border-left:1px solid #d9e5dc!important;
+  align-self:stretch!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact-map,
+body:not(.bh-home) .listing-page > .listing-layout #listingMap{
+  width:100%!important;
+  height:360px!important;
+  min-height:360px!important;
+  margin:0 0 18px!important;
+  border-radius:16px!important;
+  overflow:hidden!important;
+  background:#eaf4ed!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-addresses{
+  width:100%!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:8px!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-facts{
+  width:100%!important;
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:8px!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-schedule .schedule-list{
+  width:100%!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-schedule .session-row{
+  min-width:0!important;
+}
+@media(max-width:950px){
+  body:not(.bh-home) .listing-page > .listing-layout{
+    grid-template-columns:1fr!important;
+    grid-template-rows:auto auto auto!important;
+    column-gap:0!important;
+    padding-left:60px!important;
+    padding-right:60px!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-about{
+    grid-column:1!important;
+    grid-row:1!important;
+    padding:32px 0 24px!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-schedule{
+    grid-column:1!important;
+    grid-row:2!important;
+    padding-bottom:32px!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact{
+    grid-column:1!important;
+    grid-row:3!important;
+    padding:0 0 32px!important;
+    border-left:0!important;
+    border-top:1px solid #d9e5dc!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact-map,
+  body:not(.bh-home) .listing-page > .listing-layout #listingMap{
+    height:320px!important;
+    min-height:320px!important;
+  }
+}
+@media(max-width:650px){
+  body:not(.bh-home) .listing-page > .listing-layout{
+    padding-left:24px!important;
+    padding-right:24px!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-about{
+    padding-top:28px!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact{
+    padding-top:24px!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact-map,
+  body:not(.bh-home) .listing-page > .listing-layout #listingMap{
+    height:240px!important;
+    min-height:240px!important;
+  }
+}
+
+
+/* ========================================================================
+   activity-book-now-calendar-accent
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Match the primary Book Now CTA to the directory View calendar accent. */
+body:not(.bh-home) .activity-hero .listing-actions .activity-book-button,
+body:not(.bh-home) .activity-hero .activity-book-button{
+  background:#f6c84a!important;
+  color:#144400!important;
+  border-color:#f6c84a!important;
+  font-weight:800!important;
+  text-shadow:none!important;
+  box-shadow:0 5px 14px rgba(20,68,0,.16)!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-book-button:hover,
+body:not(.bh-home) .activity-hero .listing-actions .activity-book-button:focus-visible,
+body:not(.bh-home) .activity-hero .activity-book-button:hover,
+body:not(.bh-home) .activity-hero .activity-book-button:focus-visible{
+  background:#f1b92e!important;
+  color:#144400!important;
+  border-color:#f1b92e!important;
+}
+
+
+/* ========================================================================
+   activity-main-content-full-width-final
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Full-width main content: edge-to-edge wrapper with comfortable reading gutters. */
+body:not(.bh-home) .app-shell,
+body:not(.bh-home) main,
+body:not(.bh-home) .listing-page,
+body:not(.bh-home) .listing-layout,
+body:not(.bh-home) .activity-reference-organiser,
+body:not(.bh-home) .listing-bottom{
+  width:100%!important;
+  max-width:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .listing-layout,
+body:not(.bh-home) .activity-reference-organiser,
+body:not(.bh-home) .listing-bottom{
+  padding-left:clamp(60px,6vw,90px)!important;
+  padding-right:clamp(60px,6vw,90px)!important;
+}
+body:not(.bh-home) .listing-layout{
+  padding-top:0!important;
+}
+@media(max-width:950px){
+  body:not(.bh-home) .listing-layout,
+  body:not(.bh-home) .activity-reference-organiser,
+  body:not(.bh-home) .listing-bottom{
+    padding-left:24px!important;
+    padding-right:24px!important;
+  }
+}
+@media(max-width:650px){
+  body:not(.bh-home) .listing-layout,
+  body:not(.bh-home) .activity-reference-organiser,
+  body:not(.bh-home) .listing-bottom{
+    padding-left:16px!important;
+    padding-right:16px!important;
+  }
+}
+
+
+/* ========================================================================
+   listing-layout-fluid-final
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Force the activity body content to run edge-to-edge like the hero/footer. */
+body:not(.bh-home) .listing-layout,
+body:not(.bh-home) .listing-layout > .listing-main,
+body:not(.bh-home) .listing-layout > .listing-side,
+body:not(.bh-home) .activity-reference-organiser,
+body:not(.bh-home) .listing-bottom{
+  width:100% !important;
+  max-width:none !important;
+  margin-left:0 !important;
+  margin-right:0 !important;
+  box-sizing:border-box !important;
+}
+body:not(.bh-home) .listing-layout{
+  margin-top:0 !important;
+  margin-bottom:0 !important;
+  padding-left:15px !important;
+  padding-right:15px !important;
+}
+body:not(.bh-home) .activity-reference-organiser,
+body:not(.bh-home) .listing-bottom{
+  padding-left:15px !important;
+  padding-right:15px !important;
+}
+@media(max-width:950px){
+  body:not(.bh-home) .listing-layout{
+    width:100% !important;
+    padding-left:15px !important;
+    padding-right:15px !important;
+  }
+  body:not(.bh-home) .activity-reference-organiser,
+  body:not(.bh-home) .listing-bottom{
+    width:100% !important;
+    padding-left:15px !important;
+    padding-right:15px !important;
+  }
+}
+
+
+/* ========================================================================
+   activity-featured-image-fluid-final
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Final featured-image fit + fluid activity body */
+body:not(.bh-home) .activity-hero{
+  width:100%!important;
+  max-width:none!important;
+  height:auto!important;
+  min-height:0!important;
+  padding:24px clamp(60px,6vw,90px) 28px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  background:#1B4D3E!important;
+  align-items:center!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery{
+  width:100%!important;
+  height:280px!important;
+  min-height:280px!important;
+  max-height:280px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:0!important;
+  background:#fff!important;
+  border-radius:18px!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery picture{
+  display:flex!important;
+  width:100%!important;
+  height:100%!important;
+  max-height:100%!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery img,
+body:not(.bh-home) .activity-hero .listing-gallery-placeholder{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  border-radius:18px!important;
+  background:#fff!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery img{
+  flex:0 1 auto!important;
+}
+body:not(.bh-home) .listing-layout,
+body:not(.bh-home) .activity-reference-organiser,
+body:not(.bh-home) .listing-bottom{
+  width:100%!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .listing-layout{
+  margin-left:0!important;
+  margin-right:0!important;
+}
+@media(max-width:950px){
+  body:not(.bh-home) .activity-hero{
+    padding:22px 24px 26px!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-gallery{
+    height:240px!important;
+    min-height:240px!important;
+    max-height:240px!important;
+  }
+}
+@media(max-width:650px){
+  body:not(.bh-home) .activity-hero{
+    padding:18px 16px 24px!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-gallery{
+    height:200px!important;
+    min-height:200px!important;
+    max-height:200px!important;
+  }
+}
+
+
+/* ========================================================================
+   activity-hero-quick-facts-final
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* Final quick-facts grid and single-row hero actions */
+body:not(.bh-home) .activity-hero .listing-tags{
+  display:none!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts{
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  gap:8px!important;
+  width:100%!important;
+  margin:16px 0 14px!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts>span{
+  min-width:0!important;
+  min-height:62px!important;
+  padding:9px 10px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  gap:4px!important;
+  box-sizing:border-box!important;
+  border:1px solid rgba(255,255,255,.25)!important;
+  border-radius:12px!important;
+  background:rgba(255,255,255,.10)!important;
+  color:#fff!important;
+  overflow:hidden!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts strong{
+  display:block!important;
+  color:#d9eadf!important;
+  font-size:9px!important;
+  line-height:1.1!important;
+  font-weight:800!important;
+  letter-spacing:.04em!important;
+  text-transform:uppercase!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts b{
+  display:block!important;
+  color:#fff!important;
+  font-size:12px!important;
+  line-height:1.2!important;
+  font-weight:750!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions{
+  display:flex!important;
+  flex-flow:row nowrap!important;
+  align-items:center!important;
+  gap:7px!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-action,
+body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{
+  flex:1 1 0!important;
+  min-width:0!important;
+  width:auto!important;
+  max-width:none!important;
+  min-height:40px!important;
+  margin:0!important;
+  padding:8px 10px!important;
+  font-size:11px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{
+  flex:1.1 1 0!important;
+}
+@media(max-width:1100px) and (min-width:951px){
+  body:not(.bh-home) .activity-hero .hero-quick-facts{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:950px){
+  body:not(.bh-home) .activity-hero .hero-quick-facts{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-actions{
+    flex-wrap:wrap!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-actions .activity-action,
+  body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{
+    flex:1 1 calc(20% - 7px)!important;
+  }
+}
+@media(max-width:650px){
+  body:not(.bh-home) .activity-hero .hero-quick-facts{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-actions{
+    gap:7px!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-actions .activity-action,
+  body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{
+    flex:1 1 calc(50% - 7px)!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{
+    flex-basis:100%!important;
+  }
+}
+
+
+/* ========================================================================
+   listing-layout-edge-to-edge-final
+   Consolidated from activity.html — order intentionally preserved.
+   ======================================================================== */
+/* FINAL: activity body wrapper is fluid; inner content keeps a 15px reading gutter. */
+body:not(.bh-home) .listing-layout,
+body:not(.bh-home) .listing-layout > .listing-main,
+body:not(.bh-home) .listing-layout > .listing-side{
+  width:100% !important;
+  max-width:none !important;
+  margin-left:0 !important;
+  margin-right:0 !important;
+  box-sizing:border-box !important;
+}
+body:not(.bh-home) .listing-layout{
+  padding-left:15px !important;
+  padding-right:15px !important;
+  margin-top:0 !important;
+  margin-bottom:0 !important;
+}
+body:not(.bh-home) .listing-layout > .listing-main,
+body:not(.bh-home) .listing-layout > .listing-side{
+  padding-left:0 !important;
+  padding-right:0 !important;
+}
+@media(max-width:950px){
+  body:not(.bh-home) .listing-layout{
+    width:100% !important;
+    padding-left:15px !important;
+    padding-right:15px !important;
+  }
+}
+
