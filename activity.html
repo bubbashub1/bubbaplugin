@@ -128,27 +128,20 @@ body:not(.bh-home) .activity-hero .listing-actions #planner{
   padding-left:0;
 }
 body:not(.bh-home) .activity-hero .listing-actions #planner::first-letter{font-size:24px}
-body:not(.bh-home) .activity-hero::after{
-  content:"Book Now";
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  justify-self:end;
-  grid-column:2;
-  grid-row:1;
+body:not(.bh-home) .activity-book-button{
+  align-self:flex-end;
   width:200px;
-  height:62px;
-  margin-right:0;
-  align-self:end;
-  margin-bottom:2px;
+  min-height:62px!important;
+  margin-top:-66px;
+  margin-bottom:0;
   border-radius:999px;
   background:#e7f1ea;
   color:#144400;
   font-size:18px;
   font-weight:800;
-  pointer-events:auto;
-  cursor:pointer;
+  box-shadow:none;
 }
+body:not(.bh-home) .activity-book-button:hover{background:#f2f8f3;color:#144400}
 body:not(.bh-home) .listing-layout{
   width:min(1400px,calc(100% - 64px));
   max-width:1400px;
@@ -215,12 +208,9 @@ body:not(.bh-home) .listing-bottom{
     height:230px;
     min-height:230px;
   }
-  body:not(.bh-home) .activity-hero::after{
-    grid-column:1;
-    grid-row:auto;
-    justify-self:start;
+  body:not(.bh-home) .activity-book-button{
+    justify-self:end;
     margin-top:-62px;
-    align-self:end;
   }
   body:not(.bh-home) .listing-layout{
     width:calc(100% - 40px);
@@ -243,11 +233,11 @@ body:not(.bh-home) .listing-bottom{
   body:not(.bh-home) .activity-hero .listing-summary h1{font-size:34px}
   body:not(.bh-home) .activity-hero .listing-intro{font-size:15px}
   body:not(.bh-home) .activity-hero .listing-tags{gap:10px 16px}
-  body:not(.bh-home) .activity-hero::after{
+  body:not(.bh-home) .activity-book-button{
     width:170px;
-    height:52px;
-    font-size:15px;
+    min-height:52px!important;
     margin-top:0;
+    font-size:15px;
   }
   body:not(.bh-home) .listing-layout{width:calc(100% - 32px)}
   body:not(.bh-home) .listing-description{font-size:16px}
@@ -319,7 +309,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     '<div class="listing-gallery">'+(images.length?images.map((src,i)=>'<img src="'+bhEscape(src)+'" alt="'+bhEscape(a.title)+'"'+(i?' loading="lazy"':'')+'>').join(""):'<div class="listing-gallery-placeholder">Bubba Hub activity</div>')+'</div>'+
     '<div class="listing-summary"><span class="eyebrow">'+bhEscape(cats.join(" · ")||"Family activity")+'</span><h1>'+bhEscape(a.title)+'</h1><p class="listing-intro">'+bhEscape(a.short_description||a.summary||"A local family activity listed on Bubba Hub.")+'</p>'+
     '<div class="listing-tags">'+ages.map(x=>'<span>'+bhEscape(x)+'</span>').join("")+(a.region?'<span>'+bhEscape(a.region)+'</span>':"")+'</div>'+
-    '<div class="listing-actions" aria-label="Activity actions"><button class="button button-soft activity-action" id="save" type="button" aria-label="Save activity"></button><button class="button button-soft activity-action" id="planner" aria-label="Add to planner" type="button"></button><button class="button button-soft activity-action" id="visited" type="button" aria-label="Mark as visited"></button><button class="button button-soft activity-action" id="compare" aria-label="Compare activity" type="button"></button></div></div>'+
+    '<div class="listing-actions" aria-label="Activity actions"><button class="button button-soft activity-action" id="save" type="button" aria-label="Save activity"></button><button class="button button-soft activity-action" id="planner" aria-label="Add to planner" type="button"></button><button class="button button-soft activity-action" id="visited" type="button" aria-label="Mark as visited"></button><button class="button button-soft activity-action" id="compare" aria-label="Compare activity" type="button"></button></div><button class="button activity-book-button" id="heroBookNow" type="button">Book Now</button></div>'+
    '</section>'+
    '<div class="listing-layout"><div class="listing-main">'+
     '<section class="listing-card good-to-know-card"><span class="eyebrow">Quick Facts!</span><h2>Quick Facts!</h2><div class="good-to-know-grid">'+(a.price?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Price</span><strong>'+bhEscape(a.price)+'</strong></div>':"")+(ages.length?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Age range</span><strong>'+bhEscape(ages.join(", "))+'</strong></div>':"")+(sessions.some(s=>s.term_time)?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Term time</span><strong>'+bhEscape('Term time')+'</strong></div>':"")+(a.region?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Location</span><strong>'+bhEscape(a.region)+'</strong></div>':"")+'</div></section>'+'<section class="listing-card"><span class="eyebrow">About</span><h2>About this activity</h2><div class="listing-description">'+bhEscape(a.description||a.content||"More information about this activity will appear here.")+'</div></section>'+
@@ -332,7 +322,6 @@ document.addEventListener("DOMContentLoaded",async()=>{
    '</aside></div>'+
    '<div class="listing-bottom"><a class="button button-soft" href="directory.html">← Back to activities</a></div>';
   const save=document.getElementById("save"),plan=document.getElementById("planner"),visited=document.getElementById("visited"),compare=document.getElementById("compare");
-  const heroBookNow=document.querySelector(".activity-hero::after");
 
   const BH_VISITED_KEY="bhVisitedActivities",BH_COMPARE_KEY="bhCompareActivities";
   const listKey=key=>{try{const v=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(v)?v.map(String):[]}catch{return[]}};
@@ -340,16 +329,6 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const toggleKey=(key,id)=>{const list=listKey(key),value=String(id),i=list.indexOf(value);i>=0?list.splice(i,1):list.push(value);localStorage.setItem(key,JSON.stringify(list));return i<0};
   function refresh(){save.textContent=bhIsSaved(a.id)?"✓ Saved":"♡ Save";plan.textContent=bhIsPlanned(a.id)?"✓ My Planner":"+ My Planner";visited.textContent=hasKey(BH_VISITED_KEY,a.id)?"✓ Visited":"○ Visited";compare.textContent=hasKey(BH_COMPARE_KEY,a.id)?"✓ Compared":"＋ Compare";[save,plan,visited,compare].forEach(btn=>btn.setAttribute("aria-pressed",String(btn.textContent.indexOf("✓")===0)))}
   save.onclick=()=>{bhToggleSaved(a.id);refresh()};plan.onclick=()=>{bhTogglePlanned(a.id);refresh()};visited.onclick=()=>{toggleKey(BH_VISITED_KEY,a.id);refresh()};compare.onclick=()=>{toggleKey(BH_COMPARE_KEY,a.id);refresh()};refresh();
-  const heroBookButton=document.querySelector(".activity-hero");
-  if(heroBookButton){
-    heroBookButton.addEventListener("click",e=>{
-      if(e.target.closest(".listing-actions")) return;
-      const x=e.clientX, y=e.clientY;
-      if(x>window.innerWidth-250 && y>window.innerHeight*0.15 && y<window.innerHeight*0.65){
-        document.getElementById("bookingSchedule")?.scrollIntoView({behavior:"smooth",block:"center"});
-      }
-    });
-  }
   const bookingBox=document.getElementById("bookingSchedule");
   const bookingMode=a.booking_mode|| (a.booking_url?"external":"reserve");
   const bookingUrl=a.booking_url||"";
