@@ -382,3 +382,93 @@ void bhHydrateSaved();
       addOptions(region,regions); addOptions(town,towns); addOptions(category,categories);
     }).catch(()=>{});
 })();
+
+
+/* Homepage live activity cards — use the same activity data as Directory/Activity. */
+(function(){
+  const grid=document.querySelector(".home-activity-grid");
+  if(!grid||typeof bhActivities!=="function")return;
+
+  const fallbackCards=Array.from(grid.querySelectorAll(".home-activity-card"));
+  const setText=(el,value)=>{if(el)el.textContent=value||""};
+  const resolveImage=(path)=>{
+    const value=String(path||"").trim();
+    if(!value)return "";
+    if(/^https?:\\/\\//i.test(value)||value.startsWith("/"))return value;
+    return value.replace(/^\.\//,"");
+  };
+  const ageText=(a)=>{
+    const ages=Array.isArray(a?.age_range)?a.age_range.filter(Boolean):[];
+    return ages.length?ages.join(", "):"All ages";
+  };
+  const locationText=(a)=>{
+    const venue=Array.isArray(a?.venues)&&a.venues[0]?a.venues[0]:null;
+    return venue?.town||venue?.region||a?.town||a?.region||"Devon & Cornwall";
+  };
+  const priceText=(a)=>{
+    if(a?.price)return a.price+" per session";
+    return "See booking details";
+  };
+  const categoryText=(a)=>a?.category||"Family activity";
+
+  const render=async()=>{
+    try{
+      const items=await bhActivities();
+      if(!Array.isArray(items)||!items.length)return;
+
+      const selected=items.filter(a=>a&&a.id).slice(0,4);
+      if(!selected.length)return;
+
+      grid.innerHTML="";
+      selected.forEach((a,index)=>{
+        const card=document.createElement("a");
+        card.className="home-activity-card";
+        card.href="activity.html?slug="+encodeURIComponent(a.slug||"")+"&id="+encodeURIComponent(a.id);
+        const imageWrap=document.createElement("div");
+        imageWrap.className="home-card-image";
+        const img=document.createElement("img");
+        const fallback=fallbackCards[index]?.querySelector("img")?.getAttribute("src")||"";
+        img.src=resolveImage(a.image_url)||fallback;
+        img.alt=a.title||"Family activity";
+        imageWrap.appendChild(img);
+
+        const age=document.createElement("span");
+        age.className="home-age-badge";
+        if(index%4===1)age.classList.add("pink");
+        age.textContent=ageText(a);
+
+        const heart=document.createElement("button");
+        heart.className="home-heart";
+        heart.type="button";
+        heart.setAttribute("aria-label","Save "+(a.title||"activity"));
+        heart.textContent=bhIsSaved(a.id)?"♥":"♡";
+        if(bhIsSaved(a.id))heart.classList.add("is-saved");
+        heart.addEventListener("click",event=>{
+          event.preventDefault();
+          event.stopPropagation();
+          const saved=bhToggleSaved(a.id);
+          heart.textContent=saved?"♥":"♡";
+          heart.classList.toggle("is-saved",saved);
+        });
+
+        const body=document.createElement("div");
+        body.className="home-card-body";
+        const title=document.createElement("h3");
+        setText(title,a.title);
+        const location=document.createElement("p");
+        setText(location,"⌖ "+locationText(a));
+        const category=document.createElement("p");
+        setText(category,"♟ "+categoryText(a));
+        const price=document.createElement("p");
+        setText(price,"◷ "+priceText(a));
+        body.append(title,location,category,price);
+        card.append(imageWrap,age,heart,body);
+        grid.appendChild(card);
+      });
+    }catch(error){
+      /* Keep the approved static cards as a graceful fallback if the API is unavailable. */
+    }
+  };
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render,{once:true});
+  else render();
+})();
