@@ -170,7 +170,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         const payload = await response.json();
         const settings = response.ok && payload.ok ? {...advancedFilterDefaults,...(payload.data||{})} : advancedFilterDefaults;
         document.querySelectorAll(".directory-advanced-filter-field[data-filter-key]").forEach(el => {
-          el.hidden = settings[el.dataset.filterKey] === false;
+          const key = el.dataset.filterKey;
+          // Price is a core directory filter and must remain available.
+          el.hidden = key === "price" ? false : settings[key] === false;
         });
       } catch (_) {}
     };
