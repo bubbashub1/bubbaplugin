@@ -883,3 +883,264 @@ body .brand-logo{
 @media(max-width:650px){
   body .brand-logo{height:58px!important;max-width:180px!important}
 }
+
+
+/* ==========================================================================
+   GLOBAL LAYOUT + HEADER FINAL OVERRIDES
+   Full-width shell, consistent 60–90px desktop gutters and aligned header.
+   ========================================================================== */
+:root{
+  --bh-global-gutter:clamp(60px,6vw,90px);
+  --bh-brand-green:#1B4D3E;
+}
+
+html,body{
+  width:100%;
+  max-width:none;
+}
+
+body{
+  overflow-x:hidden;
+}
+
+/* Full-width header: one clean horizontal bar on desktop */
+body .site-header{
+  width:100%!important;
+  max-width:none!important;
+  min-height:84px!important;
+  height:84px;
+  margin:0!important;
+  padding:10px var(--bh-global-gutter)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start;
+  gap:24px;
+  border-radius:0!important;
+  box-sizing:border-box;
+}
+
+body .site-header .brand{
+  flex:0 0 auto;
+  margin:0 auto 0 0!important;
+  display:inline-flex;
+  align-items:center;
+  min-width:0;
+}
+
+body .site-header .brand-logo{
+  height:72px!important;
+  width:auto!important;
+  max-width:250px!important;
+  flex:0 0 auto;
+  object-fit:contain!important;
+}
+
+body .site-header .main-nav{
+  flex:0 1 auto;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end;
+  gap:4px;
+  min-width:0;
+  margin:0!important;
+  white-space:nowrap;
+}
+
+body .site-header .main-nav a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:44px;
+  padding:9px 13px;
+  border-radius:10px;
+  color:var(--bh-brand-green)!important;
+  background:transparent;
+  font-size:14px;
+  font-weight:750;
+  line-height:1.2;
+  white-space:nowrap;
+  text-decoration:none;
+}
+
+body .site-header .main-nav a:hover,
+body .site-header .main-nav a.active{
+  color:var(--bh-brand-green)!important;
+  background:#e7f1ea;
+}
+
+body .site-header .home-header-search{
+  flex:0 0 40px;
+  width:40px;
+  height:40px;
+  color:var(--bh-brand-green)!important;
+  margin:0;
+}
+
+/* Main page shell is fluid rather than boxed */
+body main{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  box-sizing:border-box;
+}
+
+body:not(.bh-home) .section,
+body:not(.bh-home) .app-shell,
+body:not(.bh-home) .listing-page{
+  width:100%!important;
+  max-width:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  padding-left:var(--bh-global-gutter)!important;
+  padding-right:var(--bh-global-gutter)!important;
+  box-sizing:border-box;
+}
+
+body:not(.bh-home) .page-heading{
+  padding-left:0!important;
+  padding-right:0!important;
+}
+
+/* Hero sections use the same fluid gutters */
+body:not(.bh-home) .hero{
+  width:100%!important;
+  max-width:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  padding-left:var(--bh-global-gutter)!important;
+  padding-right:var(--bh-global-gutter)!important;
+  box-sizing:border-box;
+}
+
+/* Homepage: full-width hero and content bands */
+body.bh-home .home-hero,
+body.bh-home .home-category-row,
+body.bh-home .home-section,
+body.bh-home .home-plan-band,
+body.bh-home .home-lower-grid,
+body.bh-home .home-footer{
+  width:100%!important;
+  max-width:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  box-sizing:border-box;
+}
+
+body.bh-home .home-hero{
+  border-radius:0!important;
+}
+
+body.bh-home .home-hero-copy{
+  padding-right:var(--bh-global-gutter);
+}
+
+body.bh-home .home-category-row{
+  padding-left:var(--bh-global-gutter)!important;
+  padding-right:var(--bh-global-gutter)!important;
+}
+
+body.bh-home .home-section{
+  padding-left:var(--bh-global-gutter)!important;
+  padding-right:var(--bh-global-gutter)!important;
+}
+
+body.bh-home .home-plan-band{
+  padding-left:var(--bh-global-gutter)!important;
+  padding-right:var(--bh-global-gutter)!important;
+}
+
+body.bh-home .home-lower-grid{
+  padding-left:var(--bh-global-gutter)!important;
+  padding-right:var(--bh-global-gutter)!important;
+}
+
+body.bh-home .home-footer{
+  padding-left:var(--bh-global-gutter)!important;
+  padding-right:var(--bh-global-gutter)!important;
+}
+
+/* Activity detail hero should also span the fluid content area */
+body:not(.bh-home) .activity-hero{
+  width:100%!important;
+  max-width:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+}
+
+/* Keep desktop navigation as a single aligned row */
+@media (min-width:901px){
+  body .site-header .mobile-nav-toggle{
+    display:none!important;
+  }
+}
+
+/* Mobile keeps comfortable but compact gutters and allows the menu to stack */
+@media(max-width:900px){
+  body .site-header{
+    height:auto;
+    min-height:72px!important;
+    padding:8px 24px!important;
+    gap:12px;
+  }
+
+  body .site-header .brand-logo{
+    height:60px!important;
+    max-width:210px!important;
+  }
+
+  body .site-header .main-nav{
+    flex:1 1 auto;
+    overflow-x:auto;
+    justify-content:flex-start;
+  }
+
+  body:not(.bh-home) .section,
+  body:not(.bh-home) .app-shell,
+  body:not(.bh-home) .listing-page,
+  body:not(.bh-home) .hero{
+    padding-left:24px!important;
+    padding-right:24px!important;
+  }
+
+  body.bh-home .home-hero-copy,
+  body.bh-home .home-category-row,
+  body.bh-home .home-section,
+  body.bh-home .home-plan-band,
+  body.bh-home .home-lower-grid,
+  body.bh-home .home-footer{
+    padding-left:24px!important;
+    padding-right:24px!important;
+  }
+}
+
+@media(max-width:650px){
+  body .site-header{
+    min-height:64px!important;
+    height:auto;
+    padding:8px 12px!important;
+    border-radius:0!important;
+  }
+
+  body .site-header .brand-logo{
+    height:58px!important;
+    max-width:180px!important;
+  }
+
+  body:not(.bh-home) .section,
+  body:not(.bh-home) .app-shell,
+  body:not(.bh-home) .listing-page,
+  body:not(.bh-home) .hero{
+    padding-left:16px!important;
+    padding-right:16px!important;
+  }
+
+  body.bh-home .home-hero-copy,
+  body.bh-home .home-category-row,
+  body.bh-home .home-section,
+  body.bh-home .home-plan-band,
+  body.bh-home .home-lower-grid,
+  body.bh-home .home-footer{
+    padding-left:16px!important;
+    padding-right:16px!important;
+  }
+}
