@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
     $("mapFilters").addEventListener("submit",e=>{e.preventDefault();syncUrl();render()});
     $("mapClear")?.addEventListener("click",()=>{history.replaceState({}, "", "map.html");location.reload()});
-    const back=$("mapBackLink");if(back)back.href="directory.html"+(location.search||"");
+    const back=document.querySelector(".map-back-link");if(back)back.href="directory.html"+(location.search||"");
     render();
   }catch(error){$("mapStatus").textContent=error.message||"Activities could not be loaded."}
 });
