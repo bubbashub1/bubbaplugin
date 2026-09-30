@@ -10,11 +10,20 @@ async function bhActivities(){
   const fetchPage=async page=>{
     const url=new URL(apiUrl.toString());
     url.searchParams.set("page",String(page));
-    const response=await fetch(url.toString(),{cache:"no-store",headers:{Accept:"application/json"}});
-    if(!response.ok)throw new Error("Could not load activities");
-    const payload=await response.json();
-    if(!payload.ok)throw new Error(payload.error||"Could not load activities");
-    return payload;
+    let lastError=null;
+    for(let attempt=0;attempt<2;attempt++){
+      try{
+        const response=await fetch(url.toString(),{cache:"no-store",headers:{Accept:"application/json"}});
+        if(!response.ok)throw new Error("Could not load activities");
+        const payload=await response.json();
+        if(!payload.ok)throw new Error(payload.error||"Could not load activities");
+        return payload;
+      }catch(error){
+        lastError=error;
+        if(attempt===0)await new Promise(resolve=>setTimeout(resolve,250));
+      }
+    }
+    throw lastError||new Error("Could not load activities");
   };
 
   const firstPayload=await fetchPage(1);
