@@ -1076,7 +1076,18 @@ body:not(.bh-home) .activity-reference-organiser {
   }
 }
 </style>
-</head><body>
+<style id="activity-hero-actions-fix">
+body:not(.bh-home) .activity-hero .hero-quick-facts{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;width:100%;min-width:0;margin:22px 0 20px}
+body:not(.bh-home) .activity-hero .hero-quick-facts>span{display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0;padding:13px 14px;border:1px solid rgba(255,255,255,.22);border-radius:14px;background:rgba(255,255,255,.10);overflow:hidden}
+body:not(.bh-home) .activity-hero .hero-quick-facts strong{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.82}
+body:not(.bh-home) .activity-hero .hero-quick-facts b{min-width:0;font-size:.94rem;line-height:1.25;overflow-wrap:anywhere}
+body:not(.bh-home) .activity-hero .listing-actions{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:10px!important;width:100%!important;min-width:0!important;margin:0!important}
+body:not(.bh-home) .activity-hero .listing-actions .activity-action{flex:1 1 120px!important;min-width:0!important;width:auto!important;max-width:none!important;white-space:nowrap!important}
+body:not(.bh-home) .activity-hero .activity-book-button{flex:1 1 150px!important;min-width:140px!important;width:auto!important;max-width:none!important;margin:0!important;white-space:nowrap!important}
+body:not(.bh-home) .activity-hero .listing-summary,.activity-hero .listing-summary *{min-width:0}
+@media(max-width:950px){body:not(.bh-home) .activity-hero .hero-quick-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){body:not(.bh-home) .activity-hero .listing-actions{display:grid!important;grid-template-columns:1fr 1fr!important}body:not(.bh-home) .activity-hero .listing-actions .activity-action,body:not(.bh-home) .activity-hero .activity-book-button{width:100%!important;min-width:0!important}body:not(.bh-home) .activity-hero .activity-book-button{grid-column:1/-1}}
+</style></head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
     <a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png" alt="Bubba Hub"></a>
