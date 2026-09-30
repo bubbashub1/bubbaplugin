@@ -866,3 +866,20 @@ body:not(.bh-home) .listing-bottom{
   body:not(.bh-home) .good-to-know-grid{grid-template-columns:1fr}
   body:not(.bh-home) .listing-actions{grid-template-columns:1fr}
 }
+
+
+/* SITE-WIDE BRAND LOGO — current Bubba Hub master logo */
+body .brand-logo{
+  content:url("../images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png");
+  width:auto!important;
+  height:88px!important;
+  max-width:250px!important;
+  object-fit:contain!important;
+  border-radius:0!important;
+}
+@media(max-width:900px){
+  body .brand-logo{height:72px!important;max-width:210px!important}
+}
+@media(max-width:650px){
+  body .brand-logo{height:58px!important;max-width:180px!important}
+}
