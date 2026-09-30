@@ -8,20 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-
-
-
-
-
-
-</style>
-
-
-
-
-
-</head><body>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
     <a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a>
@@ -83,31 +70,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   }catch(error){}
 });
 </script>
-<script>
-document.addEventListener("DOMContentLoaded",()=>{
-  const logout=document.getElementById("siteLogout");
-  logout?.addEventListener("click",async()=>{
-    logout.disabled=true;
-    logout.textContent="Logging out…";
-    try{
-      const auth=await bhAuthSession();
-      const response=await fetch("api/auth.php?action=logout",{
-        method:"POST",
-        credentials:"same-origin",
-        headers:{"Content-Type":"application/json","Accept":"application/json"},
-        body:JSON.stringify({csrf:auth?.csrf||""})
-      });
-      const data=await response.json();
-      if(!response.ok||!data.ok)throw new Error(data.error||"Could not log out");
-      location.href="account.html";
-    }catch(error){
-      logout.disabled=false;
-      logout.textContent="Log out";
-      alert(error.message||"Could not log out. Please try again.");
-    }
-  });
-});
-</script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded",async()=>{
  const state=document.getElementById("activityState");
@@ -118,11 +81,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
    const slug=decodeURIComponent(params.get("slug")||pathSlug||"");
    const id=params.get("id");
    let items=[];
-   if(slug){
-    items=await bhActivities();
-   }else{
-    items=await bhActivities();
-   }
+   items=await bhActivities();
    const a=bhActivityBySlug(slug,items)||bhActivity(id,items);
    if(!a){state.innerHTML='<div class="admin-panel"><h2>Activity not found</h2><p>This activity may have been removed or the link is incorrect.</p><a class="button button-primary" href="directory.html">Find activities</a></div>';return}
   const venues=bhVenues(a),sessions=bhSessions(a),images=Array.isArray(a.gallery)&&a.gallery.length?a.gallery:(a.image_url?[a.image_url]:[]);
@@ -296,8 +255,4 @@ document.addEventListener("DOMContentLoaded",async()=>{
   }catch(error){}
 })();
 </script></body></html>
-
-
-
-
 
