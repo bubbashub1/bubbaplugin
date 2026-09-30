@@ -350,7 +350,7 @@ void bhHydrateSaved();
   else applyMainNav();
 })();
 
-/* Homepage search: keep the front door simple — keyword, region and town. */
+/* Homepage search: keep the front door useful while sharing the directory filter choices. */
 (function(){
   const form=document.getElementById("heroSearch");
   if(!form)return;
@@ -358,22 +358,15 @@ void bhHydrateSaved();
   const town=document.getElementById("heroTown");
   const category=document.getElementById("heroCategory");
   const age=document.getElementById("heroAge");
-  if(category) category.closest("label")?.remove();
-  if(age) age.closest("label")?.remove();
-  if(!town){
-    const label=document.createElement("label");
-    label.innerHTML='<span>⌖</span><select id="heroTown" name="town" aria-label="Town"><option value="">Town</option></select>';
-    const fields=form.querySelector(".home-search-fields");
-    const button=fields?.querySelector("button");
-    if(fields&&button) fields.insertBefore(label,button); else fields?.appendChild(label);
-  }
-  const townEl=document.getElementById("heroTown");
+  const day=document.getElementById("heroDay");
   fetch("api/activities.php?page=1&per_page=100",{cache:"no-store",headers:{Accept:"application/json"}})
     .then(r=>r.json()).then(payload=>{
       const items=Array.isArray(payload.data)?payload.data:[];
+      const categoryMap={"Baby classes":"Baby","Baby & toddler":"Toddler","Family activities":"Family"};
+      const categories=[...new Set(items.map(a=>categoryMap[a.category]||a.category).filter(Boolean))].sort();
       const regions=[...new Set(items.flatMap(a=>(a.venues||[]).map(v=>v.region||a.region)).filter(Boolean))].sort();
-      const towns=[...new Set([...items.flatMap(a=>(a.venues||[]).map(v=>v.town||a.town)), "Paignton"].filter(Boolean))].sort();
-      if(region) regions.forEach(v=>region.add(new Option(v,v)));
-      if(townEl) towns.forEach(v=>townEl.add(new Option(v,v)));
+      const towns=[...new Set(items.flatMap(a=>(a.venues||[]).map(v=>v.town||a.town)).filter(Boolean))].sort();
+      const addOptions=(el,values)=>{if(el)values.forEach(v=>el.add(new Option(v,v)));};
+      addOptions(region,regions); addOptions(town,towns); addOptions(category,categories);
     }).catch(()=>{});
 })();
