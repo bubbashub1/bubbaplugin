@@ -110,12 +110,12 @@ async function bhActivities(){
 function bhFormatTime(value){
   const raw=String(value||"").trim();
   if(!raw)return "";
-  const m=raw.match(/^(\\d{1,2}):(\\d{2})(?::\\d{2})?$/);
+  const m=raw.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
   return m ? String(m[1]).padStart(2,"0")+":"+m[2] : raw;
 }
 function bhFormatDate(value){
   const raw=String(value||"").trim();
-  const m=raw.match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);
+  const m=raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   return m ? m[3]+"/"+m[2]+"/"+m[1] : raw;
 }
 function bhGet(key){try{const value=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(value)?value.map(String):[]}catch{return[]}}
