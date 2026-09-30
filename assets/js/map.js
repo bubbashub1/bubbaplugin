@@ -31,6 +31,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     fill("mapCategory",categoryValues,params.get("category")||"","All categories");
     fill("mapRegion",regionValues,params.get("region")||"","All regions");
     fill("mapTown",townValues,params.get("town")||"","All towns");
+    fill("mapAdvancedCategory",categoryValues,params.get("category")||"","All categories");
+    fill("mapAdvancedRegion",regionValues,params.get("region")||"","All regions");
+    fill("mapAdvancedTown",townValues,params.get("town")||"","All towns");
     $("mapSearch").value=params.get("keyword")||params.get("search")||params.get("q")||"";
     $("mapRegion").value=params.get("region")||"";
     $("mapTown").value=params.get("town")||"";
