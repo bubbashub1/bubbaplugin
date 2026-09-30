@@ -823,11 +823,13 @@
 .bh-directory .directory-calendar-hero-button{background:#f6c84a!important;color:#144400!important;min-width:168px;padding-left:24px;padding-right:24px;white-space:nowrap;font-weight:900}
 .bh-directory .directory-calendar-hero-button:hover{background:#f1b92e!important;color:#144400!important}
 
-/* Final desktop directory layout: 60% activity list / 40% map. Cards stay in list view. */
+/* Final desktop directory layout: 60% activity list / 40% map. Cards stay in list view.
+   Use fractional tracks so the 24px gap is included in the available width.
+   The previous 60% + 40% + gap overflowed the container. */
 @media(min-width:901px){
   .bh-directory .directory-results-column{
     display:grid!important;
-    grid-template-columns:minmax(0,60%) minmax(0,40%)!important;
+    grid-template-columns:minmax(0,3fr) minmax(0,2fr)!important;
     column-gap:24px!important;
     align-items:start!important;
   }
