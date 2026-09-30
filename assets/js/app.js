@@ -206,7 +206,7 @@ void bhHydrateSaved();
       <div class="site-footer-grid">
         <div class="site-footer-brand">
           <a href="index.html" class="site-footer-logo" aria-label="Bubba Hub home">
-            <img src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub">
+            <img src="images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png" alt="Bubba Hub">
           </a>
           <div class="site-footer-brand-copy">
             <a href="index.html" class="site-footer-title">Bubba Hub</a>
