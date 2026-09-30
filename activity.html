@@ -181,18 +181,60 @@ body:not(.bh-home) .listing-description{
   line-height:1.55;
   max-width:680px;
 }
-body:not(.bh-home) .listing-layout::after{
-  content:"Contact & booking\A\A  ◉   Website                 www.babyrockers.co.uk\A\A  ✉   Email                   hello@babyrockers.co.uk\A\A  ♡   Phone                   07812 345678\A\A  ⌖   Location                Torquay, TQ1 1AA";
-  white-space:pre-wrap;
+body:not(.bh-home) .activity-reference-contact{
   grid-column:2;
   grid-row:1;
-  padding:42px 0 34px;
+  padding:42px 0 34px 56px;
   border-left:1px solid #9fb7a5;
-  padding-left:56px;
+}
+body:not(.bh-home) .activity-reference-contact h2{
+  margin:0 0 20px;
+  color:#144400;
+  font-family:"Quicksand",sans-serif;
+  font-size:30px;
+  font-weight:800;
+}
+body:not(.bh-home) .activity-contact-row{
+  display:grid;
+  grid-template-columns:42px 110px minmax(0,1fr);
+  align-items:center;
+  gap:10px;
+  margin:16px 0;
   color:#3c8e96;
   font-size:17px;
-  line-height:1.55;
 }
+body:not(.bh-home) .activity-contact-icon{
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  color:#144400;
+  font-size:22px;
+}
+body:not(.bh-home) .activity-contact-label{color:#144400}
+body:not(.bh-home) .activity-contact-value{overflow-wrap:anywhere}
+body:not(.bh-home) .activity-contact-value a{color:#3c8e96}
+body:not(.bh-home) .activity-reference-organiser{
+  width:min(1400px,calc(100% - 64px));
+  margin:0 auto;
+  padding:18px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  background:#e7f1ea;
+  border-radius:18px;
+  color:#144400;
+}
+body:not(.bh-home) .activity-organiser-left{display:flex;align-items:center;gap:16px}
+body:not(.bh-home) .activity-organiser-icon{
+  width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:#d8e6db;color:#144400;font-size:25px;
+}
+body:not(.bh-home) .activity-organiser-copy small,
+body:not(.bh-home) .activity-organiser-copy strong{display:block}
+body:not(.bh-home) .activity-organiser-copy small{font-size:12px;font-weight:800}
+body:not(.bh-home) .activity-organiser-copy strong{font-size:16px;margin-top:2px}
+body:not(.bh-home) .activity-organiser-link{font-size:14px;font-weight:700}
 body:not(.bh-home) .listing-bottom{
   width:min(1400px,calc(100% - 64px));
   margin:0 auto;
@@ -212,12 +254,13 @@ body:not(.bh-home) .listing-bottom{
     justify-self:end;
     margin-top:-62px;
   }
+  body:not(.bh-home) .activity-reference-organiser{width:calc(100% - 40px)}
   body:not(.bh-home) .listing-layout{
     width:calc(100% - 40px);
     grid-template-columns:1fr;
     gap:0;
   }
-  body:not(.bh-home) .listing-layout::after{
+  body:not(.bh-home) .activity-reference-contact{
     grid-column:1;
     grid-row:2;
     border-left:0;
@@ -240,6 +283,9 @@ body:not(.bh-home) .listing-bottom{
     font-size:15px;
   }
   body:not(.bh-home) .listing-layout{width:calc(100% - 32px)}
+  body:not(.bh-home) .activity-reference-contact{padding:28px 0}
+  body:not(.bh-home) .activity-contact-row{grid-template-columns:34px 90px minmax(0,1fr);font-size:15px}
+  body:not(.bh-home) .activity-reference-organiser{width:calc(100% - 32px);padding:15px 17px}
   body:not(.bh-home) .listing-description{font-size:16px}
 }
 </style></head><body>
@@ -335,6 +381,11 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const slotHtml=(Array.isArray(a.booking_slots)?a.booking_slots:[]).map((s,i)=>'<div class="booking-slot"><div><strong>'+bhEscape(s.date||"")+'</strong><span>'+bhEscape(s.time||"")+(s.price?' · '+bhEscape(s.price):"")+'</span></div>'+ (bookingMode==="external"&&bookingUrl?'<a class="button button-primary" target="_blank" rel="noopener" href="'+bhEscape(bookingUrl)+'">Book now</a>':'<button class="button button-primary reserve-button" data-slot="'+i+'">Reserve a place</button>')+'</div>').join("");
   bookingBox.innerHTML=slotHtml+(bookingMode==="external"&&bookingUrl?'<p class="booking-note">If the latest dates are not shown, please check the booking website for latest details.</p><a class="button button-primary button-full" target="_blank" rel="noopener" href="'+bhEscape(bookingUrl)+'">Book now</a>':bookingMode==="reserve"?'<button class="button button-primary button-full" id="reserveGeneral">Reserve a place</button>':'<p class="muted">Booking details coming soon.</p>');
   function openReserve(slot){const overlay=document.createElement("div");overlay.className="booking-modal-backdrop";overlay.innerHTML='<div class="booking-modal" role="dialog" aria-modal="true"><button class="booking-modal-close" aria-label="Close">×</button><span class="eyebrow">Reserve a place</span><h2>Send a reservation request</h2><p>Your request will be sent to the organiser for them to confirm.</p><form id="reserveForm"><label>Name<input name="name" required autocomplete="name"></label><label>Email<input type="email" name="email" required autocomplete="email"></label><label>Phone<input name="phone" autocomplete="tel"></label><label>Child name<input name="child_name"></label><label>Child age<input name="child_age"></label><label>Places<input type="number" name="quantity" min="1" value="1" required></label><label>Message<textarea name="message" rows="4"></textarea></label><label class="booking-consent"><input type="checkbox" name="consent" required> I agree that my details can be sent to the organiser to action this reservation request.</label><button class="button button-primary button-full" type="submit">Send reservation request</button><p class="booking-form-status" aria-live="polite"></p></form></div>';document.body.appendChild(overlay);overlay.querySelector(".booking-modal-close").onclick=()=>overlay.remove();overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.remove()});const form=overlay.querySelector("form");const savedConsent=(()=>{try{return JSON.parse(localStorage.getItem("bhConsentProfiles")||"null")}catch{return null}})();const consentGate=overlay.querySelector(".booking-consent");if(!savedConsent||!savedConsent.consent_to_share_with_organiser){const note=document.createElement("p");note.className="booking-note";note.innerHTML='Before sending a reservation, please <a href="consent.html" target="_blank" rel="noopener"><strong>complete your booking consent form</strong></a>. This lets you choose which child, health and photo information is shared with the organiser.';form.insertBefore(note,form.firstChild)}form.addEventListener("submit",async e=>{const status=form.querySelector(".booking-form-status");if(!savedConsent||!savedConsent.consent_to_share_with_organiser){e.preventDefault();status.textContent="Please complete the booking consent form first.";return}e.preventDefault();status.textContent="Sending…";const fd=new FormData(form);fd.append("activity_id",a.id);fd.append("activity_title",a.title);fd.append("organiser_email",a.email||"");if(slot){fd.append("slot_date",slot.date||"");fd.append("slot_time",slot.time||"");}fd.append("consent_json",JSON.stringify(savedConsent));try{const res=await fetch("api/reservations.php",{method:"POST",body:fd});const data=await res.json();if(!res.ok||!data.ok)throw new Error(data.error||"Could not send request");status.textContent="Request sent. The organiser will contact you.";form.querySelector("button[type=submit]").disabled=true}catch(err){status.textContent=err.message||"Could not send request. Please try again."}})}
+  document.getElementById("heroBookNow")?.addEventListener("click",()=>{
+    const bookingMode=a.booking_mode|| (a.booking_url?"external":"reserve");
+    if(bookingMode==="external"&&a.booking_url){window.open(a.booking_url,"_blank","noopener");return}
+    openReserve(null);
+  });
   bookingBox.querySelectorAll(".reserve-button").forEach(btn=>btn.onclick=()=>openReserve((a.booking_slots||[])[Number(btn.dataset.slot)]));
   bookingBox.querySelector("#reserveGeneral")?.addEventListener("click",()=>openReserve(null));
   const contactButton=document.getElementById("contactOrganiser");
