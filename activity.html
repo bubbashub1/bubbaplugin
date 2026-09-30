@@ -2252,7 +2252,27 @@ body:not(.bh-home) .listing-page > .listing-layout .activity-reference-schedule 
     min-height:240px!important;
   }
 }
-</style></head><body>
+</style><style id="activity-book-now-calendar-accent">
+/* Match the primary Book Now CTA to the directory View calendar accent. */
+body:not(.bh-home) .activity-hero .listing-actions .activity-book-button,
+body:not(.bh-home) .activity-hero .activity-book-button{
+  background:#f6c84a!important;
+  color:#144400!important;
+  border-color:#f6c84a!important;
+  font-weight:800!important;
+  text-shadow:none!important;
+  box-shadow:0 5px 14px rgba(20,68,0,.16)!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-book-button:hover,
+body:not(.bh-home) .activity-hero .listing-actions .activity-book-button:focus-visible,
+body:not(.bh-home) .activity-hero .activity-book-button:hover,
+body:not(.bh-home) .activity-hero .activity-book-button:focus-visible{
+  background:#f1b92e!important;
+  color:#144400!important;
+  border-color:#f1b92e!important;
+}
+</style>
+</head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
     <a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a>
