@@ -34,13 +34,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     fill("mapAdvancedCategory",categoryValues,params.get("category")||"","All categories");
     fill("mapAdvancedRegion",regionValues,params.get("region")||"","All regions");
     fill("mapAdvancedTown",townValues,params.get("town")||"","All towns");
-    $("mapSearch").value=params.get("keyword")||params.get("search")||params.get("q")||"";
-    $("mapRegion").value=params.get("region")||"";
-    $("mapTown").value=params.get("town")||"";
-    $("mapCategory").value=params.get("category")||"";
-    $("mapAge").value=params.get("age_preset")||"";
-    $("mapDay").value=params.get("day")||"";
-    $("mapPrice").value=params.get("max_price")||"";
+    if ($("mapSearch")) $("mapSearch").value=params.get("keyword")||params.get("search")||params.get("q")||"";
+    if ($("mapRegion")) $("mapRegion").value=params.get("region")||"";
+    if ($("mapTown")) $("mapTown").value=params.get("town")||"";
+    if ($("mapCategory")) $("mapCategory").value=params.get("category")||"";
+    if ($("mapAge")) $("mapAge").value=params.get("age_preset")||"";
+    if ($("mapDay")) $("mapDay").value=params.get("day")||"";
+    if ($("mapPrice")) $("mapPrice").value=params.get("max_price")||"";
 
     let map=null,markers=[];
     const render=()=>{
@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const senMatch=!sen||(sen==="yes"?truthy(senValue):!truthy(senValue));
         const termMatch=!termTime||(termTime==="yes"?truthy(termValue):!truthy(termValue));
         const freeMatch=!free||price===0||priceText.includes("free");
-        const priceMatch=!maxPrice||(priceKnown&&price<=Number(maxPrice))||((maxPrice==="0")&&priceText.includes("free"));
+        const priceMatch=!maxPrice||(maxPrice==="over30"?(priceKnown&&price>30):((priceKnown&&price<=Number(maxPrice))||((maxPrice==="0")&&priceText.includes("free"))));
         return(!search||text.includes(search))&&(!category||(categoryMap[activity.category]||activity.category)===category)&&locationMatch&&ageMatches(activity,age[0],age[1])&&(!day||sessions.some(s=>s.day===day))&&priceMatch&&freeMatch&&durationMatch&&senMatch&&termMatch&&(!bookingRequired||hasBooking)&&accessibilityMatch&&(!saved||bhIsSaved(activity.id));
       });
       const valid=list.flatMap(activity=>bhVenues(activity).map(venue=>({activity,venue}))).filter(({venue})=>Number.isFinite(Number(venue.lat))&&Number.isFinite(Number(venue.long)));
@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
     const syncUrl=()=>{
       const p=new URLSearchParams();
-      const vals={keyword:$("mapSearch").value.trim(),region:$("mapRegion").value,town:$("mapTown").value,category:$("mapCategory").value,age_preset:$("mapAge").value,day:$("mapDay").value,max_price:$("mapPrice").value};
+      const vals={keyword:$("mapSearch")?.value.trim()||"",region:$("mapRegion")?.value||"",town:$("mapTown")?.value||"",category:$("mapCategory")?.value||"",age_preset:$("mapAge")?.value||"",day:$("mapDay")?.value||"",max_price:$("mapPrice")?.value||""};
       Object.entries(vals).forEach(([k,v])=>{if(v)p.set(k,v)});
       ["age_min","age_max","free","sessionLength","sen","termTime","bookingRequired","accessibility","saved"].forEach(k=>{const v=params.get(k);if(v)p.set(k,v)});
       history.replaceState({}, "", p.toString()?"map.html?"+p.toString():"map.html");
