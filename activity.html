@@ -909,7 +909,174 @@ body:not(.bh-home) .activity-reference-header .activity-sign-in{
   }
   body:not(.bh-home) .activity-reference-header .main-nav::-webkit-scrollbar{display:none!important}
 }
-</style></head><body>
+</style>
+<style id="activity-layout-safety-fix">
+/* Final activity layout guard: desktop hero is exactly 30% gallery / 70% details. */
+html, body { max-width: 100%; overflow-x: hidden; }
+*, *::before, *::after { box-sizing: border-box; }
+
+body:not(.bh-home) .activity-hero {
+  width: 100% !important;
+  max-width: none !important;
+  display: grid !important;
+  grid-template-columns: 30% 70% !important;
+  gap: 0 !important;
+  align-items: stretch !important;
+  min-width: 0 !important;
+  padding: 28px max(28px, calc((100vw - 1320px) / 2)) !important;
+  overflow: hidden !important;
+}
+
+body:not(.bh-home) .activity-hero > .listing-gallery,
+body:not(.bh-home) .activity-hero > .listing-summary {
+  min-width: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+}
+
+body:not(.bh-home) .activity-hero > .listing-gallery {
+  padding-right: 17px !important;
+}
+
+body:not(.bh-home) .activity-hero > .listing-summary {
+  padding-left: 17px !important;
+  overflow: hidden !important;
+}
+
+body:not(.bh-home) .activity-hero .listing-gallery img,
+body:not(.bh-home) .activity-hero .listing-gallery picture,
+body:not(.bh-home) .activity-hero .listing-gallery-placeholder {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  overflow: hidden !important;
+}
+
+body:not(.bh-home) .listing-layout {
+  width: min(1400px, calc(100% - 64px)) !important;
+  max-width: 1400px !important;
+  margin-inline: auto !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 46px !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+
+body:not(.bh-home) .listing-main,
+body:not(.bh-home) .listing-side {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+body:not(.bh-home) .activity-reference-about,
+body:not(.bh-home) .activity-reference-contact,
+body:not(.bh-home) .activity-reference-schedule,
+body:not(.bh-home) .listing-card,
+body:not(.bh-home) .listing-side > * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+body:not(.bh-home) .activity-reference-contact-map,
+body:not(.bh-home) #listingMap,
+body:not(.bh-home) .listing-map {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: 250px !important;
+  overflow: hidden !important;
+  border-radius: 14px;
+}
+
+body:not(.bh-home) .activity-reference-addresses,
+body:not(.bh-home) .activity-address-row,
+body:not(.bh-home) .activity-contact-row,
+body:not(.bh-home) .session-row {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+body:not(.bh-home) .activity-address-row {
+  grid-template-columns: 30px minmax(0, 1fr) auto !important;
+}
+
+body:not(.bh-home) .activity-address-row > * {
+  min-width: 0 !important;
+}
+
+body:not(.bh-home) .activity-address-row span,
+body:not(.bh-home) .activity-contact-value,
+body:not(.bh-home) .listing-description {
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+}
+
+body:not(.bh-home) .activity-reference-organiser,
+body:not(.bh-home) .listing-bottom {
+  width: min(1400px, calc(100% - 64px)) !important;
+  max-width: 1400px !important;
+  margin-inline: auto !important;
+  min-width: 0 !important;
+}
+
+body:not(.bh-home) .activity-reference-organiser {
+  overflow: hidden !important;
+}
+
+@media (max-width: 950px) {
+  body:not(.bh-home) .activity-hero {
+    grid-template-columns: 1fr !important;
+    padding: 22px 24px 28px !important;
+  }
+
+  body:not(.bh-home) .activity-hero > .listing-gallery,
+  body:not(.bh-home) .activity-hero > .listing-summary {
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  body:not(.bh-home) .listing-layout {
+    width: calc(100% - 40px) !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0 !important;
+  }
+
+  body:not(.bh-home) .activity-reference-organiser,
+  body:not(.bh-home) .listing-bottom {
+    width: calc(100% - 40px) !important;
+  }
+}
+
+@media (max-width: 650px) {
+  body:not(.bh-home) .activity-hero {
+    padding-inline: 16px !important;
+  }
+
+  body:not(.bh-home) .listing-layout {
+    width: calc(100% - 32px) !important;
+  }
+
+  body:not(.bh-home) .activity-reference-organiser,
+  body:not(.bh-home) .listing-bottom {
+    width: calc(100% - 32px) !important;
+  }
+
+  body:not(.bh-home) .activity-address-row {
+    grid-template-columns: 28px minmax(0, 1fr) !important;
+  }
+
+  body:not(.bh-home) .activity-address-row .button {
+    grid-column: 2 !important;
+    justify-self: start !important;
+  }
+}
+</style>
+</head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
     <a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png" alt="Bubba Hub"></a>
@@ -1022,8 +1189,10 @@ document.addEventListener("DOMContentLoaded",async()=>{
     '<section class="listing-card booking-card"><span class="eyebrow">Join in</span><h2>Book or reserve</h2><div id="bookingSchedule"><p>Loading booking options…</p></div></section>'+    '<section class="listing-card contact-card"><span class="eyebrow">Contact</span><h2>Contact organiser</h2><p>Have a question about the activity, venue or sessions?</p><button class="button button-soft button-full" id="contactOrganiser" type="button">Contact organiser</button></section>'+
     ''+
    '</aside></div>'+
-   '<div class="activity-reference-organiser"><div class="activity-organiser-left"><div class="activity-organiser-icon">♧</div><div class="activity-organiser-copy"><small>Organiser</small><strong>'+bhEscape(a.organiser_name||a.organiser||"Activity organiser")+'</strong></div></div><a class="activity-organiser-link" href="organiser/'+encodeURIComponent(a.organiser_slug||a.organiser_name||"organiser")+'/">View organiser profile ›</a></div>'+'<div id="activityOrganiserEditMount" data-activity-id="'+bhEscape(String(a.id||""))+'"></div>'+
+   '<div class="activity-reference-organiser"><div class="activity-organiser-left"><div class="activity-organiser-icon">♧</div><div class="activity-organiser-copy"><small>Organiser</small><strong>'+bhEscape(a.organiser_name||a.organiser||"Activity organiser")+'</strong></div></div><a class="activity-organiser-link" href="organiser/'+encodeURIComponent(a.organiser_slug||a.organiser_name||"organiser")+'/">View organiser profile ›</a></div>'+'<div id="activityOrganiserEditMount" class="activity-organiser-edit-mount"></div>'+
    '<div class="listing-bottom"><a class="button button-soft" href="directory.html">← Back to activities</a></div>';
+  const organiserEditMount=document.getElementById("activityOrganiserEditMount");
+  if(organiserEditMount) organiserEditMount.dataset.activityId=String(a.id||"");
   const save=document.getElementById("save"),plan=document.getElementById("planner"),visited=document.getElementById("visited"),compare=document.getElementById("compare");
 
   const BH_VISITED_KEY="bhVisitedActivities",BH_COMPARE_KEY="bhCompareActivities";
