@@ -1557,6 +1557,74 @@ body:not(.bh-home) .app-shell > .listing-page .activity-hero > *{
     margin-right:calc(50% - 50vw)!important;
   }
 }
+</style><style id="activity-search-natural-wrap-final">
+/* Natural-height search and hero layout — no clipping or forced heights */
+body:not(.bh-home) .activity-reference-header,
+body:not(.bh-home) .activity-reference-header .activity-header-top,
+body:not(.bh-home) .activity-reference-header .activity-header-search,
+body:not(.bh-home) .activity-header-search{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  position:relative!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-reference-header{
+  margin-bottom:32px!important;
+}
+body:not(.bh-home) .activity-header-search{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:10px!important;
+  width:100%!important;
+  max-width:1400px!important;
+  margin:18px auto 0!important;
+  align-items:stretch!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field,
+body:not(.bh-home) .activity-header-search .activity-search-button{
+  width:100%!important;
+  min-width:0!important;
+  min-height:46px!important;
+  height:auto!important;
+  max-height:none!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-button{
+  justify-self:stretch!important;
+}
+body:not(.bh-home) .activity-header-search input,
+body:not(.bh-home) .activity-header-search select{
+  height:auto!important;
+  min-height:42px!important;
+  max-height:none!important;
+}
+body:not(.bh-home) .app-shell,
+body:not(.bh-home) .app-shell > .listing-page,
+body:not(.bh-home) .app-shell > .listing-page .activity-hero{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  position:relative!important;
+  overflow:visible!important;
+}
+body:not(.bh-home) .app-shell > .listing-page .activity-hero{
+  margin-top:0!important;
+}
+@media(max-width:900px){
+  body:not(.bh-home) .activity-header-search{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:560px){
+  body:not(.bh-home) .activity-header-search{
+    grid-template-columns:1fr!important;
+  }
+  body:not(.bh-home) .activity-reference-header{
+    margin-bottom:24px!important;
+  }
+}
 </style></head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
