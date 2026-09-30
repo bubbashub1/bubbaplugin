@@ -904,3 +904,75 @@
 /* Listing → map interaction */
 .activity-card[data-activity-id] { cursor: pointer; }
 .activity-card[data-activity-id]:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
+
+
+/* Final sleek directory header — compact search panel, no hero treatment */
+.bh-directory .directory-hero-fullwidth{
+  width:100%;
+  max-width:none;
+  margin:0 0 26px;
+}
+.bh-directory .directory-hero-fullwidth .directory-hero-search{
+  width:100%;
+  box-sizing:border-box;
+  margin:0;
+  padding:22px 24px 18px;
+  min-height:0;
+  border:1px solid rgba(65,102,81,.10);
+  border-radius:20px;
+  background:#e7f1ea;
+  box-shadow:0 6px 18px rgba(20,68,0,.055);
+  overflow:visible;
+}
+.bh-directory .directory-hero-search::before,
+.bh-directory .directory-hero-search::after{
+  display:none;
+}
+.bh-directory .directory-hero-search h2{
+  max-width:none;
+  margin:0 0 14px;
+  font-family:inherit;
+  font-size:clamp(22px,2.4vw,30px);
+  line-height:1.15;
+  font-weight:900;
+  letter-spacing:0;
+  color:#144400;
+  text-shadow:none;
+}
+.bh-directory .directory-hero-search-fields{
+  grid-template-columns:minmax(220px,1.7fr) repeat(3,minmax(125px,1fr)) 104px;
+  gap:8px;
+}
+.bh-directory .directory-hero-search-fields label{
+  min-height:46px;
+  border-radius:13px;
+}
+.bh-directory .directory-hero-search .button{
+  min-height:46px;
+  border-radius:13px;
+}
+.bh-directory .directory-hero-actions{
+  margin-top:9px;
+}
+.bh-directory .directory-popular{
+  margin-top:9px;
+  padding-top:9px;
+}
+@media(max-width:1100px){
+  .bh-directory .directory-hero-search-fields{
+    grid-template-columns:1fr 1fr;
+  }
+}
+@media(max-width:700px){
+  .bh-directory .directory-hero-fullwidth{
+    margin-bottom:20px;
+  }
+  .bh-directory .directory-hero-fullwidth .directory-hero-search{
+    padding:19px 15px 15px;
+    border-radius:18px;
+  }
+  .bh-directory .directory-hero-search h2{
+    font-size:26px;
+    margin-bottom:12px;
+  }
+}
