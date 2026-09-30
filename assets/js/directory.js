@@ -871,6 +871,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     if ($("useHomeLocation")) $("useHomeLocation").onclick = loadHomeLocation;
     if (params.get("nearby") === "1") void loadHomeLocation();
 
+    if ($("applyFilters")) $("applyFilters").onclick = event => {
+      event.preventDefault();
+      render();
+      const panel = $("directoryFilters");
+      if (panel && window.innerWidth <= 900) panel.classList.remove("is-open");
+    };
+
     if ($("clear")) $("clear").onclick = () => {
       ["search", "category", "area", "town", "day", "maxPrice", "sessionLength", "sen", "termTime"].forEach(id => { if ($(id)) $(id).value = ""; });
       document.querySelectorAll(".accessibility-option").forEach(el => el.checked = false);
