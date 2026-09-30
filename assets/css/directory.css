@@ -1080,3 +1080,17 @@
     display:block!important;
   }
 }
+
+
+/* FINAL desktop visibility — never let a stored mobile map state hide listings */
+@media(min-width:901px){
+  body.bh-directory #results:not([hidden]){
+    display:flex!important;
+    flex-direction:column!important;
+    visibility:visible!important;
+  }
+  body.bh-directory #results[hidden]{
+    display:flex!important;
+    visibility:visible!important;
+  }
+}
