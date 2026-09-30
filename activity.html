@@ -1087,7 +1087,167 @@ body:not(.bh-home) .activity-hero .activity-book-button{flex:1 1 150px!important
 body:not(.bh-home) .activity-hero .listing-summary,.activity-hero .listing-summary *{min-width:0}
 @media(max-width:950px){body:not(.bh-home) .activity-hero .hero-quick-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){body:not(.bh-home) .activity-hero .listing-actions{display:grid!important;grid-template-columns:1fr 1fr!important}body:not(.bh-home) .activity-hero .listing-actions .activity-action,body:not(.bh-home) .activity-hero .activity-book-button{width:100%!important;min-width:0!important}body:not(.bh-home) .activity-hero .activity-book-button{grid-column:1/-1}}
-</style></head><body>
+</style><style id="activity-target-design-final">
+/* Target single-listing design */
+body:not(.bh-home) .activity-hero{
+  background:#1B4D3E!important;
+  grid-template-columns:30% 70%!important;
+  gap:0!important;
+  align-items:stretch!important;
+  padding:34px max(34px,calc((100vw - 1400px)/2 + 12px))!important;
+  min-height:0!important;
+}
+body:not(.bh-home) .activity-hero>.listing-gallery{
+  width:100%!important;
+  height:100%!important;
+  min-height:360px!important;
+  padding:18px!important;
+  background:rgba(255,255,255,.08)!important;
+  border-radius:18px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+body:not(.bh-home) .activity-hero>.listing-gallery img,
+body:not(.bh-home) .activity-hero>.listing-gallery picture,
+body:not(.bh-home) .activity-hero>.listing-gallery-placeholder{
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:420px!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  background:#fff!important;
+  border-radius:12px!important;
+}
+body:not(.bh-home) .activity-hero>.listing-summary{
+  min-width:0!important;
+  padding:12px 0 12px 34px!important;
+  background:transparent!important;
+  color:#fff!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary .eyebrow{
+  display:inline-flex!important;
+  width:max-content;
+  max-width:100%;
+  margin:0 0 12px!important;
+  padding:7px 13px!important;
+  border-radius:999px!important;
+  background:#d9eadf!important;
+  color:#1B4D3E!important;
+  font-size:.74rem!important;
+  font-weight:800!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary h1{
+  margin:0 0 10px!important;
+  color:#fff!important;
+  font-size:clamp(34px,4vw,58px)!important;
+  line-height:1.02!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary .listing-description{
+  max-width:760px!important;
+  margin:0 0 18px!important;
+  color:rgba(255,255,255,.9)!important;
+  font-size:16px!important;
+  line-height:1.55!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:8px!important;
+  margin:18px 0 22px!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts>span{
+  flex:1 1 145px!important;
+  min-width:125px!important;
+  padding:10px 12px!important;
+  border:1px solid rgba(255,255,255,.24)!important;
+  border-radius:12px!important;
+  background:rgba(255,255,255,.09)!important;
+  color:#fff!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts strong{color:#d9eadf!important}
+body:not(.bh-home) .activity-hero .hero-quick-facts b{color:#fff!important}
+body:not(.bh-home) .activity-hero .listing-actions{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:10px!important;
+  margin:0!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-action,
+body:not(.bh-home) .activity-hero .activity-book-button{
+  flex:0 1 auto!important;
+  min-height:44px!important;
+  width:auto!important;
+  min-width:132px!important;
+  padding:10px 18px!important;
+  border-radius:999px!important;
+  white-space:nowrap!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-action{
+  background:#f3f8f4!important;
+  color:#1B4D3E!important;
+  border:1px solid #d9eadf!important;
+}
+body:not(.bh-home) .activity-hero .activity-book-button{
+  background:#b9d8c5!important;
+  color:#123d30!important;
+  border:1px solid #b9d8c5!important;
+}
+body:not(.bh-home) .activity-reference-about,
+body:not(.bh-home) .activity-reference-schedule{
+  padding:38px!important;
+  margin-bottom:28px!important;
+  border-radius:20px!important;
+  overflow:hidden!important;
+}
+body:not(.bh-home) .activity-reference-about .listing-description{
+  max-width:820px!important;
+  line-height:1.7!important;
+}
+body:not(.bh-home) .activity-reference-schedule .schedule-list{
+  width:100%!important;
+  margin-top:20px!important;
+  border:1px solid #d9e5dc!important;
+  border-radius:14px!important;
+  overflow:hidden!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule{
+  display:block!important;
+  padding:20px!important;
+  border-bottom:1px solid #d9e5dc!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule:last-child{border-bottom:0!important}
+body:not(.bh-home) .activity-reference-schedule .session-list{
+  width:100%!important;
+  margin-top:14px!important;
+  border-top:1px solid #e4ece6!important;
+}
+body:not(.bh-home) .activity-reference-schedule .session-row{
+  display:grid!important;
+  grid-template-columns:minmax(100px,1.1fr) minmax(130px,1.5fr) minmax(70px,.7fr) minmax(70px,.7fr)!important;
+  gap:12px!important;
+  align-items:center!important;
+  padding:13px 0!important;
+  border-bottom:1px solid #edf2ee!important;
+}
+body:not(.bh-home) .activity-reference-schedule .session-row:last-child{border-bottom:0!important}
+body:not(.bh-home) .activity-reference-schedule .session-row span{min-width:0!important;overflow-wrap:anywhere}
+@media(max-width:950px){
+  body:not(.bh-home) .activity-hero{grid-template-columns:1fr!important}
+  body:not(.bh-home) .activity-hero>.listing-gallery{min-height:300px!important}
+  body:not(.bh-home) .activity-hero>.listing-summary{padding:24px 0 0!important}
+}
+@media(max-width:650px){
+  body:not(.bh-home) .activity-hero{padding:22px 18px!important}
+  body:not(.bh-home) .activity-hero>.listing-gallery{min-height:240px!important;padding:10px!important}
+  body:not(.bh-home) .activity-hero .hero-quick-facts{display:grid!important;grid-template-columns:1fr 1fr!important}
+  body:not(.bh-home) .activity-reference-about,
+  body:not(.bh-home) .activity-reference-schedule{padding:24px 20px!important}
+  body:not(.bh-home) .activity-reference-schedule .session-row{grid-template-columns:1fr 1fr!important}
+}
+</style>
+</head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
     <a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png" alt="Bubba Hub"></a>
