@@ -697,7 +697,14 @@ document.addEventListener("DOMContentLoaded", async () => {
           age_max: maxAge < 9 ? String(maxAge) : "",
           age_preset: params.get("age_preset") || "",
           day,
-          max_price: maxPrice
+          max_price: maxPrice,
+          free: freeOnly ? "1" : "",
+          sessionLength,
+          sen,
+          termTime,
+          bookingRequired: bookingRequired ? "1" : "",
+          accessibility: accessibility.join(","),
+          saved: params.get("saved") || ""
         };
         Object.entries(mapValues).forEach(([key,value]) => { if (value) mapParams.set(key,value); });
         mobileMapLink.href = "map.html" + (mapParams.toString() ? "?" + mapParams.toString() : "");
