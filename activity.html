@@ -288,6 +288,7 @@ body:not(.bh-home) .listing-bottom{
   body:not(.bh-home) .activity-reference-organiser{width:calc(100% - 32px);padding:15px 17px}
   body:not(.bh-home) .listing-description{font-size:16px}
 }
+</style>
 <style id="activity-gemini-reference-final">
 /* Activity detail visual reference — keep the menu pale green while adopting the Gemini layout. */
 body:not(.bh-home) .activity-reference-header{
@@ -346,10 +347,35 @@ body:not(.bh-home) .activity-book-button{width:150px!important;min-height:48px!i
   body:not(.bh-home) .activity-header-search{grid-template-columns:1fr}
   body:not(.bh-home) .activity-search-button{grid-column:auto;width:100%}
 }
-</style></style></head><body>
+</style><style id="activity-reference-data-layout">
+body:not(.bh-home) .listing-layout{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(360px,.9fr)!important;gap:0 46px!important}
+body:not(.bh-home) .listing-main,body:not(.bh-home) .listing-side{display:contents!important}
+body:not(.bh-home) .activity-reference-about{grid-column:1!important;grid-row:1!important}
+body:not(.bh-home) .activity-reference-contact{grid-column:2!important;grid-row:1!important}
+body:not(.bh-home) .listing-main .listing-card:nth-of-type(3),
+body:not(.bh-home) .listing-main .where-card,
+body:not(.bh-home) .listing-side .organiser-card,
+body:not(.bh-home) .listing-side .booking-card,
+body:not(.bh-home) .listing-side .contact-card{display:none!important}
+body:not(.bh-home) .activity-reference-about{padding:38px 0 28px!important}
+body:not(.bh-home) .activity-reference-about .listing-description{max-width:680px!important;font-size:15px!important;line-height:1.55!important;color:#3c8e96!important}
+body:not(.bh-home) .activity-reference-facts{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
+body:not(.bh-home) .activity-reference-facts span{padding:6px 12px;border-radius:999px;background:#e7f1ea;color:#3c8e96;font-size:11px;font-weight:700}
+body:not(.bh-home) .activity-reference-contact{padding:38px 0 28px 46px!important}
+body:not(.bh-home) .activity-reference-contact h2{font-size:23px!important;margin-bottom:18px!important}
+body:not(.bh-home) .activity-contact-row{grid-template-columns:30px 86px minmax(0,1fr)!important;font-size:12px!important;margin:13px 0!important}
+body:not(.bh-home) .activity-contact-icon{width:26px;height:26px;font-size:17px}
+body:not(.bh-home) .activity-contact-label{font-weight:700}
+body:not(.bh-home) .activity-reference-organiser{margin-top:0!important}
+@media(max-width:950px){
+ body:not(.bh-home) .listing-layout{grid-template-columns:1fr!important}
+ body:not(.bh-home) .activity-reference-about{grid-column:1!important;grid-row:1!important}
+ body:not(.bh-home) .activity-reference-contact{grid-column:1!important;grid-row:2!important;border-left:0!important;border-top:1px solid #9fb7a5!important;padding:28px 0!important}
+}
+</style></head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
-    <a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/gemini_generated_image_t65ztnt65ztnt65z-20260930-185704-7e0755.jpeg" alt="Bubba Hub"></a>
+    <a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png" alt="Bubba Hub"></a>
     <nav class="main-nav" aria-label="Main navigation">
       <a href="index.html">Home</a>
       <a href="directory.html">Directory</a>
@@ -371,7 +397,7 @@ body:not(.bh-home) .activity-book-button{width:150px!important;min-height:48px!i
 <footer class="site-footer">
   <div class="site-footer-grid">
     <div class="site-footer-brand">
-      <a href="index.html" class="site-footer-logo" aria-label="Bubba Hub home"><img src="images/logos/gemini_generated_image_t65ztnt65ztnt65z-20260930-185704-7e0755.jpeg" alt="Bubba Hub"></a>
+      <a href="index.html" class="site-footer-logo" aria-label="Bubba Hub home"><img src="images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png" alt="Bubba Hub"></a>
       <div class="site-footer-brand-copy"><a href="index.html" class="site-footer-title">Bubba Hub</a><p>Find, plan &amp; book family activities across Devon &amp; Cornwall.</p></div>
     </div>
     <div class="site-footer-column"><h2>Main menu</h2><nav class="site-footer-links" aria-label="Footer main menu"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">Account</a></nav></div>
@@ -431,11 +457,28 @@ document.addEventListener("DOMContentLoaded",async()=>{
    '<section class="listing-hero activity-hero">'+
     '<div class="listing-gallery">'+(images.length?images.map((src,i)=>'<img src="'+bhEscape(src)+'" alt="'+bhEscape(a.title)+'"'+(i?' loading="lazy"':'')+'>').join(""):'<div class="listing-gallery-placeholder">Bubba Hub activity</div>')+'</div>'+
     '<div class="listing-summary"><span class="eyebrow">'+bhEscape(cats.join(" · ")||"Family activity")+'</span><h1>'+bhEscape(a.title)+'</h1><p class="listing-intro">'+bhEscape(a.short_description||a.summary||"A local family activity listed on Bubba Hub.")+'</p>'+
-    '<div class="listing-tags">'+ages.map(x=>'<span>'+bhEscape(x)+'</span>').join("")+(a.region?'<span>'+bhEscape(a.region)+'</span>':"")+'</div>'+
+    '<div class="listing-tags">'+
+      (a.town?'<span>⌖ '+bhEscape(a.town)+'</span>':"")+
+      (ages.length?'<span>♟ '+bhEscape(ages.join(", "))+'</span>':"")+
+      (bhSessions(a).some(s=>s.term_time)?'<span>▣ Term time</span>':"")+
+      (bhSessions(a).some(s=>s.duration)?'<span>◷ '+bhEscape(bhSessions(a).find(s=>s.duration)?.duration||"")+'</span>':"")+
+    '</div>'+
     '<div class="listing-actions" aria-label="Activity actions"><button class="button button-soft activity-action" id="save" type="button" aria-label="Save activity"></button><button class="button button-soft activity-action" id="planner" aria-label="Add to planner" type="button"></button><button class="button button-soft activity-action" id="visited" type="button" aria-label="Mark as visited"></button><button class="button button-soft activity-action" id="compare" aria-label="Compare activity" type="button"></button></div><button class="button activity-book-button" id="heroBookNow" type="button">Book Now</button></div>'+
    '</section>'+
    '<div class="listing-layout"><div class="listing-main">'+
-    '<section class="listing-card good-to-know-card"><span class="eyebrow">Quick Facts!</span><h2>Quick Facts!</h2><div class="good-to-know-grid">'+(a.price?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Price</span><strong>'+bhEscape(a.price)+'</strong></div>':"")+(ages.length?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Age range</span><strong>'+bhEscape(ages.join(", "))+'</strong></div>':"")+(sessions.some(s=>s.term_time)?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Term time</span><strong>'+bhEscape('Term time')+'</strong></div>':"")+(a.region?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Location</span><strong>'+bhEscape(a.region)+'</strong></div>':"")+'</div></section>'+'<section class="listing-card"><span class="eyebrow">About</span><h2>About this activity</h2><div class="listing-description">'+bhEscape(a.description||a.content||"More information about this activity will appear here.")+'</div></section>'+
+    '<section class="listing-card good-to-know-card"><span class="eyebrow">Quick Facts!</span><h2>Quick Facts!</h2><div class="good-to-know-grid">'+(a.price?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Price</span><strong>'+bhEscape(a.price)+'</strong></div>':"")+(ages.length?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Age range</span><strong>'+bhEscape(ages.join(", "))+'</strong></div>':"")+(sessions.some(s=>s.term_time)?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Term time</span><strong>'+bhEscape('Term time')+'</strong></div>':"")+(a.region?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Location</span><strong>'+bhEscape(a.region)+'</strong></div>':"")+'</div></section>'+'<section class="listing-card activity-reference-about"><span class="eyebrow">About</span><h2>About this activity</h2><div class="listing-description">'+bhEscape(a.description||a.content||"More information about this activity will appear here.")+'</div>'+
+    '<div class="activity-reference-facts">'+
+      (cats.length?'<span>'+bhEscape(cats[0])+'</span>':"")+
+      (ages.length?'<span>'+bhEscape(ages.join(", "))+'</span>':"")+
+      (a.town?'<span>'+bhEscape(a.town)+'</span>':"")+
+      (bhSessions(a).some(s=>s.term_time)?'<span>Term time</span>':"")+
+    '</div></section>'+
+    '<section class="activity-reference-contact"><h2>Contact &amp; booking</h2>'+
+      (a.organiser_website?'<div class="activity-contact-row"><span class="activity-contact-icon">⌂</span><span class="activity-contact-label">Website</span><span class="activity-contact-value"><a href="'+bhEscape(a.organiser_website)+'" target="_blank" rel="noopener">'+bhEscape(a.organiser_website.replace(/^https?:\/\//,"").replace(/\/$/,""))+' ↗</a></span></div>':"")+
+      (a.organiser_email?'<div class="activity-contact-row"><span class="activity-contact-icon">✉</span><span class="activity-contact-label">Email</span><span class="activity-contact-value"><a href="mailto:'+bhEscape(a.organiser_email)+'">'+bhEscape(a.organiser_email)+'</a></span></div>':"")+
+      (a.organiser_phone?'<div class="activity-contact-row"><span class="activity-contact-icon">☎</span><span class="activity-contact-label">Phone</span><span class="activity-contact-value"><a href="tel:'+bhEscape(a.organiser_phone.replace(/[^0-9+]/g,""))+'">'+bhEscape(a.organiser_phone)+'</a></span></div>':"")+
+      (venues[0]?'<div class="activity-contact-row"><span class="activity-contact-icon">⌖</span><span class="activity-contact-label">Location</span><span class="activity-contact-value">'+bhEscape([venues[0].town,venues[0].postcode].filter(Boolean).join(", ")||venues[0].address||"")+'</span></div>':"")+
+    '</section>'+
     '<section class="listing-card"><span class="eyebrow">When</span><h2>Schedule &amp; hours</h2><div class="schedule-list">'+venues.map(v=>'<article class="venue-schedule"><div><h3>'+bhEscape(v.name||"Venue")+'</h3><p>'+bhEscape(v.address||v.town||v.region||"")+'</p></div><div class="session-list">'+(v.sessions||[]).map(s=>'<div class="session-row"><strong>'+bhEscape(s.day||"Session")+'</strong><span>'+bhEscape(bhFormatTime(s.start||s.time||""))+((s.end||s.end_time)?" – "+bhEscape(bhFormatTime(s.end||s.end_time)):"")+'</span><span>'+bhEscape(s.duration||"")+'</span><span>'+((s.price!==undefined&&s.price!=="")?bhEscape(String(s.price).startsWith("£")?s.price:"£"+s.price):"")+'</span></div>').join("")+'</div></article>').join("")+'</div></section>'+
     '<section class="listing-card where-card"><span class="eyebrow">Where</span><h2>Where</h2><div id="listingMap" class="listing-map" aria-label="Activity venue map"></div><div class="venue-list"><div class="venue-list-heading">Venues</div>'+venues.map(v=>'<article class="venue-card"><div class="venue-card-details"><h3><a href="venue.html?id='+encodeURIComponent(v.id||"")+'">'+bhEscape(v.name||"Venue")+'</a></h3><p>'+[v.address,v.town,v.postcode].filter(Boolean).map(x=>bhEscape(x)).join(" · ")+'</p></div><a class="button button-soft venue-directions" target="_blank" rel="noopener" href="'+(v.lat&&v.long?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.lat+","+v.long):"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.address||v.town||v.name||""))+'">Directions</a></article>').join("")+'</div></section>'+
    '</div><aside class="listing-side">'+
@@ -443,6 +486,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     '<section class="listing-card booking-card"><span class="eyebrow">Join in</span><h2>Book or reserve</h2><div id="bookingSchedule"><p>Loading booking options…</p></div></section>'+    '<section class="listing-card contact-card"><span class="eyebrow">Contact</span><h2>Contact organiser</h2><p>Have a question about the activity, venue or sessions?</p><button class="button button-soft button-full" id="contactOrganiser" type="button">Contact organiser</button></section>'+
     ''+
    '</aside></div>'+
+   '<div class="activity-reference-organiser"><div class="activity-organiser-left"><div class="activity-organiser-icon">♧</div><div class="activity-organiser-copy"><small>Organiser</small><strong>'+bhEscape(a.organiser_name||a.organiser||"Activity organiser")+'</strong></div></div><a class="activity-organiser-link" href="organiser/'+encodeURIComponent(a.organiser_slug||a.organiser_name||"organiser")+'/">View organiser profile ›</a></div>'+
    '<div class="listing-bottom"><a class="button button-soft" href="directory.html">← Back to activities</a></div>';
   const save=document.getElementById("save"),plan=document.getElementById("planner"),visited=document.getElementById("visited"),compare=document.getElementById("compare");
 
