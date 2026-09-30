@@ -291,7 +291,7 @@ void bhHydrateSaved();
         toggle.type="button";
         toggle.className="mobile-nav-toggle";
         toggle.innerHTML="<span></span><span></span><span></span>";
-        header.insertBefore(toggle,nav);
+        nav.parentNode.insertBefore(toggle,nav);
       }
 
       toggle.setAttribute("aria-expanded","false");
