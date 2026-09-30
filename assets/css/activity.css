@@ -2720,3 +2720,62 @@ body:not(.bh-home) .listing-layout > .listing-side{
     word-break:normal!important;
   }
 }
+
+
+/* ========================================================================
+   FINAL — Screenshot 2026-09-30 9.38.05 PM
+   Fluid listing body: true 50/50 desktop split with only 15px page gutters.
+   ======================================================================== */
+body:not(.bh-home) .listing-page > .listing-layout{
+  width:100% !important;
+  max-width:none !important;
+  margin:0 !important;
+  padding:0 15px !important;
+  box-sizing:border-box !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  column-gap:40px !important;
+  row-gap:0 !important;
+  align-items:start !important;
+}
+body:not(.bh-home) .listing-page > .listing-layout > .listing-main,
+body:not(.bh-home) .listing-page > .listing-layout > .listing-side{
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  box-sizing:border-box !important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-about,
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-schedule,
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact{
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact{
+  padding-left:30px !important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact-map,
+body:not(.bh-home) .listing-page > .listing-layout #listingMap{
+  width:100% !important;
+  max-width:none !important;
+}
+@media(max-width:950px){
+  body:not(.bh-home) .listing-page > .listing-layout{
+    grid-template-columns:minmax(0,1fr) !important;
+    column-gap:0 !important;
+    padding:0 15px !important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact{
+    padding-left:0 !important;
+  }
+}
+@media(max-width:650px){
+  body:not(.bh-home) .listing-page > .listing-layout{
+    padding-left:15px !important;
+    padding-right:15px !important;
+  }
+}
