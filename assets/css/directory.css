@@ -997,3 +997,34 @@
   .bh-directory .directory-mobile-map-link:hover{background:#f1b92e;color:#144400}
   .bh-directory .directory-mobile-view-toggle{display:none!important}
 }
+
+/* Final desktop directory split — true 50/50 listings and map, with the gap inside the container. */
+@media(min-width:901px){
+  .bh-directory .directory-results-column{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    column-gap:24px!important;
+  }
+  .bh-directory #results{
+    grid-column:1!important;
+    width:100%!important;
+  }
+  .bh-directory #mapView{
+    grid-column:2!important;
+    width:100%!important;
+  }
+}
+
+/* Directory navigation — full browser width on desktop/tablet. */
+@media(min-width:621px){
+  body.bh-directory .site-header{
+    width:100%!important;
+    max-width:none!important;
+    margin-top:0!important;
+    border-radius:0!important;
+    padding-left:max(16px,var(--bh-page-gutter,24px))!important;
+    padding-right:max(16px,var(--bh-page-gutter,24px))!important;
+  }
+  body.bh-directory .site-header .main-nav{
+    flex:1 1 auto;
+  }
+}
