@@ -98,9 +98,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
       '<span><strong>Price</strong><b>'+(a.price?bhEscape(a.price):"Check listing")+'</b></span>'+
       '<span><strong>Age range</strong><b>'+(ages.length?bhEscape(ages.join(", ")):"All ages")+'</b></span>'+
       '<span><strong>Location</strong><b>'+bhEscape(a.town||a.region||"Devon & Cornwall")+'</b></span>'+
-      '<span><strong>Sessions</strong><b>'+(bhSessions(a).length?bhSessions(a).length+" available":"See schedule")+'</b></span>'+
-      '<span><strong>Term Time</strong><b>'+(bhSessions(a).some(s=>s.term_time)?"Term time":"See schedule")+'</b></span>'+
-      '<span><strong>Session Length</strong><b>'+(bhSessions(a).find(s=>s.duration)?.duration||"See schedule")+'</b></span>'+
+      '<span><strong>Sessions</strong><b>'+(sessions.length?sessions.length+" available":"See schedule")+'</b></span>'+
+      '<span><strong>Term Time</strong><b>'+(sessions.some(s=>s.term_time)?"Term time":"See schedule")+'</b></span>'+
+      '<span><strong>Session Length</strong><b>'+(sessions.find(s=>s.duration)?.duration||"See schedule")+'</b></span>'+
     '</div>'+
     '<div class="listing-actions" aria-label="Activity actions"><button class="button button-soft activity-action" id="save" type="button" aria-label="Save activity"></button><button class="button button-soft activity-action" id="planner" aria-label="Add to planner" type="button"></button><button class="button button-soft activity-action" id="visited" type="button" aria-label="Mark as visited"></button><button class="button button-soft activity-action" id="compare" aria-label="Compare activity" type="button"></button><button class="button activity-book-button" id="heroBookNow" type="button">Book Now</button></div></div>'+
 
@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       (cats.length?'<span>'+bhEscape(cats[0])+'</span>':"")+
       (ages.length?'<span>'+bhEscape(ages.join(", "))+'</span>':"")+
       (a.town?'<span>'+bhEscape(a.town)+'</span>':"")+
-      (bhSessions(a).some(s=>s.term_time)?'<span>Term time</span>':"")+
+      (sessions.some(s=>s.term_time)?'<span>Term time</span>':"")+
     '</div></section>'+
     '<section class="activity-reference-contact"><div id="listingMap" class="listing-map activity-reference-contact-map" aria-label="Activity venue map"></div><div class="activity-reference-addresses">'+(venues||[]).map(v=>'<article class="activity-address-row"><div class="activity-address-icon">⌖</div><div><strong>'+bhEscape(v.name||"Venue")+'</strong><span>'+[v.address,v.town,v.postcode].filter(Boolean).map(x=>bhEscape(x)).join(", ")+'</span></div><a class="button button-soft" target="_blank" rel="noopener" href="'+(v.lat&&v.long?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.lat+","+v.long):"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.address||v.town||v.name||""))+'">Directions</a></article>').join("")+'</div></section>'+
     '<section class="listing-card activity-reference-schedule"><span class="eyebrow">When</span><h2>Schedule &amp; hours</h2><div class="schedule-list">'+venues.map(v=>'<article class="venue-schedule"><div><h3>'+bhEscape(v.name||"Venue")+(v.town?", "+bhEscape(v.town):"")+'</h3><p>'+bhEscape(v.address||v.town||v.region||"")+'</p></div><div class="session-list">'+(v.sessions||[]).map(s=>'<div class="session-row"><strong>'+bhEscape(s.day||"Session")+'</strong><span>'+bhEscape(bhFormatTime(s.start||s.time||""))+((s.end||s.end_time)?" – "+bhEscape(bhFormatTime(s.end||s.end_time)):"")+'</span><span>'+bhEscape(s.duration||"")+'</span><span>'+((s.price!==undefined&&s.price!=="")?bhEscape(String(s.price).startsWith("£")?s.price:"£"+s.price):"")+'</span></div>').join("")+'</div></article>').join("")+'</div></section>'+
