@@ -1089,8 +1089,4 @@
     flex-direction:column!important;
     visibility:visible!important;
   }
-  body.bh-directory #results[hidden]{
-    display:flex!important;
-    visibility:visible!important;
-  }
 }
