@@ -427,3 +427,413 @@ body:not(.bh-home) .hero{
   body:not(.bh-home) h1{font-size:34px}
   body:not(.bh-home) h2{font-size:28px}
 }
+
+
+/* ==========================================================================
+   ACTIVITY DETAIL — BUBBA HUB SHOWCASE
+   ========================================================================== */
+body:not(.bh-home) .listing-page{
+  width:100%;
+  max-width:1400px;
+  margin:0 auto;
+  padding:8px 0 20px;
+}
+body:not(.bh-home) .activity-hero{
+  display:grid;
+  grid-template-columns:minmax(0,1.12fr) minmax(360px,.88fr);
+  gap:28px;
+  align-items:stretch;
+  margin:0 0 22px;
+  padding:0;
+  background:transparent;
+  border-radius:22px;
+}
+body:not(.bh-home) .activity-hero::before,
+body:not(.bh-home) .activity-hero::after{display:none}
+
+body:not(.bh-home) .activity-hero .listing-gallery{
+  min-height:430px;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  padding:10px;
+  background:#e7f1ea;
+  border-radius:24px;
+  overflow:hidden;
+}
+body:not(.bh-home) .activity-hero .listing-gallery img,
+body:not(.bh-home) .activity-hero .listing-gallery-placeholder{
+  width:100%;
+  height:100%;
+  min-height:200px;
+  object-fit:cover;
+  border-radius:17px;
+}
+body:not(.bh-home) .activity-hero .listing-gallery img:first-child{
+  grid-row:span 2;
+}
+body:not(.bh-home) .activity-hero .listing-gallery-placeholder{
+  grid-column:1/-1;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,#dceee1,#d6e8ea);
+  color:var(--bh-site-dark);
+  font-weight:800;
+}
+
+body:not(.bh-home) .activity-hero .listing-summary{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:32px 34px;
+  background:#fff;
+  border:1px solid var(--bh-site-border);
+  border-radius:24px;
+  box-shadow:var(--bh-site-shadow);
+}
+body:not(.bh-home) .activity-hero .listing-summary .eyebrow{
+  margin:0 0 10px;
+  color:var(--bh-site-teal);
+}
+body:not(.bh-home) .activity-hero .listing-summary h1{
+  margin:0;
+  max-width:700px;
+  font-size:clamp(42px,5vw,64px);
+  line-height:.98;
+}
+body:not(.bh-home) .listing-intro{
+  margin:18px 0 0;
+  color:var(--bh-site-muted);
+  font-size:16px;
+  line-height:1.65;
+  font-weight:600;
+}
+body:not(.bh-home) .listing-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:18px;
+}
+body:not(.bh-home) .listing-tags span{
+  padding:6px 11px;
+  border-radius:999px;
+  background:#e7f1ea;
+  color:var(--bh-site-dark);
+  font-size:11px;
+  font-weight:800;
+}
+body:not(.bh-home) .listing-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:22px;
+}
+body:not(.bh-home) .listing-actions .button{
+  min-height:40px;
+  padding:8px 13px;
+  font-size:12px;
+}
+
+body:not(.bh-home) .listing-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1.55fr) minmax(300px,.75fr);
+  gap:22px;
+  align-items:start;
+}
+body:not(.bh-home) .listing-main,
+body:not(.bh-home) .listing-side{
+  display:grid;
+  gap:18px;
+  min-width:0;
+}
+body:not(.bh-home) .listing-card{
+  padding:25px;
+  background:#fff;
+  border:1px solid var(--bh-site-border);
+  border-radius:20px;
+  box-shadow:var(--bh-site-shadow);
+}
+body:not(.bh-home) .listing-card .eyebrow{
+  margin:0 0 5px;
+  color:var(--bh-site-teal);
+  font-size:10px;
+  font-weight:900;
+}
+body:not(.bh-home) .listing-card h2{
+  margin:0 0 17px;
+  font-size:31px;
+}
+body:not(.bh-home) .listing-description{
+  color:var(--bh-site-muted);
+  line-height:1.75;
+  white-space:pre-line;
+}
+body:not(.bh-home) .good-to-know-card{
+  background:linear-gradient(135deg,#edf7ed,#e5f1e7);
+}
+body:not(.bh-home) .good-to-know-card h2{
+  margin-bottom:14px;
+}
+body:not(.bh-home) .good-to-know-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:9px;
+}
+body:not(.bh-home) .good-to-know-pill{
+  min-width:0;
+  padding:13px 14px;
+  background:#fff;
+  border-radius:15px;
+}
+body:not(.bh-home) .good-to-know-pill-label{
+  display:block;
+  margin-bottom:4px;
+  color:var(--bh-site-muted);
+  font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+body:not(.bh-home) .good-to-know-pill strong{
+  display:block;
+  overflow-wrap:anywhere;
+  color:var(--bh-site-dark);
+  font-size:13px;
+}
+
+body:not(.bh-home) .schedule-list{display:grid;gap:14px}
+body:not(.bh-home) .venue-schedule{
+  padding:15px;
+  border-radius:16px;
+  background:#f5f9f6;
+  border:1px solid var(--bh-site-border);
+}
+body:not(.bh-home) .venue-schedule h3{
+  margin:0 0 2px;
+  font-size:17px;
+}
+body:not(.bh-home) .venue-schedule>div>p{
+  margin:0 0 12px;
+  color:var(--bh-site-muted);
+  font-size:12px;
+}
+body:not(.bh-home) .session-list{display:grid;gap:6px}
+body:not(.bh-home) .session-row{
+  display:grid;
+  grid-template-columns:1fr 1.2fr .8fr auto;
+  gap:10px;
+  align-items:center;
+  padding:9px 11px;
+  border-radius:11px;
+  background:#fff;
+  font-size:12px;
+}
+body:not(.bh-home) .session-row strong{color:var(--bh-site-dark)}
+body:not(.bh-home) .session-row span{color:var(--bh-site-muted)}
+
+body:not(.bh-home) .listing-map{
+  min-height:330px;
+  height:330px;
+  overflow:hidden;
+  border-radius:17px;
+  border:1px solid var(--bh-site-border);
+}
+body:not(.bh-home) .venue-list{
+  display:grid;
+  gap:9px;
+  margin-top:14px;
+}
+body:not(.bh-home) .venue-list-heading{
+  color:var(--bh-site-muted);
+  font-size:11px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+body:not(.bh-home) .venue-card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:13px 14px;
+  background:#f5f9f6;
+  border:1px solid var(--bh-site-border);
+  border-radius:15px;
+}
+body:not(.bh-home) .venue-card-details{min-width:0}
+body:not(.bh-home) .venue-card h3{
+  margin:0;
+  font-size:15px;
+}
+body:not(.bh-home) .venue-card h3 a{color:var(--bh-site-dark)}
+body:not(.bh-home) .venue-card p{
+  margin:3px 0 0;
+  color:var(--bh-site-muted);
+  font-size:11px;
+  overflow-wrap:anywhere;
+}
+body:not(.bh-home) .venue-directions{
+  flex:0 0 auto;
+  min-height:36px!important;
+  padding:7px 11px!important;
+  font-size:11px!important;
+}
+
+body:not(.bh-home) .listing-side{
+  position:sticky;
+  top:18px;
+}
+body:not(.bh-home) .organiser-card{
+  background:linear-gradient(145deg,#fff,#f0f7f1);
+}
+body:not(.bh-home) .organiser-profile{
+  display:flex;
+  align-items:center;
+  gap:13px;
+  margin-bottom:15px;
+}
+body:not(.bh-home) .organiser-avatar{
+  width:58px;
+  height:58px;
+  flex:0 0 58px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  border-radius:50%;
+  background:#d6e8ea;
+  color:var(--bh-site-teal);
+  font-weight:900;
+}
+body:not(.bh-home) .organiser-avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+body:not(.bh-home) .organiser-profile h2{
+  margin:0;
+  font-family:"Quicksand",sans-serif;
+  font-size:18px;
+  font-weight:850;
+}
+body:not(.bh-home) .organiser-links{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:7px;
+}
+body:not(.bh-home) .organiser-icon-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-height:38px;
+  min-width:38px;
+  padding:8px 11px;
+  border-radius:999px;
+  background:#e7f1ea;
+  color:var(--bh-site-dark);
+  font-size:12px;
+  font-weight:850;
+}
+body:not(.bh-home) .organiser-icon-link.button{
+  min-width:auto;
+}
+body:not(.bh-home) .booking-card{
+  background:linear-gradient(145deg,#e5f4f1,#f5faf7);
+}
+body:not(.bh-home) .booking-card h2{margin-bottom:10px}
+body:not(.bh-home) .booking-slot{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px;
+  margin-top:8px;
+  background:#fff;
+  border-radius:14px;
+  border:1px solid var(--bh-site-border);
+}
+body:not(.bh-home) .booking-slot strong,
+body:not(.bh-home) .booking-slot span{display:block}
+body:not(.bh-home) .booking-slot span{
+  margin-top:2px;
+  color:var(--bh-site-muted);
+  font-size:11px;
+}
+body:not(.bh-home) .booking-note,
+body:not(.bh-home) .contact-card p{
+  color:var(--bh-site-muted);
+  font-size:12px;
+  line-height:1.55;
+}
+body:not(.bh-home) .button-full{width:100%}
+body:not(.bh-home) .listing-bottom{
+  display:flex;
+  justify-content:flex-start;
+  margin-top:18px;
+}
+
+@media(max-width:950px){
+  body:not(.bh-home) .activity-hero{
+    grid-template-columns:1fr;
+  }
+  body:not(.bh-home) .activity-hero .listing-gallery{
+    min-height:360px;
+  }
+  body:not(.bh-home) .listing-layout{
+    grid-template-columns:1fr;
+  }
+  body:not(.bh-home) .listing-side{
+    position:static;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  body:not(.bh-home) .listing-side .booking-card{
+    grid-column:span 2;
+  }
+}
+@media(max-width:650px){
+  body:not(.bh-home) .listing-page{padding-top:0}
+  body:not(.bh-home) .activity-hero{gap:10px}
+  body:not(.bh-home) .activity-hero .listing-gallery{
+    min-height:285px;
+    grid-template-columns:1fr 1fr;
+    padding:7px;
+    border-radius:18px;
+    gap:7px;
+  }
+  body:not(.bh-home) .activity-hero .listing-gallery img,
+  body:not(.bh-home) .activity-hero .listing-gallery-placeholder{
+    min-height:135px;
+    border-radius:13px;
+  }
+  body:not(.bh-home) .activity-hero .listing-summary{
+    padding:24px 19px;
+    border-radius:19px;
+  }
+  body:not(.bh-home) .activity-hero .listing-summary h1{
+    font-size:42px;
+  }
+  body:not(.bh-home) .listing-intro{font-size:14px}
+  body:not(.bh-home) .listing-actions{display:grid;grid-template-columns:1fr 1fr}
+  body:not(.bh-home) .listing-actions .button{width:100%}
+  body:not(.bh-home) .listing-card{padding:19px;border-radius:17px}
+  body:not(.bh-home) .listing-card h2{font-size:28px}
+  body:not(.bh-home) .good-to-know-grid{grid-template-columns:1fr 1fr}
+  body:not(.bh-home) .session-row{
+    grid-template-columns:1fr 1fr;
+    gap:5px 10px;
+  }
+  body:not(.bh-home) .venue-card{align-items:flex-start;flex-direction:column}
+  body:not(.bh-home) .venue-directions{width:100%}
+  body:not(.bh-home) .listing-side{grid-template-columns:1fr}
+  body:not(.bh-home) .listing-side .booking-card{grid-column:auto}
+  body:not(.bh-home) .listing-map{height:280px;min-height:280px}
+}
+@media(max-width:420px){
+  body:not(.bh-home) .activity-hero .listing-gallery{min-height:230px}
+  body:not(.bh-home) .activity-hero .listing-gallery img,
+  body:not(.bh-home) .activity-hero .listing-gallery-placeholder{min-height:108px}
+  body:not(.bh-home) .activity-hero .listing-summary h1{font-size:37px}
+  body:not(.bh-home) .good-to-know-grid{grid-template-columns:1fr}
+  body:not(.bh-home) .listing-actions{grid-template-columns:1fr}
+}
