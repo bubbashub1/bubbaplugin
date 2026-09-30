@@ -1149,3 +1149,222 @@
   .bh-directory .activity-grid.directory-view-grid{grid-template-columns:1fr!important}
   .bh-directory .directory-results-heading h1{font-size:28px}
 }
+
+
+/* FINAL HOMEPAGE RESPONSIVE SCALE
+   Keep typography, spacing and layout fluid between desktop, tablet and mobile.
+   Avoid fixed text/image dimensions causing clipping at intermediate widths. */
+.bh-home .home-hero-copy p{
+  font-size:clamp(13px,1.25vw,16px);
+}
+.bh-home .home-section-heading h2,
+.bh-home .home-lower-heading h2{
+  font-size:clamp(26px,2.2vw,31px);
+}
+.bh-home .home-plan-copy h2{
+  font-size:clamp(28px,2.7vw,35px);
+}
+.bh-home .home-card-body h3{
+  font-size:clamp(16px,1.35vw,18px);
+}
+.bh-home .home-activity-card,
+.bh-home .home-plan-band,
+.bh-home .home-lower-card{
+  min-width:0;
+}
+.bh-home .home-search h2{
+  font-size:clamp(17px,1.7vw,21px);
+}
+.bh-home .home-category-row strong{
+  font-size:clamp(11px,1.05vw,13px);
+}
+
+/* Medium desktop/tablet: let the hero and navigation breathe instead of
+   squeezing fixed-width content into the viewport. */
+@media (max-width:1200px) and (min-width:901px){
+  .bh-home .site-header.home-header{
+    padding-inline:14px;
+    gap:12px;
+  }
+  .bh-home .home-header .main-nav{
+    gap:0;
+  }
+  .bh-home .home-header .main-nav a{
+    padding:8px 6px;
+    font-size:10px;
+  }
+  .bh-home .home-brand .brand-logo{
+    max-width:190px;
+    height:54px;
+  }
+  .bh-home .home-hero{
+    min-height:560px;
+  }
+  .bh-home .home-hero-copy{
+    width:57%;
+    padding:46px 28px 155px 20px;
+  }
+  .bh-home .home-brush{
+    font-size:clamp(34px,4vw,46px);
+    padding:21px 26px 25px;
+  }
+  .bh-home .home-search{
+    left:22px;
+    right:22px;
+  }
+  .bh-home .home-search-fields{
+    grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) auto;
+  }
+  .bh-home .home-search-fields .button{
+    grid-column:auto;
+  }
+  .bh-home .home-category-row a{
+    gap:7px;
+    padding-inline:7px;
+  }
+  .bh-home .home-category-icon{
+    width:44px;
+    height:44px;
+    flex-basis:44px;
+    font-size:20px;
+  }
+}
+
+/* Tablet: stack the hero content naturally and keep all text inside the
+   viewport rather than relying on desktop-sized offsets. */
+@media (max-width:900px) and (min-width:651px){
+  .bh-home .home-hero{
+    min-height:560px;
+  }
+  .bh-home .home-hero-copy{
+    width:62%;
+    padding:42px 24px 150px 18px;
+  }
+  .bh-home .home-brush{
+    font-size:clamp(32px,5vw,44px);
+    padding:20px 24px 24px;
+  }
+  .bh-home .home-search{
+    left:18px;
+    right:18px;
+    bottom:-105px;
+  }
+  .bh-home .home-search-fields{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;
+  }
+  .bh-home .home-search-fields .button{
+    grid-column:auto;
+    min-width:100px;
+    padding-inline:15px;
+  }
+  .bh-home .home-category-row{
+    margin-top:130px;
+  }
+  .bh-home .home-category-row a{
+    gap:6px;
+    padding-inline:6px;
+  }
+  .bh-home .home-category-icon{
+    width:42px;
+    height:42px;
+    flex-basis:42px;
+    font-size:19px;
+  }
+  .bh-home .home-plan-band{
+    grid-template-columns:115px minmax(0,1fr);
+    gap:18px;
+    padding:24px;
+  }
+  .bh-home .home-plan-photo{
+    width:115px;
+    height:115px;
+  }
+}
+
+/* Prevent text/buttons from overflowing narrow cards and headings. */
+.bh-home .home-section-heading>div,
+.bh-home .home-lower-heading>div,
+.bh-home .home-plan-copy,
+.bh-home .home-profile-row div,
+.bh-home .home-admin-main{
+  min-width:0;
+}
+.bh-home .home-section-heading h2,
+.bh-home .home-lower-heading h2,
+.bh-home .home-plan-copy h2,
+.bh-home .home-leader-preview h3{
+  overflow-wrap:anywhere;
+}
+.bh-home .home-view-all,
+.bh-home .home-lower-heading>a,
+.bh-home .home-profile-row a{
+  flex:0 0 auto;
+  white-space:nowrap;
+}
+
+/* Small phones: reduce fixed image heights and let copy determine card height. */
+@media (max-width:560px){
+  .bh-home .home-section-heading,
+  .bh-home .home-lower-heading{
+    gap:8px;
+  }
+  .bh-home .home-section-heading h2,
+  .bh-home .home-lower-heading h2{
+    font-size:clamp(23px,7vw,28px);
+  }
+  .bh-home .home-view-all,
+  .bh-home .home-lower-heading>a{
+    font-size:11px;
+  }
+  .bh-home .home-card-image{
+    height:clamp(112px,32vw,145px);
+  }
+  .bh-home .home-age-badge{
+    top:calc(clamp(112px,32vw,145px) - 17px);
+  }
+  .bh-home .home-heart{
+    top:calc(clamp(112px,32vw,145px) + 3px);
+  }
+  .bh-home .home-card-body{
+    padding:14px 12px 13px;
+  }
+  .bh-home .home-card-body h3{
+    font-size:16px;
+  }
+  .bh-home .home-card-body p{
+    font-size:10px;
+  }
+  .bh-home .home-plan-copy h2{
+    font-size:clamp(27px,8vw,34px);
+  }
+}
+
+/* Very narrow phones: single-column content where two-column cards become
+   too cramped, while keeping the hero readable. */
+@media (max-width:380px){
+  .bh-home .home-hero-copy{
+    padding-inline:9px;
+  }
+  .bh-home .home-brush{
+    font-size:26px;
+    padding:18px 18px 21px;
+  }
+  .bh-home .home-hero-copy p{
+    font-size:12px;
+  }
+  .bh-home .home-search{
+    left:7px;
+    right:7px;
+    padding:13px;
+  }
+  .bh-home .home-category-row,
+  .bh-home .home-activity-grid{
+    grid-template-columns:1fr;
+  }
+  .bh-home .home-category-row a:last-child{
+    grid-column:auto;
+  }
+  .bh-home .home-category-row a{
+    min-height:58px;
+  }
+}
