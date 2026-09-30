@@ -490,8 +490,8 @@
 
 /* Mobile map link — Listings | Map toggle removed */
 .bh-directory .directory-mobile-view-toggle{display:none!important}
-.bh-directory .directory-mobile-map-link{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;margin:0 0 18px;box-sizing:border-box;border-radius:14px;background:#f6c84a;color:#144400;font-weight:900;text-decoration:none}
-.bh-directory .directory-mobile-map-link:hover{background:#f1b92e;color:#144400}
+.bh-directory .directory-mobile-map-link{display:inline-flex;align-items:center;justify-content:center;min-height:48px;margin:0;border-radius:14px;background:var(--bh-site-secondary,#3c8e96);color:#fff;font-weight:900;text-decoration:none}
+.bh-directory .directory-mobile-map-link:hover{background:var(--bh-site-dark,#416651);color:#fff}
 
 /* Map modal helpers */
 .bh-directory .directory-map-modal{
