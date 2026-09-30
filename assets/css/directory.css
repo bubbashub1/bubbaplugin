@@ -176,17 +176,41 @@
   color:#fff;
 }
 
-/* Desktop: true 50/50 listings + map */
+/* Desktop: true 50/50 listings + map — explicit grid areas prevent overlap */
 .bh-directory .directory-results-column{
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  grid-template-areas:
+    "heading map"
+    "results map"
+    "all map";
   column-gap:24px;
+  row-gap:0;
   align-items:start;
   min-width:0;
 }
+.bh-directory .directory-results-column > .directory-results-heading{
+  grid-area:heading;
+}
+.bh-directory .directory-results-column > #results{
+  grid-area:results;
+}
+.bh-directory .directory-results-column > .directory-all-link-wrap{
+  grid-area:all;
+}
+.bh-directory .directory-results-column > #mapView{
+  grid-area:map;
+  align-self:start;
+  min-width:0;
+  z-index:0;
+}
+.bh-directory .directory-results-column > #results,
+.bh-directory .directory-results-column > .directory-all-link-wrap{
+  position:relative;
+  z-index:1;
+}
+/* Heading placement is controlled by grid-template-areas above */
 .bh-directory .directory-results-heading{
-  grid-column:1;
-  grid-row:1;
   display:flex;
   align-items:flex-end;
   justify-content:space-between;
@@ -214,9 +238,7 @@
   color:var(--bh-site-muted,#617261);
 }
 /* Keep the bottom action under the listings, never in the map column */
-.bh-directory .directory-all-link-wrap{
-  grid-column:1;
-  grid-row:3;
+ .bh-directory .directory-all-link-wrap{
   width:100%;
   min-width:0;
   margin-top:2px;
@@ -229,9 +251,7 @@
 }
 
 /* Listings stay list-only on desktop */
-.bh-directory #results{
-  grid-column:1;
-  grid-row:2;
+ .bh-directory #results{
   display:flex;
   flex-direction:column;
   gap:16px;
@@ -330,9 +350,7 @@
 }
 
 /* Map */
-.bh-directory #mapView{
-  grid-column:2;
-  grid-row:1 / span 2;
+ .bh-directory #mapView{
   position:sticky;
   top:24px;
   align-self:start;
