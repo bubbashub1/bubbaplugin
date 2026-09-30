@@ -443,8 +443,8 @@ body:not(.bh-home) .listing-page{
 }
 body:not(.bh-home) .activity-hero{
   display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-  gap:28px;
+  grid-template-columns:minmax(0,0.9fr) minmax(0,0.9fr);
+  gap:18px;
   align-items:stretch;
   margin:0 0 22px;
   padding:0;
@@ -455,7 +455,7 @@ body:not(.bh-home) .activity-hero::before,
 body:not(.bh-home) .activity-hero::after{display:none}
 
 body:not(.bh-home) .activity-hero .listing-gallery{
-  min-height:180px;
+  min-height:120px;
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:10px;
@@ -468,7 +468,7 @@ body:not(.bh-home) .activity-hero .listing-gallery img,
 body:not(.bh-home) .activity-hero .listing-gallery-placeholder{
   width:100%;
   height:100%;
-  min-height:90px;
+  min-height:60px;
   object-fit:contain;
   background:#e7f1ea;
   border-radius:17px;
@@ -489,7 +489,7 @@ body:not(.bh-home) .activity-hero .listing-summary{
   display:flex;
   flex-direction:column;
   justify-content:center;
-  padding:32px 34px;
+  padding:18px 20px;
   background:#fff;
   border:1px solid var(--bh-site-border);
   border-radius:24px;
@@ -502,11 +502,11 @@ body:not(.bh-home) .activity-hero .listing-summary .eyebrow{
 body:not(.bh-home) .activity-hero .listing-summary h1{
   margin:0;
   max-width:700px;
-  font-size:clamp(42px,5vw,64px);
+  font-size:clamp(32px,3.6vw,44px);
   line-height:.98;
 }
 body:not(.bh-home) .listing-intro{
-  margin:18px 0 0;
+  margin:10px 0 0;
   color:var(--bh-site-muted);
   font-size:16px;
   line-height:1.65;
@@ -516,7 +516,7 @@ body:not(.bh-home) .listing-tags{
   display:flex;
   flex-wrap:wrap;
   gap:7px;
-  margin-top:18px;
+  margin-top:10px;
 }
 body:not(.bh-home) .listing-tags span{
   padding:6px 11px;
@@ -530,7 +530,7 @@ body:not(.bh-home) .listing-actions{
   display:flex;
   flex-wrap:wrap;
   gap:8px;
-  margin-top:22px;
+  margin-top:12px;
 }
 body:not(.bh-home) .listing-actions .button{
   min-height:40px;
@@ -782,7 +782,7 @@ body:not(.bh-home) .listing-bottom{
     grid-template-columns:1fr;
   }
   body:not(.bh-home) .activity-hero .listing-gallery{
-    min-height:160px;
+    min-height:120px;
   }
   body:not(.bh-home) .listing-layout{
     grid-template-columns:1fr;
@@ -799,7 +799,7 @@ body:not(.bh-home) .listing-bottom{
   body:not(.bh-home) .listing-page{padding-top:0}
   body:not(.bh-home) .activity-hero{gap:10px}
   body:not(.bh-home) .activity-hero .listing-gallery{
-    min-height:145px;
+    min-height:110px;
     grid-template-columns:1fr 1fr;
     padding:7px;
     border-radius:18px;
@@ -807,15 +807,15 @@ body:not(.bh-home) .listing-bottom{
   }
   body:not(.bh-home) .activity-hero .listing-gallery img,
   body:not(.bh-home) .activity-hero .listing-gallery-placeholder{
-    min-height:68px;
+    min-height:52px;
     border-radius:13px;
   }
   body:not(.bh-home) .activity-hero .listing-summary{
-    padding:24px 19px;
+    padding:18px 16px;
     border-radius:19px;
   }
   body:not(.bh-home) .activity-hero .listing-summary h1{
-    font-size:42px;
+    font-size:34px;
   }
   body:not(.bh-home) .listing-intro{font-size:14px}
   body:not(.bh-home) .listing-actions{display:grid;grid-template-columns:1fr 1fr}
@@ -834,9 +834,9 @@ body:not(.bh-home) .listing-bottom{
   body:not(.bh-home) .listing-map{height:280px;min-height:280px}
 }
 @media(max-width:420px){
-  body:not(.bh-home) .activity-hero .listing-gallery{min-height:115px}
+  body:not(.bh-home) .activity-hero .listing-gallery{min-height:90px}
   body:not(.bh-home) .activity-hero .listing-gallery img,
-  body:not(.bh-home) .activity-hero .listing-gallery-placeholder{min-height:108px}
+  body:not(.bh-home) .activity-hero .listing-gallery-placeholder{min-height:72px}
   body:not(.bh-home) .activity-hero .listing-summary h1{font-size:37px}
   body:not(.bh-home) .good-to-know-grid{grid-template-columns:1fr}
   body:not(.bh-home) .listing-actions{grid-template-columns:1fr}
