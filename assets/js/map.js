@@ -35,6 +35,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("mapAge").value=params.get("age_preset")||"";
     $("mapDay").value=params.get("day")||"";
     $("mapPrice").value=params.get("max_price")||"";
+    const setFromParam=(id,key)=>{ if($(id)&&params.get(key)!==null) $(id).value=params.get(key)||""; };
+    setFromParam("mapSearch","keyword"); setFromParam("mapRegion","region"); setFromParam("mapTown","town"); setFromParam("mapCategory","category"); setFromParam("mapAge","age_preset"); setFromParam("mapDay","day"); setFromParam("mapPrice","max_price");
 
     let map=null, markers=[];
     const render=()=>{
