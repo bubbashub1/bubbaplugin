@@ -288,8 +288,85 @@ body:not(.bh-home) .listing-bottom{
   body:not(.bh-home) .activity-reference-organiser{width:calc(100% - 32px);padding:15px 17px}
   body:not(.bh-home) .listing-description{font-size:16px}
 }
-</style></head><body>
-<header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/gemini_generated_image_t65ztnt65ztnt65z-20260930-185704-7e0755.jpeg" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="events.html">Events</a><a href="venues.html">Venues</a><a href="planner.html">My planner</a><a href="calendar.html">Calendar</a><a href="my-hub.html">My Hub</a><a href="leader.html">For class leaders</a><a href="admin.html">Admin</a></nav><a class="button button-soft" href="account.html">My account</a></header>
+<style id="activity-gemini-reference-final">
+/* Activity detail visual reference — keep the menu pale green while adopting the Gemini layout. */
+body:not(.bh-home) .activity-reference-header{
+  width:100%!important;max-width:none!important;margin:0 0 18px!important;padding:12px max(28px,calc((100vw - 1320px)/2)) 14px!important;
+  display:block!important;box-sizing:border-box!important;background:#d8e6db!important;border:0!important;border-radius:0 0 18px 18px!important;
+  box-shadow:0 5px 20px rgba(18,63,49,.12)!important;
+}
+body:not(.bh-home) .activity-reference-header .activity-header-top{
+  width:100%;max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:16px;min-height:54px;
+}
+body:not(.bh-home) .activity-reference-header .brand{margin-right:auto!important}
+body:not(.bh-home) .activity-reference-header .brand-logo{width:auto!important;height:54px!important;max-width:220px!important;border-radius:0!important}
+body:not(.bh-home) .activity-reference-header .main-nav{display:flex!important;align-items:center;justify-content:flex-end;gap:6px!important;overflow:visible!important}
+body:not(.bh-home) .activity-reference-header .main-nav a{
+  min-height:38px!important;padding:8px 14px!important;border-radius:999px!important;
+  background:#eaf4ed!important;color:#144400!important;border:0!important;font-size:12px!important;font-weight:750!important;
+}
+body:not(.bh-home) .activity-reference-header .main-nav a:hover,
+body:not(.bh-home) .activity-reference-header .main-nav a.active{background:#f3f8f4!important;color:#144400!important}
+body:not(.bh-home) .activity-reference-header .activity-sign-in{
+  min-height:38px!important;padding:8px 17px!important;border-radius:999px!important;background:#144400!important;color:#fff!important;font-size:12px!important;
+}
+body:not(.bh-home) .activity-header-search{
+  width:100%;max-width:1320px;margin:10px auto 0;display:grid;grid-template-columns:minmax(0,1.65fr) minmax(170px,.8fr) minmax(145px,.7fr) auto;gap:8px;align-items:center;
+}
+body:not(.bh-home) .activity-search-field{
+  min-width:0;min-height:38px;display:flex;align-items:center;gap:7px;padding:0 13px;background:#fff;border-radius:999px;color:#3c8e96;
+}
+body:not(.bh-home) .activity-search-field span{font-size:14px;font-weight:900}
+body:not(.bh-home) .activity-search-field input,
+body:not(.bh-home) .activity-search-field select{
+  width:100%;min-width:0;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;color:#123f31!important;font-size:11px!important;padding:7px 0!important;
+}
+body:not(.bh-home) .activity-search-button{min-height:38px!important;padding:8px 19px!important;border-radius:999px!important;font-size:11px!important;white-space:nowrap}
+body:not(.bh-home) .activity-hero{
+  grid-template-columns:minmax(320px,440px) minmax(0,1fr)!important;gap:30px!important;min-height:300px!important;
+  padding:30px max(28px,calc((100vw - 1320px)/2))!important;background:#245c4a!important;border-radius:0!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery{height:250px!important;min-height:250px!important;border-radius:12px!important}
+body:not(.bh-home) .activity-hero .listing-summary{min-height:250px!important}
+body:not(.bh-home) .activity-hero .listing-summary h1{font-size:clamp(34px,3.7vw,50px)!important}
+body:not(.bh-home) .activity-hero .listing-intro{font-size:15px!important}
+body:not(.bh-home) .activity-hero .listing-tags{gap:16px!important;margin-top:18px!important}
+body:not(.bh-home) .activity-hero .listing-tags span{font-size:12px!important}
+body:not(.bh-home) .activity-book-button{width:150px!important;min-height:48px!important;margin-top:-52px!important;font-size:14px!important}
+@media(max-width:900px){
+  body:not(.bh-home) .activity-reference-header{padding:10px 14px 12px!important}
+  body:not(.bh-home) .activity-reference-header .activity-header-top{flex-wrap:wrap}
+  body:not(.bh-home) .activity-reference-header .main-nav{order:3;width:100%;justify-content:flex-start;overflow-x:auto!important}
+  body:not(.bh-home) .activity-header-search{grid-template-columns:1fr 1fr}
+  body:not(.bh-home) .activity-search-button{grid-column:1/-1}
+}
+@media(max-width:650px){
+  body:not(.bh-home) .activity-reference-header .brand-logo{height:46px!important;max-width:175px!important}
+  body:not(.bh-home) .activity-reference-header .main-nav a{padding:7px 10px!important;font-size:11px!important}
+  body:not(.bh-home) .activity-header-search{grid-template-columns:1fr}
+  body:not(.bh-home) .activity-search-button{grid-column:auto;width:100%}
+}
+</style></style></head><body>
+<header class="site-header activity-reference-header">
+  <div class="activity-header-top">
+    <a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/gemini_generated_image_t65ztnt65ztnt65z-20260930-185704-7e0755.jpeg" alt="Bubba Hub"></a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="directory.html">Directory</a>
+      <a href="planner.html">Planner</a>
+      <a href="leader.html">Leader</a>
+      <a href="help-support.html">Support</a>
+      <a href="account.html">My account</a>
+    </nav>
+    <a class="button button-primary activity-sign-in" href="auth.html">Sign in</a>
+  </div>
+  <form class="activity-header-search" action="directory.html" method="get" role="search" aria-label="Find activities">
+    <label class="activity-search-field activity-search-keyword"><span aria-hidden="true">⌕</span><input name="keyword" type="search" placeholder="Search activities, groups, or services…" aria-label="Search activities, groups, or services"></label>
+    <label class="activity-search-field"><span aria-hidden="true">⌖</span><input name="town" type="search" placeholder="Town / Postcode" aria-label="Town or postcode"></label>
+    <label class="activity-search-field"><span aria-hidden="true">▣</span><select name="day" aria-label="Day"><option value="">Any Day</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select></label>
+    <button class="button button-primary activity-search-button" type="submit"><span aria-hidden="true">⌕</span> Search</button>
+  </form>
+</header>
 <main class="app-shell"><div id="activityState" class="listing-loading"><p>Loading activity…</p></div></main>
 <footer class="site-footer">
   <div class="site-footer-grid">
