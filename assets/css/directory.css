@@ -1090,3 +1090,91 @@
     visibility:visible!important;
   }
 }
+
+
+/* ==========================================================================
+   FINAL SEARCH LAYOUT — natural height, no overlap, 3-per-row desktop
+   ========================================================================== */
+body.bh-directory .directory-hero-fullwidth{
+  width:100%!important;
+  max-width:none!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0 0 26px!important;
+  overflow:visible!important;
+  box-sizing:border-box;
+}
+
+body.bh-directory .directory-hero-fullwidth .directory-hero-search{
+  position:static!important;
+  top:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  left:auto!important;
+  width:100%!important;
+  max-width:none!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  box-sizing:border-box;
+  overflow:visible!important;
+}
+
+body.bh-directory .directory-hero-search-fields{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:10px!important;
+  width:100%;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  align-items:stretch;
+}
+
+body.bh-directory .directory-hero-search-fields label,
+body.bh-directory .directory-hero-search-fields .button{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  box-sizing:border-box;
+}
+
+body.bh-directory .directory-hero-search-fields label{
+  min-height:48px!important;
+  height:auto!important;
+}
+
+body.bh-directory .directory-hero-search-fields input,
+body.bh-directory .directory-hero-search-fields select{
+  height:auto!important;
+  max-height:none!important;
+  min-height:42px;
+}
+
+body.bh-directory .directory-hero-search-fields .button{
+  min-height:48px!important;
+  height:auto!important;
+  max-height:none!important;
+}
+
+body.bh-directory .directory-hero-actions,
+body.bh-directory .directory-popular{
+  position:static!important;
+  height:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+
+@media(max-width:900px){
+  body.bh-directory .directory-hero-search-fields{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+
+@media(max-width:600px){
+  body.bh-directory .directory-hero-search-fields{
+    grid-template-columns:1fr!important;
+  }
+}
