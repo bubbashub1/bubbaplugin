@@ -42,23 +42,34 @@ body:not(.bh-home) .activity-hero .listing-gallery{
 }
 body:not(.bh-home) .activity-hero .listing-gallery img,
 body:not(.bh-home) .activity-hero .listing-gallery-placeholder{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  object-position:center;
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  height:100%!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center!important;
   background:#eaf4ed;
   border-radius:18px;
+}
+body:not(.bh-home) .activity-hero .listing-gallery picture{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery > *{
+  box-sizing:border-box;
 }
 body:not(.bh-home) .activity-hero .listing-gallery img:not(:first-child){display:none}
 body:not(.bh-home) .activity-hero .listing-summary{
   min-height:280px;
-  padding:8px 0;
+  padding:26px 28px;
   display:flex;
   flex-direction:column;
   justify-content:center;
-  background:transparent;
+  background:#e7f1ea;
   border:0;
-  border-radius:0;
+  border-radius:18px;
   box-shadow:none;
 }
 body:not(.bh-home) .activity-hero .listing-summary .eyebrow{
@@ -74,7 +85,7 @@ body:not(.bh-home) .activity-hero .listing-summary .eyebrow{
 }
 body:not(.bh-home) .activity-hero .listing-summary h1{
   margin:0;
-  color:#fff;
+  color:#144400;
   font-family:"Quicksand",sans-serif;
   font-size:clamp(34px,4vw,52px);
   line-height:1.05;
@@ -82,7 +93,7 @@ body:not(.bh-home) .activity-hero .listing-summary h1{
 }
 body:not(.bh-home) .activity-hero .listing-intro{
   margin:10px 0 0;
-  color:rgba(255,255,255,.92);
+  color:#144400;
   font-size:18px;
   line-height:1.45;
   font-weight:550;
@@ -96,7 +107,7 @@ body:not(.bh-home) .activity-hero .listing-tags{
 body:not(.bh-home) .activity-hero .listing-tags span{
   padding:0;
   background:none;
-  color:#fff;
+  color:#144400;
   border-radius:0;
   font-size:15px;
   font-weight:650;
@@ -187,6 +198,15 @@ body:not(.bh-home) .activity-reference-contact{
   padding:42px 0 34px 56px;
   border-left:1px solid #9fb7a5;
 }
+body:not(.bh-home) .activity-reference-contact-map{width:100%;height:250px;margin:0 0 18px;border-radius:14px;overflow:hidden;background:#eaf4ed}
+body:not(.bh-home) .activity-reference-addresses{display:flex;flex-direction:column;gap:10px}
+body:not(.bh-home) .activity-address-row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #d8e6db}
+body:not(.bh-home) .activity-address-icon{width:26px;height:26px;display:grid;place-items:center;color:#144400;font-size:18px}
+body:not(.bh-home) .activity-address-row strong,
+body:not(.bh-home) .activity-address-row span{display:block}
+body:not(.bh-home) .activity-address-row strong{color:#144400;font-size:13px}
+body:not(.bh-home) .activity-address-row span{color:#3c8e96;font-size:12px;margin-top:2px}
+body:not(.bh-home) .activity-address-row .button{min-height:34px;padding:7px 11px;font-size:11px;border-radius:999px}
 body:not(.bh-home) .activity-reference-contact h2{
   margin:0 0 20px;
   color:#144400;
@@ -284,6 +304,9 @@ body:not(.bh-home) .listing-bottom{
   }
   body:not(.bh-home) .listing-layout{width:calc(100% - 32px)}
   body:not(.bh-home) .activity-reference-contact{padding:28px 0}
+  body:not(.bh-home) .activity-reference-contact-map{height:210px}
+  body:not(.bh-home) .activity-address-row{grid-template-columns:28px minmax(0,1fr);align-items:start}
+  body:not(.bh-home) .activity-address-row .button{grid-column:2;justify-self:start}
   body:not(.bh-home) .activity-contact-row{grid-template-columns:34px 90px minmax(0,1fr);font-size:15px}
   body:not(.bh-home) .activity-reference-organiser{width:calc(100% - 32px);padding:15px 17px}
   body:not(.bh-home) .listing-description{font-size:16px}
@@ -328,11 +351,11 @@ body:not(.bh-home) .activity-hero{
   padding:30px max(28px,calc((100vw - 1320px)/2))!important;background:#245c4a!important;border-radius:0!important;
 }
 body:not(.bh-home) .activity-hero .listing-gallery{height:250px!important;min-height:250px!important;border-radius:12px!important}
-body:not(.bh-home) .activity-hero .listing-summary{min-height:250px!important}
-body:not(.bh-home) .activity-hero .listing-summary h1{font-size:clamp(34px,3.7vw,50px)!important}
-body:not(.bh-home) .activity-hero .listing-intro{font-size:15px!important}
+body:not(.bh-home) .activity-hero .listing-summary{min-height:250px!important;padding:24px 28px!important;background:#e7f1ea!important;border-radius:18px!important}
+body:not(.bh-home) .activity-hero .listing-summary h1{font-size:clamp(34px,3.7vw,50px)!important;color:#144400!important}
+body:not(.bh-home) .activity-hero .listing-intro{font-size:15px!important;color:#144400!important}
 body:not(.bh-home) .activity-hero .listing-tags{gap:16px!important;margin-top:18px!important}
-body:not(.bh-home) .activity-hero .listing-tags span{font-size:12px!important}
+body:not(.bh-home) .activity-hero .listing-tags span{font-size:12px!important;color:#144400!important}
 body:not(.bh-home) .activity-book-button{width:150px!important;min-height:48px!important;margin-top:-52px!important;font-size:14px!important}
 @media(max-width:900px){
   body:not(.bh-home) .activity-reference-header{padding:10px 14px 12px!important}
@@ -473,14 +496,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
       (a.town?'<span>'+bhEscape(a.town)+'</span>':"")+
       (bhSessions(a).some(s=>s.term_time)?'<span>Term time</span>':"")+
     '</div></section>'+
-    '<section class="activity-reference-contact"><h2>Contact &amp; booking</h2>'+
-      (a.organiser_website?'<div class="activity-contact-row"><span class="activity-contact-icon">⌂</span><span class="activity-contact-label">Website</span><span class="activity-contact-value"><a href="'+bhEscape(a.organiser_website)+'" target="_blank" rel="noopener">'+bhEscape(a.organiser_website.replace(/^https?:\/\//,"").replace(/\/$/,""))+' ↗</a></span></div>':"")+
-      (a.organiser_email?'<div class="activity-contact-row"><span class="activity-contact-icon">✉</span><span class="activity-contact-label">Email</span><span class="activity-contact-value"><a href="mailto:'+bhEscape(a.organiser_email)+'">'+bhEscape(a.organiser_email)+'</a></span></div>':"")+
-      (a.organiser_phone?'<div class="activity-contact-row"><span class="activity-contact-icon">☎</span><span class="activity-contact-label">Phone</span><span class="activity-contact-value"><a href="tel:'+bhEscape(a.organiser_phone.replace(/[^0-9+]/g,""))+'">'+bhEscape(a.organiser_phone)+'</a></span></div>':"")+
-      (venues[0]?'<div class="activity-contact-row"><span class="activity-contact-icon">⌖</span><span class="activity-contact-label">Location</span><span class="activity-contact-value">'+bhEscape([venues[0].town,venues[0].postcode].filter(Boolean).join(", ")||venues[0].address||"")+'</span></div>':"")+
-    '</section>'+
+    '<section class="activity-reference-contact"><h2>Map &amp; Address</h2><div id="listingMap" class="listing-map activity-reference-contact-map" aria-label="Activity venue map"></div><div class="activity-reference-addresses">(venues||[]).map(v=>'<article class="activity-address-row"><div class="activity-address-icon">⌖</div><div><strong>'+bhEscape(v.name||"Venue")+'</strong><span>'+[v.address,v.town,v.postcode].filter(Boolean).map(x=>bhEscape(x)).join(", ")+'</span></div><a class="button button-soft" target="_blank" rel="noopener" href="'+(v.lat&&v.long?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.lat+","+v.long):"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.address||v.town||v.name||""))+'">Directions</a></article>').join("")</div></section>'+
     '<section class="listing-card"><span class="eyebrow">When</span><h2>Schedule &amp; hours</h2><div class="schedule-list">'+venues.map(v=>'<article class="venue-schedule"><div><h3>'+bhEscape(v.name||"Venue")+'</h3><p>'+bhEscape(v.address||v.town||v.region||"")+'</p></div><div class="session-list">'+(v.sessions||[]).map(s=>'<div class="session-row"><strong>'+bhEscape(s.day||"Session")+'</strong><span>'+bhEscape(bhFormatTime(s.start||s.time||""))+((s.end||s.end_time)?" – "+bhEscape(bhFormatTime(s.end||s.end_time)):"")+'</span><span>'+bhEscape(s.duration||"")+'</span><span>'+((s.price!==undefined&&s.price!=="")?bhEscape(String(s.price).startsWith("£")?s.price:"£"+s.price):"")+'</span></div>').join("")+'</div></article>').join("")+'</div></section>'+
-    '<section class="listing-card where-card"><span class="eyebrow">Where</span><h2>Where</h2><div id="listingMap" class="listing-map" aria-label="Activity venue map"></div><div class="venue-list"><div class="venue-list-heading">Venues</div>'+venues.map(v=>'<article class="venue-card"><div class="venue-card-details"><h3><a href="venue.html?id='+encodeURIComponent(v.id||"")+'">'+bhEscape(v.name||"Venue")+'</a></h3><p>'+[v.address,v.town,v.postcode].filter(Boolean).map(x=>bhEscape(x)).join(" · ")+'</p></div><a class="button button-soft venue-directions" target="_blank" rel="noopener" href="'+(v.lat&&v.long?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.lat+","+v.long):"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.address||v.town||v.name||""))+'">Directions</a></article>').join("")+'</div></section>'+
+    '<section class="listing-card where-card" aria-hidden="true"><span class="eyebrow">Where</span><h2>Where</h2><div id="listingMap" class="listing-map" aria-label="Activity venue map"></div><div class="venue-list"><div class="venue-list-heading">Venues</div>'+venues.map(v=>'<article class="venue-card"><div class="venue-card-details"><h3><a href="venue.html?id='+encodeURIComponent(v.id||"")+'">'+bhEscape(v.name||"Venue")+'</a></h3><p>'+[v.address,v.town,v.postcode].filter(Boolean).map(x=>bhEscape(x)).join(" · ")+'</p></div><a class="button button-soft venue-directions" target="_blank" rel="noopener" href="'+(v.lat&&v.long?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.lat+","+v.long):"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.address||v.town||v.name||""))+'">Directions</a></article>').join("")+'</div></section>'+
    '</div><aside class="listing-side">'+
     '<section class="listing-card organiser-card"><span class="eyebrow">Organiser</span><div class="organiser-profile"><div class="organiser-avatar">'+(a.organiser_avatar?'<img src="'+bhEscape(a.organiser_avatar)+'" alt="'+bhEscape(a.organiser_name||"Organiser")+'">':'<span>BH</span>')+'</div><div><h2>'+bhEscape(a.organiser_name||a.organiser||"Activity organiser")+'</h2></div></div><div class="organiser-links"><a class="button button-soft organiser-icon-link" href="organiser/'+encodeURIComponent(a.organiser_slug||a.organiser_name||"organiser")+'/">🏪 <span>View organiser</span></a>'+(a.organiser_website?'<a class="organiser-icon-link" title="Business website" aria-label="Business website" target="_blank" rel="noopener" href="'+bhEscape(a.organiser_website)+'">🌐</a>':"")+(a.email?'<a class="organiser-icon-link" title="Email organiser" aria-label="Email organiser" href="mailto:'+bhEscape(a.email)+'">✉</a>':"")+'</div></section>'+
     '<section class="listing-card booking-card"><span class="eyebrow">Join in</span><h2>Book or reserve</h2><div id="bookingSchedule"><p>Loading booking options…</p></div></section>'+    '<section class="listing-card contact-card"><span class="eyebrow">Contact</span><h2>Contact organiser</h2><p>Have a question about the activity, venue or sessions?</p><button class="button button-soft button-full" id="contactOrganiser" type="button">Contact organiser</button></section>'+
