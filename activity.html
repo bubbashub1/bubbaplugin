@@ -60,11 +60,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
    const id=params.get("id");
    let items=[];
    if(slug){
-    const response=await fetch("api/activities.php?slug="+encodeURIComponent(slug)+"&page=1&per_page=1",{cache:"no-store",headers:{Accept:"application/json"}});
-    if(!response.ok)throw new Error("Could not load activity");
-    const payload=await response.json();
-    if(!payload.ok)throw new Error(payload.error||"Could not load activity");
-    items=Array.isArray(payload.data)?payload.data:[];
+    items=await bhActivities();
    }else{
     items=await bhActivities();
    }
@@ -77,7 +73,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   state.innerHTML=
    '<section class="listing-hero activity-hero">'+
     '<div class="listing-gallery">'+(images.length?images.map((src,i)=>'<img src="'+bhEscape(src)+'" alt="'+bhEscape(a.title)+'"'+(i?' loading="lazy"':'')+'>').join(""):'<div class="listing-gallery-placeholder">Bubba Hub activity</div>')+'</div>'+
-    '<div class="listing-summary"><span class="eyebrow">'+bhEscape(cats.join(" · ")||"Family activity")+'</span><h1>'+bhEscape(a.title)+'</h1></span><p class="listing-intro">'+bhEscape(a.short_description||a.summary||"A local family activity listed on Bubba Hub.")+'</p>'+
+    '<div class="listing-summary"><span class="eyebrow">'+bhEscape(cats.join(" · ")||"Family activity")+'</span><h1>'+bhEscape(a.title)+'</h1><p class="listing-intro">'+bhEscape(a.short_description||a.summary||"A local family activity listed on Bubba Hub.")+'</p>'+
     '<div class="listing-tags">'+ages.map(x=>'<span>'+bhEscape(x)+'</span>').join("")+(a.region?'<span>'+bhEscape(a.region)+'</span>':"")+'</div>'+
     '<div class="listing-actions" aria-label="Activity actions"><button class="button button-primary activity-action" id="save" type="button" aria-label="Save activity"></button><button class="button button-soft activity-action" id="planner" aria-label="Add to planner" type="button"></button><button class="button button-soft activity-action" id="visited" type="button" aria-label="Mark as visited"></button><button class="button button-soft activity-action" id="compare" aria-label="Compare activity" type="button"></button></div></div>'+
    '</section>'+
