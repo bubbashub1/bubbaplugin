@@ -2312,6 +2312,44 @@ body:not(.bh-home) .listing-layout{
   }
 }
 </style>
+<style id="listing-layout-fluid-final">
+/* Force the activity body content to run edge-to-edge like the hero/footer. */
+body:not(.bh-home) .listing-layout,
+body:not(.bh-home) .listing-layout > .listing-main,
+body:not(.bh-home) .listing-layout > .listing-side,
+body:not(.bh-home) .activity-reference-organiser,
+body:not(.bh-home) .listing-bottom{
+  width:100% !important;
+  max-width:none !important;
+  margin-left:0 !important;
+  margin-right:0 !important;
+  box-sizing:border-box !important;
+}
+body:not(.bh-home) .listing-layout{
+  margin-top:0 !important;
+  margin-bottom:0 !important;
+  padding-left:15px !important;
+  padding-right:15px !important;
+}
+body:not(.bh-home) .activity-reference-organiser,
+body:not(.bh-home) .listing-bottom{
+  padding-left:15px !important;
+  padding-right:15px !important;
+}
+@media(max-width:950px){
+  body:not(.bh-home) .listing-layout{
+    width:100% !important;
+    padding-left:15px !important;
+    padding-right:15px !important;
+  }
+  body:not(.bh-home) .activity-reference-organiser,
+  body:not(.bh-home) .listing-bottom{
+    width:100% !important;
+    padding-left:15px !important;
+    padding-right:15px !important;
+  }
+}
+</style>
 </head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
