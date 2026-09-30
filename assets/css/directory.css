@@ -900,3 +900,7 @@
     font-weight:900;
   }
 }
+
+/* Listing → map interaction */
+.activity-card[data-activity-id] { cursor: pointer; }
+.activity-card[data-activity-id]:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
