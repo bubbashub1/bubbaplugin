@@ -685,6 +685,24 @@ document.addEventListener("DOMContentLoaded", async () => {
         `${list.length} activit${list.length === 1 ? "y" : "ies"} found` +
         (params.get("saved") ? " · Saved" : "");
 
+      const mobileMapLink = document.querySelector(".directory-mobile-map-link");
+      if (mobileMapLink) {
+        const mapParams = new URLSearchParams();
+        const mapValues = {
+          keyword: search,
+          region,
+          town,
+          category,
+          age_min: minAge > 0 ? String(minAge) : "",
+          age_max: maxAge < 9 ? String(maxAge) : "",
+          age_preset: params.get("age_preset") || "",
+          day,
+          max_price: maxPrice
+        };
+        Object.entries(mapValues).forEach(([key,value]) => { if (value) mapParams.set(key,value); });
+        mobileMapLink.href = "map.html" + (mapParams.toString() ? "?" + mapParams.toString() : "");
+      }
+
       const resultsEl = $("results");
       if (!resultsEl) return;
       resultsEl.className = `activity-grid directory-view-${currentView} directory-cards-${cardCount}`;
