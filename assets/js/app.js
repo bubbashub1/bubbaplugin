@@ -259,7 +259,7 @@ void bhHydrateSaved();
     if(!base)return;
     const url=new URL(base.href,document.baseURI);
     url.pathname=url.pathname.replace(/\/styles\.css$/,'/sitewide-home.css');
-    url.search='v=20260929-2';
+    url.search='v=20260930-1';
     if(!document.querySelector('link[data-bh-sitewide-theme]')){
       const link=document.createElement('link');
       link.rel='stylesheet';
