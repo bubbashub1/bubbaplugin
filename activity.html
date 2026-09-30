@@ -72,10 +72,14 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const searchToggle=document.getElementById("activitySearchToggle");
   const searchForm=document.getElementById("activityHeaderSearch");
   if(searchToggle&&searchForm){
-    searchToggle.addEventListener("click",()=>{
-      const hidden=searchForm.classList.toggle("is-collapsed");
+    const setSearchState=hidden=>{
+      searchForm.classList.toggle("is-collapsed",hidden);
       searchToggle.setAttribute("aria-expanded",String(!hidden));
       searchToggle.querySelector("span").textContent=hidden?"⌄":"⌃";
+    };
+    setSearchState(window.matchMedia("(max-width:650px)").matches);
+    searchToggle.addEventListener("click",()=>{
+      setSearchState(!searchForm.classList.contains("is-collapsed"));
     });
   }
 });
