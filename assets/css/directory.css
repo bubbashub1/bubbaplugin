@@ -301,6 +301,19 @@
   padding:8px 14px;
   font-size:12px;
 }
+.bh-directory .directory-load-more,
+.bh-directory .directory-end-message{
+  width:100%;
+  box-sizing:border-box;
+  padding:14px 10px 8px;
+  color:var(--bh-site-muted,#617261);
+  font-size:12px;
+  font-weight:800;
+  text-align:center;
+}
+.bh-directory .directory-load-more{
+  min-height:34px;
+}
 .bh-directory .activity-card[data-activity-id]{cursor:pointer}
 .bh-directory .activity-card[data-activity-id]:focus-visible{
   outline:3px solid currentColor;
