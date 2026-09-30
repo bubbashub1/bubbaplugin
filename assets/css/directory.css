@@ -721,3 +721,75 @@
   .bh-directory .directory-hero-search{padding:18px 13px 14px}
   .bh-directory .directory-hero-search h2{font-size:25px}
 }
+
+
+/* FINAL DIRECTORY LISTINGS + MAP STABILITY
+   Keep the two desktop columns independent and prevent intrinsic
+   card/map widths from creating overflow or overlap. */
+@media(min-width:901px){
+  .bh-directory .directory-results-column{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-areas:"heading map" "results map" "all map"!important;
+    column-gap:24px!important;
+    row-gap:0!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    align-items:start!important;
+  }
+  .bh-directory .directory-results-column > .directory-results-heading{
+    grid-area:heading!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  .bh-directory .directory-results-column > #results{
+    grid-area:results!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    box-sizing:border-box!important;
+  }
+  .bh-directory .directory-results-column > #results .activity-card{
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+  .bh-directory .directory-results-column > .directory-all-link-wrap{
+    grid-area:all!important;
+    width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+  .bh-directory .directory-results-column > #mapView{
+    grid-area:map!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:620px!important;
+    margin:0!important;
+    box-sizing:border-box!important;
+    align-self:start!important;
+    overflow:hidden!important;
+  }
+}
+@media(max-width:900px){
+  .bh-directory .directory-results-column{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+  .bh-directory .directory-results-column > #results,
+  .bh-directory .directory-results-column > #mapView{
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    box-sizing:border-box!important;
+  }
+}
