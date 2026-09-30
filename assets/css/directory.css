@@ -1028,3 +1028,10 @@
     flex:1 1 auto;
   }
 }
+
+/* Six-field main directory search: keyword, region, town, category, age and day. */
+@media(min-width:1101px){
+  .bh-directory .directory-hero-search-fields{
+    grid-template-columns:minmax(180px,1.7fr) repeat(4,minmax(105px,1fr)) 104px!important;
+  }
+}
