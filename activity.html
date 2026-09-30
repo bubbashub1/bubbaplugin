@@ -395,6 +395,190 @@ body:not(.bh-home) .activity-reference-organiser{margin-top:0!important}
  body:not(.bh-home) .activity-reference-about{grid-column:1!important;grid-row:1!important}
  body:not(.bh-home) .activity-reference-contact{grid-column:1!important;grid-row:2!important;border-left:0!important;border-top:1px solid #9fb7a5!important;padding:28px 0!important}
 }
+</style><style id="activity-modern-overrides">
+/* Modern activity detail polish */
+body:not(.bh-home) .activity-hero{
+  background:linear-gradient(180deg,#f8fbf8 0%,#eef6f0 100%)!important;
+  padding:28px max(28px,calc((100vw - 1320px)/2))!important;
+  gap:34px!important;
+  min-height:320px!important;
+  border-bottom:1px solid rgba(65,102,81,.12)!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery{
+  height:270px!important;
+  min-height:270px!important;
+  background:#fff!important;
+  border:1px solid rgba(65,102,81,.12)!important;
+  border-radius:22px!important;
+  box-shadow:0 14px 34px rgba(20,68,0,.08)!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery img,
+body:not(.bh-home) .activity-hero .listing-gallery-placeholder{
+  background:#fff!important;
+  border-radius:21px!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary{
+  min-height:270px!important;
+  padding:30px 32px!important;
+  background:#fff!important;
+  border:1px solid rgba(65,102,81,.12)!important;
+  border-radius:22px!important;
+  box-shadow:0 14px 34px rgba(20,68,0,.07)!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary .eyebrow{
+  background:#e7f1ea!important;
+  color:#416651!important;
+  border:1px solid #d8e6db!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary h1,
+body:not(.bh-home) .activity-hero .listing-intro,
+body:not(.bh-home) .activity-hero .listing-tags span{color:#144400!important}
+body:not(.bh-home) .activity-hero .listing-tags span::before{color:#9fb7a5!important}
+body:not(.bh-home) .activity-hero .listing-actions{margin-top:20px!important}
+body:not(.bh-home) .activity-hero .listing-actions #planner{
+  color:#416651!important;
+  padding-left:0!important;
+}
+body:not(.bh-home) .activity-book-button{
+  width:auto!important;
+  min-width:150px!important;
+  min-height:48px!important;
+  margin-top:-50px!important;
+  padding:12px 24px!important;
+  background:var(--bh-primary)!important;
+  color:#fff!important;
+  box-shadow:0 8px 18px rgba(65,102,81,.18)!important;
+}
+body:not(.bh-home) .activity-book-button:hover{
+  background:#355844!important;
+  color:#fff!important;
+  transform:translateY(-1px);
+}
+body:not(.bh-home) .listing-layout{
+  width:min(1320px,calc(100% - 56px))!important;
+  grid-template-columns:minmax(0,1fr) minmax(390px,.9fr)!important;
+  gap:0 56px!important;
+  align-items:start!important;
+}
+body:not(.bh-home) .activity-reference-about{
+  grid-column:1!important;
+  grid-row:1 / span 2!important;
+  padding:44px 0 38px!important;
+}
+body:not(.bh-home) .activity-keyword-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:0 0 16px;
+}
+body:not(.bh-home) .activity-keyword-tags:empty{display:none}
+body:not(.bh-home) .activity-keyword-tags span{
+  display:inline-flex;
+  align-items:center;
+  min-height:30px;
+  padding:5px 11px;
+  border-radius:999px;
+  background:#e7f1ea;
+  color:#416651;
+  border:1px solid #d8e6db;
+  font-size:11px;
+  font-weight:750;
+}
+body:not(.bh-home) .activity-reference-about h2{
+  margin:0 0 15px!important;
+  color:#144400!important;
+  font-size:30px!important;
+  letter-spacing:-.02em;
+}
+body:not(.bh-home) .activity-reference-contact{
+  grid-column:2!important;
+  grid-row:2!important;
+  padding:0 0 34px 42px!important;
+  border-left:1px solid #d8e6db!important;
+}
+body:not(.bh-home) .activity-reference-contact-map{
+  margin:0 0 14px!important;
+  height:245px!important;
+  border-radius:18px!important;
+  border:1px solid rgba(65,102,81,.12);
+  box-shadow:0 10px 25px rgba(20,68,0,.06);
+}
+body:not(.bh-home) .activity-reference-schedule{
+  grid-column:2!important;
+  grid-row:1!important;
+  padding:38px 0 22px 42px!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+body:not(.bh-home) .activity-reference-schedule .eyebrow{
+  display:block!important;
+  margin-bottom:6px!important;
+  color:#617261!important;
+  font-size:11px!important;
+  font-weight:800!important;
+  letter-spacing:.08em!important;
+  text-transform:uppercase!important;
+}
+body:not(.bh-home) .activity-reference-schedule h2{
+  margin:0 0 14px!important;
+  color:#144400!important;
+  font-size:23px!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule{
+  padding:12px 0!important;
+  border-top:1px solid #d8e6db!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule:last-child{border-bottom:1px solid #d8e6db!important}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule h3{
+  color:#416651!important;
+  font-size:13px!important;
+  margin:0 0 2px!important;
+}
+body:not(.bh-home) .activity-reference-schedule .venue-schedule p{
+  color:#617261!important;
+  font-size:11px!important;
+  margin:0 0 7px!important;
+}
+body:not(.bh-home) .activity-reference-schedule .session-row{
+  display:flex!important;
+  flex-wrap:wrap;
+  gap:7px 14px;
+  align-items:center;
+  padding:7px 10px;
+  margin-top:5px;
+  background:#f4f8f5;
+  border-radius:10px;
+  color:#617261;
+  font-size:11px;
+}
+body:not(.bh-home) .activity-reference-schedule .session-row strong{color:#144400}
+body:not(.bh-home) .activity-reference-organiser{
+  width:min(1320px,calc(100% - 56px))!important;
+  margin:8px auto 0!important;
+  background:#e7f1ea!important;
+  border:1px solid #d8e6db!important;
+  box-shadow:none!important;
+}
+@media(max-width:950px){
+  body:not(.bh-home) .activity-hero{padding:20px!important;gap:18px!important}
+  body:not(.bh-home) .listing-layout{width:calc(100% - 40px)!important;grid-template-columns:1fr!important}
+  body:not(.bh-home) .activity-reference-about{grid-column:1!important;grid-row:1!important;padding:30px 0!important}
+  body:not(.bh-home) .activity-reference-schedule{grid-column:1!important;grid-row:2!important;padding:0 0 26px!important}
+  body:not(.bh-home) .activity-reference-contact{grid-column:1!important;grid-row:3!important;padding:0 0 28px!important;border-left:0!important;border-top:1px solid #d8e6db!important}
+  body:not(.bh-home) .activity-reference-contact-map{margin-top:22px!important}
+  body:not(.bh-home) .activity-reference-organiser{width:calc(100% - 40px)!important}
+}
+@media(max-width:650px){
+  body:not(.bh-home) .activity-hero{padding:14px!important}
+  body:not(.bh-home) .activity-hero .listing-gallery{height:200px!important;min-height:200px!important}
+  body:not(.bh-home) .activity-hero .listing-summary{min-height:0!important;padding:24px 20px!important}
+  body:not(.bh-home) .listing-layout{width:calc(100% - 28px)!important}
+  body:not(.bh-home) .activity-reference-about h2{font-size:25px!important}
+  body:not(.bh-home) .activity-book-button{width:100%!important;margin-top:12px!important}
+  body:not(.bh-home) .activity-reference-organiser{width:calc(100% - 28px)!important}
+}
 </style></head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
@@ -475,6 +659,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const venues=bhVenues(a),sessions=bhSessions(a),images=Array.isArray(a.gallery)&&a.gallery.length?a.gallery:(a.image_url?[a.image_url]:[]);
   document.title=a.title+" · Bubba Hub";
   const cats=Array.isArray(a.category)?a.category:[a.category].filter(Boolean),ages=Array.isArray(a.age_range)?a.age_range:[a.age_range].filter(Boolean);
+  const rawKeywords=Array.isArray(a.keywords)?a.keywords:(Array.isArray(a.tags)?a.tags:(typeof a.keywords==="string"?a.keywords.split(","):(typeof a.tags==="string"?a.tags.split(","):[])));
+  const keywords=[...new Set([...cats,...rawKeywords].map(v=>String(v||"").trim()).filter(Boolean))].slice(0,10);
   state.className="listing-page";
   state.innerHTML=
    '<section class="listing-hero activity-hero">'+
@@ -489,15 +675,17 @@ document.addEventListener("DOMContentLoaded",async()=>{
     '<div class="listing-actions" aria-label="Activity actions"><button class="button button-soft activity-action" id="save" type="button" aria-label="Save activity"></button><button class="button button-soft activity-action" id="planner" aria-label="Add to planner" type="button"></button><button class="button button-soft activity-action" id="visited" type="button" aria-label="Mark as visited"></button><button class="button button-soft activity-action" id="compare" aria-label="Compare activity" type="button"></button></div><button class="button activity-book-button" id="heroBookNow" type="button">Book Now</button></div>'+
    '</section>'+
    '<div class="listing-layout"><div class="listing-main">'+
-    '<section class="listing-card good-to-know-card"><span class="eyebrow">Quick Facts!</span><h2>Quick Facts!</h2><div class="good-to-know-grid">'+(a.price?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Price</span><strong>'+bhEscape(a.price)+'</strong></div>':"")+(ages.length?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Age range</span><strong>'+bhEscape(ages.join(", "))+'</strong></div>':"")+(sessions.some(s=>s.term_time)?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Term time</span><strong>'+bhEscape('Term time')+'</strong></div>':"")+(a.region?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Location</span><strong>'+bhEscape(a.region)+'</strong></div>':"")+'</div></section>'+'<section class="listing-card activity-reference-about"><span class="eyebrow">About</span><h2>About this activity</h2><div class="listing-description">'+bhEscape(a.description||a.content||"More information about this activity will appear here.")+'</div>'+
+    '<section class="listing-card good-to-know-card"><span class="eyebrow">Quick Facts!</span><h2>Quick Facts!</h2><div class="good-to-know-grid">'+(a.price?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Price</span><strong>'+bhEscape(a.price)+'</strong></div>':"")+(ages.length?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Age range</span><strong>'+bhEscape(ages.join(", "))+'</strong></div>':"")+(sessions.some(s=>s.term_time)?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Term time</span><strong>'+bhEscape('Term time')+'</strong></div>':"")+(a.region?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Location</span><strong>'+bhEscape(a.region)+'</strong></div>':"")+'</div></section>'+'<section class="listing-card activity-reference-about">'+
+    '<div class="activity-keyword-tags" aria-label="Activity tags">'+keywords.map(k=>'<span>'+bhEscape(k)+'</span>').join("")+'</div>'+
+    '<h2>About '+bhEscape(a.title)+'</h2><div class="listing-description">'+bhEscape(a.description||a.content||"More information about this activity will appear here.")+'</div>'+
     '<div class="activity-reference-facts">'+
       (cats.length?'<span>'+bhEscape(cats[0])+'</span>':"")+
       (ages.length?'<span>'+bhEscape(ages.join(", "))+'</span>':"")+
       (a.town?'<span>'+bhEscape(a.town)+'</span>':"")+
       (bhSessions(a).some(s=>s.term_time)?'<span>Term time</span>':"")+
     '</div></section>'+
-    '<section class="activity-reference-contact"><h2>Map &amp; Address</h2><div id="listingMap" class="listing-map activity-reference-contact-map" aria-label="Activity venue map"></div><div class="activity-reference-addresses">'+(venues||[]).map(v=>'<article class="activity-address-row"><div class="activity-address-icon">⌖</div><div><strong>'+bhEscape(v.name||"Venue")+'</strong><span>'+[v.address,v.town,v.postcode].filter(Boolean).map(x=>bhEscape(x)).join(", ")+'</span></div><a class="button button-soft" target="_blank" rel="noopener" href="'+(v.lat&&v.long?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.lat+","+v.long):"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.address||v.town||v.name||""))+'">Directions</a></article>').join("")+'</div></section>'+
-    '<section class="listing-card"><span class="eyebrow">When</span><h2>Schedule &amp; hours</h2><div class="schedule-list">'+venues.map(v=>'<article class="venue-schedule"><div><h3>'+bhEscape(v.name||"Venue")+'</h3><p>'+bhEscape(v.address||v.town||v.region||"")+'</p></div><div class="session-list">'+(v.sessions||[]).map(s=>'<div class="session-row"><strong>'+bhEscape(s.day||"Session")+'</strong><span>'+bhEscape(bhFormatTime(s.start||s.time||""))+((s.end||s.end_time)?" – "+bhEscape(bhFormatTime(s.end||s.end_time)):"")+'</span><span>'+bhEscape(s.duration||"")+'</span><span>'+((s.price!==undefined&&s.price!=="")?bhEscape(String(s.price).startsWith("£")?s.price:"£"+s.price):"")+'</span></div>').join("")+'</div></article>').join("")+'</div></section>'+
+    '<section class="activity-reference-contact"><div id="listingMap" class="listing-map activity-reference-contact-map" aria-label="Activity venue map"></div><div class="activity-reference-addresses">'+(venues||[]).map(v=>'<article class="activity-address-row"><div class="activity-address-icon">⌖</div><div><strong>'+bhEscape(v.name||"Venue")+'</strong><span>'+[v.address,v.town,v.postcode].filter(Boolean).map(x=>bhEscape(x)).join(", ")+'</span></div><a class="button button-soft" target="_blank" rel="noopener" href="'+(v.lat&&v.long?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.lat+","+v.long):"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.address||v.town||v.name||""))+'">Directions</a></article>').join("")+'</div></section>'+
+    '<section class="listing-card activity-reference-schedule"><span class="eyebrow">When</span><h2>Schedule &amp; hours</h2><div class="schedule-list">'+venues.map(v=>'<article class="venue-schedule"><div><h3>'+bhEscape(v.name||"Venue")+'</h3><p>'+bhEscape(v.address||v.town||v.region||"")+'</p></div><div class="session-list">'+(v.sessions||[]).map(s=>'<div class="session-row"><strong>'+bhEscape(s.day||"Session")+'</strong><span>'+bhEscape(bhFormatTime(s.start||s.time||""))+((s.end||s.end_time)?" – "+bhEscape(bhFormatTime(s.end||s.end_time)):"")+'</span><span>'+bhEscape(s.duration||"")+'</span><span>'+((s.price!==undefined&&s.price!=="")?bhEscape(String(s.price).startsWith("£")?s.price:"£"+s.price):"")+'</span></div>').join("")+'</div></article>').join("")+'</div></section>'+
     '<section class="listing-card where-card" aria-hidden="true"><span class="eyebrow">Where</span><h2>Where</h2><div id="listingMap" class="listing-map" aria-label="Activity venue map"></div><div class="venue-list"><div class="venue-list-heading">Venues</div>'+venues.map(v=>'<article class="venue-card"><div class="venue-card-details"><h3><a href="venue.html?id='+encodeURIComponent(v.id||"")+'">'+bhEscape(v.name||"Venue")+'</a></h3><p>'+[v.address,v.town,v.postcode].filter(Boolean).map(x=>bhEscape(x)).join(" · ")+'</p></div><a class="button button-soft venue-directions" target="_blank" rel="noopener" href="'+(v.lat&&v.long?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.lat+","+v.long):"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.address||v.town||v.name||""))+'">Directions</a></article>').join("")+'</div></section>'+
    '</div><aside class="listing-side">'+
     '<section class="listing-card organiser-card"><span class="eyebrow">Organiser</span><div class="organiser-profile"><div class="organiser-avatar">'+(a.organiser_avatar?'<img src="'+bhEscape(a.organiser_avatar)+'" alt="'+bhEscape(a.organiser_name||"Organiser")+'">':'<span>BH</span>')+'</div><div><h2>'+bhEscape(a.organiser_name||a.organiser||"Activity organiser")+'</h2></div></div><div class="organiser-links"><a class="button button-soft organiser-icon-link" href="organiser/'+encodeURIComponent(a.organiser_slug||a.organiser_name||"organiser")+'/">🏪 <span>View organiser</span></a>'+(a.organiser_website?'<a class="organiser-icon-link" title="Business website" aria-label="Business website" target="_blank" rel="noopener" href="'+bhEscape(a.organiser_website)+'">🌐</a>':"")+(a.email?'<a class="organiser-icon-link" title="Email organiser" aria-label="Email organiser" href="mailto:'+bhEscape(a.email)+'">✉</a>':"")+'</div></section>'+
