@@ -99,7 +99,10 @@ async function bhActivities(){
       accessibility:Array.isArray(a.accessibility)?a.accessibility:[],
       price:a.price_from!==null&&a.price_from!==undefined?"£"+Number(a.price_from).toFixed(2):"",
       price_value:a.price_from,
-      image_url:a.image_path||"",
+      image_url:(a.image_path||"").replace(
+        "gemini_generated_image_20260930-190428-b9e652.png",
+        "gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png"
+      ),
       short_description:a.description||"",
       summary:a.description||"",
       content:a.description||"",
