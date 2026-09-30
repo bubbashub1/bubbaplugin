@@ -2200,13 +2200,15 @@ document.addEventListener("DOMContentLoaded",async()=>{
    '<section class="listing-hero activity-hero">'+
     '<div class="listing-gallery">'+(images.length?images.map((src,i)=>'<img src="'+bhEscape(src)+'" alt="'+bhEscape(a.title)+'"'+(i?' loading="lazy"':'')+'>').join(""):'<img src="images/logos/gemini_generated_image_1dzezm1dzezm1dze-20260929-213630-1f8496.jpeg" alt="'+bhEscape(a.title||"Bubba Hub activity")+'" class="listing-gallery-fallback">')+'</div>'+
     '<div class="listing-summary"><span class="eyebrow">'+bhEscape(cats.join(" · ")||"Family activity")+'</span><h1>'+bhEscape(a.title)+'</h1><p class="listing-intro">'+bhEscape(a.short_description||a.summary||"A local family activity listed on Bubba Hub.")+'</p>'+
-    '<div class="listing-tags">'+
-      (a.town?'<span>⌖ '+bhEscape(a.town)+'</span>':"")+
-      (ages.length?'<span>♟ '+bhEscape(ages.join(", "))+'</span>':"")+
-      (bhSessions(a).some(s=>s.term_time)?'<span>▣ Term time</span>':"")+
-      (bhSessions(a).some(s=>s.duration)?'<span>◷ '+bhEscape(bhSessions(a).find(s=>s.duration)?.duration||"")+'</span>':"")+
+    '<div class="hero-quick-facts" aria-label="Quick Facts">'+
+      '<span><strong>Price</strong><b>'+(a.price?bhEscape(a.price):"Check listing")+'</b></span>'+
+      '<span><strong>Age range</strong><b>'+(ages.length?bhEscape(ages.join(", ")):"All ages")+'</b></span>'+
+      '<span><strong>Location</strong><b>'+bhEscape(a.town||a.region||"Devon & Cornwall")+'</b></span>'+
+      '<span><strong>Sessions</strong><b>'+(bhSessions(a).length?bhSessions(a).length+" available":"See schedule")+'</b></span>'+
+      '<span><strong>Term Time</strong><b>'+(bhSessions(a).some(s=>s.term_time)?"Term time":"See schedule")+'</b></span>'+
+      '<span><strong>Session Length</strong><b>'+(bhSessions(a).find(s=>s.duration)?.duration||"See schedule")+'</b></span>'+
     '</div>'+
-    '<div class="hero-quick-facts" aria-label="Quick Facts"><span><strong>Price</strong><b>'+(a.price?bhEscape(a.price):"Check listing")+'</b></span><span><strong>Age range</strong><b>'+(ages.length?bhEscape(ages.join(", ")):"All ages")+'</b></span><span><strong>Location</strong><b>'+bhEscape(a.town||a.region||"Devon & Cornwall")+'</b></span><span><strong>Sessions</strong><b>'+(bhSessions(a).length?bhSessions(a).length+" available":"See schedule")+'</b></span></div>'+
+    '<div class="listing-actions" aria-label="Activity actions"><button class="button button-soft activity-action" id="save" type="button" aria-label="Save activity"></button><button class="button button-soft activity-action" id="planner" aria-label="Add to planner" type="button"></button><button class="button button-soft activity-action" id="visited" type="button" aria-label="Mark as visited"></button><button class="button button-soft activity-action" id="compare" aria-label="Compare activity" type="button"></button><button class="button activity-book-button" id="heroBookNow" type="button">Book Now</button></div></div>'+
     '<div class="listing-actions" aria-label="Activity actions"><button class="button button-soft activity-action" id="save" type="button" aria-label="Save activity"></button><button class="button button-soft activity-action" id="planner" aria-label="Add to planner" type="button"></button><button class="button button-soft activity-action" id="visited" type="button" aria-label="Mark as visited"></button><button class="button button-soft activity-action" id="compare" aria-label="Compare activity" type="button"></button><button class="button activity-book-button" id="heroBookNow" type="button">Book Now</button></div></div>'+
    '</section>'+
    '<div class="listing-layout"><div class="listing-main">'+
@@ -2440,6 +2442,113 @@ body:not(.bh-home) .listing-layout{
     height:200px!important;
     min-height:200px!important;
     max-height:200px!important;
+  }
+}
+</style>
+
+<style id="activity-hero-quick-facts-final">
+/* Final quick-facts grid and single-row hero actions */
+body:not(.bh-home) .activity-hero .listing-tags{
+  display:none!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts{
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  gap:8px!important;
+  width:100%!important;
+  margin:16px 0 14px!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts>span{
+  min-width:0!important;
+  min-height:62px!important;
+  padding:9px 10px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  gap:4px!important;
+  box-sizing:border-box!important;
+  border:1px solid rgba(255,255,255,.25)!important;
+  border-radius:12px!important;
+  background:rgba(255,255,255,.10)!important;
+  color:#fff!important;
+  overflow:hidden!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts strong{
+  display:block!important;
+  color:#d9eadf!important;
+  font-size:9px!important;
+  line-height:1.1!important;
+  font-weight:800!important;
+  letter-spacing:.04em!important;
+  text-transform:uppercase!important;
+}
+body:not(.bh-home) .activity-hero .hero-quick-facts b{
+  display:block!important;
+  color:#fff!important;
+  font-size:12px!important;
+  line-height:1.2!important;
+  font-weight:750!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions{
+  display:flex!important;
+  flex-flow:row nowrap!important;
+  align-items:center!important;
+  gap:7px!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-action,
+body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{
+  flex:1 1 0!important;
+  min-width:0!important;
+  width:auto!important;
+  max-width:none!important;
+  min-height:40px!important;
+  margin:0!important;
+  padding:8px 10px!important;
+  font-size:11px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{
+  flex:1.1 1 0!important;
+}
+@media(max-width:1100px) and (min-width:951px){
+  body:not(.bh-home) .activity-hero .hero-quick-facts{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:950px){
+  body:not(.bh-home) .activity-hero .hero-quick-facts{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-actions{
+    flex-wrap:wrap!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-actions .activity-action,
+  body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{
+    flex:1 1 calc(20% - 7px)!important;
+  }
+}
+@media(max-width:650px){
+  body:not(.bh-home) .activity-hero .hero-quick-facts{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-actions{
+    gap:7px!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-actions .activity-action,
+  body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{
+    flex:1 1 calc(50% - 7px)!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{
+    flex-basis:100%!important;
   }
 }
 </style>
