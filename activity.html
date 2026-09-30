@@ -2359,3 +2359,87 @@ document.addEventListener("DOMContentLoaded",async()=>{
   }catch(error){}
 })();
 </script></body></html>
+<style id="activity-featured-image-fluid-final">
+/* Final featured-image fit + fluid activity body */
+body:not(.bh-home) .activity-hero{
+  width:100%!important;
+  max-width:none!important;
+  height:auto!important;
+  min-height:0!important;
+  padding:24px clamp(60px,6vw,90px) 28px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  background:#1B4D3E!important;
+  align-items:center!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery{
+  width:100%!important;
+  height:280px!important;
+  min-height:280px!important;
+  max-height:280px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:0!important;
+  background:#fff!important;
+  border-radius:18px!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery picture{
+  display:flex!important;
+  width:100%!important;
+  height:100%!important;
+  max-height:100%!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery img,
+body:not(.bh-home) .activity-hero .listing-gallery-placeholder{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  border-radius:18px!important;
+  background:#fff!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery img{
+  flex:0 1 auto!important;
+}
+body:not(.bh-home) .listing-layout,
+body:not(.bh-home) .activity-reference-organiser,
+body:not(.bh-home) .listing-bottom{
+  width:100%!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .listing-layout{
+  margin-left:0!important;
+  margin-right:0!important;
+}
+@media(max-width:950px){
+  body:not(.bh-home) .activity-hero{
+    padding:22px 24px 26px!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-gallery{
+    height:240px!important;
+    min-height:240px!important;
+    max-height:240px!important;
+  }
+}
+@media(max-width:650px){
+  body:not(.bh-home) .activity-hero{
+    padding:18px 16px 24px!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-gallery{
+    height:200px!important;
+    min-height:200px!important;
+    max-height:200px!important;
+  }
+}
+</style>
