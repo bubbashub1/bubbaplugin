@@ -187,6 +187,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     let currentView = window.innerWidth > 900 ? "grid" : (storedView === "map" ? "map" : "grid");
     let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let cardCount = Number(localStorage.getItem("bh_directory_cards") || 3);
+    let visibleActivityCount = 12;
+    let infiniteScrollObserver = null;
     let homeLocation = null;
     let homeLocationLoading = false;
 
@@ -655,6 +657,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         sessionLength || sen || termTime || bookingRequired || accessibility.length ||
         minAge > 0 || maxAge < 9 || params.get("saved")
       );
+      if (!window.__bhDirectoryLastFilterKey) window.__bhDirectoryLastFilterKey = "";
+      const filterKey = JSON.stringify([search,category,region,town,minAge,maxAge,day,maxPrice,freeOnly,sessionLength,sen,termTime,bookingRequired,accessibility,params.get("saved") || ""]);
+      if (filterKey !== window.__bhDirectoryLastFilterKey) {
+        visibleActivityCount = 12;
+        window.__bhDirectoryLastFilterKey = filterKey;
+      }
 
       // A completely fresh directory must show every published activity returned
       // by the API. Only run the detailed matcher when the visitor has actually
@@ -749,7 +757,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       const resultsEl = $("results");
       if (!resultsEl) return;
       resultsEl.className = `activity-grid directory-view-${currentView} directory-cards-${cardCount}`;
-      resultsEl.innerHTML = list.map(activity => {
+      const visibleList = list.slice(0, visibleActivityCount);
+      resultsEl.innerHTML = visibleList.map(activity => {
         const venues = bhVenues(activity);
         const sessions = bhSessions(activity);
         const firstSession = sessions[0];
@@ -777,6 +786,28 @@ document.addEventListener("DOMContentLoaded", async () => {
           </div>
         </article>`;
       }).join("") || '<div class="admin-panel"><h3>No activities found</h3><p>Try widening your age range or changing your filters.</p></div>';
+
+      if (list.length > visibleActivityCount) {
+        resultsEl.insertAdjacentHTML("beforeend",
+          '<div class="directory-load-more" data-infinite-scroll aria-live="polite">Loading more activities…</div>'
+        );
+      } else if (list.length > 0) {
+        resultsEl.insertAdjacentHTML("beforeend",
+          '<div class="directory-end-message" aria-live="polite">You’ve reached the end of activities.</div>'
+        );
+      }
+
+      if (infiniteScrollObserver) infiniteScrollObserver.disconnect();
+      const loadMoreTarget = resultsEl.querySelector("[data-infinite-scroll]");
+      if (loadMoreTarget) {
+        infiniteScrollObserver = new IntersectionObserver(entries => {
+          if (!entries.some(entry => entry.isIntersecting)) return;
+          if (visibleActivityCount >= list.length) return;
+          visibleActivityCount = Math.min(visibleActivityCount + 12, list.length);
+          render();
+        }, {rootMargin:"500px 0px 500px 0px"});
+        infiniteScrollObserver.observe(loadMoreTarget);
+      }
 
       document.querySelectorAll(".bh-save").forEach(button => {
         button.onclick = () => {
