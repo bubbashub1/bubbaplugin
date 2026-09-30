@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const wasDesktop = window.__bhDirectoryDesktop;
       const isDesktop = window.innerWidth > 900;
       if (wasDesktop !== undefined && wasDesktop !== isDesktop) {
-        currentView = isDesktop ? "grid" : "grid";
+        currentView = "grid";
         updateViewVisibility();
       }
       window.__bhDirectoryDesktop = isDesktop;
@@ -182,9 +182,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     let map = null;
     let markers = [];
     const storedView = localStorage.getItem("bh_directory_view");
-    // Desktop must always open in the listings + map split. A previous mobile
-    // "Map" choice must never hide the desktop listings.
-    let currentView = window.innerWidth > 900 ? "grid" : (storedView === "map" ? "map" : "grid");
+    // One consistent stacked listing view; the old Listings | Map toggle is removed.
+    let currentView = "grid";
     let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let cardCount = Number(localStorage.getItem("bh_directory_cards") || 3);
     let visibleActivityCount = 12;
@@ -602,7 +601,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
       if (mapView) {
         // Desktop always shows the 50/50 listings + map split. Mobile uses the Listings | Map toggle.
-        mapView.hidden = desktopSplit ? currentView === "calendar" : currentView !== "map";
+        mapView.hidden = desktopSplit ? currentView === "calendar" : true;
         mapView.setAttribute("aria-hidden", mapView.hidden ? "true" : "false");
       }
       if (calendarView) {
@@ -611,8 +610,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     };
 
-    initMobileViewToggle();
-
+    
     // A plain directory URL must always open unfiltered. This prevents browser
     // autofill/restored form state from silently reducing the initial results.
     const directoryFilterKeys = ["search","q","keyword","category","region","town","age_min","age_max","age_preset","day","max_price","free","sessionLength","sen","termTime","bookingRequired","accessibility","saved"];
