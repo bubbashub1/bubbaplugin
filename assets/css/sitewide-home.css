@@ -455,7 +455,7 @@ body:not(.bh-home) .activity-hero::before,
 body:not(.bh-home) .activity-hero::after{display:none}
 
 body:not(.bh-home) .activity-hero .listing-gallery{
-  min-height:360px;
+  min-height:180px;
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:10px;
@@ -468,8 +468,9 @@ body:not(.bh-home) .activity-hero .listing-gallery img,
 body:not(.bh-home) .activity-hero .listing-gallery-placeholder{
   width:100%;
   height:100%;
-  min-height:200px;
-  object-fit:cover;
+  min-height:90px;
+  object-fit:contain;
+  background:#e7f1ea;
   border-radius:17px;
 }
 body:not(.bh-home) .activity-hero .listing-gallery img:first-child{
@@ -781,7 +782,7 @@ body:not(.bh-home) .listing-bottom{
     grid-template-columns:1fr;
   }
   body:not(.bh-home) .activity-hero .listing-gallery{
-    min-height:320px;
+    min-height:160px;
   }
   body:not(.bh-home) .listing-layout{
     grid-template-columns:1fr;
@@ -798,7 +799,7 @@ body:not(.bh-home) .listing-bottom{
   body:not(.bh-home) .listing-page{padding-top:0}
   body:not(.bh-home) .activity-hero{gap:10px}
   body:not(.bh-home) .activity-hero .listing-gallery{
-    min-height:285px;
+    min-height:145px;
     grid-template-columns:1fr 1fr;
     padding:7px;
     border-radius:18px;
@@ -806,7 +807,7 @@ body:not(.bh-home) .listing-bottom{
   }
   body:not(.bh-home) .activity-hero .listing-gallery img,
   body:not(.bh-home) .activity-hero .listing-gallery-placeholder{
-    min-height:135px;
+    min-height:68px;
     border-radius:13px;
   }
   body:not(.bh-home) .activity-hero .listing-summary{
@@ -833,7 +834,7 @@ body:not(.bh-home) .listing-bottom{
   body:not(.bh-home) .listing-map{height:280px;min-height:280px}
 }
 @media(max-width:420px){
-  body:not(.bh-home) .activity-hero .listing-gallery{min-height:230px}
+  body:not(.bh-home) .activity-hero .listing-gallery{min-height:115px}
   body:not(.bh-home) .activity-hero .listing-gallery img,
   body:not(.bh-home) .activity-hero .listing-gallery-placeholder{min-height:108px}
   body:not(.bh-home) .activity-hero .listing-summary h1{font-size:37px}
