@@ -96,7 +96,60 @@ document.addEventListener("DOMContentLoaded", async () => {
       ["age_min","age_max","free","sessionLength","sen","termTime","bookingRequired","accessibility","saved"].forEach(k=>{const v=params.get(k);if(v)p.set(k,v)});
       history.replaceState({}, "", p.toString()?"map.html?"+p.toString():"map.html");
     };
-    $("mapFilters").addEventListener("submit",e=>{e.preventDefault();syncUrl();render()});
+    const advancedMapFields = {
+      category: $("mapAdvancedCategory"),
+      region: $("mapAdvancedRegion"),
+      town: $("mapAdvancedTown"),
+      age: $("mapAgeAdvanced"),
+      day: $("mapDayAdvanced"),
+      price: $("mapPriceAdvanced"),
+      sessionLength: $("mapSessionLength"),
+      sen: $("mapSen"),
+      termTime: $("mapTermTime"),
+      bookingRequired: $("mapBookingRequired"),
+      free: $("mapFree")
+    };
+    const syncAdvancedControls = () => {
+      advancedMapFields.category.value = $("mapCategory").value;
+      advancedMapFields.region.value = $("mapRegion").value;
+      advancedMapFields.town.value = $("mapTown").value;
+      advancedMapFields.age.value = $("mapAge").value;
+      advancedMapFields.day.value = $("mapDay").value;
+      advancedMapFields.price.value = $("mapPrice").value;
+      advancedMapFields.sessionLength.value = params.get("sessionLength")||"";
+      advancedMapFields.sen.value = params.get("sen")||"";
+      advancedMapFields.termTime.value = params.get("termTime")||"";
+      advancedMapFields.bookingRequired.checked = params.get("bookingRequired")==="1";
+      advancedMapFields.free.checked = params.get("free")==="1";
+    };
+    const applyAdvancedMapControls = () => {
+      $("mapCategory").value = advancedMapFields.category.value;
+      $("mapRegion").value = advancedMapFields.region.value;
+      $("mapTown").value = advancedMapFields.town.value;
+      $("mapAge").value = advancedMapFields.age.value;
+      $("mapDay").value = advancedMapFields.day.value;
+      $("mapPrice").value = advancedMapFields.price.value;
+      if(advancedMapFields.sessionLength.value) params.set("sessionLength",advancedMapFields.sessionLength.value); else params.delete("sessionLength");
+      if(advancedMapFields.sen.value) params.set("sen",advancedMapFields.sen.value); else params.delete("sen");
+      if(advancedMapFields.termTime.value) params.set("termTime",advancedMapFields.termTime.value); else params.delete("termTime");
+      if(advancedMapFields.bookingRequired.checked) params.set("bookingRequired","1"); else params.delete("bookingRequired");
+      if(advancedMapFields.free.checked) params.set("free","1"); else params.delete("free");
+    };
+    $("mapFilters").addEventListener("submit",e=>{e.preventDefault();applyAdvancedMapControls();syncUrl();render();});
+    $("openMapFilters")?.addEventListener("click",()=>{$("mapFiltersPanel")?.classList.add("is-open");});
+    $("closeMapFilters")?.addEventListener("click",()=>{$("mapFiltersPanel")?.classList.remove("is-open");});
+    $("mapAdvancedToggle")?.addEventListener("click",()=>{
+      const fields=$("mapAdvancedFields"), button=$("mapAdvancedToggle");
+      const open=!fields.hidden; fields.hidden=open;
+      button.setAttribute("aria-expanded",String(!open));
+      button.innerHTML=(open?"More filters":"More filters")+" <span aria-hidden=\"true\">"+(open?"＋":"−")+"</span>";
+    });
+    syncAdvancedControls();
+    document.querySelectorAll(".map-accessibility-option").forEach(el=>el.addEventListener("change",()=>{
+      const selected=[...document.querySelectorAll(".map-accessibility-option:checked")].map(x=>x.value);
+      if(selected.length) params.set("accessibility",selected.join(",")); else params.delete("accessibility");
+      syncUrl(); render();
+    }));
     ["mapSearch","mapRegion","mapTown","mapCategory","mapAge","mapDay","mapPrice"].forEach(id=>{const el=$(id);if(!el)return;el.addEventListener("change",()=>{syncUrl();render()});if(id==="mapSearch")el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();syncUrl();render()}})});
     $("mapClear")?.addEventListener("click",()=>{history.replaceState({}, "", "map.html");location.reload()});
     const back=document.querySelector(".map-back-link");if(back)back.href="directory.html"+(location.search||"");
