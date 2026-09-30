@@ -626,6 +626,119 @@ body:not(.bh-home) .activity-organiser-edit-actions{display:flex;gap:10px;justif
 body:not(.bh-home) .activity-organiser-edit-close{position:absolute;top:14px;right:16px;border:0;background:transparent;color:#416651;font-size:28px;cursor:pointer}
 body:not(.bh-home) .activity-organiser-edit-status{min-height:20px;margin-top:12px;font-size:13px;color:#416651}
 @media(max-width:650px){body:not(.bh-home) .activity-organiser-edit-modal{padding:22px}.activity-organiser-edit-actions{flex-direction:column-reverse}.activity-organiser-edit-actions .button{width:100%}}
+</style><style id="activity-layout-30-70-final">
+/* Listing page: contained 30/70 hero with clean page spacing */
+body:not(.bh-home){
+  box-sizing:border-box;
+  padding-left:clamp(16px,3vw,50px)!important;
+  padding-right:clamp(16px,3vw,50px)!important;
+  overflow-x:hidden!important;
+}
+body:not(.bh-home) .activity-reference-header,
+body:not(.bh-home) .activity-reference-main,
+body:not(.bh-home) .activity-reference-contact,
+body:not(.bh-home) .activity-reference-schedule,
+body:not(.bh-home) .activity-reference-about,
+body:not(.bh-home) .activity-reference-organiser,
+body:not(.bh-home) .activity-reference-footer{
+  width:100%!important;
+  max-width:1400px!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-hero{
+  width:100%!important;
+  max-width:1400px!important;
+  margin:0 auto!important;
+  box-sizing:border-box!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,30%) minmax(0,70%)!important;
+  gap:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery,
+body:not(.bh-home) .activity-hero .listing-summary{
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery{
+  width:100%!important;
+  height:100%!important;
+}
+body:not(.bh-home) .activity-hero .listing-gallery img,
+body:not(.bh-home) .activity-hero .listing-gallery-fallback{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary{
+  width:100%!important;
+  padding:clamp(22px,3vw,42px)!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+}
+body:not(.bh-home) .activity-hero .listing-summary > *{
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-hero .listing-title,
+body:not(.bh-home) .activity-hero .listing-description,
+body:not(.bh-home) .activity-hero .listing-meta,
+body:not(.bh-home) .activity-hero .listing-actions,
+body:not(.bh-home) .activity-hero .hero-quick-facts{
+  min-width:0!important;
+  max-width:100%!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:10px!important;
+}
+body:not(.bh-home) .activity-hero .listing-actions > *{
+  max-width:100%!important;
+  min-width:0!important;
+}
+body:not(.bh-home) .listing-layout,
+body:not(.bh-home) .listing-main,
+body:not(.bh-home) .listing-side{
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+@media (max-width:900px){
+  body:not(.bh-home){
+    padding-left:20px!important;
+    padding-right:20px!important;
+  }
+  body:not(.bh-home) .activity-hero{
+    grid-template-columns:minmax(0,1fr) minmax(0,2.333333fr)!important;
+  }
+}
+@media (max-width:700px){
+  body:not(.bh-home){
+    padding-left:14px!important;
+    padding-right:14px!important;
+  }
+  body:not(.bh-home) .activity-hero{
+    grid-template-columns:1fr!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-gallery{
+    height:auto!important;
+    aspect-ratio:16/10!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-summary{
+    padding:22px 18px!important;
+  }
+}
 </style></head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
