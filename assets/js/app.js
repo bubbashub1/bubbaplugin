@@ -22,11 +22,15 @@ async function bhActivities(){
   const totalPages=Number(firstPayload.pagination?.pages||1);
   let rows=firstRows;
 
+  // Page 1 is the critical payload used by the homepage and directory shell.
+  // Do not let one later page/API hiccup blank the whole site after a hard refresh.
   for(let start=2;start<=totalPages;start+=4){
     const pages=Array.from({length:Math.min(4,totalPages-start+1)},(_,i)=>start+i);
-    const payloads=await Promise.all(pages.map(fetchPage));
-    payloads.forEach(payload=>{
-      if(Array.isArray(payload.data)) rows=rows.concat(payload.data);
+    const results=await Promise.allSettled(pages.map(fetchPage));
+    results.forEach(result=>{
+      if(result.status==="fulfilled" && Array.isArray(result.value?.data)){
+        rows=rows.concat(result.value.data);
+      }
     });
   }
 
