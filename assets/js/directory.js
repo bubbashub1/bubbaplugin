@@ -358,6 +358,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             minWidth: 260,
             className: "bh-map-popup"
           });
+        marker._bhActivityId = String(activity.id);
+        marker._bhVenueId = String(venue.id || "");
         markers.push(marker);
       });
 
@@ -692,7 +694,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const firstSession = sessions[0];
         const price = activity.price || (firstSession?.price || "Price on request");
 
-        return `<article class="activity-card">
+        return `<article class="activity-card" data-activity-id="${escapeHtml(activity.id)}">
           <div class="activity-image">${activity.image_url
             ? `<img src="${escapeHtml(activity.image_url)}" alt="${escapeHtml(activity.title)}" loading="lazy">`
             : `<img src="images/logos/gemini_generated_image_1dzezm1dzezm1dze-20260929-213630-1f8496.jpeg" alt="" aria-hidden="true" loading="lazy">`}</div>
@@ -720,6 +722,28 @@ document.addEventListener("DOMContentLoaded", async () => {
           bhToggleSaved(button.dataset.id);
           render();
         };
+      });
+
+      // Keep listings and map markers linked. Clicking a listing focuses its
+      // first mapped venue, opens that marker's popup, and scrolls the map into
+      // view on desktop. The save button remains independent.
+      document.querySelectorAll(".activity-card[data-activity-id]").forEach(card => {
+        card.addEventListener("click", event => {
+          if (event.target.closest("a, button")) return;
+          const activityId = String(card.dataset.activityId || "");
+          const marker = markers.find(item => String(item._bhActivityId) === activityId);
+          if (!marker || !map) return;
+
+          map.setView(marker.getLatLng(), Math.max(map.getZoom(), 14), { animate: true });
+          marker.openPopup();
+
+          if (window.innerWidth > 900) {
+            document.querySelector("#mapView")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          } else {
+            const mapToggle = document.querySelector(".directory-mobile-view[data-mobile-view='map']");
+            if (mapToggle) mapToggle.click();
+          }
+        });
       });
 
       if (window.innerWidth > 900) { setTimeout(() => { renderMap(list); if (map) map.invalidateSize(); }, 0); } else if (currentView === "map") { setTimeout(() => { renderMap(list); if (map) map.invalidateSize(); }, 0); }
