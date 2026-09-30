@@ -888,13 +888,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       render();
     };
 
-    if ($("filterToggle")) $("filterToggle").addEventListener("click", () => {
-      const filters = $("directoryFilters");
-      if (!filters) return;
-      const open = filters.classList.toggle("is-open");
-      $("filterToggle").setAttribute("aria-expanded", String(open));
-    });
-
     if ($("cardCount")) $("cardCount").addEventListener("change", () => {
       if ($("cardCount")) cardCount = Number($("cardCount").value);
       if (![2,3,4,5,6].includes(cardCount)) cardCount = 3;
