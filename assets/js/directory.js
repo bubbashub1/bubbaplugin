@@ -56,6 +56,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     fillSelect("heroCategory", categoryValues, params.get("category") || "", "Category");
     fillSelect("area", regionValues, params.get("region") || "", "All regions");
     fillSelect("heroRegion", regionValues, params.get("region") || "", "Region");
+    fillSelect("heroTown", townValues, params.get("town") || "", "Town");
+    if ($("heroDay")) $("heroDay").value = params.get("day") || "";
     const townValues = [...new Set([
       ...activities.flatMap(x => bhVenues(x).map(v => v.town || x.town)).filter(Boolean),
       "Paignton"
