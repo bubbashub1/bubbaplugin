@@ -177,8 +177,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     setupAdvancedSearch();
     void applyAdvancedFilterSettings();
 
-    initMobileViewToggle();
-
     let map = null;
     let markers = [];
     const storedView = localStorage.getItem("bh_directory_view");
@@ -608,6 +606,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         calendarView.setAttribute("aria-hidden", calendarView.hidden ? "true" : "false");
       }
     };
+
+    initMobileViewToggle();
 
     // A plain directory URL must always open unfiltered. This prevents browser
     // autofill/restored form state from silently reducing the initial results.
