@@ -1256,6 +1256,139 @@ body:not(.bh-home) .activity-reference-schedule .session-row span{
   font-size:12px!important;
 }
 body:not(.bh-home) .activity-reference-schedule .venue-schedule h3{font-size:18px!important}
+<style id="activity-directory-search-and-header-final">
+/* Single listing: use the same six-field search component as directory.html. */
+body:not(.bh-home) .activity-reference-header{
+  width:100%!important;
+  max-width:1400px!important;
+  margin:0 auto 18px!important;
+  padding:12px 18px 16px!important;
+  background:#d8e6db!important;
+  border:0!important;
+  border-radius:0 0 18px 18px!important;
+  box-shadow:none!important;
+}
+body:not(.bh-home) .activity-reference-header .activity-header-top{
+  width:100%!important;
+  max-width:none!important;
+  margin:0 auto!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:16px!important;
+}
+body:not(.bh-home) .activity-reference-header .brand{
+  background:transparent!important;
+  box-shadow:none!important;
+  border:0!important;
+}
+body:not(.bh-home) .activity-reference-header .brand-logo{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+body:not(.bh-home) .activity-reference-header .main-nav{
+  background:transparent!important;
+  box-shadow:none!important;
+  border:0!important;
+  gap:6px!important;
+}
+body:not(.bh-home) .activity-reference-header .main-nav a{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  color:#144400!important;
+  border-radius:8px!important;
+  padding:8px 11px!important;
+}
+body:not(.bh-home) .activity-reference-header .main-nav a:hover,
+body:not(.bh-home) .activity-reference-header .main-nav a.active{
+  background:rgba(255,255,255,.35)!important;
+  color:#144400!important;
+}
+body:not(.bh-home) .activity-reference-header .activity-sign-in{
+  background:#3c8e96!important;
+  color:#fff!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+body:not(.bh-home) .activity-header-search{
+  width:100%!important;
+  max-width:none!important;
+  margin:10px auto 0!important;
+  display:grid!important;
+  grid-template-columns:minmax(220px,1.6fr) repeat(4,minmax(120px,1fr)) 104px!important;
+  gap:8px!important;
+  align-items:center!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field{
+  display:flex!important;
+  align-items:center!important;
+  min-width:0!important;
+  min-height:46px!important;
+  padding:0 12px!important;
+  background:#fff!important;
+  border:1px solid rgba(13,59,50,.08)!important;
+  border-radius:14px!important;
+  box-shadow:0 2px 8px rgba(18,63,49,.04)!important;
+  color:#3c8e96!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-field>span{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:20px!important;
+  flex:0 0 20px!important;
+  margin:0 6px 0 0!important;
+  font-size:15px!important;
+  font-weight:900!important;
+  color:#3c8e96!important;
+}
+body:not(.bh-home) .activity-header-search input,
+body:not(.bh-home) .activity-header-search select{
+  width:100%!important;
+  min-width:0!important;
+  min-height:42px!important;
+  padding:8px 2px!important;
+  border:0!important;
+  outline:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#0d3b32!important;
+  font-size:13px!important;
+}
+body:not(.bh-home) .activity-header-search .activity-search-button{
+  min-height:46px!important;
+  width:104px!important;
+  padding:0 15px!important;
+  border-radius:14px!important;
+  background:#3c8e96!important;
+  color:#fff!important;
+  box-shadow:none!important;
+  border:0!important;
+}
+@media(max-width:1100px){
+  body:not(.bh-home) .activity-header-search{grid-template-columns:1fr 1fr!important}
+  body:not(.bh-home) .activity-header-search .activity-search-button{width:100%!important}
+}
+@media(max-width:850px){
+  body:not(.bh-home) .activity-reference-header .activity-header-top{flex-wrap:wrap!important}
+  body:not(.bh-home) .activity-reference-header .main-nav{
+    order:3!important;
+    flex:1 0 100%!important;
+    width:100%!important;
+    overflow-x:auto!important;
+  }
+}
+@media(max-width:700px){
+  body:not(.bh-home) .activity-reference-header{padding:10px 14px 14px!important}
+  body:not(.bh-home) .activity-header-search{grid-template-columns:1fr!important}
+  body:not(.bh-home) .activity-header-search .activity-search-button{width:100%!important}
+}
+</style>
 </style></head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
@@ -1270,11 +1403,13 @@ body:not(.bh-home) .activity-reference-schedule .venue-schedule h3{font-size:18p
     </nav>
     <a class="button button-primary activity-sign-in" href="auth.html">Sign in</a>
   </div>
-  <form class="activity-header-search" action="directory.html" method="get" role="search" aria-label="Find activities">
-    <label class="activity-search-field activity-search-keyword"><span aria-hidden="true">⌕</span><input name="keyword" type="search" placeholder="Search activities, groups, or services…" aria-label="Search activities, groups, or services"></label>
-    <label class="activity-search-field"><span aria-hidden="true">⌖</span><input name="town" type="search" placeholder="Town / Postcode" aria-label="Town or postcode"></label>
-    <label class="activity-search-field"><span aria-hidden="true">▣</span><select name="day" aria-label="Day"><option value="">Any Day</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select></label>
-    <button class="button button-primary activity-search-button" type="submit"><span aria-hidden="true">⌕</span> Search</button>
+  <form class="activity-header-search" id="activityHeaderSearch" action="directory.html" method="get" role="search" aria-label="Find activities">
+    <label class="activity-search-field activity-search-keyword"><span aria-hidden="true">⌕</span><input id="activitySearchKeyword" name="keyword" type="search" placeholder="Keyword" aria-label="Keyword"></label>
+    <label class="activity-search-field"><span aria-hidden="true">⌖</span><select id="activitySearchRegion" name="region" aria-label="Region"><option value="">Region</option></select></label>
+    <label class="activity-search-field"><span aria-hidden="true">⌖</span><select id="activitySearchTown" name="town" aria-label="Town"><option value="">Town</option></select></label>
+    <label class="activity-search-field"><span aria-hidden="true">♟</span><select id="activitySearchCategory" name="category" aria-label="Category"><option value="">Category</option></select></label>
+    <label class="activity-search-field"><span aria-hidden="true">◷</span><select id="activitySearchDay" name="day" aria-label="Day"><option value="">Day</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select></label>
+    <button class="button activity-search-button" type="submit">Search</button>
   </form>
 </header>
 <main class="app-shell"><div id="activityState" class="listing-loading"><p>Loading activity…</p></div></main>
@@ -1291,6 +1426,31 @@ body:not(.bh-home) .activity-reference-schedule .venue-schedule h3{font-size:18p
   <div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div>
 </footer>
 <script src="assets/js/app.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded",async()=>{
+  try{
+    const activities=await bhActivities();
+    const map={"Baby classes":"Baby","Baby & toddler":"Toddler","Family activities":"Family"};
+    const venues=activity=>Array.isArray(activity?.venues)?activity.venues:[];
+    const values=(items)=>[...new Set(items.filter(Boolean).map(String))].sort((a,b)=>a.localeCompare(b));
+    const fill=(id,items,label)=>{
+      const el=document.getElementById(id);
+      if(!el)return;
+      el.innerHTML='<option value="">'+bhEscape(label)+'</option>'+values(items).map(v=>'<option value="'+bhEscape(v)+'">'+bhEscape(v)+'</option>').join("");
+    };
+    fill("activitySearchRegion",activities.flatMap(a=>venues(a).map(v=>v.region||a.region)),"Region");
+    fill("activitySearchTown",activities.flatMap(a=>venues(a).map(v=>v.town||a.town)),"Town");
+    fill("activitySearchCategory",activities.map(a=>map[a.category]||a.category),"Category");
+    const params=new URLSearchParams(location.search);
+    const set=(id,key)=>{const el=document.getElementById(id);if(el)el.value=params.get(key)||""};
+    set("activitySearchKeyword","keyword");
+    set("activitySearchRegion","region");
+    set("activitySearchTown","town");
+    set("activitySearchCategory","category");
+    set("activitySearchDay","day");
+  }catch(error){}
+});
+</script>
 <script>
 document.addEventListener("DOMContentLoaded",()=>{
   const logout=document.getElementById("siteLogout");
