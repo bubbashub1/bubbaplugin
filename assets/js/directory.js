@@ -175,8 +175,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       } catch (_) {}
     };
     setupAdvancedSearch();
-    initMobileViewToggle();
     void applyAdvancedFilterSettings();
+
+    initMobileViewToggle();
 
     let map = null;
     let markers = [];
