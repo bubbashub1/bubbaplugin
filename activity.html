@@ -2126,6 +2126,132 @@ body:not(.bh-home) .activity-reference-schedule .session-row strong{font-weight:
   }
   .site-footer-grid{grid-template-columns:1fr!important}
 }
+</style><style id="activity-main-content-grid-final">
+/* Final activity body grid: About + Schedule on the left, map/venue panel on the right. */
+body:not(.bh-home) .listing-page > .listing-layout{
+  display:grid!important;
+  grid-template-columns:minmax(0,2fr) minmax(320px,1fr)!important;
+  grid-template-rows:auto auto!important;
+  column-gap:48px!important;
+  row-gap:0!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0 clamp(60px,6vw,90px)!important;
+  box-sizing:border-box!important;
+  align-items:start!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout > .listing-main,
+body:not(.bh-home) .listing-page > .listing-layout > .listing-side{
+  display:contents!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-about{
+  grid-column:1!important;
+  grid-row:1!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:36px 0 28px!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-schedule{
+  grid-column:1!important;
+  grid-row:2!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0 0 38px!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact{
+  grid-column:2!important;
+  grid-row:1 / span 2!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:36px 0 38px 36px!important;
+  box-sizing:border-box!important;
+  border-left:1px solid #d9e5dc!important;
+  align-self:stretch!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact-map,
+body:not(.bh-home) .listing-page > .listing-layout #listingMap{
+  width:100%!important;
+  height:360px!important;
+  min-height:360px!important;
+  margin:0 0 18px!important;
+  border-radius:16px!important;
+  overflow:hidden!important;
+  background:#eaf4ed!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-addresses{
+  width:100%!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:8px!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-facts{
+  width:100%!important;
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:8px!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-schedule .schedule-list{
+  width:100%!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .listing-page > .listing-layout .activity-reference-schedule .session-row{
+  min-width:0!important;
+}
+@media(max-width:950px){
+  body:not(.bh-home) .listing-page > .listing-layout{
+    grid-template-columns:1fr!important;
+    grid-template-rows:auto auto auto!important;
+    column-gap:0!important;
+    padding-left:60px!important;
+    padding-right:60px!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-about{
+    grid-column:1!important;
+    grid-row:1!important;
+    padding:32px 0 24px!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-schedule{
+    grid-column:1!important;
+    grid-row:2!important;
+    padding-bottom:32px!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact{
+    grid-column:1!important;
+    grid-row:3!important;
+    padding:0 0 32px!important;
+    border-left:0!important;
+    border-top:1px solid #d9e5dc!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact-map,
+  body:not(.bh-home) .listing-page > .listing-layout #listingMap{
+    height:320px!important;
+    min-height:320px!important;
+  }
+}
+@media(max-width:650px){
+  body:not(.bh-home) .listing-page > .listing-layout{
+    padding-left:24px!important;
+    padding-right:24px!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-about{
+    padding-top:28px!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact{
+    padding-top:24px!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact-map,
+  body:not(.bh-home) .listing-page > .listing-layout #listingMap{
+    height:240px!important;
+    min-height:240px!important;
+  }
+}
 </style></head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
