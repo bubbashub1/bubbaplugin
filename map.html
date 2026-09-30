@@ -24,8 +24,18 @@
 <a class="map-back-link" href="directory.html">← Back to listings</a>
 <span class="eyebrow">Explore nearby</span>
 <h1>Activities on the map</h1>
-<p>Tap a pin to see the activity and open its full listing.</p>
+<p>Search and filter the map, then tap a pin to open the activity.</p>
 </div>
+<form class="map-filter-bar" id="mapFilters">
+<label><span>⌕</span><input id="mapSearch" type="search" placeholder="Search activities" aria-label="Search activities"></label>
+<select id="mapRegion" aria-label="Region"><option value="">All regions</option></select>
+<select id="mapTown" aria-label="Town"><option value="">All towns</option></select>
+<select id="mapCategory" aria-label="Category"><option value="">All categories</option></select>
+<select id="mapAge" aria-label="Age range"><option value="">Any age</option><option value="baby">Baby · 0–1</option><option value="toddler">Toddler · 1–3</option><option value="preschool">Preschool · 3–5</option><option value="school">School age · 5–9</option></select>
+<select id="mapDay" aria-label="Day"><option value="">Any day</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select>
+<select id="mapPrice" aria-label="Maximum price"><option value="">Any price</option><option value="0">Free</option><option value="5">Up to £5</option><option value="10">Up to £10</option><option value="15">Up to £15</option><option value="20">Up to £20</option><option value="30">Up to £30</option></select>
+<button class="button button-primary" type="submit">Filter</button>
+</form>
 <section id="mapView" class="map-page-map" aria-label="Map of family activities"></section>
 <div id="mapStatus" class="map-page-status" aria-live="polite">Loading activities…</div>
 </main>
