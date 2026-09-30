@@ -1178,3 +1178,87 @@ body.bh-directory .directory-popular{
     grid-template-columns:1fr!important;
   }
 }
+
+
+/* ==========================================================================
+   DIRECTORY HERO — final sizing and single-row search
+   ========================================================================== */
+body.bh-directory .directory-hero-fullwidth{
+  width:100vw!important;
+  max-width:none!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin-left:calc(50% - 50vw)!important;
+  margin-right:0!important;
+  margin-bottom:28px!important;
+  overflow:visible!important;
+  box-sizing:border-box;
+}
+
+body.bh-directory .directory-hero-fullwidth .directory-hero-search{
+  position:static!important;
+  width:100%!important;
+  max-width:none!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:26px clamp(60px,6vw,90px) 20px!important;
+  box-sizing:border-box;
+  overflow:visible!important;
+  border-left:0!important;
+  border-right:0!important;
+  border-radius:0!important;
+}
+
+body.bh-directory .directory-hero-search-fields{
+  display:grid!important;
+  grid-template-columns:minmax(180px,1.6fr) repeat(4,minmax(110px,1fr)) minmax(104px,112px)!important;
+  gap:9px!important;
+  align-items:center!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+}
+
+body.bh-directory .directory-hero-search-fields label{
+  width:auto!important;
+  min-width:0!important;
+  min-height:50px!important;
+  height:50px!important;
+  max-height:none!important;
+  box-sizing:border-box;
+}
+
+body.bh-directory .directory-hero-search-fields .button{
+  width:100%!important;
+  min-width:0!important;
+  min-height:50px!important;
+  height:50px!important;
+  max-height:none!important;
+  box-sizing:border-box;
+}
+
+body.bh-directory .directory-hero-actions,
+body.bh-directory .directory-popular{
+  height:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+
+@media(max-width:1100px) and (min-width:701px){
+  body.bh-directory .directory-hero-search-fields{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+}
+
+@media(max-width:700px){
+  body.bh-directory .directory-hero-search{
+    padding:22px 24px 18px!important;
+  }
+  body.bh-directory .directory-hero-search-fields{
+    grid-template-columns:1fr!important;
+  }
+}
