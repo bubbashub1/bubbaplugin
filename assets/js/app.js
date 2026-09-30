@@ -345,6 +345,18 @@ void bhHydrateSaved();
   ];
   const applyMainNav=()=>document.querySelectorAll(".site-header .main-nav").forEach(nav=>{
     nav.innerHTML=MAIN_NAV.map(x=>'<a href="'+bhEscape(x.url)+'">'+bhEscape(x.label)+'</a>').join("");
+    const header=nav.closest(".site-header");
+    const toggle=header?.querySelector(".mobile-nav-toggle");
+    if(nav.dataset.bhCloseBound!=="true"){
+      nav.dataset.bhCloseBound="true";
+      nav.addEventListener("click",event=>{
+        if(event.target.closest("a")){
+          header?.classList.remove("mobile-menu-open");
+          toggle?.setAttribute("aria-expanded","false");
+          toggle?.setAttribute("aria-label","Open menu");
+        }
+      });
+    }
   });
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",applyMainNav,{once:true});
   else applyMainNav();
