@@ -1186,3 +1186,27 @@ body .site-header .brand-logo{
     max-width:180px!important;
   }
 }
+
+/* Final fluid activity body wrappers */
+body:not(.bh-home) .listing-page,
+body:not(.bh-home) .listing-layout,
+body:not(.bh-home) .activity-reference-organiser,
+body:not(.bh-home) .listing-bottom{
+  width:100%!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .listing-page{
+  margin-left:0!important;
+  margin-right:0!important;
+}
+body:not(.bh-home) .listing-layout,
+body:not(.bh-home) .activity-reference-organiser,
+body:not(.bh-home) .listing-bottom{
+  margin-left:0!important;
+  margin-right:0!important;
+}
+body:not(.bh-home) .listing-layout{
+  padding-left:0!important;
+  padding-right:0!important;
+}
