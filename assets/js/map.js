@@ -139,6 +139,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       if(advancedMapFields.free?.checked) params.set("free","1"); else params.delete("free");
     };
     $("mapFilters").addEventListener("submit",e=>{e.preventDefault();applyAdvancedMapControls();syncUrl();render();});
+    $("mapApplyFilters")?.addEventListener("click",e=>{
+      e.preventDefault();
+      applyAdvancedMapControls();
+      syncUrl();
+      render();
+      $("mapFiltersPanel")?.classList.remove("is-open");
+    });
     $("openMapFilters")?.addEventListener("click",()=>{$("mapFiltersPanel")?.classList.add("is-open");});
     $("closeMapFilters")?.addEventListener("click",()=>{$("mapFiltersPanel")?.classList.remove("is-open");});
     $("mapAdvancedToggle")?.addEventListener("click",()=>{
