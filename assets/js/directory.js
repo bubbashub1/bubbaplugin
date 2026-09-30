@@ -169,6 +169,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       } catch (_) {}
     };
     setupAdvancedSearch();
+    initMobileViewToggle();
     void applyAdvancedFilterSettings();
 
     let map = null;
@@ -557,6 +558,27 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (calendar) calendar.innerHTML = '<div class="admin-panel"><p>Checking school holiday dates…</p></div>';
     };
 
+    const initMobileViewToggle = () => {
+      const buttons = document.querySelectorAll(".directory-mobile-view");
+      if (!buttons.length) return;
+      buttons.forEach(button => {
+        button.addEventListener("click", () => {
+          const requested = button.dataset.view === "map" ? "map" : "grid";
+          currentView = requested;
+          localStorage.setItem("bh_directory_view", requested === "grid" ? "list" : requested);
+          buttons.forEach(b => {
+            const active = b === button;
+            b.classList.toggle("is-active", active);
+            b.setAttribute("aria-pressed", String(active));
+          });
+          updateViewVisibility();
+          if (requested === "map") {
+            setTimeout(() => map?.invalidateSize(), 80);
+          }
+        });
+      });
+    };
+
     const updateViewVisibility = () => {
       const results = $("results");
       const mapView = $("mapView");
@@ -568,6 +590,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         results.setAttribute("aria-hidden", results.hidden ? "true" : "false");
       }
       if (mapView) {
+        // Desktop always shows the 50/50 listings + map split. Mobile uses the Listings | Map toggle.
         mapView.hidden = desktopSplit ? currentView === "calendar" : currentView !== "map";
         mapView.setAttribute("aria-hidden", mapView.hidden ? "true" : "false");
       }
