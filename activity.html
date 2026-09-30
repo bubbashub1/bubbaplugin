@@ -1457,6 +1457,66 @@ body:not(.bh-home) .activity-reference-header .main-nav{
   body:not(.bh-home) .activity-reference-header .brand-logo{height:48px!important;max-width:155px!important}
 }
 </style>
+</style><style id="activity-stack-alignment-final">
+/* Final stacking and container alignment */
+body:not(.bh-home) .activity-reference-header{
+  position:relative!important;
+  z-index:10!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0 0 28px!important;
+  padding-left:clamp(60px,6vw,90px)!important;
+  padding-right:clamp(60px,6vw,90px)!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .activity-reference-header .activity-header-top,
+body:not(.bh-home) .activity-reference-header .activity-header-search{
+  position:relative!important;
+  z-index:11!important;
+}
+body:not(.bh-home) .activity-header-search{
+  position:relative!important;
+  margin:18px auto 0!important;
+  width:100%!important;
+  max-width:1400px!important;
+  box-sizing:border-box!important;
+  clear:both!important;
+}
+body:not(.bh-home) .app-shell{
+  position:relative!important;
+  z-index:1!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .app-shell > .listing-page{
+  position:relative!important;
+  z-index:1!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0 0 40px!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .app-shell > .listing-page .activity-hero{
+  position:relative!important;
+  z-index:1!important;
+  width:100%!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+body:not(.bh-home) .app-shell > .listing-page > *:not(.activity-hero){
+  box-sizing:border-box!important;
+}
+@media(max-width:700px){
+  body:not(.bh-home) .activity-reference-header{
+    margin-bottom:20px!important;
+    padding-left:20px!important;
+    padding-right:20px!important;
+  }
+}
 </style></head><body>
 <header class="site-header activity-reference-header">
   <div class="activity-header-top">
