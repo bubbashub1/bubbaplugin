@@ -792,60 +792,60 @@ body:not(.bh-home) .schedule-hours-status.is-closed .schedule-hours-status-dot{b
   body:not(.bh-home) .schedule-hours-time{text-align:left;}
 }
 </style><style id="navigation-clean-flex-final">
-/* Bubba Hub header navigation — clean single-row desktop layout */
+/* Final activity header navigation: stable desktop row, no wrapping or collision. */
 body:not(.bh-home) .activity-reference-header .activity-header-top{
   width:100%!important;
   max-width:1320px!important;
-  margin:0 auto!important;
   min-width:0!important;
+  margin:0 auto!important;
   display:flex!important;
-  flex-wrap:nowrap!important;
+  flex-flow:row nowrap!important;
   align-items:center!important;
-  gap:14px!important;
+  gap:12px!important;
   box-sizing:border-box!important;
 }
 body:not(.bh-home) .activity-reference-header .brand{
   flex:0 0 auto!important;
   min-width:0!important;
-  margin-right:auto!important;
+  margin:0!important;
 }
 body:not(.bh-home) .activity-reference-header .brand-logo{
   display:block!important;
-  width:auto!important;
-  height:72px!important;
-  max-width:210px!important;
+  width:200px!important;
+  max-width:200px!important;
+  height:auto!important;
   object-fit:contain!important;
 }
 body:not(.bh-home) .activity-reference-header .main-nav{
-  flex:0 1 auto!important;
+  flex:1 1 auto!important;
   min-width:0!important;
-  max-width:none!important;
+  margin-left:auto!important;
   display:flex!important;
-  flex-direction:row!important;
-  flex-wrap:nowrap!important;
+  flex-flow:row nowrap!important;
   align-items:center!important;
   justify-content:flex-end!important;
   gap:5px!important;
-  overflow:visible!important;
   white-space:nowrap!important;
+  overflow:visible!important;
 }
 body:not(.bh-home) .activity-reference-header .main-nav a{
   flex:0 0 auto!important;
   display:inline-flex!important;
   align-items:center!important;
   justify-content:center!important;
+  min-width:0!important;
   min-height:36px!important;
   height:36px!important;
-  padding:7px 11px!important;
   margin:0!important;
+  padding:7px 10px!important;
+  border:0!important;
   border-radius:999px!important;
-  white-space:nowrap!important;
-  line-height:1!important;
+  background:#eaf4ed!important;
+  color:#144400!important;
   font-size:12px!important;
   font-weight:600!important;
-  color:#144400!important;
-  background:#eaf4ed!important;
-  border:0!important;
+  line-height:1!important;
+  white-space:nowrap!important;
   box-sizing:border-box!important;
 }
 body:not(.bh-home) .activity-reference-header .main-nav a:hover,
@@ -855,54 +855,56 @@ body:not(.bh-home) .activity-reference-header .main-nav a.active{
 }
 body:not(.bh-home) .activity-reference-header .activity-sign-in{
   flex:0 0 auto!important;
-  white-space:nowrap!important;
+  min-width:max-content!important;
   min-height:36px!important;
   height:36px!important;
-  padding:7px 14px!important;
   margin:0!important;
+  padding:7px 14px!important;
   border-radius:999px!important;
   font-size:12px!important;
   font-weight:600!important;
   line-height:1!important;
+  white-space:nowrap!important;
   box-sizing:border-box!important;
 }
-/* Give the navigation room while keeping the logo and sign-in stable. */
-@media (min-width:1101px){
-  body:not(.bh-home) .activity-reference-header .main-nav{
-    gap:4px!important;
+/* The activity header is a compact desktop row; let the nav tighten before the
+   mobile breakpoint rather than allowing the logo/sign-in to collide. */
+@media (max-width:1180px) and (min-width:851px){
+  body:not(.bh-home) .activity-reference-header .activity-header-top{gap:8px!important}
+  body:not(.bh-home) .activity-reference-header .brand-logo{
+    width:170px!important;
+    max-width:170px!important;
   }
-  body:not(.bh-home) .activity-reference-header .main-nav a{
-    padding-left:10px!important;
-    padding-right:10px!important;
-  }
-}
-@media (max-width:1100px) and (min-width:851px){
-  body:not(.bh-home) .activity-reference-header .activity-header-top{gap:9px!important}
-  body:not(.bh-home) .activity-reference-header .brand-logo{max-width:175px!important;height:64px!important}
   body:not(.bh-home) .activity-reference-header .main-nav{gap:3px!important}
   body:not(.bh-home) .activity-reference-header .main-nav a{
-    padding-left:8px!important;
-    padding-right:8px!important;
+    padding-left:7px!important;
+    padding-right:7px!important;
     font-size:11px!important;
   }
   body:not(.bh-home) .activity-reference-header .activity-sign-in{
-    padding-left:11px!important;
-    padding-right:11px!important;
+    padding-left:10px!important;
+    padding-right:10px!important;
     font-size:11px!important;
   }
 }
 @media (max-width:850px){
   body:not(.bh-home) .activity-reference-header .activity-header-top{
     flex-wrap:wrap!important;
+    gap:8px!important;
+  }
+  body:not(.bh-home) .activity-reference-header .brand-logo{
+    width:180px!important;
+    max-width:180px!important;
   }
   body:not(.bh-home) .activity-reference-header .main-nav{
     order:3!important;
     flex:1 0 100%!important;
     width:100%!important;
+    margin:0!important;
     justify-content:flex-start!important;
     overflow-x:auto!important;
     overflow-y:hidden!important;
-    padding:3px 0 5px!important;
+    padding:2px 0 4px!important;
     scrollbar-width:none!important;
   }
   body:not(.bh-home) .activity-reference-header .main-nav::-webkit-scrollbar{display:none!important}
