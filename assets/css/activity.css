@@ -2779,3 +2779,239 @@ body:not(.bh-home) .listing-page > .listing-layout #listingMap{
     padding-right:15px !important;
   }
 }
+
+
+/* ========================================================================
+   FINAL MOBILE CLEANUP — activity page
+   ======================================================================== */
+@media (max-width:650px){
+  body:not(.bh-home){
+    padding-left:0!important;
+    padding-right:0!important;
+    overflow-x:hidden!important;
+  }
+  body:not(.bh-home) .activity-reference-header{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:8px 10px 12px!important;
+    border-radius:0!important;
+    box-sizing:border-box!important;
+  }
+  body:not(.bh-home) .activity-reference-header .activity-header-top{
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin:0!important;
+    flex:1 1 auto!important;
+    flex-flow:row nowrap!important;
+    gap:8px!important;
+  }
+  body:not(.bh-home) .activity-reference-header .brand-logo{
+    width:44px!important;
+    max-width:44px!important;
+    height:44px!important;
+  }
+  body:not(.bh-home) .activity-reference-header .activity-sign-in{
+    min-width:70px!important;
+    width:auto!important;
+    min-height:38px!important;
+    height:38px!important;
+    padding:7px 11px!important;
+    font-size:11px!important;
+  }
+  body:not(.bh-home) .activity-reference-header .main-nav{
+    display:none!important;
+  }
+  body:not(.bh-home) .activity-reference-header .mobile-nav-toggle{
+    flex:0 0 42px!important;
+    width:42px!important;
+    height:42px!important;
+    margin:0!important;
+    padding:0!important;
+    border:1px solid #c7dbcc!important;
+    border-radius:12px!important;
+    background:#d8e6db!important;
+    color:#144400!important;
+    display:flex!important;
+  }
+  body:not(.bh-home) .activity-reference-header.mobile-menu-open .main-nav{
+    display:flex!important;
+    position:absolute!important;
+    left:10px!important;
+    right:10px!important;
+    top:58px!important;
+    width:auto!important;
+    z-index:500!important;
+  }
+  body:not(.bh-home) .activity-reference-header .activity-header-search{
+    width:100%!important;
+    max-width:none!important;
+    margin:10px 0 0!important;
+    height:auto!important;
+    max-height:none!important;
+    grid-template-columns:1fr!important;
+    gap:7px!important;
+  }
+  body:not(.bh-home) .activity-reference-header .activity-header-search.is-collapsed{
+    display:none!important;
+  }
+  body:not(.bh-home) .activity-search-toggle{
+    display:flex!important;
+    width:100%!important;
+    min-height:40px!important;
+    margin:10px 0 0!important;
+    padding:8px 13px!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    border:1px solid #c7dbcc!important;
+    border-radius:12px!important;
+    background:#eaf4ed!important;
+    color:#144400!important;
+    font-size:12px!important;
+    font-weight:800!important;
+  }
+  body:not(.bh-home) .activity-hero{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:14px 12px 18px!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:12px!important;
+    overflow:hidden!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-gallery{
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    aspect-ratio:16/10!important;
+    padding:0!important;
+    border-radius:14px!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-gallery img,
+  body:not(.bh-home) .activity-hero .listing-gallery picture{
+    width:100%!important;
+    height:100%!important;
+    object-fit:contain!important;
+    background:#fff!important;
+    border-radius:14px!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-summary{
+    width:100%!important;
+    min-height:0!important;
+    padding:18px 14px!important;
+    border-radius:14px!important;
+    overflow:visible!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-summary h1{
+    font-size:30px!important;
+    line-height:1.08!important;
+    overflow-wrap:anywhere!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-intro{
+    font-size:15px!important;
+    line-height:1.45!important;
+  }
+  body:not(.bh-home) .activity-hero .hero-quick-facts{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:7px!important;
+    margin:14px 0!important;
+  }
+  body:not(.bh-home) .activity-hero .hero-quick-facts>span{
+    min-height:62px!important;
+    padding:9px!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-actions{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:7px!important;
+    width:100%!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-actions .activity-action,
+  body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{
+    width:100%!important;
+    min-width:0!important;
+    min-height:42px!important;
+    margin:0!important;
+    padding:8px 7px!important;
+    font-size:11px!important;
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+  body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{
+    grid-column:1 / -1!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0 12px!important;
+    display:block!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout > .listing-main{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    width:100%!important;
+    max-width:none!important;
+    padding:0!important;
+    margin:0!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout > .listing-side{
+    display:none!important;
+  }
+  body:not(.bh-home) .listing-main .good-to-know-card{display:none!important}
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-about{
+    grid-column:1!important;
+    grid-row:1!important;
+    padding:24px 0 20px!important;
+    margin:0!important;
+    border-bottom:1px solid #d8e6db!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-schedule{
+    grid-column:1!important;
+    grid-row:2!important;
+    padding:22px 0!important;
+    margin:0!important;
+    border-bottom:1px solid #d8e6db!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact{
+    grid-column:1!important;
+    grid-row:3!important;
+    padding:22px 0!important;
+    margin:0!important;
+    border:0!important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout .activity-reference-contact-map,
+  body:not(.bh-home) .listing-page > .listing-layout #listingMap{
+    height:230px!important;
+    min-height:230px!important;
+    margin:0 0 14px!important;
+  }
+  body:not(.bh-home) .activity-reference-addresses{width:100%!important}
+  body:not(.bh-home) .activity-address-row{
+    grid-template-columns:28px minmax(0,1fr)!important;
+    gap:8px!important;
+    padding:10px 0!important;
+  }
+  body:not(.bh-home) .activity-address-row .button{
+    grid-column:2!important;
+    justify-self:start!important;
+    margin-top:2px!important;
+  }
+  body:not(.bh-home) .activity-reference-organiser,
+  body:not(.bh-home) .listing-bottom{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:16px 12px!important;
+  }
+}
+@media(max-width:390px){
+  body:not(.bh-home) .activity-reference-header .activity-sign-in{min-width:62px!important;padding-left:8px!important;padding-right:8px!important}
+  body:not(.bh-home) .activity-hero .listing-summary h1{font-size:27px!important}
+  body:not(.bh-home) .activity-hero .listing-intro{font-size:14px!important}
+  body:not(.bh-home) .activity-hero .hero-quick-facts b{font-size:11px!important}
+}
