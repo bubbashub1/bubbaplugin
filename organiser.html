@@ -40,9 +40,6 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const parts=location.pathname.replace(/\/+$/, "").split("/").filter(Boolean);
   const requested=(params.get("slug")||parts[parts.length-1]||"").toLowerCase().trim();
   const items=await loadOrganiserActivities(requested);
-  const params=new URLSearchParams(location.search);
-  const parts=location.pathname.replace(/\/+$/,"").split("/").filter(Boolean);
-  const requested=(params.get("slug")||parts[parts.length-1]||"").toLowerCase().trim();
   const clean=s=>String(s||"").toLowerCase().trim().replace(/&/g,"and").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
   const groups=items.filter(a=>clean(a.organiser_slug||a.organiser_name||a.organiser||"")===clean(requested));
   const venueMap=new Map();
