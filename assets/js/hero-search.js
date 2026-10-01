@@ -64,7 +64,17 @@
     setChecked("advancedFree",params.get("free")==="1");
   }
 
+  function syncMapViewLink(){
+    const link=document.querySelector(".directory-map-hero-button");
+    if(!link)return;
+    const onMap=/\/map\.html(?:$|[?#])/.test(window.location.pathname+window.location.search+window.location.hash);
+    link.href=onMap ? "directory.html"+(window.location.search||"") : "map.html"+(window.location.search||"");
+    link.textContent=onMap ? "View list of activities →" : "View activities on map →";
+    link.setAttribute("aria-label",onMap ? "View list of activities" : "View activities on map");
+  }
+
   function init(){
+    syncMapViewLink();
     const button=$("heroMoreFilters"),modal=$("heroAdvancedModal"),close=$("heroAdvancedClose");
     if(!button||!modal)return;
 
