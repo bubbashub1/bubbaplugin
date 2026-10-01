@@ -74,6 +74,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     queueProSync();
   };
   const uid=prefix=>prefix+"-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7);
+  const norm=v=>String(v??"").trim().toLowerCase();
   const esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])));
   const colours=["#416651","#3c8e96","#8068cf","#55a9c2","#ee6684","#9cb8a4"];
   let planners=read(keys.planners,[{id:"family",name:"Family",description:"Everyday family activities and plans.",colour:"#416651"}]);
@@ -153,7 +154,10 @@ document.addEventListener("DOMContentLoaded",async()=>{
     wrap.innerHTML="<div class='pro-modal' role='dialog' aria-modal='true'><h2>"+esc(title)+"</h2><p>"+esc(intro)+"</p><form class='pro-form'>"+fieldHtml+"<div class='pro-form-actions'><button type='button' class='button button-soft' data-cancel>Cancel</button><button class='button button-primary' type='submit'>Save</button></div></form></div>";
     document.body.appendChild(wrap);
     const form=wrap.querySelector("form");
-    const close=()=>wrap.remove();
+    const close=()=>{
+      wrap.remove();
+      document.removeEventListener("keydown",onKey);
+    };
     form.querySelector("[data-cancel]").onclick=close;
     form.onsubmit=e=>{
       e.preventDefault();
@@ -370,7 +374,6 @@ document.addEventListener("DOMContentLoaded",async()=>{
       write(keys.planners,planners);
       renderPlanners();
       close();
-      document.removeEventListener("keydown",onKey);
     };
     requestAnimationFrame(()=>form.querySelector("input")?.focus());
   }
