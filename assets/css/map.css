@@ -34,3 +34,9 @@
  .map-page-map{height:calc(100vh - 245px);min-height:460px;border-radius:18px}
  .map-page-status{margin-top:8px}
 }
+
+/* Map pins */
+.bh-map-page .custom-sleek-dark-marker{background:transparent;border:0;}
+.bh-map-page .bubba-dark-pin{position:relative;width:36px;height:36px;display:block;transform:rotate(-45deg);border-radius:50% 50% 50% 0;background:#144400;border:3px solid #fff;box-shadow:0 4px 10px rgba(20,68,0,.28);}
+.bh-map-page .bubba-dark-pin .dark-core{position:absolute;width:10px;height:10px;left:10px;top:10px;border-radius:50%;background:#f6c84a;border:2px solid #fff;}
+.bh-map-page .directory-popular{margin-top:9px;}
