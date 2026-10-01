@@ -620,6 +620,36 @@ void bhHydrateSaved();
           viewLink.setAttribute("aria-label",page==="map" ? "View list of activities" : "View activities on map");
         }
         hero.dataset.heroPage=page;
+
+        if(page==="calendar"){
+          if(filterButton){
+            filterButton.textContent="More search options →";
+            filterButton.addEventListener("click",event=>{
+              event.preventDefault();
+              window.location.href="directory.html"+(window.location.search||"");
+            });
+          }
+          try{
+            const activities=await bhActivities();
+            const categoryMap={"Baby classes":"Baby","Baby & toddler":"Toddler","Family activities":"Family"};
+            const values={
+              category:[...new Set(activities.map(a=>categoryMap[a.category]||a.category).filter(Boolean))].sort(),
+              region:[...new Set(activities.flatMap(a=>bhVenues(a).map(v=>v.region||a.region)).filter(Boolean))].sort(),
+              town:[...new Set(activities.flatMap(a=>bhVenues(a).map(v=>v.town||a.town)).filter(Boolean))].sort()
+            };
+            Object.entries(values).forEach(([key,list])=>{
+              const select=hero.querySelector('[data-bh-hero-field="'+key+'"]');
+              if(!select)return;
+              const current=new URLSearchParams(window.location.search).get(key)||"";
+              const label=key.charAt(0).toUpperCase()+key.slice(1);
+              select.innerHTML="<option value=\"\">"+label+"</option>"+list.map(value=>"<option value=\""+bhEscape(value)+"\">"+bhEscape(value)+"</option>").join("");
+              if(list.includes(current))select.value=current;
+            });
+            const keyword=hero.querySelector('[data-bh-hero-field="keyword"]');
+            if(keyword)keyword.value=new URLSearchParams(window.location.search).get("keyword")||"";
+          }catch(_){}
+        }
+
         const popular=hero.querySelector("[data-bh-popular-categories]");
         if(popular && window.bhPopulatePopularCategories) window.bhPopulatePopularCategories(popular);
       }
