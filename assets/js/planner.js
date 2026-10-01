@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded",async()=>{
   const $=id=>document.getElementById(id);
-  const results=$("results"),count=$("count"),intro=$("plannerIntro"),controls=$("dayControls"),statusNote=$("plannerSyncNote"),exportBtn=$("exportCalendar");
+  const results=$("results"),count=$("count"),intro=$("plannerIntro"),controls=$("dayControls"),statusNote=$("plannerSyncNote"),exportBtn=$("exportCalendar"),printBtn=$("printCalendar");
   const days=[
     {name:"Monday",short:"Mon",num:1},{name:"Tuesday",short:"Tue",num:2},{name:"Wednesday",short:"Wed",num:3},
     {name:"Thursday",short:"Thu",num:4},{name:"Friday",short:"Fri",num:5},{name:"Saturday",short:"Sat",num:6},{name:"Sunday",short:"Sun",num:7}
@@ -137,6 +137,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     lines.push("END:VCALENDAR");
     return lines.join("\r\n");
   }
+  printBtn?.addEventListener("click",()=>{window.print()});
   exportBtn?.addEventListener("click",()=>{
     const entries=getEntries().filter(x=>x.day>0);
     if(!entries.length){statusNote.textContent="There are no scheduled sessions in your planner this week to add to a calendar.";return}
