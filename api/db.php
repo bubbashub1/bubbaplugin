@@ -62,5 +62,17 @@ function bh_mysql(): PDO {
         // available for manual application.
     }
 
+    // Account-backed Planner Pro state. The JSON document keeps Pro flexible while
+    // the core planner/activity relationships remain in their dedicated tables.
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS bh_planner_pro_state (
+            user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
+            state_json LONGTEXT NOT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_planner_pro_updated (updated_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    } catch (Throwable $ignored) {}
+
     return $pdo;
 }
