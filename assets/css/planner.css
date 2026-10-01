@@ -315,3 +315,25 @@
 @media(max-width:900px){.planner-pro-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.planner-pro-preview{padding:17px}.planner-pro-preview-head{flex-direction:column}.planner-pro-grid{grid-template-columns:1fr}.planner-pro-preview-actions{display:grid}.planner-pro-preview-actions .button{width:100%}}
 @media print{.planner-pro-preview{display:none!important}}
+
+
+/* List view: calendar-style activity list with day filters on the right */
+.planner-shell.is-list-view .planner-view-controls{margin-bottom:10px}
+.planner-shell.is-list-view .planner-day-controls{display:flex;flex-direction:column;gap:7px;overflow:visible;padding:0;}
+.planner-shell.is-list-view .planner-day-toggle{flex:none;width:100%;min-width:0}
+.planner-shell.is-list-view .planner-day-toggle span{padding:9px 10px;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.planner-shell.is-list-view .planner-day-toggle b,.planner-shell.is-list-view .planner-day-toggle small{display:block}
+.planner-shell.is-list-view .planner-day-toggle small{margin-top:0}
+@media(min-width:801px){
+  .planner-shell.is-list-view{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:18px;align-items:start}
+  .planner-shell.is-list-view .planner-toolbar{grid-column:1/-1}
+  .planner-shell.is-list-view .planner-view-controls{grid-column:1/-1}
+  .planner-shell.is-list-view .planner-day-controls{grid-column:2;grid-row:3;position:sticky;top:18px}
+  .planner-shell.is-list-view .planner-week{grid-column:1;grid-row:3}
+  .planner-shell.is-list-view #results{grid-column:1;grid-row:3}
+  .planner-shell.is-list-view .planner-footer-note{grid-column:1/-1}
+}
+@media(max-width:800px){
+  .planner-shell.is-list-view .planner-day-controls{margin-bottom:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}
+  .planner-shell.is-list-view .planner-day-toggle{min-width:0}
+}
