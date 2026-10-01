@@ -643,10 +643,10 @@ void bhHydrateSaved();
         filterButton.addEventListener("click",async event=>{
           event.preventDefault();
           await (window.bhAdvancedFiltersReady||Promise.resolve());
-          const target=page==="calendar" ? document.getElementById("calendarAdvancedFilters") : document.getElementById("directoryFilters");
+          const target=page==="calendar" ? document.getElementById("calendarFilters") : document.getElementById("directoryFilters");
           if(target){
-            if(page==="calendar"){target.hidden=false;document.body.classList.add("calendar-filter-open");}
-            else{target.classList.add("is-open");document.body.classList.add("directory-filter-open");}
+            target.classList.add("is-open");
+            document.body.classList.add("directory-filter-open");
             const first=target.querySelector("select,input,button");
             if(first)first.focus();
           }
