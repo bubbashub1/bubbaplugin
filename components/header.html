@@ -15,6 +15,10 @@
     </div>
 
     <form action="directory.html" method="get" class="bh-header-search-bar" role="search" aria-label="Search family activities">
+      <button type="button" class="bh-header-search-toggle" aria-expanded="false" aria-controls="bh-header-search-fields" aria-label="Open search">
+        <span aria-hidden="true">⌕</span>
+      </button>
+      <div class="bh-header-search-fields" id="bh-header-search-fields">
       <input type="search" name="keyword" placeholder="Keyword" aria-label="Keyword">
       <select name="region" aria-label="Region">
         <option value="">Region</option>
@@ -36,6 +40,7 @@
         <option value="Sunday">Sunday</option>
       </select>
       <button type="submit" class="bh-header-search-submit">Search</button>
+      </div>
     </form>
   </div>
 </header>
