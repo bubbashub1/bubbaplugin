@@ -190,7 +190,26 @@
 .organiser-map-note{margin:0;padding:7px 10px;color:#718076;font-size:9px;text-align:right;background:#fff}
 .organiser-map-empty{display:grid;place-items:center;height:100%;min-height:360px;color:#617261;font-size:13px}
 
-/* 4. ACTIVITY HEADING --------------------------------------------------- */
+
+/* 4. ORGANISER INFO + FAQ --------------------------------------------- */
+.organiser-info-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;width:100%;margin:0 0 34px}
+.organiser-info-card{min-width:0;padding:22px;background:#fff;border:1px solid var(--os-line);border-radius:16px}
+.organiser-info-card h2,.organiser-faq h2{margin:8px 0 7px;color:var(--os-ink);font-family:var(--os-font);font-size:23px;font-weight:800;line-height:1.15}
+.organiser-info-card p{margin:0 0 14px;color:#617261;font-size:12px;line-height:1.55}
+.organiser-info-card ul{margin:0;padding-left:18px;color:#617261;font-size:12px;line-height:1.65}
+.organiser-info-card li+li{margin-top:5px}
+.organiser-faq{width:100%;margin:0 0 28px;padding:24px;background:var(--os-mint);border:1px solid var(--os-line);border-radius:16px}
+.organiser-faq .storefront-heading{margin-bottom:14px}
+.organiser-faq-list{display:grid;gap:8px}
+.organiser-faq details{background:#fff;border:1px solid var(--os-line);border-radius:12px;overflow:hidden}
+.organiser-faq summary{cursor:pointer;padding:14px 16px;color:var(--os-ink);font-size:13px;font-weight:800;list-style:none}
+.organiser-faq summary::-webkit-details-marker{display:none}
+.organiser-faq summary:after{content:"+";float:right;color:var(--os-teal);font-size:18px;line-height:1}
+.organiser-faq details[open] summary:after{content:"−"}
+.organiser-faq details p{margin:0;padding:0 16px 15px;color:#617261;font-size:12px;line-height:1.55}
+@media(max-width:900px){.organiser-info-grid{grid-template-columns:1fr 1fr}.organiser-support-card{grid-column:1/-1}}
+@media(max-width:700px){.organiser-info-grid{grid-template-columns:1fr}.organiser-support-card{grid-column:auto}.organiser-info-card,.organiser-faq{padding:18px}}
+/* 5. ACTIVITY HEADING --------------------------------------------------- */
 .storefront-heading{
   margin:0 0 17px;
 }
@@ -209,7 +228,7 @@
   line-height:1.5;
 }
 
-/* 5. ACTIVITY GRID ------------------------------------------------------ */
+/* 6. ACTIVITY GRID ------------------------------------------------------ */
 .storefront-grid{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
@@ -313,7 +332,7 @@
   font-weight:800;
 }
 
-/* 6. BACK / EMPTY / LOADING ------------------------------------------- */
+/* 7. BACK / EMPTY / LOADING ------------------------------------------- */
 .organiser-back{
   margin-top:24px;
 }
@@ -362,7 +381,7 @@
   color:#617261;
 }
 
-/* 7. RESPONSIVE -------------------------------------------------------- */
+/* 8. RESPONSIVE -------------------------------------------------------- */
 @media(max-width:1050px){
   .organiser-storefront-page{padding-left:12px!important;padding-right:12px!important}
   .storefront-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -422,7 +441,7 @@
   .storefront-card-body{padding:16px}
 }
 
-/* 8. FOOTER ------------------------------------------------------------- */
+/* 9. FOOTER ------------------------------------------------------------- */
 .organiser-storefront-page + .site-footer{
   width:100%!important;
   max-width:none!important;
