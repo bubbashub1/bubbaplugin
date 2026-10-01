@@ -816,24 +816,30 @@ const bhInitDirectory=async()=>{
         };
       });
 
-      // Keep listings and map markers linked. Clicking a listing focuses its
-      // first mapped venue, opens that marker's popup, and scrolls the map into
-      // view on desktop. The save button remains independent.
+      // Keep listings and map markers linked in both directions.
+      // Render the current filtered list first so marker references exist
+      // immediately when a listing is clicked.
+      if (window.innerWidth > 900 || currentView === "map") {
+        renderMap(list);
+        if (map) setTimeout(() => map.invalidateSize(), 0);
+      }
+
       document.querySelectorAll(".activity-card[data-activity-id]").forEach(card => {
         card.addEventListener("click", event => {
           if (event.target.closest("a, button")) return;
           const activityId = String(card.dataset.activityId || "");
           const marker = markers.find(item => String(item._bhActivityId) === activityId);
           if (!marker || !map) return;
+
           map.setView(marker.getLatLng(), Math.max(map.getZoom(), 14), { animate: true });
           marker.openPopup();
+
           if (window.innerWidth > 900) {
             document.querySelector("#mapView")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
           }
         });
       });
 
-      if (window.innerWidth > 900) { setTimeout(() => { renderMap(list); if (map) map.invalidateSize(); }, 0); } else if (currentView === "map") { setTimeout(() => { renderMap(list); if (map) map.invalidateSize(); }, 0); }
       if (currentView === "calendar") {
         calendarRenderToken++;
         const token = calendarRenderToken;
