@@ -604,7 +604,42 @@ void bhHydrateSaved();
       if(!response.ok)throw new Error("Could not load advanced filters");
       const html=await response.text();
       placeholders.forEach(placeholder=>{placeholder.outerHTML=html;});
-      return [...document.querySelectorAll("[data-bh-advanced-filters]")];
+      const filters=[...document.querySelectorAll("[data-bh-advanced-filters]")];
+
+      /* Shared behaviour: the same More filters control is used everywhere
+         the Advanced Filters component appears (Directory, Map, Calendar). */
+      filters.forEach(root=>{
+        const toggle=root.querySelector("#advancedToggle");
+        const fields=root.querySelector("#advancedFields");
+        if(toggle&&fields){
+          toggle.addEventListener("click",()=>{
+            const open=fields.hidden;
+            fields.hidden=!open;
+            toggle.setAttribute("aria-expanded",String(open));
+            toggle.innerHTML=open
+              ? 'More filters <span aria-hidden="true">−</span>'
+              : 'More filters <span aria-hidden="true">＋</span>';
+          });
+        }
+      });
+
+      /* Shared admin-controlled visibility for Advanced Filters. */
+      fetch("api/search-settings.php",{cache:"no-store",headers:{Accept:"application/json"}})
+        .then(response=>response.ok?response.json():null)
+        .then(payload=>{
+          if(!payload?.ok)return;
+          const defaults={category:true,region:true,town:true,nearby:true,age:true,day:true,price:true,session_length:true,sen:true,term_time:true,booking:true,accessibility:true,free:true};
+          const settings={...defaults,...(payload.data||{})};
+          filters.forEach(root=>{
+            root.querySelectorAll(".directory-advanced-filter-field[data-filter-key]").forEach(el=>{
+              const key=el.dataset.filterKey;
+              el.hidden=key==="price"?false:settings[key]===false;
+            });
+          });
+        })
+        .catch(()=>{});
+
+      return filters;
     }catch(error){
       console.warn("Bubba Hub advanced filters could not load.",error);
       return [];
