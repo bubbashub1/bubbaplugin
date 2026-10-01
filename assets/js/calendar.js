@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded",()=>{(async()=>{
+  await (window.bhAdvancedFiltersReady||Promise.resolve());
   const items=await bhActivities();
   const root=document.getElementById("calendar");
   const title=document.getElementById("calendarTitle");
@@ -273,11 +274,6 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
       el?.addEventListener("input",applyHero);
     });
     hero.querySelector("[data-bh-hero-form]")?.addEventListener("submit",e=>{e.preventDefault();applyHero()});
-    hero.querySelector("[data-bh-hero-filters]")?.addEventListener("click",e=>{
-      e.preventDefault();
-      const modal=document.getElementById("calendarAdvancedFilters");
-      if(modal){modal.hidden=false;document.body.classList.add("calendar-filter-open");modal.querySelector("input,select,button")?.focus()}
-    });
   };
 
   const applyHero=()=>{
@@ -295,16 +291,33 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
   if(modal){
     const close=()=>{modal.hidden=true;document.body.classList.remove("calendar-filter-open")};
     modal.querySelectorAll("[data-calendar-filter-close]").forEach(b=>b.addEventListener("click",close));
+    const setField=(id,value)=>{const el=document.getElementById(id);if(el)el.value=value||""};
+    const setCheck=(id,value)=>{const el=document.getElementById(id);if(el)el.checked=!!value};
+    const syncAdvancedFields=()=>{
+      setField("ageRange",state.filters.age);
+      setField("maxPrice",state.filters.maxPrice);
+      setField("sessionLength",state.filters.sessionLength);
+      setField("termTime",state.filters.termTime);
+      setCheck("bookingRequired",state.filters.bookingRequired==="yes"||state.filters.bookingRequired==="1"||state.filters.bookingRequired===true);
+      setField("sen",state.filters.sen);
+      setCheck("free",state.filters.free==="1"||state.filters.free===true);
+      const accessibility=selected(state.filters.accessibility);
+      document.querySelectorAll(".accessibility-option").forEach(el=>el.checked=accessibility.includes(norm(el.value)));
+    };
+    syncAdvancedFields();
     document.getElementById("calendarClearFilters")?.addEventListener("click",()=>{
-      ["calendarAge","calendarMaxPrice","calendarSessionLength","calendarTermTime","calendarBookingRequired","calendarSen"].forEach(id=>{const el=document.getElementById(id);if(el)el.value=""});
+      state.filters.age="";state.filters.maxPrice="";state.filters.sessionLength="";state.filters.termTime="";state.filters.bookingRequired="";state.filters.sen="";state.filters.free="";state.filters.accessibility=[];
+      syncAdvancedFields();render();
     });
     document.getElementById("calendarApplyFilters")?.addEventListener("click",()=>{
-      state.filters.age=document.getElementById("calendarAge")?.value||"";
-      state.filters.maxPrice=document.getElementById("calendarMaxPrice")?.value||"";
-      state.filters.sessionLength=document.getElementById("calendarSessionLength")?.value||"";
-      state.filters.termTime=document.getElementById("calendarTermTime")?.value||"";
-      state.filters.bookingRequired=document.getElementById("calendarBookingRequired")?.value||"";
-      state.filters.sen=document.getElementById("calendarSen")?.value||"";
+      state.filters.age=document.getElementById("ageRange")?.value||"";
+      state.filters.maxPrice=document.getElementById("maxPrice")?.value||"";
+      state.filters.sessionLength=document.getElementById("sessionLength")?.value||"";
+      state.filters.termTime=document.getElementById("termTime")?.value||"";
+      state.filters.bookingRequired=document.getElementById("bookingRequired")?.checked?"yes":"";
+      state.filters.sen=document.getElementById("sen")?.value||"";
+      state.filters.free=document.getElementById("free")?.checked?"1":"";
+      state.filters.accessibility=[...document.querySelectorAll(".accessibility-option:checked")].map(el=>el.value);
       close();render();
     });
   }
