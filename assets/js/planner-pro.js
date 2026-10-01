@@ -46,10 +46,27 @@ document.addEventListener("DOMContentLoaded",async()=>{
     }catch{return false}
   }
 
+  function showProSaveStatus(message){
+    let status=document.getElementById("proSaveStatus");
+    if(!status){
+      status=document.createElement("div");
+      status.id="proSaveStatus";
+      status.setAttribute("role","status");
+      status.style.cssText="position:fixed;right:18px;bottom:18px;z-index:10001;padding:10px 14px;border-radius:12px;background:#416651;color:#fff;font:700 13px/1.2 system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.14);";
+      document.body.appendChild(status);
+    }
+    status.textContent=message;
+    clearTimeout(status._timer);
+    status._timer=setTimeout(()=>status.remove(),2600);
+  }
+
   function queueProSync(){
     if(proHydrating||!proSignedIn)return;
     clearTimeout(proSyncTimer);
-    proSyncTimer=setTimeout(()=>{saveProState()},350);
+    proSyncTimer=setTimeout(async()=>{
+      const ok=await saveProState();
+      if(!ok)showProSaveStatus("Saved on this device");
+    },350);
   }
 
   const write=(key,value)=>{
@@ -610,9 +627,14 @@ document.addEventListener("DOMContentLoaded",async()=>{
     ],d=>{
       const start=timeMinutes(d.time),end=timeMinutes(d.endTime);
       if(start===null||end===null||end<=start){alert("Please choose an end time after the start time.");return}
-      dayPlan.push({id:uid("day"),time:d.time,endTime:d.endTime,type:d.type,title:d.title,detail:d.detail});
-      dayPlan.sort((a,b)=>a.time.localeCompare(b.time));
-      write(keys.dayPlan,dayPlan);renderDayPlan();renderProCalendar();
+      const item={id:uid("day"),time:d.time,endTime:d.endTime,type:d.type,title:d.title,detail:d.detail};
+      dayPlan.push(item);
+      dayPlan.sort((a,b)=>String(a.time||"").localeCompare(String(b.time||"")));
+      write(keys.dayPlan,dayPlan);
+      renderDayPlan();
+      renderProCalendar();
+      showProSaveStatus("✓ Added to your day");
+      void saveProState().then(ok=>showProSaveStatus(ok?"✓ Saved to your Bubba Hub account":"✓ Saved on this device"));
     })
   }
 
