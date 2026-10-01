@@ -42,7 +42,7 @@
   height: 48px;
   object-fit: contain;
   border-radius: 10px;
-  background: transparent; /* Removes awkward background block */
+  background: transparent;
 }
 
 .bh-main-nav {
@@ -87,16 +87,16 @@
   opacity: 0.9;
 }
 
-/* Bottom Row: Seamless Search Toolbar (No Padding Container) */
+/* Bottom Row: Seamless Search Toolbar */
 .bh-header-search-bar {
   width: 100%;
   display: flex;
   align-items: center;
   gap: 8px;
-  background: transparent; /* Removes wrapper box background */
-  padding: 4px 0 0 0; /* Zero side padding so it spans fully */
-  margin-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.15); /* Subtle clean separator */
+  background: transparent;
+  padding: 4px 0 0 0;
+  margin-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
   flex-wrap: wrap;
 }
 
@@ -105,20 +105,20 @@
   background: #fff;
   color: #2b2d42;
   border: 1px solid #dee2e6;
-  border-radius: 12px;
-  padding: 10px 14px;
+  border-radius: 10px;
+  padding: 8px 12px;
   font-size: 13px;
   outline: none;
 }
 
 .bh-header-search-bar input {
   flex: 2;
-  min-width: 200px;
+  min-width: 180px;
 }
 
 .bh-header-search-bar select {
   flex: 1;
-  min-width: 130px;
+  min-width: 110px;
   cursor: pointer;
 }
 
@@ -126,8 +126,8 @@
   background: #ffb703;
   color: #023047;
   border: none;
-  border-radius: 12px;
-  padding: 10px 24px;
+  border-radius: 10px;
+  padding: 8px 20px;
   font-weight: 800;
   font-size: 13px;
   cursor: pointer;
