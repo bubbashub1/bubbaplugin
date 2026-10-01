@@ -320,30 +320,30 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const plannerMatchesActivity=(activity,filters)=>{
     if(!filters)return true;
     const categoryMap={"Baby classes":"Baby","Baby & toddler":"Toddler","Family activities":"Family"};
-    if(filters.category&&(categoryMap[activity.category]||activity.category)!==filters.category)return false;
+    if(filters.category?.length&&!filters.category.includes(categoryMap[activity.category]||activity.category))return false;
     const venues=typeof bhVenues==="function"?bhVenues(activity):[];
-    if(filters.region&&!venues.some(v=>String(v.region||activity.region||"")===String(filters.region)))return false;
-    if(filters.town&&!venues.some(v=>String(v.town||activity.town||"")===String(filters.town)))return false;
+    if(filters.region?.length&&!venues.some(v=>filters.region.includes(String(v.region||activity.region||""))))return false;
+    if(filters.town?.length&&!venues.some(v=>filters.town.includes(String(v.town||activity.town||""))))return false;
     const sessions=typeof bhSessions==="function"?bhSessions(activity):[];
-    if(filters.day&&!sessions.some(s=>String(s.day||"")===String(filters.day)))return false;
-    if(filters.sen&&String(activity.sen||activity.sen_friendly||"").toLowerCase()!==String(filters.sen).toLowerCase())return false;
-    if(filters.termTime){
+    if(filters.day?.length&&!sessions.some(s=>filters.day.includes(String(s.day||""))))return false;
+    if(filters.sen?.length&&!filters.sen.includes(String(activity.sen||activity.sen_friendly||"")))return false;
+    if(filters.termTime?.length){
       const term=String(activity.term_time||activity.term_time_only||"").toLowerCase();
-      if(filters.termTime==="yes"&&!["yes","true","1"].includes(term))return false;
-      if(filters.termTime==="no"&&["yes","true","1"].includes(term))return false;
+      if(filters.termTime.length&&!filters.termTime.some(v=>v==="yes"&&["yes","true","1"].includes(term)||v==="no"&&!["yes","true","1"].includes(term)))return false;
     }
     if(filters.bookingRequired&&!(activity.booking_url||activity.bookingUrl||activity.bookable||activity.booking_required))return false;
     if(filters.free){
       const price=Number(String(activity.price||"").replace(/[^0-9.]/g,""));
       if(!String(activity.price||"").toLowerCase().includes("free")&&price!==0)return false;
     }
-    if(filters.maxPrice){
-      if(filters.maxPrice==="over30"){
+    if(filters.maxPrice?.length){
+      if(filters.maxPrice.includes("over30")){
         const price=Number(String(activity.price||"").replace(/[^0-9.]/g,""));
         if(!Number.isFinite(price)||price<=30)return false;
-      }else{
+      }else if(filters.maxPrice.some(v=>Number.isFinite(Number(v)))){
         const price=Number(String(activity.price||"").replace(/[^0-9.]/g,""));
-        if(!Number.isFinite(price)||price>Number(filters.maxPrice))return false;
+        const limits=filters.maxPrice.filter(v=>Number.isFinite(Number(v))).map(Number);
+        if(!Number.isFinite(price)||!limits.some(limit=>price<=limit))return false;
       }
     }
     if(filters.accessibility?.length){
@@ -364,7 +364,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
         const day=Number(session.day_of_week||0);
         if(day<1||day>7)return;
         const date=proDateForDay(proCalendarDate,day);
-        if(filters.day&&String(session.day||"")!==String(filters.day))return;
+        if(filters.day?.length&&!filters.day.includes(String(session.day||"")))return;
         const iso=date.toISOString().slice(0,10);
         if(session.start_date&&iso<session.start_date)return;
         if(session.end_date&&iso>session.end_date)return;
