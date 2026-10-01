@@ -123,8 +123,11 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
       }))return false;
     }
     if(f.termTime){
-      const wanted=f.termTime==="yes";
-      if(!sessions(a).some(s=>Boolean(s.term_time_only)===wanted||norm(s.term_time_only)===(wanted?"yes":"no")))return false;
+      const wanted=norm(f.termTime);
+      if(!sessions(a).some(s=>{
+        const value=norm(s.term_time_only);
+        return value===wanted;
+      }))return false;
     }
     if(f.bookingRequired){
       const hasBooking=!!(a.booking_url||a.bookingUrl||a.bookable||a.booking_required===true||a.booking_required==="yes");
@@ -141,7 +144,9 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
       if(!(rawPrice.includes("free")||numericPrice===0))return false;
     }
     if(Array.isArray(f.accessibility)&&f.accessibility.length){
-      const available=(Array.isArray(a.accessibility)?a.accessibility:[a.accessibility]).map(norm);
+      const available=(Array.isArray(a.accessibility)?a.accessibility:[a.accessibility])
+        .concat(Array.isArray(a.accessibility_features)?a.accessibility_features:[])
+        .map(norm);
       if(f.accessibility.some(value=>!available.includes(norm(value))))return false;
     }
     return true;
@@ -328,6 +333,14 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
     const hero=document.querySelector("[data-bh-directory-hero]");
     if(!hero)return;
     const get=k=>hero.querySelector('[data-bh-hero-field="'+k+'"]');
+    // Restore every filter from the URL, not only the five hero fields.
+    ["keyword","region","town","category","day","age","maxPrice","sessionLength","termTime","bookingRequired","sen","free"].forEach(k=>{
+      const value=params.get(k)||"";
+      if(k==="bookingRequired")state.filters[k]=value;
+      else state.filters[k]=value;
+    });
+    const accessibilityParam=params.get("accessibility");
+    state.filters.accessibility=accessibilityParam?accessibilityParam.split(",").map(v=>v.trim()).filter(Boolean):[];
     ["keyword","region","town","category","day"].forEach(k=>{
       const value=params.get(k)||"";
       state.filters[k]=value;
