@@ -228,8 +228,8 @@ body:not(.bh-home) .activity-hero .hero-quick-facts > span{
   min-width:0!important;min-height:62px!important;padding:9px 10px!important;
   background:rgba(255,255,255,.10)!important;border:1px solid rgba(255,255,255,.25)!important;border-radius:12px!important;color:#fff!important;overflow:hidden!important;
 }
-body:not(.bh-home) .activity-hero .hero-quick-facts strong{display:block!important;color:var(--ad-pale)!important;font-size:9px!important;font-weight:800!important;letter-spacing:.04em!important;line-height:1.1!important;text-transform:uppercase!important}
-body:not(.bh-home) .activity-hero .hero-quick-facts b{display:block!important;min-width:0;color:#fff!important;font-size:12px!important;font-weight:750!important;line-height:1.2!important;overflow-wrap:anywhere}
+body:not(.bh-home) .activity-hero .hero-quick-facts strong{display:block!important;color:var(--ad-pale)!important;font-size:12px!important;font-weight:800!important;letter-spacing:.04em!important;line-height:1.1!important;text-transform:uppercase!important}
+body:not(.bh-home) .activity-hero .hero-quick-facts b{display:block!important;min-width:0;color:#fff!important;font-size:14px!important;font-weight:750!important;line-height:1.2!important;overflow-wrap:anywhere}
 
 body:not(.bh-home) .activity-hero .listing-actions{display:flex!important;flex-flow:row nowrap!important;align-items:center!important;gap:7px!important;width:100%!important;min-width:0!important;margin:0!important;padding:0!important}
 body:not(.bh-home) .activity-hero .listing-actions .activity-action,
@@ -287,7 +287,7 @@ body:not(.bh-home) .activity-hero .listing-actions .activity-book-button:focus-v
 /* 4. BODY GRID ---------------------------------------------------------- */
 /* Legacy cards replaced by the activity-reference-* blocks */
 body:not(.bh-home) .listing-main .good-to-know-card,
-body:not(.bh-home) .listing-main .listing-card:nth-of-type(3),
+body:not(.bh-home) .listing-main .listing-card:nth-of-type(3):not(.activity-reference-schedule),
 body:not(.bh-home) .listing-main .where-card,
 body:not(.bh-home) .listing-side .organiser-card,
 body:not(.bh-home) .listing-side .booking-card,
