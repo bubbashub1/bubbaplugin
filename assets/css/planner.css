@@ -194,3 +194,38 @@
   .planner-print-week-day{min-height:165mm}
   .planner-print-entry{break-inside:avoid}
 }
+
+
+/* Planner list layout refinement */
+.planner-day-column.is-hidden-day .planner-day-empty-hidden{min-height:120px;visibility:hidden}
+@media(min-width:801px){
+  .planner-shell.is-list-view{grid-template-columns:190px minmax(0,1fr)}
+  .planner-shell.is-list-view .planner-day-controls{grid-column:1;grid-row:4}
+  .planner-shell.is-list-view #results{grid-column:2;grid-row:4}
+}
+@media(max-width:800px){
+  .planner-shell.is-list-view{display:grid;grid-template-columns:78px minmax(0,1fr);column-gap:10px;align-items:start}
+  .planner-shell.is-list-view .planner-toolbar,.planner-shell.is-list-view .planner-profile-note,.planner-shell.is-list-view .planner-view-controls,.planner-shell.is-list-view .planner-footer-note{grid-column:1/-1}
+  .planner-shell.is-list-view .planner-day-controls{grid-column:1;grid-row:4;display:flex;flex-direction:column;gap:5px;width:100%;margin:0;padding:0;overflow:visible}
+  .planner-shell.is-list-view #results{grid-column:2;grid-row:4;min-width:0}
+  .planner-shell.is-list-view .planner-day-toggle{width:100%;min-width:0;flex:none}
+  .planner-shell.is-list-view .planner-day-toggle span{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:38px;padding:5px 3px;border-radius:9px;text-align:center}
+  .planner-shell.is-list-view .planner-day-toggle b{font-size:10px;line-height:1}
+  .planner-shell.is-list-view .planner-day-toggle small{display:none}
+  .planner-shell.is-list-view .planner-list-item{gap:7px;padding:9px 8px;border-radius:11px}
+  .planner-shell.is-list-view .planner-list-date{flex:0 0 39px}
+  .planner-shell.is-list-view .planner-list-date b{font-size:10px}
+  .planner-shell.is-list-view .planner-list-date span{font-size:9px}
+  .planner-shell.is-list-view .planner-list-main h4{font-size:12px;line-height:1.2}
+  .planner-shell.is-list-view .planner-list-main p,.planner-shell.is-list-view .planner-list-main .planner-time{font-size:9px}
+  .planner-shell.is-list-view .planner-card-links{gap:3px 7px;margin-top:5px}
+  .planner-shell.is-list-view .planner-card-links a,.planner-shell.is-list-view .planner-link-button{font-size:9px}
+}
+@media(max-width:420px){
+  .planner-shell.is-list-view{grid-template-columns:68px minmax(0,1fr);column-gap:8px;padding:12px}
+  .planner-shell.is-list-view .planner-day-toggle span{min-height:34px}
+  .planner-shell.is-list-view .planner-list-item{padding:8px 7px}
+  .planner-shell.is-list-view .planner-list-date{flex-basis:35px}
+  .planner-shell.is-list-view .planner-list-main h4{font-size:11px}
+  .planner-shell.is-list-view .planner-list-main p,.planner-shell.is-list-view .planner-list-main .planner-time,.planner-shell.is-list-view .planner-card-links a,.planner-shell.is-list-view .planner-link-button{font-size:8px}
+}
