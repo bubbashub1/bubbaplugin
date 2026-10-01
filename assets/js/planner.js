@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])));
   const formatTime=v=>window.bhFormatTime?window.bhFormatTime(v):String(v||"").slice(0,5);
   const today=new Date(),todayNum=((today.getDay()||7));
-  let csrf="",signedIn=false,adminOnly=false,items=[],currentView="week";
+  let csrf="",signedIn=false,adminOnly=false,items=[],currentView="week",plannerProfiles=[],activePlannerId="default",activePlannerFilters=null;
 
   const auth=await fetch("api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}}).then(r=>r.json()).catch(()=>({ok:false,authenticated:false}));
   signedIn=!!auth.authenticated;adminOnly=!!auth.is_admin;csrf=auth.csrf||"";
@@ -25,6 +25,38 @@ document.addEventListener("DOMContentLoaded",async()=>{
     try{const response=await fetch("api/planner.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({...body,csrf})});const payload=await response.json();return !!(response.ok&&payload.ok)}catch{return false}
   }
   const localPlanned=()=>bhGet(BH_KEYS.planner),localVisited=()=>getList(VISITED_KEY),localHidden=()=>getList(HIDE_KEY);
+  const plannerProfileSelect=$("plannerProfileSelect"),plannerProfileNote=$("plannerProfileNote");
+  const normalise=v=>String(v??"").trim().toLowerCase();
+  const valuesFor=(activity,session,key)=>{
+    const venue=session?.venue||{};
+    const raw={category:activity?.category,region:venue.region||activity?.region,town:venue.town||activity?.town,day:session?.day_of_week,age:activity?.age_range,sen:activity?.sen_friendly??activity?.sen,termTime:session?.term_time_only,bookingRequired:activity?.booking_required??activity?.bookingRequired,price:session?.price??activity?.price,sessionLength:activity?.session_length||session?.session_length,accessibility:activity?.accessibility||activity?.accessibility_features||venue?.accessibility};
+    const value=raw[key]; return Array.isArray(value)?value.map(normalise):[normalise(value)].filter(Boolean);
+  };
+  const filterMatch=(activity,session,filters)=>{
+    if(!filters)return true;
+    for(const key of ["category","region","town","day","age","maxPrice","sessionLength","sen","termTime","accessibility"]){
+      const wanted=Array.isArray(filters[key])?filters[key].map(normalise).filter(Boolean):[]; if(!wanted.length)continue;
+      const actual=valuesFor(activity,session,key);
+      if(key==="maxPrice"){const max=Number(wanted[0]),price=Number(String(actual[0]||"").replace(/[^0-9.]/g,""));if(Number.isFinite(max)&&Number.isFinite(price)&&price>max)return false;continue;}
+      if(key==="sessionLength"){const length=Number(String(actual[0]||"").replace(/[^0-9.]/g,""));if(wanted.some(v=>v==="181")){if(!(length>180))return false}else if(wanted.some(v=>Number(v)>0)&&!wanted.some(v=>Number(v)>=length))return false;continue;}
+      if(!wanted.some(w=>actual.some(a=>a===w||a.includes(w)||w.includes(a))))return false;
+    }
+    if(filters.free){const price=Number(String(valuesFor(activity,session,"price")[0]||"").replace(/[^0-9.]/g,""));if(Number.isFinite(price)&&price>0)return false;}
+    if(filters.bookingRequired){const b=activity?.booking_required??activity?.bookingRequired;if(!(b===true||b===1||normalise(b)==="yes"||normalise(b)==="true"))return false;}
+    return true;
+  };
+  async function loadPlannerProfiles(){
+    let local=[];try{const v=JSON.parse(localStorage.getItem("bhProPlanners")||"[]");local=Array.isArray(v)?v:[]}catch{}
+    plannerProfiles=local; const requested=new URLSearchParams(location.search).get("proPlanner");
+    try{if(signedIn&&!adminOnly){const response=await fetch("api/planner-pro.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});const payload=await response.json();if(response.ok&&payload.ok&&Array.isArray(payload.state?.planners))plannerProfiles=payload.state.planners;}}catch{}
+    if(plannerProfileSelect){
+      plannerProfileSelect.innerHTML='<option value="default">My Planner</option>'+plannerProfiles.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name||"Custom planner")+'</option>').join("");
+      const target=requested&&plannerProfiles.some(p=>String(p.id)===String(requested))?String(requested):"default"; plannerProfileSelect.value=target; activePlannerId=target;
+      const profile=plannerProfiles.find(p=>String(p.id)===target); activePlannerFilters=profile?.filters||null;
+      if(profile){plannerProfileNote.hidden=false;plannerProfileNote.innerHTML="<strong>"+esc(profile.name||"Custom planner")+"</strong>"+(profile.description?" · "+esc(profile.description):"");}
+    }
+  }
+
 
   function renderAdminProPreview(){
     if(!adminOnly)return;
@@ -78,7 +110,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       });
       else entries.push({activity,session:null,day:0,date:null});
     });
-    return entries;
+    return activePlannerFilters?entries.filter(e=>filterMatch(e.activity,e.session,activePlannerFilters)):entries;
   }
   function buildPrintCalendar(){
     const sheet=$("plannerPrintCalendar"),dateLabel=$("plannerPrintDate"),footer=$("plannerPrintFooter");
@@ -225,7 +257,17 @@ document.addEventListener("DOMContentLoaded",async()=>{
     viewControls.querySelectorAll(".planner-view-button").forEach(b=>b.classList.toggle("is-active",b===button));
     render();buildPrintCalendar();
   }));
-  await syncAccount();renderAdminProPreview();render();buildPrintCalendar();
+  await syncAccount();
+  await loadPlannerProfiles();
+  plannerProfileSelect?.addEventListener("change",()=>{
+    activePlannerId=plannerProfileSelect.value;
+    const profile=plannerProfiles.find(p=>String(p.id)===String(activePlannerId));
+    activePlannerFilters=profile?.filters||null;
+    if(profile){plannerProfileNote.hidden=false;plannerProfileNote.innerHTML="<strong>"+esc(profile.name||"Custom planner")+"</strong>"+(profile.description?" · "+esc(profile.description):"");}else{plannerProfileNote.hidden=true;plannerProfileNote.textContent="";}
+    render();buildPrintCalendar();
+    history.replaceState(null,"","planner.html"+(activePlannerId!=="default"?"?proPlanner="+encodeURIComponent(activePlannerId):""));
+  });
+  renderAdminProPreview();render();buildPrintCalendar();
 }).catch(error=>{
   const target=document.getElementById("results");
   target.innerHTML="<div class='admin-panel'><h3>Planner unavailable</h3><p>"+(window.bhEscape?bhEscape(error.message||"Unable to load planner."):String(error.message||"Unable to load planner."))+"</p></div>";
