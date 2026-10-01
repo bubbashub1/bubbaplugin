@@ -584,3 +584,52 @@
     grid-template-columns:1fr!important;
   }
 }
+
+
+/* Mobile Planner Pro navigation — replace the sidebar grid with a compact Jump To control */
+.pro-mobile-jump{display:none}
+@media(max-width:800px){
+  .pro-mobile-jump{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr);
+    align-items:center;
+    gap:9px;
+    margin:0 0 12px;
+  }
+  .pro-mobile-jump label{
+    color:var(--bh-text);
+    font-size:11px;
+    font-weight:850;
+    white-space:nowrap;
+  }
+  .pro-mobile-jump select{
+    width:100%;
+    min-width:0;
+    box-sizing:border-box;
+    min-height:44px;
+    padding:9px 36px 9px 12px;
+    border:1px solid var(--bh-border);
+    border-radius:12px;
+    background:#fff;
+    color:var(--bh-text);
+    font:inherit;
+    font-size:12px;
+    font-weight:750;
+  }
+  .pro-mobile-jump select:focus{
+    outline:3px solid rgba(246,200,74,.55);
+    outline-offset:1px;
+  }
+  .pro-dashboard .pro-sidebar{
+    display:none;
+  }
+}
+@media(max-width:520px){
+  .pro-mobile-jump{
+    grid-template-columns:1fr;
+    gap:5px;
+    margin-bottom:10px;
+  }
+  .pro-mobile-jump label{font-size:10px}
+  .pro-mobile-jump select{min-height:46px;font-size:13px}
+}
