@@ -35,46 +35,8 @@
   <div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div>
 </footer>
 
-<script>
-(async function loadSharedHeader(){
-  // Guard against the shared header being injected more than once on this page.
-  if(window.__bhSharedHeaderLoading || window.__bhSharedHeaderLoaded)return;
-  window.__bhSharedHeaderLoading=true;
+<script src="assets/js/header.js"></script>
 
-  const mount=document.getElementById("siteHeaderMount");
-  if(!mount)return;
-
-  try{
-    // Remove any stale/static copy before inserting the single shared header.
-    document.querySelectorAll(".bh-site-header").forEach(header=>header.remove());
-
-    const response=await fetch("components/header.html",{cache:"no-store"});
-    if(!response.ok)throw new Error("Header unavailable");
-
-    const template=document.createElement("template");
-    template.innerHTML=await response.text();
-    const header=template.content.querySelector(".bh-site-header");
-    if(!header)throw new Error("Shared header markup unavailable");
-
-    mount.replaceChildren(header);
-
-    // Execute only the inline behaviour belonging to this header instance.
-    template.content.querySelectorAll("script").forEach(script=>{
-      if(script.src)return;
-      const run=document.createElement("script");
-      run.textContent=script.textContent;
-      document.body.appendChild(run);
-    });
-
-    window.__bhSharedHeaderLoaded=true;
-  }catch(error){
-    mount.replaceChildren();
-    console.error("Bubba Hub shared header failed to load:",error);
-  }finally{
-    window.__bhSharedHeaderLoading=false;
-  }
-})();
-</script>
 <script src="assets/js/app.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
