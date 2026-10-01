@@ -92,11 +92,12 @@ document.addEventListener("DOMContentLoaded",async()=>{
     }
   }
 
-  const optionHtml=(options,selected="")=>{
+  const optionHtml=(options,selected=[])=>{
+    const selectedValues=Array.isArray(selected)?selected.map(String):(selected?[String(selected)]:[]);
     return options.map(option=>{
       const value=Array.isArray(option)?option[0]:option;
       const label=Array.isArray(option)?option[1]:option;
-      return "<option value='"+esc(value)+"'"+(String(value)===String(selected)?" selected":"")+">"+esc(label)+"</option>";
+      return "<option value='"+esc(value)+"'"+(selectedValues.includes(String(value))?" selected":"")+">"+esc(label)+"</option>";
     }).join("");
   };
 
@@ -116,15 +117,15 @@ document.addEventListener("DOMContentLoaded",async()=>{
 
   const plannerFilterQuery=filters=>{
     const params=new URLSearchParams();
-    if(filters.category) params.set("category",filters.category);
-    if(filters.region) params.set("region",filters.region);
-    if(filters.town) params.set("town",filters.town);
-    if(filters.day) params.set("day",filters.day);
-    if(filters.age) params.set("age_preset",filters.age);
-    if(filters.maxPrice) params.set("max_price",filters.maxPrice);
-    if(filters.sessionLength) params.set("sessionLength",filters.sessionLength);
-    if(filters.sen) params.set("sen",filters.sen);
-    if(filters.termTime) params.set("termTime",filters.termTime);
+    if(filters.category?.length) params.set("category",filters.category.join(","));
+    if(filters.region?.length) params.set("region",filters.region.join(","));
+    if(filters.town?.length) params.set("town",filters.town.join(","));
+    if(filters.day?.length) params.set("day",filters.day.join(","));
+    if(filters.age?.length) params.set("age_preset",filters.age.join(","));
+    if(filters.maxPrice?.length) params.set("max_price",filters.maxPrice.join(","));
+    if(filters.sessionLength?.length) params.set("sessionLength",filters.sessionLength.join(","));
+    if(filters.sen?.length) params.set("sen",filters.sen.join(","));
+    if(filters.termTime?.length) params.set("termTime",filters.termTime.join(","));
     if(filters.bookingRequired) params.set("bookingRequired","1");
     if(filters.free) params.set("free","1");
     if(filters.accessibility?.length) params.set("accessibility",filters.accessibility.join(","));
