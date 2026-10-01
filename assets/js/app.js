@@ -578,3 +578,33 @@ void bhHydrateSaved();
     document.head.appendChild(script);
   }
 })();
+
+/* Shared Directory / Map hero component.
+   Markup lives in components/directory-hero.html and page scripts initialise it. */
+(function(){
+  const placeholder=document.querySelector("[data-bh-directory-hero-placeholder]");
+  if(!placeholder)return;
+  window.bhDirectoryHeroReady=(async()=>{
+    try{
+      const response=await fetch(new URL("components/directory-hero.html",document.baseURI),{cache:"no-store"});
+      if(!response.ok)throw new Error("Could not load directory hero");
+      const html=await response.text();
+      const page=placeholder.dataset.heroPage||(document.body.classList.contains("bh-map-page")?"map":"directory");
+      placeholder.outerHTML=html;
+      const hero=document.querySelector("[data-bh-directory-hero]");
+      const ids=page==="map"
+        ?{form:"mapFilters",keyword:"mapSearch",region:"mapRegion",town:"mapTown",category:"mapCategory",day:"mapDay",filters:"openMapFilters"}
+        :{form:"directoryHeroSearch",keyword:"search",region:"heroRegion",town:"heroTown",category:"heroCategory",day:"heroDay",filters:"openSearchFilters"};
+      if(hero){
+        const form=hero.querySelector("[data-bh-hero-form]");
+        if(form){form.id=ids.form;form.action=page==="map"?"map.html":"directory.html";}
+        Object.entries({keyword:ids.keyword,region:ids.region,town:ids.town,category:ids.category,day:ids.day}).forEach(([key,id])=>{
+          const el=hero.querySelector('[data-bh-hero-field="'+key+'"]');if(el)el.id=id;
+        });
+        const filterButton=hero.querySelector("[data-bh-hero-filters]");if(filterButton)filterButton.id=ids.filters;
+        hero.dataset.heroPage=page;
+      }
+      return hero;
+    }catch(error){console.warn("Bubba Hub directory hero could not load.",error);return null;}
+  })();
+})();
