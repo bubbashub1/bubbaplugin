@@ -1,5 +1,6 @@
 /* Bubba Hub My Planner — consolidated, responsive styles */
-.planner-page{padding-bottom:28px}
+/* Keep the Planner content clear of the header and aligned with Calendar spacing. */
+.planner-page{padding-top:20px;padding-bottom:28px;box-sizing:border-box}
 .planner-hero{display:flex;align-items:center;justify-content:space-between;gap:28px;margin:22px 0 24px;padding:30px 32px;border:1px solid rgba(18,63,49,.08);border-radius:28px;background:linear-gradient(135deg,#eaf5ec 0%,#dff0ef 58%,#f7f1e5 100%);box-shadow:0 16px 38px rgba(18,63,49,.08)}
 .planner-hero-copy{min-width:0}
 .planner-hero h1{margin:.08em 0 .16em;color:var(--bh-dark);font-size:clamp(34px,4vw,52px);line-height:1.02}
@@ -137,6 +138,7 @@
 
 @media(max-width:1050px){.planner-week{grid-template-columns:repeat(4,minmax(0,1fr))}.planner-day-column{min-height:220px}}
 @media(max-width:800px){
+  .planner-page{padding-top:14px}
   .planner-hero{align-items:flex-start;flex-direction:column;padding:25px 22px}
   .planner-hero-actions{justify-content:flex-start;width:100%}
   .planner-hero-actions .button{flex:1 1 190px}
