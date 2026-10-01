@@ -307,6 +307,22 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
 
   window.addEventListener("focus",refreshPlannerDropdown);
 
+  const populateSharedFilterOptions=()=>{
+    const categoryMap={"Baby classes":"Baby","Baby & toddler":"Toddler","Family activities":"Family"};
+    const categoryValues=[...new Set(items.map(a=>categoryMap[a.category]||a.category).filter(Boolean))].sort();
+    const regionValues=[...new Set(items.flatMap(a=>bhVenues(a).map(v=>v.region||a.region)).filter(Boolean))].sort();
+    const townValues=[...new Set(items.flatMap(a=>bhVenues(a).map(v=>v.town||a.town)).filter(Boolean))].sort();
+    const fill=(id,values,label,current)=>{
+      const el=document.getElementById(id);
+      if(!el)return;
+      el.innerHTML='<option value="">'+label+'</option>'+values.map(v=>'<option value="'+bhEscape(v)+'">'+bhEscape(v)+'</option>').join("");
+      if(current&&values.some(v=>norm(v)===norm(current)))el.value=current;
+    };
+    fill("category",categoryValues,"All categories",state.filters.category);
+    fill("area",regionValues,"All regions",state.filters.region);
+    fill("town",townValues,"All towns",state.filters.town);
+  };
+
   const setupHero=async()=>{
     if(window.bhDirectoryHeroReady)await window.bhDirectoryHeroReady;
     const hero=document.querySelector("[data-bh-directory-hero]");
@@ -320,6 +336,7 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
       el?.addEventListener("input",applyHero);
     });
     hero.querySelector("[data-bh-hero-form]")?.addEventListener("submit",e=>{e.preventDefault();applyHero()});
+    populateSharedFilterOptions();
   };
 
   const applyHero=()=>{
@@ -342,6 +359,10 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
     const setField=(id,value)=>{const el=document.getElementById(id);if(el)el.value=value||""};
     const setCheck=(id,value)=>{const el=document.getElementById(id);if(el)el.checked=!!value};
     const syncAdvancedFields=()=>{
+      setField("category",state.filters.category);
+      setField("area",state.filters.region);
+      setField("town",state.filters.town);
+      setField("day",state.filters.day);
       setField("ageRange",state.filters.age);
       setField("maxPrice",state.filters.maxPrice);
       setField("sessionLength",state.filters.sessionLength);
@@ -353,11 +374,30 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
       document.querySelectorAll(".accessibility-option").forEach(el=>el.checked=accessibility.includes(norm(el.value)));
     };
     syncAdvancedFields();
+    const writeFilterUrl=()=>{
+      const url=new URL(window.location.href);
+      ["keyword","region","town","category","day","age","maxPrice","sessionLength","termTime","bookingRequired","sen","free"].forEach(k=>{
+        const value=state.filters[k];
+        if(value!==""&&value!==false&&value!=null)url.searchParams.set(k,String(value));
+        else url.searchParams.delete(k);
+      });
+      if(state.filters.accessibility?.length)url.searchParams.set("accessibility",state.filters.accessibility.join(","));
+      else url.searchParams.delete("accessibility");
+      window.history.replaceState(null,"",url);
+    };
     document.getElementById("calendarClearFilters")?.addEventListener("click",()=>{
-      state.filters.age="";state.filters.maxPrice="";state.filters.sessionLength="";state.filters.termTime="";state.filters.bookingRequired="";state.filters.sen="";state.filters.free="";state.filters.accessibility=[];
-      syncAdvancedFields();render();
+      state.filters.category="";state.filters.region="";state.filters.town="";state.filters.day="";
+      state.filters.age="";state.filters.maxPrice="";state.filters.sessionLength="";state.filters.termTime="";
+      state.filters.bookingRequired="";state.filters.sen="";state.filters.free="";state.filters.accessibility=[];
+      const hero=document.querySelector("[data-bh-directory-hero]");
+      hero?.querySelectorAll("[data-bh-hero-field]").forEach(el=>el.value="");
+      writeFilterUrl();syncAdvancedFields();close();render();
     });
     document.getElementById("calendarApplyFilters")?.addEventListener("click",()=>{
+      state.filters.category=document.getElementById("category")?.value||"";
+      state.filters.region=document.getElementById("area")?.value||"";
+      state.filters.town=document.getElementById("town")?.value||"";
+      state.filters.day=document.getElementById("day")?.value||"";
       state.filters.age=document.getElementById("ageRange")?.value||"";
       state.filters.maxPrice=document.getElementById("maxPrice")?.value||"";
       state.filters.sessionLength=document.getElementById("sessionLength")?.value||"";
@@ -366,7 +406,10 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
       state.filters.sen=document.getElementById("sen")?.value||"";
       state.filters.free=document.getElementById("free")?.checked?"1":"";
       state.filters.accessibility=[...document.querySelectorAll(".accessibility-option:checked")].map(el=>el.value);
-      close();render();
+      const hero=document.querySelector("[data-bh-directory-hero]");
+      const heroField=k=>hero?.querySelector('[data-bh-hero-field="'+k+'"]');
+      ["keyword","region","town","category","day"].forEach(k=>{const el=heroField(k);if(el)el.value=state.filters[k]||"";});
+      writeFilterUrl();close();render();
     });
   }
 
