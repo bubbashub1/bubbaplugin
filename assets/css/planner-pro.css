@@ -633,3 +633,29 @@
   .pro-mobile-jump label{font-size:10px}
   .pro-mobile-jump select{min-height:46px;font-size:13px}
 }
+
+
+/* Plan a day conflict warnings */
+.pro-day-type{
+  display:inline-block!important;
+  margin:0 0 3px!important;
+  color:var(--bh-primary)!important;
+  font-size:9px!important;
+  font-weight:850!important;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.pro-calendar-event.has-conflict{
+  border-left:3px solid #d88a3d;
+  padding-left:7px;
+}
+.pro-calendar-conflict{
+  display:inline-block!important;
+  margin-top:5px!important;
+  padding:4px 7px;
+  border-radius:7px;
+  background:#fff3df;
+  color:#8a5a20!important;
+  font-size:9px!important;
+  font-weight:850;
+}
