@@ -510,3 +510,14 @@
 .bh-badge-outdoor{background:#edf5e7;border-color:#c9dcb8;color:#45643a}
 .bh-badge-dropin{background:#fff5d8;border-color:#ead58d;color:#7b6110}
 .bh-badge-oneoff{background:#f7e9e8;border-color:#e2c2bf;color:#7b403b}
+
+
+/* Age-range badges ----------------------------------------------------- */
+.bh-badge[class*="bh-badge-age-"]{
+  background:#f1eef8;
+  border-color:#d7cde8;
+  color:#5d4d78;
+}
+.bh-badge[class*="bh-badge-age-"] .bh-badge-icon{
+  font-size:12px;
+}
