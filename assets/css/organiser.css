@@ -461,3 +461,5 @@
   overflow-wrap:anywhere;
 }
 .organiser-terms-content br+br{display:block;content:"";margin-top:8px}
+
+.organiser-brand-mark img{width:100%;height:100%;object-fit:contain;border-radius:inherit;display:block}.organiser-socials{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.organiser-socials .button{margin:0}
