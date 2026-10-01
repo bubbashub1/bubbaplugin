@@ -374,11 +374,30 @@
               </div>
               <div class="organiser-actions">
                 ${website ? '<a class="button button-primary" href="' + bhEscape(website) + '" target="_blank" rel="noopener">Visit website</a>' : ""}
-                ${email ? '<a class="button button-soft" href="mailto:' + bhEscape(email) + '">Contact organiser</a>' : ""}
+                ${email ? '<button type="button" class="button button-soft" data-contact-organiser>Contact organiser</button>' : ""}
                 ${phone ? '<a class="button button-soft" href="tel:' + bhEscape(phone) + '">Call organiser</a>' : ""}
               </div>
             </div>
           </section>
+
+          <div class="bh-modal" id="organiserContactModal" hidden role="dialog" aria-modal="true" aria-labelledby="organiserContactTitle">
+            <div class="bh-modal-card">
+              <button type="button" class="bh-modal-close" data-contact-close aria-label="Close contact form">×</button>
+              <span class="eyebrow">Contact organiser</span>
+              <h2 id="organiserContactTitle">Message ${bhEscape(name)}</h2>
+              <p class="bh-modal-intro">Send an enquiry directly to the organiser. Your email app will open with the message ready to send.</p>
+              <form id="organiserContactForm" class="bh-contact-form">
+                <label><span>Your name</span><input name="name" type="text" autocomplete="name" required></label>
+                <label><span>Email address</span><input name="email" type="email" autocomplete="email" required></label>
+                <label><span>Phone (optional)</span><input name="phone" type="tel" autocomplete="tel"></label>
+                <label><span>Message</span><textarea name="message" rows="5" required placeholder="What would you like to ask?"></textarea></label>
+                <div class="bh-contact-form-actions">
+                  <button type="button" class="button button-soft" data-contact-close>Cancel</button>
+                  <button type="submit" class="button button-primary">Open email</button>
+                </div>
+              </form>
+            </div>
+          </div>
 
           <section class="organiser-summary" aria-label="Organiser summary">\n            <div class="organiser-summary-stat"><strong>${organiserGroups.length}</strong><span>Activities</span></div>\n            <div class="organiser-summary-stat"><strong>${categories.length}</strong><span>Categories</span></div>\n            <div class="organiser-summary-stat"><strong>${venues.length}</strong><span>Venues</span></div>\n            ${renderBadges(organiserBadges, "bh-organiser-badges")}\n          </section>
 
@@ -455,6 +474,52 @@
             <a class="button button-soft" href="directory.html">← Back to activities</a>
           </div>
         `;
+
+        const contactButton = state.querySelector("[data-contact-organiser]");
+        const contactModal = state.querySelector("#organiserContactModal");
+        const contactClose = contactModal?.querySelector("[data-contact-close]");
+        const contactForm = contactModal?.querySelector("#organiserContactForm");
+
+        const closeContactModal = () => {
+          if (!contactModal) return;
+          contactModal.hidden = true;
+          document.body.classList.remove("bh-modal-open");
+        };
+
+        const openContactModal = () => {
+          if (!contactModal) return;
+          contactModal.hidden = false;
+          document.body.classList.add("bh-modal-open");
+          contactModal.querySelector("input[name='name']")?.focus();
+        };
+
+        contactButton?.addEventListener("click", openContactModal);
+        contactClose?.addEventListener("click", closeContactModal);
+        contactModal?.addEventListener("click", event => {
+          if (event.target === contactModal) closeContactModal();
+        });
+        document.addEventListener("keydown", event => {
+          if (event.key === "Escape" && contactModal && !contactModal.hidden) closeContactModal();
+        });
+
+        contactForm?.addEventListener("submit", event => {
+          event.preventDefault();
+          const formData = new FormData(contactForm);
+          const subject = "Bubba Hub enquiry for " + name;
+          const body = [
+            "Hello " + name + ",",
+            "",
+            String(formData.get("message") || "").trim(),
+            "",
+            "Name: " + String(formData.get("name") || "").trim(),
+            "Email: " + String(formData.get("email") || "").trim(),
+            "Phone: " + String(formData.get("phone") || "").trim()
+          ].join("\n");
+          window.location.href = "mailto:" + encodeURIComponent(email) +
+            "?subject=" + encodeURIComponent(subject) +
+            "&body=" + encodeURIComponent(body);
+          closeContactModal();
+        });
 
         await renderMap(venues);
       } catch (error) {
