@@ -612,6 +612,13 @@ void bhHydrateSaved();
           const el=hero.querySelector('[data-bh-hero-field="'+key+'"]');if(el)el.id=id;
         });
         const filterButton=hero.querySelector("[data-bh-hero-filters]");if(filterButton)filterButton.id=ids.filters;
+        const viewLink=hero.querySelector(".directory-map-hero-button");
+        if(viewLink){
+          const query=window.location.search||"";
+          viewLink.href=page==="map" ? "directory.html"+query : "map.html"+query;
+          viewLink.textContent=page==="map" ? "View list of activities →" : "View activities on map →";
+          viewLink.setAttribute("aria-label",page==="map" ? "View list of activities" : "View activities on map");
+        }
         hero.dataset.heroPage=page;
         const popular=hero.querySelector("[data-bh-popular-categories]");
         if(popular && window.bhPopulatePopularCategories) window.bhPopulatePopularCategories(popular);
