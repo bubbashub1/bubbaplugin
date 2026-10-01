@@ -482,3 +482,14 @@
   .bh-badges-overlay .bh-badge{min-height:25px;padding:5px 8px}
   .bh-badges-mobile{display:none}
 }
+
+/* Organiser hero: full-width and light-green title --------------------- */
+.organiser-storefront-page .organiser-hero{
+  width:100%!important;
+  max-width:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+}
+.organiser-storefront-page .organiser-hero-copy h1{
+  color:#d8e6db!important;
+}
