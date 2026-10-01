@@ -2,7 +2,7 @@
 async function loadOrganiserActivities(requestedSlug){
   const slug=String(requestedSlug||"").toLowerCase().trim();
   const url=new URL("api/activities.php",document.baseURI);
-  url.searchParams.set("slug",slug);
+  url.searchParams.set("organiser_slug",slug);
   url.searchParams.set("page","1");
   url.searchParams.set("per_page","50");
   const response=await fetch(url.toString(),{cache:"no-store",headers:{Accept:"application/json"}});
@@ -36,6 +36,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
 </script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script>
 document.addEventListener("DOMContentLoaded",async()=>{
  try{
+  const params=new URLSearchParams(location.search);
+  const parts=location.pathname.replace(/\/+$/, "").split("/").filter(Boolean);
+  const requested=(params.get("slug")||parts[parts.length-1]||"").toLowerCase().trim();
   const items=await loadOrganiserActivities(requested);
   const params=new URLSearchParams(location.search);
   const parts=location.pathname.replace(/\/+$/,"").split("/").filter(Boolean);
