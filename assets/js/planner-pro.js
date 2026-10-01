@@ -25,11 +25,52 @@ document.addEventListener("DOMContentLoaded",async()=>{
     el.querySelectorAll("[data-planner-edit]").forEach(b=>b.onclick=()=>editPlanner(b.dataset.plannerEdit));
     el.querySelectorAll("[data-planner-delete]").forEach(b=>b.onclick=()=>{if(planners.length===1)return;planners=planners.filter(p=>p.id!==b.dataset.plannerDelete);write(keys.planners,planners);renderPlanners();});
   }
-  function addPlanner(){
-    modal("Create custom planner","Give this planning space a name and a purpose.",[
-      {name:"name",label:"Planner name",required:true},{name:"description",label:"What is it for?",required:true}
-    ],d=>{planners.push({id:uid("planner"),name:d.name,description:d.description,colour:colours[planners.length%colours.length]});write(keys.planners,planners);renderPlanners()});
+  /* New Planner modal component */
+  function openNewPlannerModal(){
+    const wrap=document.createElement("div");
+    wrap.className="pro-modal-backdrop pro-planner-modal";
+    wrap.innerHTML=`
+      <div class="pro-modal pro-planner-modal-card" role="dialog" aria-modal="true" aria-labelledby="newPlannerTitle">
+        <button class="pro-modal-close" type="button" aria-label="Close">×</button>
+        <div class="pro-planner-modal-icon">▦</div>
+        <span class="eyebrow">Planner Pro</span>
+        <h2 id="newPlannerTitle">Create a new planner</h2>
+        <p>Set up a separate planning space for school, holidays, a child or anything else your family needs.</p>
+        <form class="pro-form">
+          <label>Planner name
+            <input name="name" type="text" placeholder="e.g. School & clubs" required maxlength="60" autocomplete="off">
+          </label>
+          <label>What is it for?
+            <textarea name="description" placeholder="e.g. School events, clubs and term dates." required maxlength="180"></textarea>
+          </label>
+          <div class="pro-form-actions">
+            <button type="button" class="button button-soft" data-cancel>Cancel</button>
+            <button type="submit" class="button button-primary">Create planner</button>
+          </div>
+        </form>
+      </div>`;
+    document.body.appendChild(wrap);
+    const form=wrap.querySelector("form");
+    const close=()=>wrap.remove();
+    wrap.querySelector(".pro-modal-close").onclick=close;
+    wrap.querySelector("[data-cancel]").onclick=close;
+    wrap.addEventListener("click",e=>{if(e.target===wrap)close()});
+    document.addEventListener("keydown",function onKey(e){if(e.key==="Escape"){close();document.removeEventListener("keydown",onKey)}});
+    form.onsubmit=e=>{
+      e.preventDefault();
+      const data=Object.fromEntries(new FormData(form));
+      const name=String(data.name||"").trim();
+      const description=String(data.description||"").trim();
+      if(!name||!description)return;
+      planners.push({id:uid("planner"),name,description,colour:colours[planners.length%colours.length]});
+      write(keys.planners,planners);
+      renderPlanners();
+      close();
+    };
+    requestAnimationFrame(()=>form.querySelector("input")?.focus());
   }
+
+  function addPlanner(){openNewPlannerModal();}
   function editPlanner(id){
     const p=planners.find(x=>x.id===id);if(!p)return;
     modal("Edit planner","Keep the purpose clear so you can recognise it quickly.",[
