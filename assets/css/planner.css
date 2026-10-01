@@ -400,3 +400,40 @@
   .planner-page > .planner-pro-preview{margin-bottom:18px}
   .planner-shell{padding:18px}
 }
+
+
+/* Mobile responsiveness pass — My Planner */
+@media(max-width:800px){
+  .planner-page{min-width:0}
+  .planner-shell,.planner-hero{box-sizing:border-box;width:100%}
+  .planner-toolbar-copy,.planner-toolbar-actions{min-width:0;width:100%}
+  .planner-toolbar-actions{justify-content:flex-start}
+  .planner-toolbar-actions .button{max-width:100%}
+  .planner-view-controls{width:100%;overflow-x:auto;justify-content:flex-start;scrollbar-width:none}
+  .planner-view-controls::-webkit-scrollbar{display:none}
+  .planner-view-button{flex:0 0 auto}
+  .planner-week{min-width:0}
+  .planner-day-column{min-width:0}
+  .planner-card,.planner-card-actions{min-width:0}
+  .planner-card h4,.planner-card-location{overflow-wrap:anywhere}
+  .planner-footer-note{align-items:flex-start}
+}
+@media(max-width:560px){
+  .planner-hero{width:100%}
+  .planner-hero-copy{width:100%}
+  .planner-hero p{font-size:13px}
+  .planner-shell{width:100%;box-sizing:border-box}
+  .planner-toolbar-copy h2{font-size:27px}
+  .planner-toolbar-copy p{font-size:12px}
+  .planner-toolbar-actions{display:grid;grid-template-columns:1fr;gap:7px}
+  .planner-toolbar-actions .button{width:100%}
+  .planner-view-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}
+  .planner-view-button{width:100%;box-sizing:border-box}
+  .planner-day-controls{width:100%;box-sizing:border-box}
+  .planner-day-toggle{flex:0 0 74px}
+  .planner-day-heading h3{font-size:14px}
+  .planner-card{padding:11px}
+  .planner-card-actions{display:grid;grid-template-columns:1fr 1fr;align-items:stretch}
+  .planner-card-actions .button,.planner-card-actions .planner-remove{width:100%;box-sizing:border-box;text-align:center}
+  .planner-unscheduled .planner-card{width:100%;box-sizing:border-box;margin-right:0}
+}
