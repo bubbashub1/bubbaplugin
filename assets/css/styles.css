@@ -1,4 +1,4 @@
-/* =================================================================atea
+/* =================================================================
    Bubba Hub Stylesheet - Main Theme & Layout
    ================================================================ */
 
@@ -52,7 +52,10 @@ img {
 .brand-logo {
   width: 50px;
   height: 50px;
-  object-fit: contain;
+  background-image: url('images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
   border-radius: 10px;
 }
 
@@ -66,17 +69,24 @@ img {
 
 /* --- 5. Footer Layout & Branding --- */
 .site-footer {
-  width: min(var(--bh-content-width), calc(100% - 32px));
-  max-width: var(--bh-content-width);
-  margin: 40px auto 20px;
-  padding: 24px 4px;
+  width: 100%;
+  background-color: #ffffff;
   border-top: 1px solid var(--bh-border);
+  margin-top: 40px;
+  padding: 24px 16px;
+}
+
+.footer-inner {
+  width: min(var(--bh-content-width), 100%);
+  max-width: var(--bh-content-width);
+  margin: 0 auto;
   display: flex;
   justify-content: space-between;
   gap: 18px;
   flex-wrap: wrap;
   color: var(--bh-text-muted);
   font-size: 13px;
+  align-items: center;
 }
 
 .site-footer strong {
@@ -86,6 +96,30 @@ img {
 .footer-logo {
   width: 60px;
   height: 60px;
-  object-fit: contain;
+  background-image: url('https://bubbahub.co.uk/beta/images/logos/mainlogo-20260924-221429-7e305d.jpg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
   border-radius: 12px;
 }
+```[cite: 1, 2]
+
+And for this CSS setup, your matching HTML will just need empty elements with those classes:
+
+```html
+<!-- Header -->
+<header class="site-header">
+  <div class="brand-logo" aria-label="Bubba Hub Logo"></div>
+  <!-- Navigation elements here -->
+</header>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p>&copy; 2026 Bubba Hub. All rights reserved.</p>
+    <div class="footer-logo" aria-label="Bubba Hub Footer Badge"></div>
+  </div>
+</footer>
+```[cite: 1, 2]
+
+How does this setup feel for your workflow?
