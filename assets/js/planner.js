@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])));
   const formatTime=v=>window.bhFormatTime?window.bhFormatTime(v):String(v||"").slice(0,5);
   const today=new Date(),todayNum=((today.getDay()||7));
-  let csrf="",signedIn=false,items=[];
+  let csrf="",signedIn=false,adminOnly=false,items=[],currentView="week";
 
   const auth=await fetch("api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}}).then(r=>r.json()).catch(()=>({ok:false,authenticated:false}));
   signedIn=!!auth.authenticated;adminOnly=!!auth.is_admin&&!auth.user?.id;csrf=auth.csrf||"";
@@ -70,25 +70,38 @@ document.addEventListener("DOMContentLoaded",async()=>{
     return entries;
   }
   function buildPrintCalendar(){
-    const calendar=$("plannerPrintCalendar"),dateLabel=$("plannerPrintDate");
-    if(!calendar)return;
-    const now=new Date(),year=now.getFullYear(),month=now.getMonth(),daysInMonth=new Date(year,month+1,0).getDate(),firstDay=new Date(year,month,1).getDay()||7;
-    dateLabel.textContent="Printed "+now.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
-    const monthName=now.toLocaleDateString("en-GB",{month:"long",year:"numeric"}),cells=[];
-    for(let i=1;i<firstDay;i++)cells.push("<div class='planner-print-day is-outside'></div>");
-    for(let day=1;day<=daysInMonth;day++){
-      const date=new Date(year,month,day),dayNum=date.getDay()||7,entries=[];
-      localPlanned().forEach(id=>{
-        const activity=byId.get(String(id));if(!activity)return;
-        (typeof bhSessions==="function"?bhSessions(activity):[]).forEach(session=>{
-          if(Number(session.day_of_week||0)===dayNum&&occurrenceAllowed(session,date))entries.push({activity,session});
-        });
+    const sheet=$("plannerPrintCalendar"),dateLabel=$("plannerPrintDate"),footer=$("plannerPrintFooter");
+    if(!sheet)return;
+    const now=new Date();
+    dateLabel.textContent="Printed "+now.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+    if(footer)footer.textContent="Printed "+now.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+    const hidden=new Set(localHidden());
+    const entries=getEntries().filter(e=>e.day>0&&!hidden.has(String(e.day))).sort((a,b)=>a.date-b.date||String(a.session?.start_time||"").localeCompare(String(b.session?.start_time||"")));
+    const townOf=e=>e.session?.venue?.town||e.activity?.town||e.activity?.location||"";
+    const entryHtml=e=>{
+      const time=e.session?(formatTime(e.session.start_time)+(e.session.end_time?" – "+formatTime(e.session.end_time):"")):"Time TBC";
+      return "<div class='planner-print-entry'><strong>"+esc(e.activity.title)+"</strong><span>"+esc(time)+(townOf(e)?" · "+esc(townOf(e)):"")+"</span></div>";
+    };
+    if(currentView==="list"){
+      const grouped=[];
+      entries.forEach(e=>{
+        const key=isoDate(e.date);
+        let group=grouped.find(g=>g.key===key);
+        if(!group)group={key,date:e.date,entries:[]},grouped.push(group);
+        group.entries.push(e);
       });
-      entries.sort((a,b)=>String(a.session?.start_time||"").localeCompare(String(b.session?.start_time||"")));
-      cells.push("<div class='planner-print-day'><div class='planner-print-date'>"+day+"</div>"+entries.map(e=>"<div class='planner-print-entry'><strong>"+esc(formatTime(e.session.start_time))+"</strong> "+esc(e.activity.title)+"</div>").join("")+"</div>");
+      sheet.innerHTML="<div class='planner-print-list'>"+(grouped.length?grouped.map(g=>"<section class='planner-print-list-day'><h2>"+esc(g.date.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"}))+"</h2>"+g.entries.map(entryHtml).join("")+"</section>").join(""):"<p class='planner-print-empty'>No scheduled activities for the selected days.</p>")+"</div>";
+      return;
     }
-    while(cells.length%7)cells.push("<div class='planner-print-day is-outside'></div>");
-    calendar.innerHTML="<div class='planner-print-month'>"+esc(monthName)+"</div><div class='planner-print-weekdays'>"+days.map(d=>"<div>"+d.short+"</div>").join("")+"</div><div class='planner-print-grid'>"+cells.join("")+"</div>";
+    const monday=mondayOf(today),cells=[];
+    for(let i=0;i<7;i++){
+      const date=new Date(monday);date.setDate(monday.getDate()+i);
+      const dayNum=date.getDay()||7;
+      if(hidden.has(String(dayNum)))continue;
+      const dayEntries=entries.filter(e=>isoDate(e.date)===isoDate(date));
+      cells.push("<div class='planner-print-week-day'><div class='planner-print-week-heading'><strong>"+esc(date.toLocaleDateString("en-GB",{weekday:"short"}))+"</strong><span>"+esc(date.toLocaleDateString("en-GB",{day:"numeric",month:"short"}))+"</span></div>"+(dayEntries.length?dayEntries.map(entryHtml).join(""):"<div class='planner-print-empty-day'>Nothing planned</div>")+"</div>");
+    }
+    sheet.innerHTML="<div class='planner-print-week'>"+(cells.length?cells.join(""):"<p class='planner-print-empty'>No days selected.</p>")+"</div>";
   }
 
   function conflictsFor(entries){
@@ -103,6 +116,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
     return conflicts;
   }
 
+  const viewControls=$("plannerViewControls");
+  if(viewControls)viewControls.innerHTML="<button type=\"button\" class=\"planner-view-button is-active\" data-view=\"week\">Weekly</button><button type=\"button\" class=\"planner-view-button\" data-view=\"list\">List</button>";
+
   controls.innerHTML=days.map(day=>"<label class='planner-day-toggle'><input type='checkbox' class='day-toggle' value='"+day.num+"'><span><b>"+day.short+"</b><small>"+day.name+"</small></span></label>").join("");
 
   function render(){
@@ -113,6 +129,16 @@ document.addEventListener("DOMContentLoaded",async()=>{
     count.textContent=uniqueActivities.size+" activit"+(uniqueActivities.size===1?"y":"ies")+" · "+shownSessions+" session"+(shownSessions===1?"":"s")+" shown";
     intro.textContent=entries.length?"Your planned activities are grouped by their actual dates this week.":"Add activities from the directory and they will appear here as soon as they are planned.";
     if(!entries.length){results.innerHTML="<div class='planner-empty'><div class='planner-empty-icon'>＋</div><h3>Your planner is ready for its first activity</h3><p>Choose <strong>My Planner</strong> on any activity you like and it will appear here automatically.</p><a class='button button-primary' href='directory.html'>Find activities</a></div>";return}
+
+    if(currentView==="list"){
+      const listEntries=shownEntries.filter(e=>e.day>0).sort((a,b)=>a.date-b.date||String(a.session?.start_time||"").localeCompare(String(b.session?.start_time||"")));
+      results.innerHTML="<div class='planner-list-view'>"+(listEntries.length?listEntries.map(entry=>{
+        const a=entry.activity,s=entry.session,venue=s?.venue,town=venue?.town||a.town||a.location||"",time=s?(formatTime(s.start_time)+(s.end_time?" – "+formatTime(s.end_time):"")):"Time TBC",visit=localVisited().includes(String(a.id));
+        return "<article class='planner-list-item'><div class='planner-list-date'><b>"+esc(entry.date.toLocaleDateString("en-GB",{weekday:"short"}))+"</b><span>"+esc(entry.date.toLocaleDateString("en-GB",{day:"numeric",month:"short"}))+"</span></div><div class='planner-list-main'><span class='planner-time'>"+esc(time)+"</span><h4>"+esc(a.title)+"</h4><p>"+esc(town)+"</p><div class='planner-card-links'><a href='"+(typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id))+"'>View activity</a><button class='planner-visit planner-link-button' type='button' data-id='"+esc(a.id)+"' aria-pressed='"+visit+"'>✓ "+(visit?"Visited":"Mark visited")+"</button><button class='planner-remove planner-link-button' type='button' data-id='"+esc(a.id)+"'>Remove</button></div></div></article>";
+      }).join(""):"<div class='planner-empty'><div class='planner-empty-icon'>＋</div><h3>Nothing planned on the selected days</h3><p>Choose an activity from the directory to add it to your planner.</p><a class='button button-primary' href='directory.html'>Find activities</a></div>")+"</div>";
+      bindPlannerActions();
+      return;
+    }
 
     const sections=days.filter(day=>!hidden.includes(String(day.num))).map(day=>{
       const dayEntries=shownEntries.map((entry,index)=>({...entry,_index:index})).filter(entry=>entry.day===day.num).sort((a,b)=>String(a.session?.start_time||"").localeCompare(String(b.session?.start_time||""))||String(a.activity.title).localeCompare(String(b.activity.title)));
@@ -135,6 +161,10 @@ document.addEventListener("DOMContentLoaded",async()=>{
       const a=entry.activity;return "<article class='planner-card'><div class='planner-card-top'><span class='planner-time'>Time TBC</span></div><h4>"+esc(a.title)+"</h4><p class='planner-card-location'>"+esc(a.location||a.town||"")+"</p><div class='planner-card-actions'><a class='button button-soft' href='"+(typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id))+"'>View</a><button class='planner-remove' type='button' data-id='"+esc(a.id)+"'>Remove</button></div></article>";
     }).join("")+"</section>":"");
 
+    bindPlannerActions();
+  }
+
+  function bindPlannerActions(){
     results.querySelectorAll(".planner-remove").forEach(button=>button.addEventListener("click",async()=>{
       const id=button.dataset.id;bhTogglePlanned(id);render();if(signedIn)await plannerPost({action:"set_activity",activity_id:Number(id),planned:false,visited:false});
     }));
@@ -142,6 +172,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       const id=button.dataset.id,visitedNow=!localVisited().includes(String(id)),list=localVisited(),index=list.indexOf(String(id));
       index>=0?list.splice(index,1):list.push(String(id));setList(VISITED_KEY,list);render();if(signedIn)await plannerPost({action:"set_visited",activity_id:Number(id),visited:visitedNow});
     }));
+  }
   }
 
   function icsEscape(v){return String(v||"").replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n").replace(/\r/g,"");}
@@ -159,7 +190,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     lines.push("END:VCALENDAR");
     return lines.join("\r\n");
   }
-  printBtn?.addEventListener("click",()=>{window.print()});
+  printBtn?.addEventListener("click",()=>{buildPrintCalendar();window.print()});
   exportBtn?.addEventListener("click",()=>{
     const entries=getEntries().filter(x=>x.day>0);
     if(!entries.length){statusNote.textContent="There are no scheduled sessions in your planner this week to add to a calendar.";return}
@@ -171,9 +202,14 @@ document.addEventListener("DOMContentLoaded",async()=>{
   controls.querySelectorAll(".day-toggle").forEach(input=>input.addEventListener("change",async()=>{
     const hidden=localHidden(),value=input.value,index=hidden.indexOf(value);
     if(input.checked){if(index>=0)hidden.splice(index,1)}else if(index<0)hidden.push(value);
-    setList(HIDE_KEY,hidden);render();if(signedIn)await plannerPost({action:"set_day",day:Number(value),visible:input.checked});
+    setList(HIDE_KEY,hidden);render();buildPrintCalendar();if(signedIn)await plannerPost({action:"set_day",day:Number(value),visible:input.checked});
   }));
-  $("showAll").addEventListener("click",async()=>{setList(HIDE_KEY,[]);render();if(signedIn)await plannerPost({action:"show_all_days"})});
+  $("showAll").addEventListener("click",async()=>{setList(HIDE_KEY,[]);render();buildPrintCalendar();if(signedIn)await plannerPost({action:"show_all_days"})});
+  viewControls?.querySelectorAll(".planner-view-button").forEach(button=>button.addEventListener("click",()=>{
+    currentView=button.dataset.view==="list"?"list":"week";
+    viewControls.querySelectorAll(".planner-view-button").forEach(b=>b.classList.toggle("is-active",b===button));
+    render();buildPrintCalendar();
+  }));
   await syncAccount();render();buildPrintCalendar();
 }).catch(error=>{
   const target=document.getElementById("results");
