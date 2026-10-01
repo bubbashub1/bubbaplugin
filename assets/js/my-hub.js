@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
 
   function setupWhatShallI(){
     const panel=$("whatShallI"),open=$("openWhatShallI"),close=$("closeWhatShallI");
-    const steps=panel?.querySelectorAll(".what-shall-i-step"),towns=$("whatTownChoices"),days=$("whatDayChoices"),cats=$("whatCategoryChoices"),results=$("whatShallIResults"),resultsGrid=$("whatResultsGrid"),resultsTitle=$("whatResultsTitle"),again=$("whatStartAgain");
+    const steps=panel?.querySelectorAll(".what-shall-i-step"),start=$("whatShallIStart"),begin=$("beginWhatShallI"),towns=$("whatTownChoices"),days=$("whatDayChoices"),cats=$("whatCategoryChoices"),results=$("whatShallIResults"),resultsGrid=$("whatResultsGrid"),resultsTitle=$("whatResultsTitle"),again=$("whatStartAgain");
     if(!panel||!open||!towns||!days||!cats)return;
     let choice={town:"",day:"",category:""};
     const unique=values=>[...new Set(values.filter(Boolean).map(v=>String(v).trim()))].sort((a,b)=>a.localeCompare(b));
@@ -159,11 +159,13 @@ document.addEventListener("DOMContentLoaded",async()=>{
       results.hidden=false;steps.forEach(s=>s.hidden=true);
       results.scrollIntoView({behavior:"smooth",block:"nearest"});
     };
-    const reset=()=>{choice={town:"",day:"",category:""};results.hidden=true;populateTowns();showStep(1)};
+    const reset=()=>{choice={town:"",day:"",category:""};results.hidden=true;start.hidden=false;steps.forEach(s=>s.hidden=true);populateTowns()};
+    const beginSearch=()=>{start.hidden=true;showStep(1)};
     open.onclick=()=>{panel.hidden=false;reset();document.body.classList.add("hub-modal-open")};
     close.onclick=()=>{panel.hidden=true;document.body.classList.remove("hub-modal-open")};
 panel.addEventListener("click",e=>{if(e.target===panel){panel.hidden=true;document.body.classList.remove("hub-modal-open")}});
-    again.onclick=reset;
+    begin?.addEventListener("click",beginSearch);
+    again.onclick=()=>{reset();beginSearch()};
     panel.querySelectorAll(".what-back").forEach(b=>b.onclick=()=>showStep(Number(b.dataset.back)));
     populateTowns();
   }
