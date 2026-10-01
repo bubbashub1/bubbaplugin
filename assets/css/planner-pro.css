@@ -383,3 +383,162 @@
 @media(max-width:600px){
   .pro-planner-filter-grid select[multiple]{min-height:110px}
 }
+
+
+/* Mobile responsiveness pass — Planner Pro + customise planner */
+@media (max-width:700px){
+  .planner-pro-page{padding-bottom:24px}
+  .pro-hero{width:100%;box-sizing:border-box}
+  .pro-hero-actions{display:grid;grid-template-columns:1fr;width:100%;gap:8px}
+  .pro-hero-actions .button{width:100%;box-sizing:border-box}
+  .pro-section{width:100%;box-sizing:border-box}
+  .pro-section-head{width:100%}
+  .pro-section-head>div{width:100%;min-width:0}
+  .pro-section-head>.button,
+  .pro-section-head>a.button{width:100%;box-sizing:border-box;text-align:center}
+  .pro-planner-card,.pro-share-card,.pro-family-card,.pro-calendar-card{min-width:0}
+  .pro-planner-card-main,.pro-family-main,.pro-share-main{min-width:0;overflow-wrap:anywhere}
+  .pro-card-actions{flex-shrink:0}
+  .pro-day-row{min-width:0}
+  .pro-day-row>div:nth-child(2){min-width:0;overflow-wrap:anywhere}
+  .pro-calendar-nav{flex-wrap:wrap}
+  .pro-calendar-nav strong{flex:1 1 120px;min-width:0}
+}
+
+@media (max-width:520px){
+  .pro-dashboard{width:100%;min-width:0}
+  .pro-sidebar{width:100%;box-sizing:border-box}
+  .pro-nav{width:100%;box-sizing:border-box}
+  .pro-nav a{min-width:0;justify-content:flex-start}
+  .pro-section{padding:16px;border-radius:18px}
+  .pro-section-head h2{font-size:27px}
+  .pro-section-head p{font-size:11px}
+  .pro-planner-card,.pro-share-card{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px}
+  .pro-planner-card .pro-card-actions,.pro-share-card .pro-card-actions{grid-column:2;justify-self:stretch;display:flex;flex-direction:row;justify-content:flex-start;align-items:center;margin-left:0}
+  .pro-card-actions button{padding:7px 5px}
+  .pro-day-row{grid-template-columns:54px minmax(0,1fr)}
+  .pro-calendar-views{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
+  .pro-calendar-view{width:100%}
+  .pro-calendar-nav{display:grid;grid-template-columns:auto minmax(0,1fr) auto;width:100%}
+  .pro-calendar-nav strong{grid-column:1/-1;grid-row:1;text-align:center}
+  .pro-calendar-nav button:first-child{grid-column:1;grid-row:2}
+  .pro-calendar-nav button:nth-of-type(2){grid-column:2;grid-row:2}
+  .pro-calendar-nav button:last-child{grid-column:3;grid-row:2}
+}
+
+/* Customise Planner: make the long filter form a true mobile bottom sheet */
+.pro-planner-customise-modal{
+  width:min(680px,calc(100vw - 28px))!important;
+  max-height:calc(100dvh - 28px)!important;
+  box-sizing:border-box;
+}
+.pro-planner-customise-modal form{
+  max-height:calc(100dvh - 28px)!important;
+  overflow-x:hidden!important;
+  -webkit-overflow-scrolling:touch;
+}
+.pro-planner-customise-modal .pro-form-actions{
+  flex-wrap:wrap;
+}
+.pro-planner-filter-grid>label,
+.pro-planner-accessibility-grid>label{
+  min-width:0;
+}
+.pro-planner-filter-grid select[multiple]{
+  width:100%;
+  max-width:100%;
+  box-sizing:border-box;
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.pro-planner-filter-group::after{
+  content:"Select one or more options";
+}
+
+@media(max-width:600px){
+  .pro-planner-modal{
+    padding:0!important;
+    align-items:flex-end!important;
+  }
+  .pro-planner-customise-modal{
+    width:100%!important;
+    max-width:none!important;
+    max-height:calc(100dvh - 8px)!important;
+    border-radius:22px 22px 0 0!important;
+  }
+  .pro-planner-customise-modal form{
+    max-height:calc(100dvh - 8px)!important;
+  }
+  .pro-planner-customise-modal .pro-planner-modal-icon{
+    margin-left:16px;
+    margin-right:52px;
+  }
+  .pro-planner-customise-modal>.eyebrow,
+  .pro-planner-customise-modal>h2,
+  .pro-planner-customise-modal>p,
+  .pro-planner-customise-modal form>label,
+  .pro-planner-customise-modal form>fieldset{
+    margin-left:16px;
+    margin-right:16px;
+  }
+  .pro-planner-customise-modal>h2{
+    padding-right:38px;
+    font-size:24px;
+  }
+  .pro-planner-customise-modal>p{
+    font-size:11px;
+  }
+  .pro-planner-customise-modal form>label input,
+  .pro-planner-customise-modal form>label textarea{
+    min-height:44px;
+    font-size:16px;
+  }
+  .pro-planner-customise-modal .pro-planner-filter-group{
+    padding:12px;
+  }
+  .pro-planner-customise-modal .pro-planner-filter-grid{
+    grid-template-columns:1fr!important;
+    gap:10px;
+  }
+  .pro-planner-customise-modal .pro-planner-filter-grid select[multiple]{
+    min-height:118px;
+    font-size:16px;
+  }
+  .pro-planner-customise-modal .pro-planner-filter-grid select[multiple] option{
+    padding:8px;
+    font-size:14px;
+  }
+  .pro-planner-customise-modal .pro-planner-checks{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+  .pro-planner-customise-modal .pro-planner-checks label,
+  .pro-planner-customise-modal .pro-planner-accessibility-grid label{
+    min-height:36px;
+    font-size:12px!important;
+  }
+  .pro-planner-customise-modal .pro-planner-accessibility-grid{
+    grid-template-columns:1fr!important;
+  }
+  .pro-planner-customise-modal .pro-form-actions{
+    position:sticky;
+    bottom:0;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    padding:12px 16px 14px;
+  }
+  .pro-planner-customise-modal .pro-form-actions .button{
+    width:100%;
+    min-width:0;
+    min-height:46px;
+  }
+}
+
+@media(max-width:380px){
+  .pro-nav a{font-size:9px;padding:10px 8px}
+  .pro-section{padding:14px}
+  .pro-calendar-view{padding:8px 6px;font-size:10px}
+  .pro-planner-customise-modal .pro-form-actions{grid-template-columns:1fr}
+}
