@@ -114,7 +114,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
       const dayEntries=entries.filter(e=>isoDate(e.date)===isoDate(date));
       cells.push("<div class='planner-print-week-day'><div class='planner-print-week-heading'><strong>"+esc(date.toLocaleDateString("en-GB",{weekday:"short"}))+"</strong><span>"+esc(date.toLocaleDateString("en-GB",{day:"numeric",month:"short"}))+"</span></div>"+(dayEntries.length?dayEntries.map(entryHtml).join(""):"<div class='planner-print-empty-day'>Nothing planned</div>")+"</div>");
     }
-    sheet.style.setProperty("--planner-print-days", String(Math.max(1, cells.length)));\n    sheet.innerHTML="<div class='planner-print-week'>"+(cells.length?cells.join(""):"<p class='planner-print-empty'>No days selected.</p>")+"</div>";
+    sheet.style.setProperty("--planner-print-days", String(Math.max(1, cells.length)));
+    sheet.innerHTML="<div class='planner-print-week'>"+(cells.length?cells.join(""):"<p class='planner-print-empty'>No days selected.</p>")+"</div>";
   }
 
   function conflictsFor(entries){
