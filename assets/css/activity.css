@@ -3015,3 +3015,55 @@ body:not(.bh-home) .listing-page > .listing-layout #listingMap{
   body:not(.bh-home) .activity-hero .listing-intro{font-size:14px!important}
   body:not(.bh-home) .activity-hero .hero-quick-facts b{font-size:11px!important}
 }
+
+
+/* ========================================================================
+   FINAL — ACTIVITY PAGE FULL-WIDTH CONTENT
+   Remove the large desktop side gutters so the listing uses the available
+   viewport width while retaining a small, consistent reading gutter.
+   ======================================================================== */
+body:not(.bh-home) .activity-hero{
+  width:100% !important;
+  max-width:none !important;
+  margin-left:0 !important;
+  margin-right:0 !important;
+  padding-left:15px !important;
+  padding-right:15px !important;
+  box-sizing:border-box !important;
+}
+body:not(.bh-home) .listing-page > .listing-layout,
+body:not(.bh-home) .activity-reference-organiser,
+body:not(.bh-home) .listing-bottom{
+  width:100% !important;
+  max-width:none !important;
+  margin-left:0 !important;
+  margin-right:0 !important;
+  box-sizing:border-box !important;
+}
+body:not(.bh-home) .listing-page > .listing-layout{
+  padding-left:15px !important;
+  padding-right:15px !important;
+}
+body:not(.bh-home) .activity-reference-organiser{
+  padding-left:15px !important;
+  padding-right:15px !important;
+}
+body:not(.bh-home) .listing-bottom{
+  padding-left:15px !important;
+  padding-right:15px !important;
+}
+@media(max-width:650px){
+  body:not(.bh-home) .activity-hero{
+    padding-left:12px !important;
+    padding-right:12px !important;
+  }
+  body:not(.bh-home) .listing-page > .listing-layout{
+    padding-left:12px !important;
+    padding-right:12px !important;
+  }
+  body:not(.bh-home) .activity-reference-organiser,
+  body:not(.bh-home) .listing-bottom{
+    padding-left:12px !important;
+    padding-right:12px !important;
+  }
+}
