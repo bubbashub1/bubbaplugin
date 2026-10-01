@@ -521,3 +521,11 @@
 .bh-badge[class*="bh-badge-age-"] .bh-badge-icon{
   font-size:12px;
 }
+
+
+/* Organiser badges sit together beneath the summary stats */
+.organiser-summary .bh-organiser-badges{
+  grid-column:1 / -1;
+  justify-content:center;
+  margin-top:2px;
+}
