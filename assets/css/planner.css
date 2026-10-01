@@ -337,3 +337,45 @@
   .planner-shell.is-list-view .planner-day-controls{margin-bottom:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}
   .planner-shell.is-list-view .planner-day-toggle{min-width:0}
 }
+
+
+/* Final planner tidy-up: keep list content full-width inside the left column. */
+@media(min-width:801px){
+  .planner-shell.is-list-view #results{
+    display:block;
+    min-width:0;
+    width:100%;
+  }
+  .planner-shell.is-list-view .planner-list-view{
+    width:100%;
+  }
+  .planner-shell.is-list-view .planner-list-item{
+    width:100%;
+    box-sizing:border-box;
+  }
+}
+
+/* Give the admin Pro preview a cleaner, lighter dashboard feel. */
+.planner-pro-preview{
+  padding:20px;
+  margin-top:16px;
+  border-radius:20px;
+  background:linear-gradient(135deg,#f3f8f3 0%,#eef7f6 100%);
+}
+.planner-pro-preview-head{margin-bottom:13px;align-items:center}
+.planner-pro-preview-head h2{font-size:24px;line-height:1.05}
+.planner-pro-preview-head p{font-size:11px;max-width:700px}
+.planner-pro-grid{gap:8px}
+.planner-pro-feature{
+  min-height:64px;
+  padding:11px 12px;
+  border-radius:13px;
+}
+.planner-pro-feature strong{font-size:11px;margin-bottom:3px}
+.planner-pro-feature span{font-size:9px;line-height:1.35}
+.planner-pro-preview-actions{margin-top:11px;padding-top:11px}
+
+@media(max-width:800px){
+  .planner-shell.is-list-view #results{display:block;min-width:0;width:100%}
+  .planner-list-item{width:100%;box-sizing:border-box}
+}
