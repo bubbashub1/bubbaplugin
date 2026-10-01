@@ -121,53 +121,70 @@ document.addEventListener("DOMContentLoaded",async()=>{
 
   function setupWhatShallI(){
     const panel=$("whatShallI"),open=$("openWhatShallI"),close=$("closeWhatShallI");
-    const steps=panel?.querySelectorAll(".what-shall-i-step"),start=$("whatShallIStart"),begin=$("beginWhatShallI"),towns=$("whatTownChoices"),days=$("whatDayChoices"),cats=$("whatCategoryChoices"),results=$("whatShallIResults"),resultsGrid=$("whatResultsGrid"),resultsTitle=$("whatResultsTitle"),again=$("whatStartAgain");
-    if(!panel||!open||!towns||!days||!cats)return;
-    let choice={town:"",day:"",category:""};
+    const steps=panel?.querySelectorAll(".what-shall-i-step"),startScreen=$("whatShallIStart"),begin=$("beginWhatShallI"),regions=$("whatRegionChoices"),towns=$("whatTownChoices"),days=$("whatDayChoices"),cats=$("whatCategoryChoices"),results=$("whatShallIResults"),resultsGrid=$("whatResultsGrid"),resultsTitle=$("whatResultsTitle"),again=$("whatStartAgain");
+    if(!panel||!open||!regions||!towns||!days||!cats)return;
+    let choice={region:"",town:"",day:"",category:""};
     const unique=values=>[...new Set(values.filter(Boolean).map(v=>String(v).trim()))].sort((a,b)=>a.localeCompare(b));
-    const townsFor=a=>unique([a.town,...(Array.isArray(a.venues)?a.venues:[]).map(v=>v.town)]);
+    const venuesFor=a=>Array.isArray(a.venues)?a.venues:[];
+    const regionsFor=a=>unique([a.region,...venuesFor(a).map(v=>v.region)]);
+    const townsFor=a=>unique([a.town,...venuesFor(a).map(v=>v.town)]);
     const daysFor=a=>activityDays(a);
     const categories=()=>unique(activities.map(a=>a.category));
-    const matching=()=>activities.filter(a=>{
-      const town=!choice.town||townsFor(a).some(v=>v.toLowerCase()===choice.town.toLowerCase());
-      const day=!choice.day||daysFor(a).some(v=>v.toLowerCase()===choice.day.toLowerCase());
-      const cat=!choice.category||String(a.category||"").toLowerCase()===choice.category.toLowerCase();
-      return town&&day&&cat;
-    });
+    const regionMatch=a=>!choice.region||regionsFor(a).some(v=>v.toLowerCase()===choice.region.toLowerCase());
+    const townMatch=a=>!choice.town||townsFor(a).some(v=>v.toLowerCase()===choice.town.toLowerCase());
+    const dayMatch=a=>!choice.day||daysFor(a).some(v=>v.toLowerCase()===choice.day.toLowerCase());
+    const categoryMatch=a=>!choice.category||String(a.category||"").toLowerCase()===choice.category.toLowerCase();
+    const matching=()=>activities.filter(a=>regionMatch(a)&&townMatch(a)&&dayMatch(a)&&categoryMatch(a));
     const showStep=n=>steps.forEach(s=>{const active=Number(s.dataset.step)===n;s.hidden=!active;s.classList.toggle("is-active",active)});
     const renderChoices=(wrap,items,handler)=>{
       wrap.innerHTML=items.map(v=>"<button class='what-choice' type='button' data-choice='"+esc(v)+"'>"+esc(v)+"</button>").join("");
       wrap.querySelectorAll("[data-choice]").forEach(b=>b.onclick=()=>handler(b.dataset.choice));
     };
-    const populateTowns=()=>renderChoices(towns,unique(activities.flatMap(townsFor)),v=>{choice.town=v;populateDays();showStep(2)});
+    const populateRegions=()=>renderChoices(regions,unique(activities.flatMap(regionsFor)),v=>{
+      choice.region=v;choice.town="";populateTowns();showStep(2);
+    });
+    const populateTowns=()=>{
+      const pool=activities.filter(regionMatch);
+      renderChoices(towns,unique(pool.flatMap(townsFor)),v=>{
+        choice.town=v;populateDays();showStep(3);
+      });
+    };
     const populateDays=()=>{
-      const pool=activities.filter(a=>!choice.town||townsFor(a).some(v=>v.toLowerCase()===choice.town.toLowerCase()));
-      renderChoices(days,unique(pool.flatMap(daysFor)),v=>{choice.day=v;populateCategories();showStep(3)});
+      const pool=activities.filter(a=>regionMatch(a)&&townMatch(a));
+      renderChoices(days,unique(pool.flatMap(daysFor)),v=>{
+        choice.day=v;populateCategories();showStep(4);
+      });
     };
     const populateCategories=()=>{
-      const pool=activities.filter(a=>(!choice.town||townsFor(a).some(v=>v.toLowerCase()===choice.town.toLowerCase()))&&(!choice.day||daysFor(a).some(v=>v.toLowerCase()===choice.day.toLowerCase())));
-      renderChoices(cats,categories().filter(v=>pool.some(a=>String(a.category||"").toLowerCase()===v.toLowerCase())),v=>{choice.category=v;showResults()});
+      const pool=activities.filter(a=>regionMatch(a)&&townMatch(a)&&dayMatch(a));
+      renderChoices(cats,categories().filter(v=>pool.some(a=>String(a.category||"").toLowerCase()===v.toLowerCase())),v=>{
+        choice.category=v;showResults();
+      });
     };
     const showResults=()=>{
       const list=matching().slice(0,6);
-      resultsTitle.textContent=list.length?choice.town+" · "+choice.day:"No exact matches";
+      const title=[choice.region,choice.town,choice.day].filter(Boolean).join(" · ");
+      resultsTitle.textContent=list.length?(title||"Your suggestions"):"No exact matches";
       resultsGrid.innerHTML=list.length?list.map(a=>{
         const url=typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id);
         const where=a.town||((Array.isArray(a.venues)&&a.venues[0])?.town)||a.location||"";
         return "<a class='what-result' href='"+url+"'><span>"+esc(a.category||"Activity")+"</span><strong>"+esc(a.title)+"</strong><small>"+esc(where)+" · "+esc(choice.day)+"</small><b>View activity →</b></a>";
-      }).join(""):"<div class='hub-empty'><strong>Nothing matched all three choices.</strong><p>Try another town or day and we’ll find more.</p></div>";
+      }).join(""):"<div class='hub-empty'><strong>Nothing matched all four choices.</strong><p>Try another town, day or category and we’ll find more.</p></div>";
       results.hidden=false;steps.forEach(s=>s.hidden=true);
       results.scrollIntoView({behavior:"smooth",block:"nearest"});
     };
-    const reset=()=>{choice={town:"",day:"",category:""};results.hidden=true;start.hidden=false;steps.forEach(s=>s.hidden=true);populateTowns()};
-    const beginSearch=()=>{start.hidden=true;showStep(1)};
+    const reset=()=>{
+      choice={region:"",town:"",day:"",category:""};
+      results.hidden=true;startScreen.hidden=false;steps.forEach(s=>s.hidden=true);populateRegions();
+    };
+    const beginSearch=()=>{startScreen.hidden=true;showStep(1)};
     open.onclick=()=>{panel.hidden=false;reset();document.body.classList.add("hub-modal-open")};
     close.onclick=()=>{panel.hidden=true;document.body.classList.remove("hub-modal-open")};
-panel.addEventListener("click",e=>{if(e.target===panel){panel.hidden=true;document.body.classList.remove("hub-modal-open")}});
+    panel.addEventListener("click",e=>{if(e.target===panel){panel.hidden=true;document.body.classList.remove("hub-modal-open")}});
     begin?.addEventListener("click",beginSearch);
     again.onclick=()=>{reset();beginSearch()};
     panel.querySelectorAll(".what-back").forEach(b=>b.onclick=()=>showStep(Number(b.dataset.back)));
-    populateTowns();
+    populateRegions();
   }
 
   function render(){
