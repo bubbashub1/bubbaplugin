@@ -133,19 +133,17 @@ document.addEventListener("DOMContentLoaded",async()=>{
     try{const items=await bhActivities();const saved=ids.map(id=>items.find(a=>String(a.id)===id)).filter(Boolean);el.innerHTML=saved.length?saved.map(a=>"<article class='pro-favourite-card'><span class='pro-fav-icon'>♡</span><div><h3>"+esc(a.title)+"</h3><p>"+esc(a.town||a.location||"Family activity")+"</p><a href='"+(typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id))+"'>View activity →</a></div></article>").join(""):"<div class='pro-empty'><strong>Your saved activities are not available yet</strong>Browse the directory to save some favourites.</div>"}catch{el.innerHTML="<div class='pro-empty'><strong>Could not load favourites</strong>Please try again.</div>"} 
   }
 
-  $("addPlanner").onclick=addPlanner;$("addPlannerTop").onclick=addPlanner;$("addFamily").onclick=addFamily;$("createShare").onclick=createShare;$("addDayPlan").onclick=addDayPlan;$("addNote").onclick=addNote;
-  $("prevMonth").onclick=()=>{monthDate.setMonth(monthDate.getMonth()-1);renderMonth()};$("nextMonth").onclick=()=>{monthDate.setMonth(monthDate.getMonth()+1);renderMonth()};
-  document.querySelectorAll("[data-calendar-action]").forEach(b=>b.onclick=()=>alert("Calendar setup will connect to your shared planner when calendar accounts are enabled."));
-  renderPlanners();renderFamily();renderShares();renderMonth();renderDayPlan();renderNotes();await renderFavourites();
-
-
   function setupProDashboard(){
     const links=[...document.querySelectorAll("[data-pro-section]")];
     const sections=[...document.querySelectorAll(".pro-content .pro-section")];
     if(!links.length||!sections.length)return;
     function show(id,updateHash=true){
       const valid=sections.some(section=>section.id===id)?id:sections[0].id;
-      sections.forEach(section=>section.classList.toggle("is-active",section.id===valid));
+      sections.forEach(section=>{
+        const active=section.id===valid;
+        section.classList.toggle("is-active",active);
+        section.hidden=!active;
+      });
       links.forEach(link=>link.classList.toggle("is-active",link.dataset.proSection===valid));
       if(updateHash)history.replaceState(null,"","#"+valid);
     }
@@ -153,5 +151,12 @@ document.addEventListener("DOMContentLoaded",async()=>{
     show(location.hash.replace("#","")||"planners",false);
     window.addEventListener("hashchange",()=>show(location.hash.replace("#",""),false));
   }
+
+  /* Initialise navigation before rendering so an async section cannot leave the dashboard blank. */
   setupProDashboard();
+
+  $("addPlanner").onclick=addPlanner;$("addPlannerTop").onclick=addPlanner;$("addFamily").onclick=addFamily;$("createShare").onclick=createShare;$("addDayPlan").onclick=addDayPlan;$("addNote").onclick=addNote;
+  $("prevMonth").onclick=()=>{monthDate.setMonth(monthDate.getMonth()-1);renderMonth()};$("nextMonth").onclick=()=>{monthDate.setMonth(monthDate.getMonth()+1);renderMonth()};
+  document.querySelectorAll("[data-calendar-action]").forEach(b=>b.onclick=()=>alert("Calendar setup will connect to your shared planner when calendar accounts are enabled."));
+  renderPlanners();renderFamily();renderShares();renderMonth();renderDayPlan();renderNotes();await renderFavourites();
 });
