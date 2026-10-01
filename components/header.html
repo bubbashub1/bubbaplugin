@@ -1,49 +1,41 @@
 <header class="bh-site-header">
   <div class="bh-header-inner">
-    
-    <!-- Top Row: Logo, Nav, and Sign In -->
     <div class="bh-header-top-row">
-      <a href="#" class="bh-header-logo">
+      <a href="index.html" class="bh-header-logo" aria-label="Bubba Hub home">
         <img src="images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png" alt="Bubba Hub Logo">
       </a>
-
-      <nav class="bh-main-nav" id="bh-main-nav">
-        <a href="#">Find activities</a>
-        <a href="#">My Hub</a>
-        <a href="#">Support & Guidance</a>
-        <a href="#">Class Leaders</a>
-        <a href="#">My Account</a>
+      <nav class="bh-main-nav" id="bh-main-nav" aria-label="Main menu">
+        <a href="directory.html">Find activities</a>
+        <a href="my-hub.html">My Hub</a>
+        <a href="help-support.html">Support &amp; Guidance</a>
+        <a href="leader.html">Class Leaders</a>
+        <a href="account.html">My Account</a>
       </nav>
-
-      <a href="#" class="bh-sign-in-btn">Sign in</a>
+      <a href="auth.html" class="bh-sign-in-btn">Sign in</a>
     </div>
 
-    <!-- Bottom Row: Linked Search Form -->
-    <form action="activities.php" method="GET" class="bh-header-search-bar">
-      <input type="text" name="keyword" placeholder="Keyword">
-      
-      <select name="region">
+    <form action="directory.html" method="get" class="bh-header-search-bar" role="search" aria-label="Search family activities">
+      <input type="search" name="keyword" placeholder="Keyword" aria-label="Keyword">
+      <select name="region" aria-label="Region">
         <option value="">Region</option>
-        <!-- Add your region options dynamically here -->
       </select>
-      
-      <select name="town">
+      <select name="town" aria-label="Town">
         <option value="">Town</option>
-        <!-- Add your town options dynamically here -->
       </select>
-      
-      <select name="category">
+      <select name="category" aria-label="Category">
         <option value="">Category</option>
-        <!-- Add your category options dynamically here -->
       </select>
-      
-      <select name="day">
+      <select name="day" aria-label="Day">
         <option value="">Day</option>
-        <!-- Add your day options dynamically here -->
+        <option value="Monday">Monday</option>
+        <option value="Tuesday">Tuesday</option>
+        <option value="Wednesday">Wednesday</option>
+        <option value="Thursday">Thursday</option>
+        <option value="Friday">Friday</option>
+        <option value="Saturday">Saturday</option>
+        <option value="Sunday">Sunday</option>
       </select>
-      
       <button type="submit" class="bh-header-search-submit">Search</button>
     </form>
-
   </div>
 </header>
