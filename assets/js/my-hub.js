@@ -85,6 +85,40 @@ document.addEventListener("DOMContentLoaded",async()=>{
   }
 
 
+  function renderSuggestionCarousel(){
+    const wrap=$("hubSuggestionsTrack"); if(!wrap)return;
+    const children=data.children||[];
+    const ages=children.map(c=>childAge(c.date_of_birth)).filter(v=>v!==null);
+    const saved=new Set((data.saved||[]).map(String));
+    const planner=new Set((data.planner||[]).map(x=>String(x.id)));
+    activities.map(a=>{let score=0;const cat=String(a.category||"").toLowerCase();
+      if(ages.length&&activityFitsAge(a,ages))score+=35;
+      if(saved.has(String(a.id)))score+=20;
+      if(planner.has(String(a.id)))score+=15;
+      return {a,score};
+    }).sort((x,y)=>y.score-x.score).slice(0,12).forEach(()=>{});
+    const ranked=activities.map(a=>{
+      let score=0;
+      if(ages.length&&activityFitsAge(a,ages))score+=35;
+      if(saved.has(String(a.id)))score+=18;
+      if(planner.has(String(a.id)))score+=12;
+      if(data.user?.region&&String(a.region||"").toLowerCase()===String(data.user.region).toLowerCase())score+=10;
+      return {a,score};
+    }).sort((x,y)=>y.score-x.score).slice(0,12);
+    wrap.innerHTML=ranked.map(({a})=>{
+      const url=typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id);
+      return "<a class='hub-suggestion-card' href='"+url+"'><div class='hub-suggestion-icon'>✦</div><span>"+esc(a.category||"Activity")+"</span><strong>"+esc(a.title)+"</strong><small>"+esc(a.town||a.location||"")+" · "+esc(a.age_range||"")+"</small><b>View activity →</b></a>";
+    }).join("")||"<div class='hub-empty'>Set your preferences to get personalised suggestions.</div>";
+    const track=wrap.parentElement;
+    $("hubSuggestionsPrev").onclick=()=>track.scrollBy({left:-Math.max(260,track.clientWidth*.75),behavior:"smooth"});
+    $("hubSuggestionsNext").onclick=()=>track.scrollBy({left:Math.max(260,track.clientWidth*.75),behavior:"smooth"});
+  }
+  function renderUpcomingTicker(){
+    const wrap=$("hubTickerTrack"); if(!wrap)return;
+    const upcoming=(data.planner||[]).map(p=>{const a=activities.find(x=>String(x.id)===String(p.id));return a?{a,p}:null}).filter(Boolean).slice(0,8);
+    wrap.innerHTML=upcoming.length?upcoming.map(({a,p})=>"<a href='planner.html'><strong>"+esc(p.date||p.starts_at||"Upcoming")+"</strong><span>"+esc(a.title)+"</span></a>").join(""):"<span>Add activities to My Planner and your upcoming plans will appear here.</span>";
+  }
+
   function setupWhatShallI(){
     const panel=$("whatShallI"),open=$("openWhatShallI"),close=$("closeWhatShallI");
     const steps=panel?.querySelectorAll(".what-shall-i-step"),towns=$("whatTownChoices"),days=$("whatDayChoices"),cats=$("whatCategoryChoices"),results=$("whatShallIResults"),resultsGrid=$("whatResultsGrid"),resultsTitle=$("whatResultsTitle"),again=$("whatStartAgain");
@@ -156,6 +190,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
     $("hubBookings").innerHTML=upcoming.length?upcoming.map(b=>"<article class='hub-booking-card'><div><span class='status'>"+esc(b.status||"Reserved")+"</span><strong>"+esc(b.title||"Booking")+"</strong><small>"+esc(b.venue_name||"Venue")+" · "+esc(bookingDate(b.starts_at)||"Date to be confirmed")+"</small></div><span class='hub-booking-qty'>"+Number(b.quantity||1)+"×</span></article>").join(""):"<div class='hub-empty'><strong>No upcoming bookings</strong><p>Your confirmed or reserved bookings will appear here.</p></div>";
     void renderBrief();
     setupWhatShallI();
+    renderSuggestionCarousel();
+    renderUpcomingTicker();
     message.textContent=adminOnly?"Admin access — family data remains separate.":"Signed in as "+(data.user?.email||"your account");
     if(adminOnly){
       root.querySelectorAll(".hub-edit-child,.hub-edit-bump,#addChild,#addBump").forEach(btn=>btn.disabled=true);
