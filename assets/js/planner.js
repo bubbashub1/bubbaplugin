@@ -173,7 +173,6 @@ document.addEventListener("DOMContentLoaded",async()=>{
       index>=0?list.splice(index,1):list.push(String(id));setList(VISITED_KEY,list);render();if(signedIn)await plannerPost({action:"set_visited",activity_id:Number(id),visited:visitedNow});
     }));
   }
-  }
 
   function icsEscape(v){return String(v||"").replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n").replace(/\r/g,"");}
   function utcStamp(d){return d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}Z$/,"Z")}
