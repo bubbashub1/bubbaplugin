@@ -629,6 +629,8 @@ void bhHydrateSaved();
         ?{form:"mapFilters",keyword:"mapSearch",region:"mapRegion",town:"mapTown",category:"mapCategory",day:"mapDay",filters:"openMapFilters"}
         :{form:"directoryHeroSearch",keyword:"search",region:"heroRegion",town:"heroTown",category:"heroCategory",day:"heroDay",filters:"openSearchFilters"};
       if(hero){
+        /* Keep page-specific hero styling attached to the loaded component, not the placeholder. */
+        hero.classList.toggle("calendar-directory-hero",page==="calendar");
         const form=hero.querySelector("[data-bh-hero-form]");
         if(form){form.id=ids.form;form.action=page==="map"?"map.html":"directory.html";}
         Object.entries({keyword:ids.keyword,region:ids.region,town:ids.town,category:ids.category,day:ids.day}).forEach(([key,id])=>{
