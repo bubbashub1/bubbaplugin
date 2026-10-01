@@ -145,6 +145,33 @@
       if (isNewActivity(activity) || isTruthy(activity.is_new)) badges.push({key:"new", icon:"✦", label:"New"});
       return badges;
     };
+
+    const getOrganiserDetailBadges = (groups, organiser = {}) => {
+      const badges = getBadges(groups[0] || {}, organiser);
+      const add = (key, icon, label) => {
+        if (!badges.some(b => b.key === key)) badges.push({key, icon, label});
+      };
+      const text = groups.map(a => [
+        a.title, a.category, a.description, a.accessibility,
+        a.activity_type, a.format, a.delivery_mode
+      ].flat().filter(Boolean).join(" ").toLowerCase()).join(" ");
+      const accessibility = groups.map(a => Array.isArray(a.accessibility) ? a.accessibility : [a.accessibility])
+        .flat().filter(Boolean).join(" ").toLowerCase();
+
+      if (groups.some(a => Array.isArray(a.age_range) && a.age_range.some(v => /0[-–]3|baby|0[-–]12/i.test(String(v))))) add("baby", "🍼", "Baby Friendly");
+      if (groups.some(a => Array.isArray(a.age_range) && a.age_range.some(v => /1[-–]3|2[-–]4|3[-–]5|toddler/i.test(String(v))))) add("toddler", "🧸", "Toddler Friendly");
+      if (/wheelchair|accessible|accessibility|step[- ]?free/i.test(accessibility)) add("accessible", "♿", "Accessible");
+      if (/pram|pushchair|buggy/i.test(accessibility)) add("pram", "🛞", "Pram Friendly");
+      if (/toilet|wc|changing room|baby change/i.test(accessibility)) add("toilet", "🚻", "Toilet Available");
+      if (/changing|baby change/i.test(accessibility)) add("changing", "🧷", "Changing Facilities");
+      if (/parking|car park/i.test(accessibility)) add("parking", "🅿️", "Parking Available");
+      if (groups.some(a => Number(a.price_value) === 0)) add("free", "£0", "Free");
+      if (/online|zoom|virtual/i.test(text)) add("online", "💻", "Online");
+      if (/outdoor|forest|park|nature/i.test(text)) add("outdoor", "🌿", "Outdoor");
+      if (/drop[- ]?in|drop in/i.test(text)) add("dropin", "👋", "Drop-in");
+      if (/one[- ]?off|one off|event/i.test(text)) add("oneoff", "✦", "One-off");
+      return badges;
+    };
     const renderBadges = (badges, extraClass = "") => badges.length
       ? '<div class="bh-badges ' + extraClass + '" aria-label="Badges">' + badges.map(b => '<span class="bh-badge bh-badge-' + b.key + '" title="' + b.label + '"><span class="bh-badge-icon" aria-hidden="true">' + b.icon + '</span>' + b.label + '</span>').join("") + '</div>'
       : "";
@@ -305,7 +332,7 @@
           organiserGroups.flatMap(a => (a.venues || []).map(v => v.town || v.region).filter(Boolean))
         )].slice(0, 3).join(" · ") || "Devon & Cornwall";
         const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join("").toUpperCase();
-        const organiserBadges = getBadges(first, first.organiser || publicContent || {});
+        const organiserBadges = getOrganiserDetailBadges(organiserGroups, first.organiser || publicContent || {});
 
         const about = String(publicContent.about_content || "");
         const logo = resolveImage(publicContent.logo_url || "");
