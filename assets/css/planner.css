@@ -147,3 +147,24 @@
   .planner-day-toggle{flex:0 0 74px}
   .planner-card-actions{gap:4px}
 }
+
+
+/* Print-friendly planner */
+@media print{
+  @page{margin:14mm}
+  body{background:#fff!important}
+  .site-header,.site-footer,.planner-hero-actions,.planner-day-controls,.planner-toolbar-actions,.planner-footer-note{display:none!important}
+  .app-shell{max-width:none!important;padding:0!important;margin:0!important}
+  .planner-page{padding:0!important}
+  .planner-hero{margin:0 0 16px!important;padding:0!important;border:0!important;box-shadow:none!important;background:none!important}
+  .planner-hero h1{font-size:30px!important}
+  .planner-hero p{max-width:none!important}
+  .planner-shell{padding:0!important;border:0!important;box-shadow:none!important}
+  .planner-toolbar{margin-bottom:10px}
+  .planner-toolbar-copy h2{font-size:22px}
+  .planner-week{grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:6px!important}
+  .planner-day-column{min-height:0!important;padding:7px!important;background:#fff!important;border:1px solid #d7e2da!important;break-inside:avoid}
+  .planner-card{padding:7px!important;margin-top:6px!important;box-shadow:none!important;break-inside:avoid}
+  .planner-card-actions{display:none!important}
+  .planner-day-heading{min-height:auto!important}
+}
