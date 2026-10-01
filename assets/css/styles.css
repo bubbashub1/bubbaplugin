@@ -1474,7 +1474,6 @@ body{background:#f5f3ed;color:var(--bh-ink);font-family:"Quicksand",sans-serif}
 .button-primary{background:var(--bh-primary);color:#fff}
 .button-primary:hover{background:#19382f}
 .button-soft{background:#eef2ed;color:var(--bh-primary)}
-.button-teal{background:var(--bh-secondary)}
 .hero{min-height:575px;margin:18px auto 0;padding:54px 56px 32px;border-radius:28px;background:#e8eee7;box-shadow:none;overflow:hidden}
 .hero::before{opacity:.20;background-position:right center}
 .hero::after{background:linear-gradient(90deg,rgba(232,238,231,.98) 0%,rgba(232,238,231,.9) 45%,rgba(232,238,231,.35) 100%)}
@@ -1491,7 +1490,6 @@ body{background:#f5f3ed;color:var(--bh-ink);font-family:"Quicksand",sans-serif}
 .hero-links .text-link{font-size:13px}
 .personal-home-callout,.hub-personal-cta{margin:18px auto 0;border:1px solid #f1d8d2;border-radius:18px;background:#fff8f5;box-shadow:none;padding:18px 22px}
 .personal-home-callout h2,.hub-personal-cta h2{font-family:"Chewy",cursive;font-size:27px;color:var(--bh-primary)}
-.section{padding:72px 0}
 .section h2,.page-heading h1,.page-heading h2,.admin-panel h2{font-family:"Chewy",cursive;font-weight:400}
 .section h2{font-size:44px;color:var(--bh-primary)}
 .feature-grid{grid-template-columns:repeat(4,1fr);gap:14px}
@@ -3308,7 +3306,6 @@ body.advanced-search-open{overflow:hidden;}
 .admin-stats strong{font-size:32px}
 .admin-stats small{font-size:12px}
 .admin-panel > .admin-panel-head + .admin-table-wrap{margin-top:4px}
-.admin-table-wrap table{min-width:760px}
 .admin-table-wrap tbody tr:last-child td{border-bottom:0}
 .admin-import-export-panel{background:#fdfefd}
 .admin-import-export-grid{gap:16px}
