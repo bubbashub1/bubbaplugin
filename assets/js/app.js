@@ -483,11 +483,28 @@ void bhHydrateSaved();
       // from the wider directory so the homepage never looks empty.
       const selected=[...townMatches,...regionMatches,...available]
         .filter((a,index,self)=>self.findIndex(x=>String(x.id)===String(a.id))===index)
-        .slice(0,4);
+        .slice(0,12);
 
       if(!selected.length)return;
 
       grid.innerHTML="";
+      grid.parentElement?.querySelectorAll(".home-carousel-control").forEach(el=>el.remove());
+      if(selected.length>4){
+        const makeControl=(direction,label)=>{
+          const button=document.createElement("button");
+          button.type="button";
+          button.className="home-carousel-control "+direction;
+          button.setAttribute("aria-label",label);
+          button.textContent=direction==="prev"?"‹":"›";
+          button.addEventListener("click",()=>{
+            const amount=Math.max(grid.clientWidth*.82,grid.clientWidth/2);
+            grid.scrollBy({left:direction==="next"?amount:-amount,behavior:"smooth"});
+          });
+          grid.parentElement.appendChild(button);
+        };
+        makeControl("prev","Previous activities");
+        makeControl("next","Next activities");
+      }
       selected.forEach((a,index)=>{
         const card=document.createElement("a");
         card.className="home-activity-card";
