@@ -269,36 +269,48 @@
 @media(max-width:560px){.my-hub-page .hub-personal-actions{width:100%;flex-direction:column}.my-hub-page .hub-personal-actions .button{width:100%}}
 
 
-/* Inspire Me — Bubba Hub themed modal */
+/* Inspire Me — compact, self-contained modal */
 body.hub-modal-open{overflow:hidden}
-.hub-inspire-modal{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(20,68,0,.24);backdrop-filter:blur(7px);overflow-y:auto}
+.hub-inspire-modal{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(20,68,0,.28);backdrop-filter:blur(6px);overflow-y:auto}
 .hub-inspire-modal[hidden]{display:none}
-.hub-inspire-modal .what-shall-i-head,.hub-inspire-modal .what-shall-i-steps,.hub-inspire-modal .what-shall-i-results{width:min(100%,820px);box-sizing:border-box;margin:0 auto;background:#fff}
-.hub-inspire-modal .what-shall-i-head{position:relative;overflow:hidden;padding:28px 30px 22px;border-radius:28px 28px 0 0;background:linear-gradient(135deg,#e4f0e5 0%,#f5f8ee 100%);border:1px solid rgba(65,102,81,.14);border-bottom:0}
-.hub-inspire-modal .what-shall-i-head:after{content:"✦";position:absolute;right:28px;top:18px;font-size:54px;line-height:1;color:rgba(60,142,150,.16);transform:rotate(12deg)}
-.hub-inspire-modal .what-shall-i-head h2{position:relative;z-index:1;margin:2px 0 4px;font-family:"Chewy",cursive;font-size:36px;font-weight:400;color:var(--bh-dark)}
-.hub-inspire-modal .what-shall-i-head p{position:relative;z-index:1;max-width:560px;margin:0;color:var(--bh-text-muted);font-size:14px;line-height:1.55}
-.hub-inspire-modal .what-shall-i-head .button{position:relative;z-index:2}
-.hub-inspire-modal .what-shall-i-steps{padding:0 30px 24px;border-left:1px solid rgba(65,102,81,.14);border-right:1px solid rgba(65,102,81,.14)}
-.hub-inspire-modal .what-shall-i-step{display:flex;gap:15px;padding:18px 0;border:0;border-top:1px solid #edf1eb;background:transparent;box-shadow:none}
-.hub-inspire-modal .what-shall-i-step:first-child{border-top:0}
-.hub-inspire-modal .what-step-number{width:38px;height:38px;flex:0 0 38px;border-radius:13px;background:#d8e6db;color:var(--bh-primary);font-weight:900;box-shadow:inset 0 0 0 1px rgba(65,102,81,.08)}
-.hub-inspire-modal .what-shall-i-step.is-active .what-step-number{background:var(--bh-primary);color:#fff;box-shadow:0 5px 14px rgba(65,102,81,.2)}
-.hub-inspire-modal .what-step-content h3{margin:2px 0 13px;font-family:"Chewy",cursive;font-size:24px;font-weight:400;color:var(--bh-dark)}
-.hub-inspire-modal .what-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
-.hub-inspire-modal .what-choice{min-height:48px;width:100%;padding:11px 13px;text-align:left;border:1px solid #dce6dd;border-radius:14px;background:#fbfdfb;color:var(--bh-text);font:inherit;font-size:13px;font-weight:750;cursor:pointer;transition:transform .16s ease,background .16s ease,border-color .16s ease,box-shadow .16s ease}
-.hub-inspire-modal .what-choice:hover,.hub-inspire-modal .what-choice:focus-visible{border-color:var(--bh-secondary);background:#edf6f0;box-shadow:0 5px 14px rgba(60,142,150,.1);transform:translateY(-1px);outline:none}
+.hub-inspire-modal .what-shall-i-dialog{width:min(100%,620px);max-height:min(760px,calc(100vh - 32px));overflow:auto;background:#fff;border:1px solid rgba(65,102,81,.18);border-radius:24px;box-shadow:0 24px 70px rgba(20,68,0,.22)}
+.hub-inspire-modal .what-shall-i-head{position:relative;padding:22px 58px 18px 24px;background:linear-gradient(135deg,#e4f0e5,#f7f9f1);border-bottom:1px solid #e2eae2}
+.hub-inspire-modal .what-shall-i-head:after{content:"✦";position:absolute;right:62px;top:10px;font-size:34px;color:rgba(60,142,150,.14)}
+.hub-inspire-modal .what-shall-i-head h2{margin:2px 0 3px;font-family:"Chewy",cursive;font-size:32px;font-weight:400;color:var(--bh-dark)}
+.hub-inspire-modal .what-shall-i-head p{margin:0;color:var(--bh-text-muted);font-size:13px;line-height:1.45}
+.hub-inspire-modal .what-modal-close{position:absolute;right:16px;top:15px;z-index:2;width:38px;height:38px;border:0;border-radius:50%;background:#fff;color:var(--bh-primary);font-size:27px;line-height:1;cursor:pointer;box-shadow:0 3px 12px rgba(20,68,0,.1)}
+.hub-inspire-modal .what-modal-close:hover,.hub-inspire-modal .what-modal-close:focus-visible{background:var(--bh-primary);color:#fff;outline:none}
+.hub-inspire-modal .what-shall-i-start{padding:28px 24px;text-align:center}
+.hub-inspire-modal .what-start-icon{display:grid;place-items:center;width:48px;height:48px;margin:0 auto 10px;border-radius:15px;background:#d8e6db;color:var(--bh-primary);font-size:24px}
+.hub-inspire-modal .what-shall-i-start h3{margin:0 0 5px;font-family:"Chewy",cursive;font-size:24px;font-weight:400;color:var(--bh-dark)}
+.hub-inspire-modal .what-shall-i-start p{max-width:430px;margin:0 auto 17px;color:var(--bh-text-muted);font-size:13px;line-height:1.5}
+.hub-inspire-modal .what-shall-i-steps{padding:0 24px 20px}
+.hub-inspire-modal .what-shall-i-step{display:flex;gap:12px;padding:17px 0;border:0;border-top:1px solid #edf1eb;background:transparent}
+.hub-inspire-modal .what-step-number{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:11px;background:#d8e6db;color:var(--bh-primary);font-weight:900}
+.hub-inspire-modal .what-shall-i-step.is-active .what-step-number{background:var(--bh-primary);color:#fff}
+.hub-inspire-modal .what-step-content{flex:1;min-width:0}
+.hub-inspire-modal .what-step-content h3{margin:1px 0 10px;font-family:"Chewy",cursive;font-size:22px;font-weight:400;color:var(--bh-dark)}
+.hub-inspire-modal .what-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.hub-inspire-modal .what-choice{min-height:44px;padding:9px 11px;text-align:left;border:1px solid #dce6dd;border-radius:12px;background:#fbfdfb;color:var(--bh-text);font:inherit;font-size:12px;font-weight:750;cursor:pointer}
+.hub-inspire-modal .what-choice:hover,.hub-inspire-modal .what-choice:focus-visible{border-color:var(--bh-secondary);background:#edf6f0;outline:none}
 .hub-inspire-modal .what-day-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-.hub-inspire-modal .what-back{margin-top:12px}
-.hub-inspire-modal .what-shall-i-results{padding:0 30px 30px;border:1px solid rgba(65,102,81,.14);border-top:0;border-radius:0 0 28px 28px}
-.hub-inspire-modal .what-results-head{display:flex;align-items:center;justify-content:space-between;gap:15px;padding-top:18px;margin:0 0 13px;border-top:1px solid #edf1eb}
-.hub-inspire-modal .what-results-head h3{margin:2px 0 0;font-family:"Chewy",cursive;font-size:27px;font-weight:400;color:var(--bh-dark)}
-.hub-inspire-modal .what-results-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-.hub-inspire-modal .what-result{display:flex;flex-direction:column;min-width:0;padding:16px;border:1px solid #dce6dd;border-radius:17px;background:linear-gradient(180deg,#f8fbf8 0%,#fff 100%);text-decoration:none;color:inherit;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
-.hub-inspire-modal .what-result:hover{border-color:#9fb7a5;box-shadow:0 9px 20px rgba(20,68,0,.08);transform:translateY(-2px)}
-.hub-inspire-modal .what-result span{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--bh-secondary);font-weight:850}
-.hub-inspire-modal .what-result strong{margin:5px 0;font-size:16px;line-height:1.25}
-.hub-inspire-modal .what-result small{color:var(--bh-text-muted);font-size:12px}
-.hub-inspire-modal .what-result b{margin-top:auto;padding-top:12px;color:var(--bh-primary);font-size:13px}
-@media(max-width:700px){.hub-inspire-modal{padding:12px}.hub-inspire-modal .what-choice-grid,.hub-inspire-modal .what-results-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hub-inspire-modal .what-day-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.hub-inspire-modal{align-items:flex-start;padding:8px}.hub-inspire-modal .what-shall-i-head{padding:22px 18px 18px}.hub-inspire-modal .what-shall-i-head h2{font-size:32px}.hub-inspire-modal .what-shall-i-head p{font-size:13px;padding-right:25px}.hub-inspire-modal .what-shall-i-steps{padding:0 18px 20px}.hub-inspire-modal .what-shall-i-step{gap:11px;padding:15px 0}.hub-inspire-modal .what-step-number{width:34px;height:34px;flex-basis:34px;border-radius:11px}.hub-inspire-modal .what-step-content h3{font-size:22px}.hub-inspire-modal .what-choice-grid,.hub-inspire-modal .what-results-grid{grid-template-columns:1fr}.hub-inspire-modal .what-shall-i-results{padding:0 18px 20px}.hub-inspire-modal .what-results-head{align-items:flex-start;flex-direction:column}.hub-inspire-modal .what-results-head .button{width:100%}}
+.hub-inspire-modal .what-back{margin-top:10px}
+.hub-inspire-modal .what-shall-i-results{padding:0 24px 24px}
+.hub-inspire-modal .what-results-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:16px;border-top:1px solid #edf1eb}
+.hub-inspire-modal .what-results-head h3{margin:2px 0 0;font-family:"Chewy",cursive;font-size:24px;font-weight:400;color:var(--bh-dark)}
+.hub-inspire-modal .what-results-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.hub-inspire-modal .what-result{display:flex;flex-direction:column;padding:14px;border:1px solid #dce6dd;border-radius:15px;background:#fbfdfb;text-decoration:none;color:inherit}
+.hub-inspire-modal .what-result span{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--bh-secondary);font-weight:850}
+.hub-inspire-modal .what-result strong{margin:4px 0;font-size:15px;line-height:1.25}
+.hub-inspire-modal .what-result small{color:var(--bh-text-muted);font-size:11px}
+.hub-inspire-modal .what-result b{margin-top:9px;color:var(--bh-primary);font-size:12px}
+@media(max-width:560px){
+  .hub-inspire-modal{align-items:flex-start;padding:8px}
+  .hub-inspire-modal .what-shall-i-dialog{max-height:calc(100vh - 16px);border-radius:20px}
+  .hub-inspire-modal .what-shall-i-head{padding:18px 54px 15px 18px}
+  .hub-inspire-modal .what-shall-i-head h2{font-size:29px}
+  .hub-inspire-modal .what-shall-i-start{padding:24px 18px}
+  .hub-inspire-modal .what-shall-i-steps,.hub-inspire-modal .what-shall-i-results{padding-left:18px;padding-right:18px}
+  .hub-inspire-modal .what-choice-grid,.hub-inspire-modal .what-results-grid{grid-template-columns:1fr 1fr}
+  .hub-inspire-modal .what-day-grid{grid-template-columns:1fr 1fr}
+}
