@@ -120,3 +120,9 @@
 .pro-planner-modal-card .pro-form textarea{min-height:105px}
 .pro-planner-modal-card .pro-form-actions{margin-top:5px;padding-top:14px;border-top:1px solid var(--bh-border)}
 @media(max-width:560px){.pro-planner-modal-card{padding:24px 19px;border-radius:20px}.pro-planner-modal-card h2{font-size:27px}.pro-planner-modal-card .pro-form-actions{flex-direction:column-reverse}.pro-planner-modal-card .pro-form-actions .button{width:100%}}
+
+
+/* Dashboard content visibility — JS controls the active panel with the hidden attribute. */
+.pro-content>.pro-section{display:block}
+.pro-content>.pro-section[hidden]{display:none!important}
+.pro-content>.pro-section.is-active{display:block!important}
