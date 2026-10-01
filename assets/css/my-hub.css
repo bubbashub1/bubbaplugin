@@ -203,3 +203,10 @@
 .my-hub-page .hub-personal-cta{padding:19px}
 .my-hub-page .hub-personal-cta .button{width:100%;box-sizing:border-box}
 }
+
+/* Personal idea CTA polish */
+.my-hub-page .hub-personal-cta{background:linear-gradient(135deg,#dcebdc 0%,#e8f3e7 100%);color:var(--bh-dark);border:1px solid rgba(65,102,81,.14)}
+.my-hub-page .hub-personal-cta .eyebrow{color:var(--bh-primary)}
+.my-hub-page .hub-personal-cta p{color:var(--bh-text-muted)}
+.my-hub-page .hub-personal-cta .button-primary{display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.my-hub-page .hub-personal-cta .hub-sparkle{font-size:1.12em;line-height:1;filter:brightness(1.2) saturate(1.15);text-shadow:0 0 7px rgba(255,215,80,.7)}
