@@ -2,7 +2,60 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const $=id=>document.getElementById(id);
   const keys={planners:"bhProPlanners",family:"bhProFamily",shares:"bhProShares",notes:"bhProNotes",dayPlan:"bhProDayPlan"};
   const read=(key,fallback=[])=>{try{const v=JSON.parse(localStorage.getItem(key)||"null");return Array.isArray(v)?v:fallback}catch{return fallback}};
-  const write=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
+  const hasLocal=(key)=>localStorage.getItem(key)!==null;
+  let proSignedIn=false,proCsrf="",proHydrating=false,proSyncTimer=null;
+
+  async function proAuth(){
+    try{
+      const response=await fetch("api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+      const payload=await response.json();
+      proSignedIn=!!payload.authenticated&&!payload.is_admin;
+      proCsrf=payload.csrf||"";
+    }catch{
+      proSignedIn=false;
+      proCsrf="";
+    }
+  }
+
+  function proState(){
+    return {
+      version:1,
+      planners,
+      family,
+      shares,
+      notes,
+      dayPlan,
+      selectedPlannerId,
+      calendarView:proCalendarView,
+      calendarDate:proCalendarDate instanceof Date?proCalendarDate.toISOString():null
+    };
+  }
+
+  async function saveProState(){
+    if(!proSignedIn||!proCsrf||proHydrating)return false;
+    try{
+      const response=await fetch("api/planner-pro.php",{
+        method:"POST",
+        credentials:"same-origin",
+        headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body:JSON.stringify({csrf:proCsrf,state:proState()})
+      });
+      const payload=await response.json();
+      if(payload.csrf)proCsrf=payload.csrf;
+      return !!(response.ok&&payload.ok);
+    }catch{return false}
+  }
+
+  function queueProSync(){
+    if(proHydrating||!proSignedIn)return;
+    clearTimeout(proSyncTimer);
+    proSyncTimer=setTimeout(()=>{saveProState()},350);
+  }
+
+  const write=(key,value)=>{
+    localStorage.setItem(key,JSON.stringify(value));
+    queueProSync();
+  };
   const uid=prefix=>prefix+"-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7);
   const esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])));
   const colours=["#416651","#3c8e96","#8068cf","#55a9c2","#ee6684","#9cb8a4"];
@@ -12,6 +65,59 @@ document.addEventListener("DOMContentLoaded",async()=>{
   let notes=read(keys.notes,[]);
   let dayPlan=read(keys.dayPlan,[{id:uid("day"),time:"09:30",title:"Morning activity",detail:"Add an activity from your planner."},{id:uid("day"),time:"12:30",title:"Lunch / travel",detail:"Leave space between plans."}]);
   let monthDate=new Date();
+
+  function mergeProArray(remoteValue,localValue,localExists){
+    const remote=Array.isArray(remoteValue)?remoteValue:[];
+    const local=Array.isArray(localValue)?localValue:[];
+    if(!localExists)return remote.length?remote:local;
+    const map=new Map(remote.map(item=>[String(item?.id??""),item]));
+    local.forEach(item=>{
+      const id=String(item?.id??"");
+      if(id)map.set(id,item);
+    });
+    return [...map.values()];
+  }
+
+  async function hydrateProState(){
+    await proAuth();
+    if(!proSignedIn)return;
+
+    try{
+      const response=await fetch("api/planner-pro.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+      const payload=await response.json();
+      if(!response.ok||!payload.ok)return;
+      proCsrf=payload.csrf||proCsrf;
+      const remote=payload.state&&typeof payload.state==="object"?payload.state:{};
+      proHydrating=true;
+
+      planners=mergeProArray(remote.planners,planners,hasLocal(keys.planners));
+      family=mergeProArray(remote.family,family,hasLocal(keys.family));
+      shares=mergeProArray(remote.shares,shares,hasLocal(keys.shares));
+      notes=mergeProArray(remote.notes,notes,hasLocal(keys.notes));
+      dayPlan=mergeProArray(remote.dayPlan,dayPlan,hasLocal(keys.dayPlan));
+
+      if(remote.selectedPlannerId)selectedPlannerId=String(remote.selectedPlannerId);
+      if(remote.calendarView)proCalendarView=String(remote.calendarView);
+      if(remote.calendarDate){
+        const parsed=new Date(remote.calendarDate);
+        if(!Number.isNaN(parsed.getTime()))proCalendarDate=parsed;
+      }
+
+      Object.entries({
+        [keys.planners]:planners,
+        [keys.family]:family,
+        [keys.shares]:shares,
+        [keys.notes]:notes,
+        [keys.dayPlan]:dayPlan
+      }).forEach(([key,value])=>localStorage.setItem(key,JSON.stringify(value)));
+      proHydrating=false;
+
+      const hadLocal=Object.values(keys).some(hasLocal);
+      if(hadLocal)await saveProState();
+    }catch{
+      proHydrating=false;
+    }
+  }
 
   function modal(title,intro,fields,onSave){
     const wrap=document.createElement("div");
@@ -543,29 +649,31 @@ document.addEventListener("DOMContentLoaded",async()=>{
 
   /* Initialise navigation before rendering so an async section cannot leave the dashboard blank. */
   setupProDashboard();
+  await hydrateProState();
 
   $("addPlanner").onclick=addPlanner;$("addPlannerTop").onclick=addPlanner;$("addFamily").onclick=addFamily;$("createShare").onclick=createShare;$("addDayPlan").onclick=addDayPlan;$("addNote").onclick=addNote;
   if(typeof bhActivities==="function"){try{window.__bhActivities=await bhActivities()}catch(error){window.__bhActivities=[];console.warn("Planner Pro calendar activities could not be loaded.",error)}}
   renderPlannerCalendarPicker();
   const calendarPlanner=$("proCalendarPlanner");
-  calendarPlanner?.addEventListener("change",()=>{selectedPlannerId=calendarPlanner.value;renderProCalendar();renderPlanners()});
+  calendarPlanner?.addEventListener("change",()=>{selectedPlannerId=calendarPlanner.value;queueProSync();renderProCalendar();renderPlanners()});
   document.querySelectorAll("[data-calendar-view]").forEach(button=>button.addEventListener("click",()=>{
     proCalendarView=button.dataset.calendarView;
+    queueProSync();
     document.querySelectorAll("[data-calendar-view]").forEach(b=>b.classList.toggle("is-active",b===button));
     renderProCalendar();
   }));
-  $("calendarToday")?.addEventListener("click",()=>{proCalendarDate=new Date();renderProCalendar()});
+  $("calendarToday")?.addEventListener("click",()=>{proCalendarDate=new Date();queueProSync();renderProCalendar()});
   $("prevMonth")?.addEventListener("click",()=>{
     if(proCalendarView==="month")proCalendarDate.setMonth(proCalendarDate.getMonth()-1);
     else if(proCalendarView==="week")proCalendarDate.setDate(proCalendarDate.getDate()-7);
     else proCalendarDate.setDate(proCalendarDate.getDate()-1);
-    renderProCalendar();
+    queueProSync();renderProCalendar();
   });
   $("nextMonth")?.addEventListener("click",()=>{
     if(proCalendarView==="month")proCalendarDate.setMonth(proCalendarDate.getMonth()+1);
     else if(proCalendarView==="week")proCalendarDate.setDate(proCalendarDate.getDate()+7);
     else proCalendarDate.setDate(proCalendarDate.getDate()+1);
-    renderProCalendar();
+    queueProSync();renderProCalendar();
   });
   renderProCalendar();
   const printMonth=$("printMonth");
