@@ -35,6 +35,11 @@ img {
   display: block;
 }
 
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
 /* --- 3. Header & Navigation Styles --- */
 .site-header {
   width: 100%;
@@ -42,11 +47,20 @@ img {
   border-bottom: 1px solid var(--bh-border);
   padding: 16px 24px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 16px;
   position: sticky;
   top: 0;
   z-index: 1000;
+}
+
+.header-top {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .brand-logo {
@@ -57,6 +71,88 @@ img {
   background-repeat: no-repeat;
   background-position: center;
   border-radius: 10px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  list-style: none;
+  flex-wrap: wrap;
+}
+
+.nav-links a {
+  color: var(--bh-text);
+  font-weight: 500;
+  font-size: 14px;
+  transition: color 0.2s ease;
+}
+
+.nav-links a:hover {
+  color: var(--bh-secondary);
+}
+
+.btn-sign-in {
+  background-color: var(--bh-secondary);
+  color: white;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: opacity 0.2s ease;
+}
+
+.btn-sign-in:hover {
+  opacity: 0.9;
+}
+
+/* Header Search Toolbar */
+.header-search-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid var(--bh-border);
+}
+
+.header-search-bar input,
+.header-search-bar select {
+  padding: 8px 14px;
+  border: 1px solid var(--bh-border);
+  border-radius: 20px;
+  font-size: 13px;
+  outline: none;
+  background: #fff;
+  color: var(--bh-text);
+}
+
+.header-search-bar input {
+  flex: 1;
+  min-width: 160px;
+  max-width: 250px;
+}
+
+.header-search-bar select {
+  cursor: pointer;
+}
+
+.header-search-bar .search-btn {
+  background-color: var(--bh-secondary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 8px 22px;
+  font-weight: 600;
+  border-radius: 20px;
+  font-size: 13px;
+  transition: opacity 0.2s ease;
+}
+
+.header-search-bar .search-btn:hover {
+  opacity: 0.9;
 }
 
 /* --- 4. Main Content Layout --- */
@@ -103,20 +199,3 @@ img {
   border-radius: 12px;
 }
 ```[cite: 1, 2]
-
-And for this CSS setup, your matching HTML will just need empty elements with those classes:
-
-```html
-<!-- Header -->
-<header class="site-header">
-  <div class="brand-logo" aria-label="Bubba Hub Logo"></div>
-  <!-- Navigation elements here -->
-</header>
-
-<!-- Footer -->
-<footer class="site-footer">
-  <div class="footer-inner">
-    <p>&copy; 2021 - 2026 Bubba Hub. All rights reserved.</p>
-    <div class="footer-logo" aria-label="Bubba Hub Footer Badge"></div>
-  </div>
-</footer>
