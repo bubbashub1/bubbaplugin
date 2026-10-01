@@ -448,3 +448,16 @@
   margin-top:40px!important;
   border-radius:0!important;
 }
+
+/* 10. CUSTOM ORGANISER TERMS ----------------------------------------- */
+.organiser-terms-content{
+  padding:24px;
+  background:#fff;
+  border:1px solid var(--os-line);
+  border-radius:14px;
+  color:#46564b;
+  font-size:13px;
+  line-height:1.7;
+  overflow-wrap:anywhere;
+}
+.organiser-terms-content br+br{display:block;content:"";margin-top:8px}
