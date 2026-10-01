@@ -357,3 +357,29 @@
   }
   .pro-planner-customise-modal .pro-form-actions .button{flex:1;min-width:0}
 }
+
+
+.pro-planner-filter-grid select[multiple]{
+  min-height:96px;
+  padding:7px;
+  background:#fff;
+}
+.pro-planner-filter-grid select[multiple] option{
+  padding:6px 7px;
+  border-radius:7px;
+  font-size:11px;
+}
+.pro-planner-filter-grid select[multiple] option:checked{
+  background:var(--bh-primary);
+  color:#fff;
+}
+.pro-planner-filter-group::after{
+  content:"Hold Ctrl (Windows) or ⌘ (Mac) to select multiple";
+  display:block;
+  margin-top:9px;
+  color:var(--bh-text-muted);
+  font-size:10px;
+}
+@media(max-width:600px){
+  .pro-planner-filter-grid select[multiple]{min-height:110px}
+}
