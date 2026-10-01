@@ -659,3 +659,9 @@
   font-size:9px!important;
   font-weight:850;
 }
+
+
+/* Plan a day time controls */
+.pro-time-select{width:100%;min-height:46px;padding:10px 38px 10px 12px;border:1px solid var(--bh-border);border-radius:12px;background:#fff;color:var(--bh-text);font:inherit;font-size:14px;font-weight:750;box-sizing:border-box;}
+.pro-time-select:focus{outline:3px solid rgba(246,200,74,.45);outline-offset:1px;border-color:var(--bh-primary);}
+@media(max-width:520px){.pro-time-select{min-height:48px;font-size:15px;}}
