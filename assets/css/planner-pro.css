@@ -151,3 +151,28 @@
   .pro-colour-picker{gap:8px}
   .pro-colour-option{width:32px;height:32px}
 }
+
+
+/* Monthly planner print control */
+.pro-print-actions{display:flex;justify-content:flex-end;margin-top:12px}
+@media print{
+  @page{size:A4 landscape;margin:12mm}
+  body{background:#fff!important}
+  body>*{display:none!important}
+  .site-header,.bh-header,.pro-sidebar,.pro-hero,.pro-print-actions{display:none!important}
+  main,.pro-dashboard,.pro-content,.pro-content .pro-section,.pro-content #month{display:block!important}
+  .pro-content #month{border:0!important;box-shadow:none!important;padding:0!important}
+  .pro-section-head{margin-bottom:12px}
+  .pro-section-head .eyebrow{display:none}
+  .pro-section-head h2{font-size:26px}
+  .pro-section-head p{font-size:11px}
+  .pro-month-actions button{display:none}
+  .pro-month-actions strong{font-size:15px}
+  .pro-month-grid{width:100%;border-color:#aaa}
+  .pro-month-cell{min-height:95px;background:#fff!important;border-color:#aaa;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .pro-month-cell.is-outside{background:#f7f7f7!important}
+  .pro-month-cell.is-today{background:#eef6ef!important}
+  .pro-month-event{font-size:9px}
+  .pro-month-cell:first-child,.pro-month-cell:nth-child(2),.pro-month-cell:nth-child(3),.pro-month-cell:nth-child(4),.pro-month-cell:nth-child(5),.pro-month-cell:nth-child(6),.pro-month-cell:nth-child(7){background:#edf5ef!important}
+}
+@media(max-width:520px){.pro-print-actions{justify-content:stretch}.pro-print-actions .button{width:100%}}
