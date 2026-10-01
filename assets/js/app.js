@@ -1,3 +1,13 @@
+/* Load the single shared Bubba Hub header on every public page. */
+(function(){
+  if(document.querySelector('script[data-bh-header-loader]'))return;
+  const script=document.createElement("script");
+  script.src="assets/js/header.js";
+  script.defer=true;
+  script.dataset.bhHeaderLoader="true";
+  document.head.appendChild(script);
+})();
+
 const BH_KEYS={saved:"bhSavedActivities",planner:"bhPlanner"};
 
 async function bhActivities(){
