@@ -1,10 +1,35 @@
 <!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="/beta/"><title>Organiser · Bubba Hub</title><link rel="stylesheet" href="assets/css/styles.css?v=20260928-shell2"><link rel="stylesheet" href="assets/css/bold-theme.css?v=20260929-bold1"><link rel="stylesheet" href="assets/css/organiser.css?v=20261001-storefront2"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></head><body><header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/gemini_generated_image_t65ztnt65ztnt65z-20260930-185704-7e0755.jpeg" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="events.html">Events</a><a href="venues.html">Venues</a><a href="planner.html">My planner</a><a href="calendar.html">Calendar</a><a href="my-hub.html">My Hub</a><a href="leader.html">For class leaders</a><a href="admin.html">Admin</a></nav><a class="button button-soft" href="account.html">My account</a></header><main class="app-shell organiser-storefront-page"><div id="organiserState" class="organiser-loading"><p>Loading organiser…</p></div></main><footer class="site-footer"><div class="site-footer-grid"><div class="site-footer-brand"><a href="index.html" class="site-footer-logo" aria-label="Bubba Hub home"><img src="images/logos/gemini_generated_image_t65ztnt65ztnt65z-20260930-185704-7e0755.jpeg" alt="Bubba Hub"></a><div class="site-footer-brand-copy"><a href="index.html" class="site-footer-title">Bubba Hub</a><p>Find, plan &amp; book family activities across Devon &amp; Cornwall.</p></div></div><div class="site-footer-column"><h2>Main menu</h2><nav class="site-footer-links"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">Account</a></nav></div><div class="site-footer-column"><h2>Explore &amp; tools</h2><nav class="site-footer-links"><a href="events.html">Events</a><a href="venues.html">Venues</a><a href="planner.html">Planner</a><a href="calendar.html">Calendar</a></nav></div><div class="site-footer-column"><h2>Legal &amp; contact</h2><nav class="site-footer-links"><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Conditions</a><a href="mailto:contact@bubbahub.co.uk">Contact Bubba Hub</a></nav></div></div><div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div></footer><script src="assets/js/app.js?v=20261001-storefront1"></script><script>
+async function loadOrganiserActivities(requestedSlug){
+  const slug=String(requestedSlug||"").toLowerCase().trim();
+  const url=new URL("api/activities.php",document.baseURI);
+  url.searchParams.set("slug",slug);
+  url.searchParams.set("page","1");
+  url.searchParams.set("per_page","50");
+  const response=await fetch(url.toString(),{cache:"no-store",headers:{Accept:"application/json"}});
+  if(!response.ok)throw new Error("Organiser API request failed");
+  const payload=await response.json();
+  if(!payload.ok)throw new Error(payload.error||"Organiser API request failed");
+  return (Array.isArray(payload.data)?payload.data:[]).map(a=>({
+    ...a,
+    id:String(a.id||""),
+    organiser_name:a.organiser?.name||"",
+    organiser_slug:a.organiser?.slug||"",
+    organiser_website:a.organiser?.website||"",
+    organiser_email:a.organiser?.email||"",
+    organiser_phone:a.organiser?.phone||"",
+    venues:Array.isArray(a.venues)?a.venues:[],
+    age_range:a.age_range?[String(a.age_range)]:[],
+    price:a.price_from!==null&&a.price_from!==undefined?"£"+Number(a.price_from).toFixed(2):"",
+    short_description:a.description||"",
+    image_url:a.image_path||"",
+  }));
+}
 document.addEventListener("DOMContentLoaded",async()=>{
  const state=document.getElementById("organiserState"),params=new URLSearchParams(location.search),parts=location.pathname.replace(/\/+$/,"").split("/").filter(Boolean);
  const requested=(params.get("slug")||parts[parts.length-1]||"").toLowerCase().trim();
  const clean=s=>String(s||"").toLowerCase().trim().replace(/&/g,"and").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
  try{
-  const items=await bhActivities();
+  const items=await loadOrganiserActivities(requested);
   const groups=items.filter(a=>clean(a.organiser_slug||a.organiser_name||a.organiser||"")===clean(requested));
   if(!groups.length){state.innerHTML='<section class="organiser-empty"><div class="organiser-empty-icon">!</div><span class="eyebrow">Organiser storefront</span><h1>Organiser not found</h1><p>We couldn’t find this organiser on Bubba Hub.</p><a class="button button-primary" href="directory.html">Find activities</a></section>';return}
   const first=groups[0],name=first.organiser_name||first.organiser||"Local organiser",website=first.organiser_website||"",email=first.organiser_email||"",phone=first.organiser_phone||"",location=[...new Set(groups.flatMap(a=>(a.venues||[]).map(v=>v.town||v.region).filter(Boolean)))].slice(0,3).join(" · ")||"Devon & Cornwall",categories=[...new Set(groups.map(a=>a.category).filter(Boolean))],initials=name.split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase();
@@ -22,12 +47,12 @@ document.addEventListener("DOMContentLoaded",async()=>{
 <details><summary>What if I have a question before booking?</summary><p>You can contact the organiser directly using the contact options at the top of this page.</p></details>
 <details><summary>How do I find out about accessibility?</summary><p>Accessibility information is shown where it has been provided by the organiser. If you need specific support, contact the organiser before booking.</p></details>
 </div></section><section id="activities" class="storefront-section"><div class="storefront-heading"><span class="eyebrow">Explore their activities</span><h2>What '+bhEscape(name)+' offers</h2><p>Browse the activities below to see what’s available, where sessions take place, who they’re for and how to book.</p></div><div class="storefront-grid">'+groups.map(a=>{const venue=a.venues?.[0],age=(Array.isArray(a.age_range)?a.age_range:[]).join(" · "),loc=a.town||venue?.town||a.region||venue?.region||"";return '<article class="storefront-card"><a class="storefront-card-image" href="'+bhEscape(bhActivityUrl(a))+'">'+(a.image_url?'<img src="'+bhEscape(a.image_url)+'" alt="'+bhEscape(a.title||"Activity")+'" loading="lazy">':'<span class="storefront-placeholder">Bubba Hub</span>')+'</a><div class="storefront-card-body"><span class="eyebrow">'+bhEscape(a.category||"Family activity")+'</span><h3><a href="'+bhEscape(bhActivityUrl(a))+'">'+bhEscape(a.title||"Activity")+'</a></h3>'+(a.short_description?'<p class="storefront-description">'+bhEscape(a.short_description).slice(0,150)+(a.short_description.length>150?"…":"")+'</p>':"")+'<div class="storefront-card-meta">'+(loc?'<span>📍 '+bhEscape(loc)+'</span>':"")+(age?'<span>👶 '+bhEscape(age)+'</span>':"")+(a.price?'<span>'+bhEscape(a.price)+'</span>':"")+'</div><a class="button button-soft button-full" href="'+bhEscape(bhActivityUrl(a))+'">View activity</a></div></article>'}).join("")+'</div></section><div class="organiser-back"><a class="button button-soft" href="directory.html">← Back to activities</a></div>';
- }catch(e){state.innerHTML='<section class="organiser-empty"><h1>Organiser unavailable</h1><p>We couldn’t load this organiser right now.</p><a class="button button-primary" href="directory.html">Back to activities</a></section>'}
+ }catch(e){console.error("Organiser storefront load failed:",e);state.innerHTML='<section class="organiser-empty"><h1>Organiser unavailable</h1><p>We couldn’t load this organiser right now.</p><a class="button button-primary" href="directory.html">Back to activities</a></section>'}
 });
 </script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script>
 document.addEventListener("DOMContentLoaded",async()=>{
  try{
-  const items=await bhActivities();
+  const items=await loadOrganiserActivities(requested);
   const params=new URLSearchParams(location.search);
   const parts=location.pathname.replace(/\/+$/,"").split("/").filter(Boolean);
   const requested=(params.get("slug")||parts[parts.length-1]||"").toLowerCase().trim();
