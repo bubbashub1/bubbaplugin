@@ -264,3 +264,6 @@
 @keyframes hubTicker{from{transform:translateX(0)}to{transform:translateX(-110%)}}
 @media(max-width:800px){.my-hub-page .hub-suggestions-head{align-items:flex-start;flex-direction:column}.my-hub-page .hub-upcoming-ticker{width:100%}.my-hub-page .hub-suggestions-carousel{grid-template-columns:1fr}.my-hub-page .hub-carousel-arrow{display:none}.my-hub-page .hub-suggestion-card{flex-basis:260px}}
 @media(max-width:560px){.my-hub-page .hub-suggestions{padding:18px}.my-hub-page .hub-suggestion-card{flex-basis:82vw}}
+
+.my-hub-page .hub-personal-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+@media(max-width:560px){.my-hub-page .hub-personal-actions{width:100%;flex-direction:column}.my-hub-page .hub-personal-actions .button{width:100%}}
