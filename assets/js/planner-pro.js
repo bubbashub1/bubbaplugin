@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   function addNote(){modal("Add note or reminder","Keep the small details with your family plan.",[{name:"title",label:"Title",required:true},{name:"date",label:"Date",type:"date"},{name:"body",label:"Note",type:"textarea",required:true}],d=>{notes.unshift({id:uid("note"),title:d.title,date:d.date,body:d.body});write(keys.notes,notes);renderNotes()})}
 
   async function renderFavourites(){
-    const el=$("favouritesGrid"),ids=bhGet(BH_KEYS.saved);if(!ids.length){el.innerHTML="<div class='pro-empty'><strong>No saved activities yet</strong>Save activities from the directory and they will appear here.</div>";return}
+    const el=$("favouritesGrid"),ids=typeof bhGet==="function"&&typeof BH_KEYS!=="undefined"?bhGet(BH_KEYS.saved):[];if(!ids.length){el.innerHTML="<div class='pro-empty'><strong>No saved activities yet</strong>Save activities from the directory and they will appear here.</div>";return}
     try{const items=await bhActivities();const saved=ids.map(id=>items.find(a=>String(a.id)===id)).filter(Boolean);el.innerHTML=saved.length?saved.map(a=>"<article class='pro-favourite-card'><span class='pro-fav-icon'>♡</span><div><h3>"+esc(a.title)+"</h3><p>"+esc(a.town||a.location||"Family activity")+"</p><a href='"+(typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id))+"'>View activity →</a></div></article>").join(""):"<div class='pro-empty'><strong>Your saved activities are not available yet</strong>Browse the directory to save some favourites.</div>"}catch{el.innerHTML="<div class='pro-empty'><strong>Could not load favourites</strong>Please try again.</div>"} 
   }
 
