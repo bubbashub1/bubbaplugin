@@ -158,13 +158,21 @@
       const accessibility = groups.map(a => Array.isArray(a.accessibility) ? a.accessibility : [a.accessibility])
         .flat().filter(Boolean).join(" ").toLowerCase();
 
+      const hasAccess = key => groups.some(a => {
+        const values = Array.isArray(a.accessibility) ? a.accessibility : [a.accessibility];
+        return values.map(v => String(v || "").toLowerCase()).includes(key);
+      });
+
       if (groups.some(a => Array.isArray(a.age_range) && a.age_range.some(v => /0[-–]3|baby|0[-–]12/i.test(String(v))))) add("baby", "🍼", "Baby Friendly");
       if (groups.some(a => Array.isArray(a.age_range) && a.age_range.some(v => /1[-–]3|2[-–]4|3[-–]5|toddler/i.test(String(v))))) add("toddler", "🧸", "Toddler Friendly");
-      if (/wheelchair|accessible|accessibility|step[- ]?free/i.test(accessibility)) add("accessible", "♿", "Accessible");
-      if (/pram|pushchair|buggy/i.test(accessibility)) add("pram", "🛞", "Pram Friendly");
-      if (/toilet|wc|changing room|baby change/i.test(accessibility)) add("toilet", "🚻", "Toilet Available");
-      if (/changing|baby change/i.test(accessibility)) add("changing", "🧷", "Changing Facilities");
-      if (/parking|car park/i.test(accessibility)) add("parking", "🅿️", "Parking Available");
+      if (hasAccess("step_free") || hasAccess("accessible_toilet") || hasAccess("send_support") || /wheelchair|accessible|step[- ]?free/i.test(accessibility)) add("accessible", "♿", "Accessible");
+      if (hasAccess("pram_access") || /pram|pushchair|buggy/i.test(accessibility)) add("pram", "🛞", "Pram Friendly");
+      if (hasAccess("toilets") || hasAccess("accessible_toilet") || /toilet|wc/i.test(accessibility)) add("toilet", "🚻", "Toilet Available");
+      if (hasAccess("baby_changing") || /changing|baby change/i.test(accessibility)) add("changing", "🧷", "Changing Facilities");
+      if (hasAccess("parking") || /parking|car park/i.test(accessibility)) add("parking", "🅿️", "Parking Available");
+      if (hasAccess("quiet_space") || hasAccess("sensory_friendly")) add("sensory", "◌", "Sensory Friendly");
+      if (hasAccess("hearing_loop")) add("hearing", "◉", "Hearing Support");
+      if (hasAccess("visual_supports")) add("visual", "◈", "Visual Supports");
       if (groups.some(a => Number(a.price_value) === 0)) add("free", "£0", "Free");
       if (/online|zoom|virtual/i.test(text)) add("online", "💻", "Online");
       if (/outdoor|forest|park|nature/i.test(text)) add("outdoor", "🌿", "Outdoor");
