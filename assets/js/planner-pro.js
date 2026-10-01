@@ -525,4 +525,13 @@ document.addEventListener("DOMContentLoaded",async()=>{
   if(printMonth) printMonth.onclick=()=>window.print();
   document.querySelectorAll("[data-calendar-action]").forEach(b=>b.onclick=()=>alert("Calendar setup will connect to your shared planner when calendar accounts are enabled."));
   renderPlanners();renderFamily();renderShares();renderMonth();renderDayPlan();renderNotes();await renderFavourites();
+  const jump=document.getElementById("proJumpTo");
+  if(jump){
+    jump.addEventListener("change",()=>{
+      if(jump.value){
+        show(jump.value);
+        jump.blur();
+      }
+    });
+  }
 });
