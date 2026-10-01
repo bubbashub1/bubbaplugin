@@ -190,6 +190,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let infiniteScrollObserver = null;
     let homeLocation = null;
     let homeLocationLoading = false;
+    let lastFilteredList = [];
 
     const distanceMiles = (lat1, lon1, lat2, lon2) => {
       const toRad = value => value * Math.PI / 180;
@@ -752,6 +753,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         mobileMapLink.href = "map.html" + (mapParams.toString() ? "?" + mapParams.toString() : "");
       }
 
+      lastFilteredList = list;
       const resultsEl = $("results");
       if (!resultsEl) return;
       resultsEl.className = `activity-grid directory-view-${currentView} directory-cards-${cardCount}`;
