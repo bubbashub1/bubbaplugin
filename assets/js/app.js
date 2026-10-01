@@ -1,6 +1,6 @@
 /* Load the single shared Bubba Hub header on every public page. */
 (function(){
-  if(document.querySelector('script[data-bh-header-loader]'))return;
+  if(document.querySelector('script[data-bh-header-loader], script[src*="assets/js/header.js"]'))return;
   const script=document.createElement("script");
   script.src="assets/js/header.js";
   script.defer=true;
