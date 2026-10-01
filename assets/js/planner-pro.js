@@ -14,9 +14,30 @@ document.addEventListener("DOMContentLoaded",async()=>{
   let monthDate=new Date();
 
   function modal(title,intro,fields,onSave){
-    const wrap=document.createElement("div");wrap.className="pro-modal-backdrop";
-    wrap.innerHTML="<div class='pro-modal' role='dialog' aria-modal='true'><h2>"+esc(title)+"</h2><p>"+esc(intro)+"</p><form class='pro-form'>"+fields.map(f=>"<label>"+esc(f.label)+(f.type==="textarea"?"<textarea name='"+f.name+"' "+(f.required?"required":"")+"></textarea>":f.type==="select"?"<select name='"+f.name+"'>"+f.options.map(o=>"<option value='"+esc(o.value)+"'>"+esc(o.label)+"</option>").join("")+"</select>":"<input name='"+f.name+"' type='"+(f.type||"text")+"' "+(f.required?"required":"")+"></label>").join("")+"<div class='pro-form-actions'><button type='button' class='button button-soft' data-cancel>Cancel</button><button class='button button-primary' type='submit'>Save</button></div></form></div>";
-    document.body.appendChild(wrap);const form=wrap.querySelector("form");form.querySelector("[data-cancel]").onclick=()=>wrap.remove();form.onsubmit=e=>{e.preventDefault();const data=Object.fromEntries(new FormData(form));onSave(data);wrap.remove()};
+    const wrap=document.createElement("div");
+    wrap.className="pro-modal-backdrop";
+    const fieldHtml=fields.map(f=>{
+      const required=f.required?" required":"";
+      if(f.type==="textarea"){
+        return "<label>"+esc(f.label)+"<textarea name='"+esc(f.name)+"'"+required+"></textarea></label>";
+      }
+      if(f.type==="select"){
+        const options=(f.options||[]).map(o=>"<option value='"+esc(o.value)+"'>"+esc(o.label)+"</option>").join("");
+        return "<label>"+esc(f.label)+"<select name='"+esc(f.name)+"'>"+options+"</select></label>";
+      }
+      return "<label>"+esc(f.label)+"<input name='"+esc(f.name)+"' type='"+esc(f.type||"text")+"'"+required+"></label>";
+    }).join("");
+    wrap.innerHTML="<div class='pro-modal' role='dialog' aria-modal='true'><h2>"+esc(title)+"</h2><p>"+esc(intro)+"</p><form class='pro-form'>"+fieldHtml+"<div class='pro-form-actions'><button type='button' class='button button-soft' data-cancel>Cancel</button><button class='button button-primary' type='submit'>Save</button></div></form></div>";
+    document.body.appendChild(wrap);
+    const form=wrap.querySelector("form");
+    const close=()=>wrap.remove();
+    form.querySelector("[data-cancel]").onclick=close;
+    form.onsubmit=e=>{
+      e.preventDefault();
+      const data=Object.fromEntries(new FormData(form));
+      onSave(data);
+      close();
+    };
   }
 
   function renderPlanners(){
