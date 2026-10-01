@@ -379,3 +379,24 @@
   .planner-shell.is-list-view #results{display:block;min-width:0;width:100%}
   .planner-list-item{width:100%;box-sizing:border-box}
 }
+
+
+/* Final spacing: separate planner containers clearly on desktop and mobile. */
+.planner-page > .planner-hero{margin-bottom:24px}
+.planner-page > .planner-pro-preview{margin-bottom:24px}
+.planner-page > .planner-shell{margin-top:0}
+.planner-shell > * + *{margin-top:4px}
+.planner-shell > .planner-view-controls{margin-top:6px}
+.planner-shell > .planner-day-controls{margin-top:4px}
+.planner-shell > .planner-week{margin-top:6px}
+.planner-shell > .planner-footer-note{margin-top:6px}
+@media(max-width:800px){
+  .planner-page > .planner-hero{margin-bottom:20px}
+  .planner-page > .planner-pro-preview{margin-bottom:20px}
+  .planner-shell{margin-top:0}
+}
+@media(max-width:560px){
+  .planner-page > .planner-hero{margin-bottom:18px}
+  .planner-page > .planner-pro-preview{margin-bottom:18px}
+  .planner-shell{padding:18px}
+}
