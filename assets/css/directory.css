@@ -112,13 +112,22 @@
   justify-content:center;
   min-height:46px;
   margin:0;
-  padding:0 8px 0 2px;
-  border:0;
-  background:transparent;
-  color:#144400;
-  font-size:12px;
+  padding:0 20px;
+  border:1px solid rgba(20,68,0,.12);
+  border-radius:14px;
+  background:#416651;
+  color:#fff;
+  font-size:13px;
   font-weight:900;
+  line-height:1;
+  text-decoration:none;
   white-space:nowrap;
+  box-shadow:0 6px 16px rgba(20,68,0,.10);
+}
+.bh-directory .directory-search-advanced-link:hover{
+  background:#f6c84a;
+  border-color:#f6c84a;
+  color:#144400;
 }
 .bh-directory .directory-calendar-hero-button,
 .bh-directory .directory-map-action-button,
