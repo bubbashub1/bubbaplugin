@@ -4,6 +4,12 @@ const bhInitDirectory=async()=>{
 
   try {
     const activities = await bhActivities();
+    /* The Hero and Advanced Filters are shared async components. Wait for them
+       before binding Directory controls so the same filter UI is actually wired. */
+    await Promise.all([
+      window.bhDirectoryHeroReady || Promise.resolve(),
+      window.bhAdvancedFiltersReady || Promise.resolve()
+    ]);
     const params = new URLSearchParams(location.search);
 
     const categoryMap = {
