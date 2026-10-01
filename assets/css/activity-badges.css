@@ -1,0 +1,9 @@
+/* Shared Activity Badges component */
+.bh-badges-activity{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px}
+.bh-badges-activity .bh-badge{display:inline-flex;align-items:center;gap:5px;min-height:28px;padding:5px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.13);color:#fff;font-size:10px;font-weight:800;line-height:1;white-space:nowrap}
+.bh-badges-activity .bh-badge-verified{background:#eaf5ed;border-color:#b9d5c0;color:#315b3d}
+.bh-badges-activity .bh-badge-featured{background:#fff5d8;border-color:#ead58d;color:#7b6110}
+.bh-badges-activity .bh-badge-popular{background:#f7e9e8;border-color:#e2c2bf;color:#7b403b}
+.bh-badges-activity .bh-badge-new{background:#e8f3f4;border-color:#bdd9dc;color:#2f686d}
+.bh-badge-icon{display:inline-grid;place-items:center;width:15px;height:15px;font-size:10px;font-weight:900}
+@media(max-width:650px){.bh-badges-activity{margin-bottom:10px}}
