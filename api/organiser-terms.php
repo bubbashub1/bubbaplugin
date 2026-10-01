@@ -10,7 +10,7 @@ try {
     $slug=preg_replace('/[^a-z0-9]+/','-',str_replace('&','and',$slug));
     $slug=trim((string)$slug,'-');
     if($slug===''){http_response_code(400);echo json_encode(['ok'=>false,'error'=>'slug_required']);exit;}
-    $q=$db->prepare("SELECT organisation_name,terms_content FROM bh_organisers WHERE LOWER(TRIM(REPLACE(REPLACE(organisation_name,'&','and'),' ','-'))) = ? LIMIT 1");
+    $q=$db->prepare("SELECT id,organisation_name,terms_content FROM bh_organisers WHERE LOWER(TRIM(REPLACE(REPLACE(organisation_name,'&','and'),' ','-'))) = ? LIMIT 1");
     $q->execute([$slug]);
     $row=$q->fetch();
     if(!$row){
@@ -24,7 +24,13 @@ try {
         }
     }
     if(!$row){http_response_code(404);echo json_encode(['ok'=>false,'error'=>'organiser_not_found']);exit;}
-    echo json_encode(['ok'=>true,'organisation_name'=>$row['organisation_name'],'terms_content'=>$row['terms_content']??''],JSON_UNESCAPED_SLASHES);
+    $faqs=[];
+    try{
+        $f=$db->prepare("SELECT id,question,answer,activity_id,sort_order FROM bh_leader_faqs WHERE organiser_id=? AND status='published' ORDER BY sort_order,id");
+        $f->execute([(int)$row['id']]);
+        $faqs=$f->fetchAll();
+    }catch(Throwable $ignored){}
+    echo json_encode(['ok'=>true,'organisation_name'=>$row['organisation_name'],'terms_content'=>$row['terms_content']??'','faqs'=>$faqs],JSON_UNESCAPED_SLASHES);
 } catch(Throwable $e) {
     http_response_code(500);
     echo json_encode(['ok'=>false,'error'=>'terms_load_failed']);
