@@ -154,7 +154,7 @@
 .planner-print-sheet{display:none}
 
 @media print{
-  @page{margin:14mm}
+  @page{size:A4 landscape;margin:9mm}
   body{background:#fff!important}
   .site-header{display:flex!important;align-items:center!important;justify-content:flex-start!important;padding:0 0 9mm!important;margin:0 0 6mm!important;border-bottom:1px solid #d7e2da!important;background:#fff!important;box-shadow:none!important}
   .site-header .brand,.site-header .brand-logo{display:block!important}
@@ -250,9 +250,9 @@
 
 .planner-print-calendar{width:100%}
 .planner-print-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
-.planner-print-week-day{min-height:65mm;padding:7px;border:1px solid #bfcfc5;border-radius:4px;overflow:hidden}
+.planner-print-week-day{min-height:165mm;padding:7px;border:1px solid #bfcfc5;border-radius:4px;overflow:hidden}
 .planner-print-week-heading{display:flex;justify-content:space-between;gap:5px;padding-bottom:5px;margin-bottom:4px;border-bottom:1px solid #d7e2da;color:#416651;font-size:9px}
-.planner-print-entry{margin:4px 0;font-size:7.5px;line-height:1.25;color:#123f31}
+.planner-print-entry{margin:5px 0;font-size:9px;line-height:1.25;color:#123f31}
 .planner-print-entry strong,.planner-print-entry span{display:block}
 .planner-print-entry strong{font-size:8px}
 .planner-print-entry span{margin-top:1px}
