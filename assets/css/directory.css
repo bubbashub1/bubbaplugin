@@ -101,7 +101,7 @@
   display:flex;
   align-items:center;
   justify-content:flex-start;
-  gap:12px;
+  gap:18px;
   flex-wrap:nowrap;
   margin-top:10px;
   min-height:46px;
@@ -112,7 +112,7 @@
   justify-content:center;
   min-height:46px;
   margin:0;
-  padding:0 4px;
+  padding:0 8px 0 2px;
   border:0;
   background:transparent;
   color:#144400;
@@ -160,6 +160,28 @@
   background:#416651;
   color:#fff;
 }
+.bh-directory .directory-planner-action-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:46px;
+  padding:0 20px;
+  border:1px solid rgba(65,102,81,.16);
+  border-radius:14px;
+  background:#d8e6db;
+  color:#144400;
+  font-size:13px;
+  font-weight:900;
+  line-height:1;
+  white-space:nowrap;
+  text-decoration:none;
+  box-shadow:0 6px 16px rgba(20,68,0,.06);
+}
+.bh-directory .directory-planner-action-button:hover{
+  background:#9fb7a5;
+  color:#144400;
+}
+
 .bh-directory .directory-popular{
   display:flex;
   align-items:center;
@@ -604,7 +626,8 @@
   .bh-directory .directory-mobile-map-link{display:flex!important}
   .bh-directory .directory-hero-actions{flex-wrap:wrap}
   .bh-directory .directory-calendar-hero-button,
-  .bh-directory .directory-map-action-button{flex:1 1 180px}
+  .bh-directory .directory-map-action-button,
+  .bh-directory .directory-planner-action-button{flex:1 1 180px}
   .bh-directory .directory-all-link{width:100%;text-align:center}
   .bh-directory .directory-hero-search{padding:19px 15px 15px;border-radius:18px}
   .bh-directory .directory-hero-search-fields{grid-template-columns:1fr}
