@@ -1,1 +1,386 @@
-.organiser-storefront-page{width:100%;max-width:none;margin:0;padding:0 0 48px}.organiser-loading{min-height:420px;display:grid;place-items:center;color:#617261}.organiser-hero{display:grid;grid-template-columns:150px minmax(0,1fr);gap:34px;align-items:center;background:#e7f1ea;border:1px solid #d8e6db;border-radius:28px;padding:42px 46px;margin-bottom:20px}.organiser-brand-mark{width:150px;height:150px;border-radius:32px;display:grid;place-items:center;background:#416651;color:#fff;font-size:48px;font-weight:800;letter-spacing:-2px}.organiser-hero-copy h1{margin:5px 0 10px;color:#144400;font-size:clamp(30px,4vw,48px);line-height:1.05}.organiser-intro{max-width:760px;margin:0;color:#3d5b4b;font-size:16px;line-height:1.65}.organiser-meta{display:flex;flex-wrap:wrap;gap:10px 22px;margin:18px 0;color:#416651;font-size:13px;font-weight:700}.organiser-actions{display:flex;flex-wrap:wrap;gap:10px}.organiser-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:0 0 42px}.organiser-summary>div{background:#fff;border:1px solid #d8e6db;border-radius:18px;padding:18px 20px;display:flex;align-items:baseline;gap:9px}.organiser-summary strong{color:#144400;font-size:24px}.organiser-summary span{color:#617261;font-size:13px;font-weight:600}.storefront-heading{margin:0 0 20px}.storefront-heading h2{margin:4px 0 5px;color:#144400;font-size:28px}.storefront-heading p{margin:0;color:#617261}.storefront-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}.storefront-card{min-width:0;overflow:hidden;background:#fff;border:1px solid #d8e6db;border-radius:22px;box-shadow:0 5px 18px rgba(18,63,49,.05);display:flex;flex-direction:column}.storefront-card-image{display:block;aspect-ratio:16/9;background:#e7f1ea;overflow:hidden}.storefront-card-image img{width:100%;height:100%;display:block;object-fit:cover}.storefront-placeholder{height:100%;display:grid;place-items:center;color:#416651;font-size:22px;font-weight:800}.storefront-card-body{padding:20px;display:flex;flex-direction:column;flex:1}.storefront-card-body h3{margin:5px 0 8px;font-size:21px;line-height:1.2}.storefront-card-body h3 a{color:#144400;text-decoration:none}.storefront-card-body h3 a:hover{text-decoration:underline}.storefront-description{margin:0 0 15px;color:#617261;font-size:13px;line-height:1.55}.storefront-card-meta{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 18px}.storefront-card-meta span{padding:6px 9px;background:#eef5ef;border-radius:999px;color:#416651;font-size:11px;font-weight:700}.button-full{width:100%;justify-content:center;margin-top:auto}.organiser-back{margin-top:30px}.organiser-empty{min-height:460px;display:grid;place-items:center;text-align:center;align-content:center;gap:10px;background:#e7f1ea;border:1px solid #d8e6db;border-radius:28px;padding:50px}.organiser-empty h1{margin:5px 0;color:#144400}.organiser-empty p{margin:0 0 12px;color:#617261}@media(max-width:900px){.storefront-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.organiser-hero{grid-template-columns:110px minmax(0,1fr);padding:30px;gap:24px}.organiser-brand-mark{width:110px;height:110px;font-size:36px}}@media(max-width:650px){.organiser-hero{grid-template-columns:1fr;text-align:center;padding:26px 20px;border-radius:22px}.organiser-brand-mark{width:92px;height:92px;margin:0 auto;font-size:30px;border-radius:24px}.organiser-meta,.organiser-actions{justify-content:center}.organiser-summary{grid-template-columns:1fr 1fr}.organiser-summary>div:last-child{grid-column:1/-1}.storefront-grid{grid-template-columns:1fr}.storefront-heading h2{font-size:24px}.organiser-empty{padding:35px 20px;border-radius:22px}}
+/* Bubba Hub — Organiser Storefront
+   Visual baseline follows activity.css without changing shared site styles.
+*/
+
+/* 0. TOKENS & PAGE FRAME ------------------------------------------------ */
+.organiser-storefront-page{
+  --os-ink:#144400;
+  --os-forest:#1B4D3E;
+  --os-teal:#3c8e96;
+  --os-mint:#e7f1ea;
+  --os-pale:#d9eadf;
+  --os-line:#d8e6db;
+  --os-line-soft:#e3ebe5;
+  --os-font:"Quicksand",sans-serif;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0 15px 48px!important;
+  color:var(--os-ink);
+  overflow:visible;
+}
+.organiser-storefront-page *{box-sizing:border-box}
+.organiser-storefront-page a{color:var(--os-teal)}
+.organiser-storefront-page .eyebrow{
+  display:inline-flex;
+  align-items:center;
+  width:max-content;
+  max-width:100%;
+  margin:0;
+  padding:6px 11px;
+  background:var(--os-pale);
+  border:1px solid var(--os-line);
+  border-radius:999px;
+  color:var(--os-forest);
+  font-size:11px;
+  font-weight:800;
+  line-height:1.1;
+}
+
+/* 1. HERO --------------------------------------------------------------- */
+.organiser-hero{
+  display:grid;
+  grid-template-columns:150px minmax(0,1fr);
+  gap:32px;
+  align-items:center;
+  width:100%;
+  margin:0 0 22px;
+  padding:34px 38px;
+  background:var(--os-forest);
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  color:#fff;
+}
+.organiser-brand-mark{
+  display:grid;
+  place-items:center;
+  width:150px;
+  height:150px;
+  border-radius:24px;
+  background:var(--os-pale);
+  color:var(--os-ink);
+  font-size:46px;
+  font-weight:800;
+  letter-spacing:-2px;
+  box-shadow:none;
+}
+.organiser-hero-copy{min-width:0}
+.organiser-hero-copy h1{
+  margin:10px 0 9px;
+  color:#fff;
+  font-family:var(--os-font);
+  font-size:clamp(32px,4vw,52px);
+  font-weight:800;
+  line-height:1.04;
+  letter-spacing:-.02em;
+  overflow-wrap:anywhere;
+}
+.organiser-intro{
+  max-width:760px;
+  margin:0;
+  color:rgba(255,255,255,.9);
+  font-size:15px;
+  line-height:1.55;
+}
+.organiser-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px 18px;
+  margin:16px 0 18px;
+  color:var(--os-pale);
+  font-size:12px;
+  font-weight:700;
+}
+.organiser-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.organiser-actions .button{
+  min-height:40px;
+  padding:8px 15px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+}
+.organiser-actions .button-primary{
+  background:#f6c84a;
+  border-color:#f6c84a;
+  color:var(--os-ink);
+}
+.organiser-actions .button-soft{
+  background:#f3f8f4;
+  border:1px solid var(--os-pale);
+  color:var(--os-forest);
+}
+.organiser-actions .button:hover{
+  transform:translateY(-1px);
+}
+
+/* 2. SUMMARY ------------------------------------------------------------ */
+.organiser-summary{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  width:100%;
+  margin:0 0 34px;
+}
+.organiser-summary>div{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  min-width:0;
+  min-height:64px;
+  padding:15px 17px;
+  background:#fff;
+  border:1px solid var(--os-line);
+  border-radius:14px;
+  box-shadow:none;
+}
+.organiser-summary strong{
+  color:var(--os-ink);
+  font-size:24px;
+  font-weight:800;
+  line-height:1;
+}
+.organiser-summary span{
+  color:#617261;
+  font-size:12px;
+  font-weight:700;
+}
+
+/* 3. ACTIVITY HEADING --------------------------------------------------- */
+.storefront-heading{
+  margin:0 0 17px;
+}
+.storefront-heading h2{
+  margin:7px 0 4px;
+  color:var(--os-ink);
+  font-family:var(--os-font);
+  font-size:28px;
+  font-weight:800;
+  line-height:1.15;
+}
+.storefront-heading p{
+  margin:0;
+  color:#617261;
+  font-size:13px;
+  line-height:1.5;
+}
+
+/* 4. ACTIVITY GRID ------------------------------------------------------ */
+.storefront-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:18px;
+  width:100%;
+}
+.storefront-card{
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  overflow:hidden;
+  background:#fff;
+  border:1px solid var(--os-line);
+  border-radius:16px;
+  box-shadow:0 5px 18px rgba(18,63,49,.05);
+}
+.storefront-card-image{
+  display:block;
+  width:100%;
+  aspect-ratio:16/9;
+  background:var(--os-mint);
+  overflow:hidden;
+}
+.storefront-card-image img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.storefront-placeholder{
+  display:grid;
+  place-items:center;
+  width:100%;
+  height:100%;
+  background:var(--os-mint);
+  color:var(--os-forest);
+  font-size:22px;
+  font-weight:800;
+}
+.storefront-card-body{
+  display:flex;
+  flex:1;
+  flex-direction:column;
+  min-width:0;
+  padding:18px;
+}
+.storefront-card-body h3{
+  margin:6px 0 8px;
+  color:var(--os-ink);
+  font-family:var(--os-font);
+  font-size:19px;
+  font-weight:800;
+  line-height:1.2;
+}
+.storefront-card-body h3 a{
+  color:var(--os-ink);
+  text-decoration:none;
+}
+.storefront-card-body h3 a:hover{text-decoration:underline}
+.storefront-description{
+  display:-webkit-box;
+  margin:0 0 13px;
+  color:#617261;
+  font-size:12px;
+  line-height:1.55;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:3;
+  overflow:hidden;
+}
+.storefront-card-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin:0 0 16px;
+}
+.storefront-card-meta span{
+  display:inline-flex;
+  align-items:center;
+  min-height:27px;
+  padding:5px 9px;
+  background:#f0f6f1;
+  border:1px solid var(--os-line);
+  border-radius:999px;
+  color:var(--os-forest);
+  font-size:10px;
+  font-weight:800;
+}
+.button-full{
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  width:100%!important;
+  min-height:40px;
+  margin-top:auto;
+  padding:8px 12px;
+  border-radius:999px;
+  background:var(--os-teal);
+  border:1px solid var(--os-teal);
+  color:#fff!important;
+  font-size:11px;
+  font-weight:800;
+}
+
+/* 5. BACK / EMPTY / LOADING ------------------------------------------- */
+.organiser-back{
+  margin-top:24px;
+}
+.organiser-back .button{
+  min-height:38px;
+  border-radius:999px;
+}
+.organiser-loading{
+  display:grid;
+  place-items:center;
+  min-height:360px;
+  color:#617261;
+  font-size:14px;
+}
+.organiser-empty{
+  display:grid;
+  align-content:center;
+  justify-items:center;
+  min-height:420px;
+  padding:48px 30px;
+  text-align:center;
+  background:var(--os-mint);
+  border:1px solid var(--os-line);
+  border-radius:22px;
+}
+.organiser-empty-icon{
+  display:grid;
+  place-items:center;
+  width:52px;
+  height:52px;
+  margin-bottom:5px;
+  background:var(--os-pale);
+  border-radius:50%;
+  color:var(--os-ink);
+  font-size:22px;
+  font-weight:800;
+}
+.organiser-empty h1{
+  margin:7px 0 5px;
+  color:var(--os-ink);
+  font-family:var(--os-font);
+  font-size:30px;
+}
+.organiser-empty p{
+  margin:0 0 13px;
+  color:#617261;
+}
+
+/* 6. RESPONSIVE -------------------------------------------------------- */
+@media(max-width:1050px){
+  .organiser-storefront-page{padding-left:12px!important;padding-right:12px!important}
+  .storefront-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .organiser-hero{
+    grid-template-columns:110px minmax(0,1fr);
+    gap:24px;
+    padding:28px 30px;
+  }
+  .organiser-brand-mark{width:110px;height:110px;font-size:36px}
+}
+@media(max-width:700px){
+  .organiser-storefront-page{padding:0 12px 36px!important}
+  .organiser-hero{
+    grid-template-columns:1fr;
+    gap:16px;
+    margin-bottom:16px;
+    padding:24px 18px;
+    border-radius:18px;
+    text-align:center;
+  }
+  .organiser-brand-mark{
+    width:88px;
+    height:88px;
+    margin:0 auto;
+    border-radius:20px;
+    font-size:30px;
+  }
+  .organiser-hero-copy h1{font-size:30px}
+  .organiser-meta,
+  .organiser-actions{justify-content:center}
+  .organiser-summary{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+    margin-bottom:28px;
+  }
+  .organiser-summary>div{
+    min-height:58px;
+    padding:13px;
+  }
+  .organiser-summary>div:last-child{grid-column:1/-1}
+  .storefront-heading h2{font-size:24px}
+  .storefront-grid{grid-template-columns:1fr;gap:14px}
+  .storefront-card{border-radius:15px}
+}
+@media(max-width:390px){
+  .organiser-storefront-page{padding-left:10px!important;padding-right:10px!important}
+  .organiser-hero{padding:20px 14px}
+  .organiser-hero-copy h1{font-size:27px}
+  .organiser-intro{font-size:14px}
+  .organiser-actions .button{width:100%;justify-content:center}
+  .organiser-summary strong{font-size:21px}
+  .storefront-card-body{padding:16px}
+}
+
+/* 7. FOOTER ------------------------------------------------------------- */
+.organiser-storefront-page + .site-footer{
+  width:100%!important;
+  max-width:none!important;
+  margin-top:40px!important;
+  border-radius:0!important;
+}
