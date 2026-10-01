@@ -3,8 +3,8 @@
    ========================================================= */
 .bh-site-header {
   width: 100%;
-  background: #416651;
-  color: #fff;
+  background: #d8e6db;
+  color: #144400;
   position: relative;
   z-index: 1000;
    padding-bottom:25px;
@@ -38,8 +38,8 @@
 }
 
 .bh-header-logo img {
-  width: 404px;
-  height: 200px;
+  width: 303px;
+  height: 150px;
   object-fit: contain;
   border-radius: 10px;
   background: transparent;
@@ -137,3 +137,16 @@
 .bh-header-search-submit:hover {
   opacity: 0.9;
 }
+
+/* Compact expandable search */
+.bh-header-search-bar{width:100%;display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:0;padding:0;border:0;flex-wrap:nowrap}
+.bh-header-search-toggle{width:44px;height:44px;flex:0 0 44px;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(20,68,0,.16);border-radius:50%;background:#fff;color:#144400;font-size:25px;line-height:1;cursor:pointer;box-shadow:0 4px 12px rgba(20,68,0,.08)}
+.bh-header-search-fields{width:0;max-width:0;opacity:0;overflow:hidden;display:flex;align-items:center;gap:8px;flex:0 1 auto;transition:max-width .25s ease,opacity .2s ease,width .25s ease}
+.bh-header-search-bar.is-open .bh-header-search-fields{width:min(900px,calc(100vw - 100px));max-width:900px;opacity:1}
+.bh-header-search-fields input,.bh-header-search-fields select{flex:1 1 130px;min-width:100px;height:42px;box-sizing:border-box;background:#fff;color:#2b2d42;border:1px solid #ced7c7;border-radius:10px;padding:8px 12px;font-size:13px;outline:none}
+.bh-header-search-fields input{flex:2 1 190px}
+.bh-header-search-submit{height:42px;flex:0 0 auto;background:#f6c84a;color:#144400;border:0;border-radius:10px;padding:0 18px;font-weight:800;font-size:13px;cursor:pointer}
+.bh-header-search-submit:hover{background:#416651;color:#fff}
+.bh-main-nav a{color:#144400}
+@media(max-width:900px){.bh-header-inner{padding:10px 15px}.bh-header-logo img{width:220px;height:110px}.bh-main-nav{gap:2px}.bh-main-nav a{padding:0 7px;font-size:12px}}
+@media(max-width:700px){.bh-header-top-row{gap:10px}.bh-main-nav a:nth-child(n+3){display:none}.bh-header-search-bar.is-open .bh-header-search-fields{width:calc(100vw - 75px);max-width:none}.bh-header-search-fields{flex-wrap:nowrap}.bh-header-search-fields input{min-width:130px}.bh-header-search-fields select{min-width:90px}}
