@@ -591,7 +591,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const hours=Number(match[1]),minutes=Number(match[2]);
     if(hours<0||hours>23||minutes<0||minutes>59)return null;
     return hours*60+minutes;
-  }\n\n  function dayPlanRange(item){
+  }
+
+  function dayPlanRange(item){
     const start=timeMinutes(item?.time);
     if(start===null)return null;
     const end=timeMinutes(item?.endTime);
