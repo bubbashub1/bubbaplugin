@@ -119,129 +119,6 @@ document.addEventListener("DOMContentLoaded",async()=>{
     wrap.innerHTML=upcoming.length?upcoming.map(({a,p})=>"<a href='planner.html'><strong>"+esc(p.date||p.starts_at||"Upcoming")+"</strong><span>"+esc(a.title)+"</span></a>").join(""):"<span>Add activities to My Planner and your upcoming plans will appear here.</span>";
   }
 
-  function setupWhatShallI(){
-    const panel=$("whatShallI"),open=$("openWhatShallI"),close=$("closeWhatShallI");
-    const steps=panel?.querySelectorAll(".what-shall-i-step"),startScreen=$("whatShallIStart"),begin=$("beginWhatShallI"),regions=$("whatRegionChoices"),towns=$("whatTownChoices"),days=$("whatDayChoices"),cats=$("whatCategoryChoices"),results=$("whatShallIResults"),resultsGrid=$("whatResultsGrid"),resultsTitle=$("whatResultsTitle"),again=$("whatStartAgain");
-    const regionCount=$("whatRegionCount"),townCount=$("whatTownCount"),dayCount=$("whatDayCount"),categoryCount=$("whatCategoryCount");
-    const regionNext=$("whatRegionNext"),townNext=$("whatTownNext"),dayNext=$("whatDayNext"),categoryNext=$("whatCategoryNext");
-    if(!panel||!open||!regions||!towns||!days||!cats)return;
-
-    let choice={region:[],town:[],day:[],category:[]};
-    const unique=values=>[...new Set(values.filter(Boolean).map(v=>String(v).trim()))].sort((a,b)=>a.localeCompare(b));
-    const venuesFor=a=>Array.isArray(a.venues)?a.venues:[];
-    const regionsFor=a=>unique([a.region,...venuesFor(a).map(v=>v.region)]);
-    const townsFor=a=>unique([a.town,...venuesFor(a).map(v=>v.town)]);
-    const daysFor=a=>activityDays(a);
-    const categories=()=>unique(activities.map(a=>a.category));
-
-    // Multiple selections are OR'd within a question and AND'd between questions.
-    const matchesAny=(selected,values)=>!selected.length||values.some(v=>selected.some(s=>String(v).toLowerCase()===String(s).toLowerCase()));
-    const regionMatch=a=>matchesAny(choice.region,regionsFor(a));
-    const townMatch=a=>matchesAny(choice.town,townsFor(a));
-    const dayMatch=a=>matchesAny(choice.day,daysFor(a));
-    const categoryMatch=a=>matchesAny(choice.category,[a.category]);
-    const matching=()=>activities.filter(a=>regionMatch(a)&&townMatch(a)&&dayMatch(a)&&categoryMatch(a));
-
-    const showStep=n=>steps.forEach(s=>{
-      const active=Number(s.dataset.step)===n;
-      s.hidden=!active;
-      s.classList.toggle("is-active",active);
-    });
-
-    const updateCount=(el,next,selected)=>{
-      if(el)el.textContent=selected.length?(selected.length+" selected"):"Optional · any";
-      if(next)next.disabled=false;
-    };
-
-    const renderChoices=(wrap,items,selected,handler)=>{
-      wrap.innerHTML=items.map(v=>{
-        const active=selected.some(s=>String(s).toLowerCase()===String(v).toLowerCase());
-        return "<button class='what-choice"+(active?" is-selected":"")+"' type='button' aria-pressed='"+(active?"true":"false")+"' data-choice='"+esc(v)+"'>"+esc(v)+"</button>";
-      }).join("");
-      wrap.querySelectorAll("[data-choice]").forEach(b=>b.onclick=()=>handler(b.dataset.choice));
-    };
-
-    const toggle=(key,value)=>{
-      const list=choice[key],index=list.findIndex(v=>String(v).toLowerCase()===String(value).toLowerCase());
-      if(index>=0)list.splice(index,1);else list.push(value);
-    };
-
-    const populateRegions=()=>{
-      renderChoices(regions,unique(activities.flatMap(regionsFor)),choice.region,v=>{
-        toggle("region",v);
-        choice.town=[];choice.day=[];choice.category=[];
-        populateRegions();populateTowns();
-      });
-      updateCount(regionCount,regionNext,choice.region);
-    };
-
-    const populateTowns=()=>{
-      const pool=activities.filter(regionMatch);
-      choice.town=choice.town.filter(v=>pool.some(a=>townsFor(a).some(t=>t.toLowerCase()===v.toLowerCase())));
-      renderChoices(towns,unique(pool.flatMap(townsFor)),choice.town,v=>{
-        toggle("town",v);
-        choice.day=[];choice.category=[];
-        populateTowns();populateDays();
-      });
-      updateCount(townCount,townNext,choice.town);
-    };
-
-    const populateDays=()=>{
-      const pool=activities.filter(a=>regionMatch(a)&&townMatch(a));
-      choice.day=choice.day.filter(v=>pool.some(a=>daysFor(a).some(d=>d.toLowerCase()===v.toLowerCase())));
-      renderChoices(days,unique(pool.flatMap(daysFor)),choice.day,v=>{
-        toggle("day",v);
-        choice.category=[];
-        populateDays();populateCategories();
-      });
-      updateCount(dayCount,dayNext,choice.day);
-    };
-
-    const populateCategories=()=>{
-      const pool=activities.filter(a=>regionMatch(a)&&townMatch(a)&&dayMatch(a));
-      const available=categories().filter(v=>pool.some(a=>String(a.category||"").toLowerCase()===v.toLowerCase()));
-      choice.category=choice.category.filter(v=>available.some(a=>a.toLowerCase()===String(v).toLowerCase()));
-      renderChoices(cats,available,choice.category,v=>{
-        toggle("category",v);
-        populateCategories();
-      });
-      updateCount(categoryCount,categoryNext,choice.category);
-    };
-
-    const showResults=()=>{
-      const list=matching().slice(0,6);
-      const filters=[choice.region,choice.town,choice.day,choice.category].filter(v=>v.length);
-      const title=filters.map(v=>v.length===1?v[0]:v.length+" options").join(" · ");
-      resultsTitle.textContent=list.length?(title||"Your suggestions"):"No exact matches";
-      resultsGrid.innerHTML=list.length?list.map(a=>{
-        const url=typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id);
-        const where=a.town||((Array.isArray(a.venues)&&a.venues[0])?.town)||a.location||"";
-        return "<a class='what-result' href='"+url+"'><span>"+esc(a.category||"Activity")+"</span><strong>"+esc(a.title)+"</strong><small>"+esc(where)+(choice.day.length?" · "+esc(choice.day.join(", ")):"")+"</small><b>View activity →</b></a>";
-      }).join(""):"<div class='hub-empty'><strong>Nothing matched those choices.</strong><p>Try removing an option or going back to broaden your search.</p></div>";
-      results.hidden=false;steps.forEach(s=>s.hidden=true);
-      results.scrollIntoView({behavior:"smooth",block:"nearest"});
-    };
-
-    const reset=()=>{
-      choice={region:[],town:[],day:[],category:[]};
-      results.hidden=true;startScreen.hidden=false;steps.forEach(s=>s.hidden=true);
-      populateRegions();
-      updateCount(regionCount,regionNext,[]);updateCount(townCount,townNext,[]);updateCount(dayCount,dayNext,[]);updateCount(categoryCount,categoryNext,[]);
-    };
-
-    const beginSearch=()=>{startScreen.hidden=true;showStep(1);populateRegions()};
-    open.onclick=()=>{panel.hidden=false;reset();document.body.classList.add("hub-modal-open")};
-    close.onclick=()=>{panel.hidden=true;document.body.classList.remove("hub-modal-open")};
-    panel.addEventListener("click",e=>{if(e.target===panel){panel.hidden=true;document.body.classList.remove("hub-modal-open")}});
-    begin?.addEventListener("click",beginSearch);
-    regionNext?.addEventListener("click",()=>{populateTowns();showStep(2)});
-    townNext?.addEventListener("click",()=>{populateDays();showStep(3)});
-    dayNext?.addEventListener("click",()=>{populateCategories();showStep(4)});
-    categoryNext?.addEventListener("click",showResults);
-    panel.querySelectorAll(".what-back").forEach(b=>b.onclick=()=>showStep(Number(b.dataset.back)));
-    again.onclick=()=>{reset();beginSearch()};
-  }
-
   function render(){
     const children=data.children||[],bumps=data.bumps||[],savedIds=new Set((data.saved||[]).map(String)),planned=data.planner||[],bookings=data.bookings||[],visitedIds=new Set((bhGet(BH_KEYS.visited)||[]).map(String)),recentIds=(bhGet(BH_KEYS.recent)||[]).map(String);
     const upcoming=bookings.filter(b=>b.status!=="cancelled").filter(b=>!b.starts_at||new Date(String(b.starts_at).replace(" ","T"))>=new Date()).slice(0,4);
@@ -269,7 +146,6 @@ document.addEventListener("DOMContentLoaded",async()=>{
 
     $("hubBookings").innerHTML=upcoming.length?upcoming.map(b=>"<article class='hub-booking-card'><div><span class='status'>"+esc(b.status||"Reserved")+"</span><strong>"+esc(b.title||"Booking")+"</strong><small>"+esc(b.venue_name||"Venue")+" · "+esc(bookingDate(b.starts_at)||"Date to be confirmed")+"</small></div><span class='hub-booking-qty'>"+Number(b.quantity||1)+"×</span></article>").join(""):"<div class='hub-empty'><strong>No upcoming bookings</strong><p>Your confirmed or reserved bookings will appear here.</p></div>";
     void renderBrief();
-    setupWhatShallI();
     renderSuggestionCarousel();
     renderUpcomingTicker();
     message.textContent=adminOnly?"Admin access — family data remains separate.":"Signed in as "+(data.user?.email||"your account");
