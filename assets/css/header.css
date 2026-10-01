@@ -387,3 +387,59 @@
     box-sizing:border-box !important;
   }
 }
+
+
+/* Mobile header/search final layout safeguards */
+@media (max-width:700px){
+  .bh-site-header{overflow:visible;}
+  .bh-header-inner{padding:8px 12px;}
+  .bh-header-top-row{min-width:0;gap:6px;}
+  .bh-header-logo{min-width:0;overflow:hidden;}
+  .bh-header-logo img{display:block;max-width:100%;height:auto;object-fit:contain;}
+  .bh-header-actions{min-width:0;gap:6px;}
+  .bh-main-nav{top:100%;left:8px;right:8px;max-height:calc(100dvh - 80px);overflow-y:auto;}
+  .bh-header-search-bar{
+    width:100%;
+    box-sizing:border-box;
+    padding-left:0;
+    padding-right:0;
+  }
+  .bh-header-search-bar.is-open{
+    max-height:280px;
+    padding-top:10px;
+    padding-bottom:4px;
+    overflow:visible;
+  }
+  .bh-header-search-fields{
+    width:100%;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:7px;
+    margin:0;
+  }
+  .bh-header-search-fields input,
+  .bh-header-search-fields select,
+  .bh-header-search-submit{
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    box-sizing:border-box;
+  }
+  .bh-header-search-fields input{
+    grid-column:1/-1;
+    min-width:0;
+  }
+  .bh-header-search-submit{
+    grid-column:1/-1;
+  }
+}
+@media (max-width:360px){
+  .bh-header-inner{padding-left:8px;padding-right:8px;}
+  .bh-header-logo img{width:120px;height:64px;max-width:38vw;}
+  .bh-mobile-menu{width:36px;height:36px;flex-basis:36px;}
+  .bh-header-search-toggle{width:36px;height:36px;flex-basis:36px;}
+  .bh-header-search-fields{grid-template-columns:1fr;}
+  .bh-header-search-fields input,
+  .bh-header-search-fields select,
+  .bh-header-search-submit{grid-column:1/-1;}
+}
