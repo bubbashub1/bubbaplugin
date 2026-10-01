@@ -292,7 +292,7 @@
         const email = String(first.organiser_email || "").trim();
         const phone = String(first.organiser_phone || "").replace(/[^+\d]/g, "");
         const faqs = Array.isArray(publicContent.faqs) ? publicContent.faqs : [];
-        const termsUrl = organiserSlug + "/terms.html";
+        const termsUrl = "organiser/" + encodeURIComponent(organiserSlug) + "/terms.html";
 
         document.title = name + " · Bubba Hub";
 
