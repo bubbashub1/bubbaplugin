@@ -129,6 +129,26 @@
       return [...venues.values()];
     };
 
+    const isTruthy = value => value === true || value === 1 || value === "1" || String(value || "").toLowerCase() === "true" || String(value || "").toLowerCase() === "yes";
+    const isNewActivity = activity => {
+      const raw = activity.created_at || activity.createdAt || activity.published_at || activity.date_created;
+      if (!raw) return false;
+      const date = new Date(raw);
+      if (Number.isNaN(date.getTime())) return false;
+      return (Date.now() - date.getTime()) <= 30 * 24 * 60 * 60 * 1000;
+    };
+    const getBadges = (activity, organiser = {}) => {
+      const badges = [];
+      if (isTruthy(activity.verified ?? activity.is_verified ?? activity.organiser_verified ?? organiser.verified ?? organiser.is_verified)) badges.push({key:"verified", icon:"✓", label:"Verified"});
+      if (isTruthy(activity.featured ?? activity.is_featured ?? organiser.featured ?? organiser.is_featured)) badges.push({key:"featured", icon:"★", label:"Featured"});
+      if (isTruthy(activity.popular ?? activity.is_popular ?? organiser.popular ?? organiser.is_popular)) badges.push({key:"popular", icon:"♥", label:"Popular"});
+      if (isNewActivity(activity) || isTruthy(activity.is_new)) badges.push({key:"new", icon:"✦", label:"New"});
+      return badges;
+    };
+    const renderBadges = (badges, extraClass = "") => badges.length
+      ? '<div class="bh-badges ' + extraClass + '" aria-label="Badges">' + badges.map(b => '<span class="bh-badge bh-badge-' + b.key + '" title="' + b.label + '"><span class="bh-badge-icon" aria-hidden="true">' + b.icon + '</span>' + b.label + '</span>').join("") + '</div>'
+      : "";
+
     const activityUrl = activity => {
       if (typeof bhActivityUrl === "function") return bhActivityUrl(activity);
       const slug = activity.slug || activity.id || "";
@@ -141,15 +161,18 @@
       const location = activity.town || venue?.town || activity.region || venue?.region || "";
       const href = activityUrl(activity);
       const image = resolveImage(activity.image_url);
+      const badges = getBadges(activity, activity.organiser || {});
 
       return `
         <article class="storefront-card">
           <a class="storefront-card-image" href="${bhEscape(href)}" aria-label="View ${bhEscape(activity.title || "activity")}">
+            ${renderBadges(badges, "bh-badges-overlay")}
             ${image
               ? '<img src="' + bhEscape(image) + '" alt="' + bhEscape(activity.title || "Activity") + '" loading="lazy">'
               : '<span class="storefront-placeholder">Bubba Hub</span>'}
           </a>
           <div class="storefront-card-body">
+            ${renderBadges(badges, "bh-badges-mobile")}
             <span class="eyebrow">${bhEscape(activity.category || "Family activity")}</span>
             <h3><a href="${bhEscape(href)}">${bhEscape(activity.title || "Activity")}</a></h3>
             ${activity.short_description
@@ -282,6 +305,7 @@
           organiserGroups.flatMap(a => (a.venues || []).map(v => v.town || v.region).filter(Boolean))
         )].slice(0, 3).join(" · ") || "Devon & Cornwall";
         const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join("").toUpperCase();
+        const organiserBadges = getBadges(first, first.organiser || publicContent || {});
 
         const about = String(publicContent.about_content || "");
         const logo = resolveImage(publicContent.logo_url || "");
@@ -305,6 +329,7 @@
             </div>
             <div class="organiser-hero-copy">
               <span class="eyebrow">Organiser storefront</span>
+              ${renderBadges(organiserBadges, "bh-organiser-badges")}
               <h1>${bhEscape(name)}</h1>
               <p class="organiser-intro">Discover family activities from ${bhEscape(name)} and see what’s available through Bubba Hub — including locations, age ranges and booking information.</p>
               <div class="organiser-meta">
