@@ -3,12 +3,13 @@
    Header styling: assets/css/header.css
 */
 (function(){
+  const script=document.currentScript;
+  const scriptUrl=script?.src||new URL("assets/js/header.js",document.baseURI).href;
   const loadHeader=async()=>{
     try{
       const existing=document.querySelector(".site-header");
-      const base=document.querySelector("base")?.href||document.baseURI;
-      const headerUrl=new URL("components/header.html",base);
-      const cssUrl=new URL("assets/css/header.css",base);
+      const headerUrl=new URL("../../components/header.html",scriptUrl);
+      const cssUrl=new URL("../css/header.css",scriptUrl);
 
       if(!document.querySelector('link[data-bh-header-css]')){
         const link=document.createElement("link");
