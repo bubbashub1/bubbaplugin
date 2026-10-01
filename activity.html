@@ -69,6 +69,16 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const a=bhActivityBySlug(slug,items)||bhActivity(id,items);
   if(!a){state.innerHTML='<div class="admin-panel"><h2>Activity not found</h2><p>This activity may have been removed or the link is incorrect.</p><a class="button button-primary" href="directory.html">Find activities</a></div>';return}
   const venues=bhVenues(a),sessions=bhSessions(a),images=Array.isArray(a.gallery)&&a.gallery.length?a.gallery:(a.image_url?[a.image_url]:[]);
+  try{
+    const key=(window.BH_KEYS&&BH_KEYS.recent)||"bhRecentlyViewed";
+    const recent=typeof bhGet==="function"?bhGet(key):[];
+    const idValue=String(a.id||"");
+    if(idValue){
+      const updated=[idValue,...recent.map(String).filter(v=>v!==idValue)].slice(0,8);
+      if(typeof bhSet==="function") bhSet(key,updated);
+      else localStorage.setItem(key,JSON.stringify(updated));
+    }
+  }catch(e){}
   document.title=a.title+" · Bubba Hub";
   const cats=Array.isArray(a.category)?a.category:[a.category].filter(Boolean),ages=Array.isArray(a.age_range)?a.age_range:[a.age_range].filter(Boolean);
   const rawKeywords=Array.isArray(a.keywords)?a.keywords:(Array.isArray(a.tags)?a.tags:(typeof a.keywords==="string"?a.keywords.split(","):(typeof a.tags==="string"?a.tags.split(","):[])));
