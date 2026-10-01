@@ -211,34 +211,6 @@
 .my-hub-page .hub-personal-cta .button-primary{display:inline-flex;align-items:center;justify-content:center;gap:7px}
 .my-hub-page .hub-personal-cta .hub-sparkle{font-size:1.12em;line-height:1;filter:brightness(1.2) saturate(1.15);text-shadow:0 0 7px rgba(255,215,80,.7)}
 
-/* What shall I do? step-by-step activity finder */
-.my-hub-page .what-shall-i{padding:24px;border-radius:22px;background:#fff;border:1px solid var(--bh-border);box-shadow:0 10px 28px rgba(20,68,0,.05)}
-.my-hub-page .what-shall-i-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:20px}
-.my-hub-page .what-shall-i-head h2{margin:0;font-family:"Chewy",cursive;font-weight:400;font-size:32px}
-.my-hub-page .what-shall-i-head p{margin:5px 0 0;color:var(--bh-text-muted);font-size:14px}
-.my-hub-page .what-shall-i-steps{display:flex;flex-direction:column;gap:12px}
-.my-hub-page .what-shall-i-step{display:flex;gap:14px;padding:18px;border-radius:18px;background:#f7faf7;border:1px solid var(--bh-border)}
-.my-hub-page .what-step-number{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:50%;background:var(--bh-primary);color:#fff;font-weight:850}
-.my-hub-page .what-step-content{min-width:0;flex:1}
-.my-hub-page .what-step-content h3{margin:2px 0 12px;font-size:21px}
-.my-hub-page .what-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
-.my-hub-page .what-choice{width:100%;padding:12px 13px;text-align:left;border:1px solid var(--bh-border);border-radius:13px;background:#fff;color:var(--bh-text);font:inherit;font-size:13px;font-weight:750;cursor:pointer;transition:.18s ease}
-.my-hub-page .what-choice:hover{border-color:var(--bh-secondary);background:#edf5ef;transform:translateY(-1px)}
-.my-hub-page .what-choice small{display:block;margin-top:3px;color:var(--bh-text-muted);font-size:11px;font-weight:600}
-.my-hub-page .what-day-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-.my-hub-page .what-back{margin-top:12px}
-.my-hub-page .what-results-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-top:20px;margin-bottom:12px}
-.my-hub-page .what-results-head h3{margin:0;font-family:"Chewy",cursive;font-size:27px;font-weight:400}
-.my-hub-page .what-results-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.my-hub-page .what-result{display:flex;flex-direction:column;min-width:0;padding:16px;border-radius:16px;background:#f7faf7;border:1px solid var(--bh-border);text-decoration:none;color:inherit}
-.my-hub-page .what-result:hover{background:#fff;transform:translateY(-1px)}
-.my-hub-page .what-result span{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--bh-secondary);font-weight:850}
-.my-hub-page .what-result strong{margin:5px 0;font-size:16px;line-height:1.2}
-.my-hub-page .what-result small{color:var(--bh-text-muted);font-size:12px}
-.my-hub-page .what-result b{margin-top:auto;padding-top:12px;color:var(--bh-primary);font-size:13px}
-@media(max-width:800px){.my-hub-page .what-choice-grid,.my-hub-page .what-results-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.my-hub-page .what-day-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.my-hub-page .what-shall-i{padding:18px}.my-hub-page .what-shall-i-head{flex-direction:column}.my-hub-page .what-shall-i-head .button{width:100%}.my-hub-page .what-choice-grid,.my-hub-page .what-results-grid{grid-template-columns:1fr}.my-hub-page .what-shall-i-step{padding:15px}.my-hub-page .what-results-head{align-items:flex-start;flex-direction:column}}
-
 /* My Hub personalised suggestions carousel */
 .my-hub-page .hub-suggestions{padding:24px;border-radius:22px;background:#fff;border:1px solid var(--bh-border);box-shadow:0 10px 28px rgba(20,68,0,.05)}
 .my-hub-page .hub-suggestions-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:14px}
@@ -268,52 +240,6 @@
 .my-hub-page .hub-personal-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 @media(max-width:560px){.my-hub-page .hub-personal-actions{width:100%;flex-direction:column}.my-hub-page .hub-personal-actions .button{width:100%}}
 
-
-/* Inspire Me — compact, self-contained modal */
-body.hub-modal-open{overflow:hidden}
-.hub-inspire-modal{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(20,68,0,.28);backdrop-filter:blur(6px);overflow-y:auto}
-.hub-inspire-modal[hidden]{display:none}
-.hub-inspire-modal .what-shall-i-dialog{width:min(100%,620px);max-height:min(760px,calc(100vh - 32px));overflow:auto;background:#fff;border:1px solid rgba(65,102,81,.18);border-radius:24px;box-shadow:0 24px 70px rgba(20,68,0,.22)}
-.hub-inspire-modal .what-shall-i-head{position:relative;padding:22px 58px 18px 24px;background:linear-gradient(135deg,#e4f0e5,#f7f9f1);border-bottom:1px solid #e2eae2}
-.hub-inspire-modal .what-shall-i-head:after{content:"✦";position:absolute;right:62px;top:10px;font-size:34px;color:rgba(60,142,150,.14)}
-.hub-inspire-modal .what-shall-i-head h2{margin:2px 0 3px;font-family:"Chewy",cursive;font-size:32px;font-weight:400;color:var(--bh-dark)}
-.hub-inspire-modal .what-shall-i-head p{margin:0;color:var(--bh-text-muted);font-size:13px;line-height:1.45}
-.hub-inspire-modal .what-modal-close{position:absolute;right:16px;top:15px;z-index:2;width:38px;height:38px;border:0;border-radius:50%;background:#fff;color:var(--bh-primary);font-size:27px;line-height:1;cursor:pointer;box-shadow:0 3px 12px rgba(20,68,0,.1)}
-.hub-inspire-modal .what-modal-close:hover,.hub-inspire-modal .what-modal-close:focus-visible{background:var(--bh-primary);color:#fff;outline:none}
-.hub-inspire-modal .what-shall-i-start{display:flex;flex-direction:column;align-items:center;min-height:300px;box-sizing:border-box;padding:28px 24px;text-align:center}
-.hub-inspire-modal .what-shall-i-start #beginWhatShallI{margin-top:auto}.hub-inspire-modal .what-start-icon{display:grid;place-items:center;width:48px;height:48px;margin:0 auto 10px;border-radius:15px;background:#d8e6db;color:var(--bh-primary);font-size:24px}
-.hub-inspire-modal .what-shall-i-start h3{margin:0 0 5px;font-family:"Chewy",cursive;font-size:24px;font-weight:400;color:var(--bh-dark)}
-.hub-inspire-modal .what-shall-i-start p{max-width:430px;margin:0 auto 17px;color:var(--bh-text-muted);font-size:13px;line-height:1.5}
-.hub-inspire-modal .what-shall-i-steps{padding:0 24px 20px}
-.hub-inspire-modal .what-shall-i-step{display:flex;gap:12px;padding:17px 0;border:0;border-top:1px solid #edf1eb;background:transparent}
-.hub-inspire-modal .what-step-number{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:11px;background:#d8e6db;color:var(--bh-primary);font-weight:900}
-.hub-inspire-modal .what-shall-i-step.is-active .what-step-number{background:var(--bh-primary);color:#fff}
-.hub-inspire-modal .what-step-content{flex:1;min-width:0}
-.hub-inspire-modal .what-step-content h3{margin:1px 0 10px;font-family:"Chewy",cursive;font-size:22px;font-weight:400;color:var(--bh-dark)}
-.hub-inspire-modal .what-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.hub-inspire-modal .what-choice{min-height:44px;padding:9px 11px;text-align:left;border:1px solid #dce6dd;border-radius:12px;background:#fbfdfb;color:var(--bh-text);font:inherit;font-size:12px;font-weight:750;cursor:pointer}
-.hub-inspire-modal .what-choice:hover,.hub-inspire-modal .what-choice:focus-visible{border-color:var(--bh-secondary);background:#edf6f0;outline:none}
-.hub-inspire-modal .what-day-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-.hub-inspire-modal .what-back{margin-top:10px}
-.hub-inspire-modal .what-shall-i-results{padding:0 24px 24px}
-.hub-inspire-modal .what-results-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:16px;border-top:1px solid #edf1eb}
-.hub-inspire-modal .what-results-head h3{margin:2px 0 0;font-family:"Chewy",cursive;font-size:24px;font-weight:400;color:var(--bh-dark)}
-.hub-inspire-modal .what-results-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
-.hub-inspire-modal .what-result{display:flex;flex-direction:column;padding:14px;border:1px solid #dce6dd;border-radius:15px;background:#fbfdfb;text-decoration:none;color:inherit}
-.hub-inspire-modal .what-result span{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--bh-secondary);font-weight:850}
-.hub-inspire-modal .what-result strong{margin:4px 0;font-size:15px;line-height:1.25}
-.hub-inspire-modal .what-result small{color:var(--bh-text-muted);font-size:11px}
-.hub-inspire-modal .what-result b{margin-top:9px;color:var(--bh-primary);font-size:12px}
-@media(max-width:560px){
-  .hub-inspire-modal{align-items:flex-start;padding:8px}
-  .hub-inspire-modal .what-shall-i-dialog{max-height:calc(100vh - 16px);border-radius:20px}
-  .hub-inspire-modal .what-shall-i-head{padding:18px 54px 15px 18px}
-  .hub-inspire-modal .what-shall-i-head h2{font-size:29px}
-  .hub-inspire-modal .what-shall-i-start{padding:24px 18px}
-  .hub-inspire-modal .what-shall-i-steps,.hub-inspire-modal .what-shall-i-results{padding-left:18px;padding-right:18px}
-  .hub-inspire-modal .what-choice-grid,.hub-inspire-modal .what-results-grid{grid-template-columns:1fr 1fr}
-  .hub-inspire-modal .what-day-grid{grid-template-columns:1fr 1fr}
-}
 
 /* Dashboard card spacing and header alignment */
 .my-hub-page .hub-panel .admin-panel-head,
@@ -350,21 +276,4 @@ body.hub-modal-open{overflow:hidden}
     padding:9px 12px;
     font-size:12px;
   }
-}
-
-/* Inspire Me follows the Directory hero search fields */
-.hub-inspire-modal .what-shall-i-step{margin:0}
-.hub-inspire-modal .what-step-content h3{margin-bottom:12px}
-
-/* Inspire Me multi-select controls */
-.hub-inspire-modal .what-step-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;margin-top:12px}
-.hub-inspire-modal .what-selection-count{margin-right:auto;color:var(--bh-text-muted);font-size:11px;font-weight:750}
-.hub-inspire-modal .what-choice.is-selected{border-color:var(--bh-primary);background:#dcebdc;color:var(--bh-primary);box-shadow:inset 0 0 0 1px rgba(65,102,81,.12)}
-.hub-inspire-modal .what-choice.is-selected:after{content:" ✓";font-weight:900}
-.hub-inspire-modal .what-continue:disabled{opacity:.45;cursor:not-allowed;transform:none}
-@media(max-width:560px){
-  .hub-inspire-modal .what-step-actions{flex-wrap:wrap}
-  .hub-inspire-modal .what-selection-count{flex:1 1 100%;margin:0}
-  .hub-inspire-modal .what-step-actions .what-back{margin-top:0}
-  .hub-inspire-modal .what-step-actions .what-continue{margin-left:auto}
 }
