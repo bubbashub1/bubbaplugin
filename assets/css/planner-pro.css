@@ -665,3 +665,47 @@
 .pro-time-select{width:100%;min-height:46px;padding:10px 38px 10px 12px;border:1px solid var(--bh-border);border-radius:12px;background:#fff;color:var(--bh-text);font:inherit;font-size:14px;font-weight:750;box-sizing:border-box;}
 .pro-time-select:focus{outline:3px solid rgba(246,200,74,.45);outline-offset:1px;border-color:var(--bh-primary);}
 @media(max-width:520px){.pro-time-select{min-height:48px;font-size:15px;}}
+
+
+/* Final fix: keep Customise Planner actions visible while the form scrolls. */
+.pro-planner-customise-modal{
+  display:flex!important;
+  flex-direction:column!important;
+  min-height:0!important;
+  max-height:calc(100vh - 28px)!important;
+  overflow:hidden!important;
+}
+.pro-planner-customise-modal form{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  height:auto!important;
+  max-height:none!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  display:flex!important;
+  flex-direction:column!important;
+}
+.pro-planner-customise-modal .pro-form-actions{
+  position:sticky!important;
+  bottom:0!important;
+  flex:0 0 auto!important;
+  z-index:50!important;
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:600px){
+  .pro-planner-customise-modal{
+    max-height:calc(100vh - 8px)!important;
+  }
+  .pro-planner-customise-modal form{
+    max-height:none!important;
+  }
+  .pro-planner-customise-modal .pro-form-actions{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    width:100%!important;
+  }
+}
