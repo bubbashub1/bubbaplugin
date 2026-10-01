@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const keys={planners:"bhProPlanners",family:"bhProFamily",shares:"bhProShares",notes:"bhProNotes",dayPlan:"bhProDayPlan"};
   const read=(key,fallback=[])=>{try{const v=JSON.parse(localStorage.getItem(key)||"null");return Array.isArray(v)?v:fallback}catch{return fallback}};
   const hasLocal=(key)=>localStorage.getItem(key)!==null;
-  let proSignedIn=false,proCsrf="",proHydrating=false,proSyncTimer=null;
+  let proSignedIn=false,proCsrf="",proHydrating=false,proSyncTimer=null,proShow=()=>{};
 
   async function proAuth(){
     try{
@@ -642,6 +642,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       links.forEach(link=>link.classList.toggle("is-active",link.dataset.proSection===valid));
       if(updateHash)history.replaceState(null,"","#"+valid);
     }
+    proShow=show;
     links.forEach(link=>link.addEventListener("click",event=>{event.preventDefault();show(link.dataset.proSection)}));
     show(location.hash.replace("#","")||"planners",false);
     window.addEventListener("hashchange",()=>show(location.hash.replace("#",""),false));
@@ -684,7 +685,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   if(jump){
     jump.addEventListener("change",()=>{
       if(jump.value){
-        show(jump.value);
+        proShow(jump.value);
         jump.blur();
       }
     });
