@@ -1,6 +1,24 @@
 /* =========================================================
    BUBBA HUB — MASTER HEADER
-   ========================================================= */
+   =========================================================/* Logo + menu + search + sign in */
+.bh-header-top-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  /* Switch from space-between to flex-start so they group together */
+  justify-content: flex-start; 
+  gap: 40px; /* Adjust this gap to control how close/far they sit */
+}
+
+.bh-header-actions {
+  /* Remove margin-left: auto so it doesn't force a gap */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+  flex: 1; /* Allows the action area to share space nicely */
+} */
 
 .bh-site-header {
   width: 100%;
@@ -24,32 +42,19 @@
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.bh-header-logo {
-  display: flex;
-  align-items: center;
-  flex: 0 0 auto;
-  text-decoration: none;
-}
-
-.bh-header-logo img {
-  width: 303px;
-  height: 150px;
-  object-fit: contain;
-  border-radius: 10px;
-  background: transparent;
+  /* Switch from space-between to flex-start so they group together */
+  justify-content: flex-start; 
+  gap: 40px; /* Adjust this gap to control how close/far they sit */
 }
 
 .bh-header-actions {
-  margin-left: auto;
+  /* Remove margin-left: auto so it doesn't force a gap */
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
   min-width: 0;
+  flex: 1; /* Allows the action area to share space nicely */
 }
 
 .bh-main-nav {
