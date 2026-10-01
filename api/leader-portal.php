@@ -47,6 +47,12 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
 if($_SERVER['REQUEST_METHOD']!=='POST')lp(405,['ok'=>false,'error'=>'method_not_allowed']);
 $b=json_decode(file_get_contents('php://input'),true);if(!is_array($b))lp(400,['ok'=>false,'error'=>'invalid_json']);$action=$b['action']??'';
 
+if($action==='save_terms'){
+ $terms=trim((string)($b['terms_content']??''));
+ if(strlen($terms)>200000) lp(422,['ok'=>false,'error'=>'terms_too_long','message'=>'Your terms are too long. Please keep them under 200,000 characters.']);
+ $q=$db->prepare("UPDATE bh_organisers SET terms_content=? WHERE id=?");$q->execute([$terms,$oid]);
+ lp(200,['ok'=>true,'message'=>'Your Terms & Conditions have been saved.','terms_content'=>$terms]);
+}
 if($action==='save_account'){
  $businessName=trim((string)($b['business_name']??''));$name=trim((string)($b['name']??''));$email=strtolower(trim((string)($b['email']??'')));
  if($businessName==='')lp(422,['ok'=>false,'error'=>'business_name_required']);if(!filter_var($email,FILTER_VALIDATE_EMAIL))lp(422,['ok'=>false,'error'=>'invalid_email']);
