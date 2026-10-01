@@ -280,8 +280,8 @@ body.hub-modal-open{overflow:hidden}
 .hub-inspire-modal .what-shall-i-head p{margin:0;color:var(--bh-text-muted);font-size:13px;line-height:1.45}
 .hub-inspire-modal .what-modal-close{position:absolute;right:16px;top:15px;z-index:2;width:38px;height:38px;border:0;border-radius:50%;background:#fff;color:var(--bh-primary);font-size:27px;line-height:1;cursor:pointer;box-shadow:0 3px 12px rgba(20,68,0,.1)}
 .hub-inspire-modal .what-modal-close:hover,.hub-inspire-modal .what-modal-close:focus-visible{background:var(--bh-primary);color:#fff;outline:none}
-.hub-inspire-modal .what-shall-i-start{padding:28px 24px;text-align:center}
-.hub-inspire-modal .what-start-icon{display:grid;place-items:center;width:48px;height:48px;margin:0 auto 10px;border-radius:15px;background:#d8e6db;color:var(--bh-primary);font-size:24px}
+.hub-inspire-modal .what-shall-i-start{display:flex;flex-direction:column;align-items:center;min-height:300px;box-sizing:border-box;padding:28px 24px;text-align:center}
+.hub-inspire-modal .what-shall-i-start #beginWhatShallI{margin-top:auto}.hub-inspire-modal .what-start-icon{display:grid;place-items:center;width:48px;height:48px;margin:0 auto 10px;border-radius:15px;background:#d8e6db;color:var(--bh-primary);font-size:24px}
 .hub-inspire-modal .what-shall-i-start h3{margin:0 0 5px;font-family:"Chewy",cursive;font-size:24px;font-weight:400;color:var(--bh-dark)}
 .hub-inspire-modal .what-shall-i-start p{max-width:430px;margin:0 auto 17px;color:var(--bh-text-muted);font-size:13px;line-height:1.5}
 .hub-inspire-modal .what-shall-i-steps{padding:0 24px 20px}
