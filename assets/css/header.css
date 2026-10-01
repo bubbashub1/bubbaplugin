@@ -38,9 +38,8 @@
 }
 
 .bh-header-logo img {
-  display: block;
-  width: 150px;
-  height: 150px;
+  width: 404px;
+  height: 200px;
   object-fit: contain;
   border-radius: 10px;
   background: transparent;
