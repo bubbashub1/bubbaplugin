@@ -22,11 +22,23 @@
       const response=await fetch(headerUrl.href,{cache:"no-store"});
       if(!response.ok)throw new Error("Could not load shared header");
       const html=await response.text();
+      const activityHeader=!!existing?.classList.contains("activity-reference-header");
+      const activitySignIn=existing?.querySelector(".activity-sign-in")?.cloneNode(true);
+      const activitySearchToggle=existing?.querySelector(".activity-search-toggle")?.cloneNode(true);
+      const activitySearch=existing?.querySelector(".activity-header-search")?.cloneNode(true);
+
       const template=document.createElement("template");
       template.innerHTML=html.trim();
       const header=template.content.firstElementChild;
       if(!header)return;
 
+      if(activityHeader){
+        header.classList.add("activity-reference-header");
+        const inner=header.querySelector(".bh-header-inner");
+        if(activitySignIn) inner?.appendChild(activitySignIn);
+        if(activitySearchToggle) header.appendChild(activitySearchToggle);
+        if(activitySearch) header.appendChild(activitySearch);
+      }
       if(existing) existing.replaceWith(header);
       else document.body.insertBefore(header,document.body.firstElementChild);
 
