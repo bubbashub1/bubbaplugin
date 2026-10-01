@@ -1,6 +1,8 @@
 /* =========================================================
    BUBBA HUB — MASTER HEADER
-   =========================================================/* Logo + menu + search + sign in */
+   ========================================================= */
+
+/* Logo + menu + search + sign in */
 .bh-header-top-row {
   width: 100%;
   display: flex;
@@ -18,7 +20,7 @@
   gap: 8px;
   min-width: 0;
   flex: 1; /* Allows the action area to share space nicely */
-} */
+}
 
 .bh-site-header {
   width: 100%;
@@ -217,9 +219,8 @@
   }
 
   .bh-header-logo img {
-  width: 144px;
-  height: 72px;
-}
+    width: 144px;
+    height: 72px;
   }
 }
 
