@@ -589,6 +589,29 @@ void bhHydrateSaved();
   }
 })();
 
+/* Shared Advanced Search Filters component.
+   The filter markup lives outside the Directory Hero so one component can
+   be reused by Directory, Calendar and Planner Pro. */
+(function(){
+  const placeholders=[...document.querySelectorAll("[data-bh-advanced-filters-placeholder]")];
+  if(!placeholders.length){
+    window.bhAdvancedFiltersReady=Promise.resolve([]);
+    return;
+  }
+  window.bhAdvancedFiltersReady=(async()=>{
+    try{
+      const response=await fetch(new URL("components/advanced-filters.html",document.baseURI),{cache:"no-store"});
+      if(!response.ok)throw new Error("Could not load advanced filters");
+      const html=await response.text();
+      placeholders.forEach(placeholder=>{placeholder.outerHTML=html;});
+      return [...document.querySelectorAll("[data-bh-advanced-filters]")];
+    }catch(error){
+      console.warn("Bubba Hub advanced filters could not load.",error);
+      return [];
+    }
+  })();
+})();
+
 /* Shared Directory / Map hero component.
    Markup lives in components/directory-hero.html and page scripts initialise it. */
 (function(){
@@ -611,7 +634,20 @@ void bhHydrateSaved();
         Object.entries({keyword:ids.keyword,region:ids.region,town:ids.town,category:ids.category,day:ids.day}).forEach(([key,id])=>{
           const el=hero.querySelector('[data-bh-hero-field="'+key+'"]');if(el)el.id=id;
         });
-        const filterButton=hero.querySelector("[data-bh-hero-filters]");if(filterButton)filterButton.id=ids.filters;
+        const filterButton=hero.querySelector("[data-bh-hero-filters]");if(filterButton){
+        filterButton.id=ids.filters;
+        filterButton.addEventListener("click",async event=>{
+          event.preventDefault();
+          await (window.bhAdvancedFiltersReady||Promise.resolve());
+          const target=page==="calendar" ? document.getElementById("calendarAdvancedFilters") : document.getElementById("directoryFilters");
+          if(target){
+            if(page==="calendar"){target.hidden=false;document.body.classList.add("calendar-filter-open");}
+            else{target.classList.add("is-open");document.body.classList.add("directory-filter-open");}
+            const first=target.querySelector("select,input,button");
+            if(first)first.focus();
+          }
+        });
+      }
         const viewLink=hero.querySelector(".directory-map-hero-button");
         if(viewLink){
           const query=window.location.search||"";
@@ -622,19 +658,7 @@ void bhHydrateSaved();
         hero.dataset.heroPage=page;
 
         if(page==="calendar"){
-          if(filterButton){
-            filterButton.textContent="More search options →";
-            filterButton.addEventListener("click",event=>{
-              event.preventDefault();
-              const modal=document.getElementById("calendarAdvancedFilters");
-              if(modal){
-                modal.hidden=false;
-                document.body.classList.add("calendar-filter-open");
-                const first=modal.querySelector("input,select,button");
-                if(first)first.focus();
-              }
-            });
-          }
+          if(filterButton)filterButton.textContent="More search options →";
           try{
             const activities=await bhActivities();
             const categoryMap={"Baby classes":"Baby","Baby & toddler":"Toddler","Family activities":"Family"};
