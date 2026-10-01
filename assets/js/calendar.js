@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
   const state={
     view:"list",
     date:new Date(),
-    filters:{keyword:"",region:"",town:"",category:"",day:"",age:"",maxPrice:"",sessionLength:"",termTime:"",bookingRequired:"",sen:""},
+    filters:{keyword:"",region:"",town:"",category:"",day:"",age:"",maxPrice:"",sessionLength:"",termTime:"",bookingRequired:"",sen:"",free:"",accessibility:[]},
     plannerId:""
   };
   let planners=[];
@@ -134,6 +134,15 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
     if(f.sen){
       const sen=norm(a.sen??a.sen_friendly);
       if(sen!==norm(f.sen))return false;
+    }
+    if(f.free){
+      const rawPrice=String(a.price??"").toLowerCase();
+      const numericPrice=Number(a.price_value);
+      if(!(rawPrice.includes("free")||numericPrice===0))return false;
+    }
+    if(Array.isArray(f.accessibility)&&f.accessibility.length){
+      const available=(Array.isArray(a.accessibility)?a.accessibility:[a.accessibility]).map(norm);
+      if(f.accessibility.some(value=>!available.includes(norm(value))))return false;
     }
     return true;
   };
