@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
-<header id="siteHeaderMount"></header>
+<div id="siteHeaderMount"></div>
 
 <main class="app-shell">
   <div id="activityState" class="listing-loading"><p>Loading activity…</p></div>
@@ -42,8 +42,8 @@
   try{
     const response=await fetch("components/header.html",{cache:"no-store"});
     if(!response.ok)throw new Error("Header unavailable");
-    mount.outerHTML=await response.text();
-    const scripts=mount.parentNode?.querySelectorAll("script");
+    document.querySelectorAll(".bh-site-header").forEach(header=>header.remove()); mount.innerHTML=await response.text();
+    const scripts=mount.querySelectorAll("script");
     if(scripts)Array.from(scripts).forEach(script=>{
       if(script.src)return;
       const run=document.createElement("script");
