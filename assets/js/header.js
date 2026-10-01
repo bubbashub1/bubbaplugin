@@ -5,6 +5,10 @@
 (function(){
   const script=document.currentScript;
   const scriptUrl=script?.src||new URL("assets/js/header.js",document.baseURI).href;
+
+  const appRoot=new URL("../../",scriptUrl);
+  const appUrl=path=>new URL(path,appRoot).href;
+
   const loadHeader=async()=>{
     try{
       const existing=document.querySelector(".site-header");
@@ -39,8 +43,61 @@
         if(activitySearchToggle) header.appendChild(activitySearchToggle);
         if(activitySearch) header.appendChild(activitySearch);
       }
+
       if(existing) existing.replaceWith(header);
       else document.body.insertBefore(header,document.body.firstElementChild);
+
+      // Make shared-header links work from root pages and nested pages alike.
+      header.querySelectorAll('a[href]').forEach(link=>{
+        const href=link.getAttribute("href");
+        if(href && !href.startsWith("#") && !href.startsWith("mailto:") && !href.startsWith("http")){
+          link.href=appUrl(href);
+        }
+      });
+      const logo=header.querySelector(".bh-header-logo img");
+      if(logo) logo.src=appUrl("images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png");
+
+      const searchForm=header.querySelector(".bh-header-search-bar");
+      if(searchForm){
+        searchForm.action=appUrl("directory.html");
+
+        // Keep the shared header search in sync with the live directory filters.
+        const populateSearchOptions=async()=>{
+          try{
+            const response=await fetch(appUrl("api/activities.php")+"?page=1&per_page=100",{cache:"no-store",headers:{Accept:"application/json"}});
+            if(!response.ok)return;
+            const payload=await response.json();
+            const items=Array.isArray(payload.data)?payload.data:[];
+            const categoryMap={"Baby classes":"Baby","Baby & toddler":"Toddler","Family activities":"Family"};
+            const values={
+              region:[...new Set(items.flatMap(a=>(a.venues||[]).map(v=>v.region||a.region)).filter(Boolean))].sort(),
+              town:[...new Set(items.flatMap(a=>(a.venues||[]).map(v=>v.town||a.town)).filter(Boolean))].sort(),
+              category:[...new Set(items.map(a=>categoryMap[a.category]||a.category).filter(Boolean))].sort()
+            };
+
+            Object.entries(values).forEach(([name,list])=>{
+              const select=searchForm.querySelector('select[name="'+name+'"]');
+              if(!select)return;
+              const current=new URLSearchParams(location.search).get(name)||"";
+              select.innerHTML="<option value=\"\">"+name.charAt(0).toUpperCase()+name.slice(1)+"</option>";
+              list.forEach(value=>{
+                const option=document.createElement("option");
+                option.value=value;
+                option.textContent=value;
+                select.appendChild(option);
+              });
+              if(list.includes(current))select.value=current;
+            });
+
+            const params=new URLSearchParams(location.search);
+            const keyword=searchForm.querySelector('[name="keyword"]');
+            const day=searchForm.querySelector('[name="day"]');
+            if(keyword)keyword.value=params.get("keyword")||params.get("search")||params.get("q")||"";
+            if(day)day.value=params.get("day")||"";
+          }catch(_){}
+        };
+        void populateSearchOptions();
+      }
 
       const menu=header.querySelector(".bh-mobile-menu");
       const nav=header.querySelector(".bh-main-nav");
@@ -64,6 +121,7 @@
       document.addEventListener("keydown",event=>{if(event.key==="Escape")close();});
     }catch(error){console.warn("Bubba Hub shared header could not load.",error);}
   };
+
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",loadHeader,{once:true});
   else void loadHeader();
 })();
