@@ -223,7 +223,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
             "<div class='planner-card-links'><a href='"+(typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id))+"'>View activity</a>"+
             "<button class='planner-visit planner-link-button' type='button' data-id='"+esc(a.id)+"' aria-pressed='"+visit+"'>✓ "+(visit?"Visited":"Mark visited")+"</button>"+
             "<button class='planner-remove planner-link-button' type='button' data-id='"+esc(a.id)+"'>Remove</button></div></article>";
-        }).join(""):"<div class='planner-day-empty'>Nothing planned</div>")+"</section>";
+        }).join(""):"<div class='planner-day-empty'>Nothing planned</div>"))+"</section>";
     }).join("");
 
     const unscheduled=shownEntries.filter(entry=>entry.day===0);
