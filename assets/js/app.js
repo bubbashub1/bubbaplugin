@@ -669,7 +669,7 @@ void bhHydrateSaved();
         /* Keep page-specific hero styling attached to the loaded component, not the placeholder. */
         hero.classList.toggle("calendar-directory-hero",page==="calendar");
         const form=hero.querySelector("[data-bh-hero-form]");
-        if(form){form.id=ids.form;form.action=page==="map"?"map.html":"directory.html";}
+        if(form){form.id=ids.form;form.action=page==="map"?"map.html":page==="calendar"?"calendar.html":"directory.html";}
         Object.entries({keyword:ids.keyword,region:ids.region,town:ids.town,category:ids.category,day:ids.day}).forEach(([key,id])=>{
           const el=hero.querySelector('[data-bh-hero-field="'+key+'"]');if(el)el.id=id;
         });
@@ -678,7 +678,7 @@ void bhHydrateSaved();
         filterButton.addEventListener("click",async event=>{
           event.preventDefault();
           await (window.bhAdvancedFiltersReady||Promise.resolve());
-          const target=page==="calendar" ? document.getElementById("calendarFilters") : document.getElementById("directoryFilters");
+          const target=page==="calendar" ? document.getElementById("calendarFilters") : page==="map" ? document.getElementById("mapFiltersPanel") : document.getElementById("directoryFilters");
           if(target){
             target.classList.add("is-open");
             document.body.classList.add("directory-filter-open");
