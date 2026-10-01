@@ -626,7 +626,13 @@ void bhHydrateSaved();
             filterButton.textContent="More search options →";
             filterButton.addEventListener("click",event=>{
               event.preventDefault();
-              window.location.href="directory.html"+(window.location.search||"");
+              const modal=document.getElementById("calendarAdvancedFilters");
+              if(modal){
+                modal.hidden=false;
+                document.body.classList.add("calendar-filter-open");
+                const first=modal.querySelector("input,select,button");
+                if(first)first.focus();
+              }
             });
           }
           try{
