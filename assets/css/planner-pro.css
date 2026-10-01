@@ -296,6 +296,8 @@
   flex-direction:column!important;
   min-height:0!important;
   max-height:calc(100vh - 28px)!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
   margin:0!important;
 }
 .pro-planner-customise-modal .pro-planner-modal-icon{
@@ -347,7 +349,7 @@
     max-height:calc(100vh - 16px)!important;
     border-radius:22px 22px 0 0!important;
   }
-  .pro-planner-customise-modal form{max-height:calc(100vh - 16px)!important}
+  .pro-planner-customise-modal form{max-height:calc(100vh - 16px)!important;overflow-y:auto!important}
   .pro-planner-customise-modal .pro-planner-modal-icon{margin-top:18px}
   .pro-planner-customise-modal .pro-planner-filter-grid{grid-template-columns:1fr}
   .pro-planner-customise-modal .pro-form-actions{
