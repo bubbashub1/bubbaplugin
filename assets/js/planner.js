@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   }
 
   async function syncAccount(){
-    if(!signedIn){statusNote.innerHTML='Your planner is saved on this device. <a href="account.html?next=planner.html">Sign in</a> to keep it across devices.';return}
+    if(!signedIn){statusNote.innerHTML='Your planner is saved on this device. <a href="account.html?next=planner.html">Sign in</a> if you want to keep it across devices.';return}
     if(adminOnly){statusNote.textContent="Admin access — this planner is saved on this device.";return}
     const remote=await plannerGet();
     if(!remote){statusNote.textContent="Your account is signed in, but planner syncing is temporarily unavailable. Your local planner is still safe.";return}
