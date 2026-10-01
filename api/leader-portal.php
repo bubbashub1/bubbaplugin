@@ -54,6 +54,7 @@ if($action==='save_profile_public'){
  $q=$db->prepare("UPDATE bh_organisers SET about_content=?,logo_url=?,facebook_url=?,instagram_url=?,tiktok_url=? WHERE id=?");$q->execute([$about,$logo,$facebook,$instagram,$tiktok,$oid]);
  lp(200,['ok'=>true,'message'=>'Public organiser profile saved.']);
 }
+if($action==='save_profile_public'){ $about=trim((string)($b['about_content']??''));$logo=trim((string)($b['logo_url']??''));$facebook=trim((string)($b['facebook_url']??''));$instagram=trim((string)($b['instagram_url']??''));$tiktok=trim((string)($b['tiktok_url']??'')); if(strlen($about)>200000)lp(422,['ok'=>false,'error'=>'about_too_long']); $q=$db->prepare("UPDATE bh_organisers SET about_content=?,logo_url=?,facebook_url=?,instagram_url=?,tiktok_url=? WHERE id=?");$q->execute([$about,$logo,$facebook,$instagram,$tiktok,$oid]); lp(200,['ok'=>true,'message'=>'Public organiser profile saved.']); }
 if($action==='save_terms'){
  $terms=trim((string)($b['terms_content']??''));
  if(strlen($terms)>200000) lp(422,['ok'=>false,'error'=>'terms_too_long','message'=>'Your terms are too long. Please keep them under 200,000 characters.']);
