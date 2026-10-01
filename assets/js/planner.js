@@ -93,6 +93,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
       const time=e.session?(formatTime(e.session.start_time)+(e.session.end_time?" – "+formatTime(e.session.end_time):"")):"Time TBC";
       return "<div class='planner-print-entry'><strong>"+esc(e.activity.title)+"</strong><span>"+esc(time)+(townOf(e)?" · "+esc(townOf(e)):"")+"</span></div>";
     };
+    document.querySelector(".planner-shell")?.classList.toggle("is-list-view",currentView==="list");
+
     if(currentView==="list"){
       const grouped=[];
       entries.forEach(e=>{
@@ -150,6 +152,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
       bindPlannerActions();
       return;
     }
+
+    document.querySelector(".planner-shell")?.classList.remove("is-list-view");
 
     const sections=days.filter(day=>!hidden.includes(String(day.num))).map(day=>{
       const dayEntries=shownEntries.map((entry,index)=>({...entry,_index:index})).filter(entry=>entry.day===day.num).sort((a,b)=>String(a.session?.start_time||"").localeCompare(String(b.session?.start_time||""))||String(a.activity.title).localeCompare(String(b.activity.title)));
