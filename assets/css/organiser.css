@@ -463,3 +463,22 @@
 .organiser-terms-content br+br{display:block;content:"";margin-top:8px}
 
 .organiser-brand-mark img{width:100%;height:100%;object-fit:contain;border-radius:inherit;display:block}.organiser-socials{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.organiser-socials .button{margin:0}
+
+/* 11. BADGES ------------------------------------------------------------ */
+.bh-badges{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.bh-badge{display:inline-flex;align-items:center;gap:5px;min-height:27px;padding:5px 9px;border-radius:999px;border:1px solid var(--os-line);font-size:10px;font-weight:800;line-height:1;white-space:nowrap;background:#fff;color:var(--os-forest)}
+.bh-badge-icon{display:inline-grid;place-items:center;width:15px;height:15px;font-size:10px;font-weight:900}
+.bh-badge-verified{background:#eaf5ed;border-color:#b9d5c0;color:#315b3d}
+.bh-badge-featured{background:#fff5d8;border-color:#ead58d;color:#7b6110}
+.bh-badge-popular{background:#f7e9e8;border-color:#e2c2bf;color:#7b403b}
+.bh-badge-new{background:#e8f3f4;border-color:#bdd9dc;color:#2f686d}
+.bh-badges-overlay{position:absolute;top:10px;left:10px;z-index:2}
+.storefront-card-image{position:relative}
+.bh-badges-mobile{margin:0 0 6px}
+.bh-organiser-badges{margin:0 0 10px}
+.bh-badges-mobile{display:none}
+@media(max-width:650px){
+  .bh-badges-overlay{top:8px;left:8px}
+  .bh-badges-overlay .bh-badge{min-height:25px;padding:5px 8px}
+  .bh-badges-mobile{display:none}
+}
