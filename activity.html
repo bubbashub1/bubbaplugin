@@ -65,8 +65,103 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const slug=decodeURIComponent(params.get("slug")||pathSlug||"");
   const id=params.get("id");
   let items=[];
-  items=await bhActivities();
-  const a=bhActivityBySlug(slug,items)||bhActivity(id,items);
+  let a=null;
+
+  // Activity pages should load only the requested listing. Loading the entire
+  // directory here can leave the page stuck on "Loading activity…" when the
+  // directory contains many pages or a later page is slow.
+  try{
+    const directUrl=new URL("api/activities.php",document.baseURI);
+    if(slug) directUrl.searchParams.set("slug",slug);
+    else if(id) directUrl.searchParams.set("id",id);
+    directUrl.searchParams.set("per_page","1");
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),8000);
+    try{
+      const response=await fetch(directUrl.toString(),{
+        cache:"no-store",
+        signal:controller.signal,
+        headers:{Accept:"application/json"}
+      });
+      if(response.ok){
+        const payload=await response.json();
+        if(payload?.ok&&Array.isArray(payload.data)&&payload.data[0]){
+          const raw=payload.data[0];
+          // Normalise the single API result using the same shape as bhActivities().
+          const venues=Array.isArray(raw.venues)?raw.venues:[];
+          const sessions=Array.isArray(raw.sessions)?raw.sessions:[];
+          const sessionByVenue={};
+          sessions.forEach(s=>{
+            const venueId=String(s.venue_id);
+            if(!sessionByVenue[venueId])sessionByVenue[venueId]=[];
+            sessionByVenue[venueId].push({
+              id:s.id,
+              day:["","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][Number(s.day_of_week)]||String(s.day_of_week||""),
+              day_of_week:Number(s.day_of_week)||null,
+              start:bhFormatTime(s.start_time||""),
+              time:bhFormatTime(s.start_time||""),
+              end:bhFormatTime(s.end_time||""),
+              end_time:bhFormatTime(s.end_time||""),
+              duration:s.duration_minutes?String(s.duration_minutes)+" mins":"",
+              duration_minutes:s.duration_minutes,
+              price:s.price!==null&&s.price!==undefined?"£"+Number(s.price).toFixed(2):"",
+              price_value:s.price,
+              term_time:s.term_time_only?"Term time":"",
+              frequency:s.frequency||"",
+              start_date:s.start_date||"",
+              end_date:s.end_date||""
+            });
+          });
+          const coordinate=value=>{
+            if(value===null||value===undefined||value==="")return null;
+            const number=Number(String(value).trim().replace(",","."));
+            return Number.isFinite(number)?number:null;
+          };
+          const normalizedVenues=venues.map(v=>({
+            id:v.id,name:v.name||"Venue",address:v.address||"",town:v.town||"",
+            region:v.region||"",postcode:v.postcode||"",
+            lat:coordinate(v.latitude),long:coordinate(v.longitude),
+            latitude:coordinate(v.latitude),longitude:coordinate(v.longitude),
+            sessions:sessionByVenue[String(v.id)]||[]
+          }));
+          a={
+            ...raw,
+            id:String(raw.id),
+            category:raw.category||"",
+            age_range:raw.age_range?[String(raw.age_range)]:[],
+            price:raw.price_from!==null&&raw.price_from!==undefined?"£"+Number(raw.price_from).toFixed(2):"",
+            price_value:raw.price_from,
+            image_url:raw.image_path||"",
+            short_description:raw.description||"",
+            summary:raw.description||"",
+            content:raw.description||"",
+            region:normalizedVenues[0]?.region||"",
+            town:normalizedVenues[0]?.town||"",
+            location:normalizedVenues[0]?.town||normalizedVenues[0]?.name||"",
+            organiser_id:raw.organiser?.id||"",
+            organiser_name:raw.organiser?.name||"",
+            organiser:raw.organiser?.name||"",
+            organiser_website:raw.organiser?.website||"",
+            organiser_email:raw.organiser?.email||"",
+            organiser_phone:raw.organiser?.phone||"",
+            organiser_slug:raw.organiser?.slug||"",
+            venues:normalizedVenues,
+            booking_mode:raw.booking_url?"external":"reserve",
+            booking_slots:[],
+            booking_url:raw.booking_url||""
+          };
+        }
+      }
+    }finally{
+      clearTimeout(timeout);
+    }
+  }catch(error){}
+
+  if(!a){
+    // Fallback for older/API-failure cases.
+    items=await bhActivities();
+    a=bhActivityBySlug(slug,items)||bhActivity(id,items);
+  }
   if(!a){state.innerHTML='<div class="admin-panel"><h2>Activity not found</h2><p>This activity may have been removed or the link is incorrect.</p><a class="button button-primary" href="directory.html">Find activities</a></div>';return}
   const venues=bhVenues(a),sessions=bhSessions(a),images=Array.isArray(a.gallery)&&a.gallery.length?a.gallery:(a.image_url?[a.image_url]:[]);
   try{
