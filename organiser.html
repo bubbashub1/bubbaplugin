@@ -366,8 +366,6 @@
                 : bhEscape(initials || "BH")}
             </div>
             <div class="organiser-hero-copy">
-              <span class="eyebrow">Organiser storefront</span>
-              ${renderBadges(organiserBadges, "bh-organiser-badges")}
               <h1>${bhEscape(name)}</h1>
               <p class="organiser-intro">Discover family activities from ${bhEscape(name)} and see what’s available through Bubba Hub — including locations, age ranges and booking information.</p>
               <div class="organiser-meta">
@@ -382,11 +380,7 @@
             </div>
           </section>
 
-          <section class="organiser-summary" aria-label="Organiser summary">
-            <div><strong>${organiserGroups.length}</strong><span>Activities</span></div>
-            <div><strong>${categories.length}</strong><span>Categories</span></div>
-            <div><strong>${venues.length}</strong><span>Venues</span></div>
-          </section>
+          <section class="organiser-summary" aria-label="Organiser summary">\n            <div><strong>${organiserGroups.length}</strong><span>Activities</span></div>\n            <div><strong>${categories.length}</strong><span>Categories</span></div>\n            <div><strong>${venues.length}</strong><span>Venues</span></div>\n            ${renderBadges(organiserBadges, "bh-organiser-badges")}\n          </section>
 
           <section class="organiser-venues">
             <div class="organiser-venues-copy">
