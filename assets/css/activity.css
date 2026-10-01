@@ -469,3 +469,13 @@ body:not(.bh-home) .schedule-hours-status.is-closed .schedule-hours-status-dot{b
   .site-footer{margin-top:36px!important;padding:36px 20px 18px!important}
   .site-footer-grid{grid-template-columns:1fr!important}
 }
+
+/* Activity badges ------------------------------------------------------- */
+body:not(.bh-home) .bh-badges-activity{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px}
+body:not(.bh-home) .bh-badges-activity .bh-badge{display:inline-flex;align-items:center;gap:5px;min-height:28px;padding:5px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.13);color:#fff;font-size:10px;font-weight:800;line-height:1;white-space:nowrap}
+body:not(.bh-home) .bh-badges-activity .bh-badge-verified{background:#eaf5ed;border-color:#b9d5c0;color:#315b3d}
+body:not(.bh-home) .bh-badges-activity .bh-badge-featured{background:#fff5d8;border-color:#ead58d;color:#7b6110}
+body:not(.bh-home) .bh-badges-activity .bh-badge-popular{background:#f7e9e8;border-color:#e2c2bf;color:#7b403b}
+body:not(.bh-home) .bh-badges-activity .bh-badge-new{background:#e8f3f4;border-color:#bdd9dc;color:#2f686d}
+body:not(.bh-home) .bh-badge-icon{display:inline-grid;place-items:center;width:15px;height:15px;font-size:10px;font-weight:900}
+@media(max-width:650px){body:not(.bh-home) .bh-badges-activity{margin-bottom:10px}}
