@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   let csrf="",signedIn=false,adminOnly=false,items=[],currentView="week";
 
   const auth=await fetch("api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}}).then(r=>r.json()).catch(()=>({ok:false,authenticated:false}));
-  signedIn=!!auth.authenticated;adminOnly=!!auth.is_admin&&!auth.user?.id;csrf=auth.csrf||"";
+  signedIn=!!auth.authenticated;adminOnly=!!auth.is_admin;csrf=auth.csrf||"";
 
   async function plannerGet(){
     if(!signedIn||adminOnly)return null;
