@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
     if(f.region&&!regions.includes(norm(f.region)))return false;
     if(f.town&&!towns.includes(norm(f.town)))return false;
     if(f.category&&!category.includes(norm(f.category)))return false;
-    if(f.day&&!sessions(a).some(s=>norm(s.day)===norm(f.day)))return false;
+    if(f.day&&!sessions(a).some(s=>norm(s.day??s.day_of_week)===norm(f.day)))return false;
 
     const age=norm(f.age);
     if(age&&!values(a,null,"age").some(v=>norm(v)===age||norm(v).includes(age)))return false;
@@ -125,7 +125,7 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
     if(f.termTime){
       const wanted=norm(f.termTime);
       if(!sessions(a).some(s=>{
-        const value=norm(s.term_time_only);
+        const value=norm(s.term_time_only??s.term_time??a.term_time_only??a.termTime);
         return value===wanted;
       }))return false;
     }
@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
       if(f.bookingRequired==="no"&&hasBooking)return false;
     }
     if(f.sen){
-      const sen=norm(a.sen??a.sen_friendly);
+      const sen=norm(a.sen??a.sen_friendly??a.sen_friendly_flag);
       if(sen!==norm(f.sen))return false;
     }
     if(f.free){
