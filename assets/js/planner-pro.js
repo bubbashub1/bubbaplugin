@@ -96,4 +96,21 @@ document.addEventListener("DOMContentLoaded",async()=>{
   $("prevMonth").onclick=()=>{monthDate.setMonth(monthDate.getMonth()-1);renderMonth()};$("nextMonth").onclick=()=>{monthDate.setMonth(monthDate.getMonth()+1);renderMonth()};
   document.querySelectorAll("[data-calendar-action]").forEach(b=>b.onclick=()=>alert("Calendar setup will connect to your shared planner when calendar accounts are enabled."));
   renderPlanners();renderFamily();renderShares();renderMonth();renderDayPlan();renderNotes();await renderFavourites();
+
+
+  function setupProDashboard(){
+    const links=[...document.querySelectorAll("[data-pro-section]")];
+    const sections=[...document.querySelectorAll(".pro-content .pro-section")];
+    if(!links.length||!sections.length)return;
+    function show(id,updateHash=true){
+      const valid=sections.some(section=>section.id===id)?id:sections[0].id;
+      sections.forEach(section=>section.classList.toggle("is-active",section.id===valid));
+      links.forEach(link=>link.classList.toggle("is-active",link.dataset.proSection===valid));
+      if(updateHash)history.replaceState(null,"","#"+valid);
+    }
+    links.forEach(link=>link.addEventListener("click",event=>{event.preventDefault();show(link.dataset.proSection)}));
+    show(location.hash.replace("#","")||"planners",false);
+    window.addEventListener("hashchange",()=>show(location.hash.replace("#",""),false));
+  }
+  setupProDashboard();
 });
