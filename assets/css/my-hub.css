@@ -267,3 +267,16 @@
 
 .my-hub-page .hub-personal-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 @media(max-width:560px){.my-hub-page .hub-personal-actions{width:100%;flex-direction:column}.my-hub-page .hub-personal-actions .button{width:100%}}
+
+
+/* Inspire me modal */
+body.hub-modal-open{overflow:hidden}
+.hub-inspire-modal{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(20,68,0,.28);backdrop-filter:blur(4px);overflow-y:auto}
+.hub-inspire-modal[hidden]{display:none}
+.hub-inspire-modal .what-shall-i-head,.hub-inspire-modal .what-shall-i-steps,.hub-inspire-modal .what-shall-i-results{width:min(100%,860px);margin-left:auto;margin-right:auto}
+.hub-inspire-modal .what-shall-i-head{background:#fff;border-radius:24px 24px 0 0;padding:28px 30px 18px}
+.hub-inspire-modal .what-shall-i-steps,.hub-inspire-modal .what-shall-i-results{background:#fff;padding:0 30px 30px}
+.hub-inspire-modal .what-shall-i-results{border-radius:0 0 24px 24px}
+.hub-inspire-modal .what-shall-i-step{border:0;box-shadow:none}
+.hub-inspire-modal .what-results-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+@media(max-width:600px){.hub-inspire-modal{padding:10px}.hub-inspire-modal .what-shall-i-head,.hub-inspire-modal .what-shall-i-steps,.hub-inspire-modal .what-shall-i-results{padding-left:18px;padding-right:18px}.hub-inspire-modal .what-shall-i-head{padding-top:20px}.hub-inspire-modal .what-shall-i-head h2{font-size:1.5rem}}
