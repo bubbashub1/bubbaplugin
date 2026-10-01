@@ -603,8 +603,47 @@ void bhHydrateSaved();
         });
         const filterButton=hero.querySelector("[data-bh-hero-filters]");if(filterButton)filterButton.id=ids.filters;
         hero.dataset.heroPage=page;
+        const popular=hero.querySelector("[data-bh-popular-categories]");
+        if(popular && window.bhPopulatePopularCategories) window.bhPopulatePopularCategories(popular);
       }
       return hero;
     }catch(error){console.warn("Bubba Hub directory hero could not load.",error);return null;}
   })();
 })();
+
+/* Populate Directory/Map popular categories dynamically. */
+window.bhPopulatePopularCategories = async function(container) {
+  if (!container) return;
+  try {
+    const response = await fetch(new URL("data/activities.json", document.baseURI), { cache: "no-store" });
+    if (!response.ok) throw new Error("activities data unavailable");
+    const data = await response.json();
+    const items = Array.isArray(data) ? data : (Array.isArray(data.activities) ? data.activities : []);
+    const counts = new Map();
+    items.forEach(item => {
+      const raw = item.category || item.categories || item.type || "";
+      const cats = Array.isArray(raw) ? raw : String(raw).split(/[,|]/);
+      cats.map(x => String(x).trim()).filter(Boolean).forEach(cat => {
+        const key = cat.toLowerCase();
+        const existing = counts.get(key);
+        counts.set(key, { label: existing ? existing.label : cat, count: (existing ? existing.count : 0) + 1 });
+      });
+    });
+    const popular = [...counts.values()].sort((a,b) => b.count - a.count || a.label.localeCompare(b.label)).slice(0, 6);
+    const icons = {"baby classes":"🍼","toddler groups":"👣","music & movement":"🎵","swimming":"🏊","soft play":"🧸","family activities":"👨‍👩‍👧"};
+    container.innerHTML = '<span class="directory-popular-label">Popular:</span>';
+    popular.forEach(item => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "directory-popular-chip";
+      button.dataset.category = item.label;
+      button.textContent = (icons[item.label.toLowerCase()] || "⭐") + " " + item.label;
+      container.appendChild(button);
+    });
+    if (!popular.length) container.innerHTML = "";
+    container.dispatchEvent(new CustomEvent("bh:popular-ready", { bubbles: true }));
+  } catch (error) {
+    console.warn("Bubba Hub popular categories could not be loaded.", error);
+    container.innerHTML = "";
+  }
+};
