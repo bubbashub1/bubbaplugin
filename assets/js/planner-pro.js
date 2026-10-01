@@ -622,7 +622,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
         {value:"Nap",label:"Nap / sleep"},{value:"Meal",label:"Meal"},{value:"Nursery",label:"Nursery / school"},
         {value:"Travel",label:"Travel"},{value:"Appointment",label:"Appointment"},{value:"Routine",label:"Routine"},{value:"Other",label:"Other"}
       ]},
-      {name:"title",label:"What is happening?",required:true},
+      {name:"title",label:"What is happening?"},
       {name:"detail",label:"Notes"}
     ],d=>{
       const start=timeMinutes(d.time),end=timeMinutes(d.endTime);
