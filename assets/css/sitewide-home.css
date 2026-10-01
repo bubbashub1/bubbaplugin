@@ -1211,6 +1211,36 @@ body:not(.bh-home) .listing-layout{
   padding-right:0!important;
 }
 
+/* Site-wide page title band: full viewport width, while title content keeps the site gutters. */
+body:not(.bh-home) .page-heading{
+  width:100vw!important;
+  max-width:none!important;
+  margin-left:calc(50% - 50vw)!important;
+  margin-right:calc(50% - 50vw)!important;
+  padding:24px var(--bh-global-gutter)!important;
+  box-sizing:border-box!important;
+  background:#d8e6db!important;
+  border-radius:0!important;
+}
+body:not(.bh-home) .page-heading h1,
+body:not(.bh-home) .page-heading h2{
+  margin-top:0;
+}
+@media(max-width:900px){
+  body:not(.bh-home) .page-heading{
+    padding-left:24px!important;
+    padding-right:24px!important;
+  }
+}
+@media(max-width:650px){
+  body:not(.bh-home) .page-heading{
+    padding-left:16px!important;
+    padding-right:16px!important;
+    padding-top:20px!important;
+    padding-bottom:20px!important;
+  }
+}
+
 /* Final footer layout: edge-to-edge, no boxed shell or redundant bottom navigation. */
 .site-footer{width:100%!important;max-width:none!important;margin:48px 0 0!important;border-radius:0!important;box-sizing:border-box!important;padding-left:clamp(24px,5vw,72px)!important;padding-right:clamp(24px,5vw,72px)!important}
 .site-footer-logo img{width:110px!important;height:auto!important;max-width:100%!important;max-height:90px!important;object-fit:contain!important;border-radius:0!important}
