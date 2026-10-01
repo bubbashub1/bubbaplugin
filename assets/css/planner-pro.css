@@ -135,3 +135,19 @@
 .pro-side-card h3{font-size:17px}
 .pro-side-card p,.pro-side-card li{font-size:13px;line-height:1.5}
 .pro-empty{font-size:13px}.pro-empty strong{font-size:16px}
+
+
+/* Planner colour picker */
+.pro-colour-field{margin:0;padding:0;border:0}
+.pro-colour-field legend{padding:0;margin:0 0 7px;color:var(--bh-text);font-size:11px;font-weight:800}
+.pro-colour-picker{display:flex;flex-wrap:wrap;gap:9px}
+.pro-colour-option{position:relative;width:34px;height:34px;padding:0;border:3px solid #fff;border-radius:50%;background:var(--planner-colour);box-shadow:0 0 0 1px var(--bh-border);cursor:pointer}
+.pro-colour-option:hover{transform:translateY(-1px);box-shadow:0 0 0 2px rgba(65,102,81,.22)}
+.pro-colour-option.is-selected{box-shadow:0 0 0 2px var(--bh-primary),0 0 0 5px #fff}
+.pro-colour-option.is-selected::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:14px;font-weight:900;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.pro-planner-card .pro-card-actions button[data-planner-delete]{color:#a45c68}
+.pro-planner-card .pro-card-actions button[data-planner-delete]:hover{color:#8e4352}
+@media(max-width:520px){
+  .pro-colour-picker{gap:8px}
+  .pro-colour-option{width:32px;height:32px}
+}
