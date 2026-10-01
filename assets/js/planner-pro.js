@@ -495,7 +495,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   setupProDashboard();
 
   $("addPlanner").onclick=addPlanner;$("addPlannerTop").onclick=addPlanner;$("addFamily").onclick=addFamily;$("createShare").onclick=createShare;$("addDayPlan").onclick=addDayPlan;$("addNote").onclick=addNote;
-  $("prevMonth").onclick=()=>{monthDate.setMonth(monthDate.getMonth()-1);renderMonth()};$("nextMonth").onclick=()=>{monthDate.setMonth(monthDate.getMonth()+1);renderMonth()};
+  if(typeof bhActivities==="function"){try{window.__bhActivities=await bhActivities()}catch(error){window.__bhActivities=[];console.warn("Planner Pro calendar activities could not be loaded.",error)}}
   renderPlannerCalendarPicker();
   const calendarPlanner=$("proCalendarPlanner");
   calendarPlanner?.addEventListener("change",()=>{selectedPlannerId=calendarPlanner.value;renderProCalendar()});
