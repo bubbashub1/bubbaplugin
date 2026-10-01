@@ -256,6 +256,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
 
   $("addPlanner").onclick=addPlanner;$("addPlannerTop").onclick=addPlanner;$("addFamily").onclick=addFamily;$("createShare").onclick=createShare;$("addDayPlan").onclick=addDayPlan;$("addNote").onclick=addNote;
   $("prevMonth").onclick=()=>{monthDate.setMonth(monthDate.getMonth()-1);renderMonth()};$("nextMonth").onclick=()=>{monthDate.setMonth(monthDate.getMonth()+1);renderMonth()};
+  const printMonth=$("printMonth");
+  if(printMonth) printMonth.onclick=()=>window.print();
   document.querySelectorAll("[data-calendar-action]").forEach(b=>b.onclick=()=>alert("Calendar setup will connect to your shared planner when calendar accounts are enabled."));
   renderPlanners();renderFamily();renderShares();renderMonth();renderDayPlan();renderNotes();await renderFavourites();
 });
