@@ -42,30 +42,122 @@ document.addEventListener("DOMContentLoaded",async()=>{
 
   function renderPlanners(){
     const el=$("proPlannerList");if(!planners.length){el.innerHTML="<div class='pro-empty'><strong>No planners yet</strong>Create your first custom planner.</div>";return}
-    el.innerHTML=planners.map((p,i)=>"<article class='pro-planner-card "+(i===0?"is-active":"")+"'><span class='pro-planner-swatch' style='background:"+esc(p.colour||colours[i%colours.length])+"'></span><div class='pro-planner-card-main'><h3>"+esc(p.name)+"</h3><p>"+esc(p.description||"Custom family planner")+"</p></div><div class='pro-card-actions'><button type='button' data-planner-edit='"+esc(p.id)+"'>Edit</button><button type='button' data-planner-delete='"+esc(p.id)+"'>Delete</button></div></article>").join("");
+    el.innerHTML=planners.map((p,i)=>{
+      const filters=p.filters||{};
+      const summary=plannerFilterSummary(filters);
+      const query=plannerFilterQuery(filters);
+      const filterText=summary.length?summary.slice(0,4).join(" · ")+(summary.length>4?" · +"+(summary.length-4)+" more":""):"No activity filters yet";
+      const browse=query?"<a class='pro-planner-browse' href='directory.html?"+esc(query)+"'>Find matching activities →</a>":"<a class='pro-planner-browse' href='directory.html'>Find activities →</a>";
+      return "<article class='pro-planner-card "+(i===0?"is-active":"")+"'><span class='pro-planner-swatch' style='background:"+esc(p.colour||colours[i%colours.length])+"'></span><div class='pro-planner-card-main'><h3>"+esc(p.name)+"</h3><p>"+esc(p.description||"Custom family planner")+"</p><div class='pro-planner-filters' aria-label='Planner activity preferences'>"+esc(filterText)+"</div>"+browse+"</div><div class='pro-card-actions'><button type='button' data-planner-edit='"+esc(p.id)+"'>Customise</button><button type='button' data-planner-delete='"+esc(p.id)+"'>Delete</button></div></article>";
+    }).join("");
     el.querySelectorAll("[data-planner-edit]").forEach(b=>b.onclick=()=>editPlanner(b.dataset.plannerEdit));
     el.querySelectorAll("[data-planner-delete]").forEach(b=>b.onclick=()=>deletePlanner(b.dataset.plannerDelete));
   }
   /* New Planner modal component */
+  const plannerFilterLabels={
+    category:"Category",region:"Region",town:"Town",day:"Day",age:"Age",maxPrice:"Price",
+    sessionLength:"Session length",sen:"SEN friendly",termTime:"Term time",
+    bookingRequired:"Booking required",free:"Free only",accessibility:"Accessibility"
+  };
+  const defaultPlannerFilters=()=>({
+    category:"",region:"",town:"",day:"",age:"",maxPrice:"",sessionLength:"",
+    sen:"",termTime:"",bookingRequired:false,free:false,accessibility:[]
+  });
+
+  async function getPlannerFilterOptions(){
+    const fallback={
+      category:[],region:[],town:[],
+      day:["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+      age:[["","Any age"],["baby","Baby · 0–1"],["toddler","Toddler · 1–3"],["preschool","Preschool · 3–5"],["school","School age · 5–9"]],
+      maxPrice:[["","Any price"],["0","Free"],["5","Up to £5"],["10","Up to £10"],["15","Up to £15"],["20","Up to £20"],["30","Up to £30"],["over30","Over £30"]],
+      sessionLength:[["","Any length"],["60","Up to 1 hour"],["120","1–2 hours"],["180","2–3 hours"],["181","3+ hours"]],
+      sen:[["","Any"],["yes","Yes"],["no","No"]],
+      termTime:[["","Any"],["yes","Term time only"],["no","Not term time only"]]
+    };
+    try{
+      if(typeof bhActivities!=="function") return fallback;
+      const activities=await bhActivities();
+      const categoryMap={"Baby classes":"Baby","Baby & toddler":"Toddler","Family activities":"Family"};
+      const venues=activities.flatMap(a=>typeof bhVenues==="function"?bhVenues(a):[]);
+      const unique=(values)=>[...new Set(values.map(v=>String(v||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+      return {
+        ...fallback,
+        category:unique(activities.map(a=>categoryMap[a.category]||a.category)),
+        region:unique(venues.map(v=>v.region)),
+        town:unique(venues.map(v=>v.town))
+      };
+    }catch(error){
+      console.warn("Planner filter options could not be loaded.",error);
+      return fallback;
+    }
+  }
+
+  const optionHtml=(options,selected="")=>{
+    return options.map(option=>{
+      const value=Array.isArray(option)?option[0]:option;
+      const label=Array.isArray(option)?option[1]:option;
+      return "<option value='"+esc(value)+"'"+(String(value)===String(selected)?" selected":"")+">"+esc(label)+"</option>";
+    }).join("");
+  };
+
+  const plannerFilterSummary=filters=>{
+    const labels=[];
+    Object.entries(plannerFilterLabels).forEach(([key,label])=>{
+      const value=filters?.[key];
+      if(Array.isArray(value)&&value.length) labels.push(label+": "+value.join(", "));
+      else if(value===true) labels.push(label);
+      else if(value!==""&&value!==null&&value!==undefined){
+        const displayMap={maxPrice:"£"+value,sessionLength:value+" mins"};
+        labels.push(label+": "+(displayMap[key]||value));
+      }
+    });
+    return labels;
+  };
+
+  const plannerFilterQuery=filters=>{
+    const params=new URLSearchParams();
+    if(filters.category) params.set("category",filters.category);
+    if(filters.region) params.set("region",filters.region);
+    if(filters.town) params.set("town",filters.town);
+    if(filters.day) params.set("day",filters.day);
+    if(filters.age) params.set("age_preset",filters.age);
+    if(filters.maxPrice) params.set("max_price",filters.maxPrice);
+    if(filters.sessionLength) params.set("sessionLength",filters.sessionLength);
+    if(filters.sen) params.set("sen",filters.sen);
+    if(filters.termTime) params.set("termTime",filters.termTime);
+    if(filters.bookingRequired) params.set("bookingRequired","1");
+    if(filters.free) params.set("free","1");
+    if(filters.accessibility?.length) params.set("accessibility",filters.accessibility.join(","));
+    return params.toString();
+  };
+
   function plannerColourPicker(selected){
     return "<div class='pro-colour-picker' role='radiogroup' aria-label='Planner colour'>"+
       colours.map((colour,i)=>"<button type='button' class='pro-colour-option "+(colour===selected?"is-selected":"")+"' style='--planner-colour:"+colour+"' data-colour='"+esc(colour)+"' role='radio' aria-checked='"+(colour===selected?"true":"false")+"' aria-label='Colour "+(i+1)+"'></button>").join("")+
       "</div>";
   }
 
-  function openPlannerForm(options){
+  async function openPlannerForm(options){
     const isEdit=Boolean(options&&options.planner);
     const p=options?.planner;
+    const filters={...defaultPlannerFilters(),...(p?.filters||{})};
+    filters.accessibility=Array.isArray(filters.accessibility)?filters.accessibility:[];
     const initialColour=p?.colour||colours[planners.length%colours.length];
+    const filterOptions=await getPlannerFilterOptions();
+    const accessibilityOptions=[
+      ["step-free","Step-free access"],["accessible-toilet","Accessible toilet"],["baby-changing","Baby changing"],
+      ["parking","Accessible parking"],["wheelchair","Wheelchair friendly"],["sensory-friendly","Sensory-friendly"],
+      ["hearing-support","Hearing support"],["visual-support","Visual support"]
+    ];
     const wrap=document.createElement("div");
     wrap.className="pro-modal-backdrop pro-planner-modal";
     wrap.innerHTML=`
-      <div class="pro-modal pro-planner-modal-card" role="dialog" aria-modal="true" aria-labelledby="plannerFormTitle">
+      <div class="pro-modal pro-planner-modal-card pro-planner-customise-modal" role="dialog" aria-modal="true" aria-labelledby="plannerFormTitle">
         <button class="pro-modal-close" type="button" aria-label="Close">×</button>
         <div class="pro-planner-modal-icon">▦</div>
         <span class="eyebrow">Planner Pro</span>
-        <h2 id="plannerFormTitle">${isEdit?"Edit planner":"Create a new planner"}</h2>
-        <p>${isEdit?"Update the name, purpose or colour for this planning space.":"Set up a separate planning space for school, holidays, a child or anything else your family needs."}</p>
+        <h2 id="plannerFormTitle">${isEdit?"Customise planner":"Create a new planner"}</h2>
+        <p>${isEdit?"Choose the activities, locations and preferences this planner is designed around.":"Create a planning space and choose the activities you want it to focus on."}</p>
         <form class="pro-form">
           <label>Planner name
             <input name="name" type="text" placeholder="e.g. School & clubs" required maxlength="60" autocomplete="off" value="${esc(p?.name||"")}">
@@ -73,6 +165,31 @@ document.addEventListener("DOMContentLoaded",async()=>{
           <label>What is it for?
             <textarea name="description" placeholder="e.g. School events, clubs and term dates." required maxlength="180">${esc(p?.description||"")}</textarea>
           </label>
+          <fieldset class="pro-planner-filter-group">
+            <legend>What should this planner focus on?</legend>
+            <p class="pro-filter-help">These are saved preferences from Bubba Hub's Advanced search. You can change them whenever you like.</p>
+            <div class="pro-planner-filter-grid">
+              <label>Category<select name="category"><option value="">All categories</option>${optionHtml(filterOptions.category,filters.category)}</select></label>
+              <label>Region<select name="region"><option value="">All regions</option>${optionHtml(filterOptions.region,filters.region)}</select></label>
+              <label>Town<select name="town"><option value="">All towns</option>${optionHtml(filterOptions.town,filters.town)}</select></label>
+              <label>Day<select name="day"><option value="">Any day</option>${optionHtml(filterOptions.day,filters.day)}</select></label>
+              <label>Age<select name="age"><option value="">Any age</option>${optionHtml(filterOptions.age.slice(1),filters.age)}</select></label>
+              <label>Price<select name="maxPrice">${optionHtml(filterOptions.maxPrice,filters.maxPrice)}</select></label>
+              <label>Session length<select name="sessionLength">${optionHtml(filterOptions.sessionLength,filters.sessionLength)}</select></label>
+              <label>SEN friendly<select name="sen">${optionHtml(filterOptions.sen,filters.sen)}</select></label>
+              <label>Term time<select name="termTime">${optionHtml(filterOptions.termTime,filters.termTime)}</select></label>
+            </div>
+            <div class="pro-planner-checks">
+              <label><input type="checkbox" name="free" ${filters.free?"checked":""}> Free only</label>
+              <label><input type="checkbox" name="bookingRequired" ${filters.bookingRequired?"checked":""}> Bookable / booking required</label>
+            </div>
+            <details class="pro-planner-accessibility">
+              <summary>Accessibility preferences</summary>
+              <div class="pro-planner-accessibility-grid">
+                ${accessibilityOptions.map(([value,label])=>"<label><input type='checkbox' name='accessibility' value='"+esc(value)+"' "+(filters.accessibility.includes(value)?"checked":"")+"> "+esc(label)+"</label>").join("")}
+              </div>
+            </details>
+          </fieldset>
           <fieldset class="pro-colour-field">
             <legend>Planner colour</legend>
             ${plannerColourPicker(initialColour)}
@@ -109,12 +226,20 @@ document.addEventListener("DOMContentLoaded",async()=>{
       const name=String(data.name||"").trim();
       const description=String(data.description||"").trim();
       if(!name||!description)return;
+      const newFilters={
+        category:String(data.category||""),region:String(data.region||""),town:String(data.town||""),
+        day:String(data.day||""),age:String(data.age||""),maxPrice:String(data.maxPrice||""),
+        sessionLength:String(data.sessionLength||""),sen:String(data.sen||""),
+        termTime:String(data.termTime||""),bookingRequired:data.bookingRequired==="on",free:data.free==="on",
+        accessibility:[...form.querySelectorAll("input[name=accessibility]:checked")].map(input=>input.value)
+      };
       if(isEdit){
         p.name=name;
         p.description=description;
         p.colour=data.colour||initialColour;
+        p.filters=newFilters;
       }else{
-        planners.push({id:uid("planner"),name,description,colour:data.colour||initialColour});
+        planners.push({id:uid("planner"),name,description,colour:data.colour||initialColour,filters:newFilters});
       }
       write(keys.planners,planners);
       renderPlanners();
