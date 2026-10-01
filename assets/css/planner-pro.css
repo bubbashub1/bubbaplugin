@@ -271,3 +271,87 @@
   .pro-calendar-month-day .pro-calendar-event small{font-size:7px}
   .pro-calendar-month-day .pro-calendar-event>span{font-size:7px}
 }
+
+
+/* Planner customise modal — polished, scrollable form */
+.pro-planner-modal{padding:16px!important;align-items:center!important;justify-content:center!important}
+.pro-planner-customise-modal{
+  width:min(680px,calc(100vw - 28px))!important;
+  max-width:680px!important;
+  max-height:calc(100vh - 28px)!important;
+  overflow:hidden!important;
+  padding:0!important;
+  border-radius:24px!important;
+  box-shadow:0 24px 70px rgba(18,63,49,.18)!important;
+}
+.pro-planner-customise-modal .pro-modal-close{
+  position:absolute;right:14px;top:14px;z-index:4;
+  width:36px;height:36px;border:0;border-radius:50%;
+  background:#f1f6f2;color:var(--bh-primary);
+  font-size:22px;line-height:1;cursor:pointer;
+}
+.pro-planner-customise-modal .pro-modal-close:hover{background:#e4eee7}
+.pro-planner-customise-modal form{
+  display:flex!important;
+  flex-direction:column!important;
+  min-height:0!important;
+  max-height:calc(100vh - 28px)!important;
+  margin:0!important;
+}
+.pro-planner-customise-modal .pro-planner-modal-icon{
+  width:46px;height:46px;display:grid;place-items:center;
+  margin:24px 24px 8px;
+  border-radius:14px;background:#edf5ef;color:var(--bh-primary);
+  font-size:22px;font-weight:900;
+}
+.pro-planner-customise-modal .eyebrow,
+.pro-planner-customise-modal>h2,
+.pro-planner-customise-modal>p{
+  margin-left:24px;margin-right:24px;
+}
+.pro-planner-customise-modal>h2{margin-top:0;margin-bottom:6px;font-size:25px;line-height:1.15}
+.pro-planner-customise-modal>p{margin-top:0;margin-bottom:18px;color:var(--bh-text-muted);font-size:12px;line-height:1.5}
+.pro-planner-customise-modal form>label,
+.pro-planner-customise-modal form>fieldset{
+  margin-left:24px;margin-right:24px;
+}
+.pro-planner-customise-modal form>label:first-of-type{margin-top:0}
+.pro-planner-customise-modal .pro-planner-filter-group{
+  margin-top:4px!important;
+  background:#f7faf7;
+  border-color:#dce8df;
+}
+.pro-planner-customise-modal .pro-planner-filter-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.pro-planner-customise-modal .pro-form-actions{
+  position:sticky;
+  bottom:0;
+  z-index:3;
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin:0!important;
+  padding:14px 24px 16px;
+  background:rgba(255,255,255,.97);
+  border-top:1px solid var(--bh-border);
+  box-shadow:0 -8px 18px rgba(18,63,49,.06);
+}
+.pro-planner-customise-modal .pro-form-actions .button{
+  min-width:120px;
+}
+@media(max-width:600px){
+  .pro-planner-modal{padding:8px!important;align-items:flex-end!important}
+  .pro-planner-customise-modal{
+    width:100%!important;
+    max-height:calc(100vh - 16px)!important;
+    border-radius:22px 22px 0 0!important;
+  }
+  .pro-planner-customise-modal form{max-height:calc(100vh - 16px)!important}
+  .pro-planner-customise-modal .pro-planner-modal-icon{margin-top:18px}
+  .pro-planner-customise-modal .pro-planner-filter-grid{grid-template-columns:1fr}
+  .pro-planner-customise-modal .pro-form-actions{
+    padding:12px 16px 14px;
+  }
+  .pro-planner-customise-modal .pro-form-actions .button{flex:1;min-width:0}
+}
