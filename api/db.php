@@ -25,6 +25,12 @@ function bh_mysql(): PDO {
         PDO::ATTR_EMULATE_PREPARES=>false,
     ]);
 
+    // Keep organiser terms storage available on older installs.
+    try {
+        $termsCheck=$pdo->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME='terms_content'")->fetchColumn();
+        if ((int)$termsCheck===0) $pdo->exec("ALTER TABLE bh_organisers ADD COLUMN terms_content MEDIUMTEXT NULL");
+    } catch (Throwable $ignored) {}
+
     // Keep the deployed database schema aligned with the application role model.
     // Older installs did not include the 'leader' enum value, while leader
     // authentication and the portal use role='leader'. Apply this safe,
