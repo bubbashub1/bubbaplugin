@@ -273,51 +273,88 @@
 }
 
 
-/* Planner customise modal — polished, scrollable form */
-.pro-planner-modal{padding:16px!important;align-items:center!important;justify-content:center!important}
+/* Planner customise modal — consolidated responsive form */
+.pro-planner-modal{
+  padding:16px!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
 .pro-planner-customise-modal{
+  display:flex!important;
+  flex-direction:column!important;
   width:min(680px,calc(100vw - 28px))!important;
   max-width:680px!important;
-  max-height:calc(100vh - 28px)!important;
+  max-height:calc(100dvh - 28px)!important;
+  min-height:0!important;
+  box-sizing:border-box;
   overflow:hidden!important;
   padding:0!important;
   border-radius:24px!important;
   box-shadow:0 24px 70px rgba(18,63,49,.18)!important;
 }
 .pro-planner-customise-modal .pro-modal-close{
-  position:absolute;right:14px;top:14px;z-index:4;
-  width:36px;height:36px;border:0;border-radius:50%;
-  background:#f1f6f2;color:var(--bh-primary);
-  font-size:22px;line-height:1;cursor:pointer;
+  position:absolute;
+  top:14px;
+  right:14px;
+  z-index:50;
+  width:36px;
+  height:36px;
+  border:0;
+  border-radius:50%;
+  background:#f1f6f2;
+  color:var(--bh-primary);
+  font-size:22px;
+  line-height:1;
+  cursor:pointer;
 }
 .pro-planner-customise-modal .pro-modal-close:hover{background:#e4eee7}
-.pro-planner-customise-modal form{
-  display:flex!important;
-  flex-direction:column!important;
-  min-height:0!important;
-  max-height:calc(100vh - 28px)!important;
-  overflow-y:auto!important;
-  overscroll-behavior:contain;
-  margin:0!important;
-}
 .pro-planner-customise-modal .pro-planner-modal-icon{
-  width:46px;height:46px;display:grid;place-items:center;
+  width:46px;
+  height:46px;
+  display:grid;
+  place-items:center;
   margin:24px 24px 8px;
-  border-radius:14px;background:#edf5ef;color:var(--bh-primary);
-  font-size:22px;font-weight:900;
+  border-radius:14px;
+  background:#edf5ef;
+  color:var(--bh-primary);
+  font-size:22px;
+  font-weight:900;
 }
-.pro-planner-customise-modal .eyebrow,
+.pro-planner-customise-modal>.eyebrow,
 .pro-planner-customise-modal>h2,
-.pro-planner-customise-modal>p{
-  margin-left:24px;margin-right:24px;
-}
-.pro-planner-customise-modal>h2{margin-top:0;margin-bottom:6px;font-size:25px;line-height:1.15}
-.pro-planner-customise-modal>p{margin-top:0;margin-bottom:18px;color:var(--bh-text-muted);font-size:12px;line-height:1.5}
+.pro-planner-customise-modal>p,
 .pro-planner-customise-modal form>label,
 .pro-planner-customise-modal form>fieldset{
-  margin-left:24px;margin-right:24px;
+  margin-left:24px;
+  margin-right:24px;
 }
-.pro-planner-customise-modal form>label:first-of-type{margin-top:0}
+.pro-planner-customise-modal>h2{
+  margin-top:0;
+  margin-bottom:6px;
+  padding-right:42px;
+  font-size:25px;
+  line-height:1.15;
+}
+.pro-planner-customise-modal>p{
+  margin-top:0;
+  margin-bottom:18px;
+  color:var(--bh-text-muted);
+  font-size:12px;
+  line-height:1.5;
+}
+.pro-planner-customise-modal form{
+  display:flex!important;
+  flex:1 1 auto!important;
+  flex-direction:column!important;
+  min-height:0!important;
+  height:auto!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  margin:0!important;
+}
 .pro-planner-customise-modal .pro-planner-filter-group{
   margin-top:4px!important;
   background:#f7faf7;
@@ -326,43 +363,17 @@
 .pro-planner-customise-modal .pro-planner-filter-grid{
   grid-template-columns:repeat(2,minmax(0,1fr));
 }
-.pro-planner-customise-modal .pro-form-actions{
-  position:sticky;
-  bottom:0;
-  z-index:3;
-  display:flex;
-  justify-content:flex-end;
-  gap:8px;
-  margin:0!important;
-  padding:14px 24px 16px;
-  background:rgba(255,255,255,.97);
-  border-top:1px solid var(--bh-border);
-  box-shadow:0 -8px 18px rgba(18,63,49,.06);
-}
-.pro-planner-customise-modal .pro-form-actions .button{
-  min-width:120px;
-}
-@media(max-width:600px){
-  .pro-planner-modal{padding:8px!important;align-items:flex-end!important}
-  .pro-planner-customise-modal{
-    width:100%!important;
-    max-height:calc(100vh - 16px)!important;
-    border-radius:22px 22px 0 0!important;
-  }
-  .pro-planner-customise-modal form{max-height:calc(100vh - 16px)!important;overflow-y:auto!important}
-  .pro-planner-customise-modal .pro-planner-modal-icon{margin-top:18px}
-  .pro-planner-customise-modal .pro-planner-filter-grid{grid-template-columns:1fr}
-  .pro-planner-customise-modal .pro-form-actions{
-    padding:12px 16px 14px;
-  }
-  .pro-planner-customise-modal .pro-form-actions .button{flex:1;min-width:0}
-}
-
-
+.pro-planner-filter-grid>label,
+.pro-planner-accessibility-grid>label{min-width:0}
 .pro-planner-filter-grid select[multiple]{
+  width:100%;
+  max-width:100%;
   min-height:96px;
+  box-sizing:border-box;
   padding:7px;
+  overflow:auto;
   background:#fff;
+  -webkit-overflow-scrolling:touch;
 }
 .pro-planner-filter-grid select[multiple] option{
   padding:6px 7px;
@@ -374,87 +385,36 @@
   color:#fff;
 }
 .pro-planner-filter-group::after{
-  content:"Hold Ctrl (Windows) or ⌘ (Mac) to select multiple";
+  content:"Select one or more options";
   display:block;
   margin-top:9px;
   color:var(--bh-text-muted);
   font-size:10px;
 }
-@media(max-width:600px){
-  .pro-planner-filter-grid select[multiple]{min-height:110px}
-}
-
-
-/* Mobile responsiveness pass — Planner Pro + customise planner */
-@media (max-width:700px){
-  .planner-pro-page{padding-bottom:24px}
-  .pro-hero{width:100%;box-sizing:border-box}
-  .pro-hero-actions{display:grid;grid-template-columns:1fr;width:100%;gap:8px}
-  .pro-hero-actions .button{width:100%;box-sizing:border-box}
-  .pro-section{width:100%;box-sizing:border-box}
-  .pro-section-head{width:100%}
-  .pro-section-head>div{width:100%;min-width:0}
-  .pro-section-head>.button,
-  .pro-section-head>a.button{width:100%;box-sizing:border-box;text-align:center}
-  .pro-planner-card,.pro-share-card,.pro-family-card,.pro-calendar-card{min-width:0}
-  .pro-planner-card-main,.pro-family-main,.pro-share-main{min-width:0;overflow-wrap:anywhere}
-  .pro-card-actions{flex-shrink:0}
-  .pro-day-row{min-width:0}
-  .pro-day-row>div:nth-child(2){min-width:0;overflow-wrap:anywhere}
-  .pro-calendar-nav{flex-wrap:wrap}
-  .pro-calendar-nav strong{flex:1 1 120px;min-width:0}
-}
-
-@media (max-width:520px){
-  .pro-dashboard{width:100%;min-width:0}
-  .pro-sidebar{width:100%;box-sizing:border-box}
-  .pro-nav{width:100%;box-sizing:border-box}
-  .pro-nav a{min-width:0;justify-content:flex-start}
-  .pro-section{padding:16px;border-radius:18px}
-  .pro-section-head h2{font-size:27px}
-  .pro-section-head p{font-size:11px}
-  .pro-planner-card,.pro-share-card{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px}
-  .pro-planner-card .pro-card-actions,.pro-share-card .pro-card-actions{grid-column:2;justify-self:stretch;display:flex;flex-direction:row;justify-content:flex-start;align-items:center;margin-left:0}
-  .pro-card-actions button{padding:7px 5px}
-  .pro-day-row{grid-template-columns:54px minmax(0,1fr)}
-  .pro-calendar-views{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
-  .pro-calendar-view{width:100%}
-  .pro-calendar-nav{display:grid;grid-template-columns:auto minmax(0,1fr) auto;width:100%}
-  .pro-calendar-nav strong{grid-column:1/-1;grid-row:1;text-align:center}
-  .pro-calendar-nav button:first-child{grid-column:1;grid-row:2}
-  .pro-calendar-nav button:nth-of-type(2){grid-column:2;grid-row:2}
-  .pro-calendar-nav button:last-child{grid-column:3;grid-row:2}
-}
-
-/* Customise Planner: make the long filter form a true mobile bottom sheet */
-.pro-planner-customise-modal{
-  width:min(680px,calc(100vw - 28px))!important;
-  max-height:calc(100dvh - 28px)!important;
-  box-sizing:border-box;
-}
-.pro-planner-customise-modal form{
-  max-height:calc(100dvh - 28px)!important;
-  overflow-x:hidden!important;
-  -webkit-overflow-scrolling:touch;
-}
 .pro-planner-customise-modal .pro-form-actions{
+  position:sticky!important;
+  bottom:0!important;
+  z-index:50!important;
+  display:flex!important;
+  flex:0 0 auto!important;
   flex-wrap:wrap;
-}
-.pro-planner-filter-grid>label,
-.pro-planner-accessibility-grid>label{
-  min-width:0;
-}
-.pro-planner-filter-grid select[multiple]{
-  width:100%;
-  max-width:100%;
+  justify-content:flex-end;
+  gap:8px;
+  width:100%!important;
+  min-height:72px;
   box-sizing:border-box;
-  overflow:auto;
-  -webkit-overflow-scrolling:touch;
+  margin:12px 0 0!important;
+  padding:14px 24px 16px;
+  background:#fff!important;
+  border-top:1px solid var(--bh-border);
+  box-shadow:0 -8px 18px rgba(18,63,49,.08);
+  visibility:visible!important;
+  opacity:1!important;
 }
-.pro-planner-filter-group::after{
-  content:"Select one or more options";
+.pro-planner-customise-modal .pro-form-actions .button{
+  min-width:120px;
+  min-height:46px;
 }
-
 @media(max-width:600px){
   .pro-planner-modal{
     padding:0!important;
@@ -466,12 +426,8 @@
     max-height:calc(100dvh - 8px)!important;
     border-radius:22px 22px 0 0!important;
   }
-  .pro-planner-customise-modal form{
-    max-height:calc(100dvh - 8px)!important;
-  }
   .pro-planner-customise-modal .pro-planner-modal-icon{
-    margin-left:16px;
-    margin-right:52px;
+    margin:18px 52px 8px 16px;
   }
   .pro-planner-customise-modal>.eyebrow,
   .pro-planner-customise-modal>h2,
@@ -485,18 +441,15 @@
     padding-right:38px;
     font-size:24px;
   }
-  .pro-planner-customise-modal>p{
-    font-size:11px;
-  }
+  .pro-planner-customise-modal>p{font-size:11px}
   .pro-planner-customise-modal form>label input,
   .pro-planner-customise-modal form>label textarea{
     min-height:44px;
     font-size:16px;
   }
-  .pro-planner-customise-modal .pro-planner-filter-group{
-    padding:12px;
-  }
-  .pro-planner-customise-modal .pro-planner-filter-grid{
+  .pro-planner-customise-modal .pro-planner-filter-group{padding:12px}
+  .pro-planner-customise-modal .pro-planner-filter-grid,
+  .pro-planner-customise-modal .pro-planner-accessibility-grid{
     grid-template-columns:1fr!important;
     gap:10px;
   }
@@ -518,73 +471,22 @@
     min-height:36px;
     font-size:12px!important;
   }
-  .pro-planner-customise-modal .pro-planner-accessibility-grid{
-    grid-template-columns:1fr!important;
-  }
-  .pro-planner-customise-modal .pro-form-actions{
-    position:sticky;
-    bottom:0;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-    padding:12px 16px 14px;
-  }
-  .pro-planner-customise-modal .pro-form-actions .button{
-    width:100%;
-    min-width:0;
-    min-height:46px;
-  }
-}
-
-@media(max-width:380px){
-  .pro-nav a{font-size:9px;padding:10px 8px}
-  .pro-section{padding:14px}
-  .pro-calendar-view{padding:8px 6px;font-size:10px}
-  .pro-planner-customise-modal .pro-form-actions{grid-template-columns:1fr}
-}
-
-
-/* Ensure the customise form actions remain visible above the mobile viewport edge. */
-.pro-planner-customise-modal form{
-  position:relative;
-}
-.pro-planner-customise-modal .pro-form-actions{
-  position:sticky!important;
-  bottom:0!important;
-  z-index:20!important;
-  flex:0 0 auto!important;
-  min-height:72px;
-  box-sizing:border-box;
-  margin-top:12px!important;
-  background:#fff!important;
-  opacity:1!important;
-  visibility:visible!important;
-}
-@media(max-width:600px){
   .pro-planner-customise-modal .pro-form-actions{
     display:grid!important;
-    grid-template-columns:1fr 1fr!important;
+    grid-template-columns:1fr 1fr;
     min-height:70px;
     margin-left:0!important;
     margin-right:0!important;
     padding:12px 16px calc(12px + env(safe-area-inset-bottom))!important;
-    box-shadow:0 -8px 18px rgba(18,63,49,.10)!important;
   }
   .pro-planner-customise-modal .pro-form-actions .button{
-    display:flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    visibility:visible!important;
-    opacity:1!important;
-    min-height:46px!important;
+    width:100%;
+    min-width:0;
   }
 }
 @media(max-width:380px){
-  .pro-planner-customise-modal .pro-form-actions{
-    grid-template-columns:1fr!important;
-  }
+  .pro-planner-customise-modal .pro-form-actions{grid-template-columns:1fr}
 }
-
 
 /* Mobile Planner Pro navigation — replace the sidebar grid with a compact Jump To control */
 .pro-mobile-jump{display:none}
