@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", async () => {
+const bhInitDirectory=async()=>{
   const $ = id => document.getElementById(id);
   const escapeHtml = value => bhEscape(value);
 
@@ -983,4 +983,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         "</p></div>";
     }
   }
-});
+};
+const bhInitDirectoryStart=()=>{const ready=window.bhDirectoryHeroReady;if(ready)ready.then(bhInitDirectory);else bhInitDirectory();};
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bhInitDirectoryStart,{once:true});else bhInitDirectoryStart();
