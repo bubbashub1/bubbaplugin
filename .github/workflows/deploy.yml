@@ -64,8 +64,11 @@ jobs:
           echo "Uploading deployment archive..."
           scp             -P "$SSH_PORT"             -i "$RUNNER_TEMP/eweball_deploy_key"             -o IdentitiesOnly=yes             -o StrictHostKeyChecking=no             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts"             "$DEPLOY_ARCHIVE"             "$SSH_USERNAME@$SSH_HOST:/tmp/bubbaplugin-deploy.tar.gz"
 
+          echo "Checking uploaded archive on eWebAll..."
+          ssh             -p "$SSH_PORT"             -i "$RUNNER_TEMP/eweball_deploy_key"             -o IdentitiesOnly=yes             -o StrictHostKeyChecking=no             -o ServerAliveInterval=15             -o ServerAliveCountMax=4             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts"             "$SSH_USERNAME@$SSH_HOST"             "ls -lh /tmp/bubbaplugin-deploy.tar.gz && tar -tzf /tmp/bubbaplugin-deploy.tar.gz >/dev/null && echo 'Archive verified successfully.'"
+
           echo "Extracting deployment on eWebAll..."
-          ssh             -p "$SSH_PORT"             -i "$RUNNER_TEMP/eweball_deploy_key"             -o IdentitiesOnly=yes             -o StrictHostKeyChecking=no             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts"             "$SSH_USERNAME@$SSH_HOST"             "mkdir -p \"$REMOTE_PATH\" && tar -xzf /tmp/bubbaplugin-deploy.tar.gz -C \"$REMOTE_PATH\" && rm -f /tmp/bubbaplugin-deploy.tar.gz"
+          ssh             -p "$SSH_PORT"             -i "$RUNNER_TEMP/eweball_deploy_key"             -o IdentitiesOnly=yes             -o StrictHostKeyChecking=no             -o ServerAliveInterval=15             -o ServerAliveCountMax=4             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts"             "$SSH_USERNAME@$SSH_HOST"             "mkdir -p \"$REMOTE_PATH\" && tar -xzf /tmp/bubbaplugin-deploy.tar.gz -C \"$REMOTE_PATH\" && rm -f /tmp/bubbaplugin-deploy.tar.gz"
 
           echo "Deployment upload finished."
 
