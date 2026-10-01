@@ -6,6 +6,7 @@
       </a>
 
       <div class="bh-header-actions">
+        <button type="button" class="bh-mobile-menu" aria-expanded="false" aria-controls="bh-main-nav" aria-label="Open menu"><span></span><span></span><span></span></button>
         <nav class="bh-main-nav" id="bh-main-nav" aria-label="Main menu">
           <a href="directory.html">Find activities</a>
           <a href="my-hub.html">My Hub</a>
@@ -54,22 +55,3 @@
   </div>
 </header>
 
-<script>
-(function () {
-  const toggle = document.querySelector('.bh-header-search-toggle');
-  const searchBar = document.getElementById('bh-header-search-bar');
-
-  if (!toggle || !searchBar) return;
-
-  toggle.addEventListener('click', function () {
-    const isOpen = searchBar.classList.toggle('is-open');
-    toggle.setAttribute('aria-expanded', String(isOpen));
-    toggle.setAttribute('aria-label', isOpen ? 'Close search' : 'Open search');
-
-    if (isOpen) {
-      const input = searchBar.querySelector('input[name="keyword"]');
-      if (input) setTimeout(() => input.focus(), 150);
-    }
-  });
-})();
-</script>
