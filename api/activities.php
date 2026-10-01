@@ -14,20 +14,16 @@ try {
 
     $search = trim((string)($_GET['search'] ?? ''));
     $slug = trim((string)($_GET['slug'] ?? ''));
+    $organiserSlug = trim((string)($_GET['organiser_slug'] ?? ''));
     $category = trim((string)($_GET['category'] ?? ''));
     $town = trim((string)($_GET['town'] ?? ''));
     $region = trim((string)($_GET['region'] ?? ''));
     $day = isset($_GET['day']) ? (int)$_GET['day'] : null;
     $minPrice = isset($_GET['min_price']) && $_GET['min_price'] !== '' ? (float)$_GET['min_price'] : null;
     $maxPrice = isset($_GET['max_price']) && $_GET['max_price'] !== '' ? (float)$_GET['max_price'] : null;
-
-    // Age filters are applied after retrieval because age_range is intentionally
-    // stored as flexible display text in the foundation schema.
     $minAge = isset($_GET['min_age']) && $_GET['min_age'] !== '' ? max(0, (float)$_GET['min_age']) : null;
     $maxAge = isset($_GET['max_age']) && $_GET['max_age'] !== '' ? max(0, (float)$_GET['max_age']) : null;
 
-    // The public directory must keep working even if the county migration has not yet
-    // been applied to an older live database. Detect the column and fall back to NULL.
     $countyColumn = false;
     try {
         $columnCheck = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bh_activities' AND COLUMN_NAME = 'county'");
@@ -48,8 +44,6 @@ try {
 
     $countySelect = $countyColumn ? 'a.county' : 'NULL AS county';
     $accessibilitySelect = $accessibilityColumn ? 'a.accessibility' : 'NULL AS accessibility';
-    // Treat both common published values as live listings. Older imports/WordPress
-    // data can use 'publish', while Bubba Hub admin uses 'published'. Drafts remain excluded.
     $where = ["LOWER(TRIM(COALESCE(a.status, ''))) IN ('published', 'publish')"];
     $params = [];
 
@@ -143,7 +137,6 @@ try {
     $stmt->execute($params);
     $rows = $stmt->fetchAll();
 
-    // Collapse multiple venue rows into one activity result while retaining venues.
     $activities = [];
     foreach ($rows as $row) {
         $id = (int)$row['id'];
@@ -193,7 +186,6 @@ try {
         }
     }
 
-    // Load sessions for the returned activity IDs in one query.
     if ($activities) {
         $ids = array_keys($activities);
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
@@ -241,7 +233,6 @@ try {
         }
     }
 
-    // Convert venue maps to arrays.
     foreach ($activities as &$activity) {
         $activity['venues'] = array_values($activity['venues']);
     }
@@ -249,8 +240,19 @@ try {
 
     $activities = array_values($activities);
 
-    // Flexible age_range support. Examples handled include:
-    // "2 - 5 years", "0-3", "5+", "under 2", "2 years".
+    if ($organiserSlug !== '') {
+        $normaliseSlug = static function ($value): string {
+            $value = strtolower(trim((string)$value));
+            $value = str_replace('&', 'and', $value);
+            $value = preg_replace('/[^a-z0-9]+/', '-', $value);
+            return trim((string)$value, '-');
+        };
+        $wantedOrganiser = $normaliseSlug($organiserSlug);
+        $activities = array_values(array_filter($activities, static function (array $activity) use ($normaliseSlug, $wantedOrganiser): bool {
+            return $normaliseSlug($activity['organiser']['slug'] ?? $activity['organiser']['name'] ?? '') === $wantedOrganiser;
+        }));
+    }
+
     if ($minAge !== null || $maxAge !== null) {
         $activities = array_values(array_filter($activities, static function (array $activity) use ($minAge, $maxAge): bool {
             $text = strtolower(trim((string)($activity['age_range'] ?? '')));
@@ -301,6 +303,7 @@ try {
             'max_price' => $maxPrice,
             'min_age' => $minAge,
             'max_age' => $maxAge,
+            'organiser_slug' => $organiserSlug,
         ],
     ], JSON_UNESCAPED_SLASHES);
 } catch (Throwable $e) {
