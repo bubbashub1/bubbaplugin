@@ -437,3 +437,11 @@
   .planner-card-actions .button,.planner-card-actions .planner-remove{width:100%;box-sizing:border-box;text-align:center}
   .planner-unscheduled .planner-card{width:100%;box-sizing:border-box;margin-right:0}
 }
+
+
+/* Planner Pro profile selector */
+.planner-profile-select{min-height:42px;max-width:210px;padding:8px 34px 8px 11px;border:1px solid var(--bh-border);border-radius:12px;background:#fff;color:var(--bh-text);font:inherit;font-size:11px;font-weight:800;box-sizing:border-box}
+.planner-profile-select:focus{outline:3px solid rgba(246,200,74,.5);outline-offset:1px;border-color:var(--bh-primary)}
+.planner-profile-note{padding:9px 12px;border-radius:12px;background:#edf5ef;color:var(--bh-text-muted);font-size:11px}
+.planner-profile-note strong{color:var(--bh-primary)}
+@media(max-width:560px){.planner-profile-select{width:100%;max-width:none;min-height:46px;font-size:13px}.planner-toolbar-actions{width:100%}.planner-profile-note{font-size:10px}}
