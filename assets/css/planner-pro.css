@@ -176,3 +176,26 @@
   .pro-month-cell:first-child,.pro-month-cell:nth-child(2),.pro-month-cell:nth-child(3),.pro-month-cell:nth-child(4),.pro-month-cell:nth-child(5),.pro-month-cell:nth-child(6),.pro-month-cell:nth-child(7){background:#edf5ef!important}
 }
 @media(max-width:520px){.pro-print-actions{justify-content:stretch}.pro-print-actions .button{width:100%}}
+
+
+/* Planner activity preferences */
+.pro-planner-customise-modal{max-height:calc(100vh - 32px);overflow:auto}
+.pro-planner-filter-group{margin:4px 0 0;padding:14px;border:1px solid var(--bh-border);border-radius:15px;background:#f8fbf8}
+.pro-planner-filter-group legend{padding:0 5px;color:var(--bh-text);font-size:13px;font-weight:850}
+.pro-filter-help{margin:3px 0 12px!important;font-size:11px!important;line-height:1.45!important}
+.pro-planner-filter-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.pro-planner-filter-grid label{font-size:10px!important}
+.pro-planner-filter-grid select{margin-top:2px}
+.pro-planner-checks{display:flex;flex-wrap:wrap;gap:12px;margin-top:11px}
+.pro-planner-checks label,.pro-planner-accessibility label{display:flex!important;align-items:center;gap:6px;font-size:10px!important;font-weight:700!important}
+.pro-planner-checks input,.pro-planner-accessibility input{width:16px;height:16px;accent-color:var(--bh-primary)}
+.pro-planner-accessibility{margin-top:11px;border-top:1px solid var(--bh-border);padding-top:10px}
+.pro-planner-accessibility summary{cursor:pointer;color:var(--bh-primary);font-size:11px;font-weight:850}
+.pro-planner-accessibility-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
+.pro-planner-filters{margin-top:7px;color:var(--bh-text-muted);font-size:11px;line-height:1.4}
+.pro-planner-browse{display:inline-block;margin-top:6px;color:var(--bh-primary);font-size:11px;font-weight:850;text-decoration:none}
+.pro-planner-browse:hover{text-decoration:underline}
+@media(max-width:600px){
+  .pro-planner-filter-grid,.pro-planner-accessibility-grid{grid-template-columns:1fr}
+  .pro-planner-customise-modal{max-height:calc(100vh - 20px)}
+}
