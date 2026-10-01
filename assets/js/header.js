@@ -99,6 +99,27 @@
         void populateSearchOptions();
       }
 
+      const searchToggle=header.querySelector(".bh-header-search-toggle");
+      const searchBar=header.querySelector(".bh-header-search-bar");
+      if(searchToggle&&searchBar){
+        searchToggle.addEventListener("click",event=>{
+          event.preventDefault();
+          event.stopPropagation();
+          const open=!searchBar.classList.contains("is-open");
+          searchBar.classList.toggle("is-open",open);
+          searchToggle.setAttribute("aria-expanded",String(open));
+          searchToggle.setAttribute("aria-label",open?"Close search":"Open search");
+          if(open) setTimeout(()=>searchBar.querySelector("[name=keyword]")?.focus(),80);
+        });
+        document.addEventListener("click",event=>{
+          if(!searchBar.contains(event.target)){
+            searchBar.classList.remove("is-open");
+            searchToggle.setAttribute("aria-expanded","false");
+            searchToggle.setAttribute("aria-label","Open search");
+          }
+        });
+      }
+
       const menu=header.querySelector(".bh-mobile-menu");
       const nav=header.querySelector(".bh-main-nav");
       if(!menu||!nav)return;
