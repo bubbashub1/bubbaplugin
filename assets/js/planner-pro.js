@@ -44,29 +44,43 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const el=$("proPlannerList");if(!planners.length){el.innerHTML="<div class='pro-empty'><strong>No planners yet</strong>Create your first custom planner.</div>";return}
     el.innerHTML=planners.map((p,i)=>"<article class='pro-planner-card "+(i===0?"is-active":"")+"'><span class='pro-planner-swatch' style='background:"+esc(p.colour||colours[i%colours.length])+"'></span><div class='pro-planner-card-main'><h3>"+esc(p.name)+"</h3><p>"+esc(p.description||"Custom family planner")+"</p></div><div class='pro-card-actions'><button type='button' data-planner-edit='"+esc(p.id)+"'>Edit</button><button type='button' data-planner-delete='"+esc(p.id)+"'>Delete</button></div></article>").join("");
     el.querySelectorAll("[data-planner-edit]").forEach(b=>b.onclick=()=>editPlanner(b.dataset.plannerEdit));
-    el.querySelectorAll("[data-planner-delete]").forEach(b=>b.onclick=()=>{if(planners.length===1)return;planners=planners.filter(p=>p.id!==b.dataset.plannerDelete);write(keys.planners,planners);renderPlanners();});
+    el.querySelectorAll("[data-planner-delete]").forEach(b=>b.onclick=()=>deletePlanner(b.dataset.plannerDelete));
   }
   /* New Planner modal component */
-  function openNewPlannerModal(){
+  function plannerColourPicker(selected){
+    return "<div class='pro-colour-picker' role='radiogroup' aria-label='Planner colour'>"+
+      colours.map((colour,i)=>"<button type='button' class='pro-colour-option "+(colour===selected?"is-selected":"")+"' style='--planner-colour:"+colour+"' data-colour='"+esc(colour)+"' role='radio' aria-checked='"+(colour===selected?"true":"false")+"' aria-label='Colour "+(i+1)+"'></button>").join("")+
+      "</div>";
+  }
+
+  function openPlannerForm(options){
+    const isEdit=Boolean(options&&options.planner);
+    const p=options?.planner;
+    const initialColour=p?.colour||colours[planners.length%colours.length];
     const wrap=document.createElement("div");
     wrap.className="pro-modal-backdrop pro-planner-modal";
     wrap.innerHTML=`
-      <div class="pro-modal pro-planner-modal-card" role="dialog" aria-modal="true" aria-labelledby="newPlannerTitle">
+      <div class="pro-modal pro-planner-modal-card" role="dialog" aria-modal="true" aria-labelledby="plannerFormTitle">
         <button class="pro-modal-close" type="button" aria-label="Close">×</button>
         <div class="pro-planner-modal-icon">▦</div>
         <span class="eyebrow">Planner Pro</span>
-        <h2 id="newPlannerTitle">Create a new planner</h2>
-        <p>Set up a separate planning space for school, holidays, a child or anything else your family needs.</p>
+        <h2 id="plannerFormTitle">${isEdit?"Edit planner":"Create a new planner"}</h2>
+        <p>${isEdit?"Update the name, purpose or colour for this planning space.":"Set up a separate planning space for school, holidays, a child or anything else your family needs."}</p>
         <form class="pro-form">
           <label>Planner name
-            <input name="name" type="text" placeholder="e.g. School & clubs" required maxlength="60" autocomplete="off">
+            <input name="name" type="text" placeholder="e.g. School & clubs" required maxlength="60" autocomplete="off" value="${esc(p?.name||"")}">
           </label>
           <label>What is it for?
-            <textarea name="description" placeholder="e.g. School events, clubs and term dates." required maxlength="180"></textarea>
+            <textarea name="description" placeholder="e.g. School events, clubs and term dates." required maxlength="180">${esc(p?.description||"")}</textarea>
           </label>
+          <fieldset class="pro-colour-field">
+            <legend>Planner colour</legend>
+            ${plannerColourPicker(initialColour)}
+            <input type="hidden" name="colour" value="${esc(initialColour)}">
+          </fieldset>
           <div class="pro-form-actions">
             <button type="button" class="button button-soft" data-cancel>Cancel</button>
-            <button type="submit" class="button button-primary">Create planner</button>
+            <button type="submit" class="button button-primary">${isEdit?"Save changes":"Create planner"}</button>
           </div>
         </form>
       </div>`;
@@ -76,27 +90,64 @@ document.addEventListener("DOMContentLoaded",async()=>{
     wrap.querySelector(".pro-modal-close").onclick=close;
     wrap.querySelector("[data-cancel]").onclick=close;
     wrap.addEventListener("click",e=>{if(e.target===wrap)close()});
-    document.addEventListener("keydown",function onKey(e){if(e.key==="Escape"){close();document.removeEventListener("keydown",onKey)}});
+    const colourInput=form.querySelector("[name=colour]");
+    form.querySelectorAll("[data-colour]").forEach(button=>{
+      button.onclick=()=>{
+        colourInput.value=button.dataset.colour;
+        form.querySelectorAll("[data-colour]").forEach(item=>{
+          const active=item===button;
+          item.classList.toggle("is-selected",active);
+          item.setAttribute("aria-checked",String(active));
+        });
+      };
+    });
+    const onKey=e=>{if(e.key==="Escape"){close();document.removeEventListener("keydown",onKey)}};
+    document.addEventListener("keydown",onKey);
     form.onsubmit=e=>{
       e.preventDefault();
       const data=Object.fromEntries(new FormData(form));
       const name=String(data.name||"").trim();
       const description=String(data.description||"").trim();
       if(!name||!description)return;
-      planners.push({id:uid("planner"),name,description,colour:colours[planners.length%colours.length]});
+      if(isEdit){
+        p.name=name;
+        p.description=description;
+        p.colour=data.colour||initialColour;
+      }else{
+        planners.push({id:uid("planner"),name,description,colour:data.colour||initialColour});
+      }
       write(keys.planners,planners);
       renderPlanners();
       close();
+      document.removeEventListener("keydown",onKey);
     };
     requestAnimationFrame(()=>form.querySelector("input")?.focus());
   }
 
+  function openNewPlannerModal(){openPlannerForm({});}
   function addPlanner(){openNewPlannerModal();}
+
   function editPlanner(id){
-    const p=planners.find(x=>x.id===id);if(!p)return;
-    modal("Edit planner","Keep the purpose clear so you can recognise it quickly.",[
-      {name:"name",label:"Planner name",required:true},{name:"description",label:"Description",required:true}
-    ],d=>{p.name=d.name;p.description=d.description;write(keys.planners,planners);renderPlanners()});
+    const p=planners.find(x=>x.id===id);
+    if(!p)return;
+    openPlannerForm({planner:p});
+  }
+
+  function deletePlanner(id){
+    if(planners.length<=1){
+      alert("Keep at least one planner. Create another planner before deleting this one.");
+      return;
+    }
+    const p=planners.find(x=>x.id===id);
+    if(!p)return;
+    const confirmed=window.confirm('Delete "'+p.name+'"? This removes the planner from Planner Pro. Any shared links for this planner will also be revoked.');
+    if(!confirmed)return;
+    planners=planners.filter(x=>x.id!==id);
+    shares=shares.filter(x=>x.plannerId!==id);
+    write(keys.planners,planners);
+    write(keys.shares,shares);
+    renderPlanners();
+    renderShares();
   }
 
   function renderFamily(){
