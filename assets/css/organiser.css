@@ -126,7 +126,7 @@
   width:100%;
   margin:0 0 34px;
 }
-.organiser-summary>div{
+.organiser-summary-stat{
   display:flex;
   align-items:baseline;
   gap:8px;
@@ -138,13 +138,13 @@
   border-radius:14px;
   box-shadow:none;
 }
-.organiser-summary strong{
+.organiser-summary-stat strong{
   color:var(--os-ink);
   font-size:24px;
   font-weight:800;
   line-height:1;
 }
-.organiser-summary span{
+.organiser-summary-stat span{
   color:#617261;
   font-size:12px;
   font-weight:700;
@@ -404,7 +404,7 @@
     gap:16px;
     margin-bottom:16px;
     padding:24px 18px;
-    border-radius:18px;
+    border-radius:0;
     text-align:center;
   }
   .organiser-brand-mark{
@@ -422,11 +422,18 @@
     gap:8px;
     margin-bottom:28px;
   }
-  .organiser-summary>div{
+  .organiser-summary-stat{
     min-height:58px;
     padding:13px;
   }
-  .organiser-summary>div:last-child{grid-column:1/-1}
+  .organiser-summary .bh-organiser-badges{padding:2px 0 0;}
+  .organiser-summary-stat:nth-child(3){grid-column:1/-1}
+  .organiser-venues-copy{padding:18px}
+  .organiser-venue-card{padding:12px}
+  .organiser-map{min-height:300px}
+  .organiser-map-empty{min-height:300px}
+  .organiser-info-card .organiser-actions .button,
+  .organiser-info-card > .button{width:100%;justify-content:center}
   .storefront-heading h2{font-size:24px}
   .storefront-grid{grid-template-columns:1fr;gap:14px}
   .storefront-card{border-radius:15px}
@@ -437,7 +444,7 @@
   .organiser-hero-copy h1{font-size:27px}
   .organiser-intro{font-size:14px}
   .organiser-actions .button{width:100%;justify-content:center}
-  .organiser-summary strong{font-size:21px}
+  .organiser-summary-stat strong{font-size:21px}
   .storefront-card-body{padding:16px}
 }
 
