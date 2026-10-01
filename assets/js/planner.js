@@ -210,12 +210,12 @@ document.addEventListener("DOMContentLoaded",async()=>{
 
     document.querySelector(".planner-shell")?.classList.remove("is-list-view");
 
-    const sections=days.filter(day=>!hidden.includes(String(day.num))).map(day=>{
+    const sections=days.map(day=>{
       const dayEntries=shownEntries.map((entry,index)=>({...entry,_index:index})).filter(entry=>entry.day===day.num).sort((a,b)=>String(a.session?.start_time||"").localeCompare(String(b.session?.start_time||""))||String(a.activity.title).localeCompare(String(b.activity.title)));
-      const isToday=day.num===todayNum,date=dateForDay(day.num);
-      return "<section class='planner-day-column"+(isToday?" is-today":"")+"' data-day='"+day.num+"'>"+
+      const isToday=day.num===todayNum,date=dateForDay(day.num),isHidden=hidden.includes(String(day.num));
+      return "<section class='planner-day-column"+(isToday?" is-today":"")+(isHidden?" is-hidden-day":"")+"' data-day='"+day.num+"'>"+
         "<div class='planner-day-heading'><div><span>"+esc(day.short)+"</span><h3>"+esc(day.name)+"</h3><small class='planner-date'>"+esc(date.toLocaleDateString("en-GB",{day:"numeric",month:"short"}))+"</small></div>"+(isToday?"<small>Today</small>":"")+"</div>"+
-        (dayEntries.length?dayEntries.map(entry=>{
+        (isHidden?"<div class='planner-day-empty planner-day-empty-hidden' aria-hidden='true'></div>":(dayEntries.length?dayEntries.map(entry=>{
           const a=entry.activity,s=entry.session,venue=s?.venue,range=timeRange(s),clash=conflicts.has(entry._index);
           const time=s?(formatTime(s.start_time)+(s.end_time?" – "+formatTime(s.end_time):"")):"Time TBC",location=venue?.town||venue?.name||a.location||a.town||"",age=Array.isArray(a.age_range)?a.age_range.join(", "):String(a.age_range||""),visit=localVisited().includes(String(a.id));
           return "<article class='planner-card"+(clash?" is-conflict":"")+"'><div class='planner-card-top'><span class='planner-time'>"+esc(time)+"</span>"+(clash?"<span class='planner-conflict'>⚠ Clash</span>":(s?.term_time_only?"<span class='planner-mini-badge'>Term time</span>":""))+"</div>"+
