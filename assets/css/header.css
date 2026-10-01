@@ -1,28 +1,222 @@
 /* =========================================================
-   BUBBA HUB — MASTER HEADER
-   Edit this file to change the header site-wide.
+   BUBBA HUB — MASTER HEADER (Full Width + Mini Search)
    ========================================================= */
-.bh-site-header{width:100%;background:#416651;color:#fff;position:relative;z-index:1000;}
-.bh-header-inner{width:100%;max-width:1400px;min-height:76px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:24px;box-sizing:border-box;}
-.bh-header-logo{display:flex;align-items:center;flex:0 0 auto;text-decoration:none;}
-.bh-header-logo img{display:block;width:auto;max-width:170px;max-height:55px;object-fit:contain;}
-.bh-main-nav{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-left:auto;}
-.bh-main-nav a{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 15px;border-radius:12px;color:#fff;text-decoration:none;font-size:14px;font-weight:800;transition:background .2s ease,color .2s ease;}
-.bh-main-nav a:hover,.bh-main-nav a:focus-visible{background:#d8e6db;color:#144400;}
-.bh-header-search{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:12px;color:#fff;text-decoration:none;font-size:23px;flex:0 0 auto;}
-.bh-header-search:hover,.bh-header-search:focus-visible{background:#d8e6db;color:#144400;}
-.bh-mobile-menu{display:none;width:44px;height:44px;padding:0;border:0;border-radius:12px;background:#d8e6db;color:#144400;cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:4px;}
-.bh-mobile-menu span{display:block;width:20px;height:2px;border-radius:2px;background:currentColor;}
-@media(max-width:800px){
-  .bh-header-inner{min-height:68px;padding:0 15px;}
-  .bh-main-nav{display:none;position:absolute;left:0;right:0;top:100%;margin:0;padding:10px 15px 16px;background:#416651;flex-direction:column;align-items:stretch;gap:5px;box-sizing:border-box;}
-  .bh-main-nav.is-open{display:flex;}
-  .bh-main-nav a{width:100%;justify-content:flex-start;box-sizing:border-box;}
-  .bh-header-search{margin-left:auto;}
-  .bh-mobile-menu{display:inline-flex;}
-  .bh-mobile-menu[aria-expanded="true"]{background:#f6c84a;}
+.bh-site-header {
+  width: 100%;
+  background: #416651;
+  color: #fff;
+  position: relative;
+  z-index: 1000;
 }
-@media(max-width:420px){
-  .bh-header-logo img{max-width:145px;max-height:48px;}
-  .bh-header-inner{gap:8px;}
+
+.bh-header-inner {
+  width: 100%;
+  max-width: 1400px;
+  min-height: 76px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-sizing: border-box;
 }
+
+.bh-header-logo {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  text-decoration: none;
+}
+
+.bh-header-logo img {
+  display: block;
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+/* Mini Inline Search Form */
+.bh-mini-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 10px;
+  border-radius: 14px;
+}
+
+.bh-mini-search input,
+.bh-mini-search select {
+  background: #fff;
+  color: #2b2d42;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 12px;
+  outline: none;
+}
+
+.bh-mini-search input {
+  width: 130px;
+}
+
+.bh-mini-search select {
+  cursor: pointer;
+  max-width: 90px;
+}
+
+.bh-mini-search-btn {
+  background: #f6c84a;
+  color: #144400;
+  border: none;
+  border-radius: 10px;
+  padding: 6px 14px;
+  font-weight: 800;
+  font-size: 12px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.bh-mini-search-btn:hover {
+  opacity: 0.9;
+}
+
+/* Navigation Links */
+.bh-main-nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.bh-main-nav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 12px;
+  border-radius: 12px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 800;
+  transition: background .2s ease, color .2s ease;
+}
+
+.bh-main-nav a:hover,
+.bh-main-nav a:focus-visible {
+  background: #d8e6db;
+  color: #144400;
+}
+
+/* Mobile Menu Button */
+.bh-mobile-menu {
+  display: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: #d8e6db;
+  color: #144400;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.bh-mobile-menu span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+@media (max-width: 1024px) {
+  .bh-mini-search {
+    display: none; /* Hide mini search on smaller screens to prevent overcrowding, or move to mobile drawer */
+  }
+}
+
+@media (max-width: 800px) {
+  .bh-header-inner {
+    min-height: 68px;
+    padding: 0 15px;
+  }
+  .bh-main-nav {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    margin: 0;
+    padding: 10px 15px 16px;
+    background: #416651;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
+    box-sizing: border-box;
+  }
+  .bh-main-nav.is-open {
+    display: flex;
+  }
+  .bh-main-nav a {
+    width: 100%;
+    justify-content: flex-start;
+    box-sizing: border-box;
+  }
+  .bh-mobile-menu {
+    display: inline-flex;
+  }
+  .bh-mobile-menu[aria-expanded="true"] {
+    background: #f6c84a;
+  }
+}
+```[cite: 2]
+
+---
+
+### 💻 Matching HTML Template
+
+```html
+<header class="bh-site-header">
+  <div class="bh-header-inner">
+    <!-- Logo -->
+    <a href="#" class="bh-header-logo">
+      <img src="images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png" alt="Bubba Hub Logo">
+    </a>
+
+    <!-- Mini Main Search Bar -->
+    <div class="bh-mini-search">
+      <input type="text" placeholder="Keyword">
+      <select><option>Region</option></select>
+      <select><option>Town</option></select>
+      <button class="bh-mini-search-btn">Go</button>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="bh-main-nav" id="bh-main-nav">
+      <a href="#">Find activities</a>
+      <a href="#">My Hub</a>
+      <a href="#">Support & Guidance</a>
+      <a href="#">Class Leaders</a>
+      <a href="#">Account</a>
+      <a href="#">Sign in</a>
+    </nav>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="bh-mobile-menu" aria-label="Toggle navigation" aria-expanded="false" aria-controls="bh-main-nav">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</header>
+```[cite: 2]
+
+How does this integrated look feel to you?
