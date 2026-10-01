@@ -26,6 +26,17 @@ document.addEventListener("DOMContentLoaded",async()=>{
   }
   const localPlanned=()=>bhGet(BH_KEYS.planner),localVisited=()=>getList(VISITED_KEY),localHidden=()=>getList(HIDE_KEY);
 
+  function renderAdminProPreview(){
+    if(!adminOnly)return;
+    const shell=document.querySelector(".planner-shell");
+    if(!shell||document.getElementById("plannerProPreview"))return;
+    const panel=document.createElement("section");
+    panel.id="plannerProPreview";
+    panel.className="planner-pro-preview";
+    panel.innerHTML='<div class="planner-pro-preview-head"><div><span class="eyebrow">Admin preview · Bubba Hub Pro</span><h2>Family Planner Pro</h2><p>Full Pro experience preview — visible to admins without changing your normal family planner data.</p></div><span class="planner-pro-badge">PRO</span></div><div class="planner-pro-grid"><button type="button" class="planner-pro-feature is-active"><strong>▦ Multiple planners</strong><span>Family, school, holidays or a separate child planner.</span></button><button type="button" class="planner-pro-feature"><strong>↗ Share a planner</strong><span>Private view-only sharing link for grandparents, carers or co-parents.</span></button><button type="button" class="planner-pro-feature"><strong>👨‍👩‍👧 Family members</strong><span>Assign activities to a child or family member with colour coding.</span></button><button type="button" class="planner-pro-feature"><strong>🔔 Notes & reminders</strong><span>Add preparation notes, reminders and booking prompts.</span></button><button type="button" class="planner-pro-feature"><strong>▤ Monthly view</strong><span>See the whole month alongside your weekly and list views.</span></button><button type="button" class="planner-pro-feature"><strong>☀ Plan a day</strong><span>Build a simple day plan around activities, travel and free time.</span></button><button type="button" class="planner-pro-feature"><strong>♡ Favourites</strong><span>Keep favourite activities ready to add when dates become available.</span></button><button type="button" class="planner-pro-feature"><strong>↗ Shared calendars</strong><span>Keep Pro planners separate and share the right calendar with the right people.</span></button></div><div class="planner-pro-preview-actions"><button type="button" class="button button-primary">＋ Create custom planner</button><button type="button" class="button button-soft">Manage shared planners</button><button type="button" class="button button-soft">View Pro settings</button></div>';
+    shell.parentNode.insertBefore(panel,shell);
+  }
+
   async function syncAccount(){
     if(!signedIn){statusNote.innerHTML='Your planner is saved on this device. <a href="account.html?next=planner.html">Sign in</a> to keep it across devices.';return}
     if(adminOnly){statusNote.textContent="Admin access — this planner is saved on this device.";return}
@@ -209,7 +220,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     viewControls.querySelectorAll(".planner-view-button").forEach(b=>b.classList.toggle("is-active",b===button));
     render();buildPrintCalendar();
   }));
-  await syncAccount();render();buildPrintCalendar();
+  await syncAccount();renderAdminProPreview();render();buildPrintCalendar();
 }).catch(error=>{
   const target=document.getElementById("results");
   target.innerHTML="<div class='admin-panel'><h3>Planner unavailable</h3><p>"+(window.bhEscape?bhEscape(error.message||"Unable to load planner."):String(error.message||"Unable to load planner."))+"</p></div>";
