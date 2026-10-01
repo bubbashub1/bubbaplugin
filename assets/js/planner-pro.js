@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       const summary=plannerFilterSummary(filters);
       const query=plannerFilterQuery(filters);
       const filterText=summary.length?summary.slice(0,4).join(" · ")+(summary.length>4?" · +"+(summary.length-4)+" more":""):"No activity filters yet";
-      const browse=query?"<a class='pro-planner-browse' href='directory.html?"+esc(query)+"'>Find matching activities →</a>":"<a class='pro-planner-browse' href='directory.html'>Find activities →</a>";
+      const browse=query?"<div class='pro-planner-links'><a class='pro-planner-browse' href='planner.html?proPlanner="+encodeURIComponent(p.id)+"'>View Planner →</a><a class='pro-planner-browse' href='directory.html?"+esc(query)+"'>Find matching activities →</a></div>":"<div class='pro-planner-links'><a class='pro-planner-browse' href='planner.html?proPlanner="+encodeURIComponent(p.id)+"'>View Planner →</a><a class='pro-planner-browse' href='directory.html'>Find activities →</a></div>";
       return "<article class='pro-planner-card "+(i===0?"is-active":"")+"'><span class='pro-planner-swatch' style='background:"+esc(p.colour||colours[i%colours.length])+"'></span><div class='pro-planner-card-main'><h3>"+esc(p.name)+"</h3><p>"+esc(p.description||"Custom family planner")+"</p><div class='pro-planner-filters' aria-label='Planner activity preferences'>"+esc(filterText)+"</div>"+browse+"</div><div class='pro-card-actions'><button type='button' data-planner-edit='"+esc(p.id)+"'>Customise</button><button type='button' data-planner-delete='"+esc(p.id)+"'>Delete</button></div></article>";
     }).join("");
     el.querySelectorAll("[data-planner-edit]").forEach(b=>b.onclick=()=>editPlanner(b.dataset.plannerEdit));
