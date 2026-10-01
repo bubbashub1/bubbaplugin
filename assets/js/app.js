@@ -8,7 +8,7 @@
   document.head.appendChild(script);
 })();
 
-const BH_KEYS={saved:"bhSavedActivities",planner:"bhPlanner"};
+const BH_KEYS={saved:"bhSavedActivities",planner:"bhPlanner",visited:"bhVisitedActivities",recent:"bhRecentlyViewed"};
 
 async function bhActivities(){
   if(window.__bhActivities)return window.__bhActivities;
