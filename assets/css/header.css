@@ -1,0 +1,28 @@
+/* =========================================================
+   BUBBA HUB — MASTER HEADER
+   Edit this file to change the header site-wide.
+   ========================================================= */
+.bh-site-header{width:100%;background:#416651;color:#fff;position:relative;z-index:1000;}
+.bh-header-inner{width:100%;max-width:1400px;min-height:76px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:24px;box-sizing:border-box;}
+.bh-header-logo{display:flex;align-items:center;flex:0 0 auto;text-decoration:none;}
+.bh-header-logo img{display:block;width:auto;max-width:170px;max-height:55px;object-fit:contain;}
+.bh-main-nav{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-left:auto;}
+.bh-main-nav a{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 15px;border-radius:12px;color:#fff;text-decoration:none;font-size:14px;font-weight:800;transition:background .2s ease,color .2s ease;}
+.bh-main-nav a:hover,.bh-main-nav a:focus-visible{background:#d8e6db;color:#144400;}
+.bh-header-search{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:12px;color:#fff;text-decoration:none;font-size:23px;flex:0 0 auto;}
+.bh-header-search:hover,.bh-header-search:focus-visible{background:#d8e6db;color:#144400;}
+.bh-mobile-menu{display:none;width:44px;height:44px;padding:0;border:0;border-radius:12px;background:#d8e6db;color:#144400;cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:4px;}
+.bh-mobile-menu span{display:block;width:20px;height:2px;border-radius:2px;background:currentColor;}
+@media(max-width:800px){
+  .bh-header-inner{min-height:68px;padding:0 15px;}
+  .bh-main-nav{display:none;position:absolute;left:0;right:0;top:100%;margin:0;padding:10px 15px 16px;background:#416651;flex-direction:column;align-items:stretch;gap:5px;box-sizing:border-box;}
+  .bh-main-nav.is-open{display:flex;}
+  .bh-main-nav a{width:100%;justify-content:flex-start;box-sizing:border-box;}
+  .bh-header-search{margin-left:auto;}
+  .bh-mobile-menu{display:inline-flex;}
+  .bh-mobile-menu[aria-expanded="true"]{background:#f6c84a;}
+}
+@media(max-width:420px){
+  .bh-header-logo img{max-width:145px;max-height:48px;}
+  .bh-header-inner{gap:8px;}
+}
