@@ -14,6 +14,7 @@ try {
 
     $search = trim((string)($_GET['search'] ?? ''));
     $slug = trim((string)($_GET['slug'] ?? ''));
+    $activityId = isset($_GET['id']) && $_GET['id'] !== '' ? (int)$_GET['id'] : null;
     $organiserSlug = trim((string)($_GET['organiser_slug'] ?? ''));
     $category = trim((string)($_GET['category'] ?? ''));
     $town = trim((string)($_GET['town'] ?? ''));
@@ -50,6 +51,11 @@ try {
     if ($slug !== '') {
         $where[] = "a.slug = :slug";
         $params[':slug'] = $slug;
+    }
+
+    if ($activityId !== null && $activityId > 0) {
+        $where[] = "a.id = :activity_id";
+        $params[':activity_id'] = $activityId;
     }
 
     if ($search !== '') {
@@ -304,6 +310,7 @@ try {
             'min_age' => $minAge,
             'max_age' => $maxAge,
             'organiser_slug' => $organiserSlug,
+            'activity_id' => $activityId,
         ],
     ], JSON_UNESCAPED_SLASHES);
 } catch (Throwable $e) {
