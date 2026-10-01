@@ -190,3 +190,33 @@
   .planner-card-actions{display:none!important}
   .planner-day-heading{min-height:auto!important}
 }
+
+/* Compact planner card links */
+.planner-card-links{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:4px 12px;
+  margin-top:9px;
+}
+.planner-card-links a,
+.planner-link-button{
+  padding:0;
+  border:0;
+  background:transparent;
+  color:var(--bh-primary);
+  font:inherit;
+  font-size:10px;
+  font-weight:800;
+  line-height:1.4;
+  text-decoration:none;
+  cursor:pointer;
+}
+.planner-card-links a:hover,
+.planner-link-button:hover{text-decoration:underline}
+.planner-link-button[aria-pressed="true"]{color:var(--bh-primary)}
+.planner-remove.planner-link-button{color:var(--bh-text-muted)}
+.planner-remove.planner-link-button:hover{color:#a83e49}
+@media print{
+  .planner-card-links{display:none!important}
+}
