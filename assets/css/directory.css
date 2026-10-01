@@ -101,9 +101,12 @@
   align-items:center;
   justify-content:flex-start;
   gap:8px;
-  flex-wrap:wrap;
+  flex-wrap:nowrap;
   margin-top:9px;
   min-height:0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding-bottom:2px;
 }
 .bh-directory .directory-search-advanced-link{
   display:inline-flex;
@@ -130,6 +133,7 @@
 }
 .bh-directory .directory-calendar-hero-button,
 .bh-directory .directory-map-action-button,
+.bh-directory .directory-map-hero-button,
 .bh-directory .directory-planner-action-button{
   display:inline-flex;
   align-items:center;
@@ -149,6 +153,7 @@
 }
 .bh-directory .directory-calendar-hero-button:hover,
 .bh-directory .directory-map-action-button:hover,
+.bh-directory .directory-map-hero-button:hover,
 .bh-directory .directory-planner-action-button:hover{
   background:#f6c84a;
   border-color:#f6c84a;
@@ -596,9 +601,10 @@
   .bh-directory .directory-results-heading{display:flex;align-items:flex-start;flex-direction:column;gap:0;width:100%;margin-bottom:14px}
   .bh-directory .directory-mobile-view-toggle{display:none!important}
   .bh-directory .directory-mobile-map-link{display:flex!important}
-  .bh-directory .directory-hero-actions{flex-wrap:wrap}
+  .bh-directory .directory-hero-actions{flex-wrap:wrap;overflow:visible}
   .bh-directory .directory-calendar-hero-button,
   .bh-directory .directory-map-action-button,
+  .bh-directory .directory-map-hero-button,
   .bh-directory .directory-planner-action-button{flex:1 1 180px}
   .bh-directory .directory-all-link{width:100%;text-align:center}
   .bh-directory .directory-hero-search{padding:19px 15px 15px;border-radius:18px}
@@ -778,6 +784,7 @@
   .bh-directory .directory-search-advanced-link,
   .bh-directory .directory-calendar-hero-button,
   .bh-directory .directory-map-action-button,
+  .bh-directory .directory-map-hero-button,
   .bh-directory .directory-planner-action-button{flex:1 1 170px;min-height:42px;padding-inline:12px}
 }
 @media (max-width:520px){
