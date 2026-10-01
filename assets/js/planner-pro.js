@@ -142,6 +142,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const p=options?.planner;
     const filters={...defaultPlannerFilters(),...(p?.filters||{})};
     filters.accessibility=Array.isArray(filters.accessibility)?filters.accessibility:[];
+    ["category","region","town","day","age","maxPrice","sessionLength","sen","termTime"].forEach(key=>{filters[key]=Array.isArray(filters[key])?filters[key]:(filters[key]?[filters[key]]:[])});
     const initialColour=p?.colour||colours[planners.length%colours.length];
     const filterOptions=await getPlannerFilterOptions();
     const accessibilityOptions=[
@@ -169,15 +170,15 @@ document.addEventListener("DOMContentLoaded",async()=>{
             <legend>What should this planner focus on?</legend>
             <p class="pro-filter-help">These are saved preferences from Bubba Hub's Advanced search. You can change them whenever you like.</p>
             <div class="pro-planner-filter-grid">
-              <label>Category<select name="category"><option value="">All categories</option>${optionHtml(filterOptions.category,filters.category)}</select></label>
-              <label>Region<select name="region"><option value="">All regions</option>${optionHtml(filterOptions.region,filters.region)}</select></label>
-              <label>Town<select name="town"><option value="">All towns</option>${optionHtml(filterOptions.town,filters.town)}</select></label>
-              <label>Day<select name="day"><option value="">Any day</option>${optionHtml(filterOptions.day,filters.day)}</select></label>
-              <label>Age<select name="age"><option value="">Any age</option>${optionHtml(filterOptions.age.slice(1),filters.age)}</select></label>
-              <label>Price<select name="maxPrice">${optionHtml(filterOptions.maxPrice,filters.maxPrice)}</select></label>
-              <label>Session length<select name="sessionLength">${optionHtml(filterOptions.sessionLength,filters.sessionLength)}</select></label>
-              <label>SEN friendly<select name="sen">${optionHtml(filterOptions.sen,filters.sen)}</select></label>
-              <label>Term time<select name="termTime">${optionHtml(filterOptions.termTime,filters.termTime)}</select></label>
+              <label>Category<select name="category" multiple size="4" aria-label="Select categories">${optionHtml(filterOptions.category,filters.category)}</select></label>
+              <label>Region<select name="region" multiple size="4" aria-label="Select regions">${optionHtml(filterOptions.region,filters.region)}</select></label>
+              <label>Town<select name="town" multiple size="4" aria-label="Select towns">${optionHtml(filterOptions.town,filters.town)}</select></label>
+              <label>Day<select name="day" multiple size="4" aria-label="Select days">${optionHtml(filterOptions.day,filters.day)}</select></label>
+              <label>Age<select name="age" multiple size="4" aria-label="Select ages">${optionHtml(filterOptions.age.slice(1),filters.age)}</select></label>
+              <label>Price<select name="maxPrice" multiple size="4" aria-label="Select price ranges">${optionHtml(filterOptions.maxPrice,filters.maxPrice)}</select></label>
+              <label>Session length<select name="sessionLength" multiple size="4" aria-label="Select session lengths">${optionHtml(filterOptions.sessionLength,filters.sessionLength)}</select></label>
+              <label>SEN friendly<select name="sen" multiple size="3" aria-label="Select SEN options">${optionHtml(filterOptions.sen,filters.sen)}</select></label>
+              <label>Term time<select name="termTime" multiple size="3" aria-label="Select term time options">${optionHtml(filterOptions.termTime,filters.termTime)}</select></label>
             </div>
             <div class="pro-planner-checks">
               <label><input type="checkbox" name="free" ${filters.free?"checked":""}> Free only</label>
@@ -223,14 +224,15 @@ document.addEventListener("DOMContentLoaded",async()=>{
     form.onsubmit=e=>{
       e.preventDefault();
       const data=Object.fromEntries(new FormData(form));
+      const selectedValues=name=>[...form.querySelectorAll("select[name=\""+name+"\"] option:checked")].map(o=>o.value).filter(Boolean);
       const name=String(data.name||"").trim();
       const description=String(data.description||"").trim();
       if(!name||!description)return;
       const newFilters={
-        category:String(data.category||""),region:String(data.region||""),town:String(data.town||""),
-        day:String(data.day||""),age:String(data.age||""),maxPrice:String(data.maxPrice||""),
-        sessionLength:String(data.sessionLength||""),sen:String(data.sen||""),
-        termTime:String(data.termTime||""),bookingRequired:data.bookingRequired==="on",free:data.free==="on",
+        category:selectedValues("category"),region:selectedValues("region"),town:selectedValues("town"),
+        day:selectedValues("day"),age:selectedValues("age"),maxPrice:selectedValues("maxPrice"),
+        sessionLength:selectedValues("sessionLength"),sen:selectedValues("sen"),
+        termTime:selectedValues("termTime"),bookingRequired:data.bookingRequired==="on",free:data.free==="on",
         accessibility:[...form.querySelectorAll("input[name=accessibility]:checked")].map(input=>input.value)
       };
       if(isEdit){
