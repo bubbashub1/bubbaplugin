@@ -542,3 +542,45 @@
   .pro-calendar-view{padding:8px 6px;font-size:10px}
   .pro-planner-customise-modal .pro-form-actions{grid-template-columns:1fr}
 }
+
+
+/* Ensure the customise form actions remain visible above the mobile viewport edge. */
+.pro-planner-customise-modal form{
+  position:relative;
+}
+.pro-planner-customise-modal .pro-form-actions{
+  position:sticky!important;
+  bottom:0!important;
+  z-index:20!important;
+  flex:0 0 auto!important;
+  min-height:72px;
+  box-sizing:border-box;
+  margin-top:12px!important;
+  background:#fff!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+@media(max-width:600px){
+  .pro-planner-customise-modal .pro-form-actions{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    min-height:70px;
+    margin-left:0!important;
+    margin-right:0!important;
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom))!important;
+    box-shadow:0 -8px 18px rgba(18,63,49,.10)!important;
+  }
+  .pro-planner-customise-modal .pro-form-actions .button{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    visibility:visible!important;
+    opacity:1!important;
+    min-height:46px!important;
+  }
+}
+@media(max-width:380px){
+  .pro-planner-customise-modal .pro-form-actions{
+    grid-template-columns:1fr!important;
+  }
+}
