@@ -47,6 +47,13 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
 if($_SERVER['REQUEST_METHOD']!=='POST')lp(405,['ok'=>false,'error'=>'method_not_allowed']);
 $b=json_decode(file_get_contents('php://input'),true);if(!is_array($b))lp(400,['ok'=>false,'error'=>'invalid_json']);$action=$b['action']??'';
 
+if($action==='save_profile_public'){
+ $about=trim((string)($b['about_content']??''));$logo=trim((string)($b['logo_url']??''));$facebook=trim((string)($b['facebook_url']??''));$instagram=trim((string)($b['instagram_url']??''));$tiktok=trim((string)($b['tiktok_url']??''));
+ if(strlen($about)>200000)lp(422,['ok'=>false,'error'=>'about_too_long','message'=>'Your organisation description is too long.']);
+ foreach(['logo'=>$logo,'facebook'=>$facebook,'instagram'=>$instagram,'tiktok'=>$tiktok] as $key=>$url){if($url!==''&&!filter_var($url,FILTER_VALIDATE_URL))lp(422,['ok'=>false,'error'=>'invalid_'.$key.'_url','message'=>'Please enter a valid URL for '.ucfirst($key).'.']);}
+ $q=$db->prepare("UPDATE bh_organisers SET about_content=?,logo_url=?,facebook_url=?,instagram_url=?,tiktok_url=? WHERE id=?");$q->execute([$about,$logo,$facebook,$instagram,$tiktok,$oid]);
+ lp(200,['ok'=>true,'message'=>'Public organiser profile saved.']);
+}
 if($action==='save_terms'){
  $terms=trim((string)($b['terms_content']??''));
  if(strlen($terms)>200000) lp(422,['ok'=>false,'error'=>'terms_too_long','message'=>'Your terms are too long. Please keep them under 200,000 characters.']);
