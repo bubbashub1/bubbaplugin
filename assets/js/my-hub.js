@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       return {a,score};
     }).sort((x,y)=>y.score-x.score).slice(0,12);
     wrap.innerHTML=ranked.map(({a})=>{
-      const url=typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id);
+      const url="directory.html?town="+encodeURIComponent(choice.town)+"&day="+encodeURIComponent(choice.day)+"&category="+encodeURIComponent(choice.category);
       return "<a class='hub-suggestion-card' href='"+url+"'><div class='hub-suggestion-icon'>✦</div><span>"+esc(a.category||"Activity")+"</span><strong>"+esc(a.title)+"</strong><small>"+esc(a.town||a.location||"")+" · "+esc(a.age_range||"")+"</small><b>View activity →</b></a>";
     }).join("")||"<div class='hub-empty'>Set your preferences to get personalised suggestions.</div>";
     const track=wrap.parentElement;
@@ -160,8 +160,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
       results.scrollIntoView({behavior:"smooth",block:"nearest"});
     };
     const reset=()=>{choice={town:"",day:"",category:""};results.hidden=true;populateTowns();showStep(1)};
-    open.onclick=()=>{panel.hidden=false;reset();panel.scrollIntoView({behavior:"smooth",block:"start"})};
-    close.onclick=()=>{panel.hidden=true};
+    open.onclick=()=>{panel.hidden=false;reset();document.body.classList.add("hub-modal-open")};
+    close.onclick=()=>{panel.hidden=true;document.body.classList.remove("hub-modal-open")};
+panel.addEventListener("click",e=>{if(e.target===panel){panel.hidden=true;document.body.classList.remove("hub-modal-open")}});
     again.onclick=reset;
     panel.querySelectorAll(".what-back").forEach(b=>b.onclick=()=>showStep(Number(b.dataset.back)));
     populateTowns();
