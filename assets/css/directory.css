@@ -349,6 +349,45 @@
 }
 
 /* Advanced filters */
+/* Shared Advanced Filters — one modal/drawer across Directory, Calendar and Map.
+   This intentionally overrides older theme sidebar styling. */
+.directory-filters-panel{
+  position:fixed;
+  z-index:10001;
+  top:20px;
+  left:50%;
+  bottom:auto;
+  width:min(420px,calc(100vw - 32px));
+  max-height:calc(100vh - 40px);
+  overflow:auto;
+  padding:22px;
+  box-sizing:border-box;
+  transform:translate(-50%,-16px);
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  background:#fff;
+  border:1px solid var(--bh-site-border,#d8e6db);
+  border-radius:24px;
+  box-shadow:0 24px 70px rgba(13,59,50,.22);
+  transition:opacity .18s ease,transform .18s ease,visibility .18s ease;
+}
+.directory-filters-panel.is-open{
+  transform:translate(-50%,0);
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+}
+@media(max-width:700px){
+  .directory-filters-panel{
+    top:12px;
+    width:calc(100vw - 24px);
+    max-height:calc(100vh - 24px);
+    padding:18px;
+    border-radius:20px;
+  }
+}
+
 .bh-directory .directory-mobile-actions{display:none}
 .bh-directory .directory-filters-panel{
   position:fixed;
