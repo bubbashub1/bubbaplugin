@@ -297,47 +297,162 @@ document.addEventListener("DOMContentLoaded",async()=>{
     ],d=>{shares.push({id:uid("share"),plannerId:d.plannerId,token:uid("share")});write(keys.shares,shares);renderShares()});
   }
 
-  function monthEvents(){
-    const events=[];
-    try{
-      const planned=typeof bhGet==="function" && typeof BH_KEYS!=="undefined" ? bhGet(BH_KEYS.planner) : [];
-      const items=Array.isArray(window.__bhActivities) ? window.__bhActivities : [];
-      planned.forEach(id=>{
-        const activity=items.find(item=>String(item.id)===String(id));
-        if(!activity || typeof bhSessions!=="function") return;
-        const sessions=bhSessions(activity)||[];
-        sessions.forEach(session=>{
-          const day=Number(session.day_of_week||0);
-          if(day<1 || day>7) return;
-          const first=new Date(monthDate.getFullYear(),monthDate.getMonth(),1);
-          const firstDay=(first.getDay()||7);
-          const date=new Date(first);
-          date.setDate(1+((day-firstDay+7)%7));
-          while(date.getMonth()===monthDate.getMonth()){
-            const iso=date.toISOString().slice(0,10);
-            if(session.start_date && iso<session.start_date){
-              date.setDate(date.getDate()+7);
-              continue;
-            }
-            if(session.end_date && iso>session.end_date) break;
-            events.push({date:date.getDate(),title:activity.title});
-            date.setDate(date.getDate()+7);
-          }
-        });
-      });
-    }catch(error){
-      console.warn("Planner Pro monthly events could not be loaded.",error);
+  let proCalendarView="list";
+  let selectedPlannerId="";
+  let proCalendarDate=new Date();
+
+  function renderPlannerCalendarPicker(){
+    const select=$("proCalendarPlanner");
+    if(!select)return;
+    if(!planners.length){
+      select.innerHTML="<option value=''>Create a planner first</option>";
+      selectedPlannerId="";
+      return;
     }
-    return events;
+    if(!selectedPlannerId||!planners.some(p=>String(p.id)===String(selectedPlannerId))) selectedPlannerId=String(planners[0].id);
+    select.innerHTML=planners.map(p=>"<option value='"+esc(p.id)+"'>"+esc(p.name)+"</option>").join("");
+    select.value=selectedPlannerId;
   }
-  function renderMonth(){
-    const grid=$("monthGrid"),year=monthDate.getFullYear(),month=monthDate.getMonth(),first=new Date(year,month,1),last=new Date(year,month+1,0),start=(first.getDay()||7)-1,events=monthEvents(),cells=[];
-    $("monthLabel").textContent=first.toLocaleDateString("en-GB",{month:"long",year:"numeric"});
-    ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].forEach(d=>cells.push("<div class='pro-month-cell' style='min-height:auto;background:#edf5ef;font-weight:800;color:#416651'>"+d+"</div>"));
-    for(let i=0;i<start;i++)cells.push("<div class='pro-month-cell is-outside'></div>");
-    for(let d=1;d<=last.getDate();d++){const date=new Date(year,month,d),today=new Date();const ev=events.filter(e=>e.date===d);cells.push("<div class='pro-month-cell "+(date.toDateString()===today.toDateString()?"is-today":"")+"'><div class='pro-month-date'>"+d+"</div>"+ev.slice(0,3).map(e=>"<span class='pro-month-event'>"+esc(e.title)+"</span>").join("")+"</div>")}
-    grid.innerHTML=cells.join("");
+
+  const plannerMatchesActivity=(activity,filters)=>{
+    if(!filters)return true;
+    const categoryMap={"Baby classes":"Baby","Baby & toddler":"Toddler","Family activities":"Family"};
+    if(filters.category&&(categoryMap[activity.category]||activity.category)!==filters.category)return false;
+    const venues=typeof bhVenues==="function"?bhVenues(activity):[];
+    if(filters.region&&!venues.some(v=>String(v.region||activity.region||"")===String(filters.region)))return false;
+    if(filters.town&&!venues.some(v=>String(v.town||activity.town||"")===String(filters.town)))return false;
+    const sessions=typeof bhSessions==="function"?bhSessions(activity):[];
+    if(filters.day&&!sessions.some(s=>String(s.day||"")===String(filters.day)))return false;
+    if(filters.sen&&String(activity.sen||activity.sen_friendly||"").toLowerCase()!==String(filters.sen).toLowerCase())return false;
+    if(filters.termTime){
+      const term=String(activity.term_time||activity.term_time_only||"").toLowerCase();
+      if(filters.termTime==="yes"&&!["yes","true","1"].includes(term))return false;
+      if(filters.termTime==="no"&&["yes","true","1"].includes(term))return false;
+    }
+    if(filters.bookingRequired&&!(activity.booking_url||activity.bookingUrl||activity.bookable||activity.booking_required))return false;
+    if(filters.free){
+      const price=Number(String(activity.price||"").replace(/[^0-9.]/g,""));
+      if(!String(activity.price||"").toLowerCase().includes("free")&&price!==0)return false;
+    }
+    if(filters.maxPrice){
+      if(filters.maxPrice==="over30"){
+        const price=Number(String(activity.price||"").replace(/[^0-9.]/g,""));
+        if(!Number.isFinite(price)||price<=30)return false;
+      }else{
+        const price=Number(String(activity.price||"").replace(/[^0-9.]/g,""));
+        if(!Number.isFinite(price)||price>Number(filters.maxPrice))return false;
+      }
+    }
+    if(filters.accessibility?.length){
+      const source=JSON.stringify(activity).toLowerCase();
+      if(!filters.accessibility.every(x=>source.includes(String(x).toLowerCase())))return false;
+    }
+    return true;
+  };
+
+  function calendarEvents(){
+    const planner=planners.find(p=>String(p.id)===String(selectedPlannerId));
+    if(!planner)return [];
+    const filters=planner.filters||{};
+    const items=Array.isArray(window.__bhActivities)?window.__bhActivities:[];
+    const output=[];
+    items.filter(a=>plannerMatchesActivity(a,filters)).forEach(activity=>{
+      (typeof bhSessions==="function"?bhSessions(activity):[]).forEach(session=>{
+        const day=Number(session.day_of_week||0);
+        if(day<1||day>7)return;
+        const date=proDateForDay(proCalendarDate,day);
+        if(filters.day&&String(session.day||"")!==String(filters.day))return;
+        const iso=date.toISOString().slice(0,10);
+        if(session.start_date&&iso<session.start_date)return;
+        if(session.end_date&&iso>session.end_date)return;
+        output.push({activity,session,date,day});
+      });
+    });
+    return output;
   }
+
+  function proMondayOf(date){
+    const d=new Date(date.getFullYear(),date.getMonth(),date.getDate());
+    const n=d.getDay();d.setDate(d.getDate()-(n===0?6:n-1));return d;
+  }
+  function proDateForDay(date,day){
+    const monday=proMondayOf(date),d=new Date(monday);d.setDate(monday.getDate()+day-1);return d;
+  }
+  function proAllEventsForRange(startDate,endDate){
+    const planner=planners.find(p=>String(p.id)===String(selectedPlannerId));
+    if(!planner)return [];
+    const filters=planner.filters||{};
+    const items=Array.isArray(window.__bhActivities)?window.__bhActivities:[];
+    const result=[];
+    items.filter(a=>plannerMatchesActivity(a,filters)).forEach(activity=>{
+      (typeof bhSessions==="function"?bhSessions(activity):[]).forEach(session=>{
+        const day=Number(session.day_of_week||0);if(day<1||day>7)return;
+        for(let d=new Date(startDate);d<=endDate;d.setDate(d.getDate()+1)){
+          if((d.getDay()||7)!==day)continue;
+          const iso=d.toISOString().slice(0,10);
+          if(session.start_date&&iso<session.start_date)continue;
+          if(session.end_date&&iso>session.end_date)continue;
+          if(filters.day&&String(session.day||"")!==String(filters.day))continue;
+          result.push({activity,session,date:new Date(d),day});
+        }
+      });
+    });
+    return result;
+  }
+
+  function proEventCard(e){
+    const time=e.session?(e.session.start_time||e.session.start||"").slice(0,5):"";
+    const venue=e.session?.venue?.name||e.session?.venue?.town||e.activity.town||e.activity.location||"";
+    return "<article class='pro-calendar-event'><span>"+esc(time||"Time TBC")+"</span><div><strong>"+esc(e.activity.title)+"</strong><small>"+esc(venue)+"</small></div></article>";
+  }
+
+  function renderProCalendar(){
+    const root=$("proCalendar"),label=$("monthLabel");
+    if(!root)return;
+    const planner=planners.find(p=>String(p.id)===String(selectedPlannerId));
+    if(!planner){
+      root.innerHTML="<div class='pro-empty'><strong>Select a planner</strong>Create a planner above before viewing its calendar.</div>";
+      if(label)label.textContent="";
+      return;
+    }
+    const dayStart=proCalendarView==="day"?new Date(proCalendarDate):proMondayOf(proCalendarDate);
+    const dayEnd=proCalendarView==="day"?new Date(dayStart):new Date(dayStart);
+    if(proCalendarView==="day")dayEnd.setDate(dayEnd.getDate());
+    else if(proCalendarView==="week")dayEnd.setDate(dayEnd.getDate()+6);
+    else if(proCalendarView==="list")dayEnd.setDate(dayEnd.getDate()+30);
+    else {dayStart.setDate(1);dayEnd.setMonth(dayStart.getMonth()+1,0);}
+    const events=proAllEventsForRange(dayStart,dayEnd);
+    if(label){
+      label.textContent=proCalendarView==="month"?proCalendarDate.toLocaleDateString("en-GB",{month:"long",year:"numeric"}):
+        proCalendarView==="day"?proCalendarDate.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"}):
+        proCalendarView==="week"?proMondayOf(proCalendarDate).toLocaleDateString("en-GB",{day:"numeric",month:"short"})+" – "+new Date(proMondayOf(proCalendarDate).getTime()+6*86400000).toLocaleDateString("en-GB",{day:"numeric",month:"short"}):
+        "Next 31 days";
+    }
+    if(proCalendarView==="list"){
+      const groups={};
+      events.sort((a,b)=>a.date-b.date).forEach(e=>{const key=e.date.toISOString().slice(0,10);(groups[key]??=[]).push(e)});
+      root.innerHTML="<div class='pro-calendar-list'>"+(Object.keys(groups).length?Object.entries(groups).map(([key,list])=>"<section><h3>"+esc(new Date(key+'T12:00:00').toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"}))+"</h3>"+list.map(proEventCard).join("")+"</section>").join(""):"<div class='pro-empty'><strong>No matching activities</strong>Try changing this planner's filters.</div>")+"</div>";
+      return;
+    }
+    if(proCalendarView==="day"){
+      root.innerHTML="<div class='pro-calendar-day'>"+(events.length?events.map(proEventCard).join(""):"<div class='pro-empty'><strong>No activities</strong>Nothing matches this planner today.</div>")+"</div>";
+      return;
+    }
+    if(proCalendarView==="week"){
+      const startDay=proMondayOf(proCalendarDate),cols=[];
+      for(let i=0;i<7;i++){const d=new Date(startDay);d.setDate(startDay.getDate()+i);const dayEvents=events.filter(e=>e.date.toDateString()===d.toDateString());cols.push("<section class='pro-calendar-week-day'><header><strong>"+esc(d.toLocaleDateString("en-GB",{weekday:"short"}))+"</strong><span>"+d.getDate()+"</span></header>"+(dayEvents.length?dayEvents.map(proEventCard).join(""):"<p>No activities</p>")+"</section>")}
+      root.innerHTML="<div class='pro-calendar-week'>"+cols.join("")+"</div>";
+      return;
+    }
+    const y=proCalendarDate.getFullYear(),m=proCalendarDate.getMonth(),first=new Date(y,m,1),start=new Date(first);start.setDate(1-(first.getDay()===0?6:first.getDay()-1));
+    const cells=[];
+    for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const dayEvents=events.filter(e=>e.date.toDateString()===d.toDateString());cells.push("<div class='pro-calendar-month-day "+(d.getMonth()!==m?"is-outside":"")+"'><span>"+d.getDate()+"</span>"+dayEvents.slice(0,3).map(proEventCard).join("")+"</div>")}
+    root.innerHTML="<div class='pro-calendar-month-head'>"+["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(x=>"<span>"+x+"</span>").join("")+"</div><div class='pro-calendar-month'>"+cells.join("")+"</div>";
+  }
+
+  function monthEvents(){ return calendarEvents(); }
+  function renderMonth(){ renderProCalendar(); }
+
 
   function renderDayPlan(){
     $("dayPlan").innerHTML=dayPlan.map(x=>"<div class='pro-day-row'><div class='pro-day-time'>"+esc(x.time)+"</div><div><strong>"+esc(x.title)+"</strong><span>"+esc(x.detail||"")+"</span></div><div class='pro-card-actions'><button type='button' data-day-delete='"+esc(x.id)+"'>Remove</button></div></div>").join("");
@@ -381,6 +496,28 @@ document.addEventListener("DOMContentLoaded",async()=>{
 
   $("addPlanner").onclick=addPlanner;$("addPlannerTop").onclick=addPlanner;$("addFamily").onclick=addFamily;$("createShare").onclick=createShare;$("addDayPlan").onclick=addDayPlan;$("addNote").onclick=addNote;
   $("prevMonth").onclick=()=>{monthDate.setMonth(monthDate.getMonth()-1);renderMonth()};$("nextMonth").onclick=()=>{monthDate.setMonth(monthDate.getMonth()+1);renderMonth()};
+  renderPlannerCalendarPicker();
+  const calendarPlanner=$("proCalendarPlanner");
+  calendarPlanner?.addEventListener("change",()=>{selectedPlannerId=calendarPlanner.value;renderProCalendar()});
+  document.querySelectorAll("[data-calendar-view]").forEach(button=>button.addEventListener("click",()=>{
+    proCalendarView=button.dataset.calendarView;
+    document.querySelectorAll("[data-calendar-view]").forEach(b=>b.classList.toggle("is-active",b===button));
+    renderProCalendar();
+  }));
+  $("calendarToday")?.addEventListener("click",()=>{proCalendarDate=new Date();renderProCalendar()});
+  $("prevMonth")?.addEventListener("click",()=>{
+    if(proCalendarView==="month")proCalendarDate.setMonth(proCalendarDate.getMonth()-1);
+    else if(proCalendarView==="week")proCalendarDate.setDate(proCalendarDate.getDate()-7);
+    else proCalendarDate.setDate(proCalendarDate.getDate()-1);
+    renderProCalendar();
+  });
+  $("nextMonth")?.addEventListener("click",()=>{
+    if(proCalendarView==="month")proCalendarDate.setMonth(proCalendarDate.getMonth()+1);
+    else if(proCalendarView==="week")proCalendarDate.setDate(proCalendarDate.getDate()+7);
+    else proCalendarDate.setDate(proCalendarDate.getDate()+1);
+    renderProCalendar();
+  });
+  renderProCalendar();
   const printMonth=$("printMonth");
   if(printMonth) printMonth.onclick=()=>window.print();
   document.querySelectorAll("[data-calendar-action]").forEach(b=>b.onclick=()=>alert("Calendar setup will connect to your shared planner when calendar accounts are enabled."));
