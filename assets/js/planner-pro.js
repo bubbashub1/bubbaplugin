@@ -498,7 +498,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   if(typeof bhActivities==="function"){try{window.__bhActivities=await bhActivities()}catch(error){window.__bhActivities=[];console.warn("Planner Pro calendar activities could not be loaded.",error)}}
   renderPlannerCalendarPicker();
   const calendarPlanner=$("proCalendarPlanner");
-  calendarPlanner?.addEventListener("change",()=>{selectedPlannerId=calendarPlanner.value;renderProCalendar()});
+  calendarPlanner?.addEventListener("change",()=>{selectedPlannerId=calendarPlanner.value;renderProCalendar();renderPlanners()});
   document.querySelectorAll("[data-calendar-view]").forEach(button=>button.addEventListener("click",()=>{
     proCalendarView=button.dataset.calendarView;
     document.querySelectorAll("[data-calendar-view]").forEach(b=>b.classList.toggle("is-active",b===button));
