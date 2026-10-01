@@ -101,10 +101,37 @@ document.addEventListener("DOMContentLoaded",async()=>{
   }
 
   function monthEvents(){
-    const planned=bhGet(BH_KEYS.planner);
-    const items=window.__bhActivities||[];
     const events=[];
-    planned.forEach(id=>{const a=items.find(x=>String(x.id)===String(id));if(!a)return;(typeof bhSessions==="function"?bhSessions(a):[]).forEach(s=>{const day=Number(s.day_of_week||0);if(day<1||day>7)return;const d=new Date(monthDate.getFullYear(),monthDate.getMonth(),1);const first=(d.getDay()||7);d.setDate(1+((day-first+7)%7));while(d.getMonth()===monthDate.getMonth()){if(s.start_date&&d.toISOString().slice(0,10)<s.start_date){d.setDate(d.getDate()+7);continue}if(s.end_date&&d.toISOString().slice(0,10)>s.end_date)break;events.push({date:d.getDate(),title:a.title});d.setDate(d.getDate()+7)}})});return events;
+    try{
+      const planned=typeof bhGet==="function" && typeof BH_KEYS!=="undefined" ? bhGet(BH_KEYS.planner) : [];
+      const items=Array.isArray(window.__bhActivities) ? window.__bhActivities : [];
+      planned.forEach(id=>{
+        const activity=items.find(item=>String(item.id)===String(id));
+        if(!activity || typeof bhSessions!=="function") return;
+        const sessions=bhSessions(activity)||[];
+        sessions.forEach(session=>{
+          const day=Number(session.day_of_week||0);
+          if(day<1 || day>7) return;
+          const first=new Date(monthDate.getFullYear(),monthDate.getMonth(),1);
+          const firstDay=(first.getDay()||7);
+          const date=new Date(first);
+          date.setDate(1+((day-firstDay+7)%7));
+          while(date.getMonth()===monthDate.getMonth()){
+            const iso=date.toISOString().slice(0,10);
+            if(session.start_date && iso<session.start_date){
+              date.setDate(date.getDate()+7);
+              continue;
+            }
+            if(session.end_date && iso>session.end_date) break;
+            events.push({date:date.getDate(),title:activity.title});
+            date.setDate(date.getDate()+7);
+          }
+        });
+      });
+    }catch(error){
+      console.warn("Planner Pro monthly events could not be loaded.",error);
+    }
+    return events;
   }
   function renderMonth(){
     const grid=$("monthGrid"),year=monthDate.getFullYear(),month=monthDate.getMonth(),first=new Date(year,month,1),last=new Date(year,month+1,0),start=(first.getDay()||7)-1,events=monthEvents(),cells=[];
