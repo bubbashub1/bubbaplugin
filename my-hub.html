@@ -46,8 +46,56 @@
     <h2>Not sure what to do?</h2>
     <p>Use your family profiles and preferences to find activities that fit your family.</p>
   </div>
-  <a class="button button-primary" href="preferences.html"><span class="hub-sparkle" aria-hidden="true">✨</span> Personalise my ideas</a>
+  <button class="button button-primary" id="openWhatShallI" type="button"><span class="hub-sparkle" aria-hidden="true">✨</span> What shall I do?</button>
 </section>
+  <section class="what-shall-i" id="whatShallI" hidden aria-labelledby="whatShallITitle">
+    <div class="what-shall-i-head">
+      <div>
+        <span class="eyebrow">Find your next activity</span>
+        <h2 id="whatShallITitle">What shall I do?</h2>
+        <p>Tell us a little about your day and we’ll suggest activities from Bubba Hub.</p>
+      </div>
+      <button class="button button-soft" id="closeWhatShallI" type="button">Close</button>
+    </div>
+    <div class="what-shall-i-steps" id="whatShallISteps">
+      <div class="what-shall-i-step is-active" data-step="1">
+        <span class="what-step-number">1</span>
+        <div class="what-step-content">
+          <span class="eyebrow">Where are you?</span>
+          <h3>Choose a town</h3>
+          <div class="what-choice-grid" id="whatTownChoices"></div>
+        </div>
+      </div>
+      <div class="what-shall-i-step" data-step="2" hidden>
+        <span class="what-step-number">2</span>
+        <div class="what-step-content">
+          <span class="eyebrow">When?</span>
+          <h3>Which day works?</h3>
+          <div class="what-choice-grid what-day-grid" id="whatDayChoices"></div>
+          <button class="button button-soft what-back" type="button" data-back="1">← Back</button>
+        </div>
+      </div>
+      <div class="what-shall-i-step" data-step="3" hidden>
+        <span class="what-step-number">3</span>
+        <div class="what-step-content">
+          <span class="eyebrow">What sounds good?</span>
+          <h3>Choose a category</h3>
+          <div class="what-choice-grid" id="whatCategoryChoices"></div>
+          <button class="button button-soft what-back" type="button" data-back="2">← Back</button>
+        </div>
+      </div>
+    </div>
+    <div class="what-shall-i-results" id="whatShallIResults" hidden>
+      <div class="what-results-head">
+        <div>
+          <span class="eyebrow">Your suggestions</span>
+          <h3 id="whatResultsTitle">Activities for you</h3>
+        </div>
+        <button class="button button-soft" id="whatStartAgain" type="button">Start again</button>
+      </div>
+      <div class="what-results-grid" id="whatResultsGrid"></div>
+    </div>
+  </section>
   <section class="admin-panel hub-panel hub-family-panel" id="family">
       <div class="admin-panel-head">
         <div><span class="eyebrow">My family</span><h2>Family profiles</h2></div>
