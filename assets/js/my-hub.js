@@ -149,8 +149,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
     });
 
     const updateCount=(el,next,selected)=>{
-      if(el)el.textContent=selected.length?(selected.length+" selected"):"Choose one or more";
-      if(next)next.disabled=!selected.length;
+      if(el)el.textContent=selected.length?(selected.length+" selected"):"Optional · any";
+      if(next)next.disabled=false;
     };
 
     const renderChoices=(wrap,items,selected,handler)=>{
