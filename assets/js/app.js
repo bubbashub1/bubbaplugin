@@ -560,3 +560,18 @@ void bhHydrateSaved();
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render,{once:true});
   else render();
 })();
+
+
+/* Load the single site-wide header component. The component owns its markup and CSS. */
+(function(){
+  const current=document.currentScript;
+  const src=current?.src||new URL("assets/js/app.js",document.baseURI).href;
+  const headerSrc=new URL("header.js",src).href;
+  if(!document.querySelector('script[data-bh-header-loader]')){
+    const script=document.createElement("script");
+    script.src=headerSrc;
+    script.defer=true;
+    script.dataset.bhHeaderLoader="true";
+    document.head.appendChild(script);
+  }
+})();
