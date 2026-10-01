@@ -34,15 +34,37 @@ document.addEventListener("DOMContentLoaded",async()=>{
   };
   const filterMatch=(activity,session,filters)=>{
     if(!filters)return true;
-    for(const key of ["category","region","town","day","age","maxPrice","sessionLength","sen","termTime","accessibility"]){
-      const wanted=Array.isArray(filters[key])?filters[key].map(normalise).filter(Boolean):[]; if(!wanted.length)continue;
+    const selected=v=>Array.isArray(v)?v.map(normalise).filter(Boolean):[normalise(v)].filter(Boolean);
+    const matches=(key)=>{
+      const wanted=selected(filters[key]);
+      if(!wanted.length)return true;
       const actual=valuesFor(activity,session,key);
-      if(key==="maxPrice"){const max=Number(wanted[0]),price=Number(String(actual[0]||"").replace(/[^0-9.]/g,""));if(Number.isFinite(max)&&Number.isFinite(price)&&price>max)return false;continue;}
-      if(key==="sessionLength"){const length=Number(String(actual[0]||"").replace(/[^0-9.]/g,""));if(wanted.some(v=>v==="181")){if(!(length>180))return false}else if(wanted.some(v=>Number(v)>0)&&!wanted.some(v=>Number(v)>=length))return false;continue;}
-      if(!wanted.some(w=>actual.some(a=>a===w||a.includes(w)||w.includes(a))))return false;
+      return wanted.some(w=>actual.some(a=>a===w||a.includes(w)||w.includes(a)));
+    };
+    if(!matches("category")||!matches("region")||!matches("town")||!matches("day")||!matches("age")||!matches("sen")||!matches("termTime")||!matches("accessibility"))return false;
+    const max=normalise(filters.maxPrice);
+    if(max){
+      const priceText=valuesFor(activity,session,"price")[0]||"";
+      const price=Number(String(priceText).replace(/[^0-9.]/g,""));
+      if(max==="over30"){if(Number.isFinite(price)&&price<=30)return false}
+      else if(max==="0"){if(Number.isFinite(price)&&price>0)return false}
+      else {const limit=Number(max);if(Number.isFinite(limit)&&Number.isFinite(price)&&price>limit)return false}
     }
-    if(filters.free){const price=Number(String(valuesFor(activity,session,"price")[0]||"").replace(/[^0-9.]/g,""));if(Number.isFinite(price)&&price>0)return false;}
-    if(filters.bookingRequired){const b=activity?.booking_required??activity?.bookingRequired;if(!(b===true||b===1||normalise(b)==="yes"||normalise(b)==="true"))return false;}
+    const lengthFilter=normalise(filters.sessionLength);
+    if(lengthFilter){
+      const length=Number(String(valuesFor(activity,session,"sessionLength")[0]||"").replace(/[^0-9.]/g,""));
+      const limit=Number(lengthFilter);
+      if(lengthFilter==="181"){if(Number.isFinite(length)&&length<=180)return false}
+      else if(Number.isFinite(limit)&&Number.isFinite(length)&&length>limit)return false;
+    }
+    if(filters.free){
+      const price=Number(String(valuesFor(activity,session,"price")[0]||"").replace(/[^0-9.]/g,""));
+      if(Number.isFinite(price)&&price>0)return false;
+    }
+    if(filters.bookingRequired){
+      const b=activity?.booking_required??activity?.bookingRequired;
+      if(!(b===true||b===1||normalise(b)==="yes"||normalise(b)==="true"))return false;
+    }
     return true;
   };
   async function loadPlannerProfiles(){
