@@ -152,3 +152,54 @@
 .my-hub-page .hub-stat{position:relative}
 .my-hub-page .hub-stat>span{width:40px;height:40px;margin:0 0 10px;padding:0;display:grid;place-items:center;border:1px solid var(--bh-border);border-radius:12px;background:var(--bh-bg);box-sizing:border-box}
 .my-hub-page .hub-stat strong{line-height:1.05}
+
+/* My Hub main dashboard refresh */
+.my-hub-page{padding-bottom:28px}
+.my-hub-page .my-hub-hero{display:flex;align-items:center;justify-content:space-between;gap:28px;margin:22px 0 18px;padding:30px 32px;border:1px solid rgba(18,63,49,.08);border-radius:28px;background:linear-gradient(135deg,#eaf5ec 0%,#dff0ef 58%,#f7f1e5 100%);box-shadow:0 16px 38px rgba(18,63,49,.08)}
+.my-hub-page .my-hub-hero-copy{min-width:0}
+.my-hub-page .my-hub-hero h1{margin:.08em 0 .16em;color:var(--bh-dark);font-size:clamp(34px,4vw,52px);line-height:1.02}
+.my-hub-page .my-hub-hero p{max-width:650px;margin:0;color:var(--bh-text-muted);font-size:15px}
+.my-hub-page .my-hub-hero-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:9px;flex:0 0 auto}
+.my-hub-page .my-hub-hero-actions .button{min-height:46px}
+.my-hub-page .hub-welcome{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 25px;border-radius:20px;background:#fff;border:1px solid var(--bh-border);box-shadow:0 8px 24px rgba(20,68,0,.035)}
+.my-hub-page .hub-welcome h2{font-size:27px!important}
+.my-hub-page .hub-account-link{flex:0 0 auto;color:var(--bh-primary);font-size:12px;font-weight:850;text-decoration:none}
+.my-hub-page .hub-account-link:hover{text-decoration:underline}
+.my-hub-page .hub-stats{gap:10px}
+.my-hub-page .hub-stat{padding:16px 18px;border-radius:17px;box-shadow:none;transition:transform .18s ease,box-shadow .18s ease}
+.my-hub-page .hub-stat:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(20,68,0,.07)}
+.my-hub-page .hub-stat>span{width:38px;height:38px;margin-bottom:9px}
+.my-hub-page .hub-stat strong{font-size:25px}
+.my-hub-page .hub-personal-cta{border-radius:22px;padding:22px 25px;background:var(--bh-primary);box-shadow:0 12px 28px rgba(18,63,49,.10)}
+.my-hub-page .hub-personal-cta .button-primary{background:#f6c84a;color:#123f31}
+.my-hub-page .hub-personal-cta .button-primary:hover{background:#f8d36b}
+.my-hub-page .hub-family-panel{padding:23px}
+.my-hub-page .hub-family-list{gap:10px}
+.my-hub-page .hub-family-card{background:#f7faf7}
+.my-hub-page .hub-family-footer{margin-top:12px}
+.my-hub-page .hub-main-dashboard{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:18px!important}
+.my-hub-page .hub-main-dashboard>.hub-brief,.my-hub-page .hub-main-dashboard>.hub-panel{min-width:0;margin:0;height:100%;box-sizing:border-box}
+.my-hub-page .hub-main-dashboard>.hub-brief{grid-column:1/-1}
+.my-hub-page .hub-brief{padding:23px}
+.my-hub-page .hub-brief-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.my-hub-page .hub-panel{padding:21px}
+.my-hub-page .hub-tools-grid{gap:10px}
+.my-hub-page .hub-tools-grid .feature-card{transition:transform .18s ease,box-shadow .18s ease}
+.my-hub-page .hub-tools-grid .feature-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(18,63,49,.08)}
+@media(max-width:800px){
+.my-hub-page .my-hub-hero{align-items:flex-start;flex-direction:column;padding:25px 22px}
+.my-hub-page .my-hub-hero-actions{justify-content:flex-start;width:100%}
+.my-hub-page .my-hub-hero-actions .button{flex:1 1 190px}
+.my-hub-page .hub-welcome{align-items:flex-start;flex-direction:column}
+.my-hub-page .hub-main-dashboard{grid-template-columns:1fr!important}
+.my-hub-page .hub-main-dashboard>.hub-brief{grid-column:auto}
+}
+@media(max-width:560px){
+.my-hub-page .my-hub-hero{margin:12px 0 14px;padding:21px 18px;border-radius:22px}
+.my-hub-page .my-hub-hero h1{font-size:36px}
+.my-hub-page .my-hub-hero-actions{display:grid;grid-template-columns:1fr}
+.my-hub-page .my-hub-hero-actions .button{width:100%;box-sizing:border-box}
+.my-hub-page .hub-welcome{padding:18px}
+.my-hub-page .hub-personal-cta{padding:19px}
+.my-hub-page .hub-personal-cta .button{width:100%;box-sizing:border-box}
+}
