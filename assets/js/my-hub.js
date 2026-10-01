@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       return {a,score};
     }).sort((x,y)=>y.score-x.score).slice(0,12);
     wrap.innerHTML=ranked.map(({a})=>{
-      const url="directory.html?town="+encodeURIComponent(choice.town)+"&day="+encodeURIComponent(choice.day)+"&category="+encodeURIComponent(choice.category);
+      const url=typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id);
       return "<a class='hub-suggestion-card' href='"+url+"'><div class='hub-suggestion-icon'>✦</div><span>"+esc(a.category||"Activity")+"</span><strong>"+esc(a.title)+"</strong><small>"+esc(a.town||a.location||"")+" · "+esc(a.age_range||"")+"</small><b>View activity →</b></a>";
     }).join("")||"<div class='hub-empty'>Set your preferences to get personalised suggestions.</div>";
     const track=wrap.parentElement;
