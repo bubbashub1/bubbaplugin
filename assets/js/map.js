@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", async () => {
+const bhInitMap=async()=>{
   const $ = id => document.getElementById(id);
   const esc = value => bhEscape(value);
   const categoryMap = {"Baby classes":"Baby","Baby & toddler":"Toddler","Family activities":"Family"};
@@ -155,6 +155,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       button.setAttribute("aria-expanded",String(!open));
       button.innerHTML=(open?"More filters":"More filters")+" <span aria-hidden=\"true\">"+(open?"＋":"−")+"</span>";
     });
+    document.querySelectorAll(".directory-popular-chip").forEach(button=>{
+      button.addEventListener("click",()=>{
+        const category=button.dataset.category||"";
+        const select=$("mapCategory");
+        if(select){
+          const option=[...select.options].find(o=>o.value===category||o.textContent.trim().toLowerCase()===category.toLowerCase()||o.textContent.toLowerCase().includes(category.toLowerCase().split(" ")[0]));
+          if(option)select.value=option.value;
+        }
+        syncUrl();render();
+        document.querySelectorAll(".directory-popular-chip").forEach(x=>x.classList.remove("active"));
+        button.classList.add("active");
+      });
+    });
     syncAdvancedControls();
     document.querySelectorAll(".map-accessibility-option").forEach(el=>el.addEventListener("change",()=>{
       const selected=[...document.querySelectorAll(".map-accessibility-option:checked")].map(x=>x.value);
@@ -166,4 +179,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const back=document.querySelector(".map-back-link");if(back)back.href="directory.html"+(location.search||"");
     render();
   }catch(error){$("mapStatus").textContent=error.message||"Activities could not be loaded."}
-});
+};
+const bhInitMapStart=()=>{const ready=window.bhDirectoryHeroReady;if(ready)ready.then(bhInitMap);else bhInitMap();};
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bhInitMapStart,{once:true});else bhInitMapStart();
