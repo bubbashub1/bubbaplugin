@@ -483,15 +483,19 @@
   .bh-badges-mobile{display:none}
 }
 
-/* Organiser hero: full-width and light-green title --------------------- */
-.organiser-storefront-page .organiser-hero{
-  width:100%!important;
-  max-width:none!important;
-  margin-left:0!important;
-  margin-right:0!important;
+/* Organiser hero: breakout full-width and light-green title --------------------- */
+.organiser-storefront-page .organiser-hero {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  position: relative !important;
+  left: 50% !important;
+  right: 50% !important;
+  margin-left: -50vw !important;
+  margin-right: -50vw !important;
 }
-.organiser-storefront-page .organiser-hero-copy h1{
-  color:#d8e6db!important;
+
+.organiser-storefront-page .organiser-hero-copy h1 {
+  color: #d8e6db !important;
 }
 
 .bh-badge-baby{background:#f6eef8;border-color:#dec9e4;color:#684574}
