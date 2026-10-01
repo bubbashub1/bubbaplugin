@@ -298,6 +298,8 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
 
   const modal=document.getElementById("calendarAdvancedFilters");
   if(modal){
+    const componentClear=document.getElementById("clear");
+    if(componentClear)componentClear.hidden=true;
     const close=()=>{modal.hidden=true;document.body.classList.remove("calendar-filter-open")};
     modal.querySelectorAll("[data-calendar-filter-close]").forEach(b=>b.addEventListener("click",close));
     const setField=(id,value)=>{const el=document.getElementById(id);if(el)el.value=value||""};
