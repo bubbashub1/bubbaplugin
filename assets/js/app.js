@@ -627,6 +627,8 @@ void bhHydrateSaved();
       const hero=document.querySelector("[data-bh-directory-hero]");
       const ids=page==="map"
         ?{form:"mapFilters",keyword:"mapSearch",region:"mapRegion",town:"mapTown",category:"mapCategory",day:"mapDay",filters:"openMapFilters"}
+        :page==="calendar"
+        ?{form:"calendarHeroSearch",keyword:"calendarSearch",region:"calendarRegion",town:"calendarTown",category:"calendarCategory",day:"calendarDay",filters:"openCalendarFilters"}
         :{form:"directoryHeroSearch",keyword:"search",region:"heroRegion",town:"heroTown",category:"heroCategory",day:"heroDay",filters:"openSearchFilters"};
       if(hero){
         /* Keep page-specific hero styling attached to the loaded component, not the placeholder. */
