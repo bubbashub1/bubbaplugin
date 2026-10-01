@@ -363,7 +363,7 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
     render();
   };
 
-  const modal=document.getElementById("calendarAdvancedFilters");
+  const modal=document.getElementById("calendarFilters");
   if(modal){
     const componentClear=document.getElementById("clear");
     if(componentClear)componentClear.hidden=true;
