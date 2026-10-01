@@ -248,7 +248,10 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
   today?.addEventListener("click",()=>{state.date=new Date();render()});
   next?.addEventListener("click",()=>{if(state.view==="month")state.date.setMonth(state.date.getMonth()+1);else if(state.view==="week")state.date.setDate(state.date.getDate()+7);else state.date.setDate(state.date.getDate()+1);render()});
 
-  const loadPlannerPro=async()=>{
+  let plannerSelectBound=false;
+
+  const loadPlannerPro=async({preserveSelection=true}={})=>{
+    const previous=preserveSelection?state.plannerId:"";
     planners=readLocalPlanners();
     try{
       const response=await fetch("api/planner-pro.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
@@ -261,14 +264,48 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
         }
       }
     }catch{}
+
     const select=document.getElementById("calendarPlannerSelect");
     if(!select)return;
+
+    const requested=new URLSearchParams(window.location.search).get("proPlanner");
+    const requestedExists=requested&&planners.some(p=>String(p.id)===String(requested));
+    const selectedExists=previous&&planners.some(p=>String(p.id)===String(previous));
+    const nextId=requestedExists?String(requested):(selectedExists?String(previous):"");
+
     select.innerHTML='<option value="">All activities</option>'+planners.map(p=>'<option value="'+bhEscape(String(p.id))+'">'+bhEscape(p.name||"Planner")+"</option>").join("");
-    const requested=params.get("proPlanner");
-    if(requested&&planners.some(p=>String(p.id)===String(requested)))state.plannerId=requested;
-    select.value=state.plannerId;
-    select.addEventListener("change",()=>{state.plannerId=select.value;render()});
+    state.plannerId=nextId;
+    select.value=nextId;
+
+    if(!plannerSelectBound){
+      plannerSelectBound=true;
+      select.addEventListener("change",()=>{
+        state.plannerId=select.value;
+        const url=new URL(window.location.href);
+        if(state.plannerId)url.searchParams.set("proPlanner",state.plannerId);
+        else url.searchParams.delete("proPlanner");
+        window.history.replaceState(null,"",url);
+        render();
+      });
+    }
   };
+
+  const refreshPlannerDropdown=async()=>{
+    const current=state.plannerId;
+    await loadPlannerPro({preserveSelection:true});
+    if(current!==state.plannerId)render();
+    else render();
+  };
+
+  window.addEventListener("storage",event=>{
+    if(event.key==="bhProPlanners")refreshPlannerDropdown();
+  });
+
+  document.addEventListener("visibilitychange",()=>{
+    if(document.visibilityState==="visible")refreshPlannerDropdown();
+  });
+
+  window.addEventListener("focus",refreshPlannerDropdown);
 
   const setupHero=async()=>{
     if(window.bhDirectoryHeroReady)await window.bhDirectoryHeroReady;
