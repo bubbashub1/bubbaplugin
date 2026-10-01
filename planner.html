@@ -34,12 +34,13 @@
         <h2>Your Week</h2>
         <p id="plannerIntro">Your planned activities will appear on the days they run.</p>
       </div>
-      <div class="planner-toolbar-actions">
+      <div class="planner-toolbar-actions"><select id="plannerProfileSelect" class="planner-profile-select" aria-label="Choose planner"></select>
         <span class="status" id="count">0 planned</span>
         <button class="button button-soft" id="showAll" type="button">Show all days</button>
       </div>
     </div>
 
+    <div id="plannerProfileNote" class="planner-profile-note" hidden></div>
     <div class="planner-view-controls" id="plannerViewControls" aria-label="Planner view"></div><div class="planner-day-controls" id="dayControls" aria-label="Choose which days to show"></div>
 
     <div class="planner-week" id="results" aria-live="polite"></div>
