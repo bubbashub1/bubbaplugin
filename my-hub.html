@@ -37,6 +37,10 @@
     <h2>Ready for your next family adventure?</h2>
     <p id="hubEmail"></p>
   </div>
+  <div class="hub-upcoming-ticker" id="hubUpcomingTicker" aria-label="Upcoming planner events">
+    <span class="hub-ticker-label">📅 Coming up</span>
+    <div class="hub-ticker-track" id="hubTickerTrack"></div>
+  </div>
   <a class="hub-account-link" href="account.html">Manage account →</a>
 </div>
 
@@ -48,6 +52,21 @@
   </div>
   <button class="button button-primary" id="openWhatShallI" type="button"><span class="hub-sparkle" aria-hidden="true">✨</span> What shall I do?</button>
 </section>
+  <section class="hub-suggestions" id="hubSuggestions">
+    <div class="hub-suggestions-head">
+      <div>
+        <span class="eyebrow">Picked for your family</span>
+        <h2>Suggested groups &amp; activities</h2>
+        <p>Up to 12 ideas based on your family and preferences.</p>
+      </div>
+      <a class="button button-soft" href="preferences.html">Update preferences</a>
+    </div>
+    <div class="hub-suggestions-carousel">
+      <button class="hub-carousel-arrow" id="hubSuggestionsPrev" type="button" aria-label="Previous suggestions">‹</button>
+      <div class="hub-suggestions-track" id="hubSuggestionsTrack"></div>
+      <button class="hub-carousel-arrow" id="hubSuggestionsNext" type="button" aria-label="Next suggestions">›</button>
+    </div>
+  </section>
   <section class="what-shall-i" id="whatShallI" hidden aria-labelledby="whatShallITitle">
     <div class="what-shall-i-head">
       <div>
