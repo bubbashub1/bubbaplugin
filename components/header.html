@@ -1,17 +1,31 @@
 <header class="bh-site-header">
   <div class="bh-header-inner">
-    <a href="#" class="bh-header-logo">
-  <img src="images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png" alt="Bubba Hub Logo">
-</a>    <nav class="bh-main-nav" aria-label="Main menu">
-      <a href="directory.html">Find activities</a>
-      <a href="my-hub.html">My Hub</a>
-      <a href="help-support.html">Support &amp; Guidance</a>
-      <a href="leader.html">Class Leaders</a>
-      <a href="account.html">My Account</a>
-    </nav>
-    <a class="bh-header-search" href="directory.html" aria-label="Search activities">⌕</a>
-    <button class="bh-mobile-menu" type="button" aria-expanded="false" aria-label="Open menu">
-      <span></span><span></span><span></span>
-    </button>
+    
+    <!-- Top Row: Logo, Nav, and Sign In -->
+    <div class="bh-header-top-row">
+      <a href="#" class="bh-header-logo">
+        <img src="images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png" alt="Bubba Hub Logo">
+      </a>
+
+      <nav class="bh-main-nav" id="bh-main-nav">
+        <a href="#">Find activities</a>
+        <a href="#">My Hub</a>
+        <a href="#">Support & Guidance</a>
+        <a href="#">Class Leaders</a>
+        <a href="#">My Account</a>
+      </nav>
+
+      <a href="#" class="bh-sign-in-btn">Sign in</a>
+    </div>
+
+    <!-- Bottom Row: Seamless Mini Search Bar -->
+    <div class="bh-header-search-bar">
+      <input type="text" placeholder="Keyword">
+      <select><option value="">Region</option></select>
+      <select><option value="">Category</option></select>
+      <select><option value="">Day</option></select>
+      <button class="bh-header-search-submit">Search</button>
+    </div>
+
   </div>
 </header>
