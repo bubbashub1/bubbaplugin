@@ -104,3 +104,19 @@
 .pro-content .pro-section{display:block}
 .pro-content .pro-section:not(.is-active){display:none}
 @media(max-width:800px){.pro-dashboard{grid-template-columns:1fr;gap:16px}.pro-sidebar{padding:14px}.pro-nav{gap:5px}.pro-nav a{padding:11px 12px;font-size:12px}}
+
+
+/* New Planner modal component */
+.pro-planner-modal{backdrop-filter:blur(3px)}
+.pro-planner-modal-card{position:relative;width:min(560px,100%);padding:30px;border-radius:24px}
+.pro-planner-modal-icon{display:grid;place-items:center;width:48px;height:48px;margin-bottom:14px;border-radius:15px;background:#e1efe3;color:var(--bh-primary);font-size:23px;font-weight:900}
+.pro-planner-modal-card .eyebrow{display:inline-block;margin-bottom:2px}
+.pro-planner-modal-card h2{margin:.12em 0 .2em;font-size:32px}
+.pro-planner-modal-card>p{max-width:470px;line-height:1.55}
+.pro-modal-close{position:absolute;top:15px;right:15px;width:36px;height:36px;border:0;border-radius:50%;background:#edf5ef;color:var(--bh-primary);font-size:24px;line-height:1;cursor:pointer}
+.pro-modal-close:hover{background:#dcebdc}
+.pro-planner-modal-card .pro-form{margin-top:20px;gap:14px}
+.pro-planner-modal-card .pro-form input,.pro-planner-modal-card .pro-form textarea{padding:12px 13px;border-radius:13px;font-size:13px}
+.pro-planner-modal-card .pro-form textarea{min-height:105px}
+.pro-planner-modal-card .pro-form-actions{margin-top:5px;padding-top:14px;border-top:1px solid var(--bh-border)}
+@media(max-width:560px){.pro-planner-modal-card{padding:24px 19px;border-radius:20px}.pro-planner-modal-card h2{font-size:27px}.pro-planner-modal-card .pro-form-actions{flex-direction:column-reverse}.pro-planner-modal-card .pro-form-actions .button{width:100%}}
