@@ -6,31 +6,35 @@
 <title>My Planner · Bubba Hub</title>
 <link rel="stylesheet" href="assets/css/styles.css">
   <link rel="stylesheet" href="assets/css/bold-theme.css">
+<link rel="stylesheet" href="assets/css/planner.css?v=20261001-1">
 </head>
 <body>
-<header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/gemini_generated_image_t65ztnt65ztnt65z-20260930-185704-7e0755.jpeg" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="events.html">Events</a><a href="venues.html">Venues</a><a href="planner.html">My planner</a><a href="calendar.html">Calendar</a><a href="my-hub.html">My Hub</a><a href="leader.html">For class leaders</a><a href="admin.html">Admin</a></nav><a class="button button-soft" href="account.html">My account</a></header>
+<header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/gemini_generated_image_t65ztnt65ztnt65z-20260930-185704-7e0755.jpeg" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">My Account</a></nav><a class="button button-soft" href="account.html">My account</a></header>
 
 <main class="app-shell planner-page">
-  <div class="page-heading planner-page-heading">
-    <div>
-      <span class="eyebrow">Your family week</span>
+  <div class="planner-hero">
+    <div class="planner-hero-copy">
+      <span class="eyebrow">Your family plans</span>
       <h1>My Planner</h1>
-      <p>See your planned activities at a glance and keep the week organised.</p>
+      <p>Keep your family's activities together, see what's coming up and make the week work for you.</p>
     </div>
-    <div class="planner-heading-actions">
-      <span class="status" id="count">0 planned</span>
-      <div class="planner-heading-actions"><button class="button button-soft" id="exportCalendar" type="button">↗ Add to calendar</button><a class="button button-primary" href="directory.html">＋ Add activity</a></div>
+    <div class="planner-hero-actions">
+      <a class="button button-primary" href="directory.html">＋ Find an activity</a>
+      <button class="button button-soft" id="exportCalendar" type="button">↗ Add to calendar</button>
     </div>
   </div>
 
   <section class="planner-shell">
-    <div class="planner-overview">
-      <div>
-        <span class="eyebrow">Weekly view</span>
+    <div class="planner-toolbar">
+      <div class="planner-toolbar-copy">
+        <span class="eyebrow">Your week</span>
         <h2>This week</h2>
         <p id="plannerIntro">Your planned activities will appear on the days they run.</p>
       </div>
-      <button class="button button-soft" id="showAll" type="button">Show all days</button>
+      <div class="planner-toolbar-actions">
+        <span class="status" id="count">0 planned</span>
+        <button class="button button-soft" id="showAll" type="button">Show all days</button>
+      </div>
     </div>
 
     <div class="planner-day-controls" id="dayControls" aria-label="Choose which days to show"></div>
