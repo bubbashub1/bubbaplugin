@@ -25,6 +25,22 @@ function bh_mysql(): PDO {
         PDO::ATTR_EMULATE_PREPARES=>false,
     ]);
 
+    // Keep public organiser profile fields available on older installs.
+    try {
+        $profileFields = [
+            'about_content' => 'MEDIUMTEXT NULL',
+            'logo_url' => 'VARCHAR(1000) NULL',
+            'facebook_url' => 'VARCHAR(1000) NULL',
+            'instagram_url' => 'VARCHAR(1000) NULL',
+            'tiktok_url' => 'VARCHAR(1000) NULL'
+        ];
+        foreach ($profileFields as $field => $definition) {
+            $check = $pdo->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME=?");
+            $check->execute([$field]);
+            if ((int)$check->fetchColumn() === 0) $pdo->exec("ALTER TABLE bh_organisers ADD COLUMN $field $definition");
+        }
+    } catch (Throwable $ignored) {}
+
     // Keep organiser terms storage available on older installs.
     try {
         $termsCheck=$pdo->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME='terms_content'")->fetchColumn();
