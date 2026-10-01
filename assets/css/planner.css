@@ -297,3 +297,21 @@
   .planner-print-footer{display:block!important}
   .planner-print-week{grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
 }
+
+
+/* Admin-only Pro planner preview */
+.planner-pro-preview{margin-top:18px;padding:22px;border:1px solid rgba(65,102,81,.22);border-radius:22px;background:linear-gradient(135deg,#f1f8f2,#edf7f7);box-shadow:0 12px 30px rgba(18,63,49,.07)}
+.planner-pro-preview-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:16px}
+.planner-pro-preview-head h2{margin:3px 0 5px;font-size:26px;color:var(--bh-dark)}
+.planner-pro-preview-head p{margin:0;color:var(--bh-text-muted);font-size:12px}
+.planner-pro-badge{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:var(--bh-primary);color:#fff;font-size:10px;font-weight:900;letter-spacing:.08em}
+.planner-pro-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.planner-pro-feature{border:1px solid var(--bh-border);background:#fff;border-radius:15px;padding:13px;text-align:left;cursor:pointer;color:var(--bh-text);transition:.18s ease}
+.planner-pro-feature:hover,.planner-pro-feature.is-active{border-color:rgba(65,102,81,.35);box-shadow:0 6px 16px rgba(18,63,49,.07);transform:translateY(-1px)}
+.planner-pro-feature strong{display:block;font-size:12px;color:var(--bh-primary);margin-bottom:4px}
+.planner-pro-feature span{display:block;font-size:10px;line-height:1.4;color:var(--bh-text-muted)}
+.planner-pro-preview-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px;padding-top:13px;border-top:1px solid var(--bh-border)}
+.planner-pro-preview-actions .button{font-size:11px}
+@media(max-width:900px){.planner-pro-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.planner-pro-preview{padding:17px}.planner-pro-preview-head{flex-direction:column}.planner-pro-grid{grid-template-columns:1fr}.planner-pro-preview-actions{display:grid}.planner-pro-preview-actions .button{width:100%}}
+@media print{.planner-pro-preview{display:none!important}}
