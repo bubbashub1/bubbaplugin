@@ -69,6 +69,28 @@ document.addEventListener("DOMContentLoaded",async()=>{
     });
     return entries;
   }
+  function buildPrintCalendar(){
+    const calendar=$("plannerPrintCalendar"),dateLabel=$("plannerPrintDate");
+    if(!calendar)return;
+    const now=new Date(),year=now.getFullYear(),month=now.getMonth(),daysInMonth=new Date(year,month+1,0).getDate(),firstDay=new Date(year,month,1).getDay()||7;
+    dateLabel.textContent="Printed "+now.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+    const monthName=now.toLocaleDateString("en-GB",{month:"long",year:"numeric"}),cells=[];
+    for(let i=1;i<firstDay;i++)cells.push("<div class='planner-print-day is-outside'></div>");
+    for(let day=1;day<=daysInMonth;day++){
+      const date=new Date(year,month,day),dayNum=date.getDay()||7,entries=[];
+      localPlanned().forEach(id=>{
+        const activity=byId.get(String(id));if(!activity)return;
+        (typeof bhSessions==="function"?bhSessions(activity):[]).forEach(session=>{
+          if(Number(session.day_of_week||0)===dayNum&&occurrenceAllowed(session,date))entries.push({activity,session});
+        });
+      });
+      entries.sort((a,b)=>String(a.session?.start_time||"").localeCompare(String(b.session?.start_time||"")));
+      cells.push("<div class='planner-print-day'><div class='planner-print-date'>"+day+"</div>"+entries.map(e=>"<div class='planner-print-entry'><strong>"+esc(formatTime(e.session.start_time))+"</strong> "+esc(e.activity.title)+"</div>").join("")+"</div>");
+    }
+    while(cells.length%7)cells.push("<div class='planner-print-day is-outside'></div>");
+    calendar.innerHTML="<div class='planner-print-month'>"+esc(monthName)+"</div><div class='planner-print-weekdays'>"+days.map(d=>"<div>"+d.short+"</div>").join("")+"</div><div class='planner-print-grid'>"+cells.join("")+"</div>";
+  }
+
   function conflictsFor(entries){
     const conflicts=new Set();
     for(let i=0;i<entries.length;i++){
@@ -152,7 +174,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     setList(HIDE_KEY,hidden);render();if(signedIn)await plannerPost({action:"set_day",day:Number(value),visible:input.checked});
   }));
   $("showAll").addEventListener("click",async()=>{setList(HIDE_KEY,[]);render();if(signedIn)await plannerPost({action:"show_all_days"})});
-  await syncAccount();render();
+  await syncAccount();render();buildPrintCalendar();
 }).catch(error=>{
   const target=document.getElementById("results");
   target.innerHTML="<div class='admin-panel'><h3>Planner unavailable</h3><p>"+(window.bhEscape?bhEscape(error.message||"Unable to load planner."):String(error.message||"Unable to load planner."))+"</p></div>";
