@@ -90,6 +90,12 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const plannedActivities=planned.map(x=>activities.find(a=>String(a.id)===String(x.id))).filter(Boolean).slice(0,5);
     const savedActivities=activities.filter(a=>savedIds.has(String(a.id))).slice(0,6);
     $("hubEmail").textContent=data.user?.email||"";
+    const heroName=$("hubHeroName");
+    if(heroName){
+      const rawName=data.user?.name||data.user?.first_name||data.user?.display_name||"";
+      const firstName=String(rawName).trim().split(/\\s+/)[0];
+      heroName.textContent=firstName||"there";
+    }
     $("hubStats").innerHTML=[["♡",savedIds.size,"Saved"],["✓",planned.length,"Planned"],["📅",upcoming.length,"Upcoming bookings"],["👶",children.length+bumps.length,"Family profiles"]].map(x=>"<article class='hub-stat'><span>"+x[0]+"</span><strong>"+x[1]+"</strong><small>"+x[2]+"</small></article>").join("");
     const schoolTracker=dob=>{if(!dob)return "";const d=new Date(dob+"T00:00:00"),now=new Date(),py=d.getFullYear()+5,sy=d.getFullYear()+11,fmt=x=>x.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}),po=new Date(py-1,10,1),pc=new Date(py,0,15),so=new Date(sy-1,8,1),sc=new Date(sy-1,9,31),days=x=>Math.ceil((x-now)/86400000),status=(o,c)=>now>=o&&now<=c?(days(c)>0?"Open · "+days(c)+" days left":"Closes today"):(days(o)>0?"Opens "+fmt(o):"Closed");return "<div class='school-tracker'><div class='school-tracker-head'><span>🎓</span><strong>School application tracker</strong></div><div class='school-tracker-grid'><div><b>Primary · Sep "+py+"</b><small>"+esc(status(po,pc))+"</small><p>Opens "+esc(fmt(po))+" · closes "+esc(fmt(pc))+"</p></div><div><b>Secondary · Sep "+sy+"</b><small>"+esc(status(so,sc))+"</small><p>Opens "+esc(fmt(so))+" · closes "+esc(fmt(sc))+"</p></div></div><a class='button button-soft school-tracker-link' href='schools'>Find local schools →</a></div>"};
     $("hubFamily").innerHTML=(children.length||bumps.length)
