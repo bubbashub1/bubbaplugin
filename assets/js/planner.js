@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const normalise=v=>String(v??"").trim().toLowerCase();
   const valuesFor=(activity,session,key)=>{
     const venue=session?.venue||{};
-    const raw={category:activity?.category,region:venue.region||activity?.region,town:venue.town||activity?.town,day:session?.day_of_week,age:activity?.age_range,sen:activity?.sen_friendly??activity?.sen,termTime:session?.term_time_only,bookingRequired:activity?.booking_required??activity?.bookingRequired,price:session?.price??activity?.price,sessionLength:activity?.session_length||session?.session_length,accessibility:activity?.accessibility||activity?.accessibility_features||venue?.accessibility};
+    const raw={category:activity?.category,region:venue.region||activity?.region,town:venue.town||activity?.town,day:[session?.day,session?.day_of_week],age:activity?.age_range,sen:activity?.sen_friendly??activity?.sen,termTime:session?.term_time_only,bookingRequired:activity?.booking_required??activity?.bookingRequired,price:session?.price??activity?.price,sessionLength:activity?.session_length||session?.session_length,accessibility:activity?.accessibility||activity?.accessibility_features||venue?.accessibility};
     const value=raw[key]; return Array.isArray(value)?value.map(normalise):[normalise(value)].filter(Boolean);
   };
   const filterMatch=(activity,session,filters)=>{
