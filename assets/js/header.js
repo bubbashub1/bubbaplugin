@@ -109,6 +109,11 @@
           searchBar.classList.toggle("is-open",open);
           searchToggle.setAttribute("aria-expanded",String(open));
           searchToggle.setAttribute("aria-label",open?"Close search":"Open search");
+          if(open){
+            nav?.classList.remove("is-open");
+            menu?.setAttribute("aria-expanded","false");
+            menu?.setAttribute("aria-label","Open menu");
+          }
           if(open) setTimeout(()=>searchBar.querySelector("[name=keyword]")?.focus(),80);
         });
         document.addEventListener("click",event=>{
@@ -136,6 +141,11 @@
         nav.classList.toggle("is-open",open);
         menu.setAttribute("aria-expanded",String(open));
         menu.setAttribute("aria-label",open?"Close menu":"Open menu");
+        if(open){
+          searchBar?.classList.remove("is-open");
+          searchToggle?.setAttribute("aria-expanded","false");
+          searchToggle?.setAttribute("aria-label","Open search");
+        }
       });
       nav.addEventListener("click",event=>{if(event.target.closest("a"))close();});
       document.addEventListener("click",event=>{if(!header.contains(event.target))close();});
