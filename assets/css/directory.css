@@ -120,68 +120,32 @@
   font-weight:900;
   white-space:nowrap;
 }
-.bh-directory .directory-calendar-hero-button{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-height:46px;
-  padding:0 20px;
-  border:1px solid rgba(20,68,0,.08);
-  border-radius:14px;
-  background:#f6c84a;
-  color:#144400;
-  font-size:13px;
-  font-weight:900;
-  line-height:1;
-  white-space:nowrap;
-  box-shadow:0 6px 16px rgba(20,68,0,.10);
-}
-.bh-directory .directory-calendar-hero-button:hover{
-  background:#f1b92e;
-  color:#144400;
-}
-.bh-directory .directory-map-action-button{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-height:46px;
-  padding:0 20px;
-  border:1px solid rgba(60,142,150,.16);
-  border-radius:14px;
-  background:#3c8e96;
-  color:#fff;
-  font-size:13px;
-  font-weight:900;
-  line-height:1;
-  white-space:nowrap;
-  box-shadow:0 6px 16px rgba(20,68,0,.08);
-}
-.bh-directory .directory-map-action-button:hover{
-  background:#416651;
-  color:#fff;
-}
+.bh-directory .directory-calendar-hero-button,
+.bh-directory .directory-map-action-button,
 .bh-directory .directory-planner-action-button{
   display:inline-flex;
   align-items:center;
   justify-content:center;
   min-height:46px;
   padding:0 20px;
-  border:1px solid rgba(65,102,81,.16);
+  border:1px solid rgba(20,68,0,.12);
   border-radius:14px;
-  background:#d8e6db;
-  color:#144400;
+  background:#416651;
+  color:#fff;
   font-size:13px;
   font-weight:900;
   line-height:1;
   white-space:nowrap;
   text-decoration:none;
-  box-shadow:0 6px 16px rgba(20,68,0,.06);
+  box-shadow:0 6px 16px rgba(20,68,0,.10);
 }
+.bh-directory .directory-calendar-hero-button:hover,
+.bh-directory .directory-map-action-button:hover,
 .bh-directory .directory-planner-action-button:hover{
-  background:#9fb7a5;
+  background:#f6c84a;
+  border-color:#f6c84a;
   color:#144400;
 }
-
 .bh-directory .directory-popular{
   display:flex;
   align-items:center;
