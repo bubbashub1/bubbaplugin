@@ -1921,7 +1921,7 @@ body:not(.bh-home) .activity-header-search .activity-search-button{
 /* Final activity hero + schedule correction */
 body:not(.bh-home) .activity-hero{
   background:#1B4D3E!important;
-  padding:24px clamp(60px,6vw,90px) 28px!important;
+  padding:24px 15px 28px!important;
   min-height:0!important;
   height:auto!important;
   overflow:visible!important;
