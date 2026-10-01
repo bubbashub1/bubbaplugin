@@ -405,8 +405,13 @@ document.addEventListener("DOMContentLoaded",async()=>{
 
   function proEventCard(e){
     const time=e.session?(e.session.start_time||e.session.start||"").slice(0,5):"";
+    const endTime=e.session?(e.session.end_time||e.session.end||"").slice(0,5):"";
     const venue=e.session?.venue?.name||e.session?.venue?.town||e.activity.town||e.activity.location||"";
-    return "<article class='pro-calendar-event'><span>"+esc(time||"Time TBC")+"</span><div><strong>"+esc(e.activity.title)+"</strong><small>"+esc(venue)+"</small></div></article>";
+    const conflicts=dayPlanConflicts(e.session);
+    const warning=conflicts.length
+      ?"<span class='pro-calendar-conflict' title='This activity overlaps a saved Plan a day time block'>⚠ "+esc(conflicts[0].title)+(conflicts.length>1?" +"+(conflicts.length-1):"")+"</span>"
+      :"";
+    return "<article class='pro-calendar-event "+(conflicts.length?"has-conflict":"")+"'><span>"+esc(time||"Time TBC")+(endTime?" – "+esc(endTime):"")+"</span><div><strong>"+esc(e.activity.title)+"</strong><small>"+esc(venue)+"</small>"+warning+"</div></article>";
   }
 
   function renderProCalendar(){
@@ -457,11 +462,53 @@ document.addEventListener("DOMContentLoaded",async()=>{
   function renderMonth(){ renderProCalendar(); }
 
 
-  function renderDayPlan(){
-    $("dayPlan").innerHTML=dayPlan.map(x=>"<div class='pro-day-row'><div class='pro-day-time'>"+esc(x.time)+"</div><div><strong>"+esc(x.title)+"</strong><span>"+esc(x.detail||"")+"</span></div><div class='pro-card-actions'><button type='button' data-day-delete='"+esc(x.id)+"'>Remove</button></div></div>").join("");
-    $("dayPlan").querySelectorAll("[data-day-delete]").forEach(b=>b.onclick=()=>{dayPlan=dayPlan.filter(x=>x.id!==b.dataset.dayDelete);write(keys.dayPlan,dayPlan);renderDayPlan()});
+  function dayPlanRange(item){
+    const start=timeMinutes(item?.time);
+    if(start===null)return null;
+    const end=timeMinutes(item?.endTime);
+    return {start,end:end!==null&&end>start?end:start+60};
   }
-  function addDayPlan(){modal("Add to your day","Add an activity, travel block, appointment or preparation step.",[{name:"time",label:"Time",type:"time",required:true},{name:"title",label:"What is happening?",required:true},{name:"detail",label:"Notes"}],d=>{dayPlan.push({id:uid("day"),time:d.time,title:d.title,detail:d.detail});dayPlan.sort((a,b)=>a.time.localeCompare(b.time));write(keys.dayPlan,dayPlan);renderDayPlan()})}
+  function dayPlanConflicts(session){
+    const range=session?{start:timeMinutes(session.start_time),end:timeMinutes(session.end_time)}:null;
+    if(!range||range.start===null)return [];
+    if(range.end===null||range.end<=range.start)range.end=range.start+60;
+    return dayPlan.filter(item=>{
+      const planned=dayPlanRange(item);
+      return planned&&range.start<planned.end&&planned.start<range.end;
+    });
+  }
+  function renderDayPlan(){
+    const el=$("dayPlan");
+    if(!el)return;
+    const sorted=[...dayPlan].sort((a,b)=>String(a.time||"").localeCompare(String(b.time||"")));
+    el.innerHTML=sorted.map(x=>{
+      const timing=x.time+(x.endTime?" – "+x.endTime:" · 1 hour");
+      const type=x.type?"<small class='pro-day-type'>"+esc(x.type)+"</small>":"";
+      return "<div class='pro-day-row'><div class='pro-day-time'>"+esc(timing)+"</div><div>"+type+"<strong>"+esc(x.title)+"</strong><span>"+esc(x.detail||"")+"</span></div><div class='pro-card-actions'><button type='button' data-day-delete='"+esc(x.id)+"'>Remove</button></div></div>";
+    }).join("");
+    el.querySelectorAll("[data-day-delete]").forEach(b=>b.onclick=()=>{
+      dayPlan=dayPlan.filter(x=>x.id!==b.dataset.dayDelete);
+      write(keys.dayPlan,dayPlan);renderDayPlan();renderProCalendar();
+    });
+  }
+  function addDayPlan(){
+    modal("Add to your day","Create a reusable daily time block — perfect for naps, meals, nursery, travel or appointments.",[
+      {name:"time",label:"Start time",type:"time",required:true},
+      {name:"endTime",label:"End time",type:"time",required:true},
+      {name:"type",label:"Type",type:"select",options:[
+        {value:"Nap",label:"Nap / sleep"},{value:"Meal",label:"Meal"},{value:"Nursery",label:"Nursery / school"},
+        {value:"Travel",label:"Travel"},{value:"Appointment",label:"Appointment"},{value:"Routine",label:"Routine"},{value:"Other",label:"Other"}
+      ]},
+      {name:"title",label:"What is happening?",required:true},
+      {name:"detail",label:"Notes"}
+    ],d=>{
+      const start=timeMinutes(d.time),end=timeMinutes(d.endTime);
+      if(start===null||end===null||end<=start){alert("Please choose an end time after the start time.");return}
+      dayPlan.push({id:uid("day"),time:d.time,endTime:d.endTime,type:d.type,title:d.title,detail:d.detail});
+      dayPlan.sort((a,b)=>a.time.localeCompare(b.time));
+      write(keys.dayPlan,dayPlan);renderDayPlan();renderProCalendar();
+    })
+  }
 
   function renderNotes(){
     const el=$("notesGrid");if(!notes.length){el.innerHTML="<div class='pro-empty'><strong>No notes yet</strong>Add reminders such as packed bags, booking deadlines or things to remember.</div>";return}
