@@ -272,7 +272,25 @@
   .planner-list-item{gap:10px}
 }
 @media print{
-  .site-header{display:none!important}
+  /* Print is a clean planner document — hide every site navigation/header variant. */
+  header.site-header,
+  header.bh-site-header,
+  .site-header,
+  .bh-site-header,
+  .main-nav,
+  .bh-main-nav,
+  .bh-header-actions,
+  .bh-header-search-bar,
+  .bh-mobile-menu,
+  .bh-header-search-toggle,
+  .bh-sign-in-btn{
+    display:none!important;
+    visibility:hidden!important;
+    height:0!important;
+    min-height:0!important;
+    max-height:0!important;
+    overflow:hidden!important;
+  }
   .site-footer,.planner-page{display:none!important}
   .planner-print-sheet{display:block!important}
   .planner-print-header{padding-bottom:5mm;border-bottom:1px solid #d7e2da}
