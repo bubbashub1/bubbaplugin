@@ -750,7 +750,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           saved: params.get("saved") || ""
         };
         Object.entries(mapValues).forEach(([key,value]) => { if (value) mapParams.set(key,value); });
-        mobileMapLink.href = "map.html" + (mapParams.toString() ? "?" + mapParams.toString() : "");
+        mobileMapLink.href = "#mapView";
       }
 
       lastFilteredList = list;
@@ -845,7 +845,23 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     };
 
-        if ($("mainSearchButton")) $("mainSearchButton").addEventListener("click", render);
+        const directoryMapLink = document.querySelector(".directory-mobile-map-link");
+    if (directoryMapLink) {
+      directoryMapLink.addEventListener("click", event => {
+        event.preventDefault();
+        currentView = "map";
+        const mapView = $("mapView");
+        if (mapView) {
+          mapView.hidden = false;
+          mapView.setAttribute("aria-hidden", "false");
+          mapView.scrollIntoView({behavior:"smooth", block:"start"});
+        }
+        renderMap(lastFilteredList);
+        setTimeout(() => { if (map) map.invalidateSize(); }, 120);
+      });
+    }
+
+    if ($("mainSearchButton")) $("mainSearchButton").addEventListener("click", render);
     if ($("search")) $("search").addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); render(); } });
 
     ["search", "category", "area", "town", "day", "maxPrice", "free", "sessionLength", "sen", "termTime", "bookingRequired"].forEach(id => {
