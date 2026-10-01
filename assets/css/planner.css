@@ -249,7 +249,7 @@
 .planner-list-main .planner-card-links{margin-top:7px}
 
 .planner-print-calendar{width:100%}
-.planner-print-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.planner-print-week{display:grid;grid-template-columns:repeat(var(--planner-print-days,7),minmax(0,1fr));gap:4mm;width:100%}
 .planner-print-week-day{min-height:165mm;padding:7px;border:1px solid #bfcfc5;border-radius:4px;overflow:hidden}
 .planner-print-week-heading{display:flex;justify-content:space-between;gap:5px;padding-bottom:5px;margin-bottom:4px;border-bottom:1px solid #d7e2da;color:#416651;font-size:9px}
 .planner-print-entry{margin:5px 0;font-size:9px;line-height:1.25;color:#123f31}
@@ -295,7 +295,7 @@
   .planner-print-sheet{display:block!important}
   .planner-print-header{padding-bottom:5mm;border-bottom:1px solid #d7e2da}
   .planner-print-footer{display:block!important}
-  .planner-print-week{grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+  .planner-print-week{grid-template-columns:repeat(var(--planner-print-days,7),minmax(0,1fr));gap:4mm;width:100%}
 }
 
 
