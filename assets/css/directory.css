@@ -140,6 +140,26 @@
   background:#f1b92e;
   color:#144400;
 }
+.bh-directory .directory-map-action-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:46px;
+  padding:0 20px;
+  border:1px solid rgba(60,142,150,.16);
+  border-radius:14px;
+  background:#3c8e96;
+  color:#fff;
+  font-size:13px;
+  font-weight:900;
+  line-height:1;
+  white-space:nowrap;
+  box-shadow:0 6px 16px rgba(20,68,0,.08);
+}
+.bh-directory .directory-map-action-button:hover{
+  background:#416651;
+  color:#fff;
+}
 .bh-directory .directory-popular{
   display:flex;
   align-items:center;
@@ -279,11 +299,11 @@
 }
 
 /* Listings — stacked card grid */
-.bh-directory #results{display:grid;grid-template-columns:1fr;gap:16px;width:100%;min-width:0}
-.bh-directory #results .activity-card{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);width:100%;min-height:180px}
+.bh-directory #results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;width:100%;min-width:0}
+.bh-directory #results .activity-card{display:flex;flex-direction:column;width:100%;min-height:0}
 .bh-directory .activity-card{background:#fff;border:1px solid rgba(65,102,81,.12);border-radius:22px;overflow:hidden;box-shadow:0 8px 24px rgba(20,68,0,.07);min-width:0;transition:transform .18s ease,box-shadow .18s ease}
 .bh-directory .activity-card:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(20,68,0,.11)}
-.bh-directory .activity-image{height:180px;min-height:180px;background:linear-gradient(135deg,#dceee1,#d6e8ea);display:grid;place-items:center;overflow:hidden;color:var(--bh-site-dark,#0d3b32);font-weight:850}
+.bh-directory .activity-image{height:190px;min-height:190px;background:linear-gradient(135deg,#dceee1,#d6e8ea);display:grid;place-items:center;overflow:hidden;color:var(--bh-site-dark,#0d3b32);font-weight:850}
 .bh-directory .activity-image img{width:100%;height:100%;object-fit:cover}
 .bh-directory .activity-body{display:flex;flex-direction:column;min-width:0;padding:17px 18px 18px}
 .bh-directory .activity-meta{color:var(--bh-site-teal,#3c8e96);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.07em}
@@ -582,6 +602,9 @@
   .bh-directory .directory-results-heading{display:flex;align-items:flex-start;flex-direction:column;gap:0;width:100%;margin-bottom:14px}
   .bh-directory .directory-mobile-view-toggle{display:none!important}
   .bh-directory .directory-mobile-map-link{display:flex!important}
+  .bh-directory .directory-hero-actions{flex-wrap:wrap}
+  .bh-directory .directory-calendar-hero-button,
+  .bh-directory .directory-map-action-button{flex:1 1 180px}
   .bh-directory .directory-all-link{width:100%;text-align:center}
   .bh-directory .directory-hero-search{padding:19px 15px 15px;border-radius:18px}
   .bh-directory .directory-hero-search-fields{grid-template-columns:1fr}
