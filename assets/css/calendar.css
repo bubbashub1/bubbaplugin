@@ -179,3 +179,14 @@
 .calendar-filter-dialog .directory-advanced-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .calendar-filter-dialog .directory-accessibility-fieldset{grid-column:1/-1}
 @media(max-width:560px){.calendar-filter-dialog .directory-filter-fields,.calendar-filter-dialog .directory-advanced-fields{grid-template-columns:1fr}.calendar-filter-dialog .directory-advanced-section,.calendar-filter-dialog .directory-accessibility-fieldset{grid-column:auto}}
+
+
+/* Calendar: add breathing room above the shared Directory Hero */
+.calendar-page .calendar-directory-hero{
+  padding-top:20px;
+}
+@media(max-width:700px){
+  .calendar-page .calendar-directory-hero{
+    padding-top:14px;
+  }
+}
