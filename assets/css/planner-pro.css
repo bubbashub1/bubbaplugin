@@ -88,3 +88,19 @@
 .pro-content{min-width:0}.pro-content .pro-section{display:none;margin:0}.pro-content .pro-section.is-active{display:block}
 @media(max-width:800px){.pro-dashboard{grid-template-columns:1fr;gap:14px}.pro-sidebar{position:static;padding:10px}.pro-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.pro-sidebar-back{padding-top:9px}}
 @media(max-width:520px){.pro-nav{grid-template-columns:1fr 1fr}.pro-nav a{font-size:10px}}
+
+
+/* Dashboard refinement */
+.pro-dashboard{grid-template-columns:270px minmax(0,1fr);gap:26px}
+.pro-sidebar{padding:18px}
+.pro-sidebar-heading{padding:7px 8px 16px;margin-bottom:8px}
+.pro-sidebar-heading .pro-icon{width:42px;height:42px}
+.pro-sidebar-heading strong{font-size:16px}.pro-sidebar-heading small{font-size:10px}
+.pro-nav{gap:5px;padding:7px 0 14px}
+.pro-nav a{gap:11px;padding:13px 14px;border-radius:13px;font-size:13px;line-height:1.25}
+.pro-nav a:first-letter{font-size:17px}
+.pro-sidebar-back{padding:14px 9px 4px;font-size:11px}
+/* Keep the first panel visible even before JavaScript initialises. */
+.pro-content .pro-section{display:block}
+.pro-content .pro-section:not(.is-active){display:none}
+@media(max-width:800px){.pro-dashboard{grid-template-columns:1fr;gap:16px}.pro-sidebar{padding:14px}.pro-nav{gap:5px}.pro-nav a{padding:11px 12px;font-size:12px}}
