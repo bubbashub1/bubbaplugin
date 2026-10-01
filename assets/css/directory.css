@@ -730,3 +730,17 @@
     padding:15px !important;
   }
 }
+
+
+/* Final mobile hero visibility safeguard */
+@media (max-width:900px) {
+  body.bh-directory .directory-hero-fullwidth[data-bh-directory-hero] {
+    display:block !important;
+    visibility:visible !important;
+    opacity:1 !important;
+  }
+  body.bh-directory .directory-hero-search {
+    display:block !important;
+    visibility:visible !important;
+  }
+}
