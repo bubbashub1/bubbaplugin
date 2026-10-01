@@ -407,11 +407,16 @@ void bhHydrateSaved();
 
   const fallbackCards=Array.from(grid.querySelectorAll(".home-activity-card"));
   const setText=(el,value)=>{if(el)el.textContent=value||""};
+  const PLACEHOLDER_IMAGE="images/logos/gemini_generated_image_1dzezm1dzezm1dze-20260929-213630-1f8496.jpeg";
   const resolveImage=(path)=>{
     const value=String(path||"").trim();
-    if(!value)return "";
-    if(/^https?:\/\//i.test(value)||value.startsWith("/"))return value;
-    return value.replace(/^\.\//,"");
+    if(!value)return PLACEHOLDER_IMAGE;
+    if(/^https?:\/\//i.test(value))return value;
+    if(value.startsWith("//"))return window.location.protocol+value;
+    if(value.startsWith("/beta/"))return value;
+    if(value.startsWith("/"))return "/beta"+value;
+    if(/^images\//i.test(value)||/^assets\//i.test(value))return value.replace(/^\.\//,"");
+    return "images/listings/"+value.replace(/^\.\//,"").replace(/^\/+/,"");
   };
   const ageText=(a)=>{
     const ages=Array.isArray(a?.age_range)?a.age_range.filter(Boolean):[];
@@ -490,9 +495,12 @@ void bhHydrateSaved();
         const imageWrap=document.createElement("div");
         imageWrap.className="home-card-image";
         const img=document.createElement("img");
-        const fallback=fallbackCards[index]?.querySelector("img")?.getAttribute("src")||"";
-        img.src=resolveImage(a.image_url)||fallback;
+        img.src=resolveImage(a.image_url);
         img.alt=a.title||"Family activity";
+        img.addEventListener("error",()=>{
+          if(img.src.endsWith(PLACEHOLDER_IMAGE))return;
+          img.src=PLACEHOLDER_IMAGE;
+        },{once:true});
         imageWrap.appendChild(img);
 
         const age=document.createElement("span");
