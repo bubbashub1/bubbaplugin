@@ -126,3 +126,12 @@
 .pro-content>.pro-section{display:block}
 .pro-content>.pro-section[hidden]{display:none!important}
 .pro-content>.pro-section.is-active{display:block!important}
+
+
+/* Larger, easier-to-read Planner Pro card typography */
+.pro-planner-card h3,.pro-family-card h3,.pro-share-card h3,.pro-note-card h3,.pro-calendar-card h3,.pro-favourite-card h3{font-size:17px;line-height:1.25}
+.pro-planner-card p,.pro-family-card p,.pro-share-card p,.pro-note-card p,.pro-calendar-card p,.pro-favourite-card p{font-size:13px;line-height:1.5}
+.pro-card-actions button,.pro-text-button{font-size:12px}
+.pro-side-card h3{font-size:17px}
+.pro-side-card p,.pro-side-card li{font-size:13px;line-height:1.5}
+.pro-empty{font-size:13px}.pro-empty strong{font-size:16px}
