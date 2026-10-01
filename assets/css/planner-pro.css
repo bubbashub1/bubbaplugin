@@ -1,0 +1,75 @@
+/* Bubba Hub Pro Planner workspace */
+.planner-pro-page{padding-bottom:34px}
+.pro-hero{display:flex;justify-content:space-between;align-items:center;gap:28px;margin:22px 0 14px;padding:30px 32px;border:1px solid rgba(65,102,81,.12);border-radius:28px;background:linear-gradient(135deg,#eaf5ec,#dff0ef 60%,#f7f1e5);box-shadow:0 16px 38px rgba(18,63,49,.08)}
+.pro-hero h1{margin:.08em 0 .15em;color:var(--bh-dark);font-size:clamp(34px,4vw,50px);line-height:1.02}
+.pro-hero p{margin:0;max-width:700px;color:var(--bh-text-muted);font-size:14px}
+.pro-hero-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.pro-nav{position:sticky;top:10px;z-index:5;display:flex;gap:6px;overflow:auto;padding:7px;margin:0 0 18px;border:1px solid var(--bh-border);border-radius:16px;background:rgba(255,255,255,.94);box-shadow:0 8px 22px rgba(18,63,49,.06);scrollbar-width:none}
+.pro-nav::-webkit-scrollbar{display:none}
+.pro-nav a{flex:0 0 auto;padding:8px 11px;border-radius:999px;color:var(--bh-text-muted);font-size:11px;font-weight:800;text-decoration:none}
+.pro-nav a:hover,.pro-nav a:focus{background:#e7f1e8;color:var(--bh-primary)}
+.pro-section{margin:0 0 18px;padding:22px;border:1px solid var(--bh-border);border-radius:22px;background:#fff;box-shadow:0 9px 26px rgba(18,63,49,.045);scroll-margin-top:76px}
+.pro-section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:15px}
+.pro-section-head h2{margin:2px 0 4px;font-family:"Chewy",cursive;font-size:30px;font-weight:400;line-height:1.05;color:var(--bh-dark)}
+.pro-section-head p{margin:0;color:var(--bh-text-muted);font-size:12px;max-width:680px}
+.pro-planner-layout,.pro-share-layout{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:14px}
+.pro-planner-list,.pro-share-list{display:grid;gap:8px}
+.pro-planner-card,.pro-share-card,.pro-family-card,.pro-note-card,.pro-calendar-card{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1px solid var(--bh-border);border-radius:15px;background:#f8fbf8}
+.pro-planner-card.is-active{background:#edf6ef;border-color:rgba(65,102,81,.25)}
+.pro-planner-swatch,.pro-family-swatch{width:10px;height:38px;border-radius:8px;background:var(--bh-primary);flex:0 0 auto}
+.pro-planner-card-main,.pro-family-main,.pro-share-main{min-width:0;flex:1}
+.pro-planner-card h3,.pro-family-card h3,.pro-share-card h3,.pro-note-card h3,.pro-calendar-card h3{margin:0 0 3px;font-size:14px;color:var(--bh-text)}
+.pro-planner-card p,.pro-family-card p,.pro-share-card p,.pro-note-card p,.pro-calendar-card p{margin:0;color:var(--bh-text-muted);font-size:11px;line-height:1.4}
+.pro-card-actions{display:flex;gap:6px;flex-wrap:wrap}
+.pro-card-actions button,.pro-text-button{border:0;background:transparent;color:var(--bh-primary);font:inherit;font-size:10px;font-weight:850;cursor:pointer;padding:5px}
+.pro-card-actions button:hover,.pro-text-button:hover{text-decoration:underline}
+.pro-side-card{padding:17px;border:1px solid rgba(65,102,81,.13);border-radius:16px;background:#f1f7f2}
+.pro-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:#dcebdc;color:var(--bh-primary);font-weight:900}
+.pro-side-card h3{margin:10px 0 4px;font-size:15px}
+.pro-side-card p,.pro-side-card li{color:var(--bh-text-muted);font-size:11px;line-height:1.45}
+.pro-side-card ul{margin:10px 0 14px;padding-left:17px}
+.pro-family-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.pro-family-card{align-items:flex-start}
+.pro-family-swatch{height:44px}
+.pro-family-card .pro-card-actions{margin-left:auto}
+.pro-month-actions{display:flex;align-items:center;gap:8px}
+.pro-month-actions strong{min-width:150px;text-align:center;font-size:13px;color:var(--bh-primary)}
+.pro-month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-top:1px solid var(--bh-border);border-left:1px solid var(--bh-border)}
+.pro-month-cell{min-height:100px;padding:7px;border-right:1px solid var(--bh-border);border-bottom:1px solid var(--bh-border);background:#fff}
+.pro-month-cell.is-outside{background:#fafcf9;color:#9aa69f}
+.pro-month-cell.is-today{background:#eef6ef}
+.pro-month-date{font-size:10px;font-weight:850;color:var(--bh-primary)}
+.pro-month-event{display:block;margin-top:5px;padding:4px 5px;border-radius:7px;background:#e7f1e8;color:var(--bh-text);font-size:9px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pro-day-plan{display:grid;gap:7px}
+.pro-day-row{display:grid;grid-template-columns:75px minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 13px;border:1px solid var(--bh-border);border-radius:13px;background:#f8fbf8}
+.pro-day-time{font-size:11px;font-weight:850;color:var(--bh-primary)}
+.pro-day-row strong{display:block;font-size:12px}
+.pro-day-row span{display:block;margin-top:2px;color:var(--bh-text-muted);font-size:10px}
+.pro-notes-grid,.pro-favourites-grid,.pro-calendar-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.pro-note-card,.pro-calendar-card{align-items:flex-start}
+.pro-note-card{display:block}
+.pro-note-card header{display:flex;justify-content:space-between;gap:8px}
+.pro-note-card small{color:var(--bh-text-muted);font-size:9px}
+.pro-note-card button{float:right;margin-top:8px}
+.pro-favourite-card{display:flex;gap:11px;padding:13px;border:1px solid var(--bh-border);border-radius:15px;background:#f8fbf8}
+.pro-favourite-card .pro-fav-icon{width:40px;height:40px;border-radius:12px;background:#e7f1e8;display:grid;place-items:center;color:var(--bh-primary);flex:0 0 auto}
+.pro-favourite-card h3{margin:0 0 3px;font-size:13px}
+.pro-favourite-card p{margin:0;color:var(--bh-text-muted);font-size:10px}
+.pro-favourite-card a{display:inline-block;margin-top:6px;color:var(--bh-primary);font-size:10px;font-weight:850;text-decoration:none}
+.pro-calendar-card{position:relative}
+.pro-calendar-card>span{font-size:20px}
+.pro-calendar-card b{margin-left:auto;padding:4px 7px;border-radius:999px;background:#dcebdc;color:var(--bh-primary);font-size:9px}
+.pro-empty{padding:24px;text-align:center;border:1px dashed var(--bh-border);border-radius:15px;background:#fafcf9;color:var(--bh-text-muted);font-size:11px}
+.pro-empty strong{display:block;margin-bottom:4px;color:var(--bh-text);font-size:14px}
+.pro-modal-backdrop{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:18px;background:rgba(18,63,49,.32)}
+.pro-modal{width:min(520px,100%);padding:22px;border-radius:20px;background:#fff;box-shadow:0 24px 70px rgba(18,63,49,.2)}
+.pro-modal h2{margin:0 0 5px;font-family:"Chewy",cursive;font-size:27px;font-weight:400}
+.pro-modal p{margin:0 0 15px;color:var(--bh-text-muted);font-size:12px}
+.pro-form{display:grid;gap:10px}
+.pro-form label{display:grid;gap:4px;color:var(--bh-text);font-size:11px;font-weight:800}
+.pro-form input,.pro-form textarea,.pro-form select{width:100%;box-sizing:border-box;padding:10px 11px;border:1px solid var(--bh-border);border-radius:11px;background:#fff;color:var(--bh-text);font:inherit;font-size:12px}
+.pro-form textarea{min-height:85px;resize:vertical}
+.pro-form-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:5px}
+@media(max-width:900px){.pro-family-grid,.pro-notes-grid,.pro-favourites-grid,.pro-calendar-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pro-planner-layout,.pro-share-layout{grid-template-columns:1fr}.pro-side-card{display:none}}
+@media(max-width:700px){.pro-hero{align-items:flex-start;flex-direction:column;padding:24px 21px}.pro-hero-actions{justify-content:flex-start;width:100%}.pro-section{padding:18px}.pro-section-head{align-items:flex-start;flex-direction:column}.pro-month-cell{min-height:72px;padding:5px}.pro-month-event{font-size:8px}.pro-month-actions{width:100%;justify-content:space-between}.pro-month-actions strong{min-width:0}.pro-day-row{grid-template-columns:60px minmax(0,1fr)}.pro-day-row .pro-card-actions{grid-column:2}.pro-family-grid,.pro-notes-grid,.pro-favourites-grid,.pro-calendar-grid{grid-template-columns:1fr}}
+@media(max-width:520px){.pro-nav{margin-left:-3px;margin-right:-3px}.pro-planner-card,.pro-share-card{align-items:flex-start}.pro-card-actions{margin-left:auto;flex-direction:column;align-items:flex-end}.pro-month-grid{font-size:8px}.pro-month-cell{min-height:58px}.pro-month-event{display:none}}
