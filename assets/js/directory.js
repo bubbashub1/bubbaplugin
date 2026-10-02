@@ -40,7 +40,7 @@ const bhInitDirectory=async()=>{
 
     const ageMatches = (activity, min, max) => {
       if (min === 0 && max === 9) return true;
-      const ranges = Array.isArray(activity.age_range) ? activity.age_range : [activity.age_range];
+      if(Number.isFinite(Number(activity.age_min_months)) && Number.isFinite(Number(activity.age_max_months))){const qMin=Number(min)*12,qMax=Number(max)*12;return Number(activity.age_max_months)>=qMin&&Number(activity.age_min_months)<=qMax;}const ranges = Array.isArray(activity.age_range) ? activity.age_range : [activity.age_range];
       return ranges.some(range => {
         const parsed = parseAgeRange(range);
         return parsed && parsed.max >= min && parsed.min <= max;
@@ -647,7 +647,7 @@ const bhInitDirectory=async()=>{
         const accessibilityMatch = !accessibility.length || accessibility.every(option => activityAccessibility.includes(option));
 
         return (!search || text.includes(search)) &&
-          (!category || (categoryMap[activity.category] || activity.category) === category) &&
+          (!category || (activity.categories||[activity.category]).some(c => (categoryMap[c] || c) === category)) &&
           locationMatch &&
           ageMatches(activity, minAge, maxAge) &&
           sessionMatch &&
