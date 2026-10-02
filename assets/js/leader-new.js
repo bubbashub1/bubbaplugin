@@ -95,19 +95,38 @@ document.querySelector(".bh-form").addEventListener("input",()=>{if(current) sav
 async function post(body){let r=await fetch(API,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(body)}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.message||d.error||"The class could not be submitted.");return d}
 form.onsubmit=async e=>{e.preventDefault();if(!valid(6))return;let p=document.querySelector('input[name="pricing"]:checked'),payload={action:"create_listing",title:Q("title").value.trim(),description:Q("description").value.trim(),category:vals(Q("categories")).join(", "),tags:vals(Q("tags")).join(", "),age_min_months:+Q("ageMin").value,age_max_months:+Q("ageMax").value,age_range:age(Q("ageMin").value)+" – "+age(Q("ageMax").value),price_from:p.value==="free"?"":+Q("price").value,price_free:p.value==="free",price_per_family:p.value==="family",price_per_session:p.value==="session",booking_required:Q("bookingRequired").checked,drop_in_welcome:Q("dropInWelcome").checked,trial_available:Q("trialAvailable").checked,term_time_only:Q("termTimeOnly").checked,holiday_sessions:Q("holidaySessions").checked,siblings_welcome:Q("siblingsWelcome").checked,what_to_bring:Q("whatToBring").value.trim(),good_to_know:Q("goodToKnow").value.trim(),booking_url:Q("bookingUrl").value.trim(),schedule:schedule(),accessibility:[...Q("accessibility").querySelectorAll("input:checked")].map(x=>x.value),existing_venue_id:Q("existingVenue").value?+Q("existingVenue").value:0,venue_name:Q("venueName").value.trim(),address:Q("address").value.trim(),town:Q("town").value.trim(),region:Q("region").value.trim(),postcode:Q("postcode").value.trim(),latitude:Q("latitude").value.trim(),longitude:Q("longitude").value.trim(),photos:uniq(Q("photoUrls").value.split(/\n+/))};Q("submitListing").disabled=true;say("Submitting your class…");try{let d=await post(payload),id=d.id;if(files.length){for(let f of files){let fd=new FormData();fd.append("action","upload_activity_image");fd.append("activity_id",id);fd.append("image",f);let r=await fetch(API,{method:"POST",credentials:"same-origin",body:fd}),u=await r.json();if(!r.ok||!u.ok)throw Error(u.message||"An uploaded image could not be saved.")}}say("Class submitted successfully. It is now awaiting review.",true);setTimeout(()=>location.href="../leader/classes.html",1000)}catch(err){say(err.message);Q("submitListing").disabled=false}};
 function saveDraft(){
- const data={};
- if(Q("descriptionEditor"))data.descriptionEditor=Q("descriptionEditor").innerHTML;
- document.querySelectorAll(".bh-form input,.bh-form select,.bh-form textarea,[contenteditable=true]").forEach(x=>{
+ const data={fields:{},multi:{},schedule:schedule(),accessibility:[...Q("accessibility").querySelectorAll("input:checked")].map(x=>x.value)};
+ if(Q("descriptionEditor"))data.fields.descriptionEditor=Q("descriptionEditor").innerHTML;
+ document.querySelectorAll(".bh-form input,.bh-form select,.bh-form textarea").forEach(x=>{
    if(!x.id)return;
-   data[x.id]=x.type==="checkbox"?x.checked:x.type==="radio"?(x.checked?x.value:null):x.value;
+   if(x.tagName==="SELECT"&&x.multiple)data.multi[x.id]=vals(x);
+   else if(x.type==="checkbox")data.fields[x.id]=x.checked;
+   else if(x.type==="radio"){if(x.checked)data.fields[x.id]=x.value}
+   else data.fields[x.id]=x.value;
  });
  localStorage.setItem("bh_add_class_draft",JSON.stringify(data));
 }
 function loadDraft(){
  try{
-  const d=JSON.parse(localStorage.getItem("bh_add_class_draft")||"{}");
-  Object.entries(d).forEach(([id,v])=>{const x=Q(id);if(!x)return;if(x.type==="checkbox")x.checked=!!v;else if(x.type==="radio"){if(x.value===v)x.checked=true}else x.value=v;});
-  if(Q("descriptionEditor")&&d.descriptionEditor)Q("descriptionEditor").innerHTML=d.descriptionEditor;
+  const d=JSON.parse(localStorage.getItem("bh_add_class_draft")||"{}"),fields=d.fields||{},multi=d.multi||{};
+  Object.entries(multi).forEach(([id,values])=>{
+    const x=Q(id);if(!x||!x.multiple)return;
+    values.forEach(v=>addOpt(x,v,true));
+  });
+  Object.entries(fields).forEach(([id,v])=>{
+    const x=Q(id);if(!x)return;
+    if(x.type==="checkbox")x.checked=!!v;
+    else if(x.type==="radio"){if(x.value===v)x.checked=true}
+    else x.value=v;
+  });
+  if(Q("descriptionEditor")&&fields.descriptionEditor)Q("descriptionEditor").innerHTML=fields.descriptionEditor;
+  if(Array.isArray(d.schedule)&&d.schedule.length){
+    Q("scheduleRows").innerHTML="";
+    d.schedule.forEach(x=>addRow(x));
+  }
+  if(Array.isArray(d.accessibility)){
+    Q("accessibility").querySelectorAll("input").forEach(x=>x.checked=d.accessibility.includes(x.value));
+  }
  }catch(e){}
  syncDescription();ageUpdate();photoRender();renderPicker("categories");renderPicker("tags");
 }
