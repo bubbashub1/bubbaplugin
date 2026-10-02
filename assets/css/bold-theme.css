@@ -1642,3 +1642,26 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
 .bh-check-row input{min-height:auto!important;width:18px;height:18px;box-shadow:none!important}.bh-new-step input:disabled{opacity:.6;cursor:not-allowed}
 @media(max-width:800px){.bh-category-tag-grid,.bh-age-price-grid{grid-template-columns:1fr}.bh-price-options{grid-template-columns:1fr}}
 @media(max-width:560px){.bh-age-inputs{grid-template-columns:1fr}.bh-category-picker,.bh-tag-picker,.bh-new-category-row,.bh-new-tag-row{grid-template-columns:1fr}}
+
+
+/* Leader Add Class — rich description + booking information */
+.bh-rich-text-field{display:block!important;grid-column:1/-1}
+.bh-rich-text-field>label:first-child{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.bh-rich-toolbar{display:flex;flex-wrap:wrap;gap:6px;padding:9px;background:#edf5ef;border:1px solid #d8e6db;border-bottom:0;border-radius:14px 14px 0 0}
+.bh-rich-toolbar button{border:1px solid #cddbcf;background:#fff;color:#416651;border-radius:9px;padding:7px 10px;font:inherit;font-weight:800;cursor:pointer}
+.bh-rich-toolbar button:hover,.bh-rich-toolbar button:focus-visible{background:#d8e6db;outline:none}
+.bh-rich-editor{min-height:190px;padding:15px;border:1px solid #d8e6db;border-radius:0 0 14px 14px;background:#fff;color:#416651;line-height:1.65}
+.bh-rich-editor:focus{outline:3px solid rgba(60,142,150,.16);border-color:#9fb7a5}
+.bh-rich-editor:empty:before{content:attr(data-placeholder);color:#9aa99d;pointer-events:none}
+.bh-rich-editor h3{margin:14px 0 7px;color:#416651}
+.bh-rich-editor p{margin:0 0 10px}.bh-rich-editor ul,.bh-rich-editor ol{padding-left:24px;margin:8px 0 12px}
+.bh-info-options{grid-column:1/-1;padding:18px;border:1px solid rgba(18,63,49,.09);border-radius:18px;background:#fbfdfc}
+.bh-info-options-head strong{display:block;color:var(--bh-dark);font-size:1.05rem;margin-bottom:4px}
+.bh-info-checks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.bh-info-text-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.bh-info-text-grid label{display:flex;flex-direction:column;gap:7px}
+.bh-field-optional{font-size:.72rem;font-weight:700;color:#617261;background:#edf5ef;border-radius:999px;padding:3px 8px;width:max-content}
+.activity-info-badges{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 14px}
+.activity-info-badges span{display:inline-flex;padding:7px 11px;border-radius:999px;background:#e7f1ea;color:#416651;font-size:.82rem;font-weight:800}
+.activity-useful-info p{margin:8px 0;color:var(--bh-text-muted)}
+@media(max-width:800px){.bh-info-checks,.bh-info-text-grid{grid-template-columns:1fr}}
