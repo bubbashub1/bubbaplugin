@@ -1427,3 +1427,101 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
 @media(max-width:430px){
   .bh-leader-hero .hero-actions{grid-template-columns:1fr}
 }
+
+
+/* LEADER DASHBOARD — STATS ROW POLISH */
+.bh-leader-stats-v2{
+  align-items:stretch;
+}
+.bh-leader-stat{
+  position:relative;
+  min-height:92px;
+  padding:15px;
+  overflow:hidden;
+  background:linear-gradient(145deg,#fff 0%,#f7faf7 100%);
+  border-color:rgba(18,63,49,.07);
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.bh-leader-stat::after{
+  content:"";
+  position:absolute;
+  width:76px;
+  height:76px;
+  right:-28px;
+  top:-28px;
+  border-radius:50%;
+  background:rgba(156,184,164,.10);
+  pointer-events:none;
+}
+.bh-leader-stat:hover,
+.bh-leader-stat:focus-visible{
+  transform:translateY(-3px);
+  border-color:rgba(60,142,150,.18);
+  box-shadow:0 16px 30px rgba(18,63,49,.09);
+  outline:none;
+}
+.bh-leader-stat>span{
+  position:relative;
+  z-index:1;
+  width:40px;
+  height:40px;
+  flex:0 0 40px;
+  border-radius:13px;
+  background:#e4f1e8;
+  font-size:18px;
+}
+.bh-leader-stat strong{
+  position:relative;
+  z-index:1;
+  display:block;
+  color:var(--bh-dark);
+  font-size:18px;
+  line-height:1.1;
+}
+.bh-leader-stat small{
+  position:relative;
+  z-index:1;
+  display:block;
+  margin-top:4px;
+  color:var(--bh-text-muted);
+  font-size:10px;
+  line-height:1.3;
+}
+.bh-leader-stat:last-child{
+  background:linear-gradient(145deg,#f3f8f4 0%,#eaf5f2 100%);
+}
+.bh-leader-stat:last-child>span{
+  background:#dcefee;
+}
+@media(max-width:1100px){
+  .bh-leader-stats-v2{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
+@media(max-width:760px){
+  .bh-leader-stats-v2{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .bh-leader-stat{
+    min-height:84px;
+    padding:13px;
+    border-radius:17px;
+    gap:9px;
+  }
+  .bh-leader-stat>span{
+    width:36px;
+    height:36px;
+    flex-basis:36px;
+    border-radius:11px;
+    font-size:16px;
+  }
+  .bh-leader-stat strong{font-size:16px}
+  .bh-leader-stat small{font-size:9px}
+}
+@media(max-width:430px){
+  .bh-leader-stats-v2{
+    grid-template-columns:1fr;
+  }
+}
