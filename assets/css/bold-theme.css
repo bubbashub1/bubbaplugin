@@ -1542,3 +1542,11 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
     padding-right:15px!important;
   }
 }
+
+
+/* LEADER PORTAL — LIGHT GREEN H2 HEADINGS */
+.bh-leader-page h2,
+.bh-leader-page .admin-panel-head h2,
+.bh-leader-page .bh-leader-panel h2{
+  color:#9cb8a4!important;
+}
