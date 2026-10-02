@@ -546,3 +546,238 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
 .home-newsletter form{display:flex;min-width:0}.home-newsletter input{min-width:0;flex:1;height:40px;padding:0 12px;border:0;border-radius:999px 0 0 999px;background:#fff;color:#123d30}.home-newsletter button{flex:0 0 44px!important;width:44px!important;height:40px!important;border:0!important;border-radius:0 999px 999px 0!important;background:#3c9fa9!important;color:#d8e6db!important;font-weight:900}
 @media(max-width:900px){.site-footer-grid{grid-template-columns:1.4fr 1fr 1fr;gap:28px}.home-newsletter{grid-column:1/-1;max-width:420px}}
 @media(max-width:650px){.site-footer-grid{grid-template-columns:1fr 1fr;padding:0 18px;gap:28px 18px}.site-footer-brand{grid-column:1/-1}.site-footer-bottom{margin-top:26px;padding:16px 18px 0;flex-direction:column;gap:6px}.site-footer{width:100%!important;border-radius:0!important}}
+
+
+/* =========================================================
+   LEADER DASHBOARD — RESPONSIVE POLISH
+   Keep the existing Bubba Hub visual language while making
+   the dashboard easier to scan and use on small screens.
+   ========================================================= */
+.bh-leader-page{
+  width:min(1240px,calc(100% - 32px));
+  margin:0 auto;
+}
+.bh-leader-hero{
+  min-width:0;
+}
+.bh-leader-hero > div:first-child{
+  min-width:0;
+}
+.bh-leader-hero .hero-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+  gap:10px;
+  flex:0 0 auto;
+}
+.bh-leader-hero .hero-actions .button{
+  white-space:nowrap;
+}
+.bh-leader-stat{
+  min-height:86px;
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.bh-leader-stat:hover{
+  transform:translateY(-2px);
+  border-color:rgba(60,142,150,.22);
+  box-shadow:0 16px 32px rgba(18,63,49,.10);
+}
+.bh-leader-tabs{
+  scrollbar-width:thin;
+  -webkit-overflow-scrolling:touch;
+}
+.bh-leader-tabs a{
+  flex:0 0 auto;
+}
+.bh-leader-panel{
+  min-width:0;
+}
+.bh-leader-quick-actions,
+.bh-leader-portal-tools{
+  min-width:0;
+}
+.bh-leader-action,
+.bh-leader-tool{
+  min-width:0;
+}
+.bh-support-banner{
+  margin-top:22px;
+  padding:24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  background:linear-gradient(135deg,#e7f3e9,#e0f0ef);
+  border:1px solid rgba(18,63,49,.08);
+  border-radius:26px;
+  box-shadow:0 12px 30px rgba(18,63,49,.06);
+}
+.bh-support-banner > div:first-child{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  min-width:0;
+}
+.bh-support-banner h2{
+  margin:.1em 0 .25em;
+  color:var(--bh-dark);
+}
+.bh-support-banner p{
+  margin:0;
+  color:var(--bh-text-muted);
+}
+.bh-support-icon{
+  display:grid;
+  place-items:center;
+  width:48px;
+  height:48px;
+  flex:0 0 48px;
+  border-radius:16px;
+  background:#fff1ca;
+  color:#8a6500;
+  font-size:22px;
+  font-weight:900;
+}
+.bh-support-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex:0 0 auto;
+}
+@media(max-width:1100px){
+  .bh-leader-page{width:min(100% - 28px,1240px)}
+}
+@media(max-width:760px){
+  .bh-leader-page{
+    width:calc(100% - 20px);
+  }
+  .bh-leader-hero{
+    margin-top:12px;
+    margin-bottom:14px;
+    padding:22px 18px!important;
+    border-radius:24px;
+  }
+  .bh-leader-hero h1{
+    font-size:clamp(30px,8.5vw,42px);
+    line-height:1.08;
+  }
+  .bh-leader-hero p{
+    font-size:14px;
+    line-height:1.55;
+  }
+  .bh-leader-hero .hero-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    margin-top:16px;
+  }
+  .bh-leader-hero .hero-actions .button{
+    width:100%;
+    min-width:0;
+    padding-left:12px;
+    padding-right:12px;
+  }
+  .bh-leader-stats-v2{
+    gap:9px;
+    margin-bottom:14px;
+  }
+  .bh-leader-stat{
+    min-height:78px;
+    padding:13px 11px;
+    gap:8px;
+    border-radius:18px;
+  }
+  .bh-leader-stat>span{
+    width:36px;
+    height:36px;
+    flex-basis:36px;
+    border-radius:12px;
+    font-size:17px;
+  }
+  .bh-leader-stat strong{
+    font-size:21px;
+  }
+  .bh-leader-stat b{
+    font-size:11px;
+    line-height:1.2;
+  }
+  .bh-leader-stat small{
+    margin-top:2px;
+    font-size:9px;
+    line-height:1.25;
+  }
+  .bh-leader-stat em{
+    display:none;
+  }
+  .bh-leader-tabs{
+    margin-bottom:14px;
+    padding:7px;
+    gap:5px;
+    border-radius:17px;
+  }
+  .bh-leader-tabs a{
+    padding:9px 11px;
+    font-size:11px;
+  }
+  .bh-leader-dashboard-grid{
+    gap:12px;
+    margin-bottom:14px;
+  }
+  .bh-leader-panel{
+    padding:20px!important;
+    border-radius:20px;
+  }
+  .bh-leader-quick-actions,
+  .bh-leader-portal-tools{
+    gap:10px;
+    margin-top:14px;
+  }
+  .bh-leader-action,
+  .bh-leader-tool{
+    padding:17px;
+    border-radius:19px;
+  }
+  .bh-support-banner{
+    margin-top:14px;
+    padding:19px;
+    display:block;
+    border-radius:22px;
+  }
+  .bh-support-banner > div:first-child{
+    align-items:flex-start;
+  }
+  .bh-support-banner h2{
+    font-size:22px;
+  }
+  .bh-support-banner p{
+    font-size:13px;
+    line-height:1.5;
+  }
+  .bh-support-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    margin-top:16px;
+  }
+  .bh-support-actions .button{
+    width:100%;
+    min-width:0;
+    padding-left:10px;
+    padding-right:10px;
+  }
+  /* The account link is already available inside the mobile menu. */
+  .site-header > .button-soft{
+    display:none;
+  }
+}
+@media(max-width:430px){
+  .bh-leader-hero .hero-actions,
+  .bh-support-actions{
+    grid-template-columns:1fr;
+  }
+  .bh-leader-stats-v2{
+    grid-template-columns:1fr;
+  }
+  .bh-leader-stat{
+    min-height:70px;
+  }
+}
