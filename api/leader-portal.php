@@ -133,6 +133,11 @@ if($action==='save_faq'){
 if($action==='delete_faq'){
  $id=(int)($b['id']??0);$q=$db->prepare("UPDATE bh_leader_faqs SET status='archived' WHERE id=? AND organiser_id=?");$q->execute([$id,$oid]);if(!$q->rowCount())lp(404,['ok'=>false,'error'=>'faq_not_found']);lp(200,['ok'=>true,'message'=>'FAQ archived.']);
 }
+if($action==='tag_suggestions'){
+ $category=trim((string)($b['category']??''));$suggestions=[];
+ if($category!==''){try{$q=$db->prepare("SELECT tags FROM bh_activities WHERE organiser_id<>? AND category=? AND tags IS NOT NULL AND TRIM(tags)<>'' ORDER BY id DESC LIMIT 100");$q->execute([$oid,$category]);foreach($q->fetchAll(PDO::FETCH_COLUMN) as $raw){foreach(preg_split('/[,|]+/',(string)$raw) as $tag){$tag=trim($tag);if($tag!==''&&!in_array($tag,$suggestions,true))$suggestions[]=$tag;}}}catch(Throwable $ignored){}}
+ sort($suggestions,SORT_NATURAL|SORT_FLAG_CASE);lp(200,['ok'=>true,'suggestions'=>array_slice($suggestions,0,12)]);
+}
 if($action==='create_listing'){
  $title=trim((string)($b['title']??''));$description=trim((string)($b['description']??''));$category=trim((string)($b['category']??''));$age=trim((string)($b['age_range']??''));$accessibility=is_array($b['accessibility']??null)?array_values(array_filter(array_map('strval',$b['accessibility']))):[];$accessibilityJson=json_encode($accessibility,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);$price=($b['price_from']??'')===''?null:(float)$b['price_from'];$url=trim((string)($b['booking_url']??''));$venueName=trim((string)($b['venue_name']??''));$address=trim((string)($b['address']??''));$town=trim((string)($b['town']??''));$region=trim((string)($b['region']??''));$postcode=trim((string)($b['postcode']??''));$lat=trim((string)($b['latitude']??''));$lng=trim((string)($b['longitude']??''));
  if($title==='')lp(422,['ok'=>false,'error'=>'title_required']);if($venueName===''||$town==='')lp(422,['ok'=>false,'error'=>'venue_required']);$db->beginTransaction();
