@@ -1326,3 +1326,104 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
 @media(max-width:430px){
   .bh-support-actions{grid-template-columns:1fr}
 }
+
+
+/* LEADER DASHBOARD — HERO + PORTAL NAV POLISH */
+.bh-leader-hero{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+}
+.bh-leader-hero::before{
+  content:"";
+  position:absolute;
+  width:260px;
+  height:260px;
+  right:-90px;
+  top:-125px;
+  border-radius:50%;
+  background:rgba(156,184,164,.18);
+  z-index:-1;
+  pointer-events:none;
+}
+.bh-leader-hero::after{
+  content:"";
+  position:absolute;
+  width:150px;
+  height:150px;
+  left:-65px;
+  bottom:-95px;
+  border-radius:50%;
+  background:rgba(60,142,150,.08);
+  z-index:-1;
+  pointer-events:none;
+}
+.bh-leader-hero .eyebrow{
+  color:var(--bh-secondary);
+  font-weight:850;
+  letter-spacing:.04em;
+}
+.bh-leader-hero .button,
+.bh-leader-hero a[class*="button"]{
+  color:#d8e6db!important;
+}
+.bh-leader-hero .hero-actions{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+  flex:0 0 auto;
+}
+.bh-leader-tabs{
+  position:sticky;
+  top:10px;
+  z-index:20;
+  scrollbar-width:none;
+  overscroll-behavior-x:contain;
+}
+.bh-leader-tabs::-webkit-scrollbar{display:none}
+.bh-leader-tabs a{
+  white-space:nowrap;
+  border:1px solid transparent;
+  transition:background .16s ease,color .16s ease,border-color .16s ease,transform .16s ease;
+}
+.bh-leader-tabs a:hover,
+.bh-leader-tabs a:focus-visible{
+  border-color:rgba(60,142,150,.12);
+  transform:translateY(-1px);
+  outline:none;
+}
+@media(max-width:760px){
+  .bh-leader-hero{
+    padding:24px 20px!important;
+    margin:12px 0 16px;
+    border-radius:22px;
+  }
+  .bh-leader-hero .hero-actions{
+    width:100%;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .bh-leader-hero .hero-actions .button,
+  .bh-leader-hero .hero-actions a[class*="button"]{
+    width:100%;
+    justify-content:center;
+  }
+  .bh-leader-tabs{
+    top:6px;
+    margin-bottom:16px;
+    padding:8px;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .bh-leader-tabs a{
+    flex:0 0 auto;
+    min-height:40px;
+    display:inline-flex;
+    align-items:center;
+  }
+}
+@media(max-width:430px){
+  .bh-leader-hero .hero-actions{grid-template-columns:1fr}
+}
