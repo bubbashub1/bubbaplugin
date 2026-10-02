@@ -1099,3 +1099,110 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
     bottom:14px;
   }
 }
+
+
+/* LEADER DASHBOARD — PORTAL TOOLS POLISH */
+.bh-leader-portal-tools{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+  margin-top:2px;
+}
+.bh-leader-tool{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  min-height:142px;
+  padding:19px;
+  overflow:hidden;
+  background:linear-gradient(145deg,#ffffff 0%,#f3f8f7 100%);
+  border:1px solid rgba(18,63,49,.08);
+  border-radius:22px;
+  box-shadow:0 10px 25px rgba(18,63,49,.05);
+  text-decoration:none;
+  color:inherit;
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.bh-leader-tool::after{
+  content:"→";
+  position:absolute;
+  right:16px;
+  bottom:14px;
+  display:grid;
+  place-items:center;
+  width:29px;
+  height:29px;
+  border-radius:50%;
+  background:#dcefee;
+  color:var(--bh-primary);
+  font-size:16px;
+  font-weight:800;
+  transition:transform .18s ease,background .18s ease;
+}
+.bh-leader-tool:hover,
+.bh-leader-tool:focus-visible{
+  transform:translateY(-3px);
+  border-color:rgba(60,142,150,.22);
+  box-shadow:0 16px 32px rgba(18,63,49,.1);
+  outline:none;
+}
+.bh-leader-tool:hover::after,
+.bh-leader-tool:focus-visible::after{
+  transform:translateX(3px);
+  background:#d8e6db;
+}
+.bh-leader-tool span{
+  display:grid;
+  place-items:center;
+  width:44px;
+  height:44px;
+  margin-bottom:13px;
+  border-radius:14px;
+  background:#dcefee;
+  font-size:22px;
+}
+.bh-leader-tool strong{
+  display:block;
+  color:var(--bh-dark);
+  font-size:14px;
+  line-height:1.25;
+}
+.bh-leader-tool small{
+  display:block;
+  max-width:225px;
+  margin-top:6px;
+  padding-right:26px;
+  color:var(--bh-text-muted);
+  font-size:11px;
+  line-height:1.45;
+}
+@media(max-width:1100px){
+  .bh-leader-portal-tools{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .bh-leader-portal-tools{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+  .bh-leader-tool{
+    min-height:0;
+    padding:16px;
+    border-radius:18px;
+  }
+  .bh-leader-tool span{
+    width:42px;
+    height:42px;
+    margin-bottom:10px;
+    border-radius:13px;
+    font-size:20px;
+  }
+  .bh-leader-tool strong{font-size:13px}
+  .bh-leader-tool small{
+    max-width:none;
+    font-size:11px;
+  }
+  .bh-leader-tool::after{
+    right:14px;
+    bottom:13px;
+  }
+}
