@@ -67,6 +67,25 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
  lp(200,['ok'=>true,'organisation'=>$org,'classes'=>$classes,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')lp(405,['ok'=>false,'error'=>'method_not_allowed']);
+if($_SERVER['REQUEST_METHOD']==='POST' && !empty($_FILES['image']) && ($_POST['action']??'')==='upload_activity_image'){
+ $activityId=(int)($_POST['activity_id']??0); if($activityId<1)lp(422,['ok'=>false,'error'=>'activity_required','message'=>'Activity is required.']);
+ $own=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND organiser_id=? LIMIT 1");$own->execute([$activityId,$oid]);if(!$own->fetch())lp(404,['ok'=>false,'error'=>'activity_not_found','message'=>'Class not found.']);
+ $file=$_FILES['image'];if(($file['error']??UPLOAD_ERR_NO_FILE)!==UPLOAD_ERR_OK)lp(422,['ok'=>false,'error'=>'upload_failed','message'=>'The image could not be uploaded.']);
+ if((int)$file['size']>5*1024*1024)lp(422,['ok'=>false,'error'=>'image_too_large','message'=>'Each image must be 5MB or smaller.']);
+ $info=@getimagesize($file['tmp_name']);if(!$info)lp(422,['ok'=>false,'error'=>'invalid_image','message'=>'Please upload a JPG, PNG or WebP image.']);
+ $mime=(string)($info['mime']??'');$ext=['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp'][$mime]??null;if(!$ext)lp(422,['ok'=>false,'error'=>'invalid_image_type','message'=>'Please upload a JPG, PNG or WebP image.']);
+ $dir=__DIR__.'/../uploads/activities';if(!is_dir($dir)&&!@mkdir($dir,0755,true))lp(500,['ok'=>false,'error'=>'upload_directory_failed','message'=>'The image upload folder could not be created.']);
+ $name='activity-'.$activityId.'-'.bin2hex(random_bytes(8)).'.'.$ext;$path=$dir.'/'.$name;if(!move_uploaded_file($file['tmp_name'],$path))lp(500,['ok'=>false,'error'=>'upload_move_failed','message'=>'The image could not be saved.']);
+ $url='uploads/activities/'.$name;
+ $cols=[];$q=$db->prepare("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME IN ('image_path','image_url','gallery_images')");$q->execute();foreach($q->fetchAll(PDO::FETCH_COLUMN) as $col)$cols[$col]=true;
+ if(empty($cols['gallery_images'])){try{$db->exec("ALTER TABLE bh_activities ADD COLUMN gallery_images TEXT NULL");$cols['gallery_images']=true;}catch(Throwable $ignored){}}
+ $row=$db->prepare("SELECT image_path".(isset($cols['image_url'])?",image_url":"").",gallery_images FROM bh_activities WHERE id=? LIMIT 1");$row->execute([$activityId]);$current=$row->fetch()?:[];
+ $gallery=[];if(!empty($current['gallery_images'])){$decoded=json_decode((string)$current['gallery_images'],true);if(is_array($decoded))$gallery=$decoded;}$gallery[]=$url;
+ if(isset($cols['image_path']) && empty($current['image_path']))$db->prepare("UPDATE bh_activities SET image_path=? WHERE id=?")->execute([$url,$activityId]);
+ if(isset($cols['image_url']) && empty($current['image_url']))$db->prepare("UPDATE bh_activities SET image_url=? WHERE id=?")->execute([$url,$activityId]);
+ if(isset($cols['gallery_images']))$db->prepare("UPDATE bh_activities SET gallery_images=? WHERE id=?")->execute([json_encode($gallery,JSON_UNESCAPED_SLASHES),$activityId]);
+ lp(201,['ok'=>true,'url'=>$url,'main'=>count($gallery)===1]);
+}
 $b=json_decode(file_get_contents('php://input'),true);if(!is_array($b))lp(400,['ok'=>false,'error'=>'invalid_json']);$action=$b['action']??'';
 
 if($action==='save_profile_public'){
