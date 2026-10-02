@@ -1977,3 +1977,7 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
   }
   .bh-schedule-session{grid-column:1}
 }
+
+
+/* HEADER — desktop alignment fix */
+.site-header{flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:18px!important;padding:10px 18px!important}.site-header .brand{flex:0 0 auto;display:flex;align-items:center;min-width:0}.site-header .brand-logo{width:58px!important;height:58px!important;min-width:58px!important;object-fit:contain;object-position:center;background-image:none!important;border-radius:12px}.site-header .main-nav{flex:0 1 auto;margin-left:auto!important;margin-right:auto!important}.site-header>.button{flex:0 0 auto;white-space:nowrap}@media(max-width:760px){.site-header{flex-direction:row!important;justify-content:space-between!important;padding:8px 10px!important}.site-header .main-nav{margin:0!important}.site-header>.button{display:none}}
