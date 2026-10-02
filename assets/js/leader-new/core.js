@@ -58,12 +58,13 @@ function renderOverview(){
 function openSection(n){
  state.current=n;Q("sectionOverview").hidden=true;document.querySelector(".bh-form").classList.add("bh-editing");
  document.querySelectorAll(".bh-panel").forEach(p=>p.classList.toggle("active",+p.dataset.panel===n));
- document.querySelector(".bh-steps").hidden=true;Q("prevStep").hidden=true;Q("nextStep").hidden=true;Q("submitListing").hidden=n!==7;Q("sectionBack").hidden=false;Q("sectionSave").hidden=false;
+ document.querySelectorAll(".bh-step").forEach(b=>b.classList.toggle("active",+b.dataset.step===n));
+ document.querySelector(".bh-steps").hidden=false;Q("prevStep").hidden=true;Q("nextStep").hidden=true;Q("submitListing").hidden=n!==7;Q("sectionBack").hidden=false;Q("sectionSave").hidden=false;
  if(n===6&&state.photoRender)state.photoRender();if(n===7&&state.photoRender)state.photoRender();if(n===7&&state.review)state.review();say("");window.scrollTo({top:document.querySelector(".bh-card").offsetTop-20,behavior:"smooth"});
 }
 function closeSection(save=true){
  if(save){syncDescription();renderOverview();saveDraft()}
- document.querySelector(".bh-form").classList.remove("bh-editing");document.querySelectorAll(".bh-panel").forEach(p=>p.classList.remove("active"));document.querySelector(".bh-steps").hidden=false;
+ document.querySelector(".bh-form").classList.remove("bh-editing");document.querySelectorAll(".bh-panel").forEach(p=>p.classList.remove("active"));document.querySelectorAll(".bh-step").forEach(b=>b.classList.remove("active"));document.querySelector(".bh-steps").hidden=false;
  Q("sectionOverview").hidden=false;Q("sectionBack").hidden=true;Q("sectionSave").hidden=true;Q("submitListing").hidden=true;Q("prevStep").hidden=true;Q("nextStep").hidden=true;renderOverview();
 }
 function valid(n){syncDescription();const fn=state.validators[n];return fn?fn():true}
