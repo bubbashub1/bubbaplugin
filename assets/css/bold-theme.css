@@ -1525,3 +1525,20 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
     grid-template-columns:1fr;
   }
 }
+
+
+/* LEADER DASHBOARD — CONSISTENT 15PX CONTAINER GUTTERS */
+.bh-leader-page{
+  box-sizing:border-box;
+  padding-left:15px!important;
+  padding-right:15px!important;
+}
+.bh-leader-page > section{
+  box-sizing:border-box;
+}
+@media(max-width:760px){
+  .bh-leader-page{
+    padding-left:15px!important;
+    padding-right:15px!important;
+  }
+}
