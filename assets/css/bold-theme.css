@@ -1918,3 +1918,62 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
   .bh-new-class-panel select,
   .bh-new-class-panel textarea{padding:10px 11px}
 }
+
+/* Weekly schedule — polished session rows */
+.bh-schedule-session{
+  grid-column:1/-1;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding-bottom:8px;
+  border-bottom:1px solid #edf2ee;
+}
+.bh-schedule-session strong{
+  color:#416651;
+  font-size:.86rem;
+  letter-spacing:.01em;
+}
+.bh-schedule-remove{
+  border:0;
+  background:transparent;
+  color:#617261;
+  font:inherit;
+  font-size:.8rem;
+  font-weight:800;
+  padding:5px 8px;
+  border-radius:8px;
+  cursor:pointer;
+}
+.bh-schedule-remove:hover:not(:disabled),
+.bh-schedule-remove:focus-visible{
+  background:#edf5ef;
+  color:#3c8e96;
+  outline:none;
+}
+.bh-schedule-remove:disabled{
+  opacity:.35;
+  cursor:not-allowed;
+}
+.bh-schedule-row label{
+  color:#416651;
+  font-size:.82rem;
+  font-weight:800;
+}
+.bh-schedule-row input[type=time],
+.bh-schedule-row select{
+  margin-top:6px;
+}
+@media(max-width:900px){
+  .bh-schedule-row{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .bh-schedule-session{grid-column:1/-1}
+}
+@media(max-width:560px){
+  .bh-schedule-row{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+  .bh-schedule-session{grid-column:1}
+}
