@@ -13,6 +13,25 @@ body{background:radial-gradient(circle at 8% 4%,rgba(85,169,194,.08),transparent
 .brand strong{font-size:20px;color:var(--bh-dark)}.brand small{color:var(--bh-secondary)}
 .main-nav a{color:var(--bh-text);font-weight:750;border-radius:13px}.main-nav a:hover,.main-nav a.active{background:var(--bh-sage);color:var(--bh-primary);transform:translateY(-1px)}
 .button{min-height:46px;padding:11px 19px;border-radius:999px;font-weight:800;letter-spacing:.005em}
+/* Site-wide CTA text treatment */
+.button-primary,
+.button-teal,
+.button-green-alt,
+.button-full,
+.home-full-button,
+.directory-calendar-hero-button,
+.directory-map-action-button,
+.directory-map-hero-button,
+.directory-planner-action-button,
+.activity-action,
+.activity-book-button,
+.organiser-actions .button,
+.bh-contact-form-actions .button,
+.planner-hero-actions .button,
+.pro-planner-customise-modal .pro-form-actions .button{
+  color:#d8e6db;
+}
+
 .button-primary{background:linear-gradient(135deg,var(--bh-primary),#267b6f);box-shadow:0 9px 20px rgba(65,102,81,.22)}.button-primary:hover{background:linear-gradient(135deg,#355844,#1e6c61)}
 .button-teal,.button-green-alt{background:var(--bh-secondary);color:#fff;box-shadow:0 8px 18px rgba(60,142,150,.18)}.button-green-alt:hover,.button-teal:hover{background:#2e7780}
 .button-soft{background:#e7f1ea;color:var(--bh-primary)}.button-soft:hover{background:#d8e9de}
