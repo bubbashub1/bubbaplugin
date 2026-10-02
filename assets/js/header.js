@@ -55,7 +55,7 @@
         }
       });
       const logo=header.querySelector(".bh-header-logo img");
-      if(logo) logo.src=appUrl("images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png");
+      if(logo) logo.src=appUrl("images/logos/gemini_generated_image_t65ztnt65ztnt65z-20260930-185704-7e0755.jpeg");
 
       const searchForm=header.querySelector(".bh-header-search-bar");
       if(searchForm){
