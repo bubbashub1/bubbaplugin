@@ -1573,3 +1573,17 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
 @media (max-width:760px){
   .bh-leader-tool{padding:20px!important;}
 }
+
+
+/* Leader Portal — Add Class page */
+.bh-new-class-panel{margin-top:15px;padding:24px!important}
+.bh-new-class-form{margin-top:10px}
+.bh-new-class-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.bh-new-class-fields label{display:flex;flex-direction:column;gap:7px;font-weight:700;color:#416651}
+.bh-new-class-fields input,.bh-new-class-fields select,.bh-new-class-fields textarea{width:100%;box-sizing:border-box}
+.bh-new-class-divider{border-top:1px solid var(--bh-border);padding-top:22px;margin-top:4px}
+.bh-new-class-divider h2{margin:0 0 5px;color:#9cb8a4!important}
+.bh-new-class-divider p{margin:0;color:var(--bh-text-muted)}
+.bh-new-class-actions{margin-top:24px;display:flex;gap:12px;flex-wrap:wrap}
+.bh-new-class-actions .button{min-width:150px}
+@media(max-width:760px){.bh-new-class-panel{padding:20px!important}.bh-new-class-fields{grid-template-columns:1fr}.bh-new-class-actions{display:grid;grid-template-columns:1fr}.bh-new-class-actions .button{width:100%}}
