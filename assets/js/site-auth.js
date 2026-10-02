@@ -6,8 +6,9 @@
   const RESTRICTED_PAGES=new Set(["my-hub.html","account.html","account-profile.html","account-planner.html","preferences.html","family.html","notifications.html","saved-activities.html","planner.html","choose.html","consent.html","privacy.html","subscription.html"]);
   const LEADER_PAGES=new Set(["leader.html","booking-manager.html","leader-account.html"]);
   const pageName=(location.pathname.split("/").filter(Boolean).pop()||"index.html").toLowerCase();
-  const nestedRoot=/\/(account|admin)\//i.test(location.pathname)?"../":"./";
-  const rootUrl=(path)=>new URL(nestedRoot+path,document.baseURI);
+  const script=document.currentScript;
+  const appRoot=new URL("../../",script?.src||new URL("assets/js/site-auth.js",document.baseURI).href);
+  const rootUrl=(path)=>new URL(String(path).replace(/^\/+/, ""),appRoot);
   const authUrl=rootUrl("auth.html");
   const nextUrl=()=>location.pathname+location.search+location.hash;
   const isRestricted=()=>RESTRICTED_PAGES.has(pageName);
