@@ -31,15 +31,15 @@ const bhInitMap=async()=>{
     fill("mapCategory",categoryValues,params.get("category")||"","All categories");
     fill("mapRegion",regionValues,params.get("region")||"","All regions");
     fill("mapTown",townValues,params.get("town")||"","All towns");
-    fill("mapAdvancedCategory",categoryValues,params.get("category")||"","All categories");
-    fill("mapAdvancedRegion",regionValues,params.get("region")||"","All regions");
-    fill("mapAdvancedTown",townValues,params.get("town")||"","All towns");
+    fill("category",categoryValues,params.get("category")||"","All categories");
+    fill("area",regionValues,params.get("region")||"","All regions");
+    fill("town",townValues,params.get("town")||"","All towns");
     if ($("mapSearch")) $("mapSearch").value=params.get("keyword")||params.get("search")||params.get("q")||"";
     if ($("mapRegion")) $("mapRegion").value=params.get("region")||"";
     if ($("mapTown")) $("mapTown").value=params.get("town")||"";
     if ($("mapCategory")) $("mapCategory").value=params.get("category")||"";
     if ($("mapAge")) $("mapAge").value=params.get("age_preset")||"";
-    if ($("mapAgeAdvanced")) $("mapAgeAdvanced").value=params.get("age_preset")||"";
+    if ($("ageRange")) $("ageRange").value=params.get("age_preset")||"";
     if ($("mapDay")) $("mapDay").value=params.get("day")||"";
     if ($("mapPrice")) $("mapPrice").value=params.get("max_price")||"";
 
@@ -101,17 +101,10 @@ const bhInitMap=async()=>{
       history.replaceState({}, "", p.toString()?"map.html?"+p.toString():"map.html");
     };
     const advancedMapFields = {
-      category: $("mapAdvancedCategory"),
-      region: $("mapAdvancedRegion"),
-      town: $("mapAdvancedTown"),
-      age: $("mapAgeAdvanced"),
-      day: $("mapDayAdvanced"),
-      price: $("mapPriceAdvanced"),
-      sessionLength: $("mapSessionLength"),
-      sen: $("mapSen"),
-      termTime: $("mapTermTime"),
-      bookingRequired: $("mapBookingRequired"),
-      free: $("mapFree")
+      category: $("category"), region: $("area"), town: $("town"),
+      age: $("ageRange"), day: $("day"), price: $("maxPrice"),
+      sessionLength: $("sessionLength"), sen: $("sen"), termTime: $("termTime"),
+      bookingRequired: $("bookingRequired"), free: $("free")
     };
     const syncAdvancedControls = () => {
       if (advancedMapFields.category) advancedMapFields.category.value = $("mapCategory")?.value || "";
@@ -139,7 +132,8 @@ const bhInitMap=async()=>{
       if(advancedMapFields.bookingRequired?.checked) params.set("bookingRequired","1"); else params.delete("bookingRequired");
       if(advancedMapFields.free?.checked) params.set("free","1"); else params.delete("free");
     };
-    $("mapFilters")?.addEventListener("submit",e=>{e.preventDefault();applyAdvancedMapControls();syncUrl();render();});
+    $("mapFiltersPanel")?.querySelector(".bh-advanced-filters")?.addEventListener("submit",e=>{e.preventDefault();applyAdvancedMapControls();syncUrl();render();});
+    $("mapFiltersPanel")?.querySelector("#clear")?.addEventListener("click",()=>{history.replaceState({}, "", "map.html");location.reload()});
     $("mapApplyFilters")?.addEventListener("click",e=>{
       e.preventDefault();
       applyAdvancedMapControls();
@@ -149,12 +143,6 @@ const bhInitMap=async()=>{
     });
     $("openMapFilters")?.addEventListener("click",()=>{$("mapFiltersPanel")?.classList.add("is-open");});
     $("closeMapFilters")?.addEventListener("click",()=>{$("mapFiltersPanel")?.classList.remove("is-open");});
-    $("mapAdvancedToggle")?.addEventListener("click",()=>{
-      const fields=$("mapAdvancedFields"), button=$("mapAdvancedToggle");
-      const open=!fields.hidden; fields.hidden=open;
-      button.setAttribute("aria-expanded",String(!open));
-      button.innerHTML=(open?"More filters":"More filters")+" <span aria-hidden=\"true\">"+(open?"＋":"−")+"</span>";
-    });
     document.querySelectorAll(".directory-popular-chip").forEach(button=>{
       button.addEventListener("click",()=>{
         const category=button.dataset.category||"";
@@ -169,13 +157,12 @@ const bhInitMap=async()=>{
       });
     });
     syncAdvancedControls();
-    document.querySelectorAll(".map-accessibility-option").forEach(el=>el.addEventListener("change",()=>{
+    document.querySelectorAll(".accessibility-option").forEach(el=>el.addEventListener("change",()=>{
       const selected=[...document.querySelectorAll(".map-accessibility-option:checked")].map(x=>x.value);
       if(selected.length) params.set("accessibility",selected.join(",")); else params.delete("accessibility");
       syncUrl(); render();
     }));
     ["mapSearch","mapRegion","mapTown","mapCategory","mapAge","mapDay","mapPrice"].forEach(id=>{const el=$(id);if(!el)return;el.addEventListener("change",()=>{syncUrl();render()});if(id==="mapSearch")el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();syncUrl();render()}})});
-    $("mapClear")?.addEventListener("click",()=>{history.replaceState({}, "", "map.html");location.reload()});
     const back=document.querySelector(".map-back-link");if(back)back.href="directory.html"+(location.search||"");
     render();
   }catch(error){$("mapStatus").textContent=error.message||"Activities could not be loaded."}
