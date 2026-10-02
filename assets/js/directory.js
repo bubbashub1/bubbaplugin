@@ -314,36 +314,13 @@ const bhInitDirectory=async()=>{
     };
 
     const initMap = () => {
-      if (map || !window.L) return;
-      map = L.map("mapView").setView([50.42, -3.57], 10);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: "© OpenStreetMap contributors"
-      }).addTo(map);
+      if (map || !window.bhMapEngine) return;
+      map = bhMapEngine.init("mapView");
     };
 
     const renderMap = list => {
       initMap();
       if (!map) return;
-
-      markers.forEach(marker => marker.remove());
-      markers = [];
-
-      const venueRows = list.flatMap(activity =>
-        bhVenues(activity).map(venue => ({ activity, venue }))
-      );
-      const valid = venueRows.filter(({ venue }) =>
-        Number.isFinite(Number(venue.lat)) && Number.isFinite(Number(venue.long))
-      );
-
-      const sleekDarkIcon = L.divIcon({
-        className: "custom-sleek-dark-marker",
-        html: '<div class="bubba-dark-pin"><div class="dark-core"></div></div>',
-        iconSize: [36, 36],
-        iconAnchor: [18, 36],
-        popupAnchor: [0, -36]
-      });
-
       const popupHtml = (activity, venue) => {
         const sessions = bhSessions(activity);
         const session = sessions.find(s => s.venue_id == null || String(s.venue_id) === String(venue.id)) || sessions[0] || {};
@@ -354,43 +331,9 @@ const bhInitDirectory=async()=>{
         const image = activity.image_url
           ? '<img class="bh-map-popup-image" src="' + escapeHtml(activity.image_url) + '" alt="' + escapeHtml(activity.title) + '">'
           : '<img class="bh-map-popup-image" src="images/logos/gemini_generated_image_1dzezm1dzezm1dze-20260929-213630-1f8496.jpeg" alt="" aria-hidden="true">';
-        return '<article class="bh-map-popup-card">' +
-          image +
-          '<div class="bh-map-popup-body">' +
-            '<span class="bh-map-popup-category">' + escapeHtml(category) + '</span>' +
-            '<h3>' + escapeHtml(activity.title) + '</h3>' +
-            '<p class="bh-map-popup-location">📍 ' + escapeHtml(venue.name || venue.town || venue.address || "") + '</p>' +
-            '<div class="bh-map-popup-meta">' +
-              '<span>👶 ' + escapeHtml(age) + '</span>' +
-              '<span>💷 ' + escapeHtml(price) + '</span>' +
-              (time ? '<span>🕒 ' + escapeHtml(time) + '</span>' : '') +
-            '</div>' +
-            '<a class="button button-primary bh-map-popup-link" href="' + bhActivityUrl(activity) + '">View activity →</a>' +
-          '</div>' +
-        '</article>';
+        return '<article class="bh-map-popup-card">' + image + '<div class="bh-map-popup-body"><span class="bh-map-popup-category">' + escapeHtml(category) + '</span><h3>' + escapeHtml(activity.title) + '</h3><p class="bh-map-popup-location">📍 ' + escapeHtml(venue.name || venue.town || venue.address || "") + '</p><div class="bh-map-popup-meta"><span>👶 ' + escapeHtml(age) + '</span><span>💷 ' + escapeHtml(price) + '</span>' + (time ? '<span>🕒 ' + escapeHtml(time) + '</span>' : '') + '</div><a class="button button-primary bh-map-popup-link" href="' + bhActivityUrl(activity) + '">View activity →</a></div></article>';
       };
-
-      valid.forEach(({ activity, venue }) => {
-        const marker = L.marker([Number(venue.lat), Number(venue.long)], { icon: sleekDarkIcon })
-          .addTo(map)
-          .bindPopup(popupHtml(activity, venue), {
-            maxWidth: 340,
-            minWidth: 260,
-            className: "bh-map-popup"
-          });
-        marker._bhActivityId = String(activity.id);
-        marker._bhVenueId = String(venue.id || "");
-        markers.push(marker);
-      });
-
-      if (valid.length) {
-        map.fitBounds(
-          L.latLngBounds(valid.map(({ venue }) => [Number(venue.lat), Number(venue.long)])),
-          { padding: [30, 30], maxZoom: 14 }
-        );
-      } else {
-        map.setView([50.42, -3.57], 10);
-      }
+      markers = bhMapEngine.render(map, list, popupHtml, markers);
     };
 
     const calendarDateKey = date => {
