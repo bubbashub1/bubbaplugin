@@ -413,6 +413,70 @@ void bhHydrateSaved();
 })();
 
 
+/* Homepage planner preview — signed-in users see their real planner; guests see a sign-in prompt. */
+(function(){
+  const root=document.getElementById("homePlannerContent");
+  if(!root)return;
+  const esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])));
+  const render=async()=>{
+    try{
+      const auth=await bhAuthSession();
+      if(!auth?.authenticated){
+        root.innerHTML='<div class="home-planner-guest"><span class="home-planner-icon">▦</span><h3>Your planner is ready when you are</h3><p>Sign in to save activities, build your family week and keep your planner across devices.</p><a class="button button-primary" href="auth.html?next=planner.html">Log in to your planner →</a></div>';
+        return;
+      }
+      const activities=await bhActivities();
+      let plannedIds=bhGet(BH_KEYS.planner);
+      try{
+        const response=await fetch("api/planner.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+        if(response.ok){
+          const payload=await response.json();
+          if(payload?.ok&&Array.isArray(payload.planned)){
+            plannedIds=payload.planned.map(item=>String(item.id));
+            bhSet(BH_KEYS.planner,plannedIds);
+          }
+        }
+      }catch(_){}
+      const byId=new Map(activities.map(a=>[String(a.id),a]));
+      const planned=plannedIds.map(id=>byId.get(String(id))).filter(Boolean).slice(0,3);
+      if(!planned.length){
+        root.innerHTML='<div class="home-planner-empty"><span class="home-planner-icon">▦</span><h3>Your planner is empty</h3><p>Save activities from the directory and they will appear here.</p><a class="button button-primary" href="directory.html">Find activities →</a></div>';
+        return;
+      }
+      root.innerHTML=planned.map(a=>{
+        const venue=Array.isArray(a.venues)&&a.venues[0]?a.venues[0]:{};
+        const session=Array.isArray(venue.sessions)&&venue.sessions[0]?venue.sessions[0]:{};
+        const when=[session.day,session.start&&session.end?(session.start+" – "+session.end):session.start].filter(Boolean).join(" · ");
+        return '<a class="home-mini-event" href="activity.html?slug='+encodeURIComponent(a.slug||"")+'&id='+encodeURIComponent(a.id)+'"><span class="home-mini-thumb"></span><div><b>'+esc(a.title||"Family activity")+'</b><small>'+esc([venue.town||venue.region,when].filter(Boolean).join(" · "))+'</small></div><em>♥</em></a>';
+      }).join("")+'<a class="button button-primary home-full-button" href="planner.html">View my planner →</a>';
+    }catch(_){
+      root.innerHTML='<div class="home-planner-empty"><h3>Your planner</h3><p>We could not load your planner just now. Your saved activities are still safe.</p><a class="button button-primary" href="planner.html">Open planner →</a></div>';
+    }
+  };
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render,{once:true});else render();
+})();
+
+/* Homepage OneSignal newsletter signup — temporary until the dedicated newsletter system is built. */
+(function(){
+  const form=document.getElementById("homeNewsletterForm"),email=document.getElementById("homeNewsletterEmail"),status=document.getElementById("homeNewsletterStatus");
+  if(!form)return;
+  form.addEventListener("submit",async event=>{
+    event.preventDefault();
+    const value=String(email?.value||"").trim();
+    if(!value||!email?.checkValidity())return;
+    if(status)status.textContent="Subscribing…";
+    try{
+      if(!window.__bubbaOneSignalPromise)throw new Error("Newsletter subscription is not ready yet.");
+      const OneSignal=await window.__bubbaOneSignalPromise;
+      await OneSignal.User.addEmail(value);
+      if(status)status.textContent="You're subscribed to Bubba Hub updates.";
+      form.reset();
+    }catch(error){
+      if(status)status.textContent="Please try again in a moment, or use Notifications in My Account.";
+    }
+  });
+})();
+
 /* Homepage live activity cards — use the same activity data as Directory/Activity. */
 (function(){
   const grid=document.querySelector(".home-activity-grid");
