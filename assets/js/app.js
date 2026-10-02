@@ -370,11 +370,11 @@ void bhHydrateSaved();
    The Admin menu editor must not override the public header navigation. */
 (function(){
   const MAIN_NAV=[
-    {label:"Find activities",url:"directory.html"},
-    {label:"My Hub",url:"my-hub.html"},
-    {label:"Support & Guidance",url:"help-support.html"},
-    {label:"Class Leaders",url:"leader.html"},
-    {label:"Account",url:"account.html"}
+    {label:"Find activities",url:"/beta/directory.html"},
+    {label:"My Hub",url:"/beta/my-hub.html"},
+    {label:"Support & Guidance",url:"/beta/help-support.html"},
+    {label:"Class Leaders",url:"/beta/leader.html"},
+    {label:"Account",url:"/beta/account.html"}
   ];
   const applyMainNav=()=>document.querySelectorAll(".site-header .main-nav").forEach(nav=>{
     nav.innerHTML=MAIN_NAV.map(x=>'<a href="'+bhEscape(x.url)+'">'+bhEscape(x.label)+'</a>').join("");
