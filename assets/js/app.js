@@ -249,26 +249,25 @@ void bhHydrateSaved();
             <a href="my-hub.html">My Hub</a>
             <a href="help-support.html">Support &amp; Guidance</a>
             <a href="leader.html">Class Leaders</a>
-            <a href="account.html">Account</a>
-          </nav>
-        </div>
-        <div class="site-footer-column">
-          <h2>Explore &amp; tools</h2>
-          <nav class="site-footer-links" aria-label="Footer explore and tools">
-            <a href="events.html">Events</a>
-            <a href="venues.html">Venues</a>
-            <a href="planner.html">Planner</a>
-            <a href="calendar.html">Calendar</a>
-            <a href="admin/admin.html">Admin</a>
+            <a href="account.html">My Account</a>
           </nav>
         </div>
         <div class="site-footer-column">
           <h2>Legal &amp; contact</h2>
           <nav class="site-footer-links" aria-label="Footer legal and contact">
-            <a href="privacy.html">Privacy</a>
+            <a href="privacy.html">Privacy Policy</a>
             <a href="terms.html">Terms &amp; Conditions</a>
             <a href="mailto:contact@bubbahub.co.uk">Contact Bubba Hub</a>
           </nav>
+        </div>
+        <div class="site-footer-column home-newsletter">
+          <h2>Stay connected</h2>
+          <p>Join our newsletter</p>
+          <form id="homeNewsletterForm">
+            <input id="homeNewsletterEmail" type="email" placeholder="Your email address" aria-label="Email address" required>
+            <button type="submit" aria-label="Subscribe">→</button>
+          </form>
+          <p id="homeNewsletterStatus" class="home-newsletter-status" aria-live="polite"></p>
         </div>
       </div>
       <div class="site-footer-bottom">
