@@ -46,8 +46,7 @@ const bhInitMap=async()=>{
     let map=null,markers=[];
     const render=()=>{
       if(!map){
-        map=L.map("mapView").setView([50.42,-3.57],10);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors"}).addTo(map);
+        map=window.bhMapEngine?.init("mapView");
       }
       markers.forEach(m=>m.remove());markers=[];
       const search=($("mapSearch")?.value||"").trim().toLowerCase();
