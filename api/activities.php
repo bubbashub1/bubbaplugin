@@ -128,7 +128,7 @@ try {
             $accessibilitySelect,
             $countySelect,
             a.price_from,
-            a.booking_url,
+            a.booking_url
             $infoSelect,
             a.image_path,
             o.id AS organiser_id,
