@@ -113,6 +113,7 @@ async function bhActivities(){
       accessibility:(()=>{if(Array.isArray(a.accessibility))return a.accessibility;try{const parsed=JSON.parse(a.accessibility||"[]");return Array.isArray(parsed)?parsed:[]}catch{return a.accessibility?[String(a.accessibility)]:[]}})(),
       price:a.price_from!==null&&a.price_from!==undefined?"£"+Number(a.price_from).toFixed(2):"",
       price_value:a.price_from,
+      price_per_family:Boolean(Number(a.price_per_family||0)),
       image_url:(a.image_path||"").replace(
         "gemini_generated_image_20260930-190428-b9e652.png",
         "gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png"
