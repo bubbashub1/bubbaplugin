@@ -74,8 +74,19 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
  $categoryOptions=lpTableOptions($db,['bh_categories','bh_activity_categories','bh_activity_categories_options'],['key','slug','id'],['name','label','title','category']);
 if(!$categoryOptions){try{$cq=$db->query("SELECT DISTINCT TRIM(category) AS category FROM bh_activities WHERE category IS NOT NULL AND TRIM(category)<>'' ORDER BY category ASC");$categoryOptions=$cq->fetchAll(PDO::FETCH_COLUMN);}catch(Throwable $ignored){}}
 if(!$categoryOptions)$categoryOptions=['Baby & toddler','Classes & groups','Music & singing','Sport & movement','Arts & crafts','Messy play','Dance','Outdoor activities','Family wellbeing','SEND & additional needs','Pregnancy & new parents','Other'];
-$venues=[];try{$vq=$db->query("SELECT id,venue_name,address,town,region,postcode,latitude,longitude FROM bh_venues WHERE venue_name IS NOT NULL AND TRIM(venue_name)<>'' ORDER BY town,venue_name");$venues=$vq->fetchAll();}catch(Throwable $ignored){}$tagOptions=array_keys(lpTableOptions($db,['bh_tags','bh_activity_tags'],['key','slug','id'],['name','label','title','tag']));
-if(!$tagOptions){try{$tc=$db->query("SELECT DISTINCT TRIM(tags) AS tags FROM bh_activities WHERE tags IS NOT NULL AND TRIM(tags)<>'' ORDER BY tags ASC");foreach($tc->fetchAll(PDO::FETCH_COLUMN) as $raw){foreach(preg_split('/[,|]+/',(string)$raw) as $tag){$tag=trim($tag);if($tag!==''&&!in_array($tag,$tagOptions,true))$tagOptions[]=$tag;}}}catch(Throwable $ignored){}sort($tagOptions,SORT_NATURAL|SORT_FLAG_CASE);lp(200,['ok'=>true,'organisation'=>$org,'classes'=>$classes,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions,'category_options'=>$categoryOptions,'tag_options'=>$tagOptions,'venues'=>$venues,'max_images'=>$imageLimit]);
+$venues=[];try{$vq=$db->query("SELECT id,venue_name,address,town,region,postcode,latitude,longitude FROM bh_venues WHERE venue_name IS NOT NULL AND TRIM(venue_name)<>'' ORDER BY town,venue_name");$venues=$vq->fetchAll();}catch(Throwable $ignored){}
+$tagMap=lpTableOptions($db,['bh_tags','bh_activity_tags'],['key','slug','id'],['name','label','title','tag']);
+$tagOptions=$tagMap?array_values($tagMap):[];
+if(!$tagOptions){
+ try{
+  $tc=$db->query("SELECT DISTINCT TRIM(tags) AS tags FROM bh_activities WHERE tags IS NOT NULL AND TRIM(tags)<>'' ORDER BY tags ASC");
+  foreach($tc->fetchAll(PDO::FETCH_COLUMN) as $raw){
+   foreach(preg_split('/[,|]+/',(string)$raw) as $tag){$tag=trim($tag);if($tag!==''&&!in_array($tag,$tagOptions,true))$tagOptions[]=$tag;}
+  }
+ }catch(Throwable $ignored){}
+}
+sort($tagOptions,SORT_NATURAL|SORT_FLAG_CASE);
+lp(200,['ok'=>true,'organisation'=>$org,'classes'=>$classes,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions,'category_options'=>$categoryOptions,'tag_options'=>$tagOptions,'venues'=>$venues,'max_images'=>$imageLimit]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')lp(405,['ok'=>false,'error'=>'method_not_allowed']);
 if($_SERVER['REQUEST_METHOD']==='POST' && !empty($_FILES['image']) && ($_POST['action']??'')==='upload_activity_image'){
