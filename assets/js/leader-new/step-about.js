@@ -1,7 +1,14 @@
 (()=>{"use strict";const B=window.BubbaNew,Q=B.Q,S=B.state;
 function renderPicker(type){let s=Q(type),chips=Q(type==="categories"?"categoryChips":"tagChips"),opts=Q(type==="categories"?"categoryOptions":"tagOptions"),search=Q(type==="categories"?"categorySearch":"tagSearch"),pool=[...s.options].map(o=>o.value);chips.innerHTML=B.vals(s).map(v=>'<span class="bh-selected-chip">'+B.esc(v)+'<button type="button" data-remove="'+B.esc(v)+'" aria-label="Remove '+B.esc(v)+'">×</button></span>').join("");chips.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{[...s.options].find(o=>o.value===b.dataset.remove).selected=false;renderPicker(type);if(type==="categories")Q("categories").dispatchEvent(new Event("change"))});let q=search.value.trim().toLowerCase();opts.innerHTML=pool.filter(v=>!B.vals(s).includes(v)&&(!q||v.toLowerCase().includes(q))).map(v=>'<button type="button" class="bh-option" data-value="'+B.esc(v)+'">'+B.esc(v)+'</button>').join("")||'<div class="bh-option">No matches</div>';opts.querySelectorAll("[data-value]").forEach(b=>b.onclick=()=>{B.addOpt(s,b.dataset.value,true);renderPicker(type);if(type==="categories")Q("categories").dispatchEvent(new Event("change"));search.focus()})}
 function setupPicker(type){let root=document.querySelector('[data-picker="'+type+'"]'),input=Q(type==="categories"?"categorySearch":"tagSearch");input.onfocus=()=>{root.classList.add("open");renderPicker(type)};input.oninput=()=>{root.classList.add("open");renderPicker(type)};document.addEventListener("click",e=>{if(!root.contains(e.target))root.classList.remove("open")})}
-function addCustom(s,i){if(i.value.trim()){B.addOpt(s,i.value,true);i.value=""}}
+async function addCustom(type,s,i){
+ const value=i.value.trim();if(!value)return;
+ try{
+  const d=await B.post({action:"add_option",type,value});
+  B.addOpt(s,d.value||value,true);i.value="";renderPicker(type);
+  if(type==="categories")Q("categories").dispatchEvent(new Event("change"));
+ }catch(e){B.say(e.message||"Could not add this option.");}
+}
 function ageUpdate(){let a=+Q("ageMin").value,b=+Q("ageMax").value;Q("ageOutput").textContent=b>=a?B.age(a)+" to "+B.age(b):"Please check the age range."}
 function init(){
  const c=Q("categories"),t=Q("tags");
@@ -10,8 +17,8 @@ function init(){
  S.meta.tags.forEach(x=>B.addOpt(t,x));
  renderPicker("categories");renderPicker("tags");
  Q("ageMin").oninput=ageUpdate;Q("ageMax").oninput=ageUpdate;
- Q("addCategory").onclick=()=>{addCustom(c,Q("newCategory"));renderPicker("categories");c.dispatchEvent(new Event("change"))};
- Q("addTag").onclick=()=>{addCustom(t,Q("newTag"));renderPicker("tags")};
+ Q("addCategory").onclick=()=>addCustom("categories",c,Q("newCategory"));
+ Q("addTag").onclick=()=>addCustom("tags",t,Q("newTag"));
  setupPicker("categories");setupPicker("tags");
  Q("newCategory").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();Q("addCategory").click()}};
  Q("newTag").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();Q("addTag").click()}};
