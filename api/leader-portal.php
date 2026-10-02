@@ -153,6 +153,35 @@ if($action==='save_faq'){
 if($action==='delete_faq'){
  $id=(int)($b['id']??0);$q=$db->prepare("UPDATE bh_leader_faqs SET status='archived' WHERE id=? AND organiser_id=?");$q->execute([$id,$oid]);if(!$q->rowCount())lp(404,['ok'=>false,'error'=>'faq_not_found']);lp(200,['ok'=>true,'message'=>'FAQ archived.']);
 }
+function lpFindOptionTable(PDO $db,string $type): ?array{
+ $tables=$type==='category'?['bh_categories','bh_activity_categories','bh_activity_categories_options']:['bh_tags','bh_activity_tags'];
+ $labels=['name','label','title',$type==='category'?'category':'tag'];
+ foreach($tables as $table){
+  try{
+   $cq=$db->prepare("SELECT COLUMN_NAME,EXTRA FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=? ORDER BY ORDINAL_POSITION");
+   $cq->execute([$table]);$cols=$cq->fetchAll(PDO::FETCH_ASSOC);if(!$cols)continue;
+   $names=array_column($cols,'COLUMN_NAME');$label=array_values(array_intersect($labels,$names))[0]??null;if(!$label)continue;
+   $key=array_values(array_intersect(['key','slug','id'],$names))[0]??$label;
+   return ['table'=>$table,'label'=>$label,'key'=>$key,'columns'=>$cols];
+  }catch(Throwable $ignored){}
+ }
+ return null;
+}
+if($action==='add_option'){
+ $type=($b['type']??'')==='tag'?'tag':'category';$label=trim((string)($b['value']??''));if($label==='')lp(422,['ok'=>false,'error'=>'option_required','message'=>'Enter a name.']);
+ $meta=lpFindOptionTable($db,$type);if(!$meta)lp(422,['ok'=>false,'error'=>'option_table_missing','message'=>'The dynamic ${type} options table is not available.']);
+ $table=$meta['table'];$labelCol=$meta['label'];$keyCol=$meta['key'];
+ try{
+  $q=$db->prepare("SELECT ".$labelCol." FROM ".$table." WHERE LOWER(TRIM(".$labelCol."))=LOWER(TRIM(?)) LIMIT 1");$q->execute([$label]);$existing=$q->fetchColumn();
+  if($existing!==false)lp(200,['ok'=>true,'value'=>(string)$existing,'existing'=>true,'type'=>$type]);
+  if($keyCol!==$labelCol&&$keyCol!=='id'){
+   $slug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-', $label),'-'));if($slug==='')$slug='option';
+   $base=$slug;$n=2;$q=$db->prepare("SELECT ".$keyCol." FROM ".$table." WHERE ".$keyCol."=? LIMIT 1");while(true){$q->execute([$slug]);if(!$q->fetch())break;$slug=$base.'-'.$n++;}
+   $q=$db->prepare("INSERT INTO ".$table." (".$keyCol.",".$labelCol.") VALUES (?,?)");$q->execute([$slug,$label]);
+  }else{$q=$db->prepare("INSERT INTO ".$table." (".$labelCol.") VALUES (?)");$q->execute([$label]);}
+  lp(201,['ok'=>true,'value'=>$label,'existing'=>false,'type'=>$type]);
+ }catch(Throwable $e){lp(500,['ok'=>false,'error'=>'option_save_failed','message'=>'Could not add this option to the dynamic options table.']);}
+}
 if($action==='tag_suggestions'){
  $category=trim((string)($b['category']??''));$suggestions=[];
  if($category!==''){try{$q=$db->prepare("SELECT tags FROM bh_activities WHERE organiser_id<>? AND FIND_IN_SET(?, REPLACE(category, ', ', ',')) AND tags IS NOT NULL AND TRIM(tags)<>'' ORDER BY id DESC LIMIT 100");$q->execute([$oid,$category]);foreach($q->fetchAll(PDO::FETCH_COLUMN) as $raw){foreach(preg_split('/[,|]+/',(string)$raw) as $tag){$tag=trim($tag);if($tag!==''&&!in_array($tag,$suggestions,true))$suggestions[]=$tag;}}}catch(Throwable $ignored){}}
