@@ -398,7 +398,7 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
       else url.searchParams.delete("accessibility");
       window.history.replaceState(null,"",url);
     };
-    document.getElementById("calendarClearFilters")?.addEventListener("click",()=>{
+    document.getElementById("clear")?.addEventListener("click",()=>{
       state.filters.category="";state.filters.region="";state.filters.town="";state.filters.day="";
       state.filters.age="";state.filters.maxPrice="";state.filters.sessionLength="";state.filters.termTime="";
       state.filters.bookingRequired="";state.filters.sen="";state.filters.free="";state.filters.accessibility=[];
@@ -406,7 +406,7 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
       hero?.querySelectorAll("[data-bh-hero-field]").forEach(el=>el.value="");
       writeFilterUrl();syncAdvancedFields();close();render();
     });
-    document.getElementById("calendarApplyFilters")?.addEventListener("click",()=>{
+    document.getElementById("applyFilters")?.addEventListener("click",()=>{
       state.filters.category=document.getElementById("category")?.value||"";
       state.filters.region=document.getElementById("area")?.value||"";
       state.filters.town=document.getElementById("town")?.value||"";
