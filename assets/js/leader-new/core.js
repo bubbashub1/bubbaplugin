@@ -77,14 +77,14 @@ async function submit(){
   say("Class submitted successfully. It is now awaiting review.",true);localStorage.removeItem("bh_add_class_draft");setTimeout(()=>location.href="../leader/classes.html",1000)
  }catch(err){say(err.message);Q("submitListing").disabled=false}
 }
-function init(){
+async function loadMeta(){try{let r=await fetch(API,{credentials:"same-origin",cache:"no-store"}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.message||d.error||"Unable to load class setup.");state.meta.categories=d.category_options||[];state.meta.tags=d.tag_options||[];state.meta.venues=d.venues||[];state.meta.max_images=+d.max_images||3;state.meta.accessibility=Object.entries(d.accessibility_options||{}).map(([key,label])=>({key,label}));if(!state.meta.accessibility.length)state.meta.accessibility=[{key:"step_free",label:"Step-free access"},{key:"accessible_toilet",label:"Accessible toilet"},{key:"baby_changing",label:"Baby changing"},{key:"pram_access",label:"Pram / pushchair friendly"},{key:"parking",label:"Parking available"},{key:"quiet_space",label:"Quiet / low-sensory space"},{key:"hearing_loop",label:"Hearing loop / assistive listening"},{key:"visual_supports",label:"Visual supports"},{key:"sensory_friendly",label:"Sensory-friendly"},{key:"send_support",label:"SEND / additional-needs support"},{key:"outdoor_access",label:"Outdoor access"},{key:"toilets",label:"Toilets available"}];}catch(e){say(e.message)}}\nasync function init(){
  const overview=document.createElement("section");overview.id="sectionOverview";overview.className="bh-section-overview";overview.innerHTML='<div class="bh-overview-head"><div><span class="eyebrow">Your listing</span><h2>Class details</h2><p>Choose a section to add or update it. You can come back to any section at any time.</p></div></div><div class="bh-section-list"></div>';document.querySelector(".bh-card").insertBefore(overview,document.querySelector(".bh-steps"));
  Q("descriptionEditor").oninput=syncDescription;document.querySelectorAll(".bh-rich-toolbar [data-cmd]").forEach(b=>b.onclick=()=>{Q("descriptionEditor").focus();document.execCommand(b.dataset.cmd,false,null);syncDescription()});
  document.querySelectorAll(".bh-step").forEach(b=>b.onclick=()=>openSection(+b.dataset.step));
  Q("sectionBack").onclick=()=>closeSection(false);Q("saveProgress").onclick=()=>{syncDescription();saveDraft();say("Progress saved",true);setTimeout(()=>say(""),1800)};Q("sectionSave").onclick=()=>{if(valid(state.current))closeSection(true)};Q("prevStep").onclick=()=>openSection(Math.max(1,state.current-1));Q("nextStep").onclick=()=>{if(valid(state.current))openSection(Math.min(7,state.current+1))};
  document.querySelector(".bh-form").addEventListener("input",()=>saveDraft());
  document.querySelector(".bh-form").addEventListener("submit",e=>{e.preventDefault();submit()});
- state.inits.forEach(fn=>fn());if(state.ageUpdate)state.ageUpdate();if(state.addRow)state.addRow();load();renderOverview();
+ await loadMeta();state.inits.forEach(fn=>fn());if(state.ageUpdate)state.ageUpdate();if(state.addRow)state.addRow();loadDraft();renderOverview();
 }
 window.BubbaNew={Q,API,uniq,vals,esc,age,state,register,say,addOpt,post,schedule,saveDraft,loadDraft,renderOverview,openSection,closeSection,valid,submit};
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
