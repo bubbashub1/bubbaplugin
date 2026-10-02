@@ -84,7 +84,7 @@
 
   async function init(){
     let auth={authenticated:false,is_admin:false};
-    try{const r=await fetch(new URL("api/auth.php?action=me",document.baseURI),{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});if(r.ok)auth=await r.json();}catch(e){}
+    try{const r=await fetch(rootUrl("api/auth.php?action=me"),{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});if(r.ok)auth=await r.json();}catch(e){}
     if(isLeaderPage()&&(!auth.authenticated||(auth.user&&auth.user.role!=="leader"&&!auth.is_admin))){location.replace(leaderAuthTarget());return;}
     if(isRestricted()&&!auth.authenticated&&!auth.is_admin){location.replace(buildAuthTarget());return;}
     let menus=null;
