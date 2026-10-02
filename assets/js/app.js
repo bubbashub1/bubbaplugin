@@ -422,7 +422,7 @@ void bhHydrateSaved();
     try{
       const auth=await bhAuthSession();
       if(!auth?.authenticated){
-        root.innerHTML='<div class="home-planner-guest"><span class="home-planner-icon">▦</span><h3>Your planner is ready when you are</h3><p>Sign in to save activities, build your family week and keep your planner across devices.</p><a class="button button-primary" href="auth.html?next=planner.html">Log in to your planner →</a></div>';
+        root.innerHTML='<div class="home-planner-guest"><span class="home-planner-icon">▦</span><h3>Your planner is ready when you are</h3><p>Sign in to see your personalised planner.</p><p>Not a member? <a href="auth.html?mode=register&next=planner.html">Sign up for free</a></p><a class="button button-primary" href="auth.html?next=planner.html">Sign in →</a></div>';
         return;
       }
       const activities=await bhActivities();
