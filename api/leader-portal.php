@@ -20,6 +20,10 @@ $expertiseTopics=[
  'specialist-send'=>'SEND & additional needs'
 ];
 $adminOnly=!empty($_SESSION['bh_admin_authenticated'])&&empty($_SESSION['bh_user_id']);
+$accessibilityOptions=[
+ 'step_free'=>'Step-free access','accessible_toilet'=>'Accessible toilet','baby_changing'=>'Baby changing','pram_access'=>'Pram / pushchair friendly','parking'=>'Parking available','quiet_space'=>'Quiet / low-sensory space','hearing_loop'=>'Hearing loop / assistive listening','visual_supports'=>'Visual supports','sensory_friendly'=>'Sensory-friendly','send_support'=>'SEND / additional-needs support','outdoor_access'=>'Outdoor access','toilets'=>'Toilets available'
+];
+$ageRangeOptions=['0-3'=>'0–3 years','1-3'=>'1–3 years','2-4'=>'2–4 years','3-5'=>'3–5 years','3-6'=>'3–6 years','5-plus'=>'5+ years','0-5'=>'0–5 years','all'=>'All ages'];
 if(empty($_SESSION['bh_user_id'])&&!$adminOnly) lp(401,['ok'=>false,'error'=>'login_required']);
 $userId=(int)($_SESSION['bh_user_id']??0); $db=bh_mysql();
 $roleStmt=$db->prepare("SELECT role,status FROM bh_users WHERE id=? LIMIT 1");$roleStmt->execute([$userId]);$roleUser=$roleStmt->fetch();
@@ -53,12 +57,9 @@ function lpTableOptions(PDO $db,array $tables,array $keyCols,array $labelCols): 
  }
  return [];
 }
-$accessibilityOptions=[
- 'step_free'=>'Step-free access','accessible_toilet'=>'Accessible toilet','baby_changing'=>'Baby changing','pram_access'=>'Pram / pushchair friendly','parking'=>'Parking available','quiet_space'=>'Quiet / low-sensory space','hearing_loop'=>'Hearing loop / assistive listening','visual_supports'=>'Visual supports','sensory_friendly'=>'Sensory-friendly','send_support'=>'SEND / additional-needs support','outdoor_access'=>'Outdoor access','toilets'=>'Toilets available'
-];
 $dynamicAccessibility=lpTableOptions($db,['bh_accessibility','bh_accessibility_options','bh_family_facilities'],['key','slug','id'],['label','name','title']);
 if($dynamicAccessibility)$accessibilityOptions=$dynamicAccessibility;
-$ageRangeOptions=['0-3'=>'0–3 years','1-3'=>'1–3 years','2-4'=>'2–4 years','3-5'=>'3–5 years','3-6'=>'3–6 years','5-plus'=>'5+ years','0-5'=>'0–5 years','all'=>'All ages'];
+
 $leaderEmail='';
 try{$eq=$db->prepare("SELECT email FROM bh_users WHERE id=? LIMIT 1");$eq->execute([$userId]);$leaderEmail=strtolower(trim((string)$eq->fetchColumn()));}catch(Throwable $ignored){$leaderEmail=strtolower(trim((string)($org['email']??'')));}
 lpEnsureExpertise($db);
