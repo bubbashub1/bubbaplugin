@@ -38,20 +38,26 @@ function lpEnsureActivityAccessibility(PDO $db): void{
  }catch(Throwable $ignored){}
 }
 lpEnsureActivityAccessibility($db);
+function lpTableOptions(PDO $db,array $tables,array $keyCols,array $labelCols): array{
+ foreach($tables as $table){
+  try{
+   $tq=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?");
+   $tq->execute([$table]);if(!(int)$tq->fetchColumn())continue;
+   $cq=$db->prepare("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?");
+   $cq->execute([$table]);$cols=$cq->fetchAll(PDO::FETCH_COLUMN);
+   $key=array_values(array_intersect($keyCols,$cols))[0]??null;$label=array_values(array_intersect($labelCols,$cols))[0]??null;
+   if(!$label)continue;$key=$key?:$label;
+   $q=$db->query("SELECT DISTINCT ".$key." AS option_key, ".$label." AS option_label FROM ".$table." WHERE ".$label." IS NOT NULL AND TRIM(".$label.")<>'' ORDER BY ".$label);
+   $out=[];foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){$k=trim((string)$row['option_key']);$l=trim((string)$row['option_label']);if($k!==''&&$l!=='')$out[$k]=$l;}if($out)return $out;
+  }catch(Throwable $ignored){}
+ }
+ return [];
+}
 $accessibilityOptions=[
- 'step_free'=>'Step-free access',
- 'accessible_toilet'=>'Accessible toilet',
- 'baby_changing'=>'Baby changing',
- 'pram_access'=>'Pram / pushchair friendly',
- 'parking'=>'Parking available',
- 'quiet_space'=>'Quiet / low-sensory space',
- 'hearing_loop'=>'Hearing loop / assistive listening',
- 'visual_supports'=>'Visual supports',
- 'sensory_friendly'=>'Sensory-friendly',
- 'send_support'=>'SEND / additional-needs support',
- 'outdoor_access'=>'Outdoor access',
- 'toilets'=>'Toilets available'
+ 'step_free'=>'Step-free access','accessible_toilet'=>'Accessible toilet','baby_changing'=>'Baby changing','pram_access'=>'Pram / pushchair friendly','parking'=>'Parking available','quiet_space'=>'Quiet / low-sensory space','hearing_loop'=>'Hearing loop / assistive listening','visual_supports'=>'Visual supports','sensory_friendly'=>'Sensory-friendly','send_support'=>'SEND / additional-needs support','outdoor_access'=>'Outdoor access','toilets'=>'Toilets available'
 ];
+$dynamicAccessibility=lpTableOptions($db,['bh_accessibility','bh_accessibility_options','bh_family_facilities'],['key','slug','id'],['label','name','title']);
+if($dynamicAccessibility)$accessibilityOptions=$dynamicAccessibility;
 $ageRangeOptions=['0-3'=>'0–3 years','1-3'=>'1–3 years','2-4'=>'2–4 years','3-5'=>'3–5 years','3-6'=>'3–6 years','5-plus'=>'5+ years','0-5'=>'0–5 years','all'=>'All ages'];
 $leaderEmail='';
 try{$eq=$db->prepare("SELECT email FROM bh_users WHERE id=? LIMIT 1");$eq->execute([$userId]);$leaderEmail=strtolower(trim((string)$eq->fetchColumn()));}catch(Throwable $ignored){$leaderEmail=strtolower(trim((string)($org['email']??'')));}
@@ -64,10 +70,11 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
  $bookings=[];try{$bookingCheck=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('bh_booking_reservations','bh_booking_slots','bh_users')");if((int)$bookingCheck->fetchColumn()===3){$r=$db->prepare("SELECT br.id,br.status,br.quantity,br.created_at,bs.starts_at,bs.ends_at,bs.activity_id,bs.venue_id,a.title,v.venue_name,u.email FROM bh_booking_reservations br JOIN bh_booking_slots bs ON bs.id=br.slot_id JOIN bh_activities a ON a.id=bs.activity_id JOIN bh_venues v ON v.id=bs.venue_id JOIN bh_users u ON u.id=br.user_id WHERE a.organiser_id=? ORDER BY bs.starts_at DESC,br.id DESC");$r->execute([$oid]);$bookings=$r->fetchAll();}}catch(Throwable $ignored){}
  $faqs=[];try{$f=$db->prepare("SELECT * FROM bh_leader_faqs WHERE organiser_id=? AND status<>'archived' ORDER BY sort_order,id");$f->execute([$oid]);$faqs=$f->fetchAll();}catch(Throwable $ignored){}
  $expertise=[];try{$e=$db->prepare("SELECT topic_key FROM bh_leader_expertise WHERE organiser_id=? AND enabled=1 ORDER BY topic_key");$e->execute([$oid]);$expertise=$e->fetchAll(PDO::FETCH_COLUMN);}catch(Throwable $ignored){}
- $categoryOptions=[];
-try{$cq=$db->query("SELECT DISTINCT TRIM(category) AS category FROM bh_activities WHERE category IS NOT NULL AND TRIM(category)<>'' ORDER BY category ASC");$categoryOptions=$cq->fetchAll(PDO::FETCH_COLUMN);}catch(Throwable $ignored){}
+ $categoryOptions=lpTableOptions($db,['bh_categories','bh_activity_categories','bh_activity_categories_options'],['key','slug','id'],['name','label','title','category']);
+if(!$categoryOptions){try{$cq=$db->query("SELECT DISTINCT TRIM(category) AS category FROM bh_activities WHERE category IS NOT NULL AND TRIM(category)<>'' ORDER BY category ASC");$categoryOptions=$cq->fetchAll(PDO::FETCH_COLUMN);}catch(Throwable $ignored){}}
 if(!$categoryOptions)$categoryOptions=['Baby & toddler','Classes & groups','Music & singing','Sport & movement','Arts & crafts','Messy play','Dance','Outdoor activities','Family wellbeing','SEND & additional needs','Pregnancy & new parents','Other'];
-$venues=[];try{$vq=$db->query("SELECT id,venue_name,address,town,region,postcode,latitude,longitude FROM bh_venues WHERE venue_name IS NOT NULL AND TRIM(venue_name)<>'' ORDER BY town,venue_name");$venues=$vq->fetchAll();}catch(Throwable $ignored){}$tagOptions=[];try{$tc=$db->query("SELECT DISTINCT TRIM(tags) AS tags FROM bh_activities WHERE tags IS NOT NULL AND TRIM(tags)<>'' ORDER BY tags ASC");foreach($tc->fetchAll(PDO::FETCH_COLUMN) as $raw){foreach(preg_split('/[,|]+/',(string)$raw) as $tag){$tag=trim($tag);if($tag!==''&&!in_array($tag,$tagOptions,true))$tagOptions[]=$tag;}}}catch(Throwable $ignored){}sort($tagOptions,SORT_NATURAL|SORT_FLAG_CASE);lp(200,['ok'=>true,'organisation'=>$org,'classes'=>$classes,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions,'category_options'=>$categoryOptions,'tag_options'=>$tagOptions,'venues'=>$venues,'max_images'=>$imageLimit]);
+$venues=[];try{$vq=$db->query("SELECT id,venue_name,address,town,region,postcode,latitude,longitude FROM bh_venues WHERE venue_name IS NOT NULL AND TRIM(venue_name)<>'' ORDER BY town,venue_name");$venues=$vq->fetchAll();}catch(Throwable $ignored){}$tagOptions=array_keys(lpTableOptions($db,['bh_tags','bh_activity_tags'],['key','slug','id'],['name','label','title','tag']));
+if(!$tagOptions){try{$tc=$db->query("SELECT DISTINCT TRIM(tags) AS tags FROM bh_activities WHERE tags IS NOT NULL AND TRIM(tags)<>'' ORDER BY tags ASC");foreach($tc->fetchAll(PDO::FETCH_COLUMN) as $raw){foreach(preg_split('/[,|]+/',(string)$raw) as $tag){$tag=trim($tag);if($tag!==''&&!in_array($tag,$tagOptions,true))$tagOptions[]=$tag;}}}catch(Throwable $ignored){}sort($tagOptions,SORT_NATURAL|SORT_FLAG_CASE);lp(200,['ok'=>true,'organisation'=>$org,'classes'=>$classes,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions,'category_options'=>$categoryOptions,'tag_options'=>$tagOptions,'venues'=>$venues,'max_images'=>$imageLimit]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')lp(405,['ok'=>false,'error'=>'method_not_allowed']);
 if($_SERVER['REQUEST_METHOD']==='POST' && !empty($_FILES['image']) && ($_POST['action']??'')==='upload_activity_image'){
