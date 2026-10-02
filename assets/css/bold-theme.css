@@ -1673,3 +1673,248 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
 .bh-venue-choice{display:grid;gap:14px;padding:18px;border:1px solid rgba(18,63,49,.09);border-radius:18px;background:#fbfdfc}.bh-venue-choice>button{justify-self:start}.bh-venue-choice [hidden]{display:none!important}.bh-venue-choice>div{display:grid;grid-template-columns:1fr 1fr;gap:12px}.bh-venue-divider{display:flex!important;align-items:center;gap:10px;color:#617261}.bh-venue-divider:before,.bh-venue-divider:after{content:"";height:1px;background:#d8e6db;flex:1}.bh-venue-divider span{font-size:.85rem}.bh-venue-choice label{display:flex;flex-direction:column;gap:6px}.bh-new-step[data-step="3"] .bh-new-class-fields{margin-top:18px}@media(max-width:800px){.bh-venue-choice>div{grid-template-columns:1fr}}
 /* Leader class review */
 .bh-review-panel{margin:20px 0}.bh-review-card{background:var(--bh-pale-green,#d8e6db);border:1px solid rgba(65,102,81,.18);border-radius:18px;padding:20px}.bh-review-card h3{margin-top:0;color:#144400}.bh-review-card dl{display:grid;grid-template-columns:minmax(120px,180px) 1fr;gap:10px 18px;margin:0}.bh-review-card dt{font-weight:700;color:#416651}.bh-review-card dd{margin:0}.bh-new-review{margin-top:20px;padding:18px;border-radius:16px;background:#f5f8f4}.bh-new-review h3{margin:0 0 6px}.bh-new-review p{margin:0 0 12px}@media(max-width:700px){.bh-review-card dl{grid-template-columns:1fr}.bh-review-card dd{margin-bottom:6px}}
+
+/* =========================================================
+   LEADER ADD CLASS — FINAL FORM POLISH
+   ========================================================= */
+.bh-new-class-panel,
+.bh-new-class-panel *{box-sizing:border-box}
+
+.bh-new-class-panel{
+  width:100%;
+  max-width:1180px;
+  margin:15px auto 0;
+  padding:26px!important;
+  overflow:hidden;
+}
+
+.bh-new-class-form{width:100%;margin:0}
+.bh-new-class-fields,
+.bh-category-tag-grid,
+.bh-age-price-grid,
+.bh-info-text-grid{min-width:0}
+
+.bh-new-class-panel input:not([type="checkbox"]):not([type="radio"]),
+.bh-new-class-panel select,
+.bh-new-class-panel textarea{
+  width:100%;
+  min-width:0;
+  min-height:46px;
+  padding:11px 13px;
+  border:1px solid #ccdacf;
+  border-radius:11px;
+  background:#fff;
+  color:#416651;
+  font:inherit;
+  line-height:1.35;
+  box-shadow:inset 0 1px 2px rgba(18,63,49,.035);
+  transition:border-color .18s ease,box-shadow .18s ease,background .18s ease;
+}
+
+.bh-new-class-panel textarea{min-height:120px;resize:vertical}
+.bh-new-class-panel input:not([type="checkbox"]):not([type="radio"])::placeholder,
+.bh-new-class-panel textarea::placeholder{color:#8a9a8e;opacity:1}
+
+.bh-new-class-panel input:not([type="checkbox"]):not([type="radio"]):focus,
+.bh-new-class-panel select:focus,
+.bh-new-class-panel textarea:focus{
+  outline:none;
+  border-color:#3c8e96;
+  box-shadow:0 0 0 3px rgba(60,142,150,.12);
+  background:#fff;
+}
+
+.bh-new-class-panel input:disabled,
+.bh-new-class-panel select:disabled,
+.bh-new-class-panel textarea:disabled{
+  background:#f0f4f1;
+}
+
+.bh-new-step-head{margin-bottom:20px}
+.bh-new-step-head h3{font-size:1.5rem;line-height:1.2;margin:6px 0}
+.bh-new-step-head p{max-width:700px;line-height:1.5}
+
+.bh-new-progress{
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:7px;
+  margin:4px 0 26px;
+  padding:7px;
+}
+.bh-new-progress-step{
+  min-width:0;
+  justify-content:center;
+  padding:10px 8px;
+}
+.bh-new-progress-step b{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.bh-field-group,
+.bh-age-section,
+.bh-price-section,
+.bh-info-options,
+.bh-schedule-box,
+.bh-venue-choice,
+.bh-image-url-box,
+.bh-upload-box{
+  min-width:0;
+}
+
+.bh-field-group,
+.bh-age-section,
+.bh-price-section,
+.bh-info-options,
+.bh-schedule-box,
+.bh-venue-choice{
+  padding:20px;
+}
+
+.bh-category-picker,
+.bh-tag-picker,
+.bh-new-category-row,
+.bh-new-tag-row{
+  min-width:0;
+}
+
+.bh-category-picker select,
+.bh-tag-picker select{
+  min-width:0;
+}
+
+.bh-new-class-panel .button{
+  min-height:44px;
+  padding:10px 15px;
+  border-radius:11px;
+  white-space:normal;
+}
+
+.bh-schedule-row{
+  grid-template-columns:minmax(130px,1.15fr) minmax(105px,1fr) minmax(105px,1fr) auto;
+  gap:10px;
+}
+.bh-schedule-row label{min-width:0}
+.bh-schedule-row .button{min-width:86px}
+
+.bh-venue-choice>div:not(.bh-venue-divider){
+  min-width:0;
+}
+.bh-venue-choice>div:not(.bh-venue-divider) label{min-width:0}
+
+.bh-review-card{padding:22px}
+.bh-review-card dl{grid-template-columns:minmax(130px,180px) minmax(0,1fr)}
+.bh-review-card dd{overflow-wrap:anywhere}
+
+@media(max-width:900px){
+  .bh-new-class-panel{padding:22px!important}
+  .bh-new-progress-step{padding:9px 5px}
+  .bh-new-progress-step b{font-size:.78rem}
+  .bh-schedule-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .bh-schedule-row .button{grid-column:1/-1;justify-self:start}
+}
+
+@media(max-width:700px){
+  .bh-new-class-panel{
+    margin-top:10px;
+    padding:16px!important;
+    border-radius:18px;
+  }
+
+  .bh-new-progress{
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:4px;
+    margin-bottom:20px;
+    padding:5px;
+    border-radius:14px;
+  }
+  .bh-new-progress-step{
+    padding:7px 2px;
+    border-radius:9px;
+  }
+  .bh-new-progress-step b{display:none}
+  .bh-new-progress-step span{
+    width:29px;
+    height:29px;
+    flex:0 0 29px;
+  }
+
+  .bh-new-step-head{margin-bottom:16px}
+  .bh-new-step-head h3{font-size:1.3rem}
+  .bh-new-step-head p{font-size:.9rem}
+
+  .bh-category-tag-grid,
+  .bh-age-price-grid,
+  .bh-info-text-grid{
+    grid-template-columns:1fr;
+    gap:12px;
+  }
+
+  .bh-field-group,
+  .bh-age-section,
+  .bh-price-section,
+  .bh-info-options,
+  .bh-schedule-box,
+  .bh-venue-choice{
+    padding:15px;
+    border-radius:15px;
+  }
+
+  .bh-category-picker,
+  .bh-tag-picker,
+  .bh-new-category-row,
+  .bh-new-tag-row{
+    grid-template-columns:1fr;
+  }
+
+  .bh-category-picker .button,
+  .bh-tag-picker .button,
+  .bh-new-category-row .button,
+  .bh-new-tag-row .button{
+    width:100%;
+  }
+
+  .bh-age-inputs,
+  .bh-price-options,
+  .bh-info-checks{
+    grid-template-columns:1fr;
+  }
+
+  .bh-schedule-row{
+    grid-template-columns:1fr;
+    padding:13px;
+  }
+  .bh-schedule-row .button{
+    width:100%;
+    justify-self:stretch;
+  }
+
+  .bh-venue-choice>div:not(.bh-venue-divider){
+    grid-template-columns:1fr;
+  }
+  .bh-venue-choice>button{width:100%}
+
+  .bh-upload-box{padding:16px}
+  .bh-upload-label{min-height:120px}
+
+  .bh-image-url-preview{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .bh-review-card dl{
+    grid-template-columns:1fr;
+    gap:4px;
+  }
+  .bh-review-card dt{margin-top:8px}
+  .bh-review-card dd{margin-bottom:4px}
+}
+
+@media(max-width:380px){
+  .bh-new-class-panel{padding:12px!important}
+  .bh-new-progress{gap:2px}
+  .bh-new-progress-step span{width:26px;height:26px;flex-basis:26px;font-size:.78rem}
+  .bh-new-class-panel input:not([type="checkbox"]):not([type="radio"]),
+  .bh-new-class-panel select,
+  .bh-new-class-panel textarea{padding:10px 11px}
+}
