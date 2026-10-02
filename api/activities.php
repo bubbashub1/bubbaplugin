@@ -45,6 +45,18 @@ try {
 
     $countySelect = $countyColumn ? 'a.county' : 'NULL AS county';
     $accessibilitySelect = $accessibilityColumn ? 'a.accessibility' : 'NULL AS accessibility';
+    $infoColumns = [];
+    foreach (['booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome','what_to_bring','good_to_know'] as $infoColumn) {
+        try {
+            $check = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bh_activities' AND COLUMN_NAME = ?");
+            $check->execute([$infoColumn]);
+            if ((int)$check->fetchColumn() > 0) $infoColumns[$infoColumn] = true;
+        } catch (Throwable $ignored) {}
+    }
+    $infoSelect = '';
+    foreach (['booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome','what_to_bring','good_to_know'] as $infoColumn) {
+        $infoSelect .= ($infoColumns[$infoColumn] ?? false) ? ", a.$infoColumn" : ", NULL AS $infoColumn";
+    }
     $where = ["LOWER(TRIM(COALESCE(a.status, ''))) IN ('published', 'publish')"];
     $params = [];
 
@@ -117,14 +129,7 @@ try {
             $countySelect,
             a.price_from,
             a.booking_url,
-            a.booking_required,
-            a.drop_in_welcome,
-            a.trial_available,
-            a.term_time_only,
-            a.holiday_sessions,
-            a.siblings_welcome,
-            a.what_to_bring,
-            a.good_to_know,
+            $infoSelect,
             a.image_path,
             o.id AS organiser_id,
             o.organisation_name,
