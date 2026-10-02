@@ -511,8 +511,9 @@ void bhHydrateSaved();
 
   const render=async()=>{
     try{
+      await bhHydrateSaved();
       const items=await bhActivities();
-      if(!Array.isArray(items)||!items.length)return;
+      if(!Array.isArray(items)||!items.length){grid.innerHTML="<div class=\"home-planner-empty\"><h3>Activities are loading</h3><p>Please try again shortly.</p></div>";return;}
 
       const available=items.filter(a=>a&&a.id);
       const readStoredPreferences=()=>{
