@@ -1564,3 +1564,12 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
   border-color:#eab83b!important;
   color:#416651!important;
 }
+
+
+/* Leader Portal — give portal tool cards more breathing room */
+.bh-leader-tool{
+  padding:24px!important;
+}
+@media (max-width:760px){
+  .bh-leader-tool{padding:20px!important;}
+}
