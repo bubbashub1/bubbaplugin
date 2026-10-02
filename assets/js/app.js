@@ -194,7 +194,7 @@ function bhIsPlanned(id){return bhGet(BH_KEYS.planner).includes(String(id))}
 let bhAuthPromise=null;
 async function bhAuthSession(){
   if(!bhAuthPromise){
-    bhAuthPromise=fetch("api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}})
+    bhAuthPromise=fetch("/beta/api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}})
       .then(r=>r.json())
       .catch(()=>({ok:false,authenticated:false}));
   }
