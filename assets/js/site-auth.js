@@ -6,7 +6,7 @@
   const RESTRICTED_PAGES=new Set(["my-hub.html","account.html","account-profile.html","account-planner.html","preferences.html","family.html","notifications.html","saved-activities.html","planner.html","choose.html","consent.html","privacy.html","subscription.html"]);
   const LEADER_PAGES=new Set(["leader.html","booking-manager.html","leader-account.html"]);
   const pageName=(location.pathname.split("/").filter(Boolean).pop()||"index.html").toLowerCase();
-  const nestedRoot=/\/(account|admin|leader)\//i.test(location.pathname)?"../":"./";
+  const nestedRoot=/\/(account|admin)\//i.test(location.pathname)?"../":"./";
   const rootUrl=(path)=>new URL(nestedRoot+path,document.baseURI);
   const authUrl=rootUrl("auth.html");
   const nextUrl=()=>location.pathname+location.search+location.hash;
@@ -84,7 +84,7 @@
   async function init(){
     let auth={authenticated:false,is_admin:false};
     try{const r=await fetch(new URL("api/auth.php?action=me",document.baseURI),{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});if(r.ok)auth=await r.json();}catch(e){}
-    if(isLeaderPage()&&!auth.authenticated&&!auth.is_admin){location.replace(leaderAuthTarget());return;}
+    if(isLeaderPage()&&(!auth.authenticated||(auth.user&&auth.user.role!=="leader"&&!auth.is_admin))){location.replace(leaderAuthTarget());return;}
     if(isRestricted()&&!auth.authenticated&&!auth.is_admin){location.replace(buildAuthTarget());return;}
     let menus=null;
     try{
