@@ -31,7 +31,7 @@ $org=null;
 if($hasOrgUserId){$o=$db->prepare("SELECT * FROM bh_organisers WHERE user_id=? LIMIT 1");$o->execute([$userId]);$org=$o->fetch();}
 else{try{$u=$db->prepare("SELECT email FROM bh_users WHERE id=? LIMIT 1");$u->execute([$userId]);$user=$u->fetch();if($user&&!empty($user['email'])){$o=$db->prepare("SELECT * FROM bh_organisers WHERE email=? LIMIT 1");$o->execute([$user['email']]);$org=$o->fetch();}}catch(Throwable $ignored){}}
 if(!$org)lp(403,['ok'=>false,'error'=>'organiser_required','message'=>'Your account is not linked to a class leader organisation yet.']);
-$oid=(int)$org['id'];
+$oid=(int)$org['id'];$isPro=false;$imageLimit=3;
 function lpEnsureActivityAccessibility(PDO $db): void{
  try{
   $db->exec("ALTER TABLE bh_activities ADD COLUMN accessibility TEXT NULL");
