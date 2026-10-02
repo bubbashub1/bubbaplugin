@@ -90,6 +90,7 @@ if($_SERVER['REQUEST_METHOD']==='POST' && !empty($_FILES['image']) && ($_POST['a
  lp(201,['ok'=>true,'url'=>$url,'main'=>count($gallery)===1]);
 }
 $b=json_decode(file_get_contents('php://input'),true);if(!is_array($b))lp(400,['ok'=>false,'error'=>'invalid_json']);$action=$b['action']??'';
+if($action==='save_listing_photos'){$activityId=(int)($b['activity_id']??0);$photos=is_array($b['photos']??null)?array_values(array_unique(array_filter(array_map('trim',$b['photos'])))):[];if(count($photos)>$imageLimit)lp(422,['ok'=>false,'error'=>'too_many_photos','message'=>'Your plan allows up to '.$imageLimit.' photos.']);$own=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND organiser_id=? LIMIT 1");$own->execute([$activityId,$oid]);if(!$own->fetch())lp(404,['ok'=>false,'error'=>'activity_not_found']);$q=$db->prepare("UPDATE bh_activities SET gallery_images=? WHERE id=?");$q->execute([json_encode($photos,JSON_UNESCAPED_SLASHES),$activityId]);if($photos)$db->prepare("UPDATE bh_activities SET image_path=? WHERE id=?")->execute([$photos[0],$activityId]);lp(200,['ok'=>true,'photos'=>$photos]);}
 
 if($action==='save_profile_public'){
  $about=trim((string)($b['about_content']??''));$logo=trim((string)($b['logo_url']??''));$facebook=trim((string)($b['facebook_url']??''));$instagram=trim((string)($b['instagram_url']??''));$tiktok=trim((string)($b['tiktok_url']??''));
