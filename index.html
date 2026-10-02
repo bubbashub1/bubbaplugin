@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="assets/css/styles.css">
   <link rel="stylesheet" href="assets/css/bold-theme.css">
   <link rel="stylesheet" href="assets/css/homepage.css">
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script src="assets/js/onesignal.js" defer></script>
 </head>
 <body class="bh-home">
 <header class="site-header home-header">
@@ -67,27 +69,7 @@
       <a href="directory.html" class="home-view-all">View all →</a>
     </div>
     <div class="home-activity-carousel">
-      <div class="home-activity-grid">
-      <a class="home-activity-card" href="activity.html?id=baby-sensory-torquay">
-        <div class="home-card-image"><img src="images/home/gemini_generated_image_dbeql8dbeql8dbeq-20260927-181224-80709b.jpeg" alt="Baby activity"></div>
-        <span class="home-age-badge">0–3</span><button class="home-heart" type="button" aria-label="Save Baby Sensory">♡</button>
-        <div class="home-card-body"><h3>Baby Sensory</h3><p>⌖ Torquay</p><p>♟ Group Class</p><p>◷ £8 per session</p></div>
-      </a>
-      <a class="home-activity-card" href="directory.html">
-        <div class="home-card-image"><img src="images/home/gemini_generated_image_fi5el2fi5el2fi5e-20260927-181228-89394c.jpeg" alt="Children enjoying a group activity"></div>
-        <span class="home-age-badge pink">3–5</span><button class="home-heart" type="button" aria-label="Save activity">♡</button>
-        <div class="home-card-body"><h3>Diddi Dance</h3><p>⌖ Exeter</p><p>♟ Weekly Class</p><p>◷ £6 per session</p></div>
-      </a>
-      <a class="home-activity-card" href="directory.html">
-        <div class="home-card-image"><img src="images/home/gemini_generated_image_khj2knkhj2knkhj2-20260927-181226-769ff1.jpeg" alt="Messy play activity"></div>
-        <span class="home-age-badge purple">2–4</span><button class="home-heart" type="button" aria-label="Save activity">♡</button>
-        <div class="home-card-body"><h3>Messy Play</h3><p>⌖ Paignton</p><p>♟ Group Class</p><p>◷ £4 per session</p></div>
-      </a>
-      <a class="home-activity-card" href="directory.html">
-        <div class="home-card-image home-card-image-nature"><img src="images/home/gemini_generated_image_fi5el2fi5el2fi5e-20260927-181228-89394c.jpeg" alt="Family nature activity"></div>
-        <span class="home-age-badge teal">All Ages</span><button class="home-heart" type="button" aria-label="Save activity">♡</button>
-        <div class="home-card-body"><h3>Nature Walks</h3><p>⌖ South Hams</p><p>♧ Outdoor Group</p><p>◷ Free</p></div>
-      </a>
+      <div class="home-activity-grid" aria-live="polite"></div>
     </div>
     </div>
   </section>
@@ -104,14 +86,9 @@
   </section>
 
   <section class="home-lower-grid">
-    <article class="home-lower-card home-planner-preview">
+    <article class="home-lower-card home-planner-preview" id="homePlannerPreview">
       <div class="home-lower-heading"><div><span class="eyebrow">Your week</span><h2>My Planner</h2></div><a href="planner.html">View Calendar →</a></div>
-      <div class="home-week"><strong>29 Sep – 5 Oct 2026</strong><span>›</span></div>
-      <div class="home-day-row"><b>Tue<br><small>29</small></b><span>Wed<br><small>30</small></span><span>Thu<br><small>1</small></span><span>Fri<br><small>2</small></span><span>Sat<br><small>3</small></span><span>Sun<br><small>4</small></span><span>Mon<br><small>5</small></span></div>
-      <div class="home-mini-event"><span class="home-mini-thumb"></span><div><b>Messy Play</b><small>Paignton · 10:00 – 11:30</small></div><em>♡</em></div>
-      <div class="home-mini-event"><span class="home-mini-thumb second"></span><div><b>Diddi Dance</b><small>Exeter · 14:00 – 15:00</small></div><em>♥</em></div>
-      <div class="home-mini-event"><span class="home-mini-thumb third"></span><div><b>Nature Walks</b><small>South Hams · 10:00 – 12:00</small></div><em>♡</em></div>
-      <a class="button button-primary home-full-button" href="directory.html">＋ Add Activity</a>
+      <div id="homePlannerContent" class="home-planner-content" aria-live="polite"></div>
     </article>
 
     <article class="home-lower-card home-account-preview">
@@ -131,10 +108,6 @@
       <div class="home-leader-icons"><span>▦<small>Manage Listings</small></span><span>▣<small>View Bookings</small></span><span>▥<small>Statistics</small></span></div>
     </article>
 
-    <article class="home-lower-card home-admin-preview">
-      <div class="home-lower-heading"><div><span class="eyebrow">Bubba Hub Admin</span><h2>Admin Dashboard</h2></div><a href="admin.html">Admin →</a></div>
-      <div class="home-admin-layout"><aside><strong>♡ Bubba Hub</strong><a>Dashboard</a><a>Listings</a><a>Bookings</a><a>Users</a><a>Reports</a><a>Settings</a><a>Support</a></aside><div class="home-admin-main"><h3>Welcome back, Admin</h3><div class="home-admin-stats"><b>248<small>Total Listings</small></b><b>12<small>Pending Bookings</small></b><b>8<small>New Users</small></b><b>View<small>Reports</small></b></div><h4>Recent Activity</h4><p>New listing submitted · Booking received · New user registered</p></div></div>
-    </article>
   </section>
 </main>
 
@@ -143,7 +116,7 @@
     <div class="site-footer-brand"><a href="index.html" class="site-footer-logo"><img src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><div class="site-footer-brand-copy"><a href="index.html" class="site-footer-title">Bubba Hub</a><p>Find · Plan · Book<br>Supporting families across Devon &amp; Cornwall.</p></div></div>
     <div class="site-footer-column"><h2>Quick Links</h2><nav class="site-footer-links"><a href="index.html">Home</a><a href="directory.html">Directory</a><a href="planner.html">Planner</a><a href="my-hub.html">My Hub</a><a href="leader.html">Leader</a><a href="help-support.html">Support</a></nav></div>
     <div class="site-footer-column"><h2>Regions</h2><nav class="site-footer-links"><a>Devon &amp; Cornwall</a><a>Exeter</a><a>North Cornwall</a><a>South Cornwall</a><a>Torbay</a><a>and more...</a></nav></div>
-    <div class="site-footer-column home-newsletter"><h2>Stay Connected</h2><p>Join our newsletter</p><form><input type="email" placeholder="Your email address" aria-label="Email address"><button type="submit">→</button></form></div>
+    <div class="site-footer-column home-newsletter"><h2>Stay Connected</h2><p>Join our newsletter</p><form id="homeNewsletterForm"><input id="homeNewsletterEmail" type="email" placeholder="Your email address" aria-label="Email address" required><button type="submit" aria-label="Subscribe">→</button></form><p id="homeNewsletterStatus" class="home-newsletter-status" aria-live="polite"></p></div>
   </div>
   <div class="site-footer-bottom"><span>© 2026 Bubba Hub. Supporting families across Devon &amp; Cornwall.</span><span>Privacy Policy &nbsp; Terms &amp; Conditions &nbsp; Accessibility</span></div>
 </footer>
