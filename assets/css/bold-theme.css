@@ -1550,3 +1550,17 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
 .bh-leader-page .bh-leader-panel h2{
   color:#9cb8a4!important;
 }
+
+
+/* Leader Portal — View directory CTA */
+.bh-leader-page a.button.button-soft[href="directory.html"]{
+  background:#f6c84a!important;
+  border-color:#f6c84a!important;
+  color:#416651!important;
+}
+.bh-leader-page a.button.button-soft[href="directory.html"]:hover,
+.bh-leader-page a.button.button-soft[href="directory.html"]:focus-visible{
+  background:#eab83b!important;
+  border-color:#eab83b!important;
+  color:#416651!important;
+}
