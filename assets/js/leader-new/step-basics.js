@@ -1,0 +1,1 @@
+(()=>{"use strict";const B=window.BubbaNew;B.register("basics",()=>{},()=>{B.Q("description").value=B.Q("descriptionEditor").innerHTML.trim();if(!B.Q("title").value.trim()){B.say("Please add a class name.");return false}if(!B.Q("description").value.trim()){B.say("Please add a description for families.");return false}return true});})();
