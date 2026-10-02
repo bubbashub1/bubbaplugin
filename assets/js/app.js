@@ -116,7 +116,7 @@ async function bhActivities(){
       price_per_family:Boolean(Number(a.price_per_family||0)),
       image_url:(a.image_path||"").replace(
         "gemini_generated_image_20260930-190428-b9e652.png",
-        "gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png"
+        "images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png"
       ),
       short_description:a.description||"",
       summary:a.description||"",
