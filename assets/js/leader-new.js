@@ -15,13 +15,100 @@ function syncDescription(){Q("description").value=Q("descriptionEditor").innerHT
 if(n===1&&!Q("description").value.trim())return say("Please add a description for families."),false;
 if(n===4&&schedule().some(x=>!x.start||!x.end||x.end<=x.start))return say("Please check each session day and time."),false;
 if(n===5&&!Q("existingVenue").value&&(!Q("venueName").value.trim()||!Q("town").value.trim()))return say("Please add a venue name and town."),false;return true}
-function setStep(n){current=n;document.querySelectorAll(".bh-panel").forEach(p=>p.classList.toggle("active",+p.dataset.panel===n));document.querySelectorAll(".bh-step").forEach(b=>{let x=+b.dataset.step;b.classList.toggle("active",x===n);b.classList.toggle("complete",x<n)});Q("prevStep").hidden=n===1;Q("nextStep").hidden=n===6;Q("submitListing").hidden=n!==6;if(n===6){photoRender();review()}say("")}
+function sectionSummary(n){
+ const p=document.querySelector('[data-panel="'+n+'"]');
+ if(!p)return "";
+ const text=[...p.querySelectorAll("input,select,textarea,[contenteditable=true]")].map(x=>{
+   if(x.type==="checkbox") return x.checked?x.parentElement?.textContent?.trim():"";
+   if(x.type==="radio") return x.checked?x.parentElement?.textContent?.trim():"";
+   if(x.multiple) return vals(x).join(", ");
+   return x.value||x.textContent||"";
+ }).filter(Boolean);
+ return text.slice(0,4).join(" · ")||"Not started";
+}
+function sectionState(n){
+ const p=document.querySelector('[data-panel="'+n+'"]');
+ if(!p)return "not-started";
+ const inputs=[...p.querySelectorAll("input,select,textarea,[contenteditable=true]")];
+ const meaningful=inputs.some(x=>x.type==="checkbox"?x.checked:x.type==="radio"?x.checked:(x.value||x.textContent||"").trim());
+ return meaningful?"in-progress":"not-started";
+}
+function renderOverview(){
+ const o=Q("sectionOverview .bh-section-list"); if(!o)return;
+ const items=[
+  [1,"Basics","Class name and description"],
+  [2,"About","Categories, tags, age range and pricing"],
+  [3,"Extra","Booking, family information and useful details"],
+  [4,"Schedule","Days and session times"],
+  [5,"Venue","Venue, town and accessibility"],
+  [6,"Photos & review","Listing images and final check"]
+ ];
+ o.innerHTML=items.map(([n,title,desc])=>{
+   const state=sectionState(n), summary=sectionSummary(n);
+   const label=state==="in-progress"?"In progress":state==="not-started"?"Not started":"Complete";
+   return '<article class="bh-section-card '+state+'"><div class="bh-section-card-copy"><div class="bh-section-kicker">Section '+n+'</div><h3>'+esc(title)+'</h3><p>'+esc(desc)+'</p><small>'+esc(summary)+'</small></div><div class="bh-section-card-actions"><span class="bh-section-status">'+label+'</span><button type="button" class="button button-soft" data-edit-section="'+n+'">Edit</button></div></article>';
+ }).join("");
+ o.querySelectorAll("[data-edit-section]").forEach(b=>b.onclick=()=>openSection(+b.dataset.editSection));
+}
+function openSection(n){
+ current=n;
+ Q("sectionOverview").hidden=true;
+ document.querySelector(".bh-form").classList.add("bh-editing");
+ document.querySelectorAll(".bh-panel").forEach(p=>p.classList.toggle("active",+p.dataset.panel===n));
+ document.querySelector(".bh-steps").hidden=true;
+ Q("prevStep").hidden=true;
+ Q("nextStep").hidden=true;
+ Q("submitListing").hidden=n!==6;
+ Q("sectionBack").hidden=false;
+ Q("sectionSave").hidden=false;
+ if(n===6){photoRender();review()}
+ say("");
+ window.scrollTo({top:document.querySelector(".bh-card").offsetTop-20,behavior:"smooth"});
+}
+function closeSection(save=true){
+ if(save){syncDescription();renderOverview();saveDraft();}
+ document.querySelector(".bh-form").classList.remove("bh-editing");
+ document.querySelectorAll(".bh-panel").forEach(p=>p.classList.remove("active"));
+ document.querySelector(".bh-steps").hidden=false;
+ Q("sectionOverview").hidden=false;
+ Q("sectionBack").hidden=true;
+ Q("sectionSave").hidden=true;
+ Q("submitListing").hidden=true;
+ Q("prevStep").hidden=true;
+ Q("nextStep").hidden=true;
+ renderOverview();
+}
+function setStep(n){openSection(n)}
 function review(){let p=document.querySelector('input[name="pricing"]:checked');Q("review").innerHTML='<div class="bh-review-card"><h3>'+esc(Q("title").value)+'</h3><p>'+esc(Q("description").value)+'</p></div><div class="bh-review-card"><b>Category:</b> '+esc(vals(Q("categories")).join(", "))+'<br><b>Tags:</b> '+esc(vals(Q("tags")).join(", "))+'<br><b>Age:</b> '+esc(Q("ageOutput").textContent)+'<br><b>Price:</b> '+(p.value==="free"?"Free":"£"+(+Q("price").value).toFixed(2)+" per "+(p.value==="family"?"family":"session"))+'</div><div class="bh-review-card"><b>Schedule:</b><br>'+schedule().map(x=>esc(x.day+" "+x.start+"–"+x.end)).join("<br>")+'</div><div class="bh-review-card"><b>Venue:</b> '+esc(Q("venueName").value)+", "+esc(Q("town").value)+'</div>'}
-Q("descriptionEditor").oninput=syncDescription;document.querySelectorAll(".bh-rich-toolbar [data-cmd]").forEach(b=>b.onclick=()=>{Q("descriptionEditor").focus();document.execCommand(b.dataset.cmd,false,null);syncDescription()});Q("ageMin").oninput=ageUpdate;Q("ageMax").oninput=ageUpdate;Q("addCategory").onclick=()=>{addCustom(Q("categories"),Q("newCategory"));renderPicker("categories");Q("categories").dispatchEvent(new Event("change"))};Q("addTag").onclick=()=>{addCustom(Q("tags"),Q("newTag"));renderPicker("tags")};setupPicker("categories");setupPicker("tags");Q("newCategory").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();Q("addCategory").click()}};Q("newTag").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();Q("addTag").click()}};
+
+const overview=document.createElement("section");overview.id="sectionOverview";overview.className="bh-section-overview";overview.innerHTML="<div class=\"bh-overview-head\"><div><span class=\"eyebrow\">Your listing</span><h2>Class details</h2><p>Choose a section to add or update it. You can come back to any section at any time.</p></div></div><div class=\"bh-section-list\"></div>";document.querySelector(".bh-card").insertBefore(overview,document.querySelector(".bh-steps"));
+const actions=document.querySelector(".bh-actions");actions.insertAdjacentHTML("afterbegin",'<div class="bh-editor-actions"><button class="button button-soft" id="sectionBack" type="button" hidden>← Back to sections</button><button class="button button-primary" id="sectionSave" type="button" hidden>Save &amp; return</button></div>');Q("descriptionEditor").oninput=syncDescription;document.querySelectorAll(".bh-rich-toolbar [data-cmd]").forEach(b=>b.onclick=()=>{Q("descriptionEditor").focus();document.execCommand(b.dataset.cmd,false,null);syncDescription()});Q("ageMin").oninput=ageUpdate;Q("ageMax").oninput=ageUpdate;Q("addCategory").onclick=()=>{addCustom(Q("categories"),Q("newCategory"));renderPicker("categories");Q("categories").dispatchEvent(new Event("change"))};Q("addTag").onclick=()=>{addCustom(Q("tags"),Q("newTag"));renderPicker("tags")};setupPicker("categories");setupPicker("tags");Q("newCategory").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();Q("addCategory").click()}};Q("newTag").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();Q("addTag").click()}};
 Q("categories").onchange=async()=>{renderPicker("categories");let selected=vals(Q("categories"));if(!selected.length){Q("tagSuggestions").innerHTML="";return}try{let all=[];for(const c of selected){let r=await fetch(API,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"tag_suggestions",category:c})}),d=await r.json();all.push(...(d.suggestions||[]))}let suggestions=uniq(all);suggestions.forEach(x=>addOpt(Q("tags"),x,true));renderPicker("tags");Q("tagSuggestions").innerHTML=suggestions.map(x=>'<button class="bh-chip" type="button" data-tag="'+esc(x)+'">✓ '+esc(x)+'</button>').join("");Q("tagSuggestions").querySelectorAll("[data-tag]").forEach(b=>b.onclick=()=>addOpt(Q("tags"),b.dataset.tag,true))}catch(e){}};
 Q("addSchedule").onclick=()=>addRow();Q("existingVenue").onchange=()=>{let o=Q("existingVenue").selectedOptions[0];if(!o||!o.value)return;let v=JSON.parse(o.dataset.json||"{}");["venueName","address","town","region","postcode","latitude","longitude"].forEach(k=>Q(k).value=v[k==="venueName"?"venue_name":k]??"")};
 Q("photoUrls").oninput=photoRender;Q("photoUpload").onchange=()=>{let f=[...Q("photoUpload").files],count=uniq(Q("photoUrls").value.split(/\n+/)).length;if(count+files.length+f.length>meta.max_images)return say("You can add up to "+meta.max_images+" images on your plan.");files.push(...f);Q("photoUpload").value="";photoRender()};
-document.querySelectorAll(".bh-step").forEach(b=>b.onclick=()=>{let n=+b.dataset.step;if(n<current||valid(current))setStep(n)});Q("prevStep").onclick=()=>setStep(current-1);Q("nextStep").onclick=()=>{if(valid(current))setStep(current+1)};
+document.querySelectorAll(".bh-step").forEach(b=>b.onclick=()=>openSection(+b.dataset.step));
+Q("sectionBack").onclick=()=>closeSection(false);
+Q("sectionSave").onclick=()=>{if(valid(current)){closeSection(true)}};
+Q("prevStep").onclick=()=>openSection(Math.max(1,current-1));
+Q("nextStep").onclick=()=>{if(valid(current))openSection(Math.min(6,current+1))};
+document.querySelector(".bh-form").addEventListener("input",()=>{if(current) saveDraft()});
 async function post(body){let r=await fetch(API,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(body)}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.message||d.error||"The class could not be submitted.");return d}
 form.onsubmit=async e=>{e.preventDefault();if(!valid(6))return;let p=document.querySelector('input[name="pricing"]:checked'),payload={action:"create_listing",title:Q("title").value.trim(),description:Q("description").value.trim(),category:vals(Q("categories")).join(", "),tags:vals(Q("tags")).join(", "),age_min_months:+Q("ageMin").value,age_max_months:+Q("ageMax").value,age_range:age(Q("ageMin").value)+" – "+age(Q("ageMax").value),price_from:p.value==="free"?"":+Q("price").value,price_free:p.value==="free",price_per_family:p.value==="family",price_per_session:p.value==="session",booking_required:Q("bookingRequired").checked,drop_in_welcome:Q("dropInWelcome").checked,trial_available:Q("trialAvailable").checked,term_time_only:Q("termTimeOnly").checked,holiday_sessions:Q("holidaySessions").checked,siblings_welcome:Q("siblingsWelcome").checked,what_to_bring:Q("whatToBring").value.trim(),good_to_know:Q("goodToKnow").value.trim(),booking_url:Q("bookingUrl").value.trim(),schedule:schedule(),accessibility:[...Q("accessibility").querySelectorAll("input:checked")].map(x=>x.value),existing_venue_id:Q("existingVenue").value?+Q("existingVenue").value:0,venue_name:Q("venueName").value.trim(),address:Q("address").value.trim(),town:Q("town").value.trim(),region:Q("region").value.trim(),postcode:Q("postcode").value.trim(),latitude:Q("latitude").value.trim(),longitude:Q("longitude").value.trim(),photos:uniq(Q("photoUrls").value.split(/\n+/))};Q("submitListing").disabled=true;say("Submitting your class…");try{let d=await post(payload),id=d.id;if(files.length){for(let f of files){let fd=new FormData();fd.append("action","upload_activity_image");fd.append("activity_id",id);fd.append("image",f);let r=await fetch(API,{method:"POST",credentials:"same-origin",body:fd}),u=await r.json();if(!r.ok||!u.ok)throw Error(u.message||"An uploaded image could not be saved.")}}say("Class submitted successfully. It is now awaiting review.",true);setTimeout(()=>location.href="../leader/classes.html",1000)}catch(err){say(err.message);Q("submitListing").disabled=false}};
-ageUpdate();addRow();load();})();
+function saveDraft(){
+ const data={};
+ if(Q("descriptionEditor"))data.descriptionEditor=Q("descriptionEditor").innerHTML;
+ document.querySelectorAll(".bh-form input,.bh-form select,.bh-form textarea,[contenteditable=true]").forEach(x=>{
+   if(!x.id)return;
+   data[x.id]=x.type==="checkbox"?x.checked:x.type==="radio"?(x.checked?x.value:null):x.value;
+ });
+ localStorage.setItem("bh_add_class_draft",JSON.stringify(data));
+}
+function loadDraft(){
+ try{
+  const d=JSON.parse(localStorage.getItem("bh_add_class_draft")||"{}");
+  Object.entries(d).forEach(([id,v])=>{const x=Q(id);if(!x)return;if(x.type==="checkbox")x.checked=!!v;else if(x.type==="radio"){if(x.value===v)x.checked=true}else x.value=v;});
+  if(Q("descriptionEditor")&&d.descriptionEditor)Q("descriptionEditor").innerHTML=d.descriptionEditor;
+ }catch(e){}
+ syncDescription();ageUpdate();photoRender();renderPicker("categories");renderPicker("tags");
+}
+ageUpdate();addRow();load().then(()=>{loadDraft();renderOverview()});})();
