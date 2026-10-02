@@ -167,5 +167,5 @@ const bhInitMap=async()=>{
     render();
   }catch(error){$("mapStatus").textContent=error.message||"Activities could not be loaded."}
 };
-const bhInitMapStart=()=>{const ready=window.bhDirectoryHeroReady;if(ready)ready.then(bhInitMap);else bhInitMap();};
+const bhInitMapStart=async()=>{await (window.bhDirectoryHeroReady||Promise.resolve());await (window.bhAdvancedFiltersReady||Promise.resolve());await bhInitMap();};
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bhInitMapStart,{once:true});else bhInitMapStart();
