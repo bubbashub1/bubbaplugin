@@ -2,7 +2,7 @@
 (function(){
   if(document.querySelector('script[data-bh-header-loader], script[src*="assets/js/header.js"]'))return;
   const script=document.createElement("script");
-  script.src="assets/js/header.js";
+  script.src="/beta/assets/js/header.js";
   script.defer=true;
   script.dataset.bhHeaderLoader="true";
   document.head.appendChild(script);
@@ -194,7 +194,7 @@ function bhIsPlanned(id){return bhGet(BH_KEYS.planner).includes(String(id))}
 let bhAuthPromise=null;
 async function bhAuthSession(){
   if(!bhAuthPromise){
-    bhAuthPromise=fetch("api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}})
+    bhAuthPromise=fetch("/beta/api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}})
       .then(r=>r.json())
       .catch(()=>({ok:false,authenticated:false}));
   }
@@ -229,7 +229,7 @@ void bhHydrateSaved();
 
 (function(){
   const s=document.createElement("script");
-  s.src="assets/js/site-auth.js";
+  s.src="/beta/assets/js/site-auth.js";
   s.defer=true;
   document.head.appendChild(s);
 })();
