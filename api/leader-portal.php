@@ -169,7 +169,7 @@ function lpFindOptionTable(PDO $db,string $type): ?array{
 }
 if($action==='add_option'){
  $type=($b['type']??'')==='tag'?'tag':'category';$label=trim((string)($b['value']??''));if($label==='')lp(422,['ok'=>false,'error'=>'option_required','message'=>'Enter a name.']);
- $meta=lpFindOptionTable($db,$type);if(!$meta)lp(422,['ok'=>false,'error'=>'option_table_missing','message'=>'The dynamic ${type} options table is not available.']);
+ $meta=lpFindOptionTable($db,$type);if(!$meta)lp(422,['ok'=>false,'error'=>'option_table_missing','message'=>'The dynamic options table is not available.']);
  $table=$meta['table'];$labelCol=$meta['label'];$keyCol=$meta['key'];
  try{
   $q=$db->prepare("SELECT ".$labelCol." FROM ".$table." WHERE LOWER(TRIM(".$labelCol."))=LOWER(TRIM(?)) LIMIT 1");$q->execute([$label]);$existing=$q->fetchColumn();
