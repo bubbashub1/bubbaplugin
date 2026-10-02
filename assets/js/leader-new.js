@@ -41,7 +41,7 @@ function renderOverview(){
   [3,"Extra","Booking, family information and useful details"],
   [4,"Schedule","Days and session times"],
   [5,"Venue","Venue, town and accessibility"],
-  [6,"Photos & review","Listing images and final check"]
+  [6,"Photos","Listing images"],[7,"Review","Final check before submission"]
  ];
  o.innerHTML=items.map(([n,title,desc])=>{
    const state=sectionState(n), summary=sectionSummary(n);
@@ -58,10 +58,10 @@ function openSection(n){
  document.querySelector(".bh-steps").hidden=true;
  Q("prevStep").hidden=true;
  Q("nextStep").hidden=true;
- Q("submitListing").hidden=n!==6;
+ Q("submitListing").hidden=n!==7;
  Q("sectionBack").hidden=false;
  Q("sectionSave").hidden=false;
- if(n===6){photoRender();review()}
+ if(n===6){photoRender()}if(n===7){photoRender();review()}
  say("");
  window.scrollTo({top:document.querySelector(".bh-card").offsetTop-20,behavior:"smooth"});
 }
@@ -79,7 +79,12 @@ function closeSection(save=true){
  renderOverview();
 }
 function setStep(n){openSection(n)}
-function review(){let p=document.querySelector('input[name="pricing"]:checked');Q("review").innerHTML='<div class="bh-review-card"><h3>'+esc(Q("title").value)+'</h3><p>'+esc(Q("description").value)+'</p></div><div class="bh-review-card"><b>Category:</b> '+esc(vals(Q("categories")).join(", "))+'<br><b>Tags:</b> '+esc(vals(Q("tags")).join(", "))+'<br><b>Age:</b> '+esc(Q("ageOutput").textContent)+'<br><b>Price:</b> '+(p.value==="free"?"Free":"£"+(+Q("price").value).toFixed(2)+" per "+(p.value==="family"?"family":"session"))+'</div><div class="bh-review-card"><b>Schedule:</b><br>'+schedule().map(x=>esc(x.day+" "+x.start+"–"+x.end)).join("<br>")+'</div><div class="bh-review-card"><b>Venue:</b> '+esc(Q("venueName").value)+", "+esc(Q("town").value)+'</div>'}
+function review(){
+ let p=document.querySelector('input[name="pricing"]:checked');
+ let price=!p?"Not set":p.value==="free"?"Free":"£"+(+Q("price").value||0).toFixed(2)+" per "+(p.value==="family"?"family":"session");
+ let access=[...Q("accessibility").querySelectorAll("input:checked")].map(x=>x.parentElement.textContent.trim());
+ let accessHtml=access.length?access.map(esc).join(", "):"None selected";
+ Q("review").innerHTML='<div class="bh-review-card"><h3>'+esc(Q("title").value)+'</h3><p>'+esc(Q("description").value)+'</p></div><div class="bh-review-card"><b>Category:</b> '+esc(vals(Q("categories")).join(", "))+'<br><b>Tags:</b> '+esc(vals(Q("tags")).join(", "))+'<br><b>Age:</b> '+esc(Q("ageOutput").textContent)+'<br><b>Price:</b> '+(p.value==="free"?"Free":"£"+(+Q("price").value).toFixed(2)+" per "+(p.value==="family"?"family":"session"))+'</div><div class="bh-review-card"><b>Schedule:</b><br>'+schedule().map(x=>esc(x.day+" "+x.start+"–"+x.end)).join("<br>")+'</div><div class="bh-review-card"><b>Venue:</b> '+esc(Q("venueName").value)+", "+esc(Q("town").value)+'</div>'}
 
 const overview=document.createElement("section");overview.id="sectionOverview";overview.className="bh-section-overview";overview.innerHTML="<div class=\"bh-overview-head\"><div><span class=\"eyebrow\">Your listing</span><h2>Class details</h2><p>Choose a section to add or update it. You can come back to any section at any time.</p></div></div><div class=\"bh-section-list\"></div>";document.querySelector(".bh-card").insertBefore(overview,document.querySelector(".bh-steps"));
 const actions=document.querySelector(".bh-actions");actions.insertAdjacentHTML("afterbegin",'<div class="bh-editor-actions"><button class="button button-soft" id="sectionBack" type="button" hidden>← Back to sections</button><button class="button button-primary" id="sectionSave" type="button" hidden>Save &amp; return</button></div>');Q("descriptionEditor").oninput=syncDescription;document.querySelectorAll(".bh-rich-toolbar [data-cmd]").forEach(b=>b.onclick=()=>{Q("descriptionEditor").focus();document.execCommand(b.dataset.cmd,false,null);syncDescription()});Q("ageMin").oninput=ageUpdate;Q("ageMax").oninput=ageUpdate;Q("addCategory").onclick=()=>{addCustom(Q("categories"),Q("newCategory"));renderPicker("categories");Q("categories").dispatchEvent(new Event("change"))};Q("addTag").onclick=()=>{addCustom(Q("tags"),Q("newTag"));renderPicker("tags")};setupPicker("categories");setupPicker("tags");Q("newCategory").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();Q("addCategory").click()}};Q("newTag").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();Q("addTag").click()}};
@@ -88,6 +93,7 @@ Q("addSchedule").onclick=()=>addRow();Q("existingVenue").onchange=()=>{let o=Q("
 Q("photoUrls").oninput=photoRender;Q("photoUpload").onchange=()=>{let f=[...Q("photoUpload").files],count=uniq(Q("photoUrls").value.split(/\n+/)).length;if(count+files.length+f.length>meta.max_images)return say("You can add up to "+meta.max_images+" images on your plan.");files.push(...f);Q("photoUpload").value="";photoRender()};
 document.querySelectorAll(".bh-step").forEach(b=>b.onclick=()=>openSection(+b.dataset.step));
 Q("sectionBack").onclick=()=>closeSection(false);
+Q("saveProgress").onclick=()=>{syncDescription();saveDraft();say("Progress saved",true);setTimeout(()=>say(""),1800)};
 Q("sectionSave").onclick=()=>{if(valid(current)){closeSection(true)}};
 Q("prevStep").onclick=()=>openSection(Math.max(1,current-1));
 Q("nextStep").onclick=()=>{if(valid(current))openSection(Math.min(6,current+1))};
