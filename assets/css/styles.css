@@ -4,14 +4,17 @@
 
 /* --- 1. CSS Variables & Design Tokens --- */
 :root {
-  --bh-primary: #ffb703;
-  --bh-secondary: #219ebc;
-  --bh-dark: #023047;
-  --bh-light: #f8f9fa;
-  --bh-text: #2b2d42;
-  --bh-text-muted: #6c757d;
-  --bh-border: #dee2e6;
+  --bh-primary: #416651;
+  --bh-secondary: #3c8e96;
+  --bh-dark: #144400;
+  --bh-light: #f7fbf8;
+  --bh-text: #2f4036;
+  --bh-text-muted: #617261;
+  --bh-border: #ced7c7;
   --bh-content-width: 1200px;
+  --bh-shadow: 0 10px 30px rgba(20, 68, 0, 0.08);
+  --bh-pale: #d8e6db;
+  --bh-soft: #9fb7a5;
 }
 
 /* --- 2. Global Resets & Base Styles --- */
@@ -32,7 +35,7 @@ body {
 
 /* --- Typography / Headings --- */
 h1 {
-  color: var(--bh-light);
+  color: var(--bh-dark);
   font-size: 2.5rem;
   font-weight: 700;
   line-height: 1.2;
@@ -74,7 +77,7 @@ a {
 .brand-logo {
   width: 50px;
   height: 50px;
-  background-image: url('/beta/images/logos/mainlogo-20260924-221429-7e0755d.jpg');
+  background-image: url('/images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -101,8 +104,8 @@ a {
 }
 
 .btn-sign-in {
-  background-color: var(--bh-secondary);
-  color: white;
+  background-color: var(--bh-primary);
+  color: var(--bh-pale);
   padding: 8px 18px;
   border-radius: 20px;
   font-weight: 600;
@@ -148,8 +151,8 @@ a {
 }
 
 .header-search-bar .search-btn {
-  background-color: var(--bh-secondary);
-  color: white;
+  background-color: var(--bh-primary);
+  color: var(--bh-pale);
   border: none;
   cursor: pointer;
   padding: 8px 22px;
@@ -200,7 +203,7 @@ a {
 .footer-logo {
   width: 60px;
   height: 60px;
-  background-image: url('/beta/images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png');
+  background-image: url('/images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
