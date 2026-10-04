@@ -9,7 +9,25 @@ document.addEventListener("DOMContentLoaded",async()=>{
   async function load(){
     const auth=await getJson("api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}}).catch(()=>({authenticated:false}));
     adminOnly=!!auth.is_admin&&!auth.user?.id;
-    if(!auth.authenticated){root.innerHTML="<section class='admin-panel my-hub-login'><div class='feature-icon'>👤</div><span class='eyebrow'>Your personal hub</span><h2>Sign in to make Bubba Hub yours</h2><p>Keep your family, saved activities, planner and bookings together across devices.</p><a class='button button-primary' href='account.html?next=my-hub.html'>Sign in or create an account</a></section>";return}
+    /* Build/development mode: authentication is intentionally disabled.
+       My Hub must still render so the rest of the site can be tested.
+       Use local browser storage for the parts that do not need the account API. */
+    if(!auth.authenticated){
+      csrf="";
+      data={
+        ok:true,
+        build_mode:true,
+        user:{email:"",name:"",first_name:""},
+        children:[],
+        bumps:[],
+        saved:bhGet(BH_KEYS.saved),
+        planner:bhGet(BH_KEYS.planner).map(id=>({id:String(id)})),
+        bookings:[]
+      };
+      activities=await bhActivities();
+      render();
+      return;
+    }
     csrf=auth.csrf||"";
     data=await getJson("api/my-hub.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
     const merged=[...new Set([...(data.saved||[]).map(String),...bhGet(BH_KEYS.saved)])];
