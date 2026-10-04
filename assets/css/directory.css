@@ -317,8 +317,8 @@
 
 /* Map */
  .bh-directory #mapView{
-  position:sticky;
-  top:24px;
+  position:relative;
+  top:auto;
   align-self:start;
   width:100%;
   height:min(72vh,720px);
