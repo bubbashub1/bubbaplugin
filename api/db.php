@@ -11,9 +11,54 @@ function bh_mysql(): PDO {
     if ($pdo instanceof PDO) return $pdo;
 
     $configFile = __DIR__ . '/config.php';
-    if (!is_file($configFile)) throw new RuntimeException('Server database configuration is missing.');
-    $config = require $configFile;
-    if (!is_array($config) || !isset($config['db']) || !is_array($config['db'])) throw new RuntimeException('Database configuration section is missing.');
+    $config = null;
+
+    // Prefer the app's private config when present.
+    if (is_file($configFile)) {
+        $loaded = require $configFile;
+        if (is_array($loaded) && isset($loaded['db']) && is_array($loaded['db'])) {
+            $config = $loaded;
+        }
+    }
+
+    // Root deployment fallback: use the existing WordPress database settings
+    // from wp-config.php instead of requiring a second set of credentials.
+    if (!is_array($config) || !isset($config['db']) || !is_array($config['db'])) {
+        $wpCandidates = [
+            dirname(__DIR__) . '/wp-config.php',
+            dirname(__DIR__, 2) . '/wp-config.php'
+        ];
+        foreach ($wpCandidates as $wpConfigFile) {
+            if (!is_file($wpConfigFile)) continue;
+            $wp = file_get_contents($wpConfigFile);
+            if ($wp === false) continue;
+
+            $readWpConstant = static function(string $name) use ($wp): ?string {
+                $pattern = '/define\\s*\\(\\s*[\'\"]' . preg_quote($name, '/') . '[\'\"]\\s*,\\s*[\'\"](.*?)[\'\"]\\s*\\)\\s*;/s';
+                if (preg_match($pattern, $wp, $m)) return stripcslashes($m[1]);
+                return null;
+            };
+
+            $dbName = $readWpConstant('DB_NAME');
+            $dbUser = $readWpConstant('DB_USER');
+            $dbPass = $readWpConstant('DB_PASSWORD');
+            $dbHost = $readWpConstant('DB_HOST') ?: 'localhost';
+
+            if ($dbName !== null && $dbUser !== null && $dbPass !== null) {
+                $config = ['db' => [
+                    'host' => $dbHost,
+                    'name' => $dbName,
+                    'user' => $dbUser,
+                    'pass' => $dbPass
+                ]];
+                break;
+            }
+        }
+    }
+
+    if (!is_array($config) || !isset($config['db']) || !is_array($config['db'])) {
+        throw new RuntimeException('Server database configuration is missing. Add api/config.php or ensure wp-config.php is available.');
+    }
     foreach (['host','name','user','pass'] as $key) {
         if (!array_key_exists($key,$config['db'])) throw new RuntimeException('Missing database configuration: '.$key);
     }
