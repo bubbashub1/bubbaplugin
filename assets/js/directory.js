@@ -177,7 +177,7 @@ const bhInitDirectory=async()=>{
     const advancedFilterDefaults = {category:true,region:true,town:true,nearby:true,age:true,day:true,price:true,session_length:true,sen:true,term_time:true,booking:true,accessibility:true,free:true};
     const applyAdvancedFilterSettings = async () => {
       try {
-        const response = await fetch("api/search-settings.php",{cache:"no-store",headers:{Accept:"application/json"}});
+        const response = await fetch("/api/search-settings.php",{cache:"no-store",headers:{Accept:"application/json"}});
         const payload = await response.json();
         const settings = response.ok && payload.ok ? {...advancedFilterDefaults,...(payload.data||{})} : advancedFilterDefaults;
         document.querySelectorAll(".directory-advanced-filter-field[data-filter-key]").forEach(el => {
@@ -234,7 +234,7 @@ const bhInitDirectory=async()=>{
       homeLocationLoading = true;
       setNearbyStatus("Loading your saved home area…");
       try {
-        const response = await fetch("api/profile.php", { credentials: "same-origin", cache: "no-store" });
+        const response = await fetch("/api/profile.php", { credentials: "same-origin", cache: "no-store" });
         const payload = await response.json();
         if (!response.ok || !payload.ok || !payload.user) {
           throw new Error("Please sign in and add your home town or postcode in My account.");
@@ -250,14 +250,14 @@ const bhInitDirectory=async()=>{
         let long = Number(address.longitude);
         if (!Number.isFinite(lat) || !Number.isFinite(long)) {
           if (!town) throw new Error("Add your home town in My account first.");
-          const geo = await fetch("api/geocode.php?q=" + encodeURIComponent(town + ", UK"), {cache:"no-store"});
+          const geo = await fetch("/api/geocode.php?q=" + encodeURIComponent(town + ", UK"), {cache:"no-store"});
           const geoPayload = await geo.json();
           const result = geoPayload?.results?.[0];
           lat = Number(result?.lat);
           long = Number(result?.lon);
           if (!Number.isFinite(lat) || !Number.isFinite(long)) throw new Error("We could not locate your home town.");
           try {
-            await fetch("api/profile.php", {
+            await fetch("/api/profile.php", {
               method: "POST",
               credentials: "same-origin",
               headers: {"Content-Type":"application/json","Accept":"application/json"},
@@ -375,7 +375,7 @@ const bhInitDirectory=async()=>{
       if (!county) return false;
       if (schoolHolidayCache.has(county)) return schoolHolidayCache.get(county);
       try {
-        const response = await fetch("api/school-holidays.php?county="+encodeURIComponent(county), {cache:"no-store"});
+        const response = await fetch("/api/school-holidays.php?county="+encodeURIComponent(county), {cache:"no-store"});
         const payload = await response.json();
         const holiday = !!(response.ok && payload.ok && payload.is_school_holiday);
         schoolHolidayCache.set(county, holiday);
