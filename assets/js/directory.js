@@ -320,7 +320,12 @@ const bhInitDirectory=async()=>{
 
     const initMap = () => {
       if (map || !window.bhMapEngine) return;
+      const mapEl = $("mapView");
+      if (!mapEl || window.innerWidth <= 900) return;
+      mapEl.hidden = false;
+      mapEl.setAttribute("aria-hidden", "false");
       map = bhMapEngine.init("mapView");
+      if (map) setTimeout(() => map.invalidateSize(), 50);
     };
 
     const renderMap = list => {
