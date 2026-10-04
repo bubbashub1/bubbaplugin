@@ -2,7 +2,7 @@
 (function(){
   if(document.querySelector('script[data-bh-header-loader], script[src*="assets/js/header.js"]'))return;
   const script=document.createElement("script");
-  script.src="/beta/assets/js/header.js";
+  script.src="/assets/js/header.js";
   script.defer=true;
   script.dataset.bhHeaderLoader="true";
   document.head.appendChild(script);
@@ -194,7 +194,7 @@ function bhIsPlanned(id){return bhGet(BH_KEYS.planner).includes(String(id))}
 let bhAuthPromise=null;
 async function bhAuthSession(){
   if(!bhAuthPromise){
-    bhAuthPromise=fetch("/beta/api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}})
+    bhAuthPromise=fetch("/api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}})
       .then(r=>r.json())
       .catch(()=>({ok:false,authenticated:false}));
   }
@@ -229,7 +229,7 @@ void bhHydrateSaved();
 
 (function(){
   const s=document.createElement("script");
-  s.src="/beta/assets/js/site-auth.js";
+  s.src="/assets/js/site-auth.js";
   s.defer=true;
   document.head.appendChild(s);
 })();
@@ -370,11 +370,11 @@ void bhHydrateSaved();
    The Admin menu editor must not override the public header navigation. */
 (function(){
   const MAIN_NAV=[
-    {label:"Find activities",url:"/beta/directory.html"},
-    {label:"My Hub",url:"/beta/my-hub.html"},
-    {label:"Support & Guidance",url:"/beta/help-support.html"},
-    {label:"Class Leaders",url:"/beta/leader.html"},
-    {label:"Account",url:"/beta/account.html"}
+    {label:"Find activities",url:"/directory.html"},
+    {label:"My Hub",url:"/my-hub.html"},
+    {label:"Support & Guidance",url:"/help-support.html"},
+    {label:"Class Leaders",url:"/leader.html"},
+    {label:"Account",url:"/account.html"}
   ];
   const applyMainNav=()=>document.querySelectorAll(".site-header .main-nav").forEach(nav=>{
     nav.innerHTML=MAIN_NAV.map(x=>'<a href="'+bhEscape(x.url)+'">'+bhEscape(x.label)+'</a>').join("");
