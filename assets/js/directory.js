@@ -1,6 +1,11 @@
 const bhInitDirectory=async()=>{
   const $ = id => document.getElementById(id);
-  const escapeHtml = value => bhEscape(value);
+  const escapeHtml = value => {
+    if (typeof window.bhEscape === "function") return window.bhEscape(value);
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[char]));
+  };
 
   try {
     const activities = await bhActivities();
@@ -934,7 +939,7 @@ const bhInitDirectory=async()=>{
     if (results) {
       results.innerHTML =
         '<div class="admin-panel"><h3>Activities unavailable</h3><p>' +
-        bhEscape(error.message || "Unable to load activities.") +
+        escapeHtml(error.message || "Unable to load activities.") +
         "</p></div>";
     }
   }
