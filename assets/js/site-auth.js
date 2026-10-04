@@ -1,6 +1,8 @@
 (function(){
-  if(window.__bhSiteAuthLoaded)return;
-  window.__bhSiteAuthLoaded=true;
+  if(window.__bhSiteAuthDisabled)return;
+  window.__bhSiteAuthDisabled=true;
+  /* Authentication is disabled during build mode. */
+  return;
   "use strict";
 
   const RESTRICTED_PAGES=new Set(["my-hub.html","account.html","account-profile.html","account-planner.html","preferences.html","family.html","notifications.html","saved-activities.html","planner.html","choose.html","consent.html","privacy.html","subscription.html"]);
