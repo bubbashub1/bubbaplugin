@@ -63,6 +63,14 @@ if($dynamicAccessibility)$accessibilityOptions=$dynamicAccessibility;
 $leaderEmail='';
 try{$eq=$db->prepare("SELECT email FROM bh_users WHERE id=? LIMIT 1");$eq->execute([$userId]);$leaderEmail=strtolower(trim((string)$eq->fetchColumn()));}catch(Throwable $ignored){$leaderEmail=strtolower(trim((string)($org['email']??'')));}
 lpEnsureExpertise($db);
+if($_SERVER['REQUEST_METHOD']==='GET' && ($_GET['csv']??'')==='template'){
+ header('Content-Type: text/csv; charset=utf-8');
+ header('Content-Disposition: attachment; filename="bubba-hub-class-import-template.csv"');
+ $headers=['title','description','category','age_range','age_min_months','age_max_months','tags','accessibility','price_from','price_per_family','price_per_session','price_free','booking_url','booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome','what_to_bring','good_to_know','schedule','venue_name','address','town','region','postcode','latitude','longitude','image_1','image_2','image_3'];
+ $example=['Baby & Toddler Group','A friendly weekly group for babies and toddlers.','Baby & toddler','0-3','0','36','baby,play,groups','baby_changing|pram_access|toilets','5','0','1','0','https://example.com/book','1','1','1','1','0','1','Bring a play mat','Parking available nearby.','Monday 10:00-11:00|Wednesday 10:00-11:00','Community Centre','High Street','Torquay','Torbay','TQ1 1AA','50.4619','-3.5253','https://example.com/image1.jpg','',''];
+ $out=fopen('php://output','w');fputcsv($out,$headers);fputcsv($out,$example);fclose($out);exit;
+}
+
 if($_SERVER['REQUEST_METHOD']==='GET'){
  $classes=[];try{$a=$db->prepare("SELECT * FROM bh_activities WHERE organiser_id=? AND status<>'archived' ORDER BY title");$a->execute([$oid]);$classes=$a->fetchAll();}catch(Throwable $e){lp(500,['ok'=>false,'error'=>'classes_query_failed','message'=>$e->getMessage()]);}
  foreach($classes as &$c){$c['venues']=[];try{$v=$db->prepare("SELECT * FROM bh_venues WHERE activity_id=? ORDER BY id");$v->execute([(int)$c['id']]);$c['venues']=$v->fetchAll();}catch(Throwable $ignored){}
