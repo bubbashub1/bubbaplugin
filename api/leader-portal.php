@@ -116,6 +116,50 @@ if($_SERVER['REQUEST_METHOD']==='POST' && !empty($_FILES['image']) && ($_POST['a
  if(isset($cols['gallery_images']))$db->prepare("UPDATE bh_activities SET gallery_images=? WHERE id=?")->execute([json_encode($gallery,JSON_UNESCAPED_SLASHES),$activityId]);
  lp(201,['ok'=>true,'url'=>$url,'main'=>count($gallery)===1]);
 }
+if($_SERVER['REQUEST_METHOD']==='POST' && ($_POST['action']??'')==='import_csv'){
+ $file=$_FILES['csv']??null;
+ if(!$file || ($file['error']??UPLOAD_ERR_NO_FILE)!==UPLOAD_ERR_OK) lp(422,['ok'=>false,'error'=>'csv_upload_failed','message'=>'Please choose a CSV file to upload.']);
+ if((int)$file['size']>5*1024*1024) lp(422,['ok'=>false,'error'=>'csv_too_large','message'=>'The CSV file must be 5MB or smaller.']);
+ $fh=@fopen($file['tmp_name'],'r'); if(!$fh) lp(422,['ok'=>false,'error'=>'csv_unreadable','message'=>'The CSV file could not be read.']);
+ $headers=fgetcsv($fh); if(!$headers) lp(422,['ok'=>422,'error'=>'csv_empty','message'=>'The CSV file is empty.']);
+ $headers=array_map(fn($v)=>strtolower(trim((string)$v)), $headers);
+ $required=['title','description','category','age_range','venue_name','town'];
+ foreach($required as $requiredCol) if(!in_array($requiredCol,$headers,true)) lp(422,['ok'=>false,'error'=>'csv_columns_missing','message'=>'The CSV is missing the required column: '.$requiredCol]);
+ $allowed=array_flip(['title','description','category','age_range','age_min_months','age_max_months','tags','accessibility','price_from','price_per_family','price_per_session','price_free','booking_url','booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome','what_to_bring','good_to_know','schedule','venue_name','address','town','region','postcode','latitude','longitude','image_1','image_2','image_3']);
+ $unknown=array_values(array_diff($headers,array_keys($allowed))); if($unknown) lp(422,['ok'=>false,'error'=>'csv_unknown_columns','message'=>'The CSV contains unsupported columns: '.implode(', ',$unknown)]);
+ $rows=[];$line=1;while(($row=fgetcsv($fh))!==false){$line++;if(count($row)===1 && trim((string)$row[0])==='')continue;$item=[];foreach($headers as $i=>$key)$item[$key]=trim((string)($row[$i]??''));$rows[]=['line'=>$line,'data'=>$item];}
+ fclose($fh); if(!$rows) lp(422,['ok'=>false,'error'=>'csv_empty_rows','message'=>'The CSV contains no data rows.']);
+ if(count($rows)>500) lp(422,['ok'=>false,'error'=>'csv_too_many_rows','message'=>'You can import up to 500 classes at a time.']);
+ $errors=[];$created=0;$createdIds=[];$db->beginTransaction();
+ try{
+  foreach($rows as $entry){
+   $line=$entry['line'];$r=$entry['data'];$title=$r['title'];$description=$r['description'];$category=$r['category'];$age=$r['age_range'];$venueName=$r['venue_name'];$town=$r['town'];
+   if($title===''||$description===''||$category===''||$age===''||$venueName===''||$town===''){ $errors[]='Row '.$line.': title, description, category, age_range, venue_name and town are required.';continue; }
+   $ageMin=(int)($r['age_min_months']!==''?$r['age_min_months']:0);$ageMax=(int)($r['age_max_months']!==''?$r['age_max_months']:0);
+   if($ageMin<0||$ageMax<0||$ageMax<$ageMin||$ageMax>216){$errors[]='Row '.$line.': invalid age_min_months/age_max_months.';continue;}
+   $priceFree=in_array(strtolower($r['price_free']),['1','yes','true','y'],true)?1:0;$price=$r['price_from']===''?null:(float)$r['price_from'];
+   $perFamily=in_array(strtolower($r['price_per_family']),['1','yes','true','y'],true)?1:0;$perSession=in_array(strtolower($r['price_per_session']),['1','yes','true','y'],true)?1:0;
+   if($priceFree){$price=null;$perFamily=0;$perSession=0;}elseif($price===null||$price<0||($perFamily+$perSession)!==1){$errors[]='Row '.$line.': choose a price and exactly one of price_per_family or price_per_session, or set price_free to 1.';continue;}
+   $bool=function($v){return in_array(strtolower(trim((string)$v)),['1','yes','true','y'],true)?1:0;};
+   $access=$r['accessibility']===''?[]:array_values(array_filter(array_map('trim',preg_split('/[|,]+/',$r['accessibility']))));$accessJson=json_encode($access,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+   $photos=array_values(array_filter([$r['image_1'],$r['image_2'],$r['image_3']],fn($v)=>$v!==''));if(count($photos)>$imageLimit){$errors[]='Row '.$line.': Basic plan allows up to '.$imageLimit.' images.';continue;}foreach($photos as $photo)if(!filter_var($photo,FILTER_VALIDATE_URL)){$errors[]='Row '.$line.': image URLs must be valid URLs.';continue 2;}
+   $scheduleRaw=$r['schedule'];$schedule=[];foreach(array_filter(array_map('trim',explode('|',$scheduleRaw))) as $part){if(!preg_match('/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\\s+([01]\\d|2[0-3]):[0-5]\\d-([01]\\d|2[0-3]):[0-5]\\d$/i',$part,$m)){$errors[]='Row '.$line.': schedule must use e.g. Monday 10:00-11:00.';continue 2;}$times=preg_split('/\\s+/',$part);[$start,$end]=explode('-',$times[1]);if($end<=$start){$errors[]='Row '.$line.': schedule end time must be after start time.';continue 2;}$schedule[]=['day'=>ucfirst(strtolower($times[0])),'start'=>$start,'end'=>$end];}
+   if(!$schedule){$errors[]='Row '.$line.': schedule is required.';continue;}
+   $slugBase=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$title),'-'));if($slugBase==='')$slugBase='class';$slug=$slugBase;$suffix=2;$sq=$db->prepare("SELECT id FROM bh_activities WHERE slug=? LIMIT 1");while(true){$sq->execute([$slug]);if(!$sq->fetch())break;$slug=$slugBase.'-'.$suffix++;}
+   $colsCheck=$db->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities'")->fetchAll(PDO::FETCH_COLUMN);$hasCounty=in_array('county',$colsCheck,true);
+   $values=[$title,$slug,$description,$category,$age,$ageMin,$ageMax,$accessJson,$r['tags'],$price,$perFamily,$perSession,$r['booking_url'],$r['schedule'],$bool($r['booking_required']),$bool($r['drop_in_welcome']),$bool($r['trial_available']),$bool($r['term_time_only']),$bool($r['holiday_sessions']),$bool($r['siblings_welcome']),$r['what_to_bring'],$r['good_to_know'],'draft',$oid];
+   if($hasCounty){$q=$db->prepare("INSERT INTO bh_activities (title,slug,description,category,age_range,age_min_months,age_max_months,accessibility,tags,county,price_from,price_per_family,price_per_session,booking_url,weekly_schedule,booking_required,drop_in_welcome,trial_available,term_time_only,holiday_sessions,siblings_welcome,what_to_bring,good_to_know,status,organiser_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");$q->execute(array_merge([$title,$slug,$description,$category,$age,$ageMin,$ageMax,$accessJson,$r['tags'],''],$values[9:]));}
+   else{$q=$db->prepare("INSERT INTO bh_activities (title,slug,description,category,age_range,age_min_months,age_max_months,accessibility,tags,price_from,price_per_family,price_per_session,booking_url,weekly_schedule,booking_required,drop_in_welcome,trial_available,term_time_only,holiday_sessions,siblings_welcome,what_to_bring,good_to_know,status,organiser_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");$q->execute($values);}
+   $activityId=(int)$db->lastInsertId();if($photos)$db->prepare("UPDATE bh_activities SET image_path=? WHERE id=?")->execute([$photos[0],$activityId]);
+   $vq=$db->prepare("INSERT INTO bh_venues (venue_name,address,town,region,postcode,latitude,longitude,notes,activity_id) VALUES (?,?,?,?,?,?,?,?,?)");$vq->execute([$venueName,$r['address'],$town,$r['region'],$r['postcode'],$r['latitude']===''?null:$r['latitude'],$r['longitude']===''?null:$r['longitude'],'',$activityId]);
+   $created++;$createdIds[]=$activityId;
+  }
+  if($errors){$db->rollBack();lp(422,['ok'=>false,'error'=>'csv_validation_failed','message'=>'No classes were imported because one or more rows contain errors.','errors'=>$errors]);}
+  $db->commit();
+ }catch(Throwable $e){if($db->inTransaction())$db->rollBack();lp(500,['ok'=>false,'error'=>'csv_import_failed','message'=>'The CSV could not be imported: '.$e->getMessage()]);}
+ lp(201,['ok'=>true,'message'=>$created.' class'.($created===1?'':'es').' imported successfully.','created'=>$created,'ids'=>$createdIds]);
+}
+
 $b=json_decode(file_get_contents('php://input'),true);if(!is_array($b))lp(400,['ok'=>false,'error'=>'invalid_json']);$action=$b['action']??'';
 if($action==='save_listing_photos'){$activityId=(int)($b['activity_id']??0);$photos=is_array($b['photos']??null)?array_values(array_unique(array_filter(array_map('trim',$b['photos'])))):[];if(count($photos)>$imageLimit)lp(422,['ok'=>false,'error'=>'too_many_photos','message'=>'Your plan allows up to '.$imageLimit.' photos.']);$own=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND organiser_id=? LIMIT 1");$own->execute([$activityId,$oid]);if(!$own->fetch())lp(404,['ok'=>false,'error'=>'activity_not_found']);$q=$db->prepare("UPDATE bh_activities SET gallery_images=? WHERE id=?");$q->execute([json_encode($photos,JSON_UNESCAPED_SLASHES),$activityId]);if($photos)$db->prepare("UPDATE bh_activities SET image_path=? WHERE id=?")->execute([$photos[0],$activityId]);lp(200,['ok'=>true,'photos'=>$photos]);}
 
