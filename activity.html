@@ -151,6 +151,22 @@ document.addEventListener("DOMContentLoaded",async()=>{
     }
   }catch(error){}
 
+  if(!a && slug && id){
+    try{
+      const idUrl=new URL("/api/activities.php",window.location.origin);
+      idUrl.searchParams.set("id",id);
+      idUrl.searchParams.set("per_page","1");
+      const response=await fetch(idUrl.toString(),{cache:"no-store",headers:{Accept:"application/json"}});
+      if(response.ok){
+        const payload=await response.json();
+        if(payload?.ok&&Array.isArray(payload.data)&&payload.data[0]){
+          const fallbackItems=await bhActivities();
+          a=bhActivity(String(payload.data[0].id),fallbackItems)||null;
+        }
+      }
+    }catch(error){}
+  }
+
   if(!a){
     // Fallback for older/API-failure cases.
     items=await bhActivities();
