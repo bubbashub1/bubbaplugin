@@ -1825,9 +1825,9 @@ main, .app-shell, .main-content { min-width:0; }
    ================================================================ */
 
 .bh-site-header{
-  width:calc(100% - 28px)!important;
+  width:calc(100% - 40px)!important;
   max-width:1400px!important;
-  margin:14px auto 0!important;
+  margin:20px auto 0!important;
   padding:0!important;
   background:#fff!important;
   color:var(--bh-dark)!important;
@@ -1926,9 +1926,9 @@ main, .app-shell, .main-content { min-width:0; }
 }
 
 @media(max-width:700px){
-  .bh-site-header{
-    width:calc(100% - 16px)!important;
-    margin-top:8px!important;
+   .bh-site-header{
+    width:calc(100% - 20px)!important;
+    margin-top:10px!important;
     border-radius:18px!important;
   }
   .bh-header-inner{padding:8px 10px!important}
