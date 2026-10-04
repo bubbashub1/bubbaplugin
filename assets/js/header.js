@@ -55,7 +55,7 @@
         }
       });
       const logo=header.querySelector(".bh-header-logo img");
-      if(logo) logo.src=appUrl("images/logos/gemini_generated_image_t65ztnt65ztnt65z-20260930-185704-7e0755.jpeg");
+      if(logo) logo.src="/wp-content/uploads/logo/logoheader.png";
 
       const searchForm=header.querySelector(".bh-header-search-bar");
       if(searchForm){
