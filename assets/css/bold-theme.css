@@ -1816,3 +1816,143 @@ main, .app-shell, .main-content { min-width:0; }
 .directory-map-modal-open .site-header {
   z-index:2000;
 }
+
+/* ================================================================
+   CANVA-INSPIRED BUBBA HUB VISUAL MERGE — 04 OCT 2026
+   The shared Canva-inspired look is now part of the Bold Theme:
+   soft family-friendly surfaces, strong rounded CTAs, teal accents,
+   warm yellow actions and a clean white navigation shell.
+   ================================================================ */
+
+.bh-site-header{
+  width:calc(100% - 28px)!important;
+  max-width:1400px!important;
+  margin:14px auto 0!important;
+  padding:0!important;
+  background:#fff!important;
+  color:var(--bh-dark)!important;
+  border:1px solid rgba(18,63,49,.10)!important;
+  border-radius:22px!important;
+  box-shadow:0 10px 30px rgba(18,63,49,.08)!important;
+  overflow:visible!important;
+}
+
+.bh-header-inner{
+  max-width:none!important;
+  padding:10px 18px!important;
+}
+
+.bh-header-top-row{
+  gap:22px!important;
+}
+
+.bh-header-logo{
+  display:flex!important;
+  align-items:center!important;
+  flex:0 0 auto!important;
+}
+
+.bh-header-logo img{
+  display:block!important;
+  width:170px!important;
+  height:64px!important;
+  max-width:220px!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+}
+
+.bh-header-actions{
+  gap:8px!important;
+}
+
+.bh-main-nav{
+  gap:4px!important;
+}
+
+.bh-main-nav a{
+  min-height:42px!important;
+  padding:0 12px!important;
+  border-radius:13px!important;
+  color:var(--bh-text)!important;
+  font-family:"Quicksand",sans-serif!important;
+  font-weight:800!important;
+}
+
+.bh-main-nav a:hover,
+.bh-main-nav a:focus-visible{
+  background:var(--bh-sage)!important;
+  color:var(--bh-primary)!important;
+}
+
+.bh-header-search-toggle{
+  border:1px solid rgba(60,142,150,.16)!important;
+  background:#e9f3ee!important;
+  color:var(--bh-primary)!important;
+  box-shadow:none!important;
+}
+
+.bh-sign-in-btn{
+  background:var(--bh-primary)!important;
+  color:#d8e6db!important;
+  border-radius:999px!important;
+  padding:10px 18px!important;
+  font-family:"Quicksand",sans-serif!important;
+  font-weight:800!important;
+  box-shadow:0 8px 18px rgba(65,102,81,.18)!important;
+}
+
+.bh-sign-in-btn:hover{
+  background:#355844!important;
+  opacity:1!important;
+}
+
+.bh-header-search-bar.is-open{
+  padding-top:12px!important;
+  padding-bottom:4px!important;
+}
+
+.bh-header-search-fields input,
+.bh-header-search-fields select{
+  border:1px solid rgba(18,63,49,.12)!important;
+  border-radius:14px!important;
+  min-height:46px!important;
+}
+
+.bh-header-search-submit{
+  min-height:46px!important;
+  border-radius:999px!important;
+  background:var(--bh-yellow)!important;
+  color:var(--bh-dark)!important;
+}
+
+@media(max-width:700px){
+  .bh-site-header{
+    width:calc(100% - 16px)!important;
+    margin-top:8px!important;
+    border-radius:18px!important;
+  }
+  .bh-header-inner{padding:8px 10px!important}
+  .bh-header-logo img{
+    width:145px!important;
+    height:62px!important;
+    max-width:43vw!important;
+  }
+  .bh-main-nav{
+    background:#fff!important;
+    border:1px solid rgba(18,63,49,.12)!important;
+    border-radius:18px!important;
+    box-shadow:0 18px 40px rgba(18,63,49,.18)!important;
+  }
+  .bh-main-nav a,
+  .bh-main-nav a:nth-child(n + 2){
+    background:#f2f8f3!important;
+    color:var(--bh-text)!important;
+    border-radius:12px!important;
+  }
+  .bh-mobile-menu{
+    background:#e9f3ee!important;
+    color:var(--bh-primary)!important;
+    border-color:rgba(60,142,150,.18)!important;
+    border-radius:14px!important;
+  }
+}
