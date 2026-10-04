@@ -1,6 +1,11 @@
 const bhInitMap=async()=>{
   const $ = id => document.getElementById(id);
-  const esc = value => bhEscape(value);
+  const esc = value => {
+    if (typeof window.bhEscape === "function") return window.bhEscape(value);
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[char]));
+  };
   const categoryMap = {"Baby classes":"Baby","Baby & toddler":"Toddler","Family activities":"Family"};
   const agePresets = {baby:[0,1], toddler:[1,3], preschool:[3,5], school:[5,9]};
   const parseAgeRange = value => {
