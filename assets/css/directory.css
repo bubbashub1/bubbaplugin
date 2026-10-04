@@ -665,6 +665,16 @@
 
 
 
+/* Directory content breathing room */
+.bh-directory main.app-shell{
+  padding-top:24px !important;
+}
+@media(max-width:650px){
+  .bh-directory main.app-shell{
+    padding-top:16px !important;
+  }
+}
+
 /* FINAL PAGE FRAME — DIRECTORY */
 .bh-directory main.app-shell{
   width:100% !important;
