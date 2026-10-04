@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 /**
  * Bubba Hub MySQL connection.
- * Uses the existing /public_html/beta/api/config.php.
+ * Uses the app's private config when available, then falls back to WordPress wp-config.php.
  * Database credentials remain server-side and are never stored in GitHub.
  */
 function bh_mysql(): PDO {
@@ -25,8 +25,8 @@ function bh_mysql(): PDO {
     // from wp-config.php instead of requiring a second set of credentials.
     if (!is_array($config) || !isset($config['db']) || !is_array($config['db'])) {
         $wpCandidates = [
-            dirname(__DIR__) . '../wp-config.php',
-            dirname(__DIR__, 2) . '../wp-config.php'
+            dirname(__DIR__) . '/wp-config.php',
+            dirname(__DIR__, 2) . '/wp-config.php'
         ];
         foreach ($wpCandidates as $wpConfigFile) {
             if (!is_file($wpConfigFile)) continue;
