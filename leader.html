@@ -23,7 +23,13 @@
 <main class="app-shell bh-leader-page">
 <section class="page-heading bh-leader-hero">
 <div><span class="eyebrow">Welcome back</span><h1 id="leaderWelcome">Welcome back</h1><p>Manage your listings, bookings, availability and support from your Bubba Hub leader portal.</p></div>
-<div class="hero-actions"><button class="button button-primary" type="button" id="addListingButton">＋ Add a class</button><a class="button button-soft" href="/directory.html">View directory</a></div>
+<div class="hero-actions">
+<button class="button button-primary" type="button" id="addListingButton">＋ Add a class</button>
+<a class="button button-soft" href="/api/leader-portal.php?csv=template">Download CSV template</a>
+<button class="button button-soft" type="button" id="csvImportButton">Upload CSV</button>
+<a class="button button-soft" href="/directory.html">View directory</a>
+<input id="csvImportInput" type="file" accept=".csv,text/csv" hidden>
+</div>
 </section>
 
 <section class="bh-leader-stats-v2" aria-label="Your Bubba Hub stats">
@@ -74,5 +80,6 @@
 
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/leader-portal.js"></script>
+<script src="/assets/js/leader-csv.js"></script>
 </body>
 </html>
