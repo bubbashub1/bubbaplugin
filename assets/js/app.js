@@ -229,7 +229,7 @@ function bhSessions(activity){return bhVenues(activity).flatMap(v=>(Array.isArra
 function bhEscape(value){return String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]))}
 
 function bhActivityBySlug(slug,items){const key=String(slug||"").toLowerCase();return items.find(x=>String(x.slug||"").toLowerCase()===key)||null}
-function bhActivityUrl(activity){const slug=String(activity?.slug||"").trim();return slug?encodeURI(slug.replace(/^\/+|\/+$/g,"")+"/"):("activity.html?id="+encodeURIComponent(activity?.id||""))}
+function bhActivityUrl(activity){const slug=String(activity?.slug||"").trim();return slug?"/"+encodeURI(slug.replace(/^\/+|\/+$/g,""))+"/":("/activity.html?id="+encodeURIComponent(activity?.id||""))}
 
 void bhHydrateSaved();
 
