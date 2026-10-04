@@ -25,8 +25,8 @@ function bh_mysql(): PDO {
     // from wp-config.php instead of requiring a second set of credentials.
     if (!is_array($config) || !isset($config['db']) || !is_array($config['db'])) {
         $wpCandidates = [
-            dirname(__DIR__) . '/wp-config.php',
-            dirname(__DIR__, 2) . '/wp-config.php'
+            dirname(__DIR__) . '../wp-config.php',
+            dirname(__DIR__, 2) . '../wp-config.php'
         ];
         foreach ($wpCandidates as $wpConfigFile) {
             if (!is_file($wpConfigFile)) continue;
