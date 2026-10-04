@@ -61,7 +61,7 @@ try {
     $params = [];
 
     if ($slug !== '') {
-        $where[] = "a.slug = :slug";
+        $where[] = "LOWER(TRIM(a.slug)) = LOWER(TRIM(:slug))";
         $params[':slug'] = $slug;
     }
 
