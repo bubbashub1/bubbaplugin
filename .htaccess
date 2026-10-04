@@ -1,30 +1,30 @@
 RewriteEngine On
-RewriteBase /beta/
+RewriteBase /
 
 # Clean section URLs
 RewriteRule ^events/?$ events.html [L,QSA]
 RewriteRule ^venues/?$ venues.html [L,QSA]
 RewriteRule ^schools/?$ schools.html [L,QSA]
 
-# Clean personalised finder URL: /beta/choose
+# Clean personalised finder URL: /choose
 RewriteRule ^choose/?$ choose.html [L,QSA]
 
 # Keep the old personalised URL working and move it to /choose
-RewriteRule ^personalise(?:\.html)?/?$ /beta/choose [R=301,L]
+RewriteRule ^personalise(?:\.html)?/?$ /choose [R=301,L]
 
-# Organiser custom Terms URLs: /beta/{organiser-slug}terms.html
+# Organiser custom Terms URLs: /{organiser-slug}terms.html
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^([a-z0-9-]+)terms\.html$ organiser-terms.html?slug=$1 [B,L,QSA]
 
 RewriteRule ^organiser/([^/]+)/terms\.html$ organiser-terms.html?slug=$1 [B,L,QSA]
 
-# Organiser storefront URLs: /beta/organiser/{company-name}/
+# Organiser storefront URLs: /organiser/{company-name}/
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^organiser/([^/]+)/?$ organiser.html?slug=$1 [B,L,QSA]
 
-# Clean activity URLs: /beta/{activity-slug}/
+# Clean activity URLs: /{activity-slug}/
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^([^/]+)/?$ activity.html?slug=$1 [L,QSA]
