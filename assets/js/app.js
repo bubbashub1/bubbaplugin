@@ -13,7 +13,7 @@ const BH_KEYS={saved:"bhSavedActivities",planner:"bhPlanner",visited:"bhVisitedA
 async function bhActivities(){
   if(window.__bhActivities)return window.__bhActivities;
 
-  const apiUrl=new URL("api/activities.php",document.baseURI);
+  const apiUrl=new URL("/api/activities.php",window.location.origin);
   apiUrl.searchParams.set("page","1");
   apiUrl.searchParams.set("per_page","50");
 
