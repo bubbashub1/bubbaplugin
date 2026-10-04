@@ -34,14 +34,31 @@ jobs:
           : > "$RUNNER_TEMP/ssh/known_hosts"
 
       - name: Check eWebAll SSH connection
-        env:
-          SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
-          SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
-          SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
-        run: |
-          set -euo pipefail
-          ssh -p "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST" 'pwd && ls -la'
-
+  env:
+    SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+    SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
+    SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+  run: |
+    set -euo pipefail
+    ssh -p "$SSH_PORT" \
+      -i "$RUNNER_TEMP/eweball_deploy_key" \
+      -o IdentitiesOnly=yes \
+      -o StrictHostKeyChecking=no \
+      -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
+      "$SSH_USERNAME@$SSH_HOST" '
+        echo "=== CURRENT USER ==="
+        whoami
+        echo "=== HOME ==="
+        echo "$HOME"
+        echo "=== PWD ==="
+        pwd
+        echo "=== HOME CONTENTS ==="
+        ls -la "$HOME"
+        echo "=== ROOT CONTENTS ==="
+        ls -la /
+        echo "=== PUBLIC_HTML SEARCH ==="
+        find "$HOME" -maxdepth 3 -type d -name public_html -print 2>/dev/null || true
+      '
       - name: Deploy via SSH tar stream
         env:
           SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
