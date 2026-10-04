@@ -160,7 +160,7 @@ async function bhSavedPersist(activityId,saved){
     const auth=await bhAuthSession();
     if(!auth?.authenticated||!auth.csrf)return false;
     if(auth.is_admin&&!auth.user?.id)return false;
-    const response=await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"set_saved",activity_id:Number(activityId),saved:!!saved,csrf:auth.csrf})});
+    const response=await fetch("/api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"set_saved",activity_id:Number(activityId),saved:!!saved,csrf:auth.csrf})});
     if(!response.ok)return false;
     const data=await response.json();
     return !!data.ok;
@@ -171,13 +171,13 @@ async function bhHydrateSaved(){
     const auth=await bhAuthSession();
     if(!auth?.authenticated||!auth.csrf)return false;
     if(auth.is_admin&&!auth.user?.id)return false;
-    const response=await fetch("api/my-hub.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+    const response=await fetch("/api/my-hub.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
     const data=await response.json();
     if(!response.ok||!data.ok||!Array.isArray(data.saved))return false;
     const local=bhGet(BH_KEYS.saved);
     const merged=[...new Set([...data.saved.map(String),...local])];
     if(merged.length!==data.saved.length){
-      await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"sync_saved",saved:merged,csrf:auth.csrf})});
+      await fetch("/api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"sync_saved",saved:merged,csrf:auth.csrf})});
     }
     bhSet(BH_KEYS.saved,merged);
     return true;
@@ -212,7 +212,7 @@ async function bhPlannerPersist(activityId,planned){
     if(!auth?.authenticated||!auth.csrf)return false;
     if(auth.is_admin&&!auth.user?.id)return false;
     const visited=bhGet("bhVisitedActivities").includes(String(activityId));
-    const response=await fetch("api/planner.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"set_activity",activity_id:Number(activityId),planned:!!planned,visited})});
+    const response=await fetch("/api/planner.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"set_activity",activity_id:Number(activityId),planned:!!planned,visited})});
     return response.ok && (await response.json()).ok;
   }catch(e){return false}
 }
@@ -410,7 +410,7 @@ void bhHydrateSaved();
   const category=document.getElementById("heroCategory");
   const age=document.getElementById("heroAge");
   const day=document.getElementById("heroDay");
-  fetch("api/activities.php?page=1&per_page=100",{cache:"no-store",headers:{Accept:"application/json"}})
+  fetch("/api/activities.php?page=1&per_page=100",{cache:"no-store",headers:{Accept:"application/json"}})
     .then(r=>r.json()).then(payload=>{
       const items=Array.isArray(payload.data)?payload.data:[];
       const categoryMap={"Baby classes":"Baby","Baby & toddler":"Toddler","Family activities":"Family"};
@@ -438,7 +438,7 @@ void bhHydrateSaved();
       const activities=await bhActivities();
       let plannedIds=bhGet(BH_KEYS.planner);
       try{
-        const response=await fetch("api/planner.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+        const response=await fetch("/api/planner.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
         if(response.ok){
           const payload=await response.json();
           if(payload?.ok&&Array.isArray(payload.planned)){
@@ -538,7 +538,7 @@ void bhHydrateSaved();
       try{
         const auth=await bhAuthSession();
         if(auth?.authenticated){
-          const response=await fetch("api/preferences.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+          const response=await fetch("/api/preferences.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
           if(response.ok){
             const payload=await response.json();
             if(payload?.ok&&payload.preferences){
@@ -699,7 +699,7 @@ void bhHydrateSaved();
       });
 
       /* Shared admin-controlled visibility for Advanced Filters. */
-      fetch("api/search-settings.php",{cache:"no-store",headers:{Accept:"application/json"}})
+      fetch("/api/search-settings.php",{cache:"no-store",headers:{Accept:"application/json"}})
         .then(response=>response.ok?response.json():null)
         .then(payload=>{
           if(!payload?.ok)return;
