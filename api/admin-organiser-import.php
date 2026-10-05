@@ -76,7 +76,7 @@ function bh_send_welcome(string $email, string $organisation, string $listing, s
         .'<p><a href="'.$safeUrl.'" style="display:inline-block;background:#416651;color:#fff;text-decoration:none;padding:12px 20px;border-radius:8px">Activate your account</a></p>'
         .'<p>This secure activation link can only be used once and expires in 7 days.</p>'
         .'<p>The Bubba Hub team</p></div>';
-    $plain = "Welcome to Bubba Hub\n\nYour listing "{$listing}" is now on the new website.\n\nActivate your organiser account:\nhttps://bubbahub.co.uk/activate.html?token=".rawurlencode($token)."\n\nThis secure activation link can only be used once and expires in 7 days.\n\nThe Bubba Hub team";
+    $plain = 'Welcome to Bubba Hub' . "\n\nYour listing \"" . $listing . "\" is now on the new website." . "\n\nActivate your organiser account:\nhttps://bubbahub.co.uk/activate.html?token=" . rawurlencode($token) . "\n\nThis secure activation link can only be used once and expires in 7 days.\n\nThe Bubba Hub team";
     return bh_send_onesignal_email($email, 'Welcome to Bubba Hub – your listing is now live', $html, $plain);
 }
 
@@ -85,21 +85,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $action = (string)($_POST['action'] ?? 'preview');
-if (!in_array($action, ['preview','import','send'], true)) {
+if (!in_array($action, ['preview','import'], true)) {
     bh_bulk_response(400, ['ok'=>false,'error'=>'Unknown action.']);
 }
-if($action==='send'){
- $q=$db->query("SELECT id,user_id,organisation_name,listing_title FROM bh_account_activation_tokens WHERE used_at IS NULL AND expires_at>NOW() AND email_sent_at IS NULL ORDER BY id LIMIT 1000");
- $sent=0;$failed=0;
- foreach($q->fetchAll() as $tokenRow){
-   $uq=$db->prepare("SELECT email FROM bh_users WHERE id=? LIMIT 1");$uq->execute([(int)$tokenRow['user_id']]);$email=(string)$uq->fetchColumn();
-   if($email===''){$failed++;continue;}
-   $raw=''; $hash=(string)$db->prepare("SELECT token_hash FROM bh_account_activation_tokens WHERE id=?")->execute([(int)$tokenRow['id']]);
-   $failed++; // Existing stored tokens are hashed-only; use the import action's immediate send path for delivery.
- }
- bh_bulk_response(200,['ok'=>true,'mode'=>'send','sent'=>$sent,'failed'=>$failed,'message'=>'Existing activation links cannot be recovered because only token hashes are stored. Run a fresh import for unsent welcome emails.']);
-}
-
 if (empty($_FILES['csv']) || $_FILES['csv']['error'] !== UPLOAD_ERR_OK) {
     bh_bulk_response(422, ['ok'=>false,'error'=>'Choose a CSV file.']);
 }
@@ -286,7 +274,7 @@ try {
         if ($newUser) {
             $token = bh_activation_token($db,$userId);
             $db->prepare("UPDATE bh_account_activation_tokens SET organisation_name=?,listing_title=? WHERE token_hash=?")->execute([$org,$title,hash('sha256',$token)]);
-            if (bh_send_welcome($email, $org, $title, $token)) $summary['emails_queued']++;
+            if (bh_send_welcome($email, $org, $title, $token)) { $summary['emails_queued']++; try { $db->prepare("UPDATE bh_account_activation_tokens SET email_sent_at=NOW() WHERE token_hash=?")->execute([hash('sha256',$token)]); } catch (Throwable $ignored) {} }
             else $summary['email_failures']++;
         }
     }
