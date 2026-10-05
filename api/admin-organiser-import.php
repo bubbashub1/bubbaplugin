@@ -257,6 +257,7 @@ try {
         $lngRaw = bh_first($row,['longitude','lng','lon']); $lng = $lngRaw===''?null:(float)$lngRaw;
         $q = $db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes) VALUES (?,?,?,?,?,?,?,?,?)");
         $q->execute([$activityId,$venue,$address,$town,$region,$postcode,$lat,$lng,'']);
+        $venueId = (int)$db->lastInsertId();
 
         $schedule = bh_first($row,['schedule','sessions','session_times','opening_times']);
         foreach (preg_split('/\s*;\s*/',$schedule) as $part) {
@@ -265,7 +266,7 @@ try {
             $day=$days[strtolower($m[1])]??0; if($day<1) continue;
             $start=$m[2].':00'; $end=isset($m[3])&&$m[3]!==''?$m[3].':00':null;
             $q=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,price,term_time_only,frequency,start_date,end_date) VALUES (?,?,?,?,?,?,?,?,?)");
-            $q->execute([(int)$db->lastInsertId(),$day,$start,$end,$price,0,'weekly',null,null]);
+            $q->execute([$venueId,$day,$start,$end,$price,0,'weekly',null,null]);
         }
 
         $summary['created_listings']++;
