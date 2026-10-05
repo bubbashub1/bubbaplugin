@@ -32,6 +32,7 @@ $db->exec("CREATE TABLE IF NOT EXISTS bh_account_activation_tokens (
     INDEX idx_activation_user (user_id),
     INDEX idx_activation_expiry (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+try{$db->exec("ALTER TABLE bh_account_activation_tokens ADD COLUMN organisation_name VARCHAR(190) NULL");}catch(Throwable $ignored){} try{$db->exec("ALTER TABLE bh_account_activation_tokens ADD COLUMN listing_title VARCHAR(190) NULL");}catch(Throwable $ignored){} try{$db->exec("ALTER TABLE bh_account_activation_tokens ADD COLUMN email_sent_at DATETIME NULL");}catch(Throwable $ignored){}
 
 function bh_clean_header(string $s): string {
     $s = preg_replace('/^\xEF\xBB\xBF/', '', $s);
@@ -84,9 +85,21 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $action = (string)($_POST['action'] ?? 'preview');
-if (!in_array($action, ['preview','import'], true)) {
+if (!in_array($action, ['preview','import','send'], true)) {
     bh_bulk_response(400, ['ok'=>false,'error'=>'Unknown action.']);
 }
+if($action==='send'){
+ $q=$db->query("SELECT id,user_id,organisation_name,listing_title FROM bh_account_activation_tokens WHERE used_at IS NULL AND expires_at>NOW() AND email_sent_at IS NULL ORDER BY id LIMIT 1000");
+ $sent=0;$failed=0;
+ foreach($q->fetchAll() as $tokenRow){
+   $uq=$db->prepare("SELECT email FROM bh_users WHERE id=? LIMIT 1");$uq->execute([(int)$tokenRow['user_id']]);$email=(string)$uq->fetchColumn();
+   if($email===''){$failed++;continue;}
+   $raw=''; $hash=(string)$db->prepare("SELECT token_hash FROM bh_account_activation_tokens WHERE id=?")->execute([(int)$tokenRow['id']]);
+   $failed++; // Existing stored tokens are hashed-only; use the import action's immediate send path for delivery.
+ }
+ bh_bulk_response(200,['ok'=>true,'mode'=>'send','sent'=>$sent,'failed'=>$failed,'message'=>'Existing activation links cannot be recovered because only token hashes are stored. Run a fresh import for unsent welcome emails.']);
+}
+
 if (empty($_FILES['csv']) || $_FILES['csv']['error'] !== UPLOAD_ERR_OK) {
     bh_bulk_response(422, ['ok'=>false,'error'=>'Choose a CSV file.']);
 }
@@ -272,6 +285,7 @@ try {
         $summary['created_listings']++;
         if ($newUser) {
             $token = bh_activation_token($db,$userId);
+            $db->prepare("UPDATE bh_account_activation_tokens SET organisation_name=?,listing_title=? WHERE token_hash=?")->execute([$org,$title,hash('sha256',$token)]);
             if (bh_send_welcome($email, $org, $title, $token)) $summary['emails_queued']++;
             else $summary['email_failures']++;
         }
