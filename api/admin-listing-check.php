@@ -51,7 +51,7 @@ function lc_norm_url(string $url):string{
 function lc_google(string $q,array $cfg):array{
  $key=(string)($cfg['google_search_api_key']??'');$cx=(string)($cfg['google_search_cx']??'');
  if($key===''||$cx==='')throw new RuntimeException('Google search is not configured. Add google_search_api_key and google_search_cx to the server-only github-deploy-config.php.');
- $url='https://www.googleapis.com/customsearch/v1?'.http_build_query(['key'=>$key,'cx'=>$cx,'q'=>$q,'num'=>10,'safe'=>'active']);
+ $url='https://customsearch.googleapis.com/customsearch/v1?'.http_build_query(['key'=>$key,'cx'=>$cx,'q'=>$q,'num'=>10,'safe'=>'active']);
  $ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>15,CURLOPT_FOLLOWLOCATION=>true,CURLOPT_USERAGENT=>'Bubba Hub Listing Check/1.0']);$raw=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);
  if($raw===false||$http>=400)throw new RuntimeException('Google search request failed (HTTP '.$http.').');
  $d=json_decode($raw,true);if(!is_array($d))return [];
