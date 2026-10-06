@@ -643,6 +643,7 @@ try {
             'authenticated' => true,
             'user' => ['id' => (int)$_SESSION['bh_user_id'], 'email' => $email, 'role' => 'family', 'status' => 'active', 'first_name' => $firstName, 'last_name' => $lastName, 'pro' => $eventPro],
             'pro' => $eventPro,
+            'welcome_email_sent' => $welcomeEmailSent,
             'csrf' => $_SESSION['bh_csrf'],
         ]);
     }
