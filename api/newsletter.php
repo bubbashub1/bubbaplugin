@@ -86,8 +86,8 @@ function bh_newsletter_send(PDO $db, array $user, string $frequency, bool $force
 
     $toEmail=(string)$user['email'];
     $subject=bh_newsletter_subject($frequency);
-    $headers="MIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nFrom: Bubba Hub <noreply@bubbahub.co.uk>\r\nReply-To: noreply@bubbahub.co.uk\r\n";
-    $sent=mail($toEmail,'=?UTF-8?B?'.base64_encode($subject).'?=',$html,$headers);
+    require_once __DIR__.'/mailer.php';
+    $sent=bh_send_smtp_mail($toEmail,$subject,$html,strip_tags($html));
     if ($sent) {
         $u=$db->prepare("UPDATE bh_user_preferences SET newsletter_last_sent_at=NOW() WHERE user_id=?");
         $u->execute([(int)$user['id']]);
