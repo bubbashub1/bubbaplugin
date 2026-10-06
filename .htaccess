@@ -8,6 +8,7 @@ RewriteRule ^index/?$ index.html [L,QSA]
 RewriteRule ^leader/?$ leader.html [L,QSA]
 
 # Clean section URLs
+RewriteRule ^my-hub/?$ my-hub.html [L,QSA]
 RewriteRule ^planner/?$ planner.html [L,QSA]
 RewriteRule ^directory/?$ directory.html [L,QSA]
 RewriteRule ^events/?$ events.html [L,QSA]
