@@ -177,7 +177,7 @@ try {
     if ($action === 'apple_config') {
         $apple = is_array($config['apple'] ?? null) ? $config['apple'] : [];
         $clientId = trim((string)($apple['client_id'] ?? ''));
-        $redirectUri = trim((string)($apple['redirect_uri'] ?? ($config['app']['base_url'] ?? getenv('BUBBAHUB_BASE_URL') ?: 'https://bubbahub.co.uk/beta') . '/auth.html'));
+        $redirectUri = trim((string)($apple['redirect_uri'] ?? ($config['app']['base_url'] ?? getenv('BUBBAHUB_BASE_URL') ?: 'https://bubbahub.co.uk') . '/auth.html'));
         if ($clientId === '') bh_auth_response(503, ['ok'=>false,'error'=>'apple_not_configured','message'=>'Sign in with Apple is not configured yet.']);
         $_SESSION['bh_apple_state'] = bin2hex(random_bytes(24));
         $_SESSION['bh_apple_nonce'] = bin2hex(random_bytes(24));
@@ -315,7 +315,7 @@ try {
         }
         $apple = is_array($config['apple'] ?? null) ? $config['apple'] : [];
         $clientId = trim((string)($apple['client_id'] ?? ''));
-        $redirectUri = trim((string)($apple['redirect_uri'] ?? ($config['app']['base_url'] ?? getenv('BUBBAHUB_BASE_URL') ?: 'https://bubbahub.co.uk/beta') . '/auth.html'));
+        $redirectUri = trim((string)($apple['redirect_uri'] ?? ($config['app']['base_url'] ?? getenv('BUBBAHUB_BASE_URL') ?: 'https://bubbahub.co.uk') . '/auth.html'));
         if ($clientId === '' || empty($apple['team_id']) || empty($apple['key_id']) || (empty($apple['private_key']) && empty($apple['private_key_file']))) {
             bh_auth_response(503, ['ok'=>false,'error'=>'apple_not_configured','message'=>'Sign in with Apple is not configured yet.']);
         }
@@ -407,7 +407,7 @@ try {
             $db->prepare("UPDATE bh_password_resets SET used_at=NOW() WHERE user_id=? AND used_at IS NULL")->execute([(int)$user['id']]);
             $db->prepare("INSERT INTO bh_password_resets (user_id,token_hash,expires_at) VALUES (?,?,?)")->execute([(int)$user['id'],$hash,$expires]);
 
-            $base = rtrim((string)($config['app']['base_url'] ?? getenv('BUBBAHUB_BASE_URL') ?: 'https://bubbahub.co.uk/beta'), '/');
+            $base = rtrim((string)($config['app']['base_url'] ?? getenv('BUBBAHUB_BASE_URL') ?: 'https://bubbahub.co.uk'), '/');
             $resetUrl = $base . '/reset-password.html?token=' . rawurlencode($rawToken);
             $apiKey = (string)($config['resend']['api_key'] ?? getenv('RESEND_API_KEY') ?: '');
             $from = (string)($config['resend']['from'] ?? getenv('RESEND_FROM') ?: 'Bubba Hub <noreply@bubbahub.co.uk>');
