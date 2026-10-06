@@ -477,13 +477,26 @@ void bhHydrateSaved();
     if(!value||!email?.checkValidity())return;
     if(status)status.textContent="Subscribing…";
     try{
-      if(!window.__bubbaOneSignalPromise)throw new Error("Newsletter subscription is not ready yet.");
-      const OneSignal=await window.__bubbaOneSignalPromise;
-      await OneSignal.User.addEmail(value);
-      if(status)status.textContent="You're subscribed to Bubba Hub updates.";
+      const response=await fetch("/api/newsletter-signup.php",{
+        method:"POST",
+        credentials:"same-origin",
+        headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body:JSON.stringify({email:value,source:"homepage_footer"})
+      });
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||!data.ok)throw new Error(data.message||"Could not subscribe.");
+      // Keep OneSignal in sync when it is available, but do not make the
+      // newsletter database subscription depend on push/email provider setup.
+      try{
+        if(window.__bubbaOneSignalPromise){
+          const OneSignal=await window.__bubbaOneSignalPromise;
+          if(OneSignal?.User?.addEmail)await OneSignal.User.addEmail(value);
+        }
+      }catch(_){}
+      if(status)status.textContent=data.message||"You're subscribed to Bubba Hub updates.";
       form.reset();
     }catch(error){
-      if(status)status.textContent="Please try again in a moment, or use Notifications in My Account.";
+      if(status)status.textContent=error.message||"Please try again in a moment.";
     }
   });
 })();
