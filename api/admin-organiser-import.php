@@ -266,9 +266,9 @@ try {
 
         $summary['created_listings']++;
         if ($newUser) {
-            $credentials=bh_activation_credentials($db,$userId);$token=$credentials['token'];$code=$credentials['code'];
+            $credentials=bh_leader_activation_credentials($db,$userId);$token=$credentials['token'];$code=$credentials['code'];
             $db->prepare("UPDATE bh_account_activation_tokens SET organisation_name=?,listing_title=?,first_name=? WHERE token_hash=?")->execute([$org,$title,$firstName,hash('sha256',$token)]);
-            if (bh_send_welcome($email,$firstName,$org,$title,$token,$code)) { $summary['emails_queued']++; try{$db->prepare("UPDATE bh_account_activation_tokens SET email_sent_at=NOW() WHERE token_hash=?")->execute([hash('sha256',$token)]);}catch(Throwable $ignored){} } else $summary['email_failures']++;
+            if (bh_send_leader_welcome($email,$firstName,$org,$title,$token,$code)) { $summary['emails_queued']++; try{$db->prepare("UPDATE bh_account_activation_tokens SET email_sent_at=NOW() WHERE token_hash=?")->execute([hash('sha256',$token)]);}catch(Throwable $ignored){} } else $summary['email_failures']++;
         }
     }
     $db->commit();
