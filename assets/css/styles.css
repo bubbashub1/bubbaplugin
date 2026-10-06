@@ -5308,3 +5308,12 @@ body:not(.bh-home) .schedule-hours-status.is-closed .schedule-hours-status-dot{b
   .preferences-interest-grid{grid-template-columns:1fr}
   .admin-panel{padding:18px}
 }
+
+/* Global link reset */
+a,
+a:visited,
+a:hover,
+a:focus,
+a:active {
+  text-decoration: none;
+}
