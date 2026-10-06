@@ -192,17 +192,18 @@ function bhToggleSaved(id){
 }
 function bhIsPlanned(id){return bhGet(BH_KEYS.planner).includes(String(id))}
 let bhAuthPromise=null;
-/* Build mode: authentication is intentionally disabled site-wide.
-   Return a guest session without calling auth.php, so public pages do not
-   generate unnecessary 500 requests while the account system is being built. */
 async function bhAuthSession(){
   if(!bhAuthPromise){
-    bhAuthPromise=Promise.resolve({
-      ok:true,
-      authenticated:false,
-      build_mode:true,
-      csrf:null
-    });
+    bhAuthPromise=fetch("/api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}})
+      .then(async response=>{
+        try{
+          const data=await response.json();
+          return data&&typeof data==="object"?data:{authenticated:false,is_admin:false};
+        }catch(_){
+          return {authenticated:false,is_admin:false};
+        }
+      })
+      .catch(()=>({authenticated:false,is_admin:false}));
   }
   return bhAuthPromise;
 }
