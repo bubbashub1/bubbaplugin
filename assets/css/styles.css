@@ -1268,7 +1268,7 @@ body:has(.hub-modal), body:has(.hero-advanced-modal:not([hidden])) { overflow: h
 }
 
 .account-welcome-note {
-  width: min(100% - 40px, 1100px);
+  width: calc(100% - 40px);
   margin: 28px auto 0;
   padding: 20px 22px;
   display: flex;
@@ -1310,7 +1310,7 @@ body:has(.hub-modal), body:has(.hero-advanced-modal:not([hidden])) { overflow: h
 .account-welcome-note p { margin: 0; }
 
 .account-pro-banner {
-  width: min(100% - 40px, 1100px);
+  width: calc(100% - 40px);
   margin: 18px auto 0;
   padding: 24px 26px;
   display: flex;
@@ -1331,7 +1331,7 @@ body:has(.hub-modal), body:has(.hero-advanced-modal:not([hidden])) { overflow: h
 .account-pro-banner p { margin: 0; max-width: 680px; }
 
 .account-section-label {
-  width: min(100% - 40px, 1100px);
+  width: calc(100% - 40px);
   margin: 42px auto 18px;
 }
 
@@ -1339,7 +1339,7 @@ body:has(.hub-modal), body:has(.hero-advanced-modal:not([hidden])) { overflow: h
 .account-section-label p { margin: 0; }
 
 .account-dashboard-grid {
-  width: min(100% - 40px, 1100px);
+  width: calc(100% - 40px);
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1407,7 +1407,7 @@ body:has(.hub-modal), body:has(.hero-advanced-modal:not([hidden])) { overflow: h
 .account-dashboard-card .card-link:hover { color: var(--bh-teal-dark); }
 
 .account-leader-section {
-  width: min(100% - 40px, 1100px);
+  width: calc(100% - 40px);
   margin: 48px auto 0;
 }
 
@@ -1455,7 +1455,7 @@ body:has(.hub-modal), body:has(.hero-advanced-modal:not([hidden])) { overflow: h
 .account-leader-card > strong { color: var(--bh-green); white-space: nowrap; }
 
 .account-account-access {
-  width: min(100% - 40px, 1100px);
+  width: calc(100% - 40px);
   margin: 48px auto 0;
   padding: 26px;
 }
@@ -1505,7 +1505,7 @@ body:has(.hub-modal), body:has(.hero-advanced-modal:not([hidden])) { overflow: h
   .account-dashboard-grid,
   .account-leader-section,
   .account-account-access {
-    width: min(100% - 24px, 1100px);
+    width: calc(100% - 24px);
   }
 
   .account-pro-banner {
@@ -1540,7 +1540,7 @@ body:has(.hub-modal), body:has(.hero-advanced-modal:not([hidden])) { overflow: h
 
 /* Bubba Hub support page — page-specific styling */
 .support-hero {
-  width: min(100% - 40px, 1100px);
+  width: calc(100% - 40px);
   margin: 28px auto 0;
   padding: 34px 30px;
   display: flex;
@@ -1567,7 +1567,7 @@ body:has(.hub-modal), body:has(.hero-advanced-modal:not([hidden])) { overflow: h
 .support-lock span { font-size: .82rem; color: var(--bh-muted); }
 
 .support-topic-grid {
-  width: min(100% - 40px, 1100px);
+  width: calc(100% - 40px);
   margin: 22px auto 0;
   display: grid;
   grid-template-columns: repeat(4,minmax(0,1fr));
