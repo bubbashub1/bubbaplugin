@@ -20,6 +20,11 @@ RewriteRule ^choose/?$ choose.html [L,QSA]
 # Keep the old personalised URL working and move it to /choose
 RewriteRule ^personalise(?:\.html)?/?$ /choose [R=301,L]
 
+# Clean account sub-pages: /account/profile, /account/preferences, etc.
+# Keep the physical account/*.html files as the source of truth.
+RewriteCond %{DOCUMENT_ROOT}/account/$1.html -f
+RewriteRule ^account/([a-z0-9-]+)/?$ account/$1.html [L,QSA]
+
 # Organiser custom Terms URLs: /{organiser-slug}terms.html
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
