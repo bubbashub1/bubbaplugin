@@ -1,6 +1,6 @@
 /* Bubba Hub master header loader.
    Header markup: components/header.html
-   Header styling: assets/css/header.css
+   Header styling is consolidated into assets/css/styles.css
 */
 (function(){
   const script=document.currentScript;
@@ -13,16 +13,6 @@
     try{
       const existing=document.querySelector(".site-header");
       const headerUrl=new URL("../../components/header.html",scriptUrl);
-      const cssUrl=new URL("../css/header.css",scriptUrl);
-
-      if(!document.querySelector('link[data-bh-header-css]')){
-        const link=document.createElement("link");
-        link.rel="stylesheet";
-        link.href=cssUrl.href;
-        link.dataset.bhHeaderCss="true";
-        document.head.appendChild(link);
-      }
-
       const response=await fetch(headerUrl.href,{cache:"no-store"});
       if(!response.ok)throw new Error("Could not load shared header");
       const html=await response.text();
