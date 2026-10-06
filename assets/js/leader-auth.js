@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const r=await fetch("api/auth.php?action=me",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});
     const d=await r.json();
     csrf=d.csrf||"";
-    if(d.authenticated&&((d.user||{}).role==="leader"||d.is_admin)){
+    if(d.leader_authenticated&&((d.user||{}).role==="leader")){
       location.replace(next);
       return;
     }
@@ -86,6 +86,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     try{
       const payload=Object.fromEntries(new FormData(form));
       payload.csrf=csrf;
+      if(!reg)payload.context="leader";
 
       const endpoint=reg?"api/leader-signup.php":"api/auth.php?action=login";
       const options={
