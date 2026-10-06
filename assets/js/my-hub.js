@@ -1,11 +1,12 @@
 document.addEventListener("DOMContentLoaded",async()=>{
   const $=id=>document.getElementById(id),root=$("myHubApp"),message=$("hubMessage");
   const esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])));
-  let data=null,csrf="",activities=[],adminOnly=false;
+  let data=null,csrf="",activities=[],adminOnly=false,isPro=false;
   const dateDisplay=value=>{if(!value)return "";const p=String(value).split("-");return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:String(value)};
   const ageFromDob=value=>{if(!value)return "";const dob=new Date(value+"T00:00:00");if(Number.isNaN(dob.getTime()))return "";const now=new Date();let years=now.getFullYear()-dob.getFullYear(),months=now.getMonth()-dob.getMonth();if(now.getDate()<dob.getDate())months--;if(months<0){years--;months+=12}return years<2?Math.max(0,years*12+months)+" months":years+" years"};
   const bookingDate=raw=>{if(!raw)return "";const d=new Date(String(raw).replace(" ","T"));if(Number.isNaN(d.getTime()))return "";return d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})+" · "+d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})};
   async function getJson(url,opts){const r=await fetch(url,opts);const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.message||j.error||"Something went wrong.");return j}
+  async function loadProStatus(){try{const r=await fetch("api/subscription.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});const j=await r.json();isPro=!!j.pro;}catch(e){isPro=false;}const status=$("hubProStatus"),pitch=$("hubProPitch");if(status)status.hidden=!isPro;if(pitch)pitch.hidden=isPro;}
   async function load(){
     const auth=await getJson("api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}}).catch(()=>({authenticated:false}));
     adminOnly=!!auth.is_admin&&!auth.user?.id;
@@ -70,6 +71,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     let pref={};try{const pr=await fetch("api/preferences.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});const pj=await pr.json();if(pj?.ok)pref=pj.preferences||{}}catch(e){}
     const children=data.children||[];
     const ages=children.map(c=>childAge(c.date_of_birth)).filter(v=>v!==null);
+    const childNames=children.map(c=>String(c.name||"").trim()).filter(Boolean);
     const saved=new Set((data.saved||[]).map(String));
     const planned=new Set((data.planner||[]).map(x=>String(x.id)));
     const interests=new Set((Array.isArray(pref.categories)?pref.categories:[]).map(String).map(v=>v.toLowerCase()));
@@ -90,6 +92,15 @@ document.addEventListener("DOMContentLoaded",async()=>{
       if(planned.has(String(a.id)))s+=7;
       return {a,s,days};
     }).filter(x=>x.s>5).sort((a,b)=>b.s-a.s).slice(0,3);
+    if(isPro){
+      const list=[];
+      const upcoming=(data.bookings||[]).filter(b=>b.status!=="cancelled").slice(0,2);
+      if(upcoming.length) list.push({type:"booking",title:"You have "+upcoming.length+" upcoming booking"+(upcoming.length>1?"s":""),detail:"Your family plans are ready to go.",href:"account/bookings.html"});
+      if(planned.size) list.push({type:"plan",title:planned.size+" activities in your planner",detail:"Keep your week organised with your saved plans.",href:"planner-pro.html"});
+      if(saved.size) list.push({type:"saved",title:saved.size+" saved ideas to choose from",detail:"Turn favourites into a family activity list.",href:"planner-pro.html#activity-lists"});
+      const proBrief=document.getElementById("hubBriefItems");
+      if(proBrief&&list.length){proBrief.insertAdjacentHTML("afterbegin",list.map(x=>"<a class='hub-brief-item hub-brief-pro-item' href='"+x.href+"'><div class='hub-brief-icon'>⭐</div><div><span>Family Pro</span><strong>"+esc(x.title)+"</strong><small>"+esc(x.detail)+"</small></div><b>→</b></a>").join(""));}
+    }
     intro.textContent=ranked.length
       ? (ages.length?"Based on your family profiles":"Based on your saved preferences")+" · updated just now."
       : "Add a family profile or a few preferences and we’ll make this more useful.";
@@ -185,5 +196,5 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const editBump=b=>modal("Edit bump","<input type='hidden' name='id' value='"+b.id+"'><label>Nickname<input name='nickname' value='"+esc(b.nickname||"")+"'></label><label>Due date<input name='due_date' type='date' value='"+esc(b.due_date||"")+"'></label>","save_bump");
   $("addChild").onclick=()=>modal("Add a child","<label>Name<input name='name' required></label><label>Gender<input name='gender'></label><label>Date of birth<input name='date_of_birth' type='date'></label>","save_child");
   $("addBump").onclick=()=>modal("Add a bump","<label>Nickname<input name='nickname' placeholder='Optional'></label><label>Due date<input name='due_date' type='date'></label>","save_bump");
-  try{await load()}catch(e){message.textContent=e.message||"My Hub is unavailable.";root.innerHTML="<section class='admin-panel'><h2>My Hub unavailable</h2><p>"+esc(e.message||"We could not load your family hub right now.")+"</p><a class='button button-primary' href='account.html'>Open account</a></section>"}
+  try{await loadProStatus();await load()}catch(e){message.textContent=e.message||"My Hub is unavailable.";root.innerHTML="<section class='admin-panel'><h2>My Hub unavailable</h2><p>"+esc(e.message||"We could not load your family hub right now.")+"</p><a class='button button-primary' href='account.html'>Open account</a></section>"}
 });
