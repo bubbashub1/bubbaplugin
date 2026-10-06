@@ -4,15 +4,17 @@ declare(strict_types=1);
 /**
  * Bubba Hub SMTP mailer.
  *
- * Credentials are read from server-only BH_SMTP_* constants in wp-config.php.
- * Never store the mailbox password in this repository.
+ * Transactional mail uses noreply@bubbahub.co.uk.
+ * Newsletter mail uses newsletter@bubbahub.co.uk.
+ * Passwords remain server-only in wp-config.php.
  */
 function bh_send_smtp_mail(
     string $to,
     string $subject,
     string $html,
     string $plainText = '',
-    string $replyTo = ''
+    string $replyTo = '',
+    string $mailbox = 'transactional'
 ): bool {
     $to = strtolower(trim($to));
     if (!filter_var($to, FILTER_VALIDATE_EMAIL)) return false;
@@ -23,14 +25,26 @@ function bh_send_smtp_mail(
 
     $host = defined('BH_SMTP_HOST') ? (string)BH_SMTP_HOST : 'smtp.bubbahub.co.uk';
     $port = defined('BH_SMTP_PORT') ? (int)BH_SMTP_PORT : 465;
-    $username = defined('BH_SMTP_USERNAME') ? (string)BH_SMTP_USERNAME : 'newsletter@bubbahub.co.uk';
-    $password = defined('BH_SMTP_PASSWORD') ? (string)BH_SMTP_PASSWORD : '';
     $secure = defined('BH_SMTP_SECURE') ? strtolower((string)BH_SMTP_SECURE) : 'ssl';
-    $from = defined('BH_SMTP_FROM') ? (string)BH_SMTP_FROM : 'newsletter@bubbahub.co.uk';
-    $fromName = defined('BH_SMTP_FROM_NAME') ? (string)BH_SMTP_FROM_NAME : 'Bubba Hub';
 
-    if ($password === '' || $password === 'YOUR-NEWSLETTER-MAILBOX-PASSWORD') {
-        error_log('Bubba Hub SMTP: BH_SMTP_PASSWORD is not configured.');
+    $isNewsletter = strtolower(trim($mailbox)) === 'newsletter';
+
+    if ($isNewsletter) {
+        $username = defined('BH_SMTP_NEWSLETTER_USERNAME') ? (string)BH_SMTP_NEWSLETTER_USERNAME : 'newsletter@bubbahub.co.uk';
+        $password = defined('BH_SMTP_NEWSLETTER_PASSWORD') ? (string)BH_SMTP_NEWSLETTER_PASSWORD : '';
+        $from = defined('BH_SMTP_NEWSLETTER_FROM') ? (string)BH_SMTP_NEWSLETTER_FROM : $username;
+        $fromName = defined('BH_SMTP_NEWSLETTER_FROM_NAME') ? (string)BH_SMTP_NEWSLETTER_FROM_NAME : 'Bubba Hub';
+        $passwordPlaceholder = 'YOUR-NEWSLETTER-MAILBOX-PASSWORD';
+    } else {
+        $username = defined('BH_SMTP_USERNAME') ? (string)BH_SMTP_USERNAME : 'noreply@bubbahub.co.uk';
+        $password = defined('BH_SMTP_PASSWORD') ? (string)BH_SMTP_PASSWORD : '';
+        $from = defined('BH_SMTP_FROM') ? (string)BH_SMTP_FROM : 'noreply@bubbahub.co.uk';
+        $fromName = defined('BH_SMTP_FROM_NAME') ? (string)BH_SMTP_FROM_NAME : 'Bubba Hub';
+        $passwordPlaceholder = 'YOUR-NOREPLY-MAILBOX-PASSWORD';
+    }
+
+    if ($password === '' || $password === $passwordPlaceholder) {
+        error_log('Bubba Hub SMTP: mailbox password is not configured for ' . $username . '.');
         return false;
     }
 
@@ -68,7 +82,7 @@ function bh_send_smtp_mail(
         $mail->send();
         return true;
     } catch (Throwable $e) {
-        error_log('Bubba Hub SMTP mail failed: ' . $e->getMessage());
+        error_log('Bubba Hub SMTP mail failed [' . $username . ']: ' . $e->getMessage());
         return false;
     }
 }
