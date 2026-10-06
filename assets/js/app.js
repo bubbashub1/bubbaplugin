@@ -500,7 +500,7 @@ void bhHydrateSaved();
     if(!value)return PLACEHOLDER_IMAGE;
     if(/^https?:\/\//i.test(value))return value;
     if(value.startsWith("//"))return window.location.protocol+value;
-    if(value.startsWith("/beta/"))return value;
+    if(value.startsWith("/beta/"))return value.replace(/^\/beta\//,"/");
     if(value.startsWith("/"))return "/beta"+value;
     if(/^images\//i.test(value)||/^assets\//i.test(value))return value.replace(/^\.\//,"");
     return "images/listings/"+value.replace(/^\.\//,"").replace(/^\/+/,"");
