@@ -116,7 +116,7 @@ async function bhActivities(){
       price_per_family:Boolean(Number(a.price_per_family||0)),
       image_url:(a.image_path||"").replace(
         "gemini_generated_image_20260930-190428-b9e652.png",
-        "images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png"
+        "/wp-content/uploads/logo/placeholder.jpeg"
       ),
       short_description:a.description||"",
       summary:a.description||"",
@@ -246,7 +246,7 @@ void bhHydrateSaved();
       <div class="site-footer-grid">
         <div class="site-footer-brand">
           <a href="index.html" class="site-footer-logo" aria-label="Bubba Hub home">
-            <img src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub">
+            <img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub">
           </a>
           <div class="site-footer-brand-copy">
             <a href="index.html" class="site-footer-title">Bubba Hub</a>
@@ -500,7 +500,7 @@ void bhHydrateSaved();
     if(!value)return PLACEHOLDER_IMAGE;
     if(/^https?:\/\//i.test(value))return value;
     if(value.startsWith("//"))return window.location.protocol+value;
-    if(value.startsWith("/beta/"))return value.replace(/^\/beta\//,"/");
+    if(value.startsWith(""))return value.replace(/^\/beta\//,"/");
     if(value.startsWith("/"))return "/beta"+value;
     if(/^images\//i.test(value)||/^assets\//i.test(value))return value.replace(/^\.\//,"");
     return "images/listings/"+value.replace(/^\.\//,"").replace(/^\/+/,"");
