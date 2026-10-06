@@ -1,6 +1,9 @@
 RewriteEngine On
 RewriteBase /
 
+# Treat /index and /index/ as the homepage, not an activity slug.
+RewriteRule ^index/?$ index.html [L,QSA]
+
 # Class leader dashboard
 RewriteRule ^leader/?$ leader.html [L,QSA]
 
