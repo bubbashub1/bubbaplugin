@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   }
 
   const $=id=>document.getElementById(id);
-  const keys={planners:"bhProPlanners",family:"bhProFamily",shares:"bhProShares",notes:"bhProNotes",dayPlan:"bhProDayPlan"};
+  const keys={planners:"bhProPlanners",family:"bhProFamily",shares:"bhProShares",notes:"bhProNotes",dayPlan:"bhProDayPlan",lists:"bhProActivityLists"};
   const read=(key,fallback=[])=>{try{const v=JSON.parse(localStorage.getItem(key)||"null");return Array.isArray(v)?v:fallback}catch{return fallback}};
   const hasLocal=(key)=>localStorage.getItem(key)!==null;
   let proSignedIn=false,proCsrf="",proHydrating=false,proSyncTimer=null,proShow=()=>{};
@@ -38,6 +38,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       shares,
       notes,
       dayPlan,
+      activityLists,
       selectedPlannerId,
       calendarView:proCalendarView,
       calendarDate:proCalendarDate instanceof Date?proCalendarDate.toISOString():null
@@ -95,6 +96,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   let shares=read(keys.shares,[]);
   let notes=read(keys.notes,[]);
   let dayPlan=read(keys.dayPlan,[{id:uid("day"),time:"09:30",title:"Morning activity",detail:"Add an activity from your planner."},{id:uid("day"),time:"12:30",title:"Lunch / travel",detail:"Leave space between plans."}]);
+  let activityLists=read(keys.lists,[]);
   let monthDate=new Date();
 
   function mergeProArray(remoteValue,localValue,localExists){
@@ -126,6 +128,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       shares=mergeProArray(remote.shares,shares,hasLocal(keys.shares));
       notes=mergeProArray(remote.notes,notes,hasLocal(keys.notes));
       dayPlan=mergeProArray(remote.dayPlan,dayPlan,hasLocal(keys.dayPlan));
+      activityLists=mergeProArray(remote.activityLists,activityLists,hasLocal(keys.lists));
 
       if(remote.selectedPlannerId)selectedPlannerId=String(remote.selectedPlannerId);
       if(remote.calendarView)proCalendarView=String(remote.calendarView);
@@ -139,7 +142,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
         [keys.family]:family,
         [keys.shares]:shares,
         [keys.notes]:notes,
-        [keys.dayPlan]:dayPlan
+        [keys.dayPlan]:dayPlan,
+        [keys.lists]:activityLists
       }).forEach(([key,value])=>localStorage.setItem(key,JSON.stringify(value)));
       proHydrating=false;
 
@@ -416,6 +420,27 @@ document.addEventListener("DOMContentLoaded",async()=>{
     renderPlanners();
     renderShares();
   }
+
+  function renderActivityLists(){
+    const el=$("activityListsGrid"); if(!el)return;
+    if(!activityLists.length){el.innerHTML="<div class='pro-empty'><strong>No family activity lists yet</strong>Create a list such as Rainy Days, Holly’s Picks or Weekend Ideas.</div>";return;}
+    el.innerHTML=activityLists.map(list=>{
+      const items=(Array.isArray(window.__bhActivities)?window.__bhActivities:[]).filter(a=>(list.activityIds||[]).map(String).includes(String(a.id)));
+      const names=items.length?items.slice(0,5).map(a=>"<li>"+esc(a.title)+"</li>").join(""):"<li>No activities added yet</li>";
+      return "<article class='pro-planner-card'><span class='pro-planner-swatch' style='background:"+esc(list.colour||colours[0])+"'></span><div class='pro-planner-card-main'><h3>"+esc(list.name)+"</h3><p>"+esc(list.description||"Family activity list")+"</p><ul class='pro-list-items'>"+names+"</ul><small>"+items.length+" saved activit"+(items.length===1?"y":"ies")+"</small></div><div class='pro-card-actions'><button type='button' data-list-edit='"+esc(list.id)+"'>Edit</button><button type='button' data-list-delete='"+esc(list.id)+"'>Delete</button></div></article>";
+    }).join("");
+    el.querySelectorAll("[data-list-edit]").forEach(b=>b.onclick=()=>editActivityList(b.dataset.listEdit));
+    el.querySelectorAll("[data-list-delete]").forEach(b=>b.onclick=()=>{activityLists=activityLists.filter(x=>x.id!==b.dataset.listDelete);write(keys.lists,activityLists);renderActivityLists()});
+  }
+  function activityListForm(existing){
+    const activities=Array.isArray(window.__bhActivities)?window.__bhActivities:[]; const current=new Set((existing?.activityIds||[]).map(String));
+    const wrap=document.createElement("div"); wrap.className="pro-modal-backdrop pro-planner-modal";
+    wrap.innerHTML="<div class='pro-modal pro-planner-modal-card' role='dialog' aria-modal='true'><button class='pro-modal-close' type='button' aria-label='Close'>×</button><span class='eyebrow'>Family Activity Lists</span><h2>"+(existing?"Edit activity list":"Create activity list")+"</h2><p>Save a hand-picked collection of activities for a child, weekend, holiday or quick idea list.</p><form class='pro-form'><label>List name<input name='name' required maxlength='60' value='"+esc(existing?.name||"")+"'></label><label>Description<textarea name='description' maxlength='180'>"+esc(existing?.description||"")+"</textarea></label><fieldset><legend>Choose activities</legend><div class='pro-list-picker'>"+(activities.length?activities.map(a=>"<label><input type='checkbox' name='activityId' value='"+esc(a.id)+"' "+(current.has(String(a.id))?"checked":"")+"> "+esc(a.title)+" <small>"+esc(a.town||a.region||"")+"</small></label>").join(""):"<p>No activities are loaded yet. Browse the directory first.</p>")+"</div></fieldset><div class='pro-form-actions'><button type='button' class='button button-soft' data-cancel>Cancel</button><button type='submit' class='button button-primary'>Save list</button></div></form></div>";
+    document.body.appendChild(wrap); const close=()=>wrap.remove(); wrap.querySelector(".pro-modal-close").onclick=close; wrap.querySelector("[data-cancel]").onclick=close; wrap.addEventListener("click",e=>{if(e.target===wrap)close()});
+    wrap.querySelector("form").onsubmit=e=>{e.preventDefault();const form=e.currentTarget;const data=Object.fromEntries(new FormData(form));const ids=[...form.querySelectorAll("input[name='activityId']:checked")].map(x=>x.value);const item={id:existing?.id||uid("list"),name:data.name,description:data.description,activityIds:ids,updatedAt:new Date().toISOString()};if(existing)activityLists=activityLists.map(x=>x.id===existing.id?item:x);else activityLists.unshift(item);write(keys.lists,activityLists);renderActivityLists();close();showProSaveStatus("✓ Activity list saved");};
+  }
+  function addActivityList(){activityListForm(null)}
+  function editActivityList(id){activityListForm(activityLists.find(x=>x.id===id))}
 
   function renderFamily(){
     const el=$("familyGrid");el.innerHTML=family.map(m=>"<article class='pro-family-card'><span class='pro-family-swatch' style='background:"+esc(m.colour)+"'></span><div class='pro-family-main'><h3>"+esc(m.name)+"</h3><p>"+esc(m.role||"Family member")+"</p></div><div class='pro-card-actions'><button type='button' data-family-delete='"+esc(m.id)+"'>Remove</button></div></article>").join("");
@@ -708,7 +733,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   setupProDashboard();
   await hydrateProState();
 
-  $("addPlanner").onclick=addPlanner;$("addPlannerTop").onclick=addPlanner;$("addFamily").onclick=addFamily;$("createShare").onclick=createShare;$("addDayPlan").onclick=addDayPlan;$("addNote").onclick=addNote;
+  $("addPlanner").onclick=addPlanner;$("addPlannerTop").onclick=addPlanner;$("addFamily").onclick=addFamily;$("createShare").onclick=createShare;$("addDayPlan").onclick=addDayPlan;$("addNote").onclick=addNote;$("addActivityList").onclick=addActivityList;
   if(typeof bhActivities==="function"){try{window.__bhActivities=await bhActivities()}catch(error){window.__bhActivities=[];console.warn("Planner Pro calendar activities could not be loaded.",error)}}
   renderPlannerCalendarPicker();
   const calendarPlanner=$("proCalendarPlanner");
@@ -736,7 +761,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const printMonth=$("printMonth");
   if(printMonth) printMonth.onclick=()=>window.print();
   document.querySelectorAll("[data-calendar-action]").forEach(b=>b.onclick=()=>alert("Calendar setup will connect to your shared planner when calendar accounts are enabled."));
-  renderPlanners();renderFamily();renderShares();renderMonth();renderDayPlan();renderNotes();await renderFavourites();
+  renderPlanners();renderFamily();renderShares();renderMonth();renderDayPlan();renderNotes();renderActivityLists();await renderFavourites();
   const jump=document.getElementById("proJumpTo");
   if(jump){
     jump.addEventListener("change",()=>{
