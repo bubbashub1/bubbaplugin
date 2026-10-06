@@ -45,7 +45,7 @@
           <option value="month">Calendar View</option>
           <option value="day-plan">Plan a day</option>
           <option value="notes">Notes & reminders</option>
-          <option value="favourites">Favourites</option>
+          <option value="activity-lists">Activity lists</option><option value="favourites">Favourites</option>
           <option value="calendars">Calendars</option>
         </select>
       </div>
@@ -56,7 +56,7 @@
         <a href="#month" data-pro-section="month">▤ <span>Calendar View</span></a>
         <a href="#day-plan" data-pro-section="day-plan">☀ <span>Plan a day</span></a>
         <a href="#notes" data-pro-section="notes">📝 <span>Notes & reminders</span></a>
-        <a href="#favourites" data-pro-section="favourites">♡ <span>Favourites</span></a>
+        <a href="#activity-lists" data-pro-section="activity-lists">☷ <span>Activity lists</span></a><a href="#favourites" data-pro-section="favourites">♡ <span>Favourites</span></a>
         <a href="#calendars" data-pro-section="calendars">📅 <span>Calendars</span></a>
       </nav>
       <a class="pro-sidebar-back" href="planner.html">← Back to My Planner</a>
@@ -114,6 +114,11 @@
   <section class="pro-section" id="notes">
     <div class="pro-section-head"><div><span class="eyebrow">Little things that matter</span><h2>Notes &amp; reminders</h2><p>Keep booking prompts, what-to-bring notes and preparation reminders alongside your plans.</p></div><button class="button button-primary" id="addNote" type="button">＋ Add note</button></div>
     <div class="pro-notes-grid" id="notesGrid"></div>
+  </section>
+
+  <section class="pro-section" id="activity-lists">
+    <div class="pro-section-head"><div><span class="eyebrow">Curated family ideas</span><h2>Family activity lists</h2><p>Build reusable lists for each child, rainy days, weekends, holidays or activities you want to try.</p></div><button class="button button-primary" id="addActivityList" type="button">＋ New activity list</button></div>
+    <div class="pro-planner-list" id="activityListsGrid"></div>
   </section>
 
   <section class="pro-section" id="favourites">
