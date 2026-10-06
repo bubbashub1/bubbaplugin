@@ -152,17 +152,21 @@ try {
 
     if ($action === 'me') {
         $adminAuthenticated = !empty($_SESSION['bh_admin_authenticated']);
+        $familyAuthenticated = !empty($_SESSION['bh_family_authenticated']);
+        $leaderAuthenticated = !empty($_SESSION['bh_leader_authenticated']);
         if (empty($_SESSION['bh_user_id'])) {
             if ($adminAuthenticated) {
                 bh_auth_response(200, [
                     'ok' => true,
                     'authenticated' => true,
+                    'family_authenticated' => false,
+                    'leader_authenticated' => false,
                     'is_admin' => true,
                     'user' => ['id' => 0, 'email' => 'Admin access', 'role' => 'admin', 'status' => 'active'],
                     'csrf' => $_SESSION['bh_csrf'],
                 ]);
             }
-            bh_auth_response(200, ['ok' => true, 'authenticated' => false, 'is_admin' => false, 'csrf' => $_SESSION['bh_csrf']]);
+            bh_auth_response(200, ['ok' => true, 'authenticated' => false, 'family_authenticated' => false, 'leader_authenticated' => false, 'is_admin' => false, 'csrf' => $_SESSION['bh_csrf']]);
         }
 
         $stmt = $db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");
@@ -187,7 +191,9 @@ try {
 
         bh_auth_response(200, [
             'ok' => true,
-            'authenticated' => true,
+            'authenticated' => $familyAuthenticated,
+            'family_authenticated' => $familyAuthenticated,
+            'leader_authenticated' => $leaderAuthenticated,
             'is_admin' => $adminAuthenticated,
             'user' => [
                 'id' => (int)$user['id'],
@@ -296,6 +302,8 @@ try {
     }
 
     if ($action === 'login') {
+        $context = trim((string)($body['context'] ?? 'family'));
+        if (!in_array($context, ['family','leader'], true)) $context = 'family';
         $email = strtolower(trim((string)($body['email'] ?? '')));
         $password = (string)($body['password'] ?? '');
 
@@ -314,9 +322,15 @@ try {
         if (($user['status'] ?? '') !== 'active') {
             bh_auth_response(403, ['ok' => false, 'error' => 'account_not_active', 'message' => 'This account is not currently active.']);
         }
+        $role = (string)($user['role'] ?? '');
+        if ($context === 'leader' && $role !== 'leader') bh_auth_response(403, ['ok'=>false,'error'=>'leader_account_required','message'=>'That email is not a class leader account. Please use the family sign in or create a leader account.']);
+        if ($context === 'family' && !in_array($role, ['family','organiser'], true)) bh_auth_response(403, ['ok'=>false,'error'=>'family_account_required','message'=>'Please use the Class Leader sign in for this account.']);
 
         session_regenerate_id(true);
         $_SESSION['bh_user_id'] = (int)$user['id'];
+        unset($_SESSION['bh_family_authenticated'], $_SESSION['bh_leader_authenticated']);
+        if ($context === 'leader') $_SESSION['bh_leader_authenticated'] = true;
+        else $_SESSION['bh_family_authenticated'] = true;
         $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
 
         bh_auth_response(200, [
@@ -370,7 +384,7 @@ try {
                 }
                 $stmt=$db->prepare("INSERT INTO bh_social_accounts (user_id,provider,provider_user_id,email) VALUES (?, 'apple', ?, ?)"); $stmt->execute([$userId,$appleId,$email]);
             }
-            session_regenerate_id(true); $_SESSION['bh_user_id']=$userId; $_SESSION['bh_csrf']=bin2hex(random_bytes(24));
+            session_regenerate_id(true); $_SESSION['bh_user_id']=$userId; $_SESSION['bh_family_authenticated']=true; unset($_SESSION['bh_leader_authenticated']); $_SESSION['bh_csrf']=bin2hex(random_bytes(24));
             $stmt=$db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1"); $stmt->execute([$userId]); $user=$stmt->fetch();
             $welcomeEmailSent = $newSocialUser ? bh_send_family_welcome($email, (string)($returnedUser['name']['firstName'] ?? '')) : false;
             bh_auth_response(200,['ok'=>true,'authenticated'=>true,'user'=>['id'=>(int)$user['id'],'email'=>$user['email'],'role'=>$user['role'],'status'=>$user['status']],'csrf'=>$_SESSION['bh_csrf'],'provider'=>'apple','welcome_email_sent'=>$welcomeEmailSent]);
@@ -575,11 +589,15 @@ try {
 
         session_regenerate_id(true);
         $_SESSION['bh_user_id'] = $newUserId;
+        $_SESSION['bh_family_authenticated'] = true;
+        unset($_SESSION['bh_leader_authenticated']);
         $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
 
         bh_auth_response(201, [
             'ok' => true,
             'authenticated' => true,
+            'family_authenticated' => true,
+            'leader_authenticated' => false,
             'user' => ['id' => (int)$_SESSION['bh_user_id'], 'email' => $email, 'role' => 'family', 'status' => 'active', 'first_name' => $firstName, 'last_name' => $lastName, 'pro' => $eventPro],
             'pro' => $eventPro,
             'welcome_email_sent' => $welcomeEmailSent,
@@ -589,7 +607,7 @@ try {
 
     if ($action === 'logout') {
         if (!empty($_SESSION['bh_admin_authenticated'])) {
-            unset($_SESSION['bh_user_id']);
+            unset($_SESSION['bh_user_id'], $_SESSION['bh_family_authenticated'], $_SESSION['bh_leader_authenticated']);
             $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
             bh_auth_response(200, ['ok' => true, 'authenticated' => true, 'is_admin' => true]);
         }
