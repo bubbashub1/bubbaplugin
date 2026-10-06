@@ -38,6 +38,7 @@
 
 <script src="/assets/js/activity-badges.js"></script>
 <script src="/assets/js/app.js"></script>
+<script src="/assets/js/pro-demo.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded",async()=>{
@@ -167,6 +168,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
     }catch(error){}
   }
 
+  if(!a && window.BH_DEMO_MODE && typeof window.bhLoadDemoActivities==="function"){
+    try{ const demoItems=await window.bhLoadDemoActivities(); a=bhActivityBySlug(slug,demoItems)||bhActivity(id,demoItems)||null; }catch(error){}
+  }
   if(!a){
     // Fallback for older/API-failure cases.
     items=await bhActivities();
