@@ -5611,3 +5611,15 @@ input[type="radio"]{
   min-height:0;
   padding:0;
 }
+
+
+/* Final site-wide soft CTA colour swap */
+body:not(.bh-home) .button-soft{
+  background:#144400;
+  color:#d8e6db;
+}
+body:not(.bh-home) .button-soft:hover,
+body:not(.bh-home) .button-soft:focus-visible{
+  background:#f39a3f;
+  color:#fff;
+}
