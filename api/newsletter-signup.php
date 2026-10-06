@@ -20,7 +20,13 @@ try {
         bh_newsletter_signup_json(405, ['ok'=>false,'error'=>'method_not_allowed']);
     }
 
-    $body = json_decode((string)file_get_contents('php://input'), true);
+    $raw = (string)file_get_contents('php://input');
+    $body = json_decode($raw, true);
+
+    // Accept both the site's JSON request and a normal form POST.
+    if (!is_array($body)) {
+        $body = $_POST;
+    }
     if (!is_array($body)) {
         bh_newsletter_signup_json(400, ['ok'=>false,'error'=>'invalid_request']);
     }
@@ -35,10 +41,6 @@ try {
         bh_newsletter_signup_json(422, ['ok'=>false,'error'=>'invalid_email','message'=>'Please enter a valid email address.']);
     }
 
-    $existingStmt = $db->prepare("SELECT status FROM bh_newsletter_subscribers WHERE email = ? LIMIT 1");
-    $existingStmt->execute([$email]);
-    $existingStatus = $existingStmt->fetchColumn();
-
     $stmt = $db->prepare("INSERT INTO bh_newsletter_subscribers
         (email,status,source,consented_at,unsubscribed_at)
         VALUES (?, 'subscribed', ?, NOW(), NULL)
@@ -49,11 +51,13 @@ try {
           unsubscribed_at=NULL");
     $stmt->execute([$email, substr(trim((string)($body['source'] ?? 'website')) ?: 'website', 0, 80)]);
 
-    // Send the welcome email after the subscriber has been saved. Email failure
-    // is deliberately non-blocking so a mail problem cannot lose the signup.
-    if ($existingStatus === false || $existingStatus === 'unsubscribed') {
+    // Welcome email is best-effort and must never turn a successful database
+    // signup into a 500 response.
+    try {
         require_once __DIR__.'/newsletter-welcome.php';
         bh_send_newsletter_welcome($email);
+    } catch (Throwable $mailError) {
+        error_log('[Bubba Hub newsletter welcome] '.$mailError->getMessage());
     }
 
     bh_newsletter_signup_json(200, [
