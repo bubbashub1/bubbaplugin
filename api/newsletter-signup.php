@@ -35,6 +35,10 @@ try {
         bh_newsletter_signup_json(422, ['ok'=>false,'error'=>'invalid_email','message'=>'Please enter a valid email address.']);
     }
 
+    $existingStmt = $db->prepare("SELECT status FROM bh_newsletter_subscribers WHERE email = ? LIMIT 1");
+    $existingStmt->execute([$email]);
+    $existingStatus = $existingStmt->fetchColumn();
+
     $stmt = $db->prepare("INSERT INTO bh_newsletter_subscribers
         (email,status,source,consented_at,unsubscribed_at)
         VALUES (?, 'subscribed', ?, NOW(), NULL)
@@ -44,6 +48,13 @@ try {
           consented_at=NOW(),
           unsubscribed_at=NULL");
     $stmt->execute([$email, substr(trim((string)($body['source'] ?? 'website')) ?: 'website', 0, 80)]);
+
+    // Send the welcome email after the subscriber has been saved. Email failure
+    // is deliberately non-blocking so a mail problem cannot lose the signup.
+    if ($existingStatus === false || $existingStatus === 'unsubscribed') {
+        require_once __DIR__.'/newsletter-welcome.php';
+        bh_send_newsletter_welcome($email);
+    }
 
     bh_newsletter_signup_json(200, [
         'ok'=>true,
