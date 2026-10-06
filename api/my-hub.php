@@ -49,6 +49,14 @@ try {
     }
 
     $db = bh_mysql();
+
+    // Self-heal the small account tables on older deployments. The app must not
+    // return a PHP 500 simply because the DB schema was created before My Hub.
+    // These are all bh_* tables and are safe to create when absent.
+    $db->exec("CREATE TABLE IF NOT EXISTS bh_children (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,user_id BIGINT UNSIGNED NOT NULL,name VARCHAR(120) NOT NULL,gender VARCHAR(40) NULL,photo_path VARCHAR(500) NULL,date_of_birth DATE NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,INDEX idx_child_user (user_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    $db->exec("CREATE TABLE IF NOT EXISTS bh_bumps (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,user_id BIGINT UNSIGNED NOT NULL,nickname VARCHAR(120) NULL,photo_path VARCHAR(500) NULL,due_date DATE NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,INDEX idx_bump_user (user_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    $db->exec("CREATE TABLE IF NOT EXISTS bh_saved_activities (user_id BIGINT UNSIGNED NOT NULL,activity_id BIGINT UNSIGNED NOT NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY(user_id,activity_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    $db->exec("CREATE TABLE IF NOT EXISTS bh_planner (user_id BIGINT UNSIGNED NOT NULL,activity_id BIGINT UNSIGNED NOT NULL,visited TINYINT(1) NOT NULL DEFAULT 0,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY(user_id,activity_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
     $userStmt = $db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");
     $userStmt->execute([$userId]);
     $user = $userStmt->fetch();
