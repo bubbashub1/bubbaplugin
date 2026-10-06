@@ -514,6 +514,9 @@ void bhHydrateSaved();
         }
 
         if(status)status.textContent=data.message||"You're subscribed to Bubba Hub updates.";
+        if(data.welcome_email_sent===false){
+          console.warn("[Bubba Hub] Newsletter signup saved, but welcome email was not sent. Check newsletter SMTP configuration.");
+        }
         form.reset();
       }catch(error){
         console.error("[Bubba Hub] Newsletter signup failed:",error);
