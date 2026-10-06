@@ -8,11 +8,18 @@
 <header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="leader.html">Class Leaders</a><a href="admin/admin.html">Admin</a></nav><a class="button button-soft" href="account.html">My account</a></header>
 <main class="admin-subpage-shell"><div class="admin-back"><a href="admin-activities.html">← Activities & listings</a></div>
 <div class="admin-subpage-head"><div><span class="eyebrow">Bulk directory tools</span><h1>Import & Export</h1><p>Move activities between Bubba Hub and Google Sheets using CSV.</p></div><div class="admin-setting-actions"><button class="button button-soft" type="button" data-admin-logout>Sign out of admin</button></div></div>
-<section class="admin-panel"><div class="admin-panel-head"><div><span class="eyebrow">Import</span><h2>Import published Google Sheet</h2><p>Publish your Google Sheet as CSV, then paste the published link below.</p></div></div>
-<label>Google Sheets published CSV link<input id="activityCsvUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?...&output=csv"></label>
-<small class="bh-address-help">Google Sheets: <strong>File → Share → Publish to web</strong> → choose CSV. Use the published <strong>/spreadsheets/d/e/.../pub</strong> link.</small>
+<section class="admin-panel"><div class="admin-panel-head"><div><span class="eyebrow">Import</span><h2>Upload activities CSV</h2><p>Upload a CSV file from your computer, or import directly from a published Google Sheet.</p></div></div>
+<label>CSV file<input id="activityCsvFile" type="file" accept=".csv,text/csv"></label>
+<small class="bh-address-help">Use a CSV with the columns shown in the template below. Maximum file size: 10 MB.</small>
+<div class="admin-form-grid">
 <label>When an activity already exists<select id="activityCsvMode"><option value="update">Update the existing listing</option><option value="skip">Skip the existing listing</option></select></label>
-<button class="button button-primary" id="importActivityCsv" type="button">Import published Google Sheet</button>
+</div>
+<button class="button button-primary" id="uploadActivityCsv" type="button">Upload CSV</button>
+<div style="margin:18px 0;border-top:1px solid #d8e6db;padding-top:18px">
+<label>Or use a published Google Sheets CSV link<input id="activityCsvUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?...&output=csv"></label>
+<small class="bh-address-help">Google Sheets: <strong>File → Share → Publish to web</strong> → choose CSV.</small>
+<button class="button button-soft" id="importActivityCsv" type="button">Import Google Sheet</button>
+</div>
 <p class="library-message" id="activityImportStatus" role="status"></p></section>
 <section class="admin-panel"><div class="admin-panel-head"><div><span class="eyebrow">Export</span><h2>Download current activities</h2><p>Export the current directory as a CSV file for editing in Google Sheets or Excel.</p></div></div>
 <a class="button button-primary" href="api/admin-import-export.php?mode=export">Download current activities</a></section>
