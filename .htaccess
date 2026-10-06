@@ -8,6 +8,9 @@ RewriteRule ^index/?$ index.html [L,QSA]
 RewriteRule ^admin-login/?$ /admin-login.html [R=301,L]
 RewriteRule ^leader-login/?$ /leader-login.html [R=301,L]
 
+# Admin dashboard
+RewriteRule ^admin/?$ admin.html [L,QSA]
+
 # Class leader dashboard
 RewriteRule ^leader/?$ leader.html [L,QSA]
 
