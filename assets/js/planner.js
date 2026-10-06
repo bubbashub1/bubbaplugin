@@ -254,7 +254,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       const start=new Date(e.date.getFullYear(),e.date.getMonth(),e.date.getDate(),Number(String(e.session.start_time).slice(0,2)),Number(String(e.session.start_time).slice(3,5)),0);
       const endRange=timeRange(e.session),end=new Date(start.getTime()+(endRange?Math.max(30,endRange.end-endRange.start):60)*60000);
       const venue=e.session.venue?.name||e.session.venue?.town||e.activity.town||"";
-      lines.push("BEGIN:VEVENT","UID:bubbahub-"+e.activity.id+"-"+e.day+"-"+i+"@bubbahub.co.uk","DTSTAMP:"+utcStamp(new Date()),"DTSTART:"+utcStamp(start),"DTEND:"+utcStamp(end),"SUMMARY:"+icsEscape(e.activity.title),"LOCATION:"+icsEscape(venue),"DESCRIPTION:"+icsEscape("Bubba Hub family planner · "+(e.activity.category||"Activity")),"URL:"+icsEscape(location.origin+"/beta/"+(typeof bhActivityUrl==="function"?bhActivityUrl(e.activity):"activity.html?id="+encodeURIComponent(e.activity.id))),"END:VEVENT");
+      lines.push("BEGIN:VEVENT","UID:bubbahub-"+e.activity.id+"-"+e.day+"-"+i+"@bubbahub.co.uk","DTSTAMP:"+utcStamp(new Date()),"DTSTART:"+utcStamp(start),"DTEND:"+utcStamp(end),"SUMMARY:"+icsEscape(e.activity.title),"LOCATION:"+icsEscape(venue),"DESCRIPTION:"+icsEscape("Bubba Hub family planner · "+(e.activity.category||"Activity")),"URL:"+icsEscape(location.origin+"/"+(typeof bhActivityUrl==="function"?bhActivityUrl(e.activity):"activity.html?id="+encodeURIComponent(e.activity.id))),"END:VEVENT");
     });
     lines.push("END:VCALENDAR");
     return lines.join("\r\n");
