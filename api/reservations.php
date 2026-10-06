@@ -96,8 +96,8 @@ if(!empty($consentData['photo_organiser_marketing'])) $photos[]='Organiser marke
 $subject='Bubba Hub reservation request: '.$activity;
 $body="New Bubba Hub reservation request\n\nActivity: {$activity}\nDate: {$slotDate}\nTime: {$slotTime}\nPlaces: {$qty}\n\nParent/carer: {$name}\nEmail: {$email}\nPhone: {$phone}\nChild: {$child}\nChild age: {$age}\n\nMessage:\n{$message}\n\nThe family has consented to their details being sent to you to action this reservation request.\n\nBooking consent information shared by the family:\n".($consentText!==''?$consentText:'No additional child/medical information supplied.')."\nPhoto permissions: ".($photos?implode(', ',$photos):'None selected')."\nConsent version: ".trim((string)($consentData['consent_version']??''))."\nConsent given at: ".trim((string)($consentData['consent_given_at']??''))."\nReservation snapshot created at: ".trim((string)($consentData['reservation_created_at']??date('c')))."\n";
 
-$headers="From: Bubba Hub <no-reply@bubbahub.co.uk>\r\nReply-To: {$email}\r\nContent-Type: text/plain; charset=UTF-8\r\n";
-$sent=mail($leader,$subject,$body,$headers);
+require_once __DIR__ . '/mailer.php';
+$sent=bh_send_smtp_mail($leader,$subject,nl2br(htmlspecialchars($body,ENT_QUOTES,'UTF-8')),$body,$email);
 
 if(!$sent){
  http_response_code(500);
