@@ -6,33 +6,14 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const ageFromDob=value=>{if(!value)return "";const dob=new Date(value+"T00:00:00");if(Number.isNaN(dob.getTime()))return "";const now=new Date();let years=now.getFullYear()-dob.getFullYear(),months=now.getMonth()-dob.getMonth();if(now.getDate()<dob.getDate())months--;if(months<0){years--;months+=12}return years<2?Math.max(0,years*12+months)+" months":years+" years"};
   const bookingDate=raw=>{if(!raw)return "";const d=new Date(String(raw).replace(" ","T"));if(Number.isNaN(d.getTime()))return "";return d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})+" · "+d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})};
   async function getJson(url,opts){const r=await fetch(url,opts);const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.message||j.error||"Something went wrong.");return j}
-  async function loadProStatus(){try{const r=await fetch("api/subscription.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});const j=await r.json();isPro=!!j.pro;}catch(e){isPro=false;}const status=$("hubProStatus"),pitch=$("hubProPitch");if(status)status.hidden=!isPro;if(pitch)pitch.hidden=isPro;}
+  async function loadProStatus(){try{const r=await fetch("/api/subscription.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});const j=await r.json();isPro=!!j.pro;}catch(e){isPro=false;}const status=$("hubProStatus"),pitch=$("hubProPitch");if(status)status.hidden=!isPro;if(pitch)pitch.hidden=isPro;}
   async function load(){
     const auth=await getJson("api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}}).catch(()=>({authenticated:false}));
     adminOnly=!!auth.is_admin&&!auth.user?.id;
-    /* Build/development mode: authentication is intentionally disabled.
-       My Hub must still render so the rest of the site can be tested.
-       Use local browser storage for the parts that do not need the account API. */
-    if(!auth.authenticated){
-      csrf="";
-      data={
-        ok:true,
-        build_mode:true,
-        user:{email:"",name:"",first_name:""},
-        children:[],
-        bumps:[],
-        saved:bhGet(BH_KEYS.saved),
-        planner:bhGet(BH_KEYS.planner).map(id=>({id:String(id)})),
-        bookings:[]
-      };
-      activities=await bhActivities();
-      render();
-      return;
-    }
     csrf=auth.csrf||"";
     data=await getJson("api/my-hub.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
     const merged=[...new Set([...(data.saved||[]).map(String),...bhGet(BH_KEYS.saved)])];
-    if(!adminOnly&&JSON.stringify(merged)!==JSON.stringify((data.saved||[]).map(String))){const sync=await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"sync_saved",saved:merged,csrf})}).then(r=>r.json()).catch(()=>null);if(sync?.ok)data.saved=sync.saved||merged}
+    if(!adminOnly&&JSON.stringify(merged)!==JSON.stringify((data.saved||[]).map(String))){const sync=await fetch("/api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"sync_saved",saved:merged,csrf})}).then(r=>r.json()).catch(()=>null);if(sync?.ok)data.saved=sync.saved||merged}
     data.saved=merged;
     bhSet(BH_KEYS.saved,(data.saved||[]).map(String));
     activities=await bhActivities();
@@ -190,7 +171,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const overlay=document.createElement("div");overlay.className="hub-modal";
     overlay.innerHTML="<form class='hub-modal-card'><div class='admin-panel-head'><div><span class='eyebrow'>Family profile</span><h2>"+esc(title)+"</h2></div><button type='button' class='button button-soft' data-close>Close</button></div><div class='hub-form-grid'>"+body+"</div><div class='hero-actions'><button class='button button-primary' type='submit'>Save</button></div><p class='library-message' data-modal-message></p></form>";
     document.body.appendChild(overlay);const form=overlay.querySelector("form"),close=()=>overlay.remove();overlay.querySelector("[data-close]").onclick=close;overlay.addEventListener("click",e=>{if(e.target===overlay)close()});
-    form.onsubmit=async e=>{e.preventDefault();const status=form.querySelector("[data-modal-message]");try{const payload=Object.fromEntries(new FormData(form));payload.action=action;payload.csrf=csrf;const r=await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(payload)});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.message||j.error||"Could not save.");close();await load()}catch(err){status.textContent=err.message||"Could not save.";status.classList.add("is-error")}};
+    form.onsubmit=async e=>{e.preventDefault();const status=form.querySelector("[data-modal-message]");try{const payload=Object.fromEntries(new FormData(form));payload.action=action;payload.csrf=csrf;const r=await fetch("/api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(payload)});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.message||j.error||"Could not save.");close();await load()}catch(err){status.textContent=err.message||"Could not save.";status.classList.add("is-error")}};
   }
   const editChild=c=>modal("Edit child","<input type='hidden' name='id' value='"+c.id+"'><label>Name<input name='name' required value='"+esc(c.name||"")+"'></label><label>Gender<input name='gender' value='"+esc(c.gender||"")+"'></label><label>Date of birth<input name='date_of_birth' type='date' value='"+esc(c.date_of_birth||"")+"'></label>","save_child");
   const editBump=b=>modal("Edit bump","<input type='hidden' name='id' value='"+b.id+"'><label>Nickname<input name='nickname' value='"+esc(b.nickname||"")+"'></label><label>Due date<input name='due_date' type='date' value='"+esc(b.due_date||"")+"'></label>","save_bump");
