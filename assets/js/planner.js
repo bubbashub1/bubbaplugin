@@ -13,16 +13,16 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const today=new Date(),todayNum=((today.getDay()||7));
   let csrf="",signedIn=false,adminOnly=false,items=[],currentView="week",plannerProfiles=[],activePlannerId="default",activePlannerFilters=null;
 
-  const auth=await fetch("api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}}).then(r=>r.json()).catch(()=>({ok:false,authenticated:false}));
+  const auth=await fetch("/api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}}).then(r=>r.json()).catch(()=>({ok:false,authenticated:false}));
   signedIn=!!auth.authenticated;adminOnly=!!auth.is_admin;csrf=auth.csrf||"";
 
   async function plannerGet(){
     if(!signedIn||adminOnly)return null;
-    try{const response=await fetch("api/planner.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});const payload=await response.json();if(!response.ok||!payload.ok)return null;csrf=payload.csrf||csrf;return payload}catch{return null}
+    try{const response=await fetch("/api/planner.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});const payload=await response.json();if(!response.ok||!payload.ok)return null;csrf=payload.csrf||csrf;return payload}catch{return null}
   }
   async function plannerPost(body){
     if(!signedIn||adminOnly||!csrf)return false;
-    try{const response=await fetch("api/planner.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({...body,csrf})});const payload=await response.json();return !!(response.ok&&payload.ok)}catch{return false}
+    try{const response=await fetch("/api/planner.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({...body,csrf})});const payload=await response.json();return !!(response.ok&&payload.ok)}catch{return false}
   }
   const localPlanned=()=>bhGet(BH_KEYS.planner),localVisited=()=>getList(VISITED_KEY),localHidden=()=>getList(HIDE_KEY);
   const plannerProfileSelect=$("plannerProfileSelect"),plannerProfileNote=$("plannerProfileNote");
@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   async function loadPlannerProfiles(){
     let local=[];try{const v=JSON.parse(localStorage.getItem("bhProPlanners")||"[]");local=Array.isArray(v)?v:[]}catch{}
     plannerProfiles=local; const requested=new URLSearchParams(location.search).get("proPlanner");
-    try{if(signedIn&&!adminOnly){const response=await fetch("api/planner-pro.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});const payload=await response.json();if(response.ok&&payload.ok&&Array.isArray(payload.state?.planners))plannerProfiles=payload.state.planners;}}catch{}
+    try{if(signedIn&&!adminOnly){const response=await fetch("/api/planner-pro.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});const payload=await response.json();if(response.ok&&payload.ok&&Array.isArray(payload.state?.planners))plannerProfiles=payload.state.planners;}}catch{}
     if(plannerProfileSelect){
       plannerProfileSelect.innerHTML='<option value="default">My Planner</option>'+plannerProfiles.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name||"Custom planner")+'</option>').join("");
       const target=requested&&plannerProfiles.some(p=>String(p.id)===String(requested))?String(requested):"default"; plannerProfileSelect.value=target; activePlannerId=target;
