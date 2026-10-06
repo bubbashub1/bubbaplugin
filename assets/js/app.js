@@ -467,39 +467,74 @@ void bhHydrateSaved();
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render,{once:true});else render();
 })();
 
-/* Homepage OneSignal newsletter signup — temporary until the dedicated newsletter system is built. */
+/* Homepage newsletter signup */
 (function(){
-  const form=document.getElementById("homeNewsletterForm"),email=document.getElementById("homeNewsletterEmail"),status=document.getElementById("homeNewsletterStatus");
-  if(!form)return;
-  form.addEventListener("submit",async event=>{
-    event.preventDefault();
-    const value=String(email?.value||"").trim();
-    if(!value||!email?.checkValidity())return;
-    if(status)status.textContent="Subscribing…";
-    try{
-      const response=await fetch("/api/newsletter-signup.php",{
-        method:"POST",
-        credentials:"same-origin",
-        headers:{"Content-Type":"application/json","Accept":"application/json"},
-        body:JSON.stringify({email:value,source:"homepage_footer"})
-      });
-      const data=await response.json().catch(()=>({}));
-      if(!response.ok||!data.ok)throw new Error(data.message||"Could not subscribe.");
-      // Keep OneSignal in sync when it is available, but do not make the
-      // newsletter database subscription depend on push/email provider setup.
+  function bindNewsletterForm(){
+    const form=document.getElementById("homeNewsletterForm");
+    const email=document.getElementById("homeNewsletterEmail");
+    const status=document.getElementById("homeNewsletterStatus");
+    if(!form||form.dataset.newsletterBound==="true")return;
+    form.dataset.newsletterBound="true";
+
+    form.addEventListener("submit",async function(event){
+      event.preventDefault();
+      const value=String(email?.value||"").trim();
+      if(!value){
+        if(status)status.textContent="Please enter your email address.";
+        return;
+      }
+      if(email && !email.checkValidity()){
+        email.reportValidity();
+        return;
+      }
+
+      if(status)status.textContent="Subscribing…";
+      const button=form.querySelector("button");
+      if(button)button.disabled=true;
+
       try{
-        if(window.__bubbaOneSignalPromise){
-          const OneSignal=await window.__bubbaOneSignalPromise;
-          if(OneSignal?.User?.addEmail)await OneSignal.User.addEmail(value);
+        const response=await fetch("/api/newsletter-signup.php",{
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json",
+            "Accept":"application/json"
+          },
+          body:JSON.stringify({
+            email:value,
+            source:"homepage_footer"
+          })
+        });
+
+        const raw=await response.text();
+        let data={};
+        try{data=raw?JSON.parse(raw):{};}catch(_){}
+
+        if(!response.ok||!data.ok){
+          throw new Error(data.message||"We couldn't subscribe you just now.");
         }
-      }catch(_){}
-      if(status)status.textContent=data.message||"You're subscribed to Bubba Hub updates.";
-      form.reset();
-    }catch(error){
-      if(status)status.textContent=error.message||"Please try again in a moment.";
-    }
-  });
-})();
+
+        if(status)status.textContent=data.message||"You're subscribed to Bubba Hub updates.";
+        form.reset();
+      }catch(error){
+        console.error("[Bubba Hub] Newsletter signup failed:",error);
+        if(status)status.textContent=error.message||"Please try again in a moment.";
+      }finally{
+        if(button)button.disabled=false;
+      }
+    });
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",bindNewsletterForm,{once:true});
+  }else{
+    bindNewsletterForm();
+  }
+
+  // The shared footer may be injected after this script starts.
+  const observer=new MutationObserver(bindNewsletterForm);
+  observer.observe(document.body,{childList:true,subtree:true});
+  window.setTimeout(()=>observer.disconnect(),10000);
+})(); 
 
 /* Homepage live activity cards — use the same activity data as Directory/Activity. */
 (function(){
