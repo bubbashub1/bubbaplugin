@@ -210,7 +210,79 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const bookingUrl=a.booking_url||"";
   const slotHtml=(Array.isArray(a.booking_slots)?a.booking_slots:[]).map((s,i)=>'<div class="booking-slot"><div><strong>'+bhEscape(s.date||"")+'</strong><span>'+bhEscape(s.time||"")+(s.price?" · "+bhEscape(s.price):"")+'</span></div>'+(bookingMode==="external"&&bookingUrl?'<a class="button button-primary" target="_blank" rel="noopener" href="'+bhEscape(bookingUrl)+'">Book now</a>':'<button class="button button-primary reserve-button" data-slot="'+i+'">Reserve a place</button>')+'</div>').join("");
   bookingBox.innerHTML=slotHtml+(bookingMode==="external"&&bookingUrl?'<p class="booking-note">If the latest dates are not shown, please check the booking website for latest details.</p><a class="button button-primary button-full" target="_blank" rel="noopener" href="'+bhEscape(bookingUrl)+'">Book now</a>':bookingMode==="reserve"?'<button class="button button-primary button-full" id="reserveGeneral">Reserve a place</button>':'<p class="muted">Booking details coming soon.</p>');
-  function openReserve(slot){if(window.BH_DEMO_MODE && String(a.id||'').startsWith('demo-')){window.location.href='booking.html?slug='+encodeURIComponent(a.slug||'');return}const overlay=document.createElement("div");overlay.className="booking-modal-backdrop";overlay.innerHTML='<div class="booking-modal" role="dialog" aria-modal="true"><button class="booking-modal-close" aria-label="Close">×</button><span class="eyebrow">Reserve a place</span><h2>Send a reservation request</h2><p>Your request will be sent to the organiser for them to confirm.</p><form id="reserveForm"><label>Name<input name="name" required autocomplete="name"></label><label>Email<input type="email" name="email" required autocomplete="email"></label><label>Phone<input name="phone" autocomplete="tel"></label><label>Child name<input name="child_name"></label><label>Child age<input name="child_age"></label><label>Places<input type="number" name="quantity" min="1" value="1" required></label><label>Message<textarea name="message" rows="4"></textarea></label><label class="booking-consent"><input type="checkbox" name="consent" required> I agree that my details can be sent to the organiser to action this reservation request.</label><button class="button button-primary button-full" type="submit">Send reservation request</button><p class="booking-form-status" aria-live="polite"></p></form></div>';document.body.appendChild(overlay);overlay.querySelector(".booking-modal-close").onclick=()=>overlay.remove();overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.remove()});const form=overlay.querySelector("form");const savedConsent=(()=>{try{return JSON.parse(localStorage.getItem("bhConsentProfiles")||"null")}catch{return null}})();if(!savedConsent||!savedConsent.consent_to_share_with_organiser){const note=document.createElement("p");note.className="booking-note";note.innerHTML='Before sending a reservation, please <a href="consent.html" target="_blank" rel="noopener"><strong>complete your booking consent form</strong></a>. This lets you choose which child, health and photo information is shared with the organiser.';form.insertBefore(note,form.firstChild)}form.addEventListener("submit",async e=>{const status=form.querySelector(".booking-form-status");if(!savedConsent||!savedConsent.consent_to_share_with_organiser){e.preventDefault();status.textContent="Please complete the booking consent form first.";return}e.preventDefault();status.textContent="Sending…";const fd=new FormData(form);fd.append("activity_id",a.id);fd.append("activity_title",a.title);fd.append("organiser_email",a.email||"");if(slot){fd.append("slot_date",slot.date||"");fd.append("slot_time",slot.time||"")}fd.append("consent_json",JSON.stringify(savedConsent));try{const res=await fetch("/api/reservations.php",{method:"POST",body:fd});const data=await res.json();if(!res.ok||!data.ok)throw new Error(data.error||"Could not send request");status.textContent="Request sent. The organiser will contact you.";form.querySelector("button[type=submit]").disabled=true}catch(err){status.textContent=err.message||"Could not send request. Please try again."}})}
+  function openReserve(slot){
+    if(window.BH_DEMO_MODE && String(a.id||'').startsWith('demo-')){window.location.href='booking.html?slug='+encodeURIComponent(a.slug||'');return}
+    const overlay=document.createElement("div");
+    overlay.className="booking-modal-backdrop";
+    overlay.innerHTML='<div class="booking-modal" role="dialog" aria-modal="true" aria-labelledby="reserveTitle"><button class="booking-modal-close" aria-label="Close">×</button><span class="eyebrow">Reserve a place</span><h2 id="reserveTitle">Send a reservation request</h2><p>Your request goes directly to the organiser. Bubba Hub does not take payment or confirm availability.</p><form id="reserveForm"><label>Name<input name="name" required autocomplete="name"></label><label>Email<input type="email" name="email" required autocomplete="email"></label><label>Phone<input name="phone" autocomplete="tel"></label><label>Child profile<select name="child_id" id="reservationChild"><option value="">Choose a child profile</option><option value="manual">Enter child details below</option></select></label><div id="reservationChildHelp" class="booking-note">Select a child from your My Hub profile where available. Their saved name and date of birth will be added to this reservation request.</div><label>Child name<input name="child_name" required></label><label>Child age<input name="child_age" required inputmode="numeric"></label><label>Places<input type="number" name="quantity" min="1" value="1" required></label><label>Message<textarea name="message" rows="4" placeholder="Anything the organiser should know about this reservation?"></textarea></label><section class="booking-consent-panel"><strong>Consent &amp; information sharing</strong><p>Your consent profile is <strong>required</strong> for every reservation request. Only information you have agreed can be shared will be attached to this request.</p><div id="reservationConsentStatus" class="booking-note">Checking your consent profile…</div><label class="booking-consent"><input type="checkbox" name="consent" required> I agree that the relevant information in my saved consent profile can be sent to this organiser for this reservation.</label><p class="booking-note"><a href="consent.html" target="_blank" rel="noopener">Review or update my consent profile</a></p></section><button class="button button-primary button-full" type="submit">Send reservation request</button><p class="booking-form-status" aria-live="polite"></p></form></div>';
+    document.body.appendChild(overlay);
+    const close=()=>overlay.remove();
+    overlay.querySelector(".booking-modal-close").onclick=close;
+    overlay.addEventListener("click",e=>{if(e.target===overlay)close()});
+    const form=overlay.querySelector("#reserveForm"), childSelect=overlay.querySelector("#reservationChild"), childHelp=overlay.querySelector("#reservationChildHelp"), consentStatus=overlay.querySelector("#reservationConsentStatus"), submit=form.querySelector("button[type=submit]");
+    let savedConsent=null, children=[];
+    try{savedConsent=JSON.parse(localStorage.getItem("bhConsentProfiles")||"null")}catch{}
+    const consentReady=!!(savedConsent&&savedConsent.consent_to_share_with_organiser&&savedConsent.consent_given_at&&savedConsent.consent_version);
+    if(consentReady) consentStatus.textContent="✓ Consent profile ready. It will be attached to this reservation request as a dated snapshot.";
+    else consentStatus.innerHTML='⚠️ A saved consent profile is required. <a href="consent.html" target="_blank" rel="noopener"><strong>Complete consent first</strong></a>.';
+    const applyChild=child=>{
+      if(!child)return;
+      form.elements.child_name.value=child.name||"";
+      if(child.date_of_birth){
+        const dob=new Date(child.date_of_birth+"T00:00:00"),now=new Date();
+        let age=now.getFullYear()-dob.getFullYear();
+        const before=now.getMonth()<dob.getMonth()||(now.getMonth()===dob.getMonth()&&now.getDate()<dob.getDate());
+        if(before)age--;
+        form.elements.child_age.value=age>=0?String(age):"";
+      }
+      if(savedConsent && child.name && String(savedConsent.child_name||"").trim().toLowerCase()===String(child.name).trim().toLowerCase()){
+        consentStatus.textContent="✓ Consent profile matches "+child.name+". A dated consent snapshot will be attached.";
+      }else if(savedConsent){
+        consentStatus.textContent="✓ Consent profile saved. Check that it applies to the selected child before sending.";
+      }
+    };
+    (async()=>{
+      try{
+        const res=await fetch("/api/my-hub.php?view=family",{credentials:"same-origin",headers:{Accept:"application/json"}});
+        if(res.ok){
+          const data=await res.json();
+          if(data?.ok&&Array.isArray(data.children)){
+            children=data.children;
+            children.forEach(child=>{const o=document.createElement("option");o.value=String(child.id);o.textContent=child.name+(child.date_of_birth?" · "+child.date_of_birth:"");o.dataset.child=JSON.stringify(child);childSelect.appendChild(o)});
+            if(children.length){childHelp.textContent="Choose a child from your My Hub profile. Their saved details will be added to the reservation request."}
+            const savedName=String(savedConsent?.child_name||"").trim().toLowerCase();
+            const match=children.find(x=>String(x.name||"").trim().toLowerCase()===savedName);
+            if(match){childSelect.value=String(match.id);applyChild(match)}
+          }
+        }
+      }catch{}
+    })();
+    childSelect.addEventListener("change",()=>{
+      const id=childSelect.value;
+      if(id==="manual"){form.elements.child_name.value="";form.elements.child_age.value="";childHelp.textContent="Enter the child details below. Your saved consent profile must still match the child you are reserving for.";return}
+      const child=children.find(x=>String(x.id)===String(id)); if(child)applyChild(child);
+    });
+    form.addEventListener("submit",async e=>{
+      e.preventDefault();
+      const status=form.querySelector(".booking-form-status");
+      if(!consentReady){status.textContent="Please complete and save your consent profile before sending a reservation request.";return}
+      const selectedId=childSelect.value;
+      const selected=selectedId&&selectedId!=="manual"?children.find(x=>String(x.id)===String(selectedId)):null;
+      if(selected && String(savedConsent.child_name||"").trim().toLowerCase()!==String(selected.name||"").trim().toLowerCase()){
+        status.textContent="Your saved consent profile is for a different child. Please update consent before sending this request.";return
+      }
+      status.textContent="Sending…";submit.disabled=true;
+      const fd=new FormData(form);
+      fd.append("activity_id",a.id);fd.append("activity_title",a.title);
+      if(slot){fd.append("slot_date",slot.date||"");fd.append("slot_time",slot.time||"")}
+      fd.append("consent_json",JSON.stringify({...savedConsent,selected_child_id:selected?.id||"",selected_child_name:selected?.name||form.elements.child_name.value.trim(),reservation_created_at:new Date().toISOString()}));
+      try{
+        const res=await fetch("/api/reservations.php",{method:"POST",body:fd,credentials:"same-origin",headers:{Accept:"application/json"}});
+        const data=await res.json();if(!res.ok||!data.ok)throw new Error(data.error||"Could not send request");
+        status.textContent="Reservation request sent. The organiser will contact you.";submit.textContent="Request sent"; 
+      }catch(err){status.textContent=err.message||"Could not send request. Please try again.";submit.disabled=false}
+    });
+  }
   document.getElementById("heroBookNow")?.addEventListener("click",()=>{if(bookingMode==="external"&&a.booking_url){window.open(a.booking_url,"_blank","noopener");return}openReserve(null)});
   bookingBox.querySelectorAll(".reserve-button").forEach(btn=>btn.onclick=()=>openReserve((a.booking_slots||[])[Number(btn.dataset.slot)]));
   bookingBox.querySelector("#reserveGeneral")?.addEventListener("click",()=>openReserve(null));
