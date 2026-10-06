@@ -486,6 +486,9 @@ try {
         $email = strtolower(trim((string)($body['email'] ?? '')));
         $password = (string)($body['password'] ?? '');
         $confirm = (string)($body['confirm_password'] ?? '');
+        $firstName = trim((string)($body['first_name'] ?? ''));
+        $lastName = trim((string)($body['last_name'] ?? ''));
+        $eventCode = strtoupper(trim((string)($body['event_code'] ?? '')));
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             bh_auth_response(422, ['ok' => false, 'error' => 'invalid_email', 'message' => 'Please enter a valid email address.']);
@@ -503,17 +506,38 @@ try {
             bh_auth_response(409, ['ok' => false, 'error' => 'email_exists', 'message' => 'An account already exists for this email.']);
         }
 
-        $stmt = $db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?, 'family','active')");
-        $stmt->execute([$email, password_hash($password, PASSWORD_DEFAULT)]);
+        try { $db->exec("ALTER TABLE bh_users ADD COLUMN first_name VARCHAR(80) NULL"); } catch (Throwable $ignored) {}
+        try { $db->exec("ALTER TABLE bh_users ADD COLUMN last_name VARCHAR(80) NULL"); } catch (Throwable $ignored) {}
+        $stmt = $db->prepare("INSERT INTO bh_users (email,password_hash,role,status,first_name,last_name) VALUES (?,?, 'family','active',?,?)");
+        $stmt->execute([$email, password_hash($password, PASSWORD_DEFAULT), $firstName ?: null, $lastName ?: null]);
+        $newUserId=(int)$db->lastInsertId();
+
+        // Event sign-ups can receive Pro access without touching the future payment flow.
+        $eventPro=false;
+        $configuredEventCode='';
+        try {
+            $cfgFile=__DIR__.'/config.php';
+            $cfg=is_file($cfgFile)?require $cfgFile:[];
+            $configuredEventCode=strtoupper(trim((string)($cfg['app']['event_signup_code'] ?? getenv('BUBBAHUB_EVENT_CODE') ?: 'BUBBAEVENT26')));
+        } catch(Throwable $ignored) {}
+        if($eventCode!=='' && $configuredEventCode!=='' && hash_equals($configuredEventCode,$eventCode)){
+            try{
+                $db->exec("CREATE TABLE IF NOT EXISTS bh_user_subscriptions (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,user_id BIGINT UNSIGNED NOT NULL,plan VARCHAR(40) NOT NULL DEFAULT 'family_pro',status VARCHAR(30) NOT NULL DEFAULT 'active',source VARCHAR(40) NOT NULL DEFAULT 'event',started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,expires_at DATETIME NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY(id),UNIQUE KEY uq_bh_user_subscription(user_id),KEY idx_bh_subscription_status(status)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+                $q=$db->prepare("INSERT INTO bh_user_subscriptions(user_id,plan,status,source,expires_at) VALUES(?,?,?,?,NULL) ON DUPLICATE KEY UPDATE plan=VALUES(plan),status='active',source=VALUES(source),expires_at=NULL");
+                $q->execute([$newUserId,'family_pro','active','event']);
+                $eventPro=true;
+            }catch(Throwable $ignored){}
+        }
 
         session_regenerate_id(true);
-        $_SESSION['bh_user_id'] = (int)$db->lastInsertId();
+        $_SESSION['bh_user_id'] = $newUserId;
         $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
 
         bh_auth_response(201, [
             'ok' => true,
             'authenticated' => true,
-            'user' => ['id' => (int)$_SESSION['bh_user_id'], 'email' => $email, 'role' => 'family', 'status' => 'active'],
+            'user' => ['id' => (int)$_SESSION['bh_user_id'], 'email' => $email, 'role' => 'family', 'status' => 'active', 'first_name' => $firstName, 'last_name' => $lastName, 'pro' => $eventPro],
+            'pro' => $eventPro,
             'csrf' => $_SESSION['bh_csrf'],
         ]);
     }
