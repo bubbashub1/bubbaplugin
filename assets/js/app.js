@@ -494,7 +494,7 @@ void bhHydrateSaved();
 
   const fallbackCards=Array.from(grid.querySelectorAll(".home-activity-card"));
   const setText=(el,value)=>{if(el)el.textContent=value||""};
-  const PLACEHOLDER_IMAGE="images/logos/gemini_generated_image_1dzezm1dzezm1dze-20260929-213630-1f8496.jpeg";
+  const PLACEHOLDER_IMAGE="/wp-content/uploads/logo/placeholder.jpeg";
   const resolveImage=(path)=>{
     const value=String(path||"").trim();
     if(!value)return PLACEHOLDER_IMAGE;
