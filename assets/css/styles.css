@@ -5514,3 +5514,100 @@ a:active {
   .auth-tabs{display:grid;grid-template-columns:1fr 1fr}
   .auth-tabs .button{width:100%}
 }
+
+/* =========================================================================
+   FINAL BRAND FORM + CTA CONSISTENCY
+   ========================================================================= */
+:root{
+  --bh-cta-bg: var(--bh-green-dark);
+  --bh-cta-text: var(--bh-green-soft);
+  --bh-cta-hover: #f39a3f;
+}
+
+/* All standard form controls get comfortable touch-friendly spacing. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+select,
+textarea{
+  width:100%;
+  min-height:48px;
+  padding:12px 14px;
+  border:1px solid var(--bh-border);
+  border-radius:12px;
+  background:var(--bh-white);
+  color:var(--bh-text);
+  line-height:1.4;
+}
+
+textarea{
+  min-height:120px;
+  padding:13px 14px;
+}
+
+input::placeholder,
+textarea::placeholder{color:var(--bh-muted);opacity:1}
+
+/* Primary CTAs: Bubba Hub dark green with light green text. */
+.button,
+.button-primary,
+.button-full,
+.home-full-button,
+.directory-calendar-hero-button,
+.directory-map-action-button,
+.directory-map-hero-button,
+.directory-planner-action-button,
+.auth-submit,
+button[type="submit"]{
+  background:var(--bh-cta-bg);
+  border-color:var(--bh-cta-bg);
+  color:var(--bh-cta-text) !important;
+  text-decoration:none;
+}
+
+.button:hover,
+.button:focus-visible,
+.button-primary:hover,
+.button-full:hover,
+.home-full-button:hover,
+.directory-calendar-hero-button:hover,
+.directory-map-action-button:hover,
+.directory-map-hero-button:hover,
+.directory-planner-action-button:hover,
+.auth-submit:hover,
+button[type="submit"]:hover,
+.button:focus-visible,
+button[type="submit"]:focus-visible{
+  background:var(--bh-cta-hover);
+  border-color:var(--bh-cta-hover);
+  color:var(--bh-white) !important;
+}
+
+/* CTA links should never inherit underlines. */
+a.button,
+a.button-primary,
+a.button-full,
+a.home-full-button,
+a[class*="action-button"],
+a[class*="hero-button"]{
+  text-decoration:none !important;
+}
+
+/* Keep secondary controls readable without competing with the primary CTA. */
+.button-secondary{
+  background:var(--bh-white);
+  border-color:var(--bh-green);
+  color:var(--bh-green-dark) !important;
+}
+.button-secondary:hover,
+.button-secondary:focus-visible{
+  background:var(--bh-green-soft);
+  border-color:var(--bh-green);
+  color:var(--bh-green-dark) !important;
+}
+
+/* Checkbox/radio controls should retain their native sizing. */
+input[type="checkbox"],
+input[type="radio"]{
+  width:auto;
+  min-height:0;
+  padding:0;
+}
