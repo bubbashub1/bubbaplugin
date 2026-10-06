@@ -1,4 +1,17 @@
 document.addEventListener("DOMContentLoaded",async()=>{
+  try{
+    const subResponse=await fetch("api/subscription.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+    const sub=await subResponse.json();
+    const demo=window.BH_DEMO_MODE===true || localStorage.getItem("BH_PRO_DEMO")==="1";
+    if(!sub.pro && !demo){
+      document.querySelector(".pro-content")?.insertAdjacentHTML("afterbegin","<div class='admin-panel' style='margin-bottom:18px'><strong>Family Pro required</strong><p>Planner Pro is available with an active Family Pro account.</p><a class='button button-primary' href='account/subscription.html'>Upgrade to Family Pro →</a></div>");
+      document.querySelectorAll(".pro-content button").forEach(b=>b.disabled=true);
+      return;
+    }
+  }catch(e){
+    if(!(window.BH_DEMO_MODE===true || localStorage.getItem("BH_PRO_DEMO")==="1")) return;
+  }
+
   const $=id=>document.getElementById(id);
   const keys={planners:"bhProPlanners",family:"bhProFamily",shares:"bhProShares",notes:"bhProNotes",dayPlan:"bhProDayPlan"};
   const read=(key,fallback=[])=>{try{const v=JSON.parse(localStorage.getItem(key)||"null");return Array.isArray(v)?v:fallback}catch{return fallback}};
