@@ -19,7 +19,6 @@ if (empty($_SESSION['bh_admin_authenticated'])) {
 }
 
 require __DIR__.'/db.php';
-require __DIR__.'/onesignal-email.php';
 $db = bh_mysql();
 
 $db->exec("CREATE TABLE IF NOT EXISTS bh_account_activation_tokens (
@@ -32,7 +31,7 @@ $db->exec("CREATE TABLE IF NOT EXISTS bh_account_activation_tokens (
     INDEX idx_activation_user (user_id),
     INDEX idx_activation_expiry (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-try{$db->exec("ALTER TABLE bh_account_activation_tokens ADD COLUMN organisation_name VARCHAR(190) NULL");}catch(Throwable $ignored){} try{$db->exec("ALTER TABLE bh_account_activation_tokens ADD COLUMN listing_title VARCHAR(190) NULL");}catch(Throwable $ignored){} try{$db->exec("ALTER TABLE bh_account_activation_tokens ADD COLUMN email_sent_at DATETIME NULL");}catch(Throwable $ignored){}
+try{$db->exec("ALTER TABLE bh_account_activation_tokens ADD COLUMN organisation_name VARCHAR(190) NULL");}catch(Throwable $ignored){} try{$db->exec("ALTER TABLE bh_account_activation_tokens ADD COLUMN listing_title VARCHAR(190) NULL");}catch(Throwable $ignored){} try{$db->exec("ALTER TABLE bh_account_activation_tokens ADD COLUMN first_name VARCHAR(120) NULL");}catch(Throwable $ignored){} try{$db->exec("ALTER TABLE bh_account_activation_tokens ADD COLUMN code_hash CHAR(64) NULL");}catch(Throwable $ignored){} try{$db->exec("ALTER TABLE bh_account_activation_tokens ADD COLUMN email_sent_at DATETIME NULL");}catch(Throwable $ignored){} try{$db->exec("ALTER TABLE bh_account_activation_tokens ADD COLUMN listing_title VARCHAR(190) NULL");}catch(Throwable $ignored){} try{$db->exec("ALTER TABLE bh_account_activation_tokens ADD COLUMN email_sent_at DATETIME NULL");}catch(Throwable $ignored){}
 
 function bh_clean_header(string $s): string {
     $s = preg_replace('/^\xEF\xBB\xBF/', '', $s);
@@ -57,27 +56,21 @@ function bh_has_column(PDO $db, string $table, string $column): bool {
     $q->execute([$table,$column]);
     return (int)$q->fetchColumn() > 0;
 }
-function bh_activation_token(PDO $db, int $userId): string {
-    $raw = bin2hex(random_bytes(32));
-    $hash = hash('sha256', $raw);
+function bh_activation_credentials(PDO $db, int $userId): array {
+    $token=bin2hex(random_bytes(32)); $code=(string)random_int(100000,999999);
     $db->prepare("UPDATE bh_account_activation_tokens SET used_at=NOW() WHERE user_id=? AND used_at IS NULL")->execute([$userId]);
-    $db->prepare("INSERT INTO bh_account_activation_tokens (user_id,token_hash,expires_at) VALUES (?,?,DATE_ADD(NOW(),INTERVAL 7 DAY))")->execute([$userId,$hash]);
-    return $raw;
+    $db->prepare("INSERT INTO bh_account_activation_tokens (user_id,token_hash,code_hash,expires_at) VALUES (?,?,?,DATE_ADD(NOW(),INTERVAL 7 DAY))")->execute([$userId,hash('sha256',$token),hash('sha256',$code)]);
+    return ['token'=>$token,'code'=>$code];
 }
-function bh_send_welcome(string $email, string $organisation, string $listing, string $token): bool {
-    $safeOrg = htmlspecialchars($organisation, ENT_QUOTES, 'UTF-8');
-    $safeListing = htmlspecialchars($listing, ENT_QUOTES, 'UTF-8');
-    $safeUrl = htmlspecialchars('https://bubbahub.co.uk/activate.html?token='.rawurlencode($token), ENT_QUOTES, 'UTF-8');
-    $html = '<div style="font-family:Arial,sans-serif;line-height:1.6;color:#26352b;max-width:640px;margin:0 auto">'
-        .'<h1 style="color:#617261">Welcome to Bubba Hub</h1>'
-        .'<p>Hi'.($safeOrg!==''?' '.$safeOrg:'').',</p>'
-        .'<p>Welcome to Bubba Hub. Your listing <strong>'.$safeListing.'</strong> is now on the new website.</p>'
-        .'<p>We have created your organiser account so you can manage your listing and keep your details up to date.</p>'
-        .'<p><a href="'.$safeUrl.'" style="display:inline-block;background:#416651;color:#fff;text-decoration:none;padding:12px 20px;border-radius:8px">Activate your account</a></p>'
-        .'<p>This secure activation link can only be used once and expires in 7 days.</p>'
-        .'<p>The Bubba Hub team</p></div>';
-    $plain = 'Welcome to Bubba Hub' . "\n\nYour listing \"" . $listing . "\" is now on the new website." . "\n\nActivate your organiser account:\nhttps://bubbahub.co.uk/activate.html?token=" . rawurlencode($token) . "\n\nThis secure activation link can only be used once and expires in 7 days.\n\nThe Bubba Hub team";
-    return bh_send_onesignal_email($email, 'Welcome to Bubba Hub – your listing is now live', $html, $plain);
+function bh_send_welcome(string $email,string $firstName,string $organisation,string $listing,string $token,string $code): bool {
+    $wpConfig=dirname(__DIR__).'/wp-config.php'; if(!is_file($wpConfig)){error_log('Bubba Hub leader welcome: wp-config.php not found.');return false;} require_once $wpConfig;
+    $dir=dirname(__DIR__).'/wp-includes/PHPMailer'; foreach(['Exception.php','PHPMailer.php','SMTP.php'] as $f){$p=$dir.'/'.$f;if(!is_file($p)){error_log('Bubba Hub leader welcome: PHPMailer file missing: '.$p);return false;}require_once $p;}
+    $host=defined('BH_SMTP_HOST')?(string)BH_SMTP_HOST:'smtp.bubbahub.co.uk';$port=defined('BH_SMTP_PORT')?(int)BH_SMTP_PORT:465;$username=defined('BH_SMTP_USERNAME')?(string)BH_SMTP_USERNAME:'noreply@bubbahub.co.uk';$password=defined('BH_SMTP_PASSWORD')?(string)BH_SMTP_PASSWORD:'';$secure=defined('BH_SMTP_SECURE')?strtolower((string)BH_SMTP_SECURE):'ssl';$from=defined('BH_SMTP_FROM')?(string)BH_SMTP_FROM:$username;$fromName=defined('BH_SMTP_FROM_NAME')?(string)BH_SMTP_FROM_NAME:'Bubba Hub';
+    if($password===''||$password==='YOUR-NOREPLY-MAILBOX-PASSWORD'){error_log('Bubba Hub leader welcome: SMTP password not configured.');return false;}
+    $sf=htmlspecialchars($firstName,ENT_QUOTES,'UTF-8');$so=htmlspecialchars($organisation,ENT_QUOTES,'UTF-8');$sl=htmlspecialchars($listing,ENT_QUOTES,'UTF-8');$url=htmlspecialchars('https://bubbahub.co.uk/activate.html?token='.rawurlencode($token),ENT_QUOTES,'UTF-8');$hello=$sf!==''?'Hi '.$sf.',':'Hello,';
+    try{$mail=new PHPMailer\PHPMailer\PHPMailer(true);$mail->isSMTP();$mail->Host=$host;$mail->Port=$port;$mail->SMTPAuth=true;$mail->Username=$username;$mail->Password=$password;$mail->SMTPSecure=($secure==='tls'||$secure==='starttls')?PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS:PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;$mail->CharSet='UTF-8';$mail->setFrom($from,$fromName);$mail->addAddress($email);$mail->isHTML(true);$mail->Subject='Welcome to Bubba Hub — your leader account is ready 💚';
+    $mail->Body='<div style="margin:0;background:#f4f7f3;padding:32px 12px;font-family:Arial,Helvetica,sans-serif;color:#33483a"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;margin:0 auto;background:#fff;border-radius:18px;overflow:hidden"><tr><td style="background:#d8e6db;padding:24px;text-align:center"><img src="https://bubbahub.co.uk/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub" width="190" style="display:block;width:190px;max-width:100%;height:auto;margin:0 auto 10px"><div style="font-size:12px;color:#416651;font-weight:bold">YOUR FAMILY HUB FOR FINDING, PLANNING &amp; BOOKING FAMILY ACTIVITIES</div></td></tr><tr><td style="padding:34px 34px 12px"><div style="font-size:12px;letter-spacing:1.5px;font-weight:bold;color:#3c8e96">WELCOME TO BUBBA HUB</div><h1 style="margin:8px 0 14px;font-size:30px;line-height:1.2;color:#416651">Your leader account is ready 💚</h1><p style="font-size:16px;line-height:1.7;margin:0 0 14px">'.$hello.'</p><p style="font-size:16px;line-height:1.7;margin:0 0 18px">The Bubba Hub team has created a leader account for <strong>'.$so.'</strong>'.($sl!==''?' and added <strong>'.$sl.'</strong> to your account.':'').'</p></td></tr><tr><td style="padding:0 34px 28px"><div style="background:#f0f5f0;border:1px solid #d8e6db;border-radius:14px;padding:22px;text-align:center"><div style="font-size:13px;color:#617261;font-weight:bold;text-transform:uppercase;letter-spacing:1px">Your one-time sign-in code</div><div style="font-size:34px;line-height:1.2;letter-spacing:8px;font-weight:bold;color:#144400;margin:12px 0">'.$code.'</div><div style="font-size:13px;color:#617261">Use this code once when activating your account. It expires in 7 days.</div></div></td></tr><tr><td style="padding:0 34px 28px;text-align:center"><a href="'.$url.'" style="display:inline-block;background:#416651;color:#fff;text-decoration:none;font-weight:bold;font-size:16px;padding:15px 26px;border-radius:10px">SIGN IN &amp; CREATE YOUR PASSWORD</a><p style="font-size:13px;line-height:1.6;color:#617261;margin:14px 0 0">You will create your own password during your first sign-in.</p></td></tr><tr><td style="padding:0 34px 30px"><h2 style="font-size:20px;color:#416651;margin:0 0 14px">What is waiting for you?</h2><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td width="50%" valign="top" style="padding:0 8px 12px 0"><strong style="color:#144400">📍 Add activities</strong><div style="font-size:14px;line-height:1.6;margin-top:4px">Manage your listings, locations, ages, prices and booking information.</div></td><td width="50%" valign="top" style="padding:0 0 12px 8px"><strong style="color:#144400">👨‍👩‍👧 Reach families</strong><div style="font-size:14px;line-height:1.6;margin-top:4px">Help local families discover what you offer.</div></td></tr><tr><td width="50%" valign="top" style="padding:0 8px 0 0"><strong style="color:#144400">📅 Keep it up to date</strong><div style="font-size:14px;line-height:1.6;margin-top:4px">Update your activities whenever details change.</div></td><td width="50%" valign="top" style="padding:0 0 0 8px"><strong style="color:#144400">⭐ Build your presence</strong><div style="font-size:14px;line-height:1.6;margin-top:4px">Give families a clear place to discover your organisation.</div></td></tr></table></td></tr><tr><td style="background:#416651;padding:24px 34px;color:#fff"><div style="font-size:16px;font-weight:bold;margin-bottom:6px">A little security note</div><div style="font-size:13px;line-height:1.6">Your code is for you only. It can be used once and expires after 7 days. If you were not expecting this email, please contact the Bubba Hub team.</div></td></tr><tr><td style="padding:22px 34px;text-align:center;font-size:12px;line-height:1.6;color:#617261">Bubba Hub<br>Your Family Hub for Finding, Planning &amp; Booking Family Activities<br><span style="color:#9fb7a5">You are receiving this because a Bubba Hub leader account was created for you.</span></td></tr></table></div>';
+    $mail->AltBody="Welcome to Bubba Hub — your leader account is ready 💚\n\n{$hello}\n\nYour one-time sign-in code is: {$code}\n\nUse it once at: https://bubbahub.co.uk/activate.html?token=".rawurlencode($token)."\n\nYou will create your own password during first sign-in. The code expires in 7 days.\n\nThe Bubba Hub Team";$mail->send();return true;}catch(Throwable $e){error_log('Bubba Hub leader welcome failed: '.$e->getMessage());return false;}
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -166,6 +159,7 @@ try {
     foreach ($rows as $idx => $row) {
         $line = $idx + 2;
         $email = strtolower(trim(bh_first($row,['email','email_address','contact_email'])));
+        $firstName = bh_first($row,['first_name','firstname','forename','contact_first_name']);
         $title = bh_first($row,['title','activity_title','activity_name','activity','class_name','class','name']);
         $org = bh_first($row,['organisation_name','organisation','organization','organizer','organiser','company','company_name','provider','provider_name','leader','leader_name']);
         $category = bh_first($row,['category','activity_category','type','class_type']);
@@ -272,10 +266,9 @@ try {
 
         $summary['created_listings']++;
         if ($newUser) {
-            $token = bh_activation_token($db,$userId);
-            $db->prepare("UPDATE bh_account_activation_tokens SET organisation_name=?,listing_title=? WHERE token_hash=?")->execute([$org,$title,hash('sha256',$token)]);
-            if (bh_send_welcome($email, $org, $title, $token)) { $summary['emails_queued']++; try { $db->prepare("UPDATE bh_account_activation_tokens SET email_sent_at=NOW() WHERE token_hash=?")->execute([hash('sha256',$token)]); } catch (Throwable $ignored) {} }
-            else $summary['email_failures']++;
+            $credentials=bh_activation_credentials($db,$userId);$token=$credentials['token'];$code=$credentials['code'];
+            $db->prepare("UPDATE bh_account_activation_tokens SET organisation_name=?,listing_title=?,first_name=? WHERE token_hash=?")->execute([$org,$title,$firstName,hash('sha256',$token)]);
+            if (bh_send_welcome($email,$firstName,$org,$title,$token,$code)) { $summary['emails_queued']++; try{$db->prepare("UPDATE bh_account_activation_tokens SET email_sent_at=NOW() WHERE token_hash=?")->execute([hash('sha256',$token)]);}catch(Throwable $ignored){} } else $summary['email_failures']++;
         }
     }
     $db->commit();
