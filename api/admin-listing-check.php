@@ -65,7 +65,7 @@ function lc_fetch(string $url):array{
  $text=preg_replace('/\s+/',' ',strip_tags($raw));$text=trim(html_entity_decode((string)$text,ENT_QUOTES|ENT_HTML5,'UTF-8'));
  $signals=[];
  foreach(['closed','no longer running','no longer trading','permanently closed','ceased trading','we have closed','we are closing','relocated','new venue','moved to','new timetable','returning soon'] as $term)if(mb_stripos($text,$term)!==false)$signals[]=$term;
- $social=[];if(preg_match_all('#https?://(?:www\.)?(?:facebook\.com|instagram\.com|tiktok\.com)/[^\"\'\s<>]+#i',$raw,$sm))$social=array_values(array_unique($sm[0]));
+ $social=[];if(preg_match_all("#https?://(?:www\\.)?(?:facebook\\.com|instagram\\.com|tiktok\\.com)/[^\\\"'\\s<>]+#i",$raw,$sm))$social=array_values(array_unique($sm[0]));
  return ['ok'=>true,'http'=>$http,'title'=>$title,'text'=>mb_substr($text,0,30000),'signals'=>$signals,'social'=>$social,'url'=>$final?:$url];
 }
 function lc_match(array $items,string $title,string $website):?array{
@@ -99,13 +99,15 @@ if($action==='results'){ $rows=lc_results($db);lc_out(200,['ok'=>true,'results'=
 if($action==='dismiss'){ $id=(int)($input['id']??0);$q=$db->prepare("UPDATE bh_listing_check_results SET status='dismissed',reviewed_at=NOW() WHERE id=?");$q->execute([$id]);lc_out(200,['ok'=>true]); }
 if($action==='create_draft'){
  $id=(int)($input['id']??0);$q=$db->prepare("SELECT * FROM bh_listing_check_results WHERE id=?");$q->execute([$id]);$r=$q->fetch();if(!$r)lc_out(404,['ok'=>false,'error'=>'Listing Check result not found.']);if((int)($r['draft_activity_id']??0)>0)lc_out(200,['ok'=>true,'draft_activity_id'=>(int)$r['draft_activity_id']]);
- $org=$db->query("SELECT id FROM bh_organisers WHERE slug='listing-check-unassigned' LIMIT 1")->fetchColumn();
- if(!$org){$db->prepare("INSERT INTO bh_organisers (organisation_name,slug,description,status) VALUES (?,?,?, 'draft')")->execute(['Listing Check — Unassigned','listing-check-unassigned','Temporary owner for newly discovered listings. Assign a real organiser before publishing.']);$org=$db->lastInsertId();}
+ $orgSlug='listing-check-'.strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',(string)$r['title']),'-')).'-'.$id;
+ $orgName=trim((string)$r['title'])?:'New listing';
+ $db->prepare("INSERT INTO bh_organisers (organisation_name,slug,description,website,status) VALUES (?,?,?,?, 'draft')")->execute([$orgName,$orgSlug,'Discovered by Listing Check. Assign/claim the real organiser before publishing.',($r['website']?:null)]);
+ $org=(int)$db->lastInsertId();
  $slug=trim((string)$r['title']);$slug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$slug),'-'));if($slug==='')$slug='listing-check-'.$id;$base=$slug;$n=2;while(true){$x=$db->prepare("SELECT COUNT(*) FROM bh_activities WHERE slug=?");$x->execute([$slug]);if(!(int)$x->fetchColumn())break;$slug=$base.'-'.$n++;}
- $desc=trim((string)($r['website_evidence']??''));$ins=$db->prepare("INSERT INTO bh_activities (organiser_id,title,slug,description,county,status) VALUES (?,?,?,?,?,'draft')");
+ $desc='Discovered by Bubba Hub Listing Check. Review the external source before publishing.';
+ $ins=$db->prepare("INSERT INTO bh_activities (organiser_id,title,slug,description,county,status) VALUES (?,?,?,?,?,'draft')");
  $county=in_array($r['region'],['Plymouth','Torbay'],true)?$r['region']:(str_contains(strtolower((string)$r['region']),'cornwall')?'Cornwall':(str_contains(strtolower((string)$r['region']),'devon')?'Devon':null));
- $ins->execute([(int)$org,$r['title'],$slug,$desc?:null,$county]);$aid=(int)$db->lastInsertId();
- if($r['website']){$db->prepare("UPDATE bh_organisers SET website=? WHERE id=?")->execute([$r['website'],(int)$org]);}
+ $ins->execute([$org,$r['title'],$slug,$desc,$county]);$aid=(int)$db->lastInsertId();
  $db->prepare("UPDATE bh_listing_check_results SET draft_activity_id=?,updated_at=NOW() WHERE id=?")->execute([$aid,$id]);lc_out(200,['ok'=>true,'draft_activity_id'=>$aid]);
 }
 if($action!=='scan')lc_out(400,['ok'=>false,'error'=>'Unknown action.']);
