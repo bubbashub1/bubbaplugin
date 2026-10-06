@@ -89,7 +89,7 @@ const bhInitMap=async()=>{
         const ageText=Array.isArray(activity.age_range)?activity.age_range.join(" · "):(activity.age_range||"All ages");
         const price=activity.price||session.price||"Price on request";
         const time=[session.day,session.start&&session.start.slice(0,5)].filter(Boolean).join(" · ");
-        const image=activity.image_url?'<img class="bh-map-popup-image" src="'+esc(activity.image_url)+'" alt="'+esc(activity.title)+'">':'<img class="bh-map-popup-image" src="images/logos/gemini_generated_image_1dzezm1dzezm1dze-20260929-213630-1f8496.jpeg" alt="" aria-hidden="true">';
+        const image=activity.image_url?'<img class="bh-map-popup-image" src="'+esc(activity.image_url)+'" alt="'+esc(activity.title)+'">':'<img class="bh-map-popup-image" src="/wp-content/uploads/logo/logoheader.png" alt="" aria-hidden="true">';
         const popup='<article class="bh-map-popup-card">'+image+'<div class="bh-map-popup-body"><span class="bh-map-popup-category">'+esc(categoryMap[activity.category]||activity.category||"Family activity")+'</span><h3>'+esc(activity.title)+'</h3><p class="bh-map-popup-location">📍 '+esc(venue.name||venue.town||venue.address||"")+'</p><div class="bh-map-popup-meta"><span>👶 '+esc(ageText)+'</span><span>💷 '+esc(price)+'</span>'+(time?'<span>🕒 '+esc(time)+'</span>':'')+'</div><a class="button button-primary bh-map-popup-link" href="'+bhActivityUrl(activity)+'">View activity →</a></div></article>';
         markers.push(L.marker([Number(venue.lat),Number(venue.long)],{icon}).addTo(map).bindPopup(popup,{maxWidth:330,minWidth:250,className:"bh-map-popup"}));
       });
