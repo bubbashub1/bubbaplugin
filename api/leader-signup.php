@@ -153,6 +153,8 @@ try {
 
     session_regenerate_id(true);
     $_SESSION['bh_user_id'] = $userId;
+    $_SESSION['bh_leader_authenticated'] = true;
+    unset($_SESSION['bh_family_authenticated']);
     $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
 
     bh_leader_signup_response(201, [
