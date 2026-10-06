@@ -18,7 +18,7 @@ function bh_newsletter_escape(string $value): string {
 function bh_newsletter_base_url(): string {
     $configFile = __DIR__.'/config.php';
     $config = is_file($configFile) ? require $configFile : [];
-    return rtrim((string)($config['app']['base_url'] ?? getenv('BUBBAHUB_BASE_URL') ?: 'https://bubbahub.co.uk/beta'), '/');
+    return rtrim((string)($config['app']['base_url'] ?? getenv('BUBBAHUB_BASE_URL') ?: 'https://bubbahub.co.uk'), '/');
 }
 function bh_newsletter_window(string $frequency): array {
     $now = new DateTimeImmutable('now');
