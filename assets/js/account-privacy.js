@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
  let csrf="";
  try{
   const auth=await fetch("../api/auth.php?action=me",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}).then(r=>r.json());
-  if(!auth.authenticated){msg.innerHTML='<strong>Sign in required.</strong> <a href="../auth.html?next=%2Fbeta%2Faccount%2Fprivacy.html">Sign in to manage privacy choices.</a>';form.style.display="none";return;}
+  if(!auth.authenticated){msg.innerHTML='<strong>Sign in required.</strong> <a href="../auth.html?next=%2Faccount%2Fprivacy.html">Sign in to manage privacy choices.</a>';form.style.display="none";return;}
   const r=await fetch("../api/preferences.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}),data=await r.json();
   if(!r.ok||!data.ok)throw new Error(data.message||"Could not load privacy settings.");
   csrf=data.csrf||auth.csrf||"";
