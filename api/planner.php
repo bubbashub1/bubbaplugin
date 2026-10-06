@@ -12,6 +12,7 @@ function bh_planner_response(int $status, array $data): never {
 
 try {
     require __DIR__ . '/db.php';
+    $db = bh_mysql();
 
     $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
     if (session_status() !== PHP_SESSION_ACTIVE) {
