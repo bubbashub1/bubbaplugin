@@ -23,10 +23,17 @@
 <article class="pro-card" style="border:2px solid #416651"><span class="pro-badge">50% OFF DEMO</span><h2>Family Pro</h2><div class="pro-price">£20 <small>/ year</small></div><p>More planning and organisation for family life.</p><ul class="demo-list"><li class="tick">✓ Personalised My Hub</li><li class="tick">✓ Multiple planners</li><li class="tick">✓ Family planning</li><li class="tick">✓ Calendar & print</li><li class="tick">✓ Saved activities</li><li class="tick">✓ Future Pro features</li></ul><button class="button button-primary" id="activateDemo">Activate Pro demo</button></article>
 <article class="pro-card"><span class="eyebrow">Already Pro?</span><h2>Your Pro dashboard</h2><p>Jump straight into the tools that make Bubba Hub useful every week.</p><div class="pro-cta"><a class="button button-soft" href="my-hub.html">My Hub</a><a class="button button-soft" href="planner-pro.html">Planner Pro</a><a class="button button-soft" href="calendar.html">Calendar</a></div></article>
 </section>
-<section class="admin-panel" style="margin-top:24px"><span class="eyebrow">Demo data → live data</span><h2>Built with replaceable data sources</h2><table class="demo-table"><tr><th>Demo component</th><th>Future source</th></tr><tr><td>Family members</td><td><code>api/my-hub.php</code></td></tr><tr><td>Saved activities</td><td><code>api/my-hub.php</code> / favourites</td></tr><tr><td>Planner items</td><td><code>api/planner.php</code></td></tr><tr><td>Subscription</td><td><code>api/profile.php</code> / payment system</td></tr><tr><td>Bookings</td><td><code>api/reservations.php</code></td></tr></table></section>
+<section class="admin-panel" style="margin-top:24px"><span class="eyebrow">Demo data → live data</span><h2>Built with replaceable data sources</h2><table class="demo-table"><tr><th>Demo component</th><th>Future source</th></tr><tr><td>Family members</td><td><code>api/my-hub.php</code></td></tr><tr><td>Saved activities</td><td><code>api/my-hub.php</code> / favourites</td></tr><tr><td>Planner items</td><td><code>api/planner.php</code></td></tr><tr><td>Subscription</td><td><code>api/subscription.php</code> / payment system</td></tr><tr><td>Bookings</td><td><code>api/reservations.php</code></td></tr></table></section>
 </main>
 <footer class="site-footer"><div class="site-footer-bottom"><span>© 2026 Bubba Hub</span><span>Devon & Cornwall</span></div></footer>
 <script>
+(async()=>{
+ try{
+  const r=await fetch("api/subscription.php",{credentials:"same-origin",cache:"no-store"}),d=await r.json();
+  const b=document.getElementById("activateDemo");
+  if(d.pro&&b){b.textContent="✓ Family Pro active";b.disabled=true;b.dataset.live="1";}
+ }catch(e){}
+})();
 document.getElementById('activateDemo')?.addEventListener('click',()=>{localStorage.setItem('BH_PRO_DEMO','1');document.getElementById('activateDemo').textContent='✓ Pro demo active';document.getElementById('activateDemo').disabled=true;});
-if(localStorage.getItem('BH_PRO_DEMO')==='1'){document.getElementById('activateDemo').textContent='✓ Pro demo active';document.getElementById('activateDemo').disabled=true;}
+if(localStorage.getItem('BH_PRO_DEMO')==='1' && !document.getElementById('activateDemo')?.dataset.live){document.getElementById('activateDemo').textContent='✓ Pro demo active';document.getElementById('activateDemo').disabled=true;}
 </script></body></html>
