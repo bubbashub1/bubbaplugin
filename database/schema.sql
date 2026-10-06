@@ -370,3 +370,18 @@ CREATE TABLE IF NOT EXISTS bh_leader_expertise (
  PRIMARY KEY (organiser_id, topic_key),
  INDEX idx_leader_expertise_topic (topic_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- Public website newsletter subscribers.
+CREATE TABLE IF NOT EXISTS bh_newsletter_subscribers (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ email VARCHAR(190) NOT NULL UNIQUE,
+ status ENUM('subscribed','unsubscribed') NOT NULL DEFAULT 'subscribed',
+ source VARCHAR(80) NOT NULL DEFAULT 'website',
+ consented_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ unsubscribed_at DATETIME NULL,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ INDEX idx_newsletter_status (status),
+ INDEX idx_newsletter_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
