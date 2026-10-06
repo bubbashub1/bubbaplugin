@@ -5623,3 +5623,10 @@ body:not(.bh-home) .button-soft:focus-visible{
   background:#f39a3f;
   color:#fff;
 }
+
+
+/* Listing claim */
+.listing-claim-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--bh-border,#d8e6db)}
+.listing-claim-button{min-height:36px;font-size:12px}
+.listing-claim-message{margin:0;color:#617261;font-size:12px;line-height:1.4}
+@media(max-width:600px){.listing-claim-wrap{align-items:stretch;flex-direction:column}.listing-claim-button{width:100%;justify-content:center}}
