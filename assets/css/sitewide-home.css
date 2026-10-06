@@ -1089,9 +1089,13 @@ body:not(.bh-home) .activity-hero{
   }
 
   body .site-header .main-nav{
-    flex:1 1 auto;
-    overflow-x:auto;
-    justify-content:flex-start;
+    display:none!important;
+    flex:initial;
+    overflow:visible;
+    justify-content:initial;
+  }
+  body .site-header.mobile-menu-open .main-nav{
+    display:flex!important;
   }
 
   body:not(.bh-home) .section,
