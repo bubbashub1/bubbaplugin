@@ -24,6 +24,10 @@ function bh_send_family_welcome(string $email, string $firstName=''): bool {
         return false;
     }
 
+    // auth.php is a standalone API endpoint, so wp-config.php is not loaded
+    // automatically. Load it here so the BH_SMTP_* constants are available.
+    require_once $wpConfig;
+
     $host = defined('BH_SMTP_HOST') ? (string)BH_SMTP_HOST : 'smtp.bubbahub.co.uk';
     $port = defined('BH_SMTP_PORT') ? (int)BH_SMTP_PORT : 465;
     $username = defined('BH_SMTP_USERNAME') ? (string)BH_SMTP_USERNAME : 'noreply@bubbahub.co.uk';
@@ -32,7 +36,7 @@ function bh_send_family_welcome(string $email, string $firstName=''): bool {
     $from = defined('BH_SMTP_FROM') ? (string)BH_SMTP_FROM : $username;
     $fromName = defined('BH_SMTP_FROM_NAME') ? (string)BH_SMTP_FROM_NAME : 'Bubba Hub';
 
-    if ($password === '') {
+    if ($password === '' || $password === 'YOUR-NOREPLY-MAILBOX-PASSWORD') {
         error_log('Bubba Hub welcome email: BH_SMTP_PASSWORD is not configured.');
         return false;
     }
@@ -256,7 +260,6 @@ try {
                 'status' => $user['status'],
             ],
             'csrf' => $_SESSION['bh_csrf'],
-            'welcome_email_sent' => $welcomeEmailSent,
         ]);
     }
 
