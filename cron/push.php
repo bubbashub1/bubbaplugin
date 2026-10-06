@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 require dirname(__DIR__).'/api/db.php';
 
-$base = rtrim((string)(getenv('BUBBAHUB_BASE_URL') ?: 'https://bubbahub.co.uk/beta'), '/');
+$base = rtrim((string)(getenv('BUBBAHUB_BASE_URL') ?: 'https://bubbahub.co.uk'), '/');
 $secret = trim((string)(getenv('BUBBAHUB_PUSH_SECRET') ?: ''));
 if ($secret === '') {
     fwrite(STDERR, "BUBBAHUB_PUSH_SECRET is not configured.\n");
