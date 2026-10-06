@@ -33,9 +33,22 @@ $db->exec("CREATE TABLE IF NOT EXISTS bh_listing_check_results (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
 function lc_config():array{
- $files=array_filter([dirname(__DIR__).'/github-deploy-config.php',dirname($_SERVER['DOCUMENT_ROOT']??'').'/github-deploy-config.php',($_SERVER['DOCUMENT_ROOT']??'').'/github-deploy-config.php','/github-deploy-config.php']);
- foreach($files as $f)if(is_file($f)){ $c=require $f; if(is_array($c))return $c; }
- return [];
+ $wpConfigs=array_filter([
+  dirname(__DIR__).'/wp-config.php',
+  dirname($_SERVER['DOCUMENT_ROOT']??'').'/wp-config.php',
+  ($_SERVER['DOCUMENT_ROOT']??'').'/wp-config.php',
+  '/public_html/wp-config.php',
+ ]);
+ foreach($wpConfigs as $f){
+  if(is_file($f)){
+   require_once $f;
+   break;
+  }
+ }
+ return [
+  'google_search_api_key'=>defined('BH_GOOGLE_SEARCH_API_KEY')?(string)BH_GOOGLE_SEARCH_API_KEY:'',
+  'google_search_cx'=>defined('BH_GOOGLE_SEARCH_CX')?(string)BH_GOOGLE_SEARCH_CX:'',
+ ];
 }
 function lc_key(string $title,string $url):string{
  $title=mb_strtolower(trim($title));$url=trim($url);
@@ -50,7 +63,7 @@ function lc_norm_url(string $url):string{
 }
 function lc_google(string $q,array $cfg):array{
  $key=(string)($cfg['google_search_api_key']??'');$cx=(string)($cfg['google_search_cx']??'');
- if($key===''||$cx==='')throw new RuntimeException('Google search is not configured. Add google_search_api_key and google_search_cx to the server-only github-deploy-config.php.');
+ if($key===''||$cx==='')throw new RuntimeException('Google search is not configured. Add BH_GOOGLE_SEARCH_API_KEY and BH_GOOGLE_SEARCH_CX to wp-config.php.');
  $url='https://customsearch.googleapis.com/customsearch/v1?'.http_build_query(['key'=>$key,'cx'=>$cx,'q'=>$q,'num'=>10,'safe'=>'active']);
  $ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>15,CURLOPT_FOLLOWLOCATION=>true,CURLOPT_USERAGENT=>'Bubba Hub Listing Check/1.0']);$raw=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);
  if($raw===false||$http>=400)throw new RuntimeException('Google search request failed (HTTP '.$http.').');
