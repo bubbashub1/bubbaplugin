@@ -15,86 +15,25 @@ function bh_send_family_welcome(string $email, string $firstName=''): bool {
     $email = strtolower(trim($email));
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
 
-    $wpConfig = dirname(__DIR__) . '/wp-config.php';
-    if (!is_file($wpConfig)) {
-        error_log('Bubba Hub welcome email: wp-config.php not found.');
-        return false;
-    }
+    $safeName = htmlspecialchars($firstName, ENT_QUOTES, 'UTF-8');
+    $greeting = $safeName !== '' ? 'Hi ' . $safeName . '!' : 'Welcome!';
+    $html = '<div style="font-family:Arial,sans-serif;line-height:1.6;color:#26352b;max-width:640px;margin:0 auto">'
+        . '<h1 style="color:#416651">Welcome to Bubba Hub 💚</h1>'
+        . '<p>' . $greeting . '</p>'
+        . '<p>Your family account is ready. Bubba Hub helps you find, save, plan and book family activities across Devon &amp; Cornwall.</p>'
+        . '<p><strong>Next steps:</strong></p>'
+        . '<ul><li>Add your child or children to your family profiles.</li><li>Save activities you love.</li><li>Build your family planner.</li><li>Explore upcoming events and bookings.</li></ul>'
+        . '<p><a href="https://bubbahub.co.uk/my-hub.html" style="display:inline-block;padding:12px 20px;background:#416651;color:#fff;text-decoration:none;border-radius:8px">Open My Hub</a></p>'
+        . '<p>You can update your account and notification preferences at any time.</p>'
+        . '<p>The Bubba Hub team</p></div>';
 
-    // auth.php is a standalone API endpoint, so wp-config.php is not loaded
-    // automatically. Load it here so the BH_SMTP_* constants are available.
-    require_once $wpConfig;
+    $plain = "Welcome to Bubba Hub 💚\n\n"
+        . ($firstName !== '' ? "Hi {$firstName}!\n\n" : '')
+        . "Your family account is ready. Bubba Hub helps you find, save, plan and book family activities across Devon & Cornwall.\n\n"
+        . "Open My Hub: https://bubbahub.co.uk/my-hub.html\n\n"
+        . "The Bubba Hub team";
 
-    $host = defined('BH_SMTP_HOST') ? (string)BH_SMTP_HOST : 'smtp.bubbahub.co.uk';
-    $port = defined('BH_SMTP_PORT') ? (int)BH_SMTP_PORT : 465;
-    $username = defined('BH_SMTP_USERNAME') ? (string)BH_SMTP_USERNAME : 'noreply@bubbahub.co.uk';
-    $password = defined('BH_SMTP_PASSWORD') ? (string)BH_SMTP_PASSWORD : '';
-    $secure = defined('BH_SMTP_SECURE') ? strtolower((string)BH_SMTP_SECURE) : 'ssl';
-    $from = defined('BH_SMTP_FROM') ? (string)BH_SMTP_FROM : $username;
-    $fromName = defined('BH_SMTP_FROM_NAME') ? (string)BH_SMTP_FROM_NAME : 'Bubba Hub';
-
-    if ($password === '' || $password === 'YOUR-NOREPLY-MAILBOX-PASSWORD') {
-        error_log('Bubba Hub welcome email: BH_SMTP_PASSWORD is not configured.');
-        return false;
-    }
-
-    $phpMailerDir = dirname(__DIR__) . '/wp-includes/PHPMailer';
-    $required = [
-        $phpMailerDir . '/Exception.php',
-        $phpMailerDir . '/PHPMailer.php',
-        $phpMailerDir . '/SMTP.php',
-    ];
-    foreach ($required as $file) {
-        if (!is_file($file)) {
-            error_log('Bubba Hub welcome email: WordPress PHPMailer file missing: ' . $file);
-            return false;
-        }
-        require_once $file;
-    }
-
-    try {
-        $mail = new PHPMailer\PHPMailer\PHPMailer(true);
-        $mail->isSMTP();
-        $mail->Host = $host;
-        $mail->Port = $port;
-        $mail->SMTPAuth = true;
-        $mail->Username = $username;
-        $mail->Password = $password;
-        if ($secure === 'tls' || $secure === 'starttls') {
-            $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-        } else {
-            $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
-        }
-        $mail->CharSet = 'UTF-8';
-        $mail->setFrom($from, $fromName);
-        $mail->addAddress($email);
-        $mail->isHTML(true);
-        $mail->Subject = 'Welcome to Bubba Hub 💚';
-
-        $safeName = htmlspecialchars($firstName, ENT_QUOTES, 'UTF-8');
-        $greeting = $safeName !== '' ? 'Hi ' . $safeName . '!' : 'Welcome!';
-        $mail->Body = '<div style="font-family:Arial,sans-serif;line-height:1.6;color:#26352b;max-width:640px;margin:0 auto">'
-            . '<h1 style="color:#416651">Welcome to Bubba Hub 💚</h1>'
-            . '<p>' . $greeting . '</p>'
-            . '<p>Your family account is ready. Bubba Hub helps you find, save, plan and book family activities across Devon &amp; Cornwall.</p>'
-            . '<p><strong>Next steps:</strong></p>'
-            . '<ul><li>Add your child or children to your family profiles.</li><li>Save activities you love.</li><li>Build your family planner.</li><li>Explore upcoming events and bookings.</li></ul>'
-            . '<p><a href="https://bubbahub.co.uk/my-hub.html" style="display:inline-block;padding:12px 20px;background:#416651;color:#fff;text-decoration:none;border-radius:8px">Open My Hub</a></p>'
-            . '<p>You can update your account and notification preferences at any time.</p>'
-            . '<p>The Bubba Hub team</p></div>';
-
-        $mail->AltBody = "Welcome to Bubba Hub 💚\n\n"
-            . ($firstName !== '' ? "Hi {$firstName}!\n\n" : '')
-            . "Your family account is ready. Bubba Hub helps you find, save, plan and book family activities across Devon & Cornwall.\n\n"
-            . "Open My Hub: https://bubbahub.co.uk/my-hub.html\n\n"
-            . "The Bubba Hub team";
-
-        $mail->send();
-        return true;
-    } catch (Throwable $e) {
-        error_log('Bubba Hub welcome email failed: ' . $e->getMessage());
-        return false;
-    }
+    return bh_send_smtp_mail($email, 'Welcome to Bubba Hub 💚', $html, $plain);
 }
 function bh_b64url_encode(string $value): string {
     return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
