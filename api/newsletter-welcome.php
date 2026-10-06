@@ -77,6 +77,8 @@ You're receiving this because you signed up for the Bubba Hub newsletter.";
         $email,
         'Welcome to Bubba Hub 💚',
         $html,
-        $plain
+        $plain,
+        '',
+        'newsletter'
     );
 }
