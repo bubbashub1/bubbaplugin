@@ -53,16 +53,23 @@ try {
 
     // Welcome email is best-effort and must never turn a successful database
     // signup into a 500 response.
+    $welcomeEmailSent = false;
     try {
         require_once __DIR__.'/newsletter-welcome.php';
-        bh_send_newsletter_welcome($email);
+        $welcomeEmailSent = bh_send_newsletter_welcome($email);
+        if (!$welcomeEmailSent) {
+            error_log('[Bubba Hub newsletter welcome] SMTP send returned false for '.$email);
+        }
     } catch (Throwable $mailError) {
         error_log('[Bubba Hub newsletter welcome] '.$mailError->getMessage());
     }
 
     bh_newsletter_signup_json(200, [
         'ok'=>true,
-        'message'=>"You're subscribed to Bubba Hub updates."
+        'welcome_email_sent'=>$welcomeEmailSent,
+        'message'=>$welcomeEmailSent
+            ? "You're subscribed to Bubba Hub updates. We've sent you a welcome email."
+            : "You're subscribed to Bubba Hub updates, but we couldn't send the welcome email yet."
     ]);
 } catch (Throwable $e) {
     error_log('[Bubba Hub newsletter] '.$e->getMessage());
