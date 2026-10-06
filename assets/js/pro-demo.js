@@ -1,7 +1,7 @@
 /* Bubba Hub demo-data adapter.
    Demo data is read-only and intentionally mirrors the future API shape.
    Live APIs remain the source of truth whenever they are available. */
-window.BH_DEMO_MODE = window.BH_DEMO_MODE ?? true;
+window.BH_DEMO_MODE = window.BH_DEMO_MODE ?? (new URLSearchParams(location.search).get('demo') === '1');
 window.bhLoadDemoActivities = async function(){
   if(window.__bhDemoActivities) return window.__bhDemoActivities;
   const response = await fetch("/data/pro-demo.json",{cache:"no-store",headers:{Accept:"application/json"}});
