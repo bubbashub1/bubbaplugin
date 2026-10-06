@@ -52,7 +52,9 @@ async function loadDashboard(){
    if(!table)return;
    table.innerHTML=list.map(a=>{const price=a.price_from!==null&&a.price_from!==undefined?"£"+Number(a.price_from).toFixed(2):"—";const status=a.status==="published"?"Published":"Draft";return '<tr><td><strong>'+escapeHtml(a.title)+'</strong><small>'+escapeHtml(a.organisation_name||"")+'</small></td><td>'+escapeHtml(a.category)+'</td><td>'+escapeHtml(a.town||a.county||"—")+'</td><td>'+escapeHtml(a.session_summary||"—")+'</td><td>'+price+'</td><td><span class="admin-status admin-status-'+escapeHtml(a.status)+'">'+status+'</span></td><td><button type="button" class="button button-soft admin-edit-activity" data-id="'+escapeHtml(a.id)+'">Edit</button></td></tr>';}).join("")||'<tr><td colspan="7">No activities found.</td></tr>';
   };
-  document.querySelector("#adminSearch").oninput=render;
+  const search=document.querySelector("#adminSearch");
+  if(!table)return;
+  if(search)search.oninput=render;
   render();
  }catch(error){
   if(table)table.innerHTML='<tr><td colspan="7"><strong>Activities could not be loaded.</strong><br><small>'+escapeHtml(error.message)+'</small><br><button type="button" class="button button-soft" id="retryActivities">Try again</button></td></tr>';
@@ -474,9 +476,9 @@ async function login(){
 }
 
 document.querySelector("#saveAdvancedFilterSettings")?.addEventListener("click",saveAdvancedFilterSettings);
-document.querySelector("#adminLogout").addEventListener("click",logout);
+document.querySelector("#adminLogout")?.addEventListener("click",logout);
 
-document.querySelector("#deployLatest").addEventListener("click",async()=>{
+document.querySelector("#deployLatest")?.addEventListener("click",async()=>{
  const status=document.querySelector("#deployStatus");
  const button=document.querySelector("#deployLatest");
  button.disabled=true;
@@ -494,10 +496,12 @@ document.querySelector("#deployLatest").addEventListener("click",async()=>{
  }
 });
 document.querySelector("#addVenue")?.addEventListener("click",()=>addAdditionalVenue());
-document.querySelector("#newActivity").addEventListener("click",openEditor);
-document.querySelector("#cancelActivity").addEventListener("click",closeEditor);
-document.querySelector("#cancelActivity2").addEventListener("click",closeEditor);
-document.querySelector("#activityForm").addEventListener("submit",createActivity);document.querySelector("#addSession").addEventListener("click",()=>addSessionRow());document.querySelector("#adminActivities").addEventListener("click",async e=>{const b=e.target.closest(".admin-edit-activity");if(!b)return;try{await editActivity(b.dataset.id)}catch(err){alert(err.message)}});
+document.querySelector("#newActivity")?.addEventListener("click",()=>{location.href="admin/admin-activities-add-listing.html";});
+document.querySelector("#cancelActivity")?.addEventListener("click",closeEditor);
+document.querySelector("#cancelActivity2")?.addEventListener("click",closeEditor);
+document.querySelector("#activityForm")?.addEventListener("submit",createActivity);
+document.querySelector("#addSession")?.addEventListener("click",()=>addSessionRow());
+document.querySelector("#adminActivities")?.addEventListener("click",async e=>{const b=e.target.closest(".admin-edit-activity");if(!b)return;try{await editActivity(b.dataset.id)}catch(err){alert(err.message)}});
 initAddressAutocomplete();
 loadVenueSuggestions();
 verifyAdmin().then(()=>{document.querySelector("#adminContent").hidden=false;loadDashboard();loadTestUsers()}).catch(()=>{location.replace("/admin-login.html?next="+encodeURIComponent(location.pathname+location.search+location.hash));});
