@@ -349,7 +349,7 @@ const bhInitDirectory=async()=>{
         const time = [session.day, session.start && session.start.slice(0,5)].filter(Boolean).join(" · ");
         const image = activity.image_url
           ? '<img class="bh-map-popup-image" src="' + escapeHtml(activity.image_url) + '" alt="' + escapeHtml(activity.title) + '">'
-          : '<img class="bh-map-popup-image" src="images/logos/gemini_generated_image_1dzezm1dzezm1dze-20260929-213630-1f8496.jpeg" alt="" aria-hidden="true">';
+          : '<img class="bh-map-popup-image" src="/wp-content/uploads/logo/logoheader.png" alt="" aria-hidden="true">';
         return '<article class="bh-map-popup-card">' + image + '<div class="bh-map-popup-body"><span class="bh-map-popup-category">' + escapeHtml(category) + '</span><h3>' + escapeHtml(activity.title) + '</h3><p class="bh-map-popup-location">📍 ' + escapeHtml(venue.name || venue.town || venue.address || "") + '</p><div class="bh-map-popup-meta"><span>👶 ' + escapeHtml(age) + '</span><span>💷 ' + escapeHtml(price) + '</span>' + (time ? '<span>🕒 ' + escapeHtml(time) + '</span>' : '') + '</div><a class="button button-primary bh-map-popup-link" href="' + bhActivityUrl(activity) + '">View activity →</a></div></article>';
       };
       markers = bhMapEngine.render(map, list, popupHtml, markers);
@@ -735,7 +735,7 @@ const bhInitDirectory=async()=>{
         return `<article class="activity-card" data-activity-id="${escapeHtml(activity.id)}">
           <div class="activity-image">${activity.image_url
             ? `<img src="${escapeHtml(activity.image_url)}" alt="${escapeHtml(activity.title)}" loading="lazy">`
-            : `<img src="images/logos/gemini_generated_image_1dzezm1dzezm1dze-20260929-213630-1f8496.jpeg" alt="" aria-hidden="true" loading="lazy">`}</div>
+            : `<img src="/wp-content/uploads/logo/logoheader.png" alt="" aria-hidden="true" loading="lazy">`}</div>
           <div class="activity-body">
             <div class="activity-meta">${escapeHtml(categoryMap[activity.category] || activity.category || "Family activity")}</div>
             <h3>${escapeHtml(activity.title)}</h3>
