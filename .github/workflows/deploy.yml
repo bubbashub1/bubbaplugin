@@ -29,36 +29,35 @@ jobs:
       - name: Prepare SSH connection
         run: |
           mkdir -p "$RUNNER_TEMP/ssh"
-          # Accept the eWebAll host key during the SSH connection so a
-          # failed ssh-keyscan cannot block deployment before SFTP starts.
           : > "$RUNNER_TEMP/ssh/known_hosts"
 
       - name: Check eWebAll SSH connection
-  env:
-    SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
-    SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
-    SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
-  run: |
-    set -euo pipefail
-    ssh -p "$SSH_PORT" \
-      -i "$RUNNER_TEMP/eweball_deploy_key" \
-      -o IdentitiesOnly=yes \
-      -o StrictHostKeyChecking=no \
-      -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
-      "$SSH_USERNAME@$SSH_HOST" '
-        echo "=== CURRENT USER ==="
-        whoami
-        echo "=== HOME ==="
-        echo "$HOME"
-        echo "=== PWD ==="
-        pwd
-        echo "=== HOME CONTENTS ==="
-        ls -la "$HOME"
-        echo "=== ROOT CONTENTS ==="
-        ls -la /
-        echo "=== PUBLIC_HTML SEARCH ==="
-        find "$HOME" -maxdepth 3 -type d -name public_html -print 2>/dev/null || true
-      '
+        env:
+          SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
+          SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+        run: |
+          set -euo pipefail
+          ssh -p "$SSH_PORT" \
+            -i "$RUNNER_TEMP/eweball_deploy_key" \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
+            "$SSH_USERNAME@$SSH_HOST" '
+              echo "=== CURRENT USER ==="
+              whoami
+              echo "=== HOME ==="
+              echo "$HOME"
+              echo "=== PWD ==="
+              pwd
+              echo "=== HOME CONTENTS ==="
+              ls -la "$HOME"
+              echo "=== ROOT CONTENTS ==="
+              ls -la /
+              echo "=== PUBLIC_HTML SEARCH ==="
+              find "$HOME" -maxdepth 3 -type d -name public_html -print 2>/dev/null || true
+            '
+
       - name: Deploy via SSH tar stream
         env:
           SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
@@ -76,19 +75,56 @@ jobs:
           echo "Building deployment archive..."
           DEPLOY_ARCHIVE="$RUNNER_TEMP/bubbaplugin-deploy.tar.gz"
 
-          tar             --exclude='./.git'             --exclude='./.github'             --exclude='./README.md'             --exclude='./.gitignore'             -czf "$DEPLOY_ARCHIVE" .
+          tar \
+            --exclude='./.git' \
+            --exclude='./.github' \
+            --exclude='./README.md' \
+            --exclude='./.gitignore' \
+            -czf "$DEPLOY_ARCHIVE" .
 
           echo "Uploading deployment archive..."
-          scp             -P "$SSH_PORT"             -i "$RUNNER_TEMP/eweball_deploy_key"             -o IdentitiesOnly=yes             -o StrictHostKeyChecking=no             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts"             "$DEPLOY_ARCHIVE"             "$SSH_USERNAME@$SSH_HOST:/tmp/bubbaplugin-deploy.tar.gz"
+          scp \
+            -P "$SSH_PORT" \
+            -i "$RUNNER_TEMP/eweball_deploy_key" \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
+            "$DEPLOY_ARCHIVE" \
+            "$SSH_USERNAME@$SSH_HOST:/tmp/bubbaplugin-deploy.tar.gz"
 
           echo "Checking uploaded archive on eWebAll..."
-          ssh             -p "$SSH_PORT"             -i "$RUNNER_TEMP/eweball_deploy_key"             -o IdentitiesOnly=yes             -o StrictHostKeyChecking=no             -o ServerAliveInterval=15             -o ServerAliveCountMax=4             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts"             "$SSH_USERNAME@$SSH_HOST"             "ls -lh /tmp/bubbaplugin-deploy.tar.gz && tar -tzf /tmp/bubbaplugin-deploy.tar.gz >/dev/null && echo 'Archive verified successfully.'"
+          ssh \
+            -p "$SSH_PORT" \
+            -i "$RUNNER_TEMP/eweball_deploy_key" \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=no \
+            -o ServerAliveInterval=15 \
+            -o ServerAliveCountMax=4 \
+            -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
+            "$SSH_USERNAME@$SSH_HOST" \
+            "ls -lh /tmp/bubbaplugin-deploy.tar.gz && tar -tzf /tmp/bubbaplugin-deploy.tar.gz >/dev/null && echo 'Archive verified successfully.'"
 
           echo "Extracting deployment on eWebAll..."
-          ssh             -p "$SSH_PORT"             -i "$RUNNER_TEMP/eweball_deploy_key"             -o IdentitiesOnly=yes             -o StrictHostKeyChecking=no             -o ServerAliveInterval=15             -o ServerAliveCountMax=4             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts"             "$SSH_USERNAME@$SSH_HOST"             "mkdir -p \"$REMOTE_PATH\" && tar -xzf /tmp/bubbaplugin-deploy.tar.gz -C \"$REMOTE_PATH\" && rm -f /tmp/bubbaplugin-deploy.tar.gz"
+          ssh \
+            -p "$SSH_PORT" \
+            -i "$RUNNER_TEMP/eweball_deploy_key" \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=no \
+            -o ServerAliveInterval=15 \
+            -o ServerAliveCountMax=4 \
+            -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
+            "$SSH_USERNAME@$SSH_HOST" \
+            "mkdir -p \"$REMOTE_PATH\" && tar -xzf /tmp/bubbaplugin-deploy.tar.gz -C \"$REMOTE_PATH\" && rm -f /tmp/bubbaplugin-deploy.tar.gz"
 
           echo "Deployment upload finished."
 
-          ssh             -p "$SSH_PORT"             -i "$RUNNER_TEMP/eweball_deploy_key"             -o IdentitiesOnly=yes             -o StrictHostKeyChecking=no             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts"             "$SSH_USERNAME@$SSH_HOST"             "cd \"$REMOTE_PATH\" && test -f index.html && test -f OneSignalSDKWorker.js && test -f assets/css/styles.css && test -f assets/js/app.js && test -f data/activities.json && test -f schools/index.html && echo 'Remote files verified successfully.'"
+          ssh \
+            -p "$SSH_PORT" \
+            -i "$RUNNER_TEMP/eweball_deploy_key" \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
+            "$SSH_USERNAME@$SSH_HOST" \
+            "cd \"$REMOTE_PATH\" && test -f index.html && test -f OneSignalSDKWorker.js && test -f assets/css/styles.css && test -f assets/js/app.js && test -f data/activities.json && test -f schools/index.html && echo 'Remote files verified successfully.'"
 
           echo "Deployment completed successfully."
