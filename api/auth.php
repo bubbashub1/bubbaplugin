@@ -506,10 +506,25 @@ try {
             bh_auth_response(409, ['ok' => false, 'error' => 'email_exists', 'message' => 'An account already exists for this email.']);
         }
 
-        try { $db->exec("ALTER TABLE bh_users ADD COLUMN first_name VARCHAR(80) NULL"); } catch (Throwable $ignored) {}
-        try { $db->exec("ALTER TABLE bh_users ADD COLUMN last_name VARCHAR(80) NULL"); } catch (Throwable $ignored) {}
-        $stmt = $db->prepare("INSERT INTO bh_users (email,password_hash,role,status,first_name,last_name) VALUES (?,?, 'family','active',?,?)");
-        $stmt->execute([$email, password_hash($password, PASSWORD_DEFAULT), $firstName ?: null, $lastName ?: null]);
+        // Name columns were added during the account upgrade. Check the live
+        // schema before inserting so registration still works on older databases
+        // where the web user cannot ALTER TABLE.
+        $userColumns = [];
+        try {
+            $cq = $db->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_users'");
+            $userColumns = array_map('strval', $cq->fetchAll(PDO::FETCH_COLUMN));
+        } catch (Throwable $ignored) {}
+        $columns = ['email','password_hash','role','status'];
+        $values = [$email, password_hash($password, PASSWORD_DEFAULT), 'family', 'active'];
+        if (in_array('first_name', $userColumns, true)) {
+            $columns[]='first_name'; $values[]=$firstName ?: null;
+        }
+        if (in_array('last_name', $userColumns, true)) {
+            $columns[]='last_name'; $values[]=$lastName ?: null;
+        }
+        $placeholders = implode(',', array_fill(0, count($columns), '?'));
+        $stmt = $db->prepare("INSERT INTO bh_users (".implode(',', $columns).") VALUES (".$placeholders.")");
+        $stmt->execute($values);
         $newUserId=(int)$db->lastInsertId();
 
         // Event sign-ups can receive Pro access without touching the future payment flow.
