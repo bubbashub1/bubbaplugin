@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded",async()=>{
 const list=document.getElementById("familyList"),message=document.getElementById("familyMessage"),esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])));let csrf="";
-const get=async()=>{const r=await fetch("api/my-hub.php?view=family",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});const j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||"Please sign in.");return j};
+const get=async()=>{const r=await fetch("../api/my-hub.php?view=family",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});const j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||"Please sign in.");return j};
 const age=d=>{if(!d)return "";const x=new Date(d+"T00:00:00"),n=new Date();let y=n.getFullYear()-x.getFullYear(),m=n.getMonth()-x.getMonth();if(n.getDate()<x.getDate())m--;if(m<0){y--;m+=12}return y<2?Math.max(0,y*12+m)+" months":y+" years"};
 function avatarMarkup(item){
  const path=item.photo_path||"";
@@ -14,7 +14,7 @@ async function uploadAvatar(childId,file,form,msg){
  fd.append("action","upload_child_avatar"); fd.append("id",childId); fd.append("csrf",csrf); fd.append("avatar",file);
  try{
   msg.textContent="Uploading photo…";msg.className="library-message";
-  const r=await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",body:fd});
+  const r=await fetch("../api/my-hub.php",{method:"POST",credentials:"same-origin",body:fd});
   const j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||j.error||"Could not upload photo.");
   msg.textContent="Photo uploaded.";await load();form.closest(".hub-modal")?.remove();
  }catch(e){msg.textContent=e.message;msg.classList.add("is-error")}
@@ -32,7 +32,7 @@ function modal(title,type,item={}){
   e.preventDefault();const p=Object.fromEntries(new FormData(form));delete p.avatar;p.action=type==="child"?"save_child":"save_bump";if(item.id)p.id=item.id;p.csrf=csrf;
   const m=form.querySelector("[data-msg]");
   try{
-   const r=await fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(p)});
+   const r=await fetch("../api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(p)});
    const j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||j.error||"Could not save.");
    if(type==="child"&&file?.files?.[0]){
     const childId=j.id||item.id;if(!childId)throw Error("Child saved, but the photo could not be linked.");
@@ -72,7 +72,7 @@ function babyHere(id,nickname){
  const gender=prompt("Gender (optional)","")||"";
  const dob=new Date().toISOString().slice(0,10);
  const p={action:"convert_bump_to_child",id,name:clean,gender,date_of_birth:dob,csrf};
- fetch("api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(p)})
+ fetch("../api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(p)})
  .then(async r=>{const j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||j.error||"Could not convert profile.");await load()})
  .catch(e=>alert(e.message));
 }
