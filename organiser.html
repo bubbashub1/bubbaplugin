@@ -23,6 +23,7 @@
   </main>
 
   <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/leader-demo.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
@@ -65,6 +66,19 @@
       } catch (_) {
         return "";
       }
+    };
+
+    const getDemoOrganiserActivities = async slug => {
+      if(!window.BH_DEMO_MODE || typeof window.bhLoadDemoLeader!=="function") return [];
+      const d=await window.bhLoadDemoLeader(), org=d.organisation||{};
+      const wanted=cleanSlug(slug), orgSlug=cleanSlug(org.slug||org.organisation_name||org.name||"little-explorers-torbay");
+      return (d.classes||[]).filter(a=>wanted===orgSlug || cleanSlug(a.organiser_slug||orgSlug)===wanted).map(a=>({
+        ...a,id:String(a.id||""),organiser_name:org.organisation_name||org.name||"Local organiser",organiser_slug:orgSlug,
+        organiser_website:org.website||"",organiser_email:org.email||"",organiser_phone:org.phone||"",
+        venues:(a.venues||[]).map(v=>({name:v.venue_name||v.name,address:v.address,town:v.town,region:v.region,postcode:v.postcode,latitude:v.latitude,longitude:v.longitude})),
+        age_range:a.age_range?[String(a.age_range)]:[],price:a.price_from!==null&&a.price_from!==undefined?"£"+Number(a.price_from).toFixed(2):"",
+        short_description:a.description||"",image_url:a.image_path||""
+      }));
     };
 
     const getOrganiserActivities = async slug => {
@@ -312,10 +326,10 @@
       }
 
       try {
-        const [items, publicContent] = await Promise.all([
-          getOrganiserActivities(requested),
-          getPublicContent(cleanSlug(requested))
-        ]);
+        let items=[];
+        try { items=await getOrganiserActivities(requested); } catch (_) {}
+        if(!items.length) items=await getDemoOrganiserActivities(requested);
+        const publicContent=await getPublicContent(cleanSlug(requested));
 
         organiserGroups = items.filter(activity =>
           cleanSlug(activity.organiser_slug || activity.organiser_name || activity.organiser || "") === cleanSlug(requested)
