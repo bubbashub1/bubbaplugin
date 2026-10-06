@@ -21,7 +21,7 @@
     if(next&&!/\/auth\.html$/i.test(location.pathname))u.searchParams.set("next",next);
     return u.href;
   }
-  function leaderAuthTarget(){const u=rootUrl("leader-auth.html");u.searchParams.set("next",nextUrl());return u.href;}
+  function leaderAuthTarget(){const u=rootUrl("leader-login.html");u.searchParams.set("next",nextUrl());return u.href;}
 
   function updateHeader(auth,menus){
     document.querySelectorAll(".site-header").forEach(header=>{
@@ -83,8 +83,8 @@
   async function init(){
     let auth={authenticated:false,is_admin:false};
     try{const r=await fetch(rootUrl("api/auth.php?action=me"),{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});if(r.ok)auth=await r.json();}catch(e){}
-    if(isLeaderPage()&&(!auth.authenticated||(auth.user&&auth.user.role!=="leader"&&!auth.is_admin))){location.replace(leaderAuthTarget());return;}
-    if(isRestricted()&&!auth.authenticated&&!auth.is_admin){location.replace(buildAuthTarget());return;}
+    if(isLeaderPage()&&(!auth.leader_authenticated||(auth.user&&auth.user.role!=="leader"))){location.replace(leaderAuthTarget());return;}
+    if(isRestricted()&&!auth.family_authenticated&&!auth.is_admin){location.replace(buildAuthTarget());return;}
     let menus=null;
     try{
       const mr=await fetch(rootUrl("api/menu.php"),{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});

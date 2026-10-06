@@ -473,7 +473,6 @@ async function login(){
  }catch(e){setAuthMessage(e.message,true)}
 }
 
-document.querySelector("#saveAdminLogin").addEventListener("click",login);
 document.querySelector("#saveAdvancedFilterSettings")?.addEventListener("click",saveAdvancedFilterSettings);
 document.querySelector("#adminLogout").addEventListener("click",logout);
 
@@ -494,7 +493,6 @@ document.querySelector("#deployLatest").addEventListener("click",async()=>{
   button.disabled=false;
  }
 });
-document.querySelector("#adminPassword").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
 document.querySelector("#addVenue")?.addEventListener("click",()=>addAdditionalVenue());
 document.querySelector("#newActivity").addEventListener("click",openEditor);
 document.querySelector("#cancelActivity").addEventListener("click",closeEditor);
@@ -502,7 +500,7 @@ document.querySelector("#cancelActivity2").addEventListener("click",closeEditor)
 document.querySelector("#activityForm").addEventListener("submit",createActivity);document.querySelector("#addSession").addEventListener("click",()=>addSessionRow());document.querySelector("#adminActivities").addEventListener("click",async e=>{const b=e.target.closest(".admin-edit-activity");if(!b)return;try{await editActivity(b.dataset.id)}catch(err){alert(err.message)}});
 initAddressAutocomplete();
 loadVenueSuggestions();
-verifyAdmin().then(()=>{document.querySelector("#adminAccess").hidden=true;document.querySelector("#adminContent").hidden=false;loadDashboard();loadTestUsers()}).catch(()=>{});
+verifyAdmin().then(()=>{document.querySelector("#adminContent").hidden=false;loadDashboard();loadTestUsers()}).catch(()=>{location.replace("/admin-login.html?next="+encodeURIComponent(location.pathname+location.search+location.hash));});
 
 
 async function importActivityCsv(){
