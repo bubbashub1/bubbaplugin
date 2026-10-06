@@ -11,13 +11,10 @@ function bh_auth_response(int $status, array $data): never {
 }
 
 function bh_send_family_welcome(string $email, string $firstName=''): bool {
+    require_once __DIR__.'/mailer.php';
     $email = strtolower(trim($email));
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
 
-    // Bubba Hub sends transactional mail directly through the existing
-    // noreply@bubbahub.co.uk mailbox using WordPress' bundled PHPMailer.
-    // SMTP credentials are server-only constants in wp-config.php and are
-    // never stored in this repository.
     $wpConfig = dirname(__DIR__) . '/wp-config.php';
     if (!is_file($wpConfig)) {
         error_log('Bubba Hub welcome email: wp-config.php not found.');
