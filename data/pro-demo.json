@@ -1,0 +1,25 @@
+{
+  "mode":"demo",
+  "replace_with_api": {
+    "activities":"api/activities.php",
+    "family":"api/my-hub.php",
+    "planner":"api/planner.php",
+    "bookings":"api/reservations.php",
+    "subscription":"api/profile.php"
+  },
+  "activities":[
+    {"id":"little-explorers","slug":"little-explorers","title":"Little Explorers · Toddler Play","category":"Baby & toddler","region":"Torbay","town":"Torquay","age_range":["2-4"],"day":"Tuesday","time":"10:00","price":10,"venue":"Torquay Community Centre","organiser":"Little Explorers Torbay","badges":["Verified","Popular"]},
+    {"id":"baby-sensory-torquay","slug":"baby-sensory-torquay","title":"Baby Sensory Torquay","category":"Baby classes","region":"Torbay","town":"Torquay","age_range":["0-3"],"day":"Tuesday","time":"09:30","price":8,"venue":"Torquay Community Centre","organiser":"Baby Sensory Torquay","badges":["Verified"]},
+    {"id":"tiny-tots-paignton","slug":"tiny-tots-paignton","title":"Tiny Tots Play","category":"Baby & toddler","region":"Torbay","town":"Paignton","age_range":["0-3","3-6"],"day":"Wednesday","time":"10:00","price":4,"venue":"Paignton Community Centre","organiser":"Tiny Tots","badges":["Popular"]},
+    {"id":"family-nature-exeter","slug":"family-nature-club","title":"Family Nature Club","category":"Family activities","region":"Exeter","town":"Exeter","age_range":["3-6","6-9"],"day":"Saturday","time":"11:00","price":6,"venue":"Exeter & East Devon","organiser":"Family Nature Club","badges":["New","Outdoor"]},
+    {"id":"messy-play-paignton","slug":"messy-play-paignton","title":"Messy Play Club","category":"Messy play","region":"Torbay","town":"Paignton","age_range":["2-5"],"day":"Friday","time":"09:45","price":7,"venue":"Paignton","organiser":"Messy Play Club","badges":["Verified"]},
+    {"id":"music-torquay","slug":"music-time-torquay","title":"Music Time for Little Ones","category":"Music","region":"Torbay","town":"Torquay","age_range":["0-5"],"day":"Thursday","time":"10:30","price":6,"venue":"St Luke's Hall","organiser":"Music Time","badges":["Popular"]},
+    {"id":"baby-massage-totnes","slug":"baby-massage-totnes","title":"Baby Massage","category":"Baby classes","region":"South Hams","town":"Totnes","age_range":["0-1"],"day":"Monday","time":"11:00","price":9,"venue":"Totnes Family Centre","organiser":"Nurturing Families","badges":["Verified"]},
+    {"id":"soft-play-newton","slug":"soft-play-newton-abbot","title":"Little Movers Soft Play","category":"Soft play","region":"Teignbridge","town":"Newton Abbot","age_range":["1-6"],"day":"Monday","time":"09:30","price":5,"venue":"Newton Abbot","organiser":"Little Movers","badges":["New"]},
+    {"id":"forest-play-exeter","slug":"forest-play-exeter","title":"Forest Play Adventures","category":"Outdoor","region":"Exeter","town":"Exeter","age_range":["2-7"],"day":"Saturday","time":"10:00","price":8,"venue":"Haldon Forest","organiser":"Forest Families","badges":["Outdoor","Popular"]},
+    {"id":"baby-yoga-torquay","slug":"baby-yoga-torquay","title":"Baby Yoga & Stretch","category":"Baby classes","region":"Torbay","town":"Torquay","age_range":["0-2"],"day":"Wednesday","time":"11:15","price":8,"venue":"Babbacombe Community Centre","organiser":"Happy Babies","badges":["Verified"]}
+  ],
+  "family":[{"name":"Holly","age":5,"demo":true},{"name":"Baby","age":1,"demo":true}],
+  "planners":[{"name":"Family Week","demo":true},{"name":"School & Clubs","demo":true},{"name":"Summer Holidays","demo":true}],
+  "bookings":[{"activity":"Little Explorers · Toddler Play","date":"2026-10-13","time":"10:00","child":"Holly","venue":"Torquay Community Centre","total":10.20,"status":"confirmed"},{"activity":"Family Nature Club","date":"2026-10-17","time":"11:00","child":"Holly","venue":"Exeter & East Devon","total":6.12,"status":"confirmed"}]
+}
