@@ -17,7 +17,6 @@ $age=trim((string)($_POST['child_age']??''));
 $qty=max(1,(int)($_POST['quantity']??1));
 $message=trim((string)($_POST['message']??''));
 $consent=isset($_POST['consent']);
-$leader=trim((string)($_POST['organiser_email']??''));
 $activityId=(int)($_POST['activity_id']??0);
 $childId=(int)($_POST['child_id']??0);
 
