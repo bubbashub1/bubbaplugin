@@ -8,7 +8,16 @@ const bhInitDirectory=async()=>{
   };
 
   try {
-    const activities = await bhActivities();
+    let activities;
+    try {
+      activities = await bhActivities();
+    } catch (liveError) {
+      if (window.BH_DEMO_MODE && typeof window.bhLoadDemoActivities === "function") {
+        activities = await window.bhLoadDemoActivities();
+      } else {
+        throw liveError;
+      }
+    }
     /* The Hero and Advanced Filters are shared async components. Wait for them
        before binding Directory controls so the same filter UI is actually wired. */
     await Promise.all([
