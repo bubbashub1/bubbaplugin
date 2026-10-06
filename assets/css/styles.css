@@ -5231,3 +5231,80 @@ body:not(.bh-home) .schedule-hours-status.is-closed .schedule-hours-status-dot{b
   .bh-header-search-fields select,
   .bh-header-search-submit{grid-column:1/-1;}
 }
+
+
+/* =========================================================================
+   ACCOUNT / FAMILY AREA — shared styles
+   ========================================================================= */
+.account-page{padding:0 0 56px}
+.account-page .page-heading{padding:54px max(18px,calc((100% - var(--bh-max))/2)) 44px;display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
+.account-page .page-heading>div{min-width:0}
+.account-profile-layout{width:min(calc(100% - 32px),var(--bh-max));margin:30px auto 0;display:grid;grid-template-columns:230px minmax(0,1fr);gap:24px;align-items:start}
+.account-side-nav{display:flex;flex-direction:column;gap:5px;padding:10px;background:var(--bh-green-pale);border:1px solid var(--bh-border);border-radius:18px;position:sticky;top:18px}
+.account-side-nav a{display:flex;align-items:center;gap:9px;min-height:44px;padding:10px 12px;border-radius:12px;color:var(--bh-text);font-weight:750;text-decoration:none}
+.account-side-nav a:hover{background:var(--bh-white);color:var(--bh-green-dark)}
+.account-side-nav a.active{background:var(--bh-green);color:var(--bh-green-soft);box-shadow:0 6px 14px rgba(20,68,0,.12)}
+.account-profile-layout>.admin-panel,.preferences-layout>.admin-panel,.account-planner-grid>.admin-panel{min-width:0}
+.account-profile-form,.preferences-layout,.account-privacy-panel,.account-notifications-panel,.saved-activities-panel{min-width:0}
+.account-profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.account-profile-grid label,.preferences-field,.notification-field{display:flex;flex-direction:column;gap:7px;font-weight:750;color:var(--bh-text)}
+.account-profile-grid input,.preferences-field select,.notification-field select{width:100%;min-height:48px;padding:11px 13px;border:1px solid var(--bh-border);background:var(--bh-white);color:var(--bh-text)}
+.profile-address-section{margin-top:26px;padding-top:24px;border-top:1px solid var(--bh-border)}
+.profile-address-heading{margin-bottom:16px}
+.account-profile-note{display:flex;gap:12px;align-items:flex-start;margin-top:22px;padding:15px 16px;background:var(--bh-green-pale);border:1px solid var(--bh-border);border-radius:14px}
+.account-profile-note>span{font-size:1.2rem}
+.account-profile-note p{margin:3px 0 0;color:var(--bh-muted)}
+.account-form-actions,.preferences-actions,.notification-actions,.privacy-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:22px}
+.library-message.is-error{color:var(--bh-danger)}
+.account-signed-out{text-align:center;padding:36px 20px}
+.preferences-layout{display:grid;gap:18px}
+.preferences-two-col{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.preferences-subsection{margin-top:26px;padding-top:24px;border-top:1px solid var(--bh-border)}
+.preferences-interest-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.preferences-interest{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--bh-border);border-radius:12px;background:var(--bh-green-pale);font-weight:700}
+.preference-list,.notification-list{display:grid;gap:10px;margin-top:18px}
+.preference-list label,.notification-choice,.privacy-choice{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--bh-border);border-radius:14px;background:var(--bh-white);cursor:pointer}
+.preference-list input,.notification-choice input,.privacy-choice input{margin-top:4px;accent-color:var(--bh-green)}
+.preference-list strong,.notification-choice strong,.privacy-choice strong{display:block}
+.preference-list small,.notification-choice small,.privacy-choice small{display:block;margin-top:3px;color:var(--bh-muted);font-weight:500}
+.notification-channel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.preferences-help{color:var(--bh-muted);font-size:.92rem;margin:0}
+.notification-section,.privacy-section{margin-top:24px;padding-top:24px;border-top:1px solid var(--bh-border)}
+.newsletter-section{display:grid;gap:12px}
+.account-planner-grid{width:min(calc(100% - 32px),var(--bh-max));margin:30px auto 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.account-planner-help{width:min(calc(100% - 32px),var(--bh-max));margin:18px auto 0}
+.account-planner-help-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.account-planner-help-grid>div{padding:16px;background:var(--bh-green-pale);border-radius:14px}
+.account-planner-help-grid p{margin:5px 0 0;color:var(--bh-muted)}
+.account-planner-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.account-booking-list{display:grid;gap:10px}
+.account-booking-card{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:16px;border:1px solid var(--bh-border);border-radius:14px;background:var(--bh-green-pale)}
+.account-booking-card h3{margin:4px 0}
+.account-booking-card p{margin:0;color:var(--bh-muted)}
+.account-booking-id{font-weight:800;color:var(--bh-muted)}
+.saved-activity-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.saved-activity-card{overflow:hidden;border:1px solid var(--bh-border);border-radius:18px;background:var(--bh-white);box-shadow:var(--bh-shadow)}
+.saved-activity-image{display:block;aspect-ratio:16/8;overflow:hidden;background:var(--bh-green-pale)}
+.saved-activity-image img{width:100%;height:100%;object-fit:cover}
+.saved-activity-body{padding:18px}
+.saved-activity-body h3{margin:4px 0 7px}
+.saved-activity-body h3 a{text-decoration:none}
+.saved-activity-meta,.saved-activity-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.saved-activity-meta{margin:12px 0;color:var(--bh-muted);font-size:.9rem}
+.saved-activity-actions{margin-top:14px}
+@media(max-width:900px){
+  .account-profile-layout{grid-template-columns:1fr}
+  .account-side-nav{position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .account-planner-grid{grid-template-columns:1fr}
+  .account-planner-help-grid{grid-template-columns:1fr}
+}
+@media(max-width:650px){
+  .account-page .page-heading{padding:40px 16px 34px;display:block}
+  .account-page .page-heading>.button{margin-top:8px}
+  .account-profile-layout,.account-planner-grid,.account-planner-help{width:calc(100% - 24px);margin-top:18px}
+  .account-side-nav{grid-template-columns:1fr 1fr}
+  .account-side-nav a{min-height:42px;font-size:.92rem}
+  .account-profile-grid,.preferences-two-col,.notification-channel-grid,.saved-activity-grid{grid-template-columns:1fr}
+  .preferences-interest-grid{grid-template-columns:1fr}
+  .admin-panel{padding:18px}
+}
