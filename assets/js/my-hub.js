@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       const priceText=Number.isFinite(price)?(price===0?"Free":"From £"+price.toFixed(2)):(a.price||"Price on request");
       const reason=ages.length&&activityFitsAge(a,ages)?"Age match":preferredDay&&x.days.includes(preferredDay)?preferredDay:(interests.has(String(a.category||"").toLowerCase())?a.category:"Good fit");
       return "<a class='hub-brief-item' href='"+url+"'><div class='hub-brief-icon'>✦</div><div><span>"+esc(reason)+"</span><strong>"+esc(a.title)+"</strong><small>"+esc(a.town||a.location||"")+" · "+esc(priceText)+"</small></div><b>→</b></a>";
-    }).join(""):"<div class='hub-empty'><strong>Your plans are waiting</strong><p>Set your usual area, preferred day or interests in Preferences.</p><a class='button button-soft' href='preferences.html'>Set preferences</a></div>";
+    }).join(""):"<div class='hub-empty'><strong>Your plans are waiting</strong><p>Set your usual area, preferred day or interests in Preferences.</p><a class='button button-soft' href='account/preferences.html'>Set preferences</a></div>";
   }
 
 
