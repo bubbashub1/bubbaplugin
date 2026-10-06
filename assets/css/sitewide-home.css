@@ -870,7 +870,7 @@ body:not(.bh-home) .listing-bottom{
 
 /* SITE-WIDE BRAND LOGO — current Bubba Hub master logo */
 body .brand-logo{
-  content:url("../images/logos/gemini_generated_image_pq5i56pq5i56pq5i-removebg-preview-20260930-190428-b9e652.png");
+  content:url("../wp-content/uploads/logo/logoheader.png");
   width:auto!important;
   height:88px!important;
   max-width:250px!important;
