@@ -14,11 +14,11 @@
 <button type="button" class="google-signin-button" id="googleSignIn"><span class="google-mark" aria-hidden="true">G</span><span>Continue with Google</span></button>
 <button type="button" class="apple-signin-button" id="appleSignIn"><span class="apple-mark" aria-hidden="true">●</span><span>Continue with Apple</span></button><div class="auth-divider"><span>or</span></div>
 <form id="authForm" novalidate>
-<label>Email address<input name="email" type="email" required autocomplete="email" placeholder="you@example.com"></label>
+<div class="auth-name-grid" id="nameWrap" hidden><label>First name<input name="first_name" type="text" autocomplete="given-name" placeholder="First name"></label><label>Last name<input name="last_name" type="text" autocomplete="family-name" placeholder="Last name"></label></div><label>Email address<input name="email" type="email" required autocomplete="email" placeholder="you@example.com"></label>
 <label>Password<input id="authPassword" name="password" type="password" required autocomplete="current-password" minlength="8" placeholder="At least 8 characters"><span class="auth-password-row"><button type="button" class="auth-show-password" id="showPassword">Show password</button><small>Minimum 8 characters</small></span></label>
 <div class="auth-forgot" id="forgotWrap"><a href="forgot-password.html">Forgot your password?</a></div>
 <label id="confirmWrap" hidden>Confirm password<input name="confirm_password" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the password again"></label>
-<label id="termsWrap" class="auth-check" hidden><input type="checkbox" id="terms" required><span>I agree to create a Bubba Hub account and understand that my family information is kept private according to the site's privacy information.</span></label>
+<label id="eventCodeWrap" hidden>Event access code (optional)<input name="event_code" type="text" autocomplete="off" placeholder="Enter your event code"></label><label id="termsWrap" class="auth-check" hidden><input type="checkbox" id="terms" required><span>I agree to create a Bubba Hub account and understand that my family information is kept private according to the site's privacy information.</span></label>
 <button class="button button-primary auth-submit" type="submit" id="authSubmit">Sign in</button>
 <p class="library-message" id="authMessage" role="status" aria-live="polite"></p>
 </form>
@@ -39,5 +39,5 @@
   </div>
   <div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div>
 </footer>
-<script src="assets/js/app.js?v=20260928-shell2"></script><script src="assets/js/auth-page.js?v=20260927-auth1"></script>
+<script src="assets/js/app.js?v=20260928-shell2"></script><script src="assets/js/auth-page.js?v=20261006-signup1"></script>
 </body></html>
