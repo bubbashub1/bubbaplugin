@@ -11,9 +11,7 @@ header('Cache-Control: no-store');
 
 function respond(int $s,array $d):never{http_response_code($s);echo json_encode($d);exit;}
 
-// The beta app is deployed from /public_html/beta. Keep the server-only
-// configuration one level above the app and resolve it from this file's
-// location rather than relying on the web server's DOCUMENT_ROOT.
+// Root deployment: resolve the server-only configuration without exposing it to the browser.
 $configCandidates = array_filter([
     dirname(__DIR__) . '/github-deploy-config.php',
     dirname($_SERVER['DOCUMENT_ROOT'] ?? '') . '/github-deploy-config.php',
