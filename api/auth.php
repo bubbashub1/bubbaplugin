@@ -10,6 +10,60 @@ function bh_auth_response(int $status, array $data): never {
     exit;
 }
 
+function bh_send_family_welcome(string $email, string $firstName=''): bool {
+    $configFile = __DIR__ . '/config.php';
+    $config = is_file($configFile) ? require $configFile : [];
+    $apiKey = (string)($config['resend']['api_key'] ?? getenv('RESEND_API_KEY') ?: '');
+    $from = (string)($config['resend']['from'] ?? getenv('RESEND_FROM') ?: 'Bubba Hub <noreply@bubbahub.co.uk>');
+    if ($apiKey === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
+
+    $safeName = htmlspecialchars($firstName, ENT_QUOTES, 'UTF-8');
+    $greeting = $safeName !== '' ? 'Hi '.$safeName.'!' : 'Welcome!';
+    $html = '<div style="font-family:Arial,sans-serif;line-height:1.6;color:#26352b;max-width:640px;margin:0 auto">'
+        . '<h1 style="color:#416651">Welcome to Bubba Hub 💚</h1>'
+        . '<p>'.$greeting.'</p>'
+        . '<p>Your family account is ready. Bubba Hub helps you find, save, plan and book family activities across Devon &amp; Cornwall.</p>'
+        . '<p><strong>Next steps:</strong></p>'
+        . '<ul><li>Add your child or children to your family profiles.</li><li>Save activities you love.</li><li>Build your family planner.</li><li>Explore upcoming events and bookings.</li></ul>'
+        . '<p><a href="https://bubbahub.co.uk/my-hub.html" style="display:inline-block;padding:12px 20px;background:#416651;color:#fff;text-decoration:none;border-radius:8px">Open My Hub</a></p>'
+        . '<p>You can update your account and notification preferences at any time.</p>'
+        . '<p>The Bubba Hub team</p></div>';
+
+    $plain = "Welcome to Bubba Hub 💚\n\n"
+        . ($firstName !== '' ? "Hi {$firstName}!\n\n" : '')
+        . "Your family account is ready. Bubba Hub helps you find, save, plan and book family activities across Devon & Cornwall.\n\n"
+        . "Open My Hub: https://bubbahub.co.uk/my-hub.html\n\n"
+        . "The Bubba Hub team";
+
+    $payload = json_encode([
+        'from'=>$from,
+        'to'=>[$email],
+        'subject'=>'Welcome to Bubba Hub 💚',
+        'html'=>$html,
+        'text'=>$plain,
+    ], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+    if ($payload === false) return false;
+
+    $ch = curl_init('https://api.resend.com/emails');
+    curl_setopt_array($ch, [
+        CURLOPT_POST=>true,
+        CURLOPT_RETURNTRANSFER=>true,
+        CURLOPT_TIMEOUT=>10,
+        CURLOPT_CONNECTTIMEOUT=>5,
+        CURLOPT_HTTPHEADER=>['Authorization'=>'Bearer '.$apiKey,'Content-Type'=>'application/json'],
+        CURLOPT_POSTFIELDS=>$payload,
+    ]);
+    $response = curl_exec($ch);
+    $http = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+    if ($response === false || $http < 200 || $http >= 300) {
+        error_log('Bubba Hub welcome email failed: HTTP '.$http.' '.($error ?: $response ?: 'unknown error'));
+        return false;
+    }
+    return true;
+}
+
 function bh_b64url_encode(string $value): string {
     return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
 }
@@ -171,6 +225,7 @@ try {
                 'status' => $user['status'],
             ],
             'csrf' => $_SESSION['bh_csrf'],
+            'welcome_email_sent' => $welcomeEmailSent,
         ]);
     }
 
@@ -331,7 +386,9 @@ try {
             $appleId = trim((string)$claims['sub']);
             $email = strtolower(trim((string)($claims['email'] ?? ($returnedUser['email'] ?? ''))));
             if ($appleId === '') throw new RuntimeException('Apple account identifier missing.');
-            $db->exec("CREATE TABLE IF NOT EXISTS bh_social_accounts (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,user_id BIGINT UNSIGNED NOT NULL,provider VARCHAR(32) NOT NULL,provider_user_id VARCHAR(191) NOT NULL,email VARCHAR(255) NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY(id),UNIQUE KEY uq_provider_user(provider,provider_user_id),UNIQUE KEY uq_user_provider(user_id,provider),KEY idx_social_user(user_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            $newSocialUser = false;
+        $newSocialUser = false;
+        $db->exec("CREATE TABLE IF NOT EXISTS bh_social_accounts (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,user_id BIGINT UNSIGNED NOT NULL,provider VARCHAR(32) NOT NULL,provider_user_id VARCHAR(191) NOT NULL,email VARCHAR(255) NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY(id),UNIQUE KEY uq_provider_user(provider,provider_user_id),UNIQUE KEY uq_user_provider(user_id,provider),KEY idx_social_user(user_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
             $stmt=$db->prepare("SELECT user_id FROM bh_social_accounts WHERE provider='apple' AND provider_user_id=? LIMIT 1"); $stmt->execute([$appleId]); $linked=$stmt->fetch();
             if($linked){$userId=(int)$linked['user_id'];}
             else{
@@ -340,13 +397,14 @@ try {
                 else{
                     if($email==='') bh_auth_response(422,['ok'=>false,'error'=>'apple_email_missing','message'=>'Apple did not provide an email address. Please try again.']);
                     $randomPassword=password_hash(bin2hex(random_bytes(32)),PASSWORD_DEFAULT);
-                    $stmt=$db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,'family','active')"); $stmt->execute([$email,$randomPassword]); $userId=(int)$db->lastInsertId();
+                    $stmt=$db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,'family','active')"); $stmt->execute([$email,$randomPassword]); $userId=(int)$db->lastInsertId(); $newSocialUser=true;
                 }
                 $stmt=$db->prepare("INSERT INTO bh_social_accounts (user_id,provider,provider_user_id,email) VALUES (?, 'apple', ?, ?)"); $stmt->execute([$userId,$appleId,$email]);
             }
             session_regenerate_id(true); $_SESSION['bh_user_id']=$userId; $_SESSION['bh_csrf']=bin2hex(random_bytes(24));
             $stmt=$db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1"); $stmt->execute([$userId]); $user=$stmt->fetch();
-            bh_auth_response(200,['ok'=>true,'authenticated'=>true,'user'=>['id'=>(int)$user['id'],'email'=>$user['email'],'role'=>$user['role'],'status'=>$user['status']],'csrf'=>$_SESSION['bh_csrf'],'provider'=>'apple']);
+            $welcomeEmailSent = $newSocialUser ? bh_send_family_welcome($email, (string)($returnedUser['name']['firstName'] ?? '')) : false;
+            bh_auth_response(200,['ok'=>true,'authenticated'=>true,'user'=>['id'=>(int)$user['id'],'email'=>$user['email'],'role'=>$user['role'],'status'=>$user['status']],'csrf'=>$_SESSION['bh_csrf'],'provider'=>'apple','welcome_email_sent'=>$welcomeEmailSent]);
         } catch (Throwable $e) {
             bh_auth_response(401,['ok'=>false,'error'=>'apple_signin_failed','message'=>'Apple sign-in could not be completed. Please try again.']);
         }
@@ -367,12 +425,13 @@ try {
         if($linked){$userId=(int)$linked['user_id'];}else{
             $stmt=$db->prepare("SELECT id,status FROM bh_users WHERE email=? LIMIT 1"); $stmt->execute([$email]); $user=$stmt->fetch();
             if($user){if(($user['status']??'')!=='active') bh_auth_response(403,['ok'=>false,'error'=>'account_not_active','message'=>'This account is not currently active.']); $userId=(int)$user['id'];}
-            else{$randomPassword=password_hash(bin2hex(random_bytes(32)),PASSWORD_DEFAULT);$stmt=$db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,'family','active')");$stmt->execute([$email,$randomPassword]);$userId=(int)$db->lastInsertId();}
+            else{$randomPassword=password_hash(bin2hex(random_bytes(32)),PASSWORD_DEFAULT);$stmt=$db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,'family','active')");$stmt->execute([$email,$randomPassword]);$userId=(int)$db->lastInsertId();} $newSocialUser=true;
             $stmt=$db->prepare("INSERT INTO bh_social_accounts (user_id,provider,provider_user_id,email) VALUES (?, 'google', ?, ?)");$stmt->execute([$userId,$googleId,$email]);
         }
         session_regenerate_id(true); $_SESSION['bh_user_id']=$userId; $_SESSION['bh_csrf']=bin2hex(random_bytes(24));
         $stmt=$db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");$stmt->execute([$userId]);$user=$stmt->fetch();
-        bh_auth_response(200,['ok'=>true,'authenticated'=>true,'user'=>['id'=>(int)$user['id'],'email'=>$user['email'],'role'=>$user['role'],'status'=>$user['status']],'csrf'=>$_SESSION['bh_csrf'],'provider'=>'google']);
+        $welcomeEmailSent = $newSocialUser ? bh_send_family_welcome($email, '') : false;
+        bh_auth_response(200,['ok'=>true,'authenticated'=>true,'user'=>['id'=>(int)$user['id'],'email'=>$user['email'],'role'=>$user['role'],'status'=>$user['status']],'csrf'=>$_SESSION['bh_csrf'],'provider'=>'google','welcome_email_sent'=>$welcomeEmailSent]);
     }
 
     if ($action === 'forgot_password') {
@@ -526,6 +585,7 @@ try {
         $stmt = $db->prepare("INSERT INTO bh_users (".implode(',', $columns).") VALUES (".$placeholders.")");
         $stmt->execute($values);
         $newUserId=(int)$db->lastInsertId();
+        $welcomeEmailSent = bh_send_family_welcome($email, $firstName);
 
         // Event sign-ups can receive Pro access without touching the future payment flow.
         $eventPro=false;
