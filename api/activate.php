@@ -12,12 +12,14 @@ $db->exec("CREATE TABLE IF NOT EXISTS bh_account_activation_tokens (
  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
  user_id BIGINT UNSIGNED NOT NULL,
  token_hash CHAR(64) NOT NULL UNIQUE,
+ code_hash CHAR(64) NULL,
  expires_at DATETIME NOT NULL,
  used_at DATETIME NULL,
  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
  INDEX idx_activation_user (user_id),
  INDEX idx_activation_expiry (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+try{$db->exec("ALTER TABLE bh_account_activation_tokens ADD COLUMN code_hash CHAR(64) NULL");}catch(Throwable $ignored){}
 
 $method=$_SERVER['REQUEST_METHOD'];
 if($method==='GET'){
@@ -34,16 +36,18 @@ if($method!=='POST') bh_activate_response(405,['ok'=>false,'error'=>'GET or POST
 $body=json_decode((string)file_get_contents('php://input'),true);
 if(!is_array($body))$body=$_POST;
 $token=trim((string)($body['token']??''));
+$code=preg_replace('/\D+/','',(string)($body['code']??''));
 $password=(string)($body['password']??'');
 $confirm=(string)($body['confirm_password']??$body['password_confirm']??'');
-if($token===''||strlen($password)<8||$password!==$confirm)bh_activate_response(422,['ok'=>false,'error'=>'password_invalid','message'=>'Choose a password of at least 8 characters and enter it the same way twice.']);
+if($token===''||!preg_match('/^\d{6}$/',$code)||strlen($password)<8||$password!==$confirm)bh_activate_response(422,['ok'=>false,'error'=>'activation_details_invalid','message'=>'Enter the 6-digit one-time code and choose a password of at least 8 characters.']);
 
 $hash=hash('sha256',$token);
 $db->beginTransaction();
 try{
-  $q=$db->prepare("SELECT t.id,t.user_id,u.email,u.role,u.status FROM bh_account_activation_tokens t INNER JOIN bh_users u ON u.id=t.user_id WHERE t.token_hash=? AND t.used_at IS NULL AND t.expires_at>NOW() LIMIT 1 FOR UPDATE");
+  $q=$db->prepare("SELECT t.id,t.user_id,t.code_hash,u.email,u.role,u.status FROM bh_account_activation_tokens t INNER JOIN bh_users u ON u.id=t.user_id WHERE t.token_hash=? AND t.used_at IS NULL AND t.expires_at>NOW() LIMIT 1 FOR UPDATE");
   $q->execute([$hash]);$row=$q->fetch();
   if(!$row){$db->rollBack();bh_activate_response(410,['ok'=>false,'error'=>'activation_link_invalid','message'=>'This activation link is invalid, expired or has already been used.']);}
+  if(empty($row['code_hash'])||!hash_equals((string)$row['code_hash'],hash('sha256',$code))){$db->rollBack();bh_activate_response(422,['ok'=>false,'error'=>'activation_code_invalid','message'=>'That one-time sign-in code is incorrect. Check the email and try again.']);}
   $db->prepare("UPDATE bh_users SET password_hash=?,status='active',role=CASE WHEN role='family' THEN 'leader' ELSE role END WHERE id=?")->execute([password_hash($password,PASSWORD_DEFAULT),(int)$row['user_id']]);
   $db->prepare("UPDATE bh_account_activation_tokens SET used_at=NOW() WHERE id=? AND used_at IS NULL")->execute([(int)$row['id']]);
   $db->commit();
