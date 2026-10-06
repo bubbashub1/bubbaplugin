@@ -90,6 +90,8 @@ try {
         'cancel_url' => $stripe['cancel_url'],
         'metadata[user_id]' => (string)$uid,
         'metadata[plan]' => 'family_pro',
+        'subscription_data[metadata][user_id]' => (string)$uid,
+        'subscription_data[metadata][plan]' => 'family_pro',
     ], $stripe['secret_key']);
 
     echo json_encode(['ok'=>true,'url'=>$session['url'] ?? null,'session_id'=>$session['id'] ?? null], JSON_UNESCAPED_SLASHES);
