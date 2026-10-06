@@ -519,3 +519,23 @@ async function importActivityCsv(){
  try{const fd=new FormData();fd.append("csv_url",url);fd.append("mode",document.querySelector("#activityCsvMode")?.value||"update");const r=await fetch("api/admin-import-export.php",{method:"POST",credentials:"same-origin",body:fd});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"Google Sheets import failed.");status.textContent="✓ Import complete. "+d.created+" created, "+d.updated+" updated, "+d.skipped+" skipped, "+d.failed+" failed.";if(d.errors?.length)status.textContent+=" "+d.errors.join(" ");await loadDashboard();}catch(e){status.textContent=e.message||"Google Sheets import failed.";status.classList.add("is-error");}finally{button.disabled=false;}
 }
 document.querySelector("#importActivityCsv")?.addEventListener("click",importActivityCsv);
+async function uploadActivityCsv(){
+ const file=document.querySelector("#activityCsvFile")?.files?.[0],status=document.querySelector("#activityImportStatus"),button=document.querySelector("#uploadActivityCsv");
+ if(!file){status.textContent="Choose a CSV file first.";status.classList.add("is-error");return;}
+ if(!/\.csv$/i.test(file.name)){status.textContent="Please choose a .csv file.";status.classList.add("is-error");return;}
+ if(file.size>10*1024*1024){status.textContent="CSV files must be 10 MB or smaller.";status.classList.add("is-error");return;}
+ button.disabled=true;status.classList.remove("is-error");status.textContent="Uploading CSV…";
+ try{
+  const fd=new FormData();fd.append("csv",file);fd.append("mode",document.querySelector("#activityCsvMode")?.value||"update");
+  const r=await fetch("api/admin-import-export.php",{method:"POST",credentials:"same-origin",body:fd});
+  const d=await r.json();
+  if(!r.ok||!d.ok)throw new Error(d.error||"CSV upload failed.");
+  status.textContent="✓ CSV imported. "+d.created+" created, "+d.updated+" updated, "+d.skipped+" skipped, "+d.failed+" failed.";
+  if(d.errors?.length)status.textContent+=" "+d.errors.join(" ");
+  document.querySelector("#activityCsvFile").value="";
+  await loadDashboard();
+ }catch(e){status.textContent=e.message||"CSV upload failed.";status.classList.add("is-error");}
+ finally{button.disabled=false;}
+}
+document.querySelector("#uploadActivityCsv")?.addEventListener("click",uploadActivityCsv);
+
