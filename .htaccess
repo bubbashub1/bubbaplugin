@@ -4,6 +4,10 @@ RewriteBase /
 # Treat /index and /index/ as the homepage, not an activity slug.
 RewriteRule ^index/?$ index.html [L,QSA]
 
+# Dedicated authentication pages must be handled before the generic activity-slug rule.
+RewriteRule ^admin-login/?$ /admin-login.html [R=301,L]
+RewriteRule ^leader-login/?$ /leader-login.html [R=301,L]
+
 # Class leader dashboard
 RewriteRule ^leader/?$ leader.html [L,QSA]
 
