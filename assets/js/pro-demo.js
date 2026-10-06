@@ -8,7 +8,7 @@ window.bhLoadDemoActivities = async function(){
   if(!response.ok) throw new Error("Demo data unavailable");
   const payload = await response.json();
   const rows = Array.isArray(payload.activities) ? payload.activities : [];
-  window.__bhDemoActivities = rows.map((a,index)=>{
+  const extra = JSON.parse(localStorage.getItem("BH_DEMO_LEADER_EXTRA") || "[]");\n  rows.push(...extra.map(a=>({...a, category:a.category||"Family activity"})));\n  window.__bhDemoActivities = rows.map((a,index)=>{
     const venues = Array.isArray(a.venues) ? a.venues : [{
       id:String(a.id||index+1)+"-venue",
       name:a.venue||"Demo venue",
