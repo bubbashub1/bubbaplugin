@@ -166,14 +166,14 @@ p  { margin: 0 0 14px; }
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  width: calc(100% - 28px);
-  max-width: 1400px;
+  width: 100%;
+  max-width: none;
   min-height: 76px;
-  margin: 14px auto 0;
-  padding: 10px 18px;
+  margin: 0;
+  padding: 10px max(18px, calc((100% - 1400px) / 2 + 18px));
   background: var(--bh-white);
-  border: 1px solid var(--bh-line);
-  border-radius: 22px;
+  border: 0;
+  border-radius: 0;
   box-shadow: 0 10px 30px rgba(18, 63, 49, .08);
 }
 
