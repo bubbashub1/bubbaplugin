@@ -144,7 +144,15 @@ try{
    $key=lc_key($title,$url);$dup=$db->prepare("SELECT id FROM bh_listing_check_results WHERE website_key=? AND title=? LIMIT 1");$dup->execute([$key,$title]);if($dup->fetchColumn())continue;
    $page=lc_fetch($url);$title2=$page['title']?:$title;$websiteEvidence=$page['ok']?'Website reachable'.(!empty($page['signals'])?' · '.implode(', ',$page['signals']):''):'Website could not be reached.';
    $social=lc_google('"'.$title.'" Facebook Instagram', $cfg);$sources=[['label'=>$title,'url'=>$url]];foreach($social as $si)if(!empty($si['link']))$sources[]=['label'=>(string)($si['title']??'Social result'),'url'=>(string)$si['link']];
-   $town=$region;$confidence=$page['ok']?88:65;$stt='new';$label='New opportunity';$ins=$db->prepare("INSERT INTO bh_listing_check_results (title,website,website_key,status,label,confidence,town,region,website_evidence,social_evidence,sources_json,search_query) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");$ins->execute([$title2,$url,$key,$stt,$label,$confidence,$town,$region,$websiteEvidence,count($social)?'Relevant social/search results found.':'No social result found.',json_encode($sources),$scope]);
+   $town=$region;$confidence=$page['ok']?88:65;$stt='new';$label='New opportunity';$ins=$db->prepare("INSERT INTO bh_listing_check_results (title,website,website_key,status,label,confidence,town,region,website_evidence,social_evidence,sources_json,search_query) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");$ins->execute([$title2,$url,$key,$stt,$label,$confidence,$town,$region,$websiteEvidence,count($social)?'Relevant social/search results found.':'No social result found.',json_encode($sources),$scope]);$newId=(int)$db->lastInsertId();
+   if($confidence>=75){
+    $orgSlug='listing-check-'.strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',(string)$title2),'-')).'-'.$newId;$orgName=trim((string)$title2)?:'New listing';
+    $db->prepare("INSERT INTO bh_organisers (organisation_name,slug,description,website,status) VALUES (?,?,?,?, 'draft')")->execute([$orgName,$orgSlug,'Discovered by Listing Check. Assign/claim the real organiser before publishing.',$url]);$org=(int)$db->lastInsertId();
+    $slug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',(string)$title2),'-'));if($slug==='')$slug='listing-check-'.$newId;$base=$slug;$n=2;while(true){$x=$db->prepare("SELECT COUNT(*) FROM bh_activities WHERE slug=?");$x->execute([$slug]);if(!(int)$x->fetchColumn())break;$slug=$base.'-'.$n++;}
+    $county=in_array($region,['Plymouth','Torbay'],true)?$region:(str_contains(strtolower($region),'cornwall')?'Cornwall':(str_contains(strtolower($region),'devon')?'Devon':null));
+    $db->prepare("INSERT INTO bh_activities (organiser_id,title,slug,description,county,status) VALUES (?,?,?,?,?,'draft')")->execute([$org,$title2,$slug,'Discovered by Bubba Hub Listing Check. Review the external source before publishing.',$county]);$draftId=(int)$db->lastInsertId();
+    $db->prepare("UPDATE bh_listing_check_results SET draft_activity_id=? WHERE id=?")->execute([$draftId,$newId]);
+   }
   }
  }
  $rows=lc_results($db);lc_out(200,['ok'=>true,'results'=>$rows,'summary'=>lc_summary($rows)]);
