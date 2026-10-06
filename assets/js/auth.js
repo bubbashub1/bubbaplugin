@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
 
   const load=async()=>{
     try{
-      const response=await fetch("api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+      const response=await fetch("/api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
       const data=await response.json();
       csrf=data.csrf||"";
       if(data.authenticated){
@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
         loginPanel.innerHTML="<div class='account-signed-in'><span class='feature-icon'>✓</span><div><span class='eyebrow'>"+eyebrow+"</span><h2>"+titleText+"</h2><p>"+esc(data.user?.email||"")+"</p><small>"+detail+"</small></div><button class='button button-soft' id='accountLogout' type='button'>Sign out</button></div>";
         document.getElementById("accountLogout").onclick=async()=>{
           try{
-            await fetch("api/auth.php?action=logout",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({csrf})});
+            await fetch("/api/auth.php?action=logout",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({csrf})});
           }finally{location.reload();}
         };
         return true;
@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     setMessage(mode==="login"?"Signing in…":"Creating your account…");
     try{
       const payload=Object.fromEntries(new FormData(form));
-      const response=await fetch("api/auth.php?action="+mode,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(payload)});
+      const response=await fetch("/api/auth.php?action="+mode,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(payload)});
       const data=await response.json();
       if(!response.ok||!data.ok)throw new Error(data.message||"Something went wrong. Please try again.");
       csrf=data.csrf||"";
