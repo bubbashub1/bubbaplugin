@@ -1,7 +1,30 @@
 (function(){
   if(window.__bhSiteAuthDisabled)return;
   window.__bhSiteAuthDisabled=true;
-  /* Authentication is disabled during build mode. */
+  /* Authentication is disabled during build mode, but logout must still work. */
+  document.addEventListener("click",e=>{
+    const t=e.target.closest(".bh-logout-link,.bh-logout-button,#siteLogout");
+    if(!t)return;
+    e.preventDefault();
+    if(t.dataset.bhLoggingOut==="1")return;
+    t.dataset.bhLoggingOut="1";
+    t.textContent="Logging out…";
+    (async()=>{
+      try{
+        const r=await fetch("/api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+        const d=await r.json();
+        if(d.authenticated){
+          await fetch("/api/auth.php?action=logout",{
+            method:"POST",
+            credentials:"same-origin",
+            headers:{"Content-Type":"application/json","Accept":"application/json"},
+            body:JSON.stringify({csrf:d.csrf||""})
+          });
+        }
+      }catch(e){}
+      location.href="/index.html";
+    })();
+  });
   return;
   "use strict";
 
