@@ -14,18 +14,7 @@ try {
     require __DIR__.'/db.php';
     $db = bh_mysql();
 
-    $db->exec("CREATE TABLE IF NOT EXISTS bh_newsletter_subscribers (
-        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        email VARCHAR(190) NOT NULL UNIQUE,
-        status ENUM('subscribed','unsubscribed') NOT NULL DEFAULT 'subscribed',
-        source VARCHAR(80) NOT NULL DEFAULT 'website',
-        consented_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        unsubscribed_at DATETIME NULL,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_newsletter_status (status),
-        INDEX idx_newsletter_created (created_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    bh_ensure_newsletter_subscribers($db);
 
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         bh_newsletter_signup_json(405, ['ok'=>false,'error'=>'method_not_allowed']);
@@ -54,16 +43,18 @@ try {
           source=VALUES(source),
           consented_at=NOW(),
           unsubscribed_at=NULL");
-    $stmt->execute([$email, trim((string)($body['source'] ?? 'website')) ?: 'website']);
+    $stmt->execute([$email, substr(trim((string)($body['source'] ?? 'website')) ?: 'website', 0, 80)]);
 
     bh_newsletter_signup_json(200, [
         'ok'=>true,
         'message'=>"You're subscribed to Bubba Hub updates."
     ]);
 } catch (Throwable $e) {
+    error_log('[Bubba Hub newsletter] '.$e->getMessage());
     bh_newsletter_signup_json(500, [
         'ok'=>false,
-        'error'=>'newsletter_signup_error'
+        'error'=>'newsletter_signup_error',
+        'message'=>'Newsletter signup is temporarily unavailable. Please try again shortly.'
     ]);
 }
 ?>
