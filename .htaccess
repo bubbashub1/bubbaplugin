@@ -7,6 +7,9 @@ RewriteRule ^index/?$ index.html [L,QSA]
 # Class leader dashboard
 RewriteRule ^leader/?$ leader.html [L,QSA]
 
+# Redirect the old nested calendar URL to the canonical root calendar.
+RewriteRule ^planner/calendar(?:\.html)?/?$ /calendar.html [R=301,L]
+
 # Clean section URLs
 RewriteRule ^my-hub/?$ my-hub.html [L,QSA]
 RewriteRule ^planner/?$ planner.html [L,QSA]
