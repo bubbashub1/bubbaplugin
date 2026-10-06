@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const activities=await bhActivities();
   const saved=activities.filter(a=>ids.has(String(a.id)));
   count.textContent=saved.length+" saved";
-  if(!saved.length){root.innerHTML="<div class='hub-empty saved-empty'><strong>Nothing saved yet</strong><p>When you find an activity you like, use its Save button and it will appear here.</p><a class='button button-primary' href='directory.html'>Browse activities</a></div>";return}
+  if(!saved.length){root.innerHTML="<div class='hub-empty saved-empty'><strong>Nothing saved yet</strong><p>When you find an activity you like, use its Save button and it will appear here.</p><a class='button button-primary' href='../directory.html'>Browse activities</a></div>";return}
   root.innerHTML=saved.map(a=>{
    const url=typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id);
    const image=a.image||a.image_url||"";
