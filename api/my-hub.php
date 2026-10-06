@@ -57,6 +57,38 @@ try {
     $db->exec("CREATE TABLE IF NOT EXISTS bh_bumps (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,user_id BIGINT UNSIGNED NOT NULL,nickname VARCHAR(120) NULL,photo_path VARCHAR(500) NULL,due_date DATE NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,INDEX idx_bump_user (user_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
     $db->exec("CREATE TABLE IF NOT EXISTS bh_saved_activities (user_id BIGINT UNSIGNED NOT NULL,activity_id BIGINT UNSIGNED NOT NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY(user_id,activity_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
     $db->exec("CREATE TABLE IF NOT EXISTS bh_planner (user_id BIGINT UNSIGNED NOT NULL,activity_id BIGINT UNSIGNED NOT NULL,visited TINYINT(1) NOT NULL DEFAULT 0,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY(user_id,activity_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // Existing My Hub tables may pre-date newer profile fields. CREATE TABLE IF
+    // NOT EXISTS does not upgrade an existing table, so add missing columns safely
+    // before any SELECT/INSERT uses them.
+    $ensureColumn = static function (PDO $db, string $table, string $column, string $definition): void {
+        try {
+            $check = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=? AND COLUMN_NAME=?");
+            $check->execute([$table, $column]);
+            if ((int)$check->fetchColumn() === 0) {
+                $db->exec("ALTER TABLE `{$table}` ADD COLUMN `{$column}` {$definition}");
+            }
+        } catch (Throwable $ignored) {
+            // The main request will still return a normal JSON error if the
+            // deployment user cannot alter the table.
+        }
+    };
+
+    foreach ([
+        ['bh_children','name','VARCHAR(120) NOT NULL'],
+        ['bh_children','gender','VARCHAR(40) NULL'],
+        ['bh_children','photo_path','VARCHAR(500) NULL'],
+        ['bh_children','date_of_birth','DATE NULL'],
+        ['bh_children','created_at','DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP'],
+        ['bh_children','updated_at','DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'],
+        ['bh_bumps','nickname','VARCHAR(120) NULL'],
+        ['bh_bumps','photo_path','VARCHAR(500) NULL'],
+        ['bh_bumps','due_date','DATE NULL'],
+        ['bh_bumps','created_at','DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP'],
+        ['bh_bumps','updated_at','DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'],
+    ] as [$table,$column,$definition]) {
+        $ensureColumn($db, $table, $column, $definition);
+    }
     $userStmt = $db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");
     $userStmt->execute([$userId]);
     $user = $userStmt->fetch();
