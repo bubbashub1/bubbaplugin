@@ -81,7 +81,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
       const number=Number(String(value).trim().replace(",","."));
       return Number.isFinite(number)?number:null;
     };
-    const cleanDescription=html=>{const box=document.createElement("div");box.innerHTML=String(html||"");box.querySelectorAll("script,style,iframe,object,embed,form,input,textarea,button").forEach(x=>x.remove());box.querySelectorAll("[class*=\"citation-\"]").forEach(x=>x.replaceWith(...x.childNodes));box.querySelectorAll("*").forEach(el=>[...el.attributes].forEach(attr=>{if(attr.name.toLowerCase().startsWith("data-path-to-node")||attr.name.toLowerCase().startsWith("data-index-in-node")||attr.name.toLowerCase().startsWith("data-")||attr.name.toLowerCase().startsWith("on")||["style","class"].includes(attr.name.toLowerCase()))el.removeAttribute(attr.name)}));return box.innerHTML.trim()};\n    const normalizedVenues=venues.map(v=>({
+    const cleanDescription=html=>{const box=document.createElement("div");box.innerHTML=String(html||"");box.querySelectorAll("script,style,iframe,object,embed,form,input,textarea,button").forEach(x=>x.remove());box.querySelectorAll("[class*=\"citation-\"]").forEach(x=>x.replaceWith(...x.childNodes));box.querySelectorAll("*").forEach(el=>[...el.attributes].forEach(attr=>{if(attr.name.toLowerCase().startsWith("data-path-to-node")||attr.name.toLowerCase().startsWith("data-index-in-node")||attr.name.toLowerCase().startsWith("data-")||attr.name.toLowerCase().startsWith("on")||["style","class"].includes(attr.name.toLowerCase()))el.removeAttribute(attr.name)}));return box.innerHTML.trim()};
+    const normalizedVenues=venues.map(v=>({
       id:v.id,name:v.name||"Venue",address:v.address||"",town:v.town||"",region:v.region||"",postcode:v.postcode||"",
       lat:coordinate(v.latitude),long:coordinate(v.longitude),latitude:coordinate(v.latitude),longitude:coordinate(v.longitude),
       sessions:sessionByVenue[String(v.id)]||[]
