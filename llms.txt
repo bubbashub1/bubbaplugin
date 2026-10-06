@@ -9,14 +9,14 @@ Bubba Hub is designed to help local families discover useful activities and serv
 ## Main website
 
 - Homepage: https://bubbahub.co.uk/
-- Beta homepage: https://bubbahub.co.uk/beta/
+- Beta homepage: https://bubbahub.co.uk/
 
 ## Key areas
 
-- Find activities: https://bubbahub.co.uk/beta/directory.html
-- My planner: https://bubbahub.co.uk/beta/planner.html
-- My Hub: https://bubbahub.co.uk/beta/my-hub.html
-- Account: https://bubbahub.co.uk/beta/account.html
+- Find activities: https://bubbahub.co.uk/directory.html
+- My planner: https://bubbahub.co.uk/planner.html
+- My Hub: https://bubbahub.co.uk/my-hub.html
+- Account: https://bubbahub.co.uk/account.html
 
 ## Content and purpose
 
