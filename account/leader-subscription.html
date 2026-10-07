@@ -28,8 +28,10 @@
  }catch(e){}
  title.textContent="Leader Pro";text.textContent="Choose monthly or annual billing, then upgrade securely with Stripe.";badge.textContent="UPGRADE";
  action.onclick=async()=>{
+  if(window.BHStripeModal){ const selected=document.querySelector('input[name="leaderBilling"]:checked'); await window.BHStripeModal.open({plan:"leader_pro",billing:selected?.value||"annual"}); action.disabled=false; action.textContent="Upgrade to Leader Pro →"; return; }
+
   const billing=document.querySelector('input[name="leaderBilling"]:checked')?.value||"annual";action.disabled=true;action.textContent="Opening secure checkout…";msg.textContent="";
   try{const r=await fetch("../api/stripe-checkout.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({plan:"leader_pro",billing})});const d=await r.json();if(!r.ok||!d.url)throw Error(d.message||d.error||"Unable to start checkout.");location.href=d.url;}catch(e){msg.textContent=e.message||"Unable to start checkout.";action.disabled=false;action.textContent="Upgrade to Leader Pro →";}
  };
 })();
-</script></body></html>
+</script><script src="../assets/js/stripe-modal.js"></script></body></html>
