@@ -5,8 +5,8 @@ RewriteBase /
 RewriteRule ^index/?$ index.html [L,QSA]
 
 # Dedicated authentication pages must be handled before the generic activity-slug rule.
-RewriteRule ^admin-login/?$ /admin-login.html [R=301,L]
-RewriteRule ^leader-login/?$ /leader-login.html [R=301,L]
+RewriteRule ^admin-login/?$ admin-login.html [L,QSA]
+RewriteRule ^leader-login/?$ leader-login.html [L,QSA]
 
 # Admin dashboard
 RewriteRule ^admin/?$ admin.html [L,QSA]
