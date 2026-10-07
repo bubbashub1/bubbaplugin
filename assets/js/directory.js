@@ -197,6 +197,24 @@ const bhInitDirectory=async()=>{
       } catch (_) {}
     };
     setupAdvancedSearch();
+
+    // The hero CTA opens the inline advanced filter section — never a modal.
+    const heroMoreFilters = document.querySelector("[data-bh-hero-filters]");
+    const advancedToggle = $("advancedToggle");
+    const advancedFields = $("advancedFields");
+    if (heroMoreFilters && advancedToggle && advancedFields) {
+      heroMoreFilters.addEventListener("click", event => {
+        event.preventDefault();
+        const open = advancedFields.hidden;
+        advancedFields.hidden = !open;
+        advancedToggle.setAttribute("aria-expanded", String(open));
+        advancedToggle.innerHTML = open
+          ? 'More search filters <span aria-hidden="true">−</span>'
+          : 'More search filters <span aria-hidden="true">＋</span>';
+        if (open) requestAnimationFrame(() => advancedFields.scrollIntoView({behavior:"smooth", block:"nearest"}));
+      });
+    }
+
     void applyAdvancedFilterSettings();
 
     let map = null;
@@ -627,7 +645,7 @@ const bhInitDirectory=async()=>{
       if (!window.__bhDirectoryLastFilterKey) window.__bhDirectoryLastFilterKey = "";
       const filterKey = JSON.stringify([search,category,region,town,minAge,maxAge,day,maxPrice,freeOnly,sessionLength,sen,termTime,bookingRequired,accessibility,params.get("saved") || ""]);
       if (filterKey !== window.__bhDirectoryLastFilterKey) {
-        visibleActivityCount = 12;
+        visibleActivityCount = 6;
         window.__bhDirectoryLastFilterKey = filterKey;
       }
 
