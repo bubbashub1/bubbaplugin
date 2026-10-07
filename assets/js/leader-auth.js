@@ -79,7 +79,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
     socialMessage("Signing in with "+(provider==="google"?"Google":"Facebook")+"…");
     try{
       const r=await fetch("api/auth.php?action="+encodeURIComponent(provider),{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({context:"leader",provider,...payload})});
-      const d=await r.json();
+      const raw=await r.text();
+      let d; try{d=JSON.parse(raw);}catch(parseError){throw Error(raw.trim()||("Server returned HTTP "+r.status+" instead of JSON."));}
       if(!r.ok||!d.ok)throw Error(d.message||"Social sign-in could not be completed.");
       location.replace(next);
     }catch(err){socialMessage(err.message||"Please try again.",true);}
@@ -165,7 +166,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
       };
 
       const r=await fetch(endpoint,options);
-      const d=await r.json();
+      const raw=await r.text();
+      let d; try{d=JSON.parse(raw);}catch(parseError){throw Error(raw.trim()||("Server returned HTTP "+r.status+" instead of JSON."));}
       if(!r.ok||!d.ok)throw Error(d.message||"We could not complete that request.");
 
       if((d.user||{}).role!=="leader")throw Error("This account is not a class leader account.");
