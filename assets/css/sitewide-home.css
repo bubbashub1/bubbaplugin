@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700;800&display=swap");
-
 /* Bubba Hub — Sitewide Home Theme
    Shared visual system based on the approved homepage.
    Homepage-specific rules remain in homepage.css.
@@ -23,7 +21,7 @@
 body:not(.bh-home){
   background:var(--bh-site-bg);
   color:#123f31;
-  font-family:"Quicksand",ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-family:Calibri,Arial,Helvetica,sans-serif;
 }
 body:not(.bh-home) main{
   width:min(1400px,calc(100% - 24px));
@@ -104,7 +102,7 @@ body:not(.bh-home) h2,
 body:not(.bh-home) .page-heading h1,
 body:not(.bh-home) .page-heading h2{
   color:var(--bh-site-dark);
-  font-family:"Chewy",cursive;
+  font-family:Calibri,Arial,Helvetica,sans-serif;
   font-weight:400;
   letter-spacing:.01em;
 }
@@ -264,7 +262,7 @@ body:not(.bh-home) .site-footer-column h2{
   color:#fff;
 }
 body:not(.bh-home) .site-footer-title{
-  font-family:"Chewy",cursive;
+  font-family:Calibri,Arial,Helvetica,sans-serif;
   font-size:27px;
   font-weight:400;
 }
@@ -274,7 +272,7 @@ body:not(.bh-home) .site-footer-brand-copy p{
 }
 body:not(.bh-home) .site-footer-column h2{
   margin:0 0 10px;
-  font-family:"Quicksand",sans-serif;
+  font-family:Calibri,Arial,Helvetica,sans-serif;
   font-size:13px;
   font-weight:850;
 }
@@ -736,7 +734,7 @@ body:not(.bh-home) .organiser-avatar img{
 }
 body:not(.bh-home) .organiser-profile h2{
   margin:0;
-  font-family:"Quicksand",sans-serif;
+  font-family:Calibri,Arial,Helvetica,sans-serif;
   font-size:18px;
   font-weight:850;
 }
