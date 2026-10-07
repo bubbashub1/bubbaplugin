@@ -21,5 +21,7 @@ foreach ($wpConfigCandidates as $wpConfigFile) {
 if (defined('BH_GOOGLE_CLIENT_ID')) {
     $clientId = (string)BH_GOOGLE_CLIENT_ID;
 }
+$facebookAppId = defined('BH_FACEBOOK_APP_ID') ? (string)BH_FACEBOOK_APP_ID : '';
 
 echo 'window.BUBBAHUB_GOOGLE_CLIENT_ID=' . json_encode($clientId, JSON_UNESCAPED_SLASHES) . ';';
+echo 'window.BUBBAHUB_FACEBOOK_APP_ID=' . json_encode($facebookAppId, JSON_UNESCAPED_SLASHES) . ';';
