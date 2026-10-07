@@ -6105,7 +6105,7 @@ textarea:focus{
 }
 
 .google-signin-button,
-.apple-signin-button{
+.facebook-signin-button{
   width:100%;
   min-height:48px;
   display:flex;
@@ -6123,7 +6123,7 @@ textarea:focus{
 }
 
 .google-signin-button:hover,
-.apple-signin-button:hover{
+.facebook-signin-button:hover{
   border-color:var(--bh-brand);
   background:#f7faf7;
 }
