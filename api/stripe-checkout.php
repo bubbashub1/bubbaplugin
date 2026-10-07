@@ -13,9 +13,21 @@ function bh_stripe_config(): array {
     $file = __DIR__ . '/config.php';
     $config = is_file($file) ? require $file : [];
     $stripe = is_array($config['stripe'] ?? null) ? $config['stripe'] : [];
-    $stripe['secret_key'] = trim((string)($stripe['secret_key'] ?? getenv('STRIPE_SECRET_KEY') ?: ''));
+
+    // Server-side constants in wp-config.php take priority when present.
+    $constant = static function(string $name): string {
+        return defined($name) ? trim((string)constant($name)) : '';
+    };
+
+    $stripe['secret_key'] = $constant('BUBBAHUB_STRIPE_SECRET_KEY')
+        ?: trim((string)($stripe['secret_key'] ?? getenv('STRIPE_SECRET_KEY') ?: ''));
+    $stripe['monthly_price_id'] = $constant('BUBBAHUB_STRIPE_PRICE_MONTHLY')
+        ?: trim((string)($stripe['monthly_price_id'] ?? getenv('BUBBAHUB_STRIPE_PRICE_MONTHLY') ?: 'price_1UNyo9BCqGaB2UiPpuJ64CqM'));
+    $stripe['annual_price_id'] = $constant('BUBBAHUB_STRIPE_PRICE_ANNUAL')
+        ?: trim((string)($stripe['annual_price_id'] ?? getenv('BUBBAHUB_STRIPE_PRICE_ANNUAL') ?: 'price_1UNytgBCqGaB2UiPeqTNsLh9'));
     $stripe['success_url'] = trim((string)($stripe['success_url'] ?? getenv('BUBBAHUB_STRIPE_SUCCESS_URL') ?: 'https://bubbahub.co.uk/account/subscription.html?stripe=success'));
     $stripe['cancel_url'] = trim((string)($stripe['cancel_url'] ?? getenv('BUBBAHUB_STRIPE_CANCEL_URL') ?: 'https://bubbahub.co.uk/account/subscription.html?stripe=cancelled'));
+
     return $stripe;
 }
 
@@ -44,11 +56,30 @@ function bh_stripe_post(string $endpoint, array $params, string $secret): array 
 try {
     require __DIR__ . '/db.php';
     if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+
     $uid = (int)($_SESSION['bh_user_id'] ?? 0);
     if (!$uid) bh_stripe_response(401, ['ok'=>false,'error'=>'login_required']);
 
     $stripe = bh_stripe_config();
-    if ($stripe['secret_key'] === '') bh_stripe_response(503, ['ok'=>false,'error'=>'stripe_not_configured','message'=>'Stripe is not configured yet.']);
+    if ($stripe['secret_key'] === '') {
+        bh_stripe_response(503, ['ok'=>false,'error'=>'stripe_not_configured','message'=>'Stripe is not configured yet.']);
+    }
+
+    $input = json_decode((string)file_get_contents('php://input'), true);
+    if (!is_array($input)) $input = $_POST;
+
+    // Only allow the two known Family Pro prices. Never accept an arbitrary
+    // Stripe Price ID from the browser.
+    $billing = strtolower(trim((string)($input['billing'] ?? 'annual')));
+    if (!in_array($billing, ['monthly', 'annual'], true)) $billing = 'annual';
+
+    $priceId = $billing === 'monthly'
+        ? $stripe['monthly_price_id']
+        : $stripe['annual_price_id'];
+
+    if ($priceId === '') {
+        bh_stripe_response(503, ['ok'=>false,'error'=>'stripe_price_not_configured','message'=>'The selected Family Pro price is not configured yet.']);
+    }
 
     $db = bh_mysql();
     $q = $db->prepare("SELECT id,email FROM bh_users WHERE id=? AND status='active' LIMIT 1");
@@ -78,11 +109,7 @@ try {
         'mode' => 'subscription',
         'customer_email' => (string)$user['email'],
         'client_reference_id' => (string)$uid,
-        'line_items[0][price_data][currency]' => 'gbp',
-        'line_items[0][price_data][product_data][name]' => 'Bubba Hub Family Pro',
-        'line_items[0][price_data][product_data][description]' => 'Family Pro membership · £20 per year',
-        'line_items[0][price_data][unit_amount]' => '2000',
-        'line_items[0][price_data][recurring][interval]' => 'year',
+        'line_items[0][price]' => $priceId,
         'line_items[0][quantity]' => '1',
         'allow_promotion_codes' => 'true',
         'billing_address_collection' => 'auto',
@@ -90,11 +117,17 @@ try {
         'cancel_url' => $stripe['cancel_url'],
         'metadata[user_id]' => (string)$uid,
         'metadata[plan]' => 'family_pro',
+        'metadata[billing]' => $billing,
         'subscription_data[metadata][user_id]' => (string)$uid,
         'subscription_data[metadata][plan]' => 'family_pro',
+        'subscription_data[metadata][billing]' => $billing,
     ], $stripe['secret_key']);
 
-    echo json_encode(['ok'=>true,'url'=>$session['url'] ?? null,'session_id'=>$session['id'] ?? null], JSON_UNESCAPED_SLASHES);
+    echo json_encode([
+        'ok'=>true,
+        'url'=>$session['url'] ?? null,
+        'session_id'=>$session['id'] ?? null
+    ], JSON_UNESCAPED_SLASHES);
 } catch (Throwable $e) {
     bh_stripe_response(500, ['ok'=>false,'error'=>'stripe_checkout_error','message'=>$e->getMessage()]);
 }
