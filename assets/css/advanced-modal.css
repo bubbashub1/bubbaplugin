@@ -145,3 +145,21 @@
     padding: 1.5rem;
   }
 }
+
+
+/* BUBBA HUB — FRIENDLY BOLD ALIGNMENT
+   Shared visual language; page-specific layout remains unchanged. */
+
+.hero-advanced-dialog{background:var(--bh-cream,#fffaf2);border:2px solid rgba(18,63,49,.07);border-radius:var(--bh-radius-xl,30px);box-shadow:var(--bh-shadow-bold,0 14px 34px rgba(18,63,49,.12))}
+.hero-advanced-close{border:2px solid rgba(18,63,49,.07);border-radius:14px;color:var(--bh-green-dark,#144400);box-shadow:none}
+.hero-advanced-close:hover{background:var(--bh-green-soft,#d8e6db)}
+.hero-advanced-dialog h2{font-weight:800;letter-spacing:-.025em;color:var(--bh-green-dark,#144400)}
+.advanced-filter-field select{min-height:50px;padding:11px 12px;border:2px solid #dbe5dd;border-radius:14px;font:inherit}
+.advanced-filter-field label,.hero-advanced-check{font-weight:800;color:var(--bh-green-dark,#416651)}
+.hero-advanced-actions .button{min-height:48px;border-radius:999px}
+
+
+
+
+
+
