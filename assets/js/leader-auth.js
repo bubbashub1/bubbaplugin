@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const socialLogin=async(provider,payload)=>{
     socialMessage("Signing in with "+(provider==="google"?"Google":"Facebook")+"…");
     try{
-      const r=await fetch("api/leader-social.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({provider,...payload})});
+      const r=await fetch("api/auth.php?action="+encodeURIComponent(provider),{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({context:"leader",provider,...payload})});
       const d=await r.json();
       if(!r.ok||!d.ok)throw Error(d.message||"Social sign-in could not be completed.");
       location.replace(next);
