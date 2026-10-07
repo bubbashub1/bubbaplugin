@@ -6395,3 +6395,121 @@ a[class*="hero-button"]{
     padding:18px;
   }
 }
+
+
+/* BUBBA HUB — HOMEPAGE FAMILY WEEK / PRO CARDS */
+.bh-home .home-plan-pro-band{
+  display:block;
+  padding:28px;
+}
+.bh-home .home-plan-intro{
+  display:grid;
+  grid-template-columns:minmax(180px,280px) minmax(0,1fr);
+  gap:28px;
+  align-items:center;
+  margin-bottom:24px;
+}
+.bh-home .home-plan-photo img{
+  display:block;
+  width:100%;
+  height:190px;
+  object-fit:cover;
+  border-radius:18px;
+}
+.bh-home .home-plan-cards{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px;
+}
+.bh-home .home-plan-card{
+  position:relative;
+  min-width:0;
+  padding:24px;
+  background:#fff;
+  border:1px solid rgba(18,63,49,.10);
+  border-radius:18px;
+  box-shadow:0 7px 23px rgba(18,63,49,.05);
+}
+.bh-home .home-plan-card h3{
+  margin:10px 0 8px;
+  color:#144400;
+  font-size:20px;
+}
+.bh-home .home-plan-card p{
+  margin:0;
+  color:#5c7067;
+  line-height:1.55;
+}
+.bh-home .home-plan-card-icon{
+  display:grid;
+  place-items:center;
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:#d8e6db;
+  color:#144400;
+  font-size:20px;
+}
+.bh-home .home-plan-card-pro{
+  background:#eef7e8;
+  border:2px solid #9fb7a5;
+}
+.bh-home .home-plan-card-pro .pro-badge{
+  position:absolute;
+  top:18px;
+  right:18px;
+  display:inline-flex;
+  align-items:center;
+  padding:5px 9px;
+  border-radius:999px;
+  background:#144400;
+  color:#fff;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+.bh-home .home-plan-pro-price{
+  margin:12px 0 2px;
+  color:#144400;
+  font-size:28px;
+  font-weight:800;
+}
+.bh-home .home-plan-pro-price span{
+  font-size:14px;
+  font-weight:600;
+}
+.bh-home .home-plan-pro-annual{
+  font-size:13px;
+}
+.bh-home .home-plan-pro-annual strong{
+  color:#144400;
+}
+.bh-home .home-plan-card-pro ul{
+  margin:16px 0 20px;
+  padding:0;
+  list-style:none;
+}
+.bh-home .home-plan-card-pro li{
+  position:relative;
+  margin:8px 0;
+  padding-left:20px;
+  color:#123f31;
+  font-size:13px;
+  font-weight:600;
+}
+.bh-home .home-plan-card-pro li::before{
+  content:"✓";
+  position:absolute;
+  left:0;
+  color:#144400;
+  font-weight:800;
+}
+@media(max-width:850px){
+  .bh-home .home-plan-intro{grid-template-columns:1fr}
+  .bh-home .home-plan-cards{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .bh-home .home-plan-pro-band{padding:20px}
+  .bh-home .home-plan-photo img{height:170px}
+  .bh-home .home-plan-card{padding:20px}
+}
