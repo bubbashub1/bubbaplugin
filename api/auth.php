@@ -65,27 +65,41 @@ try {
     $config = is_file($configFile) ? require $configFile : [];
     if (!is_array($config)) $config = [];
 
-    // Social-auth secrets live in the live WordPress wp-config.php.
-    $wpConfigCandidates = [
-        dirname(__DIR__) . '/wp-config.php',
-        '/public_html/wp-config.php',
-        dirname(__DIR__, 2) . '/wp-config.php',
-    ];
-    foreach ($wpConfigCandidates as $wpConfigFile) {
-        if (is_file($wpConfigFile)) {
-            require_once $wpConfigFile;
-            break;
+    // Read social-auth settings from wp-config.php without executing WordPress.
+    // Loading wp-config.php directly can bootstrap environment-specific WordPress code
+    // and turn otherwise simple API requests into HTTP 500 errors.
+    function bh_read_wp_constant(string $name): string {
+        $candidates = [
+            '/public_html/wp-config.php',
+            dirname(__DIR__) . '/wp-config.php',
+            dirname(__DIR__, 2) . '/wp-config.php',
+        ];
+
+        foreach ($candidates as $file) {
+            if (!is_file($file)) continue;
+            $contents = @file_get_contents($file);
+            if ($contents === false) continue;
+
+            $pattern = '/define\\s*\\(\\s*[\\\'"]' . preg_quote($name, '/') . '[\\\'"]\\s*,\\s*[\\\'"](.*?)[\\\'"]\\s*\\)\\s*;/s';
+            if (preg_match($pattern, $contents, $m)) {
+                return stripcslashes($m[1]);
+            }
         }
+
+        return '';
     }
 
     if (!isset($config['google']) || !is_array($config['google'])) $config['google'] = [];
-    if (defined('BH_GOOGLE_CLIENT_ID')) {
-        $config['google']['client_id'] = (string)BH_GOOGLE_CLIENT_ID;
+    $googleClientId = bh_read_wp_constant('BH_GOOGLE_CLIENT_ID');
+    if ($googleClientId !== '') {
+        $config['google']['client_id'] = $googleClientId;
     }
 
     if (!isset($config['facebook']) || !is_array($config['facebook'])) $config['facebook'] = [];
-    if (defined('BH_FACEBOOK_APP_ID')) $config['facebook']['app_id'] = (string)BH_FACEBOOK_APP_ID;
-    if (defined('BH_FACEBOOK_APP_SECRET')) $config['facebook']['app_secret'] = (string)BH_FACEBOOK_APP_SECRET;
+    $facebookAppId = bh_read_wp_constant('BH_FACEBOOK_APP_ID');
+    $facebookAppSecret = bh_read_wp_constant('BH_FACEBOOK_APP_SECRET');
+    if ($facebookAppId !== '') $config['facebook']['app_id'] = $facebookAppId;
+    if ($facebookAppSecret !== '') $config['facebook']['app_secret'] = $facebookAppSecret;
 
     $action = trim((string)($_GET['action'] ?? 'me'));
 
