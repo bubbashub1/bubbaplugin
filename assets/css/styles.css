@@ -6650,3 +6650,15 @@ body.bh-stripe-modal-open{overflow:hidden}
   .bh-stripe-modal{padding:8px}
   .bh-stripe-modal-dialog{padding:20px;border-radius:20px;max-height:96vh}
 }
+
+/* Leader Pro banner: full width beneath the two-column leader auth layout */
+.bh-leader-auth-page .leader-login-pro{
+  grid-column:1 / -1;
+  width:100%;
+  margin:0;
+}
+@media(max-width:700px){
+  .bh-leader-auth-page .leader-login-pro{
+    width:100%;
+  }
+}
