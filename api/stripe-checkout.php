@@ -14,8 +14,6 @@ function bh_stripe_config(): array {
     $config = is_file($file) ? require $file : [];
     $stripe = is_array($config['stripe'] ?? null) ? $config['stripe'] : [];
 
-    // Read Stripe constants from wp-config.php without executing WordPress.
-    // This keeps checkout independent from the WordPress bootstrap.
     $constant = static function(string $name): string {
         if (defined($name)) return trim((string)constant($name));
         $candidates = [
@@ -27,7 +25,7 @@ function bh_stripe_config(): array {
             if (!is_file($file)) continue;
             $contents = @file_get_contents($file);
             if ($contents === false) continue;
-            $pattern = '/define\\s*\\(\\s*[\'" ]' . preg_quote($name, '/') . '[\'" ]\\s*,\\s*[\'" ](.*?)[\'" ]\\s*\\)\\s*;/s';
+            $pattern = '/define\s*\(\s*[\'" ]' . preg_quote($name, '/') . '[\'" ]\s*,\s*[\'" ](.*?)[\'" ]\s*\)\s*;/s';
             if (preg_match($pattern, $contents, $m)) return stripcslashes($m[1]);
         }
         return '';
@@ -76,8 +74,8 @@ try {
     if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 
     $uid = (int)($_SESSION['bh_user_id'] ?? 0);
-
     $stripe = bh_stripe_config();
+
     if ($stripe['secret_key'] === '') {
         bh_stripe_response(503, ['ok'=>false,'error'=>'stripe_not_configured','message'=>'Stripe is not configured yet.']);
     }
@@ -87,6 +85,7 @@ try {
 
     $plan = strtolower(trim((string)($input['plan'] ?? 'family_pro')));
     if (!in_array($plan, ['family_pro','leader_pro'], true)) $plan='family_pro';
+
     $billing = strtolower(trim((string)($input['billing'] ?? 'annual')));
     if (!in_array($billing, ['monthly', 'annual'], true)) $billing = 'annual';
 
@@ -101,9 +100,6 @@ try {
 
     $db = bh_mysql();
 
-    // A family does not need a pre-existing Bubba Hub account to buy Pro.
-    // Signed-in users keep their existing account; new customers enter their
-    // email in Stripe Checkout and the webhook creates/link the family account.
     $user = null;
     if ($uid > 0) {
         $q = $db->prepare("SELECT id,email,role FROM bh_users WHERE id=? AND status='active' LIMIT 1");
@@ -111,6 +107,7 @@ try {
         $user = $q->fetch();
         if (!$user) $uid = 0;
     }
+
     if ($plan === 'leader_pro' && (!$user || ($user['role'] ?? '') !== 'leader')) {
         bh_stripe_response(403, ['ok'=>false,'error'=>'leader_account_required','message'=>'Please sign in to your class leader account before upgrading to Leader Pro.']);
     }
@@ -133,26 +130,37 @@ try {
         UNIQUE KEY uq_bh_stripe_subscription(stripe_subscription_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
-    $session = bh_stripe_post('checkout/sessions', [
+    /*
+     * Stripe subscription Checkout creates the Customer automatically.
+     * customer_creation is intentionally NOT sent here because Stripe only
+     * permits customer_creation in payment mode.
+     */
+    $params = [
         'mode' => 'subscription',
-        'customer_creation' => 'always',
-        ...(array_filter([
-            'customer_email' => $user ? (string)$user['email'] : null,
-            'client_reference_id' => $uid > 0 ? (string)$uid : null,
-        ], static fn($v) => $v !== null)),
         'line_items[0][price]' => $priceId,
         'line_items[0][quantity]' => '1',
         'allow_promotion_codes' => 'true',
         'billing_address_collection' => 'auto',
-        'success_url' => $plan === 'leader_pro' ? 'https://bubbahub.co.uk/account/leader-subscription.html?stripe=success' : $stripe['success_url'],
-        'cancel_url' => $plan === 'leader_pro' ? 'https://bubbahub.co.uk/account/leader-subscription.html?stripe=cancelled' : $stripe['cancel_url'],
+        'success_url' => $plan === 'leader_pro'
+            ? 'https://bubbahub.co.uk/account/leader-subscription.html?stripe=success'
+            : $stripe['success_url'],
+        'cancel_url' => $plan === 'leader_pro'
+            ? 'https://bubbahub.co.uk/account/leader-subscription.html?stripe=cancelled'
+            : $stripe['cancel_url'],
         'metadata[user_id]' => (string)$uid,
         'metadata[plan]' => $plan,
         'metadata[billing]' => $billing,
         'subscription_data[metadata][user_id]' => (string)$uid,
         'subscription_data[metadata][plan]' => $plan,
         'subscription_data[metadata][billing]' => $billing,
-    ], $stripe['secret_key']);
+    ];
+
+    if ($user) {
+        $params['customer_email'] = (string)$user['email'];
+        $params['client_reference_id'] = (string)$uid;
+    }
+
+    $session = bh_stripe_post('checkout/sessions', $params, $stripe['secret_key']);
 
     echo json_encode([
         'ok'=>true,
