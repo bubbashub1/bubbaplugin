@@ -23,7 +23,7 @@
 <article class="pro-card"><span class="eyebrow">Already Pro?</span><h2>Your Pro dashboard</h2><p>Jump straight into the tools that make Bubba Hub useful every week.</p><div class="pro-cta"><a class="button button-soft" href="my-hub.html">My Hub</a><a class="button button-soft" href="planner-pro.html">Planner Pro</a><a class="button button-soft" href="calendar.html">Calendar</a></div></article>
 </section>
 <section class="admin-panel" style="margin-top:24px"><span class="eyebrow">Demo data → live data</span><h2>Built with replaceable data sources</h2><table class="demo-table"><tr><th>Demo component</th><th>Future source</th></tr><tr><td>Family members</td><td><code>api/my-hub.php</code></td></tr><tr><td>Saved activities</td><td><code>api/my-hub.php</code> / favourites</td></tr><tr><td>Planner items</td><td><code>api/planner.php</code></td></tr><tr><td>Subscription</td><td><code>api/subscription.php</code> / payment system</td></tr><tr><td>Bookings</td><td><code>api/reservations.php</code></td></tr></table></section>
-</main>
+<section class="admin-panel" style="margin-top:18px"><h2>Support Bubba Hub</h2><p>If Bubba Hub is useful to your family, help us keep it running with a voluntary contribution.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="button button-primary" type="button" data-stripe-payment="family_pro" data-stripe-donation="1" data-stripe-amount="5">Support · £5</button><button class="button button-soft" type="button" data-stripe-payment="family_pro" data-stripe-donation="1" data-stripe-amount="10">Support · £10</button><button class="button button-soft" type="button" data-stripe-payment="family_pro" data-stripe-donation="1" data-stripe-amount="20">Support · £20</button></div></section></main>
 <footer class="site-footer"><div class="site-footer-bottom"><span>© 2026 Bubba Hub</span><span>Devon & Cornwall</span></div></footer>
 <script>
 (async()=>{
@@ -35,4 +35,4 @@
 })();
 document.getElementById('activateDemo')?.addEventListener('click',()=>{localStorage.setItem('BH_PRO_DEMO','1');document.getElementById('activateDemo').textContent='✓ Pro demo active';document.getElementById('activateDemo').disabled=true;});
 if(localStorage.getItem('BH_PRO_DEMO')==='1' && !document.getElementById('activateDemo')?.dataset.live){document.getElementById('activateDemo').textContent='✓ Pro demo active';document.getElementById('activateDemo').disabled=true;}
-</script></body></html>
+</script><script src="assets/js/stripe-modal.js"></script></body></html>
