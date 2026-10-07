@@ -88,13 +88,17 @@
       <div id="homePlannerContent" class="home-planner-content" aria-live="polite"></div>
     </article>
 
-    <article class="home-lower-card home-account-preview">
+    <article class="home-lower-card home-account-preview" id="homeAccountPreview" aria-live="polite">
       <div class="home-lower-heading"><div><span class="eyebrow">Your family space</span><h2>My Account</h2></div></div>
-      <div class="home-profile-row"><span class="home-avatar">SJ</span><div><strong>Sarah Johnson</strong><small>Member since 2026</small></div><a href="account/profile.html">Edit Profile</a></div>
+      <div class="home-profile-row" id="homeAccountProfile">
+        <span class="home-avatar" id="homeAccountAvatar" aria-hidden="true">?</span>
+        <div><strong id="homeAccountName">Checking your account…</strong><small id="homeAccountMeta">Loading your family details…</small></div>
+        <a href="account/profile.html">Edit Profile</a>
+      </div>
       <nav class="home-account-links">
         <a href="account/profile.html">♟ My Details</a><a href="account/family.html">♧ My Children</a><a href="account/planner.html">▦ My Planner</a><a href="account/notifications.html">♩ Notifications</a><a href="account/privacy.html">◉ Consent Forms</a><a href="help-support.html">? Help &amp; Support</a>
       </nav>
-      <a class="home-logout" href="account.html">Log Out</a>
+      <a class="home-logout" id="homeAccountAction" href="account.html">Sign in</a>
     </article>
 
     <article class="home-lower-card home-leader-preview">
