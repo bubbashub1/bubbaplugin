@@ -43,6 +43,7 @@ function bh_stripe_config(): array {
         ?: trim((string)($stripe['leader_annual_price_id'] ?? getenv('BUBBAHUB_LEADER_STRIPE_PRICE_ANNUAL') ?: ''));
     $stripe['success_url'] = trim((string)($stripe['success_url'] ?? getenv('BUBBAHUB_STRIPE_SUCCESS_URL') ?: 'https://bubbahub.co.uk/account/subscription.html?stripe=success'));
     $stripe['cancel_url'] = trim((string)($stripe['cancel_url'] ?? getenv('BUBBAHUB_STRIPE_CANCEL_URL') ?: 'https://bubbahub.co.uk/account/subscription.html?stripe=cancelled'));
+    $stripe['publishable_key'] = $constant('BUBBAHUB_STRIPE_PUBLISHABLE_KEY') ?: trim((string)($stripe['publishable_key'] ?? getenv('BUBBAHUB_STRIPE_PUBLISHABLE_KEY') ?: ''));
 
     return $stripe;
 }
@@ -83,8 +84,33 @@ try {
     $input = json_decode((string)file_get_contents('php://input'), true);
     if (!is_array($input)) $input = $_POST;
 
+    $embedded = !empty($input['embedded']);
+    $donation = !empty($input['donation']);
     $plan = strtolower(trim((string)($input['plan'] ?? 'family_pro')));
     if (!in_array($plan, ['family_pro','leader_pro'], true)) $plan='family_pro';
+
+    if ($donation) {
+        $amount = (int)($input['amount'] ?? 10);
+        $amount = max(100, min(50000, $amount));
+        $params = [
+            'mode'=>'payment',
+            'line_items[0][price_data][currency]'=>'gbp',
+            'line_items[0][price_data][product_data][name]'=>'Support Bubba Hub',
+            'line_items[0][price_data][product_data][description]'=>'A voluntary contribution towards keeping Bubba Hub running.',
+            'line_items[0][price_data][unit_amount]'=>(string)$amount,
+            'line_items[0][quantity]'=>'1',
+            'billing_address_collection'=>'auto',
+            'success_url'=>'https://bubbahub.co.uk/?donation=success',
+            'cancel_url'=>'https://bubbahub.co.uk/?donation=cancelled'
+        ];
+        if ($embedded) {
+            $params['ui_mode']='embedded';
+            $params['return_url']='https://bubbahub.co.uk/?donation=success&session_id={CHECKOUT_SESSION_ID}';
+        }
+        $session=bh_stripe_post('checkout/sessions',$params,$stripe['secret_key']);
+        echo json_encode(['ok'=>true,'mode'=>'donation','url'=>$session['url']??null,'client_secret'=>$session['client_secret']??null,'publishable_key'=>$stripe['publishable_key']??''],JSON_UNESCAPED_SLASHES);
+        exit;
+    }
 
     $billing = strtolower(trim((string)($input['billing'] ?? 'annual')));
     if (!in_array($billing, ['monthly', 'annual'], true)) $billing = 'annual';
@@ -147,6 +173,7 @@ try {
         'cancel_url' => $plan === 'leader_pro'
             ? 'https://bubbahub.co.uk/account/leader-subscription.html?stripe=cancelled'
             : $stripe['cancel_url'],
+        'ui_mode' => $embedded ? 'embedded' : null,
         'metadata[user_id]' => (string)$uid,
         'metadata[plan]' => $plan,
         'metadata[billing]' => $billing,
@@ -154,6 +181,14 @@ try {
         'subscription_data[metadata][plan]' => $plan,
         'subscription_data[metadata][billing]' => $billing,
     ];
+    if ($embedded) {
+        unset($params['success_url'], $params['cancel_url']);
+        $params['return_url'] = $plan === 'leader_pro'
+            ? 'https://bubbahub.co.uk/account/leader-subscription.html?stripe=success&session_id={CHECKOUT_SESSION_ID}'
+            : 'https://bubbahub.co.uk/account/subscription.html?stripe=success&session_id={CHECKOUT_SESSION_ID}';
+    } else {
+        unset($params['ui_mode']);
+    }
 
     if ($user) {
         $params['customer_email'] = (string)$user['email'];
@@ -165,7 +200,9 @@ try {
     echo json_encode([
         'ok'=>true,
         'url'=>$session['url'] ?? null,
-        'session_id'=>$session['id'] ?? null
+        'session_id'=>$session['id'] ?? null,
+        'client_secret'=>$session['client_secret'] ?? null,
+        'publishable_key'=>$stripe['publishable_key'] ?? ''
     ], JSON_UNESCAPED_SLASHES);
 } catch (Throwable $e) {
     bh_stripe_response(500, ['ok'=>false,'error'=>'stripe_checkout_error','message'=>$e->getMessage()]);
