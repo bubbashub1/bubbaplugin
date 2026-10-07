@@ -1,7 +1,7 @@
 (function(){
   "use strict";
 
-  const RESTRICTED_PAGES=new Set(["my-hub.html","account.html","account-profile.html","account-planner.html","preferences.html","family.html","notifications.html","saved-activities.html","planner.html","choose.html","consent.html","privacy.html","subscription.html"]);
+  const RESTRICTED_PAGES=new Set(["my-hub.html","account.html","account-profile.html","account-planner.html","preferences.html","family.html","notifications.html","saved-activities.html","planner.html","choose.html","consent.html","privacy.html"]);
   const LEADER_PAGES=new Set(["leader.html","booking-manager.html","leader-account.html"]);
   const pageName=(location.pathname.split("/").filter(Boolean).pop()||"index.html").toLowerCase();
   const script=document.currentScript;
