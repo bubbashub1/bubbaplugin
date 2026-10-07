@@ -39,6 +39,10 @@ function bh_stripe_config(): array {
         ?: trim((string)($stripe['monthly_price_id'] ?? getenv('BUBBAHUB_STRIPE_PRICE_MONTHLY') ?: 'price_1UNyo9BCqGaB2UiPpuJ64CqM'));
     $stripe['annual_price_id'] = $constant('BUBBAHUB_STRIPE_PRICE_ANNUAL')
         ?: trim((string)($stripe['annual_price_id'] ?? getenv('BUBBAHUB_STRIPE_PRICE_ANNUAL') ?: 'price_1UNytgBCqGaB2UiPeqTNsLh9'));
+    $stripe['leader_monthly_price_id'] = $constant('BUBBAHUB_LEADER_STRIPE_PRICE_MONTHLY')
+        ?: trim((string)($stripe['leader_monthly_price_id'] ?? getenv('BUBBAHUB_LEADER_STRIPE_PRICE_MONTHLY') ?: ''));
+    $stripe['leader_annual_price_id'] = $constant('BUBBAHUB_LEADER_STRIPE_PRICE_ANNUAL')
+        ?: trim((string)($stripe['leader_annual_price_id'] ?? getenv('BUBBAHUB_LEADER_STRIPE_PRICE_ANNUAL') ?: ''));
     $stripe['success_url'] = trim((string)($stripe['success_url'] ?? getenv('BUBBAHUB_STRIPE_SUCCESS_URL') ?: 'https://bubbahub.co.uk/account/subscription.html?stripe=success'));
     $stripe['cancel_url'] = trim((string)($stripe['cancel_url'] ?? getenv('BUBBAHUB_STRIPE_CANCEL_URL') ?: 'https://bubbahub.co.uk/account/subscription.html?stripe=cancelled'));
 
@@ -81,17 +85,18 @@ try {
     $input = json_decode((string)file_get_contents('php://input'), true);
     if (!is_array($input)) $input = $_POST;
 
-    // Only allow the two known Family Pro prices. Never accept an arbitrary
-    // Stripe Price ID from the browser.
+    $plan = strtolower(trim((string)($input['plan'] ?? 'family_pro')));
+    if (!in_array($plan, ['family_pro','leader_pro'], true)) $plan='family_pro';
     $billing = strtolower(trim((string)($input['billing'] ?? 'annual')));
     if (!in_array($billing, ['monthly', 'annual'], true)) $billing = 'annual';
 
-    $priceId = $billing === 'monthly'
-        ? $stripe['monthly_price_id']
-        : $stripe['annual_price_id'];
+    $priceId = $plan === 'leader_pro'
+        ? ($billing === 'monthly' ? $stripe['leader_monthly_price_id'] : $stripe['leader_annual_price_id'])
+        : ($billing === 'monthly' ? $stripe['monthly_price_id'] : $stripe['annual_price_id']);
 
     if ($priceId === '') {
-        bh_stripe_response(503, ['ok'=>false,'error'=>'stripe_price_not_configured','message'=>'The selected Family Pro price is not configured yet.']);
+        $label = $plan === 'leader_pro' ? 'Leader Pro' : 'Family Pro';
+        bh_stripe_response(503, ['ok'=>false,'error'=>'stripe_price_not_configured','message'=>"The selected {$label} price is not configured yet."]);
     }
 
     $db = bh_mysql();
@@ -101,10 +106,13 @@ try {
     // email in Stripe Checkout and the webhook creates/link the family account.
     $user = null;
     if ($uid > 0) {
-        $q = $db->prepare("SELECT id,email FROM bh_users WHERE id=? AND status='active' LIMIT 1");
+        $q = $db->prepare("SELECT id,email,role FROM bh_users WHERE id=? AND status='active' LIMIT 1");
         $q->execute([$uid]);
         $user = $q->fetch();
         if (!$user) $uid = 0;
+    }
+    if ($plan === 'leader_pro' && (!$user || ($user['role'] ?? '') !== 'leader')) {
+        bh_stripe_response(403, ['ok'=>false,'error'=>'leader_account_required','message'=>'Please sign in to your class leader account before upgrading to Leader Pro.']);
     }
 
     $db->exec("CREATE TABLE IF NOT EXISTS bh_user_subscriptions (
@@ -136,13 +144,13 @@ try {
         'line_items[0][quantity]' => '1',
         'allow_promotion_codes' => 'true',
         'billing_address_collection' => 'auto',
-        'success_url' => $stripe['success_url'],
-        'cancel_url' => $stripe['cancel_url'],
+        'success_url' => $plan === 'leader_pro' ? 'https://bubbahub.co.uk/account/leader-subscription.html?stripe=success' : $stripe['success_url'],
+        'cancel_url' => $plan === 'leader_pro' ? 'https://bubbahub.co.uk/account/leader-subscription.html?stripe=cancelled' : $stripe['cancel_url'],
         'metadata[user_id]' => (string)$uid,
-        'metadata[plan]' => 'family_pro',
+        'metadata[plan]' => $plan,
         'metadata[billing]' => $billing,
         'subscription_data[metadata][user_id]' => (string)$uid,
-        'subscription_data[metadata][plan]' => 'family_pro',
+        'subscription_data[metadata][plan]' => $plan,
         'subscription_data[metadata][billing]' => $billing,
     ], $stripe['secret_key']);
 
