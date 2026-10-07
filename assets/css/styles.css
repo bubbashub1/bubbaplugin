@@ -2022,7 +2022,7 @@ body:has(.hub-modal), body:has(.hero-advanced-modal:not([hidden])) { overflow: h
 
 .bh-home .home-activity-grid{
   display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
+  grid-template-columns:repeat(3,minmax(0,1fr));
   gap:15px;
   margin-top:15px;
 }
@@ -6572,7 +6572,7 @@ body.bh-directory.directory-filter-open .directory-filters-panel.is-open .direct
 /* Directory hero action layout */
 body.bh-directory .directory-hero-actions{
   display:grid!important;
-  grid-template-columns:repeat(3,minmax(0,1fr));
+  grid-template-columns:repeat(4,minmax(0,1fr));
   gap:8px;
   align-items:stretch;
   width:100%;
