@@ -18,3 +18,28 @@
 .support-note{font-size:.88rem;opacity:.9;margin:16px 0 0}
 .support-bottom{margin-top:24px;text-align:center}
 @media(max-width:800px){.support-hero{padding:34px 20px}.support-grid{grid-template-columns:1fr}.donate-options{grid-template-columns:1fr}}
+
+
+/* Mobile layout */
+@media (max-width: 600px){
+  .support-page{width:100%;padding:0 14px 28px;box-sizing:border-box}
+  .support-hero{border-radius:18px;padding:30px 18px;margin-bottom:16px}
+  .support-hero h1{font-size:clamp(2rem,10vw,2.7rem);line-height:1.08}
+  .support-hero p{font-size:1rem;line-height:1.6}
+  .support-grid{display:flex;flex-direction:column;gap:16px}
+  .support-card,.donate-box{border-radius:18px;padding:22px 18px}
+  .support-card h2,.donate-box h2{font-size:1.4rem}
+  .support-list{margin-top:16px;gap:9px}
+  .support-list li{padding:11px 12px;font-size:.95rem}
+  .donate-box{text-align:center}
+  .donate-options{grid-template-columns:1fr;margin-top:16px}
+  .donate-options .button{min-height:52px;font-size:1.05rem}
+  .support-bottom{margin-top:16px}
+  .support-bottom .button{width:100%;justify-content:center;box-sizing:border-box}
+}
+
+@media (max-width: 380px){
+  .support-page{padding-left:10px;padding-right:10px}
+  .support-hero{padding:26px 15px}
+  .support-card,.donate-box{padding:20px 15px}
+}
