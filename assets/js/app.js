@@ -467,6 +467,107 @@ void bhHydrateSaved();
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render,{once:true});else render();
 })();
 
+/* Homepage live account preview */
+(function(){
+  const card=document.querySelector(".home-account-preview");
+  if(!card)return;
+
+  const avatar=document.getElementById("homeAccountAvatar");
+  const name=document.getElementById("homeAccountName");
+  const meta=document.getElementById("homeAccountMeta");
+  const action=document.getElementById("homeAccountAction");
+  const edit=card.querySelector('a[href="account/profile.html"]');
+
+  const setText=(el,value)=>{if(el)el.textContent=String(value||"")};
+  const initials=(first,last,email)=>{
+    const f=String(first||"").trim(),l=String(last||"").trim();
+    if(f||l)return ((f[0]||"")+(l[0]||"")).toUpperCase()||"?";
+    const e=String(email||"").trim();
+    return e?e[0].toUpperCase():"?";
+  };
+
+  const renderSignedOut=()=>{
+    setText(avatar,"?");
+    setText(name,"Welcome to Bubba Hub");
+    setText(meta,"Sign in to see your family account");
+    if(edit)edit.hidden=true;
+    if(action){
+      action.textContent="Sign in";
+      action.href="auth.html";
+      action.classList.remove("home-logout");
+    }
+  };
+
+  const renderSignedIn=async(auth)=>{
+    const user=auth?.user||{};
+    let profile=null,hub=null;
+
+    try{
+      const response=await fetch("/api/profile.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+      if(response.ok){
+        const payload=await response.json();
+        if(payload?.ok)profile=payload.user||null;
+      }
+    }catch(_){}
+
+    try{
+      const response=await fetch("/api/my-hub.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+      if(response.ok){
+        const payload=await response.json();
+        if(payload?.ok)hub=payload;
+      }
+    }catch(_){}
+
+    const first=profile?.first_name||"";
+    const last=profile?.last_name||"";
+    const email=profile?.email||user.email||"";
+    const displayName=[first,last].filter(Boolean).join(" ")||email||"Your Bubba Hub account";
+    const childCount=Array.isArray(hub?.children)?hub.children.length:0;
+    const savedCount=Array.isArray(hub?.saved)?hub.saved.length:0;
+
+    setText(avatar,initials(first,last,email));
+    setText(name,displayName);
+    setText(meta,
+      childCount||savedCount
+        ? [childCount?childCount+" "+(childCount===1?"child":"children"):"",savedCount?savedCount+" saved "+(savedCount===1?"activity":"activities"):""].filter(Boolean).join(" · ")
+        : "Family account"
+    );
+
+    if(edit)edit.hidden=false;
+    if(action){
+      action.textContent="Log Out";
+      action.href="account.html";
+      action.classList.add("home-logout");
+      action.onclick=async event=>{
+        event.preventDefault();
+        action.textContent="Signing out…";
+        action.setAttribute("aria-disabled","true");
+        try{
+          await fetch("/api/auth.php?action=logout",{
+            method:"POST",
+            credentials:"same-origin",
+            headers:{"Content-Type":"application/json","Accept":"application/json"},
+            body:JSON.stringify({csrf:auth.csrf||""})
+          });
+        }catch(_){}
+        window.location.href="auth.html";
+      };
+    }
+  };
+
+  const render=async()=>{
+    const auth=await bhAuthSession();
+    if(!auth?.authenticated||auth?.is_admin&&!auth?.user?.id){
+      renderSignedOut();
+      return;
+    }
+    await renderSignedIn(auth);
+  };
+
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render,{once:true});
+  else render();
+})();
+
 /* Homepage newsletter signup */
 (function(){
   function bindNewsletterForm(){
