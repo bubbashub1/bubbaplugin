@@ -43,7 +43,12 @@ try{
 
  $db=bh_mysql(); $userCols=bh_leader_columns($db,'bh_users'); $orgCols=bh_leader_columns($db,'bh_organisers');
  foreach(['email','password_hash','role'] as $c)if(!bh_leader_col($userCols,$c))throw new RuntimeException('The live bh_users table is missing '.$c.'.');
- foreach(['organisation_name','slug','status'] as $c)if(!bh_leader_col($orgCols,$c))throw new RuntimeException('The live bh_organisers table is missing '.$c.'.');
+ if(!bh_leader_col($orgCols,'organisation_name')){
+   $aliasFound=false;
+   foreach(['name','organisation','business_name'] as $alias){if(bh_leader_col($orgCols,$alias)){$aliasFound=true;break;}}
+   if(!$aliasFound)throw new RuntimeException('The live bh_organisers table has no organisation-name field.');
+ }
+ foreach(['slug','status'] as $c)if(!bh_leader_col($orgCols,$c))throw new RuntimeException('The live bh_organisers table is missing '.$c.'.');
 
  $q=$db->prepare("SELECT id,role,status FROM bh_users WHERE email=? LIMIT 1");$q->execute([$email]);$user=$q->fetch();
  if($user)bh_leader_signup_response(409,['ok'=>false,'error'=>'email_exists','message'=>(($user['role']??'')==='leader')?'A leader account already exists for this email. Please sign in instead.':'This email is already linked to a Bubba Hub account. Leader accounts are separate from family accounts, so please use a different email address.']);
@@ -73,7 +78,8 @@ try{
      if($sets){$values[]=(int)$org['id'];$q=$db->prepare("UPDATE bh_organisers SET ".implode(',',$sets)." WHERE id=?");$q->execute($values);}
      $organiserId=(int)$org['id'];
    }else{
-     $fields=['organisation_name','slug','status'];$values=[$organisation,$slug,'pending'];
+     $orgNameField=bh_leader_col($orgCols,'organisation_name')?'organisation_name':(bh_leader_col($orgCols,'name')?'name':(bh_leader_col($orgCols,'organisation')?'organisation':'business_name'));
+     $fields=[$orgNameField,'slug','status'];$values=[$organisation,$slug,'pending'];
      if($hasOrgUserId){array_unshift($fields,'user_id');array_unshift($values,$userId);}
      foreach(['description'=>'','email'=>$email,'phone'=>$phone!==''?$phone:null,'website'=>$website!==''?$website:null] as $field=>$value)if(bh_leader_col($orgCols,$field)){$fields[]=$field;$values[]=$value;}
      // Some older live installs used `name` instead of `organisation_name`. Keep those
