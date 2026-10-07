@@ -15,7 +15,9 @@ async function bhActivities(){
 
   const apiUrl=new URL("/api/activities.php",window.location.origin);
   apiUrl.searchParams.set("page","1");
-  apiUrl.searchParams.set("per_page","50");
+  // Load the directory dataset in one request. The API supports up to 200
+  // activities, avoiding repeated full database/session queries for each page.
+  apiUrl.searchParams.set("per_page","200");
 
   const fetchPage=async page=>{
     const url=new URL(apiUrl.toString());
@@ -41,15 +43,13 @@ async function bhActivities(){
   const totalPages=Number(firstPayload.pagination?.pages||1);
   let rows=firstRows;
 
-  // Page 1 is the critical payload used by the homepage and directory shell.
-  // Do not let one later page/API hiccup blank the whole site after a hard refresh.
+  // Normally the 200-item request above contains the complete directory.
+  // Keep a small fallback for sites that genuinely exceed 200 published activities.
   for(let start=2;start<=totalPages;start+=4){
     const pages=Array.from({length:Math.min(4,totalPages-start+1)},(_,i)=>start+i);
     const results=await Promise.allSettled(pages.map(fetchPage));
     results.forEach(result=>{
-      if(result.status==="fulfilled" && Array.isArray(result.value?.data)){
-        rows=rows.concat(result.value.data);
-      }
+      if(result.status==="fulfilled" && Array.isArray(result.value?.data)) rows=rows.concat(result.value.data);
     });
   }
 
