@@ -3,22 +3,56 @@
 <title>Leader login · Bubba Hub</title><meta name="description" content="Sign in or create a Bubba Hub class leader account.">
 <link rel="stylesheet" href="assets/css/styles.css"><script src="api/google-config.php" defer></script><script src="https://accounts.google.com/gsi/client" async defer></script><script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script></head><body>
 <header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">For class leaders</a><a href="account.html">Account</a></nav><a class="button button-soft" href="account.html">My account</a></header>
+
 <main class="app-shell auth-page bh-leader-auth-page">
 <section class="auth-hero"><div><span class="eyebrow">Bubba Hub for class leaders</span><h1 id="leaderAuthTitle">Sign in to your leader portal</h1><p id="leaderAuthIntro">Manage your classes, venues, schedules and bookings from one dedicated account.</p></div></section>
-<section class="auth-layout"><div class="admin-panel auth-card">
+
+<section class="auth-layout">
+<div class="admin-panel auth-card">
 <div class="auth-tabs" role="tablist" aria-label="Leader account access"><button type="button" class="button button-soft active" data-leader-mode="login" role="tab" aria-selected="true">Sign in</button><button type="button" class="button button-soft" data-leader-mode="register" role="tab" aria-selected="false">Create account</button></div>
-<div class="leader-social-buttons"><button type="button" class="google-signin-button" id="leaderGoogleSignIn"><span class="google-mark" aria-hidden="true">G</span><span>Continue with Google</span></button><button type="button" class="facebook-signin-button" id="leaderFacebookSignIn"><span class="facebook-mark" aria-hidden="true">f</span><span>Continue with Facebook</span></button><div class="auth-divider"><span>or sign in with email</span></div></div><form id="leaderAuthForm" novalidate>
+
+<div class="leader-social-buttons">
+<button type="button" class="google-signin-button" id="leaderGoogleSignIn"><span class="google-mark" aria-hidden="true">G</span><span>Continue with Google</span></button>
+<button type="button" class="facebook-signin-button" id="leaderFacebookSignIn"><span class="facebook-mark" aria-hidden="true">f</span><span>Continue with Facebook</span></button>
+<div class="auth-divider"><span>or sign in with email</span></div>
+</div>
+
+<form id="leaderAuthForm" novalidate>
 <label id="leaderOrganisationWrap" class="leader-register-only" hidden>Class, business or organisation name<input name="organisation_name" type="text" maxlength="190" autocomplete="organization" placeholder="e.g. Little Bubbas Baby Group"></label>
+
 <label>Email address<input name="email" type="email" required autocomplete="email" placeholder="leader@example.com"></label>
+
 <label id="leaderPhoneWrap" class="leader-register-only" hidden>Phone number<input name="phone" type="tel" maxlength="80" autocomplete="tel" placeholder="Optional"></label>
 <label id="leaderWebsiteWrap" class="leader-register-only" hidden>Website<input name="website" type="url" maxlength="255" autocomplete="url" placeholder="https://example.com"></label>
+
 <label>Password<input id="leaderPassword" name="password" type="password" required autocomplete="current-password" minlength="8" placeholder="At least 8 characters"><span class="auth-password-row"><button type="button" class="auth-show-password" id="leaderShowPassword">Show password</button><small>Minimum 8 characters</small></span></label>
+
 <label id="leaderConfirmWrap" hidden>Confirm password<input name="confirm_password" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the password again"></label>
 <label id="leaderTermsWrap" class="leader-register-only leader-terms" hidden><span><input name="terms" type="checkbox" value="1"> <span>I agree to the <a href="terms.html" target="_blank" rel="noopener">Bubba Hub Terms &amp; Conditions</a> and understand my organiser profile will be reviewed before public approval.</span></span></label>
-<button class="button button-primary auth-submit" type="submit" id="leaderAuthSubmit">Sign in</button><p class="library-message" id="leaderAuthMessage" role="status" aria-live="polite"></p></form>
+
+<button class="button button-primary auth-submit" type="submit" id="leaderAuthSubmit">Sign in</button>
+<p class="library-message" id="leaderAuthMessage" role="status" aria-live="polite"></p>
+</form>
+
 <div class="auth-note"><span>🔐</span><div><strong>Leader accounts are separate from family accounts</strong><p>Use your dedicated leader email address to manage classes, venues, schedules and bookings.</p></div></div>
+
+<section class="account-pro-banner leader-login-pro">
+<div>
+<span class="eyebrow">Leader Pro</span>
+<h2>Get more from Bubba Hub</h2>
+<p>Upgrade your leader account for Pro access to the features built for growing class and activity businesses.</p>
 </div>
-<aside class="auth-benefits"><span class="eyebrow">Leader portal</span><h2>Everything for your classes in one place.</h2><ul><li>🎨 Create and manage class listings</li><li>📍 Add venues and map details</li><li>📅 Keep schedules up to date</li><li>🎟️ Manage booking requests</li><li>⭐ Build your organiser profile</li></ul><p class="deployment-note">New organiser profiles start as pending review before public directory approval.</p></aside></section></main>
+<div class="account-pro-banner-actions">
+<strong>£5.50/month</strong>
+<span>or £60/year · Pay yearly &amp; get 1 month free</span>
+<a class="button button-primary" href="account/leader-subscription.html">View Leader Pro</a>
+</div>
+</section>
+</div>
+
+<aside class="auth-benefits"><span class="eyebrow">Leader portal</span><h2>Everything for your classes in one place.</h2><ul><li>🎨 Create and manage class listings</li><li>📍 Add venues and map details</li><li>📅 Keep schedules up to date</li><li>🎟️ Manage booking requests</li><li>⭐ Build your organiser profile</li></ul><p class="deployment-note">New organiser profiles start as pending review before public directory approval.</p></aside>
+</section></main>
+
 <footer class="site-footer"><div class="site-footer-grid"><div class="site-footer-brand"><a href="index.html" class="site-footer-logo"><img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><div class="site-footer-brand-copy"><a href="index.html" class="site-footer-title">Bubba Hub</a><p>Find, plan &amp; book family activities across Devon &amp; Cornwall.</p></div></div></div></footer>
 <script src="assets/js/leader-auth.js"></script><script src="assets/js/site-auth.js"></script><script src="assets/js/app.js"></script>
 </body></html>
