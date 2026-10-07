@@ -1,4 +1,36 @@
 /* Bubba Hub Support page */
+
+/* Support page header */
+body:has(.support-page) > .site-header{
+  min-height:72px;
+  padding:8px max(16px, calc((100% - 1400px) / 2 + 16px));
+  background:#d8e6db;
+  box-shadow:none;
+  border-bottom:1px solid rgba(20,68,0,.08);
+}
+body:has(.support-page) > .site-header .brand-logo{
+  width:58px;
+  height:58px;
+  border-radius:12px;
+}
+body:has(.support-page) > .site-header .main-nav{gap:4px}
+body:has(.support-page) > .site-header .main-nav a{
+  min-height:40px;
+  padding:0 11px;
+  border-radius:10px;
+  color:#144400;
+  font-size:13px;
+  font-weight:700;
+}
+body:has(.support-page) > .site-header .main-nav a:hover,
+body:has(.support-page) > .site-header .main-nav a:focus-visible{
+  background:rgba(255,255,255,.6);
+}
+body:has(.support-page) > .site-header > .button{
+  flex:0 0 auto;
+  white-space:nowrap;
+}
+
 .support-page{max-width:1100px;margin:0 auto;padding-bottom:40px}
 .support-hero{background:linear-gradient(135deg,#d8e6db,#eef5ef);border-radius:28px;padding:48px 36px;text-align:center;margin-bottom:24px}
 .support-hero h1{font-size:clamp(2.2rem,5vw,4rem);margin:8px 0 12px;color:#144400}
@@ -12,16 +44,64 @@
 .donate-box{background:#416651;color:#fff;border-radius:24px;padding:30px;display:flex;flex-direction:column;justify-content:center}
 .donate-box h2{color:#fff;margin:0 0 10px}
 .donate-box p{line-height:1.6;margin-top:0}
-.donate-options{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
-.donate-options .button{width:100%;justify-content:center;background:#fff;color:#144400;border-color:#fff}
-.donate-options .button:hover{background:#eef5ef}
+.donate-options{display:grid;grid-template-columns:1fr;gap:10px;margin-top:18px}
+.donate-options .button{
+  width:100%;
+  justify-content:center;
+  background:linear-gradient(135deg,#416651,#267b6f);
+  color:#d8e6db;
+  border-color:transparent;
+  box-shadow:0 9px 20px rgba(65,102,81,.22);
+}
+.donate-options .button:hover,
+.donate-options .button:focus-visible{
+  background:linear-gradient(135deg,#355844,#1e6c61);
+  color:#d8e6db;
+}
 .support-note{font-size:.88rem;opacity:.9;margin:16px 0 0}
 .support-bottom{margin-top:24px;text-align:center}
-@media(max-width:800px){.support-hero{padding:34px 20px}.support-grid{grid-template-columns:1fr}.donate-options{grid-template-columns:1fr}}
 
+@media(max-width:800px){
+  .support-hero{padding:34px 20px}
+  .support-grid{grid-template-columns:1fr}
+}
 
-/* Mobile layout */
-@media (max-width: 600px){
+@media(max-width:700px){
+  body:has(.support-page) > .site-header{
+    min-height:64px;
+    padding:7px 12px;
+    gap:8px;
+    overflow-x:auto;
+  }
+  body:has(.support-page) > .site-header .brand-logo{width:52px;height:52px}
+  body:has(.support-page) > .site-header .main-nav{
+    order:2;
+    flex:1 1 auto;
+    margin:0;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  body:has(.support-page) > .site-header .main-nav::-webkit-scrollbar{display:none}
+  body:has(.support-page) > .site-header .main-nav a{
+    flex:0 0 auto;
+    min-height:38px;
+    padding:0 9px;
+    font-size:12px;
+    white-space:nowrap;
+  }
+  body:has(.support-page) > .site-header > .button{
+    font-size:12px;
+    padding:8px 11px;
+  }
+}
+
+@media(max-width:460px){
+  body:has(.support-page) > .site-header .brand-logo{width:48px;height:48px}
+  body:has(.support-page) > .site-header .main-nav a:nth-child(n+3){display:none}
+  body:has(.support-page) > .site-header > .button{display:none}
+}
+
+@media(max-width:600px){
   .support-page{width:100%;padding:0 14px 28px;box-sizing:border-box}
   .support-hero{border-radius:18px;padding:30px 18px;margin-bottom:16px}
   .support-hero h1{font-size:clamp(2rem,10vw,2.7rem);line-height:1.08}
@@ -38,7 +118,7 @@
   .support-bottom .button{width:100%;justify-content:center;box-sizing:border-box}
 }
 
-@media (max-width: 380px){
+@media(max-width:380px){
   .support-page{padding-left:10px;padding-right:10px}
   .support-hero{padding:26px 15px}
   .support-card,.donate-box{padding:20px 15px}
