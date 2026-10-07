@@ -6,8 +6,19 @@ require_once __DIR__ . '/db.php';
 
 function bh_leader_signup_response(int $status,array $data):never{http_response_code($status);echo json_encode($data,JSON_UNESCAPED_SLASHES);exit;}
 function bh_leader_columns(PDO $db,string $table):array{
- $q=$db->prepare("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?");
- $q->execute([$table]); return array_fill_keys(array_map('strval',$q->fetchAll(PDO::FETCH_COLUMN)),true);
+ $q=$db->prepare("SELECT COLUMN_NAME,IS_NULLABLE,COLUMN_DEFAULT,EXTRA,COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?");
+ $q->execute([$table]);
+ $out=[];
+ foreach($q->fetchAll() as $row) $out[(string)$row['COLUMN_NAME']=$row;
+ return $out;
+}
+function bh_leader_col(array $cols,string $name):bool{return isset($cols[$name]);}
+function bh_leader_required(array $cols):array{
+ $out=[];
+ foreach($cols as $name=>$meta){
+   if(($meta['IS_NULLABLE']??'YES')==='NO' && $meta['COLUMN_DEFAULT']===null && stripos((string)($meta['EXTRA']??''),'auto_increment')===false) $out[]=$name;
+ }
+ return $out;
 }
 try{
  $secure=!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off';
@@ -31,14 +42,14 @@ try{
  if(!$terms)bh_leader_signup_response(422,['ok'=>false,'error'=>'terms_required','message'=>'Please confirm that you agree to the Bubba Hub organiser terms.']);
 
  $db=bh_mysql(); $userCols=bh_leader_columns($db,'bh_users'); $orgCols=bh_leader_columns($db,'bh_organisers');
- foreach(['email','password_hash','role'] as $c)if(empty($userCols[$c]))throw new RuntimeException('The live bh_users table is missing '.$c.'.');
- foreach(['organisation_name','slug','status'] as $c)if(empty($orgCols[$c]))throw new RuntimeException('The live bh_organisers table is missing '.$c.'.');
+ foreach(['email','password_hash','role'] as $c)if(!bh_leader_col($userCols,$c))throw new RuntimeException('The live bh_users table is missing '.$c.'.');
+ foreach(['organisation_name','slug','status'] as $c)if(!bh_leader_col($orgCols,$c))throw new RuntimeException('The live bh_organisers table is missing '.$c.'.');
 
  $q=$db->prepare("SELECT id,role,status FROM bh_users WHERE email=? LIMIT 1");$q->execute([$email]);$user=$q->fetch();
  if($user)bh_leader_signup_response(409,['ok'=>false,'error'=>'email_exists','message'=>(($user['role']??'')==='leader')?'A leader account already exists for this email. Please sign in instead.':'This email is already linked to a Bubba Hub account. Leader accounts are separate from family accounts, so please use a different email address.']);
 
- $hasOrgUserId=!empty($orgCols['user_id']); $org=false;
- if(!empty($orgCols['email'])){$q=$db->prepare("SELECT * FROM bh_organisers WHERE LOWER(email)=? LIMIT 1");$q->execute([$email]);$org=$q->fetch();}
+ $hasOrgUserId=bh_leader_col($orgCols,'user_id'); $org=false;
+ if(bh_leader_col($orgCols,'email')){$q=$db->prepare("SELECT * FROM bh_organisers WHERE LOWER(email)=? LIMIT 1");$q->execute([$email]);$org=$q->fetch();}
  if($org){
    if($hasOrgUserId&&!empty($org['user_id']))bh_leader_signup_response(409,['ok'=>false,'error'=>'organiser_claimed','message'=>'An organiser profile is already linked to this email. Please sign in or contact Bubba Hub support.']);
    if(($org['status']??'')==='suspended')bh_leader_signup_response(403,['ok'=>false,'error'=>'organiser_suspended','message'=>'This organiser profile is currently suspended. Please contact Bubba Hub support.']);
@@ -51,20 +62,34 @@ try{
  try{
    $passwordHash=password_hash($password,PASSWORD_DEFAULT);
    $fields=['email','password_hash','role'];$values=[$email,$passwordHash,'leader'];
-   if(isset($userCols['status'])){$fields[]='status';$values[]='active';}
+   if(bh_leader_col($userCols,'status')){$fields[]='status';$values[]='active';}
    $q=$db->prepare("INSERT INTO bh_users (".implode(',',$fields).") VALUES (".implode(',',array_fill(0,count($fields),'?')).")");$q->execute($values);$userId=(int)$db->lastInsertId();
 
    if($org){
      $sets=[];$values=[];
      if($hasOrgUserId){$sets[]='user_id=?';$values[]=$userId;}
-     if(isset($orgCols['phone'])&&$phone!==''){$sets[]='phone=?';$values[]=$phone;}
-     if(isset($orgCols['website'])&&$website!==''){$sets[]='website=?';$values[]=$website;}
+     if(bh_leader_col($orgCols,'phone')&&$phone!==''){$sets[]='phone=?';$values[]=$phone;}
+     if(bh_leader_col($orgCols,'website')&&$website!==''){$sets[]='website=?';$values[]=$website;}
      if($sets){$values[]=(int)$org['id'];$q=$db->prepare("UPDATE bh_organisers SET ".implode(',',$sets)." WHERE id=?");$q->execute($values);}
      $organiserId=(int)$org['id'];
    }else{
      $fields=['organisation_name','slug','status'];$values=[$organisation,$slug,'pending'];
      if($hasOrgUserId){array_unshift($fields,'user_id');array_unshift($values,$userId);}
-     foreach(['description'=>'','email'=>$email,'phone'=>$phone!==''?$phone:null,'website'=>$website!==''?$website:null] as $field=>$value)if(isset($orgCols[$field])){$fields[]=$field;$values[]=$value;}
+     foreach(['description'=>'','email'=>$email,'phone'=>$phone!==''?$phone:null,'website'=>$website!==''?$website:null] as $field=>$value)if(bh_leader_col($orgCols,$field)){$fields[]=$field;$values[]=$value;}
+     // Some older live installs used `name` instead of `organisation_name`. Keep those
+     // schemas usable without requiring a manual database rebuild.
+     foreach(['name','organisation','business_name'] as $alias){
+       if(bh_leader_col($orgCols,$alias) && !in_array($alias,$fields,true)){$fields[]=$alias;$values[]=$organisation;}
+     }
+     foreach(bh_leader_required($orgCols) as $required){
+       if(!in_array($required,$fields,true)) throw new RuntimeException('The live bh_organisers table requires an unsupported field: '.$required.'.');
+     }
+     foreach(bh_leader_required($userCols) as $required){
+       if(!in_array($required,$fields,true) && !in_array($required,['created_at','updated_at'],true)) {
+         // User required fields should be covered by the standard account columns.
+         throw new RuntimeException('The live bh_users table requires an unsupported field: '.$required.'.');
+       }
+     }
      $q=$db->prepare("INSERT INTO bh_organisers (".implode(',',$fields).") VALUES (".implode(',',array_fill(0,count($fields),'?')).")");$q->execute($values);$organiserId=(int)$db->lastInsertId();
    }
    $db->commit();
