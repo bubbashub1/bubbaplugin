@@ -98,9 +98,45 @@ try {
 
     if ($type === 'checkout.session.completed') {
         $uid = (int)($obj['metadata']['user_id'] ?? $obj['client_reference_id'] ?? 0);
+        $subscriptionId = is_string($obj['subscription'] ?? null) ? $obj['subscription'] : null;
+        $customerId = is_string($obj['customer'] ?? null) ? $obj['customer'] : null;
+
+        // Family Pro can be purchased without first creating a normal account.
+        // Stripe supplies the verified checkout email; create/link the family
+        // account here and then attach the subscription to that user.
+        if ($uid <= 0) {
+            $email = strtolower(trim((string)($obj['customer_details']['email'] ?? $obj['customer_email'] ?? '')));
+            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $q = $db->prepare("SELECT id,status FROM bh_users WHERE LOWER(email)=? LIMIT 1");
+                $q->execute([$email]);
+                $existing = $q->fetch();
+
+                if ($existing) {
+                    if (($existing['status'] ?? '') === 'active') {
+                        $uid = (int)$existing['id'];
+                    }
+                } else {
+                    $randomPassword = password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT);
+                    $q = $db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,'family','active')");
+                    $q->execute([$email,$randomPassword]);
+                    $uid = (int)$db->lastInsertId();
+
+                    // Send the normal welcome email; the customer can use the
+                    // password-reset flow later if they want to sign in.
+                    try {
+                        require_once __DIR__ . '/mailer.php';
+                        bh_send_smtp_mail(
+                            $email,
+                            'Welcome to Bubba Hub 💚',
+                            '<div style="font-family:Arial,sans-serif;line-height:1.6;color:#26352b;max-width:640px;margin:0 auto"><h1 style="color:#416651">Welcome to Bubba Hub 💚</h1><p>Your Family Pro account is ready.</p><p>Your payment has been received and your Family Pro access is now being activated.</p><p>You can sign in at <a href="https://bubbahub.co.uk/auth.html">Bubba Hub</a> and use the password reset option if you would like to set a password.</p><p>The Bubba Hub team</p></div>',
+                            "Welcome to Bubba Hub 💚\n\nYour Family Pro account is ready. Your payment has been received and your Family Pro access is now being activated.\n\nSign in: https://bubbahub.co.uk/auth.html\nUse the password reset option if you would like to set a password.\n\nThe Bubba Hub team"
+                        );
+                    } catch (Throwable $ignored) {}
+                }
+            }
+        }
+
         if ($uid > 0) {
-            $subscriptionId = is_string($obj['subscription'] ?? null) ? $obj['subscription'] : null;
-            $customerId = is_string($obj['customer'] ?? null) ? $obj['customer'] : null;
             bh_upsert_stripe_subscription($db,$uid,'active','stripe',$customerId,$subscriptionId,(string)($obj['id'] ?? ''),date('Y-m-d H:i:s'),null);
         }
     } elseif (in_array($type,['customer.subscription.updated','customer.subscription.created','customer.subscription.deleted'],true)) {
