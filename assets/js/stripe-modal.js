@@ -19,6 +19,7 @@
     modal.hidden=true;
     body.classList.remove("bh-stripe-modal-open");
     if(checkout){try{checkout.destroy();}catch(_){} checkout=null;}
+    stripe=null;
     const mount=document.getElementById("bhStripeCheckout");
     if(mount)mount.innerHTML="";
   }
@@ -38,48 +39,34 @@
 
     try{
       await loadStripeJs();
-      // Use Stripe's hosted Checkout as the reliable payment path.
-      // Embedded Checkout requires a correctly configured publishable key and
-      // can fail before the payment form is even created. Hosted Checkout
-      // works with the existing server-side Stripe configuration.
+
       const response=await fetch("/api/stripe-checkout.php",{
-        method:"POST",credentials:"same-origin",
+        method:"POST",
+        credentials:"same-origin",
         headers:{"Content-Type":"application/json","Accept":"application/json"},
         body:JSON.stringify({
           plan:options.plan||"family_pro",
           billing:options.billing||"annual",
           donation:!!options.donation,
-          amount:options.amount||10
+          amount:options.amount||10,
+          embedded:true
         })
       });
       const data=await response.json();
-      if(!response.ok||!data.url)throw new Error(data.message||data.error||"Unable to open Stripe checkout.");
-      mount.innerHTML='<div class="bh-stripe-loading">Redirecting to secure Stripe checkout…</div>';
-      window.location.assign(data.url);
+      if(!response.ok||!data.client_secret)throw new Error(data.message||data.error||"Unable to open Stripe checkout.");
+      if(!data.publishable_key)throw new Error("Stripe embedded checkout is not configured. Please add the Stripe publishable key to Bubba Hub's server configuration.");
+      if(typeof window.Stripe!=="function")throw new Error("Stripe could not be loaded. Please allow Stripe in your browser and try again.");
+
+      stripe=window.Stripe(data.publishable_key);
+      if(!stripe||typeof stripe.initEmbeddedCheckout!=="function")throw new Error("Stripe embedded checkout is not available in this browser.");
+
+      checkout=await stripe.initEmbeddedCheckout({clientSecret:data.client_secret});
+      mount.innerHTML="";
+      checkout.mount("#bhStripeCheckout");
     }catch(err){
+      if(checkout){try{checkout.destroy();}catch(_){} checkout=null;}
       mount.innerHTML="";
       error.textContent=err.message||"Unable to open secure checkout.";
-      if(/Stripe could not be loaded/i.test(String(err&&err.message||""))){
-        const fallback=document.createElement("button");
-        fallback.type="button";
-        fallback.className="button button-primary";
-        fallback.textContent="Continue to secure Stripe checkout →";
-        fallback.addEventListener("click",async()=>{
-          fallback.disabled=true;
-          fallback.textContent="Opening secure checkout…";
-          try{
-            const response=await fetch("/api/stripe-checkout.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({plan:options.plan||"family_pro",billing:options.billing||"annual",donation:!!options.donation,amount:options.amount||10})});
-            const data=await response.json();
-            if(!response.ok||!data.url)throw new Error(data.message||"Unable to open secure checkout.");
-            location.href=data.url;
-          }catch(fallbackError){
-            error.textContent=fallbackError.message||"Unable to open secure checkout.";
-            fallback.disabled=false;
-            fallback.textContent="Continue to secure Stripe checkout →";
-          }
-        });
-        mount.appendChild(fallback);
-      }
     }
   }
 
