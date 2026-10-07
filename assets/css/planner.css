@@ -11,7 +11,7 @@
 .planner-shell{display:flex;flex-direction:column;gap:10px;padding:23px;border:1px solid var(--bh-border);border-radius:22px;background:#fff;box-shadow:0 10px 28px rgba(20,68,0,.05)}
 .planner-toolbar{display:flex;align-items:flex-end;justify-content:space-between;gap:18px}
 .planner-toolbar-copy{min-width:0}
-.planner-toolbar-copy h2{margin:0;font-family:"Chewy",cursive;font-weight:400;font-size:30px;line-height:1.05}
+.planner-toolbar-copy h2{margin:0;font-family:Calibri,Arial,Helvetica,sans-serif;font-weight:400;font-size:30px;line-height:1.05}
 .planner-toolbar-copy p{margin:4px 0 0;color:var(--bh-text-muted);font-size:13px}
 .planner-toolbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap;min-width:0}
 .planner-toolbar-actions .status{margin:0}
