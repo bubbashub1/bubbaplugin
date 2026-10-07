@@ -19,8 +19,19 @@
 (async()=>{
  const action=document.getElementById("leaderProAction"),title=document.getElementById("leaderStatusTitle"),text=document.getElementById("leaderStatusText"),badge=document.getElementById("leaderProBadge"),msg=document.getElementById("leaderCheckoutMessage"),inputs=[...document.querySelectorAll('input[name="leaderBilling"]')];
  try{
-  const a=await fetch("../api/auth.php?action=me",{credentials:"same-origin",cache:"no-store"}),d=await a.json();
-  if(!d.leader_authenticated||d.user?.role!=="leader"){location.href="../leader-login.html?next="+encodeURIComponent(location.pathname);return;}
+  let leaderSignedIn=false;
+  try{
+   const a=await fetch("../api/auth.php?action=me",{credentials:"same-origin",cache:"no-store"}),d=await a.json();
+   leaderSignedIn=!!(d.leader_authenticated&&d.user?.role==="leader");
+  }catch(e){}
+  if(!leaderSignedIn){
+   title.textContent="Leader Pro";
+   text.textContent="Sign in to your class leader account to upgrade to Leader Pro.";
+   badge.textContent="LEADER PRO";
+   action.textContent="Sign in to upgrade →";
+   action.onclick=()=>{location.href="../leader-login.html?next="+encodeURIComponent(location.pathname);};
+   return;
+  }
   const r=await fetch("../api/subscription.php",{credentials:"same-origin",cache:"no-store"}),s=await r.json();
   if(s.pro&&s.subscription?.plan==="leader_pro"){
    title.textContent="⭐ Leader Pro active";text.textContent="Your Leader Pro access is active.";badge.textContent="PRO ACTIVE";action.textContent="Leader Pro active";action.disabled=true;inputs.forEach(i=>i.disabled=true);return;
