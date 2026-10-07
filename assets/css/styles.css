@@ -6536,3 +6536,34 @@ a[class*="hero-button"]{
   .account-pro-banner{gap:16px;}
   .account-pro-action,.account-pro-badge{width:100%;}
 }
+
+
+/* DIRECTORY ADVANCED SEARCH — FINAL MODAL VISIBILITY FIX
+   The More search options CTA opens the existing advanced filter panel.
+   Keep the panel above the page backdrop so the filters are actually usable. */
+body.bh-directory.directory-filter-open .directory-filters-panel.is-open{
+  position:fixed !important;
+  z-index:100001 !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+  transform:translate(-50%,0) !important;
+}
+
+body.bh-directory.directory-filter-open::before{
+  z-index:100000 !important;
+  pointer-events:auto;
+}
+
+body.bh-directory.directory-filter-open .directory-filters-panel.is-open .directory-filters-close{
+  position:relative;
+  z-index:100002;
+}
+
+@media(max-width:700px){
+  body.bh-directory.directory-filter-open .directory-filters-panel.is-open{
+    top:12px !important;
+    width:calc(100vw - 24px) !important;
+    max-height:calc(100vh - 24px) !important;
+  }
+}
