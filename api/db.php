@@ -18,9 +18,7 @@ function bh_ensure_newsletter_subscribers(PDO $pdo): void {
         consented_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         unsubscribed_at DATETIME NULL,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_newsletter_status (status),
-        INDEX idx_newsletter_created (created_at)
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 }
 
@@ -31,7 +29,6 @@ function bh_mysql(): PDO {
     $configFile = __DIR__ . '/config.php';
     $config = null;
 
-    // Prefer the app's private config when present.
     if (is_file($configFile)) {
         $loaded = require $configFile;
         if (is_array($loaded) && isset($loaded['db']) && is_array($loaded['db'])) {
@@ -39,8 +36,6 @@ function bh_mysql(): PDO {
         }
     }
 
-    // Root deployment fallback: the existing WordPress config is named
-    // wp-config.php (with a hyphen) and lives in /public_html/.
     if (!is_array($config) || !isset($config['db']) || !is_array($config['db'])) {
         $wpCandidates = [
             '/public_html/wp-config.php',
@@ -53,7 +48,7 @@ function bh_mysql(): PDO {
             if ($wp === false) continue;
 
             $readWpConstant = static function(string $name) use ($wp): ?string {
-                $pattern = '/define\\s*\\(\\s*[\'"]' . preg_quote($name, '/') . '[\'"]\\s*,\\s*[\'"](.*?)[\'"]\\s*\\)\\s*;/s';
+                $pattern = '/define\s*\(\s*[\'"]' . preg_quote($name, '/') . '[\'"]\s*,\s*[\'"](.*?)[\'"]\s*\)\s*;/s';
                 if (preg_match($pattern, $wp, $m)) return stripcslashes($m[1]);
                 return null;
             };
@@ -115,11 +110,19 @@ function bh_mysql(): PDO {
         }
     } catch (Throwable $ignored) {}
 
-    // Keep organiser terms storage available on older installs.
     try {
         $termsCheck = $pdo->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME='terms_content'")->fetchColumn();
         if ((int)$termsCheck === 0) {
             $pdo->exec("ALTER TABLE bh_organisers ADD COLUMN terms_content MEDIUMTEXT NULL");
+        }
+    } catch (Throwable $ignored) {}
+
+    // Older Bubba Hub databases may have an organiser status enum that predates
+    // the pending-review workflow. Leader signup creates profiles as pending.
+    try {
+        $statusType = $pdo->query("SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME='status' LIMIT 1")->fetchColumn();
+        if (is_string($statusType) && strpos($statusType, "'pending'") === false) {
+            $pdo->exec("ALTER TABLE bh_organisers MODIFY COLUMN status ENUM('draft','pending','published','suspended') NOT NULL DEFAULT 'draft'");
         }
     } catch (Throwable $ignored) {}
 
@@ -131,7 +134,6 @@ function bh_mysql(): PDO {
         }
     } catch (Throwable $ignored) {}
 
-    // Account-backed Planner Pro state.
     try {
         $pdo->exec("CREATE TABLE IF NOT EXISTS bh_planner_pro_state (
             user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
