@@ -72,7 +72,6 @@ try {
     if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 
     $uid = (int)($_SESSION['bh_user_id'] ?? 0);
-    if (!$uid) bh_stripe_response(401, ['ok'=>false,'error'=>'login_required']);
 
     $stripe = bh_stripe_config();
     if ($stripe['secret_key'] === '') {
@@ -96,10 +95,17 @@ try {
     }
 
     $db = bh_mysql();
-    $q = $db->prepare("SELECT id,email FROM bh_users WHERE id=? AND status='active' LIMIT 1");
-    $q->execute([$uid]);
-    $user = $q->fetch();
-    if (!$user) bh_stripe_response(401, ['ok'=>false,'error'=>'account_not_found']);
+
+    // A family does not need a pre-existing Bubba Hub account to buy Pro.
+    // Signed-in users keep their existing account; new customers enter their
+    // email in Stripe Checkout and the webhook creates/link the family account.
+    $user = null;
+    if ($uid > 0) {
+        $q = $db->prepare("SELECT id,email FROM bh_users WHERE id=? AND status='active' LIMIT 1");
+        $q->execute([$uid]);
+        $user = $q->fetch();
+        if (!$user) $uid = 0;
+    }
 
     $db->exec("CREATE TABLE IF NOT EXISTS bh_user_subscriptions (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -121,8 +127,11 @@ try {
 
     $session = bh_stripe_post('checkout/sessions', [
         'mode' => 'subscription',
-        'customer_email' => (string)$user['email'],
-        'client_reference_id' => (string)$uid,
+        'customer_creation' => 'always',
+        ...(array_filter([
+            'customer_email' => $user ? (string)$user['email'] : null,
+            'client_reference_id' => $uid > 0 ? (string)$uid : null,
+        ], static fn($v) => $v !== null)),
         'line_items[0][price]' => $priceId,
         'line_items[0][quantity]' => '1',
         'allow_promotion_codes' => 'true',
