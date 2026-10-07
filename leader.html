@@ -30,6 +30,11 @@
 </div>
 </section>
 
+<section class="account-pro-banner leader-pro-banner" id="leaderProBanner">
+<div><span class="eyebrow">Bubba Hub Leader Pro</span><h2 id="leaderProTitle">Get more from your leader account</h2><p id="leaderProText">Upgrade to Leader Pro for enhanced tools for your classes and organiser profile.</p></div>
+<a class="button button-primary" id="leaderProAction" href="/account/leader-subscription.html">Upgrade to Pro →</a>
+</section>
+
 <section class="bh-leader-stats-v2" aria-label="Your Bubba Hub stats">
 <a class="bh-leader-stat" href="/leader/classes.html"><span>🎨</span><div><strong id="statActivities">0</strong><b>My classes</b><small id="statActivitiesSub">Loading…</small></div><em>→</em></a>
 <a class="bh-leader-stat" href="/leader/venues.html"><span>📍</span><div><strong id="statVenues">0</strong><b>My venues</b><small id="statVenuesSub">Loading…</small></div><em>→</em></a>
@@ -80,5 +85,15 @@
 <script src="/assets/js/leader-demo.js"></script>
 <script src="/assets/js/leader-portal.js"></script>
 <script src="/assets/js/leader-csv.js"></script>
+<script>
+fetch("/api/subscription.php",{credentials:"same-origin",cache:"no-store"}).then(r=>r.json()).then(d=>{
+ const a=document.getElementById("leaderProAction"); if(!a)return;
+ if(d.pro&&d.subscription?.plan==="leader_pro"){
+  a.textContent="⭐ Leader Pro"; a.href="/account/leader-subscription.html"; a.className="account-pro-badge";
+  document.getElementById("leaderProTitle").textContent="Your Leader Pro account is active";
+  document.getElementById("leaderProText").textContent="You have access to your Leader Pro features.";
+ }
+}).catch(()=>{});
+</script>
 </body>
 </html>
