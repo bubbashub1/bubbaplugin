@@ -44,87 +44,6 @@ function bh_b64url_decode(string $value): string|false {
     if ($pad) $value .= str_repeat('=', 4 - $pad);
     return base64_decode($value, true);
 }
-function bh_der_length(int $length): string {
-    if ($length < 128) return chr($length);
-    $hex = ltrim(bin2hex(pack('N', $length)), '0');
-    if ($hex === '') $hex = '00';
-    if (strlen($hex) % 2) $hex = '0' . $hex;
-    return chr(0x80 | (strlen($hex) / 2)) . hex2bin($hex);
-}
-function bh_ecdsa_der_to_raw(string $der, int $size = 32): string {
-    $i = 0;
-    if (($der[$i++] ?? '') !== "\x30") throw new RuntimeException('Invalid ECDSA signature.');
-    $len = ord($der[$i++]);
-    if ($len & 0x80) { $n = $len & 0x7f; $i += $n; }
-    if (($der[$i++] ?? '') !== "\x02") throw new RuntimeException('Invalid ECDSA signature.');
-    $rLen = ord($der[$i++]); $r = substr($der, $i, $rLen); $i += $rLen;
-    if (($der[$i++] ?? '') !== "\x02") throw new RuntimeException('Invalid ECDSA signature.');
-    $sLen = ord($der[$i++]); $s = substr($der, $i, $sLen);
-    $r = ltrim($r, "\x00"); $s = ltrim($s, "\x00");
-    return str_pad($r, $size, "\x00", STR_PAD_LEFT) . str_pad($s, $size, "\x00", STR_PAD_LEFT);
-}
-function bh_ecdsa_raw_to_der(string $raw, int $size = 32): string {
-    if (strlen($raw) !== $size * 2) throw new RuntimeException('Invalid ECDSA signature.');
-    $parts = [substr($raw, 0, $size), substr($raw, $size, $size)];
-    $out = '';
-    foreach ($parts as $part) {
-        $part = ltrim($part, "\x00");
-        if ($part === '') $part = "\x00";
-        if (ord($part[0]) & 0x80) $part = "\x00" . $part;
-        $out .= "\x02" . bh_der_length(strlen($part)) . $part;
-    }
-    return "\x30" . bh_der_length(strlen($out)) . $out;
-}
-function bh_apple_client_secret(array $apple): string {
-    $team = trim((string)($apple['team_id'] ?? ''));
-    $client = trim((string)($apple['client_id'] ?? ''));
-    $keyId = trim((string)($apple['key_id'] ?? ''));
-    $private = (string)($apple['private_key'] ?? '');
-    if ($private === '' && !empty($apple['private_key_file'])) {
-        $private = (string)@file_get_contents((string)$apple['private_key_file']);
-    }
-    if ($team === '' || $client === '' || $keyId === '' || $private === '') throw new RuntimeException('Apple Sign in with Apple server configuration is incomplete.');
-    $header = bh_b64url_encode(json_encode(['alg'=>'ES256','kid'=>$keyId], JSON_UNESCAPED_SLASHES));
-    $now = time();
-    $payload = bh_b64url_encode(json_encode(['iss'=>$team,'iat'=>$now,'exp'=>$now + 15777000,'aud'=>'https://appleid.apple.com','sub'=>$client], JSON_UNESCAPED_SLASHES));
-    $data = $header . '.' . $payload;
-    $key = openssl_pkey_get_private($private);
-    if (!$key || !openssl_sign($data, $signature, $key, OPENSSL_ALGO_SHA256)) throw new RuntimeException('Apple private key could not sign the client secret.');
-    if (is_object($key)) openssl_free_key($key);
-    $raw = bh_ecdsa_der_to_raw($signature);
-    return $data . '.' . bh_b64url_encode($raw);
-}
-function bh_apple_public_key_pem(array $jwk): string {
-    if (($jwk['kty'] ?? '') !== 'EC' || ($jwk['crv'] ?? '') !== 'P-256') throw new RuntimeException('Unsupported Apple signing key.');
-    $x = bh_b64url_decode((string)($jwk['x'] ?? ''));
-    $y = bh_b64url_decode((string)($jwk['y'] ?? ''));
-    if ($x === false || $y === false || strlen($x) !== 32 || strlen($y) !== 32) throw new RuntimeException('Invalid Apple signing key.');
-    $der = hex2bin('3059301306072a8648ce3d020106082a8648ce3d03010703420004') . $x . $y;
-    return "-----BEGIN PUBLIC KEY-----\n" . chunk_split(base64_encode($der), 64, "\n") . "-----END PUBLIC KEY-----\n";
-}
-function bh_apple_verify_id_token(string $jwt, string $clientId, string $nonce): array {
-    $parts = explode('.', $jwt);
-    if (count($parts) !== 3) throw new RuntimeException('Apple identity token is invalid.');
-    $header = json_decode((string)bh_b64url_decode($parts[0]), true);
-    $claims = json_decode((string)bh_b64url_decode($parts[1]), true);
-    $signature = bh_b64url_decode($parts[2]);
-    if (!is_array($header) || !is_array($claims) || $signature === false || ($header['alg'] ?? '') !== 'ES256' || strlen($signature) !== 64) throw new RuntimeException('Apple identity token is invalid.');
-    $ctx = stream_context_create(['http'=>['method'=>'GET','timeout'=>8,'ignore_errors'=>true,'header'=>"Accept: application/json\r\n"]]);
-    $keysRaw = @file_get_contents('https://appleid.apple.com/auth/keys', false, $ctx);
-    $keys = is_string($keysRaw) ? json_decode($keysRaw, true) : null;
-    $selected = null;
-    foreach (($keys['keys'] ?? []) as $key) if (($key['kid'] ?? '') === ($header['kid'] ?? '')) { $selected = $key; break; }
-    if (!$selected) throw new RuntimeException('Apple signing key could not be found.');
-    $public = openssl_pkey_get_public(bh_apple_public_key_pem($selected));
-    if (!$public) throw new RuntimeException('Apple signing key could not be loaded.');
-    $ok = openssl_verify($parts[0] . '.' . $parts[1], bh_ecdsa_raw_to_der($signature), $public, OPENSSL_ALGO_SHA256);
-    if (is_object($public)) openssl_free_key($public);
-    if ($ok !== 1) throw new RuntimeException('Apple identity token signature could not be verified.');
-    if (($claims['iss'] ?? '') !== 'https://appleid.apple.com' || ($claims['aud'] ?? '') !== $clientId || empty($claims['sub']) || empty($claims['exp']) || (int)$claims['exp'] <= time()) throw new RuntimeException('Apple identity token claims are invalid.');
-    $tokenNonce = (string)($claims['nonce'] ?? '');
-    if ($nonce === '' || !hash_equals($nonce, $tokenNonce) && !hash_equals(hash('sha256', $nonce), $tokenNonce)) throw new RuntimeException('Apple identity token nonce could not be verified.');
-    return $claims;
-}
 
 try {
     require __DIR__ . '/db.php';
@@ -164,13 +83,9 @@ try {
         $config['google']['client_id'] = (string)BH_GOOGLE_CLIENT_ID;
     }
 
-    if (!isset($config['apple']) || !is_array($config['apple'])) $config['apple'] = [];
-    if (defined('BH_APPLE_TEAM_ID')) $config['apple']['team_id'] = (string)BH_APPLE_TEAM_ID;
-    if (defined('BH_APPLE_CLIENT_ID')) $config['apple']['client_id'] = (string)BH_APPLE_CLIENT_ID;
-    if (defined('BH_APPLE_KEY_ID')) $config['apple']['key_id'] = (string)BH_APPLE_KEY_ID;
-    if (defined('BH_APPLE_PRIVATE_KEY')) $config['apple']['private_key'] = (string)BH_APPLE_PRIVATE_KEY;
-    if (defined('BH_APPLE_PRIVATE_KEY_FILE')) $config['apple']['private_key_file'] = (string)BH_APPLE_PRIVATE_KEY_FILE;
-    if (defined('BH_APPLE_REDIRECT_URI')) $config['apple']['redirect_uri'] = (string)BH_APPLE_REDIRECT_URI;
+    if (!isset($config['facebook']) || !is_array($config['facebook'])) $config['facebook'] = [];
+    if (defined('BH_FACEBOOK_APP_ID')) $config['facebook']['app_id'] = (string)BH_FACEBOOK_APP_ID;
+    if (defined('BH_FACEBOOK_APP_SECRET')) $config['facebook']['app_secret'] = (string)BH_FACEBOOK_APP_SECRET;
 
     $action = trim((string)($_GET['action'] ?? 'me'));
 
@@ -231,16 +146,6 @@ try {
             ],
             'csrf' => $_SESSION['bh_csrf'],
         ]);
-    }
-
-    if ($action === 'apple_config') {
-        $apple = is_array($config['apple'] ?? null) ? $config['apple'] : [];
-        $clientId = trim((string)($apple['client_id'] ?? ''));
-        $redirectUri = trim((string)($apple['redirect_uri'] ?? ($config['app']['base_url'] ?? getenv('BUBBAHUB_BASE_URL') ?: 'https://bubbahub.co.uk') . '/auth.html'));
-        if ($clientId === '') bh_auth_response(503, ['ok'=>false,'error'=>'apple_not_configured','message'=>'Sign in with Apple is not configured yet.']);
-        $_SESSION['bh_apple_state'] = bin2hex(random_bytes(24));
-        $_SESSION['bh_apple_nonce'] = bin2hex(random_bytes(24));
-        bh_auth_response(200, ['ok'=>true,'client_id'=>$clientId,'redirect_uri'=>$redirectUri,'state'=>$_SESSION['bh_apple_state'],'nonce'=>$_SESSION['bh_apple_nonce']]);
     }
 
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -369,55 +274,42 @@ try {
         ]);
     }
 
-    if ($action === 'apple') {
-        $code = trim((string)($body['code'] ?? ''));
-        $idToken = trim((string)($body['id_token'] ?? ''));
-        $state = trim((string)($body['state'] ?? ''));
-        $returnedUser = is_array($body['user'] ?? null) ? $body['user'] : [];
-        $expectedState = (string)($_SESSION['bh_apple_state'] ?? '');
-        $expectedNonce = (string)($_SESSION['bh_apple_nonce'] ?? '');
-        unset($_SESSION['bh_apple_state'], $_SESSION['bh_apple_nonce']);
-        if ($code === '' || $idToken === '' || $expectedState === '' || !hash_equals($expectedState, $state)) {
-            bh_auth_response(401, ['ok'=>false,'error'=>'apple_invalid_state','message'=>'Apple sign-in could not be verified. Please try again.']);
-        }
-        $apple = is_array($config['apple'] ?? null) ? $config['apple'] : [];
-        $clientId = trim((string)($apple['client_id'] ?? ''));
-        $redirectUri = trim((string)($apple['redirect_uri'] ?? ($config['app']['base_url'] ?? getenv('BUBBAHUB_BASE_URL') ?: 'https://bubbahub.co.uk') . '/auth.html'));
-        if ($clientId === '' || empty($apple['team_id']) || empty($apple['key_id']) || (empty($apple['private_key']) && empty($apple['private_key_file']))) {
-            bh_auth_response(503, ['ok'=>false,'error'=>'apple_not_configured','message'=>'Sign in with Apple is not configured yet.']);
-        }
+    if ($action === 'facebook') {
+        $accessToken = trim((string)($body['access_token'] ?? ''));
+        if ($accessToken === '') bh_auth_response(422, ['ok'=>false,'error'=>'facebook_access_token_required','message'=>'Facebook sign-in could not be started.']);
+        $facebook = is_array($config['facebook'] ?? null) ? $config['facebook'] : [];
+        $appId = trim((string)($facebook['app_id'] ?? ''));
+        $appSecret = trim((string)($facebook['app_secret'] ?? ''));
+        if ($appId === '' || $appSecret === '') bh_auth_response(503, ['ok'=>false,'error'=>'facebook_not_configured','message'=>'Facebook sign-in is not configured yet.']);
         try {
-            $clientSecret = bh_apple_client_secret($apple);
-            $post = http_build_query(['client_id'=>$clientId,'client_secret'=>$clientSecret,'code'=>$code,'grant_type'=>'authorization_code','redirect_uri'=>$redirectUri]);
-            $ch = curl_init('https://appleid.apple.com/auth/token');
-            curl_setopt_array($ch,[CURLOPT_POST=>true,CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>10,CURLOPT_HTTPHEADER=>['Content-Type: application/x-www-form-urlencoded'],CURLOPT_POSTFIELDS=>$post]);
-            $tokenResponse = curl_exec($ch); $http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE); curl_close($ch);
-            $tokenData = is_string($tokenResponse) ? json_decode($tokenResponse,true) : null;
-            if ($http < 200 || $http >= 300 || !is_array($tokenData) || empty($tokenData['id_token'])) throw new RuntimeException('Apple token exchange failed.');
-            $claims = bh_apple_verify_id_token((string)$tokenData['id_token'],$clientId,$expectedNonce);
-            $appleId = trim((string)$claims['sub']);
-            $email = strtolower(trim((string)($claims['email'] ?? ($returnedUser['email'] ?? ''))));
-            if ($appleId === '') throw new RuntimeException('Apple account identifier missing.');
-        $newSocialUser = false;
-        $db->exec("CREATE TABLE IF NOT EXISTS bh_social_accounts (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,user_id BIGINT UNSIGNED NOT NULL,provider VARCHAR(32) NOT NULL,provider_user_id VARCHAR(191) NOT NULL,email VARCHAR(255) NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY(id),UNIQUE KEY uq_provider_user(provider,provider_user_id),UNIQUE KEY uq_user_provider(user_id,provider),KEY idx_social_user(user_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-            $stmt=$db->prepare("SELECT user_id FROM bh_social_accounts WHERE provider='apple' AND provider_user_id=? LIMIT 1"); $stmt->execute([$appleId]); $linked=$stmt->fetch();
-            if($linked){$userId=(int)$linked['user_id'];}
-            else{
-                $stmt=$db->prepare("SELECT id,status FROM bh_users WHERE email=? LIMIT 1"); $stmt->execute([$email]); $user=$email!==''?$stmt->fetch():false;
+            $ctx = stream_context_create(['http'=>['method'=>'GET','timeout'=>8,'ignore_errors'=>true,'header'=>"Accept: application/json\r\n"]]);
+            $debugUrl = 'https://graph.facebook.com/debug_token?input_token=' . rawurlencode($accessToken) . '&access_token=' . rawurlencode($appId . '|' . $appSecret);
+            $debugRaw = @file_get_contents($debugUrl, false, $ctx);
+            $debug = is_string($debugRaw) ? json_decode($debugRaw, true) : null;
+            $data = is_array($debug['data'] ?? null) ? $debug['data'] : [];
+            if (empty($data['is_valid']) || (string)($data['app_id'] ?? '') !== $appId || empty($data['user_id'])) throw new RuntimeException('Facebook access token could not be verified.');
+            $meUrl = 'https://graph.facebook.com/me?fields=id,name,email&access_token=' . rawurlencode($accessToken);
+            $meRaw = @file_get_contents($meUrl, false, $ctx);
+            $me = is_string($meRaw) ? json_decode($meRaw, true) : null;
+            if (!is_array($me) || !empty($me['error'])) throw new RuntimeException('Facebook account details could not be retrieved.');
+            $facebookId = trim((string)($me['id'] ?? ($data['user_id'] ?? '')));
+            $email = strtolower(trim((string)($me['email'] ?? '')));
+            if ($facebookId === '') throw new RuntimeException('Facebook account identifier missing.');
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) bh_auth_response(422,['ok'=>false,'error'=>'facebook_email_missing','message'=>'Facebook did not provide an email address. Please allow the email permission and try again.']);
+            $db->exec("CREATE TABLE IF NOT EXISTS bh_social_accounts (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,user_id BIGINT UNSIGNED NOT NULL,provider VARCHAR(32) NOT NULL,provider_user_id VARCHAR(191) NOT NULL,email VARCHAR(255) NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY(id),UNIQUE KEY uq_provider_user(provider,provider_user_id),UNIQUE KEY uq_user_provider(user_id,provider),KEY idx_social_user(user_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            $stmt=$db->prepare("SELECT user_id FROM bh_social_accounts WHERE provider='facebook' AND provider_user_id=? LIMIT 1"); $stmt->execute([$facebookId]); $linked=$stmt->fetch(); $newSocialUser=false;
+            if($linked){$userId=(int)$linked['user_id'];}else{
+                $stmt=$db->prepare("SELECT id,status FROM bh_users WHERE email=? LIMIT 1"); $stmt->execute([$email]); $user=$stmt->fetch();
                 if($user){if(($user['status']??'')!=='active') bh_auth_response(403,['ok'=>false,'error'=>'account_not_active','message'=>'This account is not currently active.']); $userId=(int)$user['id'];}
-                else{
-                    if($email==='') bh_auth_response(422,['ok'=>false,'error'=>'apple_email_missing','message'=>'Apple did not provide an email address. Please try again.']);
-                    $randomPassword=password_hash(bin2hex(random_bytes(32)),PASSWORD_DEFAULT);
-                    $stmt=$db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,'family','active')"); $stmt->execute([$email,$randomPassword]); $userId=(int)$db->lastInsertId(); $newSocialUser=true;
-                }
-                $stmt=$db->prepare("INSERT INTO bh_social_accounts (user_id,provider,provider_user_id,email) VALUES (?, 'apple', ?, ?)"); $stmt->execute([$userId,$appleId,$email]);
+                else{$randomPassword=password_hash(bin2hex(random_bytes(32)),PASSWORD_DEFAULT);$stmt=$db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,'family','active')");$stmt->execute([$email,$randomPassword]);$userId=(int)$db->lastInsertId();$newSocialUser=true;}
+                $stmt=$db->prepare("INSERT INTO bh_social_accounts (user_id,provider,provider_user_id,email) VALUES (?, 'facebook', ?, ?)");$stmt->execute([$userId,$facebookId,$email]);
             }
-            session_regenerate_id(true); $_SESSION['bh_user_id']=$userId; $_SESSION['bh_family_authenticated']=true; unset($_SESSION['bh_leader_authenticated']); $_SESSION['bh_csrf']=bin2hex(random_bytes(24));
-            $stmt=$db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1"); $stmt->execute([$userId]); $user=$stmt->fetch();
-            $welcomeEmailSent = $newSocialUser ? bh_send_family_welcome($email, (string)($returnedUser['name']['firstName'] ?? '')) : false;
-            bh_auth_response(200,['ok'=>true,'authenticated'=>true,'user'=>['id'=>(int)$user['id'],'email'=>$user['email'],'role'=>$user['role'],'status'=>$user['status']],'csrf'=>$_SESSION['bh_csrf'],'provider'=>'apple','welcome_email_sent'=>$welcomeEmailSent]);
+            session_regenerate_id(true); $_SESSION['bh_user_id']=$userId; $_SESSION['bh_csrf']=bin2hex(random_bytes(24));
+            $stmt=$db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");$stmt->execute([$userId]);$user=$stmt->fetch();
+            $welcomeEmailSent = $newSocialUser ? bh_send_family_welcome($email, '') : false;
+            bh_auth_response(200,['ok'=>true,'authenticated'=>true,'user'=>['id'=>(int)$user['id'],'email'=>$user['email'],'role'=>$user['role'],'status'=>$user['status']],'csrf'=>$_SESSION['bh_csrf'],'provider'=>'facebook','welcome_email_sent'=>$welcomeEmailSent]);
         } catch (Throwable $e) {
-            bh_auth_response(401,['ok'=>false,'error'=>'apple_signin_failed','message'=>'Apple sign-in could not be completed. Please try again.']);
+            bh_auth_response(401,['ok'=>false,'error'=>'facebook_invalid_token','message'=>$e->getMessage() ?: 'Facebook could not verify this sign-in. Please try again.']);
         }
     }
 
