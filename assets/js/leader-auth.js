@@ -24,10 +24,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     msg.classList.toggle("is-error",isError);
   };
 
-  const fieldInput=(wrap)=>{
-    if(!wrap)return null;
-    return wrap.querySelector("input");
-  };
+  const fieldInput=(wrap)=>wrap?wrap.querySelector("input"):null;
 
   const setMode=(nextMode)=>{
     mode=nextMode;
@@ -88,21 +85,55 @@ document.addEventListener("DOMContentLoaded",async()=>{
     }catch(err){socialMessage(err.message||"Please try again.",true);}
   };
 
-  const googleButton=document.getElementById("leaderGoogleSignIn");
-  if(googleButton){
-    googleButton.onclick=()=>{
-      if(!window.google?.accounts?.id){socialMessage("Google sign-in is still loading. Please try again in a moment.",true);return;}
-      google.accounts.id.initialize({
-        client_id:window.BUBBAHUB_GOOGLE_CLIENT_ID||"",
-        callback:response=>socialLogin("google",{credential:response.credential})
-      });
-      google.accounts.id.prompt();
-    };
-  }
+  /* Google Identity Services:
+     Use the official rendered button rather than prompt(), which can be
+     suppressed by browser/account settings and makes the custom button appear
+     to do nothing. The GIS callback still posts the verified credential to our
+     existing leader-social.php endpoint. */
+  const googleHost=document.getElementById("leaderGoogleSignIn");
+  const initGoogle=()=>{
+    if(!googleHost||!window.google?.accounts?.id)return false;
+    const clientId=String(window.BUBBAHUB_GOOGLE_CLIENT_ID||"").trim();
+    if(!clientId){
+      googleHost.textContent="Google sign-in is not configured";
+      googleHost.setAttribute("aria-disabled","true");
+      return true;
+    }
+
+    google.accounts.id.initialize({
+      client_id:clientId,
+      callback:response=>{
+        if(response?.credential) socialLogin("google",{credential:response.credential});
+        else socialMessage("Google sign-in did not return a credential.",true);
+      },
+      ux_mode:"popup",
+      auto_select:false
+    });
+
+    googleHost.innerHTML="";
+    google.accounts.id.renderButton(googleHost,{
+      type:"standard",
+      theme:"outline",
+      size:"large",
+      text:"continue_with",
+      shape:"rectangular",
+      width:320,
+      logo_alignment:"left"
+    });
+    return true;
+  };
+
+  let googleAttempts=0;
+  const waitForGoogle=()=>{
+    if(initGoogle()||googleAttempts++>40)return;
+    setTimeout(waitForGoogle,250);
+  };
+  waitForGoogle();
 
   const initFacebook=()=>{if(window.FB&&window.BUBBAHUB_FACEBOOK_APP_ID){try{FB.init({appId:window.BUBBAHUB_FACEBOOK_APP_ID,cookie:true,xfbml:false,version:"v24.0"});}catch(e){}}};
   window.fbAsyncInit=initFacebook;
   if(window.FB)initFacebook();
+
   const facebookButton=document.getElementById("leaderFacebookSignIn");
   if(facebookButton){
     facebookButton.onclick=()=>{
