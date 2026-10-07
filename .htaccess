@@ -14,7 +14,11 @@ RewriteRule ^leader-login/?$ leader-login.html [L,QSA]
 RewriteRule ^admin/admin\.html$ /admin/ [R=301,L]
 RewriteRule ^admin/?$ admin.html [L,QSA]
 
-# IMPORTANT: never pass /admin/* pages into the generic clean activity URL rule.
+# IMPORTANT: keep the internal admin dashboard rewrite from being processed
+# again by the generic clean activity URL rule on the next Apache pass.
+RewriteRule ^admin\.html$ - [L]
+
+# Never pass /admin/* pages into the generic clean activity URL rule.
 # All physical admin HTML/PHP/API assets must be served from the admin directory.
 RewriteRule ^admin(?:/|$) - [L]
 
