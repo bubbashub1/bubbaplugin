@@ -6567,3 +6567,67 @@ body.bh-directory.directory-filter-open .directory-filters-panel.is-open .direct
     max-height:calc(100vh - 24px) !important;
   }
 }
+
+
+/* Directory hero action layout */
+body.bh-directory .directory-hero-actions{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  align-items:stretch;
+  width:100%;
+  margin-top:9px;
+  overflow:visible;
+  padding:0;
+}
+body.bh-directory .directory-search-advanced-link{
+  grid-column:1/-1;
+  justify-self:end;
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:center;
+  width:auto!important;
+  min-width:0;
+  min-height:34px!important;
+  height:34px!important;
+  margin:0 0 0 auto!important;
+  padding:0 10px!important;
+  border:0!important;
+  border-radius:999px!important;
+  background:transparent!important;
+  color:#144400!important;
+  box-shadow:none!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  white-space:nowrap;
+}
+body.bh-directory .directory-search-advanced-link:hover,
+body.bh-directory .directory-search-advanced-link:focus-visible{
+  background:#d8e6db!important;
+  color:#144400!important;
+  text-decoration:none;
+}
+body.bh-directory .directory-calendar-hero-button,
+body.bh-directory .directory-map-hero-button,
+body.bh-directory .directory-map-action-button,
+body.bh-directory .directory-planner-action-button{
+  min-width:0!important;
+  width:100%!important;
+  min-height:46px!important;
+  height:46px!important;
+  margin:0!important;
+  box-sizing:border-box;
+  padding:0 12px!important;
+}
+@media(max-width:900px){
+  body.bh-directory .directory-hero-actions{grid-template-columns:1fr;gap:7px;}
+  body.bh-directory .directory-search-advanced-link{
+    grid-column:auto;
+    justify-self:start;
+    width:auto!important;
+  }
+  body.bh-directory .directory-calendar-hero-button,
+  body.bh-directory .directory-map-hero-button,
+  body.bh-directory .directory-map-action-button,
+  body.bh-directory .directory-planner-action-button{width:100%!important;}
+}
