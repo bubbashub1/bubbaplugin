@@ -54,10 +54,15 @@
         // Keep the shared header search in sync with the live directory filters.
         const populateSearchOptions=async()=>{
           try{
-            const response=await fetch(appUrl("api/activities.php")+"?page=1&per_page=100",{cache:"no-store",headers:{Accept:"application/json"}});
-            if(!response.ok)return;
-            const payload=await response.json();
-            const items=Array.isArray(payload.data)?payload.data:[];
+            // Use the already-loaded directory dataset when available. Otherwise
+            // wait until the header search is actually opened before making a request.
+            let items=Array.isArray(window.__bhActivities)?window.__bhActivities:[];
+            if(!items.length){
+              const response=await fetch(appUrl("api/activities.php")+"?page=1&per_page=100",{cache:"no-store",headers:{Accept:"application/json"}});
+              if(!response.ok)return;
+              const payload=await response.json();
+              items=Array.isArray(payload.data)?payload.data:[];
+            }
             const categoryMap={"Baby classes":"Baby","Baby & toddler":"Toddler","Family activities":"Family"};
             const values={
               region:[...new Set(items.flatMap(a=>(a.venues||[]).map(v=>v.region||a.region)).filter(Boolean))].sort(),
@@ -86,7 +91,12 @@
             if(day)day.value=params.get("day")||"";
           }catch(_){}
         };
-        void populateSearchOptions();
+        let searchOptionsLoaded=false;
+        const ensureSearchOptions=()=>{
+          if(searchOptionsLoaded)return;
+          searchOptionsLoaded=true;
+          void populateSearchOptions();
+        };
       }
 
       const searchToggle=header.querySelector(".bh-header-search-toggle");
@@ -104,7 +114,7 @@
             menu?.setAttribute("aria-expanded","false");
             menu?.setAttribute("aria-label","Open menu");
           }
-          if(open) setTimeout(()=>searchBar.querySelector("[name=keyword]")?.focus(),80);
+          if(open){ ensureSearchOptions(); setTimeout(()=>searchBar.querySelector("[name=keyword]")?.focus(),80); }
         });
         document.addEventListener("click",event=>{
           if(!searchBar.contains(event.target)){
