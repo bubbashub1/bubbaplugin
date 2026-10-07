@@ -6,7 +6,31 @@ function bh_stripe_webhook_config(): array {
     $file = __DIR__ . '/config.php';
     $config = is_file($file) ? require $file : [];
     $stripe = is_array($config['stripe'] ?? null) ? $config['stripe'] : [];
-    $stripe['webhook_secret'] = trim((string)($stripe['webhook_secret'] ?? getenv('STRIPE_WEBHOOK_SECRET') ?: ''));
+
+    // Read the webhook secret from wp-config.php without executing WordPress.
+    $secret = '';
+    $name = 'BUBBAHUB_STRIPE_WEBHOOK_SECRET';
+    if (defined($name)) {
+        $secret = trim((string)constant($name));
+    } else {
+        $candidates = [
+            '/public_html/wp-config.php',
+            dirname(__DIR__) . '/wp-config.php',
+            dirname(__DIR__, 2) . '/wp-config.php',
+        ];
+        foreach ($candidates as $path) {
+            if (!is_file($path)) continue;
+            $contents = @file_get_contents($path);
+            if ($contents === false) continue;
+            $pattern = '/define\\s*\\(\\s*[\'" ]' . preg_quote($name, '/') . '[\'" ]\\s*,\\s*[\'" ](.*?)[\'" ]\\s*\\)\\s*;/s';
+            if (preg_match($pattern, $contents, $m)) {
+                $secret = stripcslashes($m[1]);
+                break;
+            }
+        }
+    }
+
+    $stripe['webhook_secret'] = trim($secret ?: (string)($stripe['webhook_secret'] ?? getenv('STRIPE_WEBHOOK_SECRET') ?: ''));
     return $stripe;
 }
 
