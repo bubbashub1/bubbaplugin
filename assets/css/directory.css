@@ -938,3 +938,211 @@
     width:100%;
   }
 }
+
+
+/* =========================================================
+   BUBBA HUB FAMILY-FRIENDLY POLISH
+   Visual refresh only — core directory structure/layout unchanged.
+   ========================================================= */
+.bh-directory{
+  background:#f8fbf8;
+}
+.bh-directory .directory-hero-search{
+  padding:22px 22px 18px;
+  border:2px solid #d8e6db;
+  border-radius:24px;
+  background:linear-gradient(135deg,#eaf5ed 0%,#e4f1ef 100%);
+  box-shadow:0 10px 28px rgba(20,68,0,.07);
+}
+.bh-directory .directory-hero-search h2{
+  color:#144400;
+  font-size:clamp(24px,2.7vw,34px);
+  letter-spacing:-.02em;
+}
+.bh-directory .directory-hero-search-fields{
+  gap:10px;
+}
+.bh-directory .directory-hero-search-fields label{
+  min-height:50px;
+  height:50px;
+  padding:0 13px;
+  border:2px solid #dce8df;
+  border-radius:15px;
+  background:#fff;
+  box-shadow:0 3px 10px rgba(20,68,0,.045);
+  transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+.bh-directory .directory-hero-search-fields label:focus-within{
+  border-color:#3c8e96;
+  box-shadow:0 0 0 3px rgba(60,142,150,.12);
+}
+.bh-directory .directory-hero-search input,
+.bh-directory .directory-hero-search select{
+  font-size:14px;
+  font-weight:700;
+  color:#144400;
+}
+.bh-directory .directory-hero-search .button{
+  min-height:50px;
+  height:50px;
+  border-radius:15px;
+  font-size:14px;
+  box-shadow:0 7px 16px rgba(20,68,0,.14);
+}
+.bh-directory .directory-hero-actions{
+  gap:9px;
+  margin-top:12px;
+}
+.bh-directory .directory-search-advanced-link,
+.bh-directory .directory-calendar-hero-button,
+.bh-directory .directory-map-action-button,
+.bh-directory .directory-map-hero-button,
+.bh-directory .directory-planner-action-button{
+  min-height:44px;
+  padding-inline:17px;
+  border:0;
+  border-radius:14px;
+  font-size:13px;
+  box-shadow:0 6px 14px rgba(20,68,0,.10);
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+}
+.bh-directory .directory-search-advanced-link{
+  background:#f6c84a;
+  color:#144400;
+}
+.bh-directory .directory-calendar-hero-button,
+.bh-directory .directory-map-action-button,
+.bh-directory .directory-map-hero-button,
+.bh-directory .directory-planner-action-button{
+  background:#416651;
+  color:#fff;
+}
+.bh-directory .directory-search-advanced-link:hover,
+.bh-directory .directory-calendar-hero-button:hover,
+.bh-directory .directory-map-action-button:hover,
+.bh-directory .directory-map-hero-button:hover,
+.bh-directory .directory-planner-action-button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 9px 20px rgba(20,68,0,.15);
+}
+.bh-directory .directory-search-advanced-link:hover{background:#ffe078;color:#144400}
+.bh-directory .directory-calendar-hero-button:hover,
+.bh-directory .directory-map-action-button:hover,
+.bh-directory .directory-map-hero-button:hover,
+.bh-directory .directory-planner-action-button:hover{background:#3c8e96;color:#fff}
+.bh-directory .directory-popular{
+  margin-top:12px;
+  padding-top:11px;
+  border-top:2px solid rgba(65,102,81,.10);
+}
+.bh-directory .directory-popular-chip{
+  padding:8px 12px;
+  border:2px solid #dce8df;
+  background:#fff;
+  color:#416651;
+  font-size:12px;
+  font-weight:900;
+  box-shadow:none;
+  transition:transform .16s ease,background .16s ease,border-color .16s ease;
+}
+.bh-directory .directory-popular-chip:hover{transform:translateY(-2px)}
+.bh-directory .directory-popular-chip.active{background:#3c8e96;border-color:#3c8e96;color:#fff}
+.bh-directory .directory-results-heading{
+  margin-bottom:17px;
+}
+.bh-directory .directory-results-heading h1{
+  font-size:clamp(32px,3.8vw,46px);
+  font-weight:900;
+  letter-spacing:-.035em;
+}
+.bh-directory .directory-results-heading #count{
+  font-size:14px;
+  font-weight:700;
+}
+.bh-directory #results{
+  gap:18px;
+}
+.bh-directory .activity-card{
+  border:2px solid #e0e9e2;
+  border-radius:24px;
+  box-shadow:0 8px 22px rgba(20,68,0,.065);
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.bh-directory .activity-card:hover{
+  transform:translateY(-4px);
+  border-color:#c7ddd0;
+  box-shadow:0 16px 32px rgba(20,68,0,.12);
+}
+.bh-directory .activity-image{
+  height:200px;
+  min-height:200px;
+  background:linear-gradient(135deg,#d8e6db,#d8eceb);
+}
+.bh-directory .activity-body{
+  padding:18px 19px 19px;
+}
+.bh-directory .activity-meta{
+  color:#3c8e96;
+  font-size:11px;
+  letter-spacing:.08em;
+}
+.bh-directory .activity-card h3{
+  margin:7px 0 8px;
+  font-size:21px;
+  font-weight:900;
+  letter-spacing:-.015em;
+}
+.bh-directory .activity-card p{
+  font-size:13px;
+  font-weight:600;
+}
+.bh-directory .activity-footer .button{
+  min-height:40px;
+  padding:9px 15px;
+  border-radius:12px;
+  font-weight:900;
+}
+.bh-directory #mapView{
+  border:2px solid #dce8df;
+  border-radius:24px;
+  box-shadow:0 12px 28px rgba(20,68,0,.08);
+}
+.bh-directory .directory-map-expand{
+  border:2px solid #dce8df;
+  border-radius:13px;
+  font-weight:900;
+}
+.bh-directory .directory-more-search-toggle{
+  min-height:54px;
+  padding-inline:19px;
+  border:2px solid #dce8df;
+  border-radius:17px;
+  font-size:14px;
+  font-weight:900;
+  box-shadow:0 5px 14px rgba(20,68,0,.045);
+}
+.bh-directory .directory-more-search-toggle:hover,
+.bh-directory .directory-more-search-toggle[aria-expanded="true"]{
+  background:#eaf5ed;
+  border-color:#9fb7a5;
+}
+.bh-directory .directory-more-search-panel{
+  padding:20px;
+  border:2px solid #dce8df;
+  border-radius:20px;
+  background:#f7fbf8;
+}
+@media(max-width:900px){
+  .bh-directory .directory-hero-search{padding:18px 14px 15px}
+  .bh-directory .directory-hero-search-fields label,
+  .bh-directory .directory-hero-search .button{min-height:48px;height:48px}
+  .bh-directory .activity-image{height:190px;min-height:190px}
+  .bh-directory .activity-card{border-radius:20px}
+  .bh-directory .directory-results-heading h1{font-size:34px}
+}
+@media(max-width:520px){
+  .bh-directory .directory-hero-search{border-radius:20px}
+  .bh-directory .directory-hero-search h2{font-size:24px}
+  .bh-directory .directory-results-heading h1{font-size:31px}
+  .bh-directory .activity-card h3{font-size:20px}
+}
