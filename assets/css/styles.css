@@ -5905,3 +5905,352 @@ select:focus,textarea:focus{
   outline:3px solid var(--bh-coral);
   outline-offset:3px;
 }
+
+
+/* =========================================================================
+   BUBBA HUB — CLEAN WHITE + DARK GREEN BRAND FINISH
+   Tonies-inspired simplicity: white space, strong rounded shapes and one
+   confident dark-green brand colour.
+   ========================================================================= */
+:root{
+  --bh-brand:#144400;
+  --bh-brand-2:#416651;
+  --bh-brand-soft:#d8e6db;
+  --bh-page:#ffffff;
+  --bh-panel:#ffffff;
+  --bh-line:#d8e6db;
+  --bh-muted-clean:#617261;
+  --bh-clean-shadow:0 10px 28px rgba(20,68,0,.09);
+}
+
+html,body{
+  background:var(--bh-page);
+  color:var(--bh-brand);
+}
+
+body{
+  font-weight:500;
+}
+
+.site-header{
+  background:#fff;
+  border-bottom:1px solid var(--bh-line);
+  box-shadow:0 4px 16px rgba(20,68,0,.05);
+}
+
+.main-nav a{
+  color:var(--bh-brand);
+}
+
+.main-nav a:hover,
+.main-nav a.active{
+  background:var(--bh-brand-soft);
+  color:var(--bh-brand);
+}
+
+.button,
+.button-primary,
+.button-full,
+.home-full-button,
+.directory-calendar-hero-button,
+.directory-map-action-button,
+.directory-map-hero-button,
+.directory-planner-action-button,
+.auth-submit,
+button[type="submit"]{
+  background:var(--bh-brand)!important;
+  border-color:var(--bh-brand)!important;
+  color:#fff!important;
+}
+
+.button:hover,
+.button:focus-visible,
+.button-primary:hover,
+.button-full:hover,
+.home-full-button:hover,
+.directory-calendar-hero-button:hover,
+.directory-map-action-button:hover,
+.directory-map-hero-button:hover,
+.directory-planner-action-button:hover,
+.auth-submit:hover,
+button[type="submit"]:hover,
+button[type="submit"]:focus-visible{
+  background:var(--bh-brand-2)!important;
+  border-color:var(--bh-brand-2)!important;
+  color:#fff!important;
+}
+
+.button-soft{
+  background:var(--bh-brand-soft)!important;
+  border-color:var(--bh-brand-soft)!important;
+  color:var(--bh-brand)!important;
+}
+
+.button-soft:hover,
+.button-soft:focus-visible{
+  background:var(--bh-brand)!important;
+  border-color:var(--bh-brand)!important;
+  color:#fff!important;
+}
+
+.card,
+.admin-panel,
+.search-panel,
+.feature-card,
+.auth-benefits,
+.saved-activity-card,
+.preferences-layout>div,
+.account-planner-grid>.admin-panel,
+.activity-card,
+.directory-card,
+.bh-activity-card{
+  background:#fff;
+  border-color:var(--bh-line);
+  box-shadow:var(--bh-clean-shadow);
+}
+
+input:not([type=checkbox]):not([type=radio]):not([type=file]),
+select,
+textarea{
+  background:#fff;
+  color:var(--bh-brand);
+  border:2px solid var(--bh-line);
+}
+
+input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,
+select:focus,
+textarea:focus{
+  border-color:var(--bh-brand);
+  box-shadow:0 0 0 4px rgba(20,68,0,.10);
+  outline:none;
+}
+
+/* -------------------------------------------------------------------------
+   SIGN IN / CREATE ACCOUNT — cleaner, calmer and centred
+   ------------------------------------------------------------------------- */
+.auth-page{
+  background:#fff;
+  padding:0 0 72px;
+}
+
+.auth-hero{
+  width:min(100%,1080px);
+  margin:0 auto;
+  padding:54px 24px 30px;
+  background:#fff;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  text-align:center;
+}
+
+.auth-hero .eyebrow{
+  color:var(--bh-brand-2);
+}
+
+.auth-hero h1{
+  margin:6px 0 10px;
+  color:var(--bh-brand);
+  font-size:clamp(2rem,4vw,3rem);
+}
+
+.auth-hero p{
+  max-width:620px;
+  margin:0 auto;
+  color:var(--bh-muted-clean);
+}
+
+.auth-layout{
+  width:min(calc(100% - 32px),980px);
+  margin:8px auto 0;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 320px;
+  gap:24px;
+  align-items:start;
+}
+
+.auth-card{
+  padding:30px;
+  background:#fff;
+  border:2px solid var(--bh-line);
+  border-radius:24px;
+  box-shadow:var(--bh-clean-shadow);
+}
+
+.auth-tabs{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  padding:5px;
+  margin-bottom:22px;
+  background:#f4f8f4;
+  border-radius:999px;
+}
+
+.auth-tabs .button{
+  width:100%;
+  min-height:44px;
+  box-shadow:none;
+  border:0!important;
+}
+
+.auth-tabs .button.active{
+  background:var(--bh-brand)!important;
+  color:#fff!important;
+}
+
+.auth-tabs .button:not(.active){
+  background:transparent!important;
+  color:var(--bh-brand)!important;
+}
+
+.google-signin-button,
+.apple-signin-button{
+  width:100%;
+  min-height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin:0 0 10px;
+  padding:12px 16px;
+  border:2px solid var(--bh-line);
+  border-radius:999px;
+  background:#fff;
+  color:var(--bh-brand);
+  font-weight:800;
+  cursor:pointer;
+}
+
+.google-signin-button:hover,
+.apple-signin-button:hover{
+  border-color:var(--bh-brand);
+  background:#f7faf7;
+}
+
+.auth-divider{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:20px 0;
+  color:var(--bh-muted-clean);
+  font-size:.85rem;
+  font-weight:700;
+}
+
+.auth-divider:before,
+.auth-divider:after{
+  content:"";
+  height:1px;
+  flex:1;
+  background:var(--bh-line);
+}
+
+.auth-page #authForm{
+  display:grid;
+  gap:16px;
+}
+
+.auth-page #authForm>label{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  color:var(--bh-brand);
+  font-weight:800;
+  font-size:.92rem;
+}
+
+.auth-name-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.auth-forgot{
+  margin-top:-6px;
+  text-align:right;
+}
+
+.auth-forgot a,
+.auth-show-password{
+  color:var(--bh-brand);
+  font-weight:800;
+}
+
+.auth-submit{
+  width:100%;
+  min-height:52px;
+  margin-top:2px;
+  font-size:1rem;
+}
+
+.auth-page .auth-note{
+  margin-top:20px;
+  padding:14px 16px;
+  background:var(--bh-brand-soft);
+  border:0;
+  border-radius:16px;
+}
+
+.auth-benefits{
+  padding:24px;
+  border:2px solid var(--bh-line);
+  border-radius:24px;
+  box-shadow:none;
+}
+
+.auth-benefits h2{
+  color:var(--bh-brand);
+}
+
+.auth-benefits li{
+  background:#f4f8f4;
+  border:1px solid var(--bh-line);
+  color:var(--bh-brand);
+}
+
+.auth-benefits .button{
+  width:100%;
+  justify-content:center;
+}
+
+.auth-page .library-message{
+  text-align:center;
+  color:var(--bh-brand);
+  font-weight:700;
+}
+
+@media(max-width:900px){
+  .auth-layout{
+    grid-template-columns:1fr;
+    max-width:620px;
+  }
+  .auth-benefits{
+    order:2;
+  }
+}
+
+@media(max-width:650px){
+  .auth-hero{
+    padding:38px 18px 24px;
+  }
+  .auth-layout{
+    width:calc(100% - 24px);
+    margin-top:0;
+  }
+  .auth-card{
+    padding:20px;
+    border-radius:20px;
+  }
+  .auth-name-grid{
+    grid-template-columns:1fr;
+  }
+  .auth-benefits{
+    padding:20px;
+  }
+}
+
+/* Remove the old orange hover language from the shared brand layer. */
+:focus-visible{
+  outline-color:var(--bh-brand);
+}
