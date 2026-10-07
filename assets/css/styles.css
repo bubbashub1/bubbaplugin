@@ -6310,3 +6310,21 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,select:focus
   .container{width:calc(100% - 24px);}
   .auth-card{padding:20px;}
 }
+
+
+/* FONT SAFETY: use a dependable system sans-serif.
+   Prevent decorative cursive fallbacks when Google Fonts are unavailable. */
+html,body,
+button,input,select,textarea{
+  font-family:Calibri,Arial,Helvetica,sans-serif!important;
+}
+h1,h2,h3,h4,h5,h6,
+.page-heading h1,.page-heading h2,
+.home-brush,.home-section-heading h2,
+.my-hub-page .hub-welcome h2,
+.my-hub-page .hub-personal-cta h2,
+.planner-toolbar-copy h2,
+.pro-section-head h2,.pro-modal h2{
+  font-family:Calibri,Arial,Helvetica,sans-serif!important;
+  font-weight:700;
+}
