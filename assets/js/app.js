@@ -907,9 +907,18 @@ void bhHydrateSaved();
           await (window.bhAdvancedFiltersReady||Promise.resolve());
           const target=page==="calendar" ? document.getElementById("calendarFilters") : page==="map" ? document.getElementById("mapFiltersPanel") : document.getElementById("directoryFilters");
           if(target){
+            const fields=target.querySelector("#advancedFields");
+            const toggle=target.querySelector("#advancedToggle");
+            if(fields){
+              fields.hidden=false;
+              if(toggle){
+                toggle.setAttribute("aria-expanded","true");
+                toggle.innerHTML='More search filters <span aria-hidden="true">−</span>';
+              }
+            }
             target.classList.add("is-open");
             document.body.classList.add("directory-filter-open");
-            const first=target.querySelector("select,input,button");
+            const first=fields?.querySelector("select,input,button") || target.querySelector("select,input,button");
             if(first)first.focus();
           }
         });
