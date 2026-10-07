@@ -9,6 +9,8 @@ RewriteRule ^admin-login/?$ admin-login.html [L,QSA]
 RewriteRule ^leader-login/?$ leader-login.html [L,QSA]
 
 # Admin dashboard
+# Keep legacy/nested admin links working while /admin/ remains canonical.
+RewriteRule ^admin/admin\.html$ /admin/ [R=301,L]
 RewriteRule ^admin/?$ admin.html [L,QSA]
 
 # Class leader dashboard
