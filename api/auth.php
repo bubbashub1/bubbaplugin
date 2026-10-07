@@ -35,7 +35,7 @@ function bh_send_family_welcome(string $email, string $firstName=''): bool {
 
     return bh_send_smtp_mail($email, 'Welcome to Bubba Hub 💚', $html, $plain);
 }
-function bh_create_leader_organiser(PDO $db, int $userId, string $email, string $displayName='New organiser'): int {
+function bh_create_leader_organiser(PDO $db, int $userId, string $email, string $displayName='New organiser', string $phone='', string $website=''): int {
     $displayName = trim($displayName) !== '' ? trim($displayName) : 'New organiser';
     $columns = [];
     try {
@@ -69,12 +69,13 @@ function bh_create_leader_organiser(PDO $db, int $userId, string $email, string 
     $fields=[$nameField,'slug','status']; $values=[$displayName,$slug,'pending'];
     if(isset($columns['user_id'])){$fields[]='user_id';$values[]=$userId;}
     if(isset($columns['email'])){$fields[]='email';$values[]=$email;}
+    if(isset($columns['phone'])){$fields[]='phone';$values[]=$phone!==''?$phone:null;}
+    if(isset($columns['website'])){$fields[]='website';$values[]=$website!==''?$website:null;}
     if(isset($columns['description'])){$fields[]='description';$values[]='';}
 
     foreach($columns as $field=>$meta){
         $required=((string)($meta['Null']??'YES'))==='NO' && ($meta['Default']??null)===null && stripos((string)($meta['Extra']??''),'auto_increment')===false;
         if($required && !in_array($field,$fields,true)) {
-            // Timestamp columns with a DB default are already covered above.
             throw new RuntimeException('Leader organiser setup is missing a required field: '.$field.'.');
         }
     }
@@ -236,64 +237,58 @@ try {
         $email = strtolower(trim((string)($body['email'] ?? '')));
         $password = (string)($body['password'] ?? '');
         $confirm = (string)($body['confirm_password'] ?? '');
+        $organisation = trim((string)($body['organisation_name'] ?? ''));
+        $phone = trim((string)($body['phone'] ?? ''));
+        $website = trim((string)($body['website'] ?? ''));
+        $terms = !empty($body['terms']);
         $csrf = (string)($body['csrf'] ?? '');
+
         if (empty($_SESSION['bh_csrf']) || $csrf === '' || !hash_equals((string)$_SESSION['bh_csrf'], $csrf)) {
             bh_auth_response(403, ['ok'=>false,'error'=>'csrf_invalid','message'=>'Please refresh the page and try again.']);
         }
+        if ($organisation === '' || mb_strlen($organisation) > 190) bh_auth_response(422, ['ok'=>false,'error'=>'organisation_required','message'=>'Please enter the name of your class, business or organisation.']);
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) bh_auth_response(422, ['ok'=>false,'error'=>'invalid_email','message'=>'Please enter a valid email address.']);
+        if ($phone !== '' && mb_strlen($phone) > 80) bh_auth_response(422, ['ok'=>false,'error'=>'invalid_phone','message'=>'Please check your phone number.']);
+        if ($website !== '' && (!filter_var($website, FILTER_VALIDATE_URL) || !preg_match('~^https?://~i', $website))) bh_auth_response(422, ['ok'=>false,'error'=>'invalid_website','message'=>'Please enter a full website address starting with http:// or https://.']);
         if (strlen($password) < 8) bh_auth_response(422, ['ok'=>false,'error'=>'password_too_short','message'=>'Please choose a password with at least 8 characters.']);
         if ($password !== $confirm) bh_auth_response(422, ['ok'=>false,'error'=>'password_mismatch','message'=>'The passwords do not match.']);
-
-        $org = false;
-        try {
-            $hasUserId = false;
-            $cc = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME='user_id'");
-            $cc->execute();
-            $hasUserId = ((int)$cc->fetchColumn()) > 0;
-            if ($hasUserId) {
-                $q = $db->prepare("SELECT id,name,email,user_id FROM bh_organisers WHERE LOWER(email)=? LIMIT 1");
-            } else {
-                $q = $db->prepare("SELECT id,name,email FROM bh_organisers WHERE LOWER(email)=? LIMIT 1");
-            }
-            $q->execute([$email]);
-            $org = $q->fetch();
-        } catch (Throwable $e) {
-            bh_auth_response(500, ['ok'=>false,'error'=>'leader_registration_unavailable','message'=>'Leader account setup is not available yet. Please contact Bubba Hub support.']);
-        }
-        if (!$org) bh_auth_response(403, ['ok'=>false,'error'=>'leader_not_invited','message'=>'We could not find an organiser account for that email. Please contact Bubba Hub to have your leader access set up.']);
+        if (!$terms) bh_auth_response(422, ['ok'=>false,'error'=>'terms_required','message'=>'Please confirm that you agree to the Bubba Hub organiser terms.']);
 
         $check = $db->prepare("SELECT id,role,status FROM bh_users WHERE email=? LIMIT 1");
         $check->execute([$email]);
-        $existing = $check->fetch();
-        if ($existing && ($existing['role'] ?? '') !== 'leader') {
-            $stmt = $db->prepare("UPDATE bh_users SET password_hash=?,role='leader',status='active' WHERE id=?");
-            $stmt->execute([password_hash($password, PASSWORD_DEFAULT), (int)$existing['id']]);
-            $userId = (int)$existing['id'];
-        } elseif ($existing) {
-            $stmt = $db->prepare("UPDATE bh_users SET password_hash=?,status='active' WHERE id=?");
-            $stmt->execute([password_hash($password, PASSWORD_DEFAULT), (int)$existing['id']]);
-            $userId = (int)$existing['id'];
-        } else {
-            $stmt = $db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?, 'leader','active')");
-            $stmt->execute([$email, password_hash($password, PASSWORD_DEFAULT)]);
-            $userId = (int)$db->lastInsertId();
+        if ($check->fetch()) {
+            bh_auth_response(409, ['ok'=>false,'error'=>'email_exists','message'=>'An account already exists for this email. Please sign in instead.']);
         }
 
         try {
-            $cc = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME='user_id'");
-            $cc->execute();
-            if ((int)$cc->fetchColumn() > 0) {
-                $db->prepare("UPDATE bh_organisers SET user_id=? WHERE id=?")->execute([$userId, (int)$org['id']]);
-            }
-        } catch (Throwable $ignored) {}
+            $db->beginTransaction();
+            $stmt = $db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?, 'leader','active')");
+            $stmt->execute([$email, password_hash($password, PASSWORD_DEFAULT)]);
+            $userId = (int)$db->lastInsertId();
+
+            $organiserId = bh_create_leader_organiser($db, $userId, $email, $organisation, $phone, $website);
+            $db->commit();
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) $db->rollBack();
+            error_log('Bubba Hub leader registration failed: '.$e->getMessage());
+            bh_auth_response(500, ['ok'=>false,'error'=>'leader_registration_error','message'=>'We could not create your leader account just yet. Please try again.']);
+        }
 
         session_regenerate_id(true);
         $_SESSION['bh_user_id'] = $userId;
+        $_SESSION['bh_leader_authenticated'] = true;
+        unset($_SESSION['bh_family_authenticated']);
         $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
+
         bh_auth_response(201, [
-            'ok'=>true,'authenticated'=>true,
+            'ok'=>true,
+            'authenticated'=>true,
+            'leader_authenticated'=>true,
+            'pending_review'=>true,
+            'organiser_id'=>$organiserId,
             'user'=>['id'=>$userId,'email'=>$email,'role'=>'leader','status'=>'active'],
-            'csrf'=>$_SESSION['bh_csrf']
+            'csrf'=>$_SESSION['bh_csrf'],
+            'message'=>'Your leader account is ready. Your organiser profile is pending review.'
         ]);
     }
 
@@ -340,6 +335,8 @@ try {
     if ($action === 'facebook') {
         $accessToken = trim((string)($body['access_token'] ?? ''));
         if ($accessToken === '') bh_auth_response(422, ['ok'=>false,'error'=>'facebook_access_token_required','message'=>'Facebook sign-in could not be started.']);
+        $authContext = trim((string)($body['context'] ?? 'family'));
+        if (!in_array($authContext, ['family','leader'], true)) $authContext = 'family';
         $facebook = is_array($config['facebook'] ?? null) ? $config['facebook'] : [];
         $appId = trim((string)($facebook['app_id'] ?? ''));
         $appSecret = trim((string)($facebook['app_secret'] ?? ''));
@@ -361,11 +358,26 @@ try {
             if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) bh_auth_response(422,['ok'=>false,'error'=>'facebook_email_missing','message'=>'Facebook did not provide an email address. Please allow the email permission and try again.']);
             $db->exec("CREATE TABLE IF NOT EXISTS bh_social_accounts (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,user_id BIGINT UNSIGNED NOT NULL,provider VARCHAR(32) NOT NULL,provider_user_id VARCHAR(191) NOT NULL,email VARCHAR(255) NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY(id),UNIQUE KEY uq_provider_user(provider,provider_user_id),UNIQUE KEY uq_user_provider(user_id,provider),KEY idx_social_user(user_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
             $stmt=$db->prepare("SELECT user_id FROM bh_social_accounts WHERE provider='facebook' AND provider_user_id=? LIMIT 1"); $stmt->execute([$facebookId]); $linked=$stmt->fetch(); $newSocialUser=false;
-            if($linked){$userId=(int)$linked['user_id'];}else{
-                $stmt=$db->prepare("SELECT id,status FROM bh_users WHERE email=? LIMIT 1"); $stmt->execute([$email]); $user=$stmt->fetch();
-                if($user){if(($user['status']??'')!=='active') bh_auth_response(403,['ok'=>false,'error'=>'account_not_active','message'=>'This account is not currently active.']); $userId=(int)$user['id'];}
-                else{$randomPassword=password_hash(bin2hex(random_bytes(32)),PASSWORD_DEFAULT);$role=$authContext==='leader'?'leader':'family';$stmt=$db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,?,'active')");$stmt->execute([$email,$randomPassword,$role]);$userId=(int)$db->lastInsertId();$newSocialUser=true;if($authContext==='leader'){bh_create_leader_organiser($db,$userId,$email,(string)($google['name']??'New organiser'));}}
-                $stmt=$db->prepare("INSERT INTO bh_social_accounts (user_id,provider,provider_user_id,email) VALUES (?, 'facebook', ?, ?)");$stmt->execute([$userId,$facebookId,$email]);
+            if($linked){
+                $userId=(int)$linked['user_id'];
+            }else{
+                $stmt=$db->prepare("SELECT id,role,status FROM bh_users WHERE email=? LIMIT 1"); $stmt->execute([$email]); $user=$stmt->fetch();
+                if($user){
+                    if(($user['status']??'')!=='active') bh_auth_response(403,['ok'=>false,'error'=>'account_not_active','message'=>'This account is not currently active.']);
+                    if($authContext==='leader' && ($user['role']??'')!=='leader') bh_auth_response(403,['ok'=>false,'error'=>'leader_account_required','message'=>'This email is already a family account. Use a different email for your leader account.']);
+                    if($authContext==='family' && ($user['role']??'')==='leader') bh_auth_response(403,['ok'=>false,'error'=>'family_account_required','message'=>'Please use the Class Leader sign in for this account.']);
+                    $userId=(int)$user['id'];
+                }else{
+                    $randomPassword=password_hash(bin2hex(random_bytes(32)),PASSWORD_DEFAULT);
+                    $role=$authContext==='leader'?'leader':'family';
+                    $stmt=$db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,?,'active')");
+                    $stmt->execute([$email,$randomPassword,$role]);
+                    $userId=(int)$db->lastInsertId();
+                    $newSocialUser=true;
+                    if($authContext==='leader') bh_create_leader_organiser($db,$userId,$email,(string)($me['name']??'New organiser'));
+                }
+                $stmt=$db->prepare("INSERT INTO bh_social_accounts (user_id,provider,provider_user_id,email) VALUES (?, 'facebook', ?, ?)");
+                $stmt->execute([$userId,$facebookId,$email]);
             }
             if($authContext==='leader' && isset($user) && ($user['role']??'')!=='leader') bh_auth_response(403,['ok'=>false,'error'=>'leader_account_required','message'=>'This email is already a family account. Use a different email for your leader account.']); if($authContext==='family' && isset($user) && ($user['role']??'')==='leader') bh_auth_response(403,['ok'=>false,'error'=>'family_account_required','message'=>'Please use the Class Leader sign in for this account.']); session_regenerate_id(true); $_SESSION['bh_user_id']=$userId; unset($_SESSION['bh_family_authenticated'],$_SESSION['bh_leader_authenticated']); if($authContext==='leader') $_SESSION['bh_leader_authenticated']=true; else $_SESSION['bh_family_authenticated']=true; $_SESSION['bh_csrf']=bin2hex(random_bytes(24));
             $stmt=$db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");$stmt->execute([$userId]);$user=$stmt->fetch();
@@ -388,16 +400,35 @@ try {
         if($email===''||$googleId===''||!$emailVerified||!filter_var($email,FILTER_VALIDATE_EMAIL)) bh_auth_response(401,['ok'=>false,'error'=>'google_unverified_email','message'=>'Google did not provide a verified email address.']);
         $db->exec("CREATE TABLE IF NOT EXISTS bh_social_accounts (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,user_id BIGINT UNSIGNED NOT NULL,provider VARCHAR(32) NOT NULL,provider_user_id VARCHAR(191) NOT NULL,email VARCHAR(255) NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY(id),UNIQUE KEY uq_provider_user(provider,provider_user_id),UNIQUE KEY uq_user_provider(user_id,provider),KEY idx_social_user(user_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
         $stmt=$db->prepare("SELECT user_id FROM bh_social_accounts WHERE provider='google' AND provider_user_id=? LIMIT 1"); $stmt->execute([$googleId]); $linked=$stmt->fetch();
-        if($linked){$userId=(int)$linked['user_id'];}else{
-            $stmt=$db->prepare("SELECT id,status FROM bh_users WHERE email=? LIMIT 1"); $stmt->execute([$email]); $user=$stmt->fetch();
-            if($user){if(($user['status']??'')!=='active') bh_auth_response(403,['ok'=>false,'error'=>'account_not_active','message'=>'This account is not currently active.']); $userId=(int)$user['id'];}
-            else{$randomPassword=password_hash(bin2hex(random_bytes(32)),PASSWORD_DEFAULT);$stmt=$db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,'family','active')");$stmt->execute([$email,$randomPassword]);$userId=(int)$db->lastInsertId();$newSocialUser=true;}
-            $stmt=$db->prepare("INSERT INTO bh_social_accounts (user_id,provider,provider_user_id,email) VALUES (?, 'google', ?, ?)");$stmt->execute([$userId,$googleId,$email]);
+        $newSocialUser=false;
+        if($linked){
+            $userId=(int)$linked['user_id'];
+            $stmt=$db->prepare("SELECT id,role,status FROM bh_users WHERE id=? LIMIT 1"); $stmt->execute([$userId]); $user=$stmt->fetch();
+        }else{
+            $stmt=$db->prepare("SELECT id,role,status FROM bh_users WHERE email=? LIMIT 1"); $stmt->execute([$email]); $user=$stmt->fetch();
+            if($user){
+                if(($user['status']??'')!=='active') bh_auth_response(403,['ok'=>false,'error'=>'account_not_active','message'=>'This account is not currently active.']);
+                if($authContext==='leader' && ($user['role']??'')!=='leader') bh_auth_response(403,['ok'=>false,'error'=>'leader_account_required','message'=>'This email is already a family account. Use a different email for your leader account.']);
+                if($authContext==='family' && ($user['role']??'')==='leader') bh_auth_response(403,['ok'=>false,'error'=>'family_account_required','message'=>'Please use the Class Leader sign in for this account.']);
+                $userId=(int)$user['id'];
+            }else{
+                $randomPassword=password_hash(bin2hex(random_bytes(32)),PASSWORD_DEFAULT);
+                $role=$authContext==='leader'?'leader':'family';
+                $stmt=$db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,?,'active')");
+                $stmt->execute([$email,$randomPassword,$role]);
+                $userId=(int)$db->lastInsertId();
+                $newSocialUser=true;
+                if($authContext==='leader') bh_create_leader_organiser($db,$userId,$email,(string)($google['name']??'New organiser'));
+            }
+            $stmt=$db->prepare("INSERT INTO bh_social_accounts (user_id,provider,provider_user_id,email) VALUES (?, 'google', ?, ?)");
+            $stmt->execute([$userId,$googleId,$email]);
         }
         session_regenerate_id(true); $_SESSION['bh_user_id']=$userId; $_SESSION['bh_csrf']=bin2hex(random_bytes(24));
         $stmt=$db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");$stmt->execute([$userId]);$user=$stmt->fetch();
         $welcomeEmailSent = $newSocialUser ? bh_send_family_welcome($email, '') : false;
-        bh_auth_response(200,['ok'=>true,'authenticated'=>true,'user'=>['id'=>(int)$user['id'],'email'=>$user['email'],'role'=>$user['role'],'status'=>$user['status']],'csrf'=>$_SESSION['bh_csrf'],'provider'=>'google','welcome_email_sent'=>$welcomeEmailSent]);
+        unset($_SESSION['bh_family_authenticated'],$_SESSION['bh_leader_authenticated']);
+        if($authContext==='leader') $_SESSION['bh_leader_authenticated']=true; else $_SESSION['bh_family_authenticated']=true;
+        bh_auth_response(200,['ok'=>true,'authenticated'=>true,'user'=>['id'=>(int)$user['id'],'email'=>$user['email'],'role'=>$user['role'],'status'=>$user['status']],'csrf'=>$_SESSION['bh_csrf'],'provider'=>'google','leader_authenticated'=>($authContext==='leader'),'family_authenticated'=>($authContext==='family'),'created_leader'=>($authContext==='leader' && $newSocialUser),'pending_review'=>($authContext==='leader' && $newSocialUser),'welcome_email_sent'=>($authContext==='family' ? $welcomeEmailSent : false)]);
     }
 
     if ($action === 'forgot_password') {
