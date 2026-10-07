@@ -14,65 +14,66 @@
 <script src="../assets/js/site-auth.js"></script><script src="../assets/js/app.js"></script>
 <script>
 (async()=>{
+  const action=document.getElementById("proAction");
+  const title=document.getElementById("liveStatusTitle");
+  const text=document.getElementById("liveStatusText");
+  const badge=document.getElementById("subscriptionBadge");
+  const msg=document.getElementById("checkoutMessage");
+  const billingInputs=[...document.querySelectorAll('input[name="proBilling"]')];
+
+  // Family Pro checkout is deliberately available to visitors. A Bubba Hub
+  // family account is created automatically from the Stripe checkout email.
+  let signedIn=false;
   try{
     const authResponse=await fetch("../api/auth.php?action=me",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});
     const authData=await authResponse.json();
-    const action=document.getElementById("proAction");
-    if(!authData.authenticated && !authData.family_authenticated && !authData.is_admin){
-      action.textContent="Sign in to upgrade →";
-      action.onclick=()=>location.href="../auth.html?next="+encodeURIComponent(location.pathname+location.search);
-      document.getElementById("liveStatusTitle").textContent="Family Pro";
-      document.getElementById("liveStatusText").textContent="You can view Family Pro and pricing here. Sign in when you’re ready to upgrade.";
-      return;
-    }
-    const r=await fetch("../api/subscription.php",{credentials:"same-origin",cache:"no-store"});
-    const d=await r.json();
-    const title=document.getElementById("liveStatusTitle");
-    const text=document.getElementById("liveStatusText");
-    const badge=document.getElementById("subscriptionBadge");
-    const action=document.getElementById("proAction");
-    const msg=document.getElementById("checkoutMessage");
-    const billingInputs=[...document.querySelectorAll('input[name="proBilling"]')];
+    signedIn=!!(authData.authenticated||authData.family_authenticated||authData.is_admin);
 
-    if(d.pro){
-      title.textContent="⭐ Family Pro active";
-      text.textContent="Your Family Pro access is active on this account.";
-      badge.textContent="PRO ACTIVE";
-      document.getElementById("subscriptionEyebrow").textContent="Bubba Hub Pro · Active";
-      document.getElementById("subscriptionText").textContent="Your Family Pro account is ready — explore your full family hub.";
-      action.textContent="Open Family Pro →";
-      billingInputs.forEach(input=>input.disabled=true);
-      action.onclick=()=>location.href="../pro.html";
-    }else{
-      title.textContent="Free family account";
-      text.textContent="Choose monthly or annual Family Pro billing, then upgrade securely with Stripe Checkout.";
-      badge.textContent="UPGRADE";
-      action.onclick=async()=>{
-        const selected=document.querySelector('input[name="proBilling"]:checked');
-        const billing=selected ? selected.value : "annual";
-        action.disabled=true;
-        action.textContent="Opening secure checkout…";
-        msg.textContent="";
-        try{
-          const r=await fetch("../api/stripe-checkout.php",{
-            method:"POST",
-            credentials:"same-origin",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({billing})
-          });
-          const d=await r.json();
-          if(!r.ok||!d.url) throw new Error(d.message||d.error||"Unable to start checkout.");
-          location.href=d.url;
-        }catch(e){
-          msg.textContent=e.message||"Unable to start checkout.";
-          action.disabled=false;
-          action.textContent="Try again →";
-        }
-      };
+    if(signedIn){
+      const r=await fetch("../api/subscription.php",{credentials:"same-origin",cache:"no-store"});
+      const d=await r.json();
+      if(d.pro){
+        title.textContent="⭐ Family Pro active";
+        text.textContent="Your Family Pro access is active on this account.";
+        badge.textContent="PRO ACTIVE";
+        document.getElementById("subscriptionEyebrow").textContent="Bubba Hub Pro · Active";
+        document.getElementById("subscriptionText").textContent="Your Family Pro account is ready — explore your full family hub.";
+        action.textContent="Open Family Pro →";
+        billingInputs.forEach(input=>input.disabled=true);
+        action.onclick=()=>location.href="../pro.html";
+        return;
+      }
     }
-  }catch(e){
-    const t=document.getElementById("liveStatusTitle");
-    if(t)t.textContent="Family plan";
-  }
+  }catch(e){}
+
+  title.textContent="Family Pro";
+  text.textContent=signedIn
+    ?"Choose monthly or annual billing, then upgrade securely with Stripe Checkout."
+    :"Choose monthly or annual billing. You can create your Family Pro account as part of checkout.";
+  badge.textContent="UPGRADE";
+
+  action.onclick=async()=>{
+    const selected=document.querySelector('input[name="proBilling"]:checked');
+    const billing=selected ? selected.value : "annual";
+    action.disabled=true;
+    action.textContent="Opening secure checkout…";
+    msg.textContent="";
+    try{
+      const r=await fetch("../api/stripe-checkout.php",{
+        method:"POST",
+        credentials:"same-origin",
+        headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body:JSON.stringify({billing})
+      });
+      const d=await r.json();
+      if(!r.ok||!d.url) throw new Error(d.message||d.error||"Unable to start checkout.");
+      location.href=d.url;
+    }catch(e){
+      msg.textContent=e.message||"Unable to start checkout.";
+      action.disabled=false;
+      action.textContent="Upgrade to Family Pro →";
+    }
+  };
 })();
+</script>
 </script></body></html>
