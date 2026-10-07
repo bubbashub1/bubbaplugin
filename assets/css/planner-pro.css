@@ -10,7 +10,7 @@
 .pro-nav a:hover,.pro-nav a:focus{background:#e7f1e8;color:var(--bh-primary)}
 .pro-section{margin:0 0 18px;padding:22px;border:1px solid var(--bh-border);border-radius:22px;background:#fff;box-shadow:0 9px 26px rgba(18,63,49,.045);scroll-margin-top:76px}
 .pro-section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:15px}
-.pro-section-head h2{margin:2px 0 4px;font-family:"Chewy",cursive;font-size:30px;font-weight:400;line-height:1.05;color:var(--bh-dark)}
+.pro-section-head h2{margin:2px 0 4px;font-family:Calibri,Arial,Helvetica,sans-serif;font-size:30px;font-weight:400;line-height:1.05;color:var(--bh-dark)}
 .pro-section-head p{margin:0;color:var(--bh-text-muted);font-size:12px;max-width:680px}
 .pro-planner-layout,.pro-share-layout{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:14px}
 .pro-planner-list,.pro-share-list{display:grid;gap:8px}
@@ -63,7 +63,7 @@
 .pro-empty strong{display:block;margin-bottom:4px;color:var(--bh-text);font-size:14px}
 .pro-modal-backdrop{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:18px;background:rgba(18,63,49,.32)}
 .pro-modal{width:min(520px,100%);padding:22px;border-radius:20px;background:#fff;box-shadow:0 24px 70px rgba(18,63,49,.2)}
-.pro-modal h2{margin:0 0 5px;font-family:"Chewy",cursive;font-size:27px;font-weight:400}
+.pro-modal h2{margin:0 0 5px;font-family:Calibri,Arial,Helvetica,sans-serif;font-size:27px;font-weight:400}
 .pro-modal p{margin:0 0 15px;color:var(--bh-text-muted);font-size:12px}
 .pro-form{display:grid;gap:10px}
 .pro-form label{display:grid;gap:4px;color:var(--bh-text);font-size:11px;font-weight:800}
