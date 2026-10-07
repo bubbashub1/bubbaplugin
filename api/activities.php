@@ -9,7 +9,7 @@ try {
     $db = bh_mysql();
     $page = max(1, (int)($_GET['page'] ?? 1));
     $perPage = (int)($_GET['per_page'] ?? 12);
-    $perPage = max(1, min(50, $perPage));
+    $perPage = max(1, min(200, $perPage));
     $offset = ($page - 1) * $perPage;
 
     $search = trim((string)($_GET['search'] ?? ''));
