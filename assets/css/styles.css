@@ -6366,3 +6366,32 @@ a[class*="hero-button"]{
     min-height:48px;
   }
 }
+
+/* BUBBA HUB — CARD/PANEL INTERNAL SPACING */
+.card,
+.admin-panel,
+.panel,
+.app-card,
+.dashboard-card,
+.content-card,
+.form-card,
+.settings-card,
+.modal-card,
+.filter-card{
+  padding:24px;
+}
+
+@media(max-width:760px){
+  .card,
+  .admin-panel,
+  .panel,
+  .app-card,
+  .dashboard-card,
+  .content-card,
+  .form-card,
+  .settings-card,
+  .modal-card,
+  .filter-card{
+    padding:18px;
+  }
+}
