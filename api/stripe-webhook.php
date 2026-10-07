@@ -48,7 +48,7 @@ function bh_stripe_signature_valid(string $payload, string $header, string $secr
     return false;
 }
 
-function bh_upsert_stripe_subscription(PDO $db, int $uid, string $status, string $source, ?string $customerId, ?string $subscriptionId, ?string $checkoutId, ?string $startedAt, ?string $expiresAt): void {
+function bh_upsert_stripe_subscription(PDO $db, int $uid, string $plan, string $status, string $source, ?string $customerId, ?string $subscriptionId, ?string $checkoutId, ?string $startedAt, ?string $expiresAt): void {
     $sql = "INSERT INTO bh_user_subscriptions
         (user_id,plan,status,source,stripe_customer_id,stripe_subscription_id,stripe_checkout_session_id,started_at,expires_at)
         VALUES (?,?,?,?,?,?,?,?,?)
@@ -60,7 +60,7 @@ function bh_upsert_stripe_subscription(PDO $db, int $uid, string $status, string
         started_at=COALESCE(VALUES(started_at),started_at),
         expires_at=VALUES(expires_at)";
     $q = $db->prepare($sql);
-    $q->execute([$uid,'family_pro',$status,$source,$customerId,$subscriptionId,$checkoutId,$startedAt,$expiresAt]);
+    $q->execute([$uid,$plan,$status,$source,$customerId,$subscriptionId,$checkoutId,$startedAt,$expiresAt]);
 }
 
 try {
@@ -136,21 +136,29 @@ try {
             }
         }
 
+        $plan = (string)($obj['metadata']['plan'] ?? 'family_pro');
+        if (!in_array($plan,['family_pro','leader_pro'],true)) $plan='family_pro';
+        if ($plan==='leader_pro' && $uid>0) {
+            $roleQ=$db->prepare("SELECT role FROM bh_users WHERE id=? LIMIT 1"); $roleQ->execute([$uid]);
+            if (($roleQ->fetchColumn() ?? '') !== 'leader') $uid=0;
+        }
         if ($uid > 0) {
-            bh_upsert_stripe_subscription($db,$uid,'active','stripe',$customerId,$subscriptionId,(string)($obj['id'] ?? ''),date('Y-m-d H:i:s'),null);
+            bh_upsert_stripe_subscription($db,$uid,$plan,'active','stripe',$customerId,$subscriptionId,(string)($obj['id'] ?? ''),date('Y-m-d H:i:s'),null);
         }
     } elseif (in_array($type,['customer.subscription.updated','customer.subscription.created','customer.subscription.deleted'],true)) {
         $subscriptionId = (string)($obj['id'] ?? '');
         $status = (string)($obj['status'] ?? 'inactive');
         $activeStatus = in_array($status,['active','trialing'],true) ? 'active' : $status;
         $uid = (int)($obj['metadata']['user_id'] ?? 0);
+        $plan = (string)($obj['metadata']['plan'] ?? 'family_pro');
+        if (!in_array($plan,['family_pro','leader_pro'],true)) $plan='family_pro';
         if (!$uid && $subscriptionId !== '') {
             $q=$db->prepare("SELECT user_id FROM bh_user_subscriptions WHERE stripe_subscription_id=? LIMIT 1");
             $q->execute([$subscriptionId]); $uid=(int)$q->fetchColumn();
         }
         if ($uid) {
             $expires = !empty($obj['current_period_end']) ? date('Y-m-d H:i:s',(int)$obj['current_period_end']) : null;
-            bh_upsert_stripe_subscription($db,$uid,$activeStatus,'stripe',(string)($obj['customer'] ?? ''),$subscriptionId,null,null,$expires);
+            bh_upsert_stripe_subscription($db,$uid,$plan,$activeStatus,'stripe',(string)($obj['customer'] ?? ''),$subscriptionId,null,null,$expires);
         }
     }
 
