@@ -72,7 +72,7 @@ try {
         $userColumns=[];
         try{
             $cq=$db->query("SELECT COLUMN_NAME,IS_NULLABLE,COLUMN_DEFAULT,EXTRA FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_users'");
-            foreach($cq->fetchAll() as $row) $userColumns[(string)$row['COLUMN_NAME']=$row;
+            foreach($cq->fetchAll() as $row) $userColumns[(string)$row['COLUMN_NAME']]=$row;
         }catch(Throwable $ignored){}
 
         foreach(['email','password_hash','role'] as $required){
@@ -89,7 +89,7 @@ try {
         $orgColumns=[];
         try{
             $cq=$db->query("SELECT COLUMN_NAME,IS_NULLABLE,COLUMN_DEFAULT,EXTRA FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers'");
-            foreach($cq->fetchAll() as $row) $orgColumns[(string)$row['COLUMN_NAME']=$row;
+            foreach($cq->fetchAll() as $row) $orgColumns[(string)$row['COLUMN_NAME']]=$row;
         }catch(Throwable $ignored){}
 
         $nameField=isset($orgColumns['organisation_name'])?'organisation_name':(isset($orgColumns['name'])?'name':(isset($orgColumns['organisation'])?'organisation':(isset($orgColumns['business_name'])?'business_name':'')));
