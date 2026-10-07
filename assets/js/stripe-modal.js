@@ -38,6 +38,10 @@
 
     try{
       await loadStripeJs();
+      // Use Stripe's hosted Checkout as the reliable payment path.
+      // Embedded Checkout requires a correctly configured publishable key and
+      // can fail before the payment form is even created. Hosted Checkout
+      // works with the existing server-side Stripe configuration.
       const response=await fetch("/api/stripe-checkout.php",{
         method:"POST",credentials:"same-origin",
         headers:{"Content-Type":"application/json","Accept":"application/json"},
@@ -45,17 +49,13 @@
           plan:options.plan||"family_pro",
           billing:options.billing||"annual",
           donation:!!options.donation,
-          amount:options.amount||10,
-          embedded:true
+          amount:options.amount||10
         })
       });
       const data=await response.json();
-      if(!response.ok||!data.client_secret||!data.publishable_key)throw new Error(data.message||"Unable to open Stripe checkout.");
-      stripe=window.Stripe(data.publishable_key);
-      const embedded=await stripe.initEmbeddedCheckout({clientSecret:data.client_secret});
-      checkout=embedded;
-      mount.innerHTML="";
-      embedded.mount("#bhStripeCheckout");
+      if(!response.ok||!data.url)throw new Error(data.message||data.error||"Unable to open Stripe checkout.");
+      mount.innerHTML='<div class="bh-stripe-loading">Redirecting to secure Stripe checkout…</div>';
+      window.location.assign(data.url);
     }catch(err){
       mount.innerHTML="";
       error.textContent=err.message||"Unable to open secure checkout.";
