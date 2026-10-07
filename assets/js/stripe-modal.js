@@ -67,28 +67,7 @@
       if(checkout){try{checkout.destroy();}catch(_){} checkout=null;}
       mount.innerHTML="";
 
-      // Fall back to Stripe's hosted Checkout if embedded checkout cannot initialise.
-      try{
-        const fallback=await fetch("/api/stripe-checkout.php",{
-          method:"POST",
-          credentials:"same-origin",
-          headers:{"Content-Type":"application/json","Accept":"application/json"},
-          body:JSON.stringify({
-            plan:options.plan||"family_pro",
-            billing:options.billing||"annual",
-            donation:!!options.donation,
-            amount:options.amount||10,
-            embedded:false
-          })
-        });
-        const fallbackData=await fallback.json();
-        if(fallback.ok&&fallbackData.url){
-          window.location.href=fallbackData.url;
-          return;
-        }
-      }catch(_){}
-
-      error.textContent=err.message||"Unable to open secure checkout.";
+      // Keep the checkout inside the Bubba Hub modal. Never redirect to hosted Checkout.\n      error.textContent=err.message||"Unable to open secure checkout inside the modal.";\n
     }
   }
 
