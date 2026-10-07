@@ -144,12 +144,34 @@ try {
     $db = bh_mysql();
     $configFile = __DIR__ . '/config.php';
     $config = is_file($configFile) ? require $configFile : [];
-    if (!isset($config['google']) || !is_array($config['google'])) {
-        $config['google'] = [];
+    if (!is_array($config)) $config = [];
+
+    // Social-auth secrets live in the live WordPress wp-config.php.
+    $wpConfigCandidates = [
+        dirname(__DIR__) . '/wp-config.php',
+        '/public_html/wp-config.php',
+        dirname(__DIR__, 2) . '/wp-config.php',
+    ];
+    foreach ($wpConfigCandidates as $wpConfigFile) {
+        if (is_file($wpConfigFile)) {
+            require_once $wpConfigFile;
+            break;
+        }
     }
+
+    if (!isset($config['google']) || !is_array($config['google'])) $config['google'] = [];
     if (defined('BH_GOOGLE_CLIENT_ID')) {
         $config['google']['client_id'] = (string)BH_GOOGLE_CLIENT_ID;
     }
+
+    if (!isset($config['apple']) || !is_array($config['apple'])) $config['apple'] = [];
+    if (defined('BH_APPLE_TEAM_ID')) $config['apple']['team_id'] = (string)BH_APPLE_TEAM_ID;
+    if (defined('BH_APPLE_CLIENT_ID')) $config['apple']['client_id'] = (string)BH_APPLE_CLIENT_ID;
+    if (defined('BH_APPLE_KEY_ID')) $config['apple']['key_id'] = (string)BH_APPLE_KEY_ID;
+    if (defined('BH_APPLE_PRIVATE_KEY')) $config['apple']['private_key'] = (string)BH_APPLE_PRIVATE_KEY;
+    if (defined('BH_APPLE_PRIVATE_KEY_FILE')) $config['apple']['private_key_file'] = (string)BH_APPLE_PRIVATE_KEY_FILE;
+    if (defined('BH_APPLE_REDIRECT_URI')) $config['apple']['redirect_uri'] = (string)BH_APPLE_REDIRECT_URI;
+
     $action = trim((string)($_GET['action'] ?? 'me'));
 
     if (!isset($_SESSION['bh_csrf'])) {
@@ -402,7 +424,7 @@ try {
     if ($action === 'google') {
         $credential=trim((string)($body['credential']??''));
         if($credential==='') bh_auth_response(422,['ok'=>false,'error'=>'google_credential_required','message'=>'Google sign-in could not be started.']);
-        $configFile=__DIR__.'/config.php'; $config=is_file($configFile)?require $configFile:[]; $clientId=(string)($config['google']['client_id']??'');
+        $clientId=(string)($config['google']['client_id']??'');
         if($clientId==='') bh_auth_response(503,['ok'=>false,'error'=>'google_not_configured','message'=>'Google sign-in is not configured yet.']);
         $context=stream_context_create(['http'=>['method'=>'GET','timeout'=>8,'ignore_errors'=>true,'header'=>"Accept: application/json\r\n"]]);
         $verify=@file_get_contents('https://oauth2.googleapis.com/tokeninfo?id_token='.rawurlencode($credential),false,$context); $google=is_string($verify)?json_decode($verify,true):null;
