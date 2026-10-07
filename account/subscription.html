@@ -15,6 +15,16 @@
 <script>
 (async()=>{
   try{
+    const authResponse=await fetch("../api/auth.php?action=me",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});
+    const authData=await authResponse.json();
+    const action=document.getElementById("proAction");
+    if(!authData.authenticated && !authData.family_authenticated && !authData.is_admin){
+      action.textContent="Sign in to upgrade →";
+      action.onclick=()=>location.href="../auth.html?next="+encodeURIComponent(location.pathname+location.search);
+      document.getElementById("liveStatusTitle").textContent="Family Pro";
+      document.getElementById("liveStatusText").textContent="You can view Family Pro and pricing here. Sign in when you’re ready to upgrade.";
+      return;
+    }
     const r=await fetch("../api/subscription.php",{credentials:"same-origin",cache:"no-store"});
     const d=await r.json();
     const title=document.getElementById("liveStatusTitle");
