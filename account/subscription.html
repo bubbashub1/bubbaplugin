@@ -14,7 +14,7 @@
 <script src="../assets/js/site-auth.js"></script><script src="../assets/js/app.js"></script>
 <script>
 (async()=>{
-  const action=document.getElementById("proAction");
+  const subscriptionAction=document.getElementById("proAction");
   const title=document.getElementById("liveStatusTitle");
   const text=document.getElementById("liveStatusText");
   const badge=document.getElementById("subscriptionBadge");
@@ -38,9 +38,9 @@
         badge.textContent="PRO ACTIVE";
         document.getElementById("subscriptionEyebrow").textContent="Bubba Hub Pro · Active";
         document.getElementById("subscriptionText").textContent="Your Family Pro account is ready — explore your full family hub.";
-        action.textContent="Open Family Pro →";
+        subscriptionAction.textContent="Open Family Pro →";
         billingInputs.forEach(input=>input.disabled=true);
-        action.onclick=()=>location.href="../pro.html";
+        subscriptionAction.onclick=()=>location.href="../pro.html";
         return;
       }
     }
@@ -52,11 +52,11 @@
     :"Choose monthly or annual billing. You can create your Family Pro account as part of checkout.";
   badge.textContent="UPGRADE";
 
-  action.onclick=async()=>{
+  subscriptionAction.onclick=async()=>{
     const selected=document.querySelector('input[name="proBilling"]:checked');
     const billing=selected ? selected.value : "annual";
-    action.disabled=true;
-    action.textContent="Opening secure checkout…";
+    subscriptionAction.disabled=true;
+    subscriptionAction.textContent="Opening secure checkout…";
     msg.textContent="";
     try{
       const r=await fetch("../api/stripe-checkout.php",{
@@ -70,10 +70,9 @@
       location.href=d.url;
     }catch(e){
       msg.textContent=e.message||"Unable to start checkout.";
-      action.disabled=false;
-      action.textContent="Upgrade to Family Pro →";
+      subscriptionAction.disabled=false;
+      subscriptionAction.textContent="Upgrade to Family Pro →";
     }
   };
 })();
-</script>
 </script></body></html>
