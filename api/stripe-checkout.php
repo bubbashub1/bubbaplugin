@@ -99,6 +99,7 @@ try {
             'line_items[0][price_data][product_data][description]'=>'A voluntary contribution towards keeping Bubba Hub running.',
             'line_items[0][price_data][unit_amount]'=>(string)$amount,
             'line_items[0][quantity]'=>'1',
+            'payment_method_types[0]'=>'card',
             'billing_address_collection'=>'auto',
             'success_url'=>'https://bubbahub.co.uk/?donation=success',
             'cancel_url'=>'https://bubbahub.co.uk/?donation=cancelled'
@@ -106,6 +107,7 @@ try {
         if ($embedded) {
             $params['ui_mode']='embedded';
             $params['return_url']='https://bubbahub.co.uk/?donation=success&session_id={CHECKOUT_SESSION_ID}';
+            unset($params['success_url'], $params['cancel_url']);
         }
         $session=bh_stripe_post('checkout/sessions',$params,$stripe['secret_key']);
         echo json_encode(['ok'=>true,'mode'=>'donation','url'=>$session['url']??null,'client_secret'=>$session['client_secret']??null,'publishable_key'=>$stripe['publishable_key']??''],JSON_UNESCAPED_SLASHES);
@@ -156,15 +158,11 @@ try {
         UNIQUE KEY uq_bh_stripe_subscription(stripe_subscription_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
-    /*
-     * Stripe subscription Checkout creates the Customer automatically.
-     * customer_creation is intentionally NOT sent here because Stripe only
-     * permits customer_creation in payment mode.
-     */
     $params = [
         'mode' => 'subscription',
         'line_items[0][price]' => $priceId,
         'line_items[0][quantity]' => '1',
+        'payment_method_types[0]' => 'card',
         'allow_promotion_codes' => 'true',
         'billing_address_collection' => 'auto',
         'success_url' => $plan === 'leader_pro'
