@@ -360,6 +360,10 @@ try {
             $stmt=$db->prepare("SELECT user_id FROM bh_social_accounts WHERE provider='facebook' AND provider_user_id=? LIMIT 1"); $stmt->execute([$facebookId]); $linked=$stmt->fetch(); $newSocialUser=false;
             if($linked){
                 $userId=(int)$linked['user_id'];
+                $stmt=$db->prepare("SELECT id,role,status FROM bh_users WHERE id=? LIMIT 1"); $stmt->execute([$userId]); $user=$stmt->fetch();
+                if(!$user || ($user['status']??'')!=='active') bh_auth_response(403,['ok'=>false,'error'=>'account_not_active','message'=>'This account is not currently active.']);
+                if($authContext==='leader' && ($user['role']??'')!=='leader') bh_auth_response(403,['ok'=>false,'error'=>'leader_account_required','message'=>'This social account is linked to a family account. Please use a separate leader email.']);
+                if($authContext==='family' && ($user['role']??'')==='leader') bh_auth_response(403,['ok'=>false,'error'=>'family_account_required','message'=>'Please use the Class Leader sign in for this account.']);
             }else{
                 $stmt=$db->prepare("SELECT id,role,status FROM bh_users WHERE email=? LIMIT 1"); $stmt->execute([$email]); $user=$stmt->fetch();
                 if($user){
@@ -381,7 +385,7 @@ try {
             }
             if($authContext==='leader' && isset($user) && ($user['role']??'')!=='leader') bh_auth_response(403,['ok'=>false,'error'=>'leader_account_required','message'=>'This email is already a family account. Use a different email for your leader account.']); if($authContext==='family' && isset($user) && ($user['role']??'')==='leader') bh_auth_response(403,['ok'=>false,'error'=>'family_account_required','message'=>'Please use the Class Leader sign in for this account.']); session_regenerate_id(true); $_SESSION['bh_user_id']=$userId; unset($_SESSION['bh_family_authenticated'],$_SESSION['bh_leader_authenticated']); if($authContext==='leader') $_SESSION['bh_leader_authenticated']=true; else $_SESSION['bh_family_authenticated']=true; $_SESSION['bh_csrf']=bin2hex(random_bytes(24));
             $stmt=$db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");$stmt->execute([$userId]);$user=$stmt->fetch();
-            $welcomeEmailSent = $newSocialUser ? bh_send_family_welcome($email, '') : false;
+            $welcomeEmailSent = ($authContext==='family' && $newSocialUser) ? bh_send_family_welcome($email, '') : false;
             bh_auth_response(200,['ok'=>true,'authenticated'=>true,'user'=>['id'=>(int)$user['id'],'email'=>$user['email'],'role'=>$user['role'],'status'=>$user['status']],'csrf'=>$_SESSION['bh_csrf'],'provider'=>'facebook','leader_authenticated'=>($authContext==='leader'),'family_authenticated'=>($authContext==='family'),'created_leader'=>($authContext==='leader' && $newSocialUser),'pending_review'=>($authContext==='leader' && $newSocialUser),'welcome_email_sent'=>($authContext==='family' ? $welcomeEmailSent : false)]);
         } catch (Throwable $e) {
             bh_auth_response(401,['ok'=>false,'error'=>'facebook_invalid_token','message'=>$e->getMessage() ?: 'Facebook could not verify this sign-in. Please try again.']);
