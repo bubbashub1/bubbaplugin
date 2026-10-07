@@ -9,9 +9,14 @@ RewriteRule ^admin-login/?$ admin-login.html [L,QSA]
 RewriteRule ^leader-login/?$ leader-login.html [L,QSA]
 
 # Admin dashboard
-# Keep legacy/nested admin links working while /admin/ remains canonical.
+# /admin/ is the canonical dashboard URL.
+# Keep legacy /admin/admin.html working by redirecting it to /admin/.
 RewriteRule ^admin/admin\.html$ /admin/ [R=301,L]
 RewriteRule ^admin/?$ admin.html [L,QSA]
+
+# IMPORTANT: never pass /admin/* pages into the generic clean activity URL rule.
+# All physical admin HTML/PHP/API assets must be served from the admin directory.
+RewriteRule ^admin(?:/|$) - [L]
 
 # Class leader dashboard
 RewriteRule ^leader/?$ leader.html [L,QSA]
@@ -51,8 +56,7 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^organiser/([^/]+)/?$ organiser.html?slug=$1 [B,L,QSA]
 
 # Clean activity URLs: /{activity-slug}/
-# IMPORTANT: never rewrite an existing physical file (such as admin.html)
-# as an activity slug. This prevents /admin/ from looping through activity.html.
+# IMPORTANT: never rewrite an existing physical file as an activity slug.
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^([^/]+)/?$ activity.html?slug=$1 [L,QSA]
