@@ -92,57 +92,8 @@ function bh_mysql(): PDO {
         ]
     );
 
-    // Keep public organiser profile fields available on older installs.
-    try {
-        $profileFields = [
-            'about_content' => 'MEDIUMTEXT NULL',
-            'logo_url' => 'VARCHAR(1000) NULL',
-            'facebook_url' => 'VARCHAR(1000) NULL',
-            'instagram_url' => 'VARCHAR(1000) NULL',
-            'tiktok_url' => 'VARCHAR(1000) NULL'
-        ];
-        foreach ($profileFields as $field => $definition) {
-            $check = $pdo->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME=?");
-            $check->execute([$field]);
-            if ((int)$check->fetchColumn() === 0) {
-                $pdo->exec("ALTER TABLE bh_organisers ADD COLUMN $field $definition");
-            }
-        }
-    } catch (Throwable $ignored) {}
-
-    try {
-        $termsCheck = $pdo->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME='terms_content'")->fetchColumn();
-        if ((int)$termsCheck === 0) {
-            $pdo->exec("ALTER TABLE bh_organisers ADD COLUMN terms_content MEDIUMTEXT NULL");
-        }
-    } catch (Throwable $ignored) {}
-
-    // Older Bubba Hub databases may have an organiser status enum that predates
-    // the pending-review workflow. Leader signup creates profiles as pending.
-    try {
-        $statusType = $pdo->query("SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME='status' LIMIT 1")->fetchColumn();
-        if (is_string($statusType) && strpos($statusType, "'pending'") === false) {
-            $pdo->exec("ALTER TABLE bh_organisers MODIFY COLUMN status ENUM('draft','pending','published','suspended') NOT NULL DEFAULT 'draft'");
-        }
-    } catch (Throwable $ignored) {}
-
-    // Keep the deployed database schema aligned with the application role model.
-    try {
-        $roleType = $pdo->query("SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_users' AND COLUMN_NAME='role' LIMIT 1")->fetchColumn();
-        if (is_string($roleType) && strpos($roleType, "'leader'") === false) {
-            $pdo->exec("ALTER TABLE bh_users MODIFY COLUMN role ENUM('family','leader','organiser','admin') NOT NULL DEFAULT 'family'");
-        }
-    } catch (Throwable $ignored) {}
-
-    try {
-        $pdo->exec("CREATE TABLE IF NOT EXISTS bh_planner_pro_state (
-            user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
-            state_json LONGTEXT NOT NULL,
-            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            INDEX idx_planner_pro_updated (updated_at)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-    } catch (Throwable $ignored) {}
+    // Connection only: schema maintenance is handled separately so public auth requests
+    // are not able to fail because an ALTER TABLE/DDL operation is unavailable.
 
     return $pdo;
 }
