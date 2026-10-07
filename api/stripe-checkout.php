@@ -14,9 +14,23 @@ function bh_stripe_config(): array {
     $config = is_file($file) ? require $file : [];
     $stripe = is_array($config['stripe'] ?? null) ? $config['stripe'] : [];
 
-    // Server-side constants in wp-config.php take priority when present.
+    // Read Stripe constants from wp-config.php without executing WordPress.
+    // This keeps checkout independent from the WordPress bootstrap.
     $constant = static function(string $name): string {
-        return defined($name) ? trim((string)constant($name)) : '';
+        if (defined($name)) return trim((string)constant($name));
+        $candidates = [
+            '/public_html/wp-config.php',
+            dirname(__DIR__) . '/wp-config.php',
+            dirname(__DIR__, 2) . '/wp-config.php',
+        ];
+        foreach ($candidates as $file) {
+            if (!is_file($file)) continue;
+            $contents = @file_get_contents($file);
+            if ($contents === false) continue;
+            $pattern = '/define\\s*\\(\\s*[\'" ]' . preg_quote($name, '/') . '[\'" ]\\s*,\\s*[\'" ](.*?)[\'" ]\\s*\\)\\s*;/s';
+            if (preg_match($pattern, $contents, $m)) return stripcslashes($m[1]);
+        }
+        return '';
     };
 
     $stripe['secret_key'] = $constant('BUBBAHUB_STRIPE_SECRET_KEY')
