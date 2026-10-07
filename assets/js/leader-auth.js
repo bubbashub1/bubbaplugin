@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       payload.csrf=csrf;
       if(!reg)payload.context="leader";
 
-      const endpoint=reg?"api/leader-signup.php":"api/auth.php?action=login";
+      const endpoint=reg?"api/auth.php?action=leader_register":"api/auth.php?action=login";
       const options={
         method:"POST",
         credentials:"same-origin",
