@@ -6956,3 +6956,80 @@ body.bh-stripe-modal-open{overflow:hidden}
   .bh-directory .directory-results-heading h1{font-size:31px;}
   .bh-directory .activity-card h3{font-size:20px;}
 }
+
+/* SITEWIDE ADMIN-STYLE HEADER — FINAL */
+.site-header{
+  position:relative;
+  z-index:2000;
+  display:flex;
+  align-items:center;
+  width:100%;
+  max-width:none!important;
+  min-height:88px;
+  margin:0!important;
+  padding:10px clamp(20px,4vw,56px);
+  box-sizing:border-box;
+  background:#fff;
+  border:0;
+  border-bottom:1px solid rgba(18,63,49,.08);
+  border-radius:0;
+  box-shadow:0 6px 22px rgba(18,63,49,.08);
+}
+.site-header .brand{
+  display:flex;
+  align-items:center;
+  flex:0 0 auto;
+}
+.site-header .brand-logo{
+  width:72px!important;
+  height:72px!important;
+  min-width:72px!important;
+  max-width:none!important;
+  object-fit:contain;
+  border-radius:14px;
+}
+.main-nav{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  flex:1 1 auto;
+  min-width:0;
+  margin:0 24px;
+}
+.main-nav a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:44px;
+  padding:10px 15px;
+  border-radius:13px;
+  color:var(--bh-ink);
+  font-weight:800;
+  text-decoration:none;
+}
+.main-nav a:hover,
+.main-nav a.active{
+  background:var(--bh-green-soft);
+  color:var(--bh-green-dark);
+  transform:none;
+}
+.site-header>.button{
+  flex:0 0 auto;
+  min-height:46px;
+  white-space:nowrap;
+}
+@media(max-width:760px){
+  .site-header{
+    min-height:74px;
+    padding:8px 14px;
+  }
+  .site-header .brand-logo{
+    width:58px!important;
+    height:58px!important;
+    min-width:58px!important;
+  }
+  .main-nav{
+    margin:0;
+  }
+}
