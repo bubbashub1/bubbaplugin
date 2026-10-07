@@ -6,6 +6,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 function lc_out(int $code,array $data):never{http_response_code($code);echo json_encode($data,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);exit;}
 if(empty($_SESSION['bh_admin_authenticated']))lc_out(401,['ok'=>false,'error'=>'Admin login required.']);
+try {
 $db=bh_mysql();
 $db->exec("CREATE TABLE IF NOT EXISTS bh_listing_check_results (
  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -31,6 +32,9 @@ $db->exec("CREATE TABLE IF NOT EXISTS bh_listing_check_results (
  INDEX idx_lc_status(status),
  INDEX idx_lc_identity(title,website_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+} catch(Throwable $e) {
+ lc_out(500,['ok'=>false,'error'=>'Listing Check database setup failed: '.$e->getMessage()]);
+}
 
 function lc_config():array{
  $wpConfigs=array_filter([
@@ -66,7 +70,8 @@ function lc_google(string $q,array $cfg):array{
  if($key===''||$cx==='')throw new RuntimeException('Google search is not configured. Add BH_GOOGLE_SEARCH_API_KEY and BH_GOOGLE_SEARCH_CX to wp-config.php.');
  $url='https://customsearch.googleapis.com/customsearch/v1?'.http_build_query(['key'=>$key,'cx'=>$cx,'q'=>$q,'num'=>10,'safe'=>'active']);
  $ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>15,CURLOPT_FOLLOWLOCATION=>true,CURLOPT_USERAGENT=>'Bubba Hub Listing Check/1.0']);$raw=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);
- if($raw===false||$http>=400)throw new RuntimeException('Google search request failed (HTTP '.$http.').');
+ if($raw===false)throw new RuntimeException('Google search request could not be completed.');
+ if($http>=400){$gd=json_decode((string)$raw,true);$detail=(string)($gd['error']['message']??'');throw new RuntimeException('Google search request failed (HTTP '.$http.').'.($detail?' '.$detail:''));}
  $d=json_decode($raw,true);if(!is_array($d))return [];
  return is_array($d['items']??null)?$d['items']:[];
 }
