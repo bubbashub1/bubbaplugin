@@ -6631,3 +6631,22 @@ body.bh-directory .directory-planner-action-button{
   body.bh-directory .directory-map-action-button,
   body.bh-directory .directory-planner-action-button{width:100%!important;}
 }
+
+
+/* Stripe embedded checkout modal */
+.bh-stripe-modal{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:20px}
+.bh-stripe-modal[hidden]{display:none}
+.bh-stripe-modal-backdrop{position:absolute;inset:0;background:rgba(20,68,0,.48)}
+.bh-stripe-modal-dialog{position:relative;z-index:1;width:min(680px,100%);max-height:min(92vh,900px);overflow:auto;border-radius:24px;background:#fff;box-shadow:0 24px 80px rgba(20,68,0,.28);padding:26px}
+.bh-stripe-modal-close{position:absolute;right:16px;top:14px;width:40px;height:40px;border:0;border-radius:50%;background:#eef4ef;color:#144400;font-size:26px;line-height:1;cursor:pointer}
+.bh-stripe-modal-head{padding-right:44px;margin-bottom:18px}
+.bh-stripe-modal-head h2{margin:5px 0;color:#144400}
+.bh-stripe-modal-head p{margin:0;color:#617261;font-size:13px}
+.bh-stripe-checkout{min-height:300px}
+.bh-stripe-loading{padding:40px 10px;text-align:center;color:#617261;font-weight:700}
+.bh-stripe-error{margin:12px 0 0;color:#a32929;font-weight:700;font-size:13px}
+body.bh-stripe-modal-open{overflow:hidden}
+@media(max-width:600px){
+  .bh-stripe-modal{padding:8px}
+  .bh-stripe-modal-dialog{padding:20px;border-radius:20px;max-height:96vh}
+}
