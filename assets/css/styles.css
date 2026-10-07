@@ -6254,3 +6254,59 @@ textarea:focus{
 :focus-visible{
   outline-color:var(--bh-brand);
 }
+
+
+/* BUBBA HUB — FINAL CSS CLEANUP */
+:root{
+  --bh-brand:#144400;
+  --bh-brand-mid:#416651;
+  --bh-brand-soft:#d8e6db;
+  --bh-page:#fff;
+  --bh-surface:#fff;
+  --bh-surface-soft:#f7faf7;
+  --bh-line:#d8e6db;
+  --bh-clean-shadow:0 8px 24px rgba(20,68,0,.07);
+}
+html,body{background:var(--bh-page);}
+body{color:#243027;overflow-x:clip;}
+a,h1,h2,h3,h4{color:var(--bh-brand);}
+.card,.admin-panel,.search-panel,.feature-card,.auth-benefits,.saved-activity-card,.preferences-layout>div,.account-planner-grid>.admin-panel,.activity-card,.directory-card,.bh-activity-card{
+  background:#fff;border:1px solid var(--bh-line);box-shadow:var(--bh-clean-shadow);
+}
+input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea{
+  background:#fff;color:#243027;border:1px solid var(--bh-line);border-radius:12px;box-shadow:none;
+}
+input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,select:focus,textarea:focus{
+  border-color:var(--bh-brand-mid);box-shadow:0 0 0 3px rgba(65,102,81,.12);outline:none;
+}
+.button,.button-primary,.button-full,.home-full-button,.directory-calendar-hero-button,.directory-map-action-button,.directory-map-hero-button,.directory-planner-action-button,.auth-submit,button[type=submit]{
+  background:var(--bh-brand)!important;border-color:var(--bh-brand)!important;color:#fff!important;
+}
+.button:hover,.button:focus-visible,.button-primary:hover,.button-full:hover,.home-full-button:hover,.directory-calendar-hero-button:hover,.directory-map-action-button:hover,.directory-map-hero-button:hover,.directory-planner-action-button:hover,.auth-submit:hover,button[type=submit]:hover,button[type=submit]:focus-visible{
+  background:var(--bh-brand-mid)!important;border-color:var(--bh-brand-mid)!important;color:#fff!important;
+}
+.button-soft{background:var(--bh-brand-soft)!important;border-color:var(--bh-brand-soft)!important;color:var(--bh-brand)!important;}
+.button-soft:hover,.button-soft:focus-visible{background:var(--bh-brand)!important;border-color:var(--bh-brand)!important;color:#fff!important;}
+.button-secondary{background:#fff!important;border-color:var(--bh-line)!important;color:var(--bh-brand)!important;}
+.button-secondary:hover,.button-secondary:focus-visible{background:var(--bh-surface-soft)!important;border-color:var(--bh-brand-mid)!important;color:var(--bh-brand)!important;}
+.site-header{
+  width:100%;max-width:none;margin:0;min-height:76px;padding:10px clamp(14px,3vw,42px);
+  background:#fff;border:0;border-bottom:1px solid rgba(20,68,0,.08);border-radius:0;
+  box-shadow:0 4px 16px rgba(20,68,0,.05);
+}
+.main-nav a{color:var(--bh-brand);border-radius:999px;}
+.main-nav a:hover,.main-nav a.active{background:var(--bh-brand-soft);color:var(--bh-brand);transform:none;}
+.auth-page{background:#fff;}
+.auth-hero{background:#fff;box-shadow:none;}
+.auth-card{background:#fff;border:1px solid var(--bh-line);box-shadow:var(--bh-clean-shadow);}
+.auth-tabs{background:var(--bh-surface-soft);}
+.auth-benefits{border:1px solid var(--bh-line);box-shadow:var(--bh-clean-shadow);}
+.auth-benefits li{background:var(--bh-surface-soft);border:1px solid var(--bh-line);}
+.hero-search-button:hover,.button-yellow:hover,.hero-links .button:first-child:hover{background:var(--bh-brand-mid);border-color:var(--bh-brand-mid);color:#fff;}
+:focus-visible{outline:3px solid var(--bh-brand-mid);outline-offset:3px;}
+@media(max-width:760px){
+  .site-header{width:100%;margin:0;min-height:66px;padding:8px 12px;border-radius:0;}
+  .main-content{width:calc(100% - 24px);margin-inline:auto;}
+  .container{width:calc(100% - 24px);}
+  .auth-card{padding:20px;}
+}
