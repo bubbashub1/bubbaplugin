@@ -1,3 +1,26 @@
+/* Robust inline More search options handler.
+   The hero and advanced filters load asynchronously, so use delegation rather
+   than relying on both components being ready at the same instant. */
+document.addEventListener("click", event => {
+  const trigger = event.target.closest("[data-bh-hero-filters]");
+  if (!trigger) return;
+  event.preventDefault();
+  const fields = document.getElementById("advancedFields");
+  const toggle = document.getElementById("advancedToggle");
+  if (!fields) return;
+  const shouldOpen = fields.hidden;
+  fields.hidden = !shouldOpen;
+  if (toggle) {
+    toggle.setAttribute("aria-expanded", String(shouldOpen));
+    toggle.innerHTML = shouldOpen
+      ? 'More search filters <span aria-hidden="true">−</span>'
+      : 'More search filters <span aria-hidden="true">＋</span>';
+  }
+  if (shouldOpen) {
+    requestAnimationFrame(() => fields.scrollIntoView({behavior:"smooth", block:"nearest"}));
+  }
+});
+
 const bhInitDirectory=async()=>{
   const $ = id => document.getElementById(id);
   const escapeHtml = value => {
