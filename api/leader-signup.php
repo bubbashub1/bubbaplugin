@@ -84,12 +84,7 @@ try{
      foreach(bh_leader_required($orgCols) as $required){
        if(!in_array($required,$fields,true)) throw new RuntimeException('The live bh_organisers table requires an unsupported field: '.$required.'.');
      }
-     foreach(bh_leader_required($userCols) as $required){
-       if(!in_array($required,$fields,true) && !in_array($required,['created_at','updated_at'],true)) {
-         // User required fields should be covered by the standard account columns.
-         throw new RuntimeException('The live bh_users table requires an unsupported field: '.$required.'.');
-       }
-     }
+
      $q=$db->prepare("INSERT INTO bh_organisers (".implode(',',$fields).") VALUES (".implode(',',array_fill(0,count($fields),'?')).")");$q->execute($values);$organiserId=(int)$db->lastInsertId();
    }
    $db->commit();
