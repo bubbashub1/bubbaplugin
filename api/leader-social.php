@@ -88,13 +88,37 @@ try {
 
         $orgColumns=[];
         try{
-            $cq=$db->query("SELECT COLUMN_NAME,IS_NULLABLE,COLUMN_DEFAULT,EXTRA FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers'");
-            foreach($cq->fetchAll() as $row) $orgColumns[(string)$row['COLUMN_NAME']]=$row;
-        }catch(Throwable $ignored){}
+            $cq=$db->query("SHOW COLUMNS FROM bh_organisers");
+            foreach($cq->fetchAll() as $row){
+                $field=(string)($row['Field']??'');
+                if($field!=='') $orgColumns[$field]=[
+                    'COLUMN_NAME'=>$field,
+                    'IS_NULLABLE'=>((string)($row['Null']??'YES')),
+                    'COLUMN_DEFAULT'=>$row['Default']??null,
+                    'EXTRA'=>((string)($row['Extra']??''))
+                ];
+            }
+        }catch(Throwable $ignored){
+            // Fall back to the known Bubba Hub organiser schema if metadata
+            // access is restricted by the hosting MySQL account.
+            $orgColumns=[
+                'id'=>['IS_NULLABLE'=>'NO','COLUMN_DEFAULT'=>null,'EXTRA'=>'auto_increment'],
+                'user_id'=>['IS_NULLABLE'=>'YES','COLUMN_DEFAULT'=>null,'EXTRA'=>''],
+                'organisation_name'=>['IS_NULLABLE'=>'NO','COLUMN_DEFAULT'=>null,'EXTRA'=>''],
+                'slug'=>['IS_NULLABLE'=>'NO','COLUMN_DEFAULT'=>null,'EXTRA'=>''],
+                'description'=>['IS_NULLABLE'=>'YES','COLUMN_DEFAULT'=>null,'EXTRA'=>''],
+                'email'=>['IS_NULLABLE'=>'YES','COLUMN_DEFAULT'=>null,'EXTRA'=>''],
+                'phone'=>['IS_NULLABLE'=>'YES','COLUMN_DEFAULT'=>null,'EXTRA'=>''],
+                'website'=>['IS_NULLABLE'=>'YES','COLUMN_DEFAULT'=>null,'EXTRA'=>''],
+                'status'=>['IS_NULLABLE'=>'NO','COLUMN_DEFAULT'=>'draft','EXTRA'=>''],
+                'created_at'=>['IS_NULLABLE'=>'NO','COLUMN_DEFAULT'=>'CURRENT_TIMESTAMP','EXTRA'=>''],
+                'updated_at'=>['IS_NULLABLE'=>'NO','COLUMN_DEFAULT'=>'CURRENT_TIMESTAMP','EXTRA'=>'']
+            ];
+        }
 
         $nameField=isset($orgColumns['organisation_name'])?'organisation_name':(isset($orgColumns['name'])?'name':(isset($orgColumns['organisation'])?'organisation':(isset($orgColumns['business_name'])?'business_name':'')));
         if($nameField==='' || !isset($orgColumns['slug']) || !isset($orgColumns['status'])){
-            bh_ls_response(500,['ok'=>false,'message'=>'Leader organiser setup is not available yet. Please try again shortly.']);
+            bh_ls_response(500,['ok'=>false,'message'=>'Leader organiser setup is missing its core database fields.']);
         }
 
         $slugBase=strtolower(trim((string)preg_replace('/[^a-z0-9]+/i','-', $displayName),'-'));
