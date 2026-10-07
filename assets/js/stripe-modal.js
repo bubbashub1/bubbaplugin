@@ -23,7 +23,7 @@
     if(mount)mount.innerHTML="";
   }
 
-  function loadStripeJs(){return new Promise((resolve,reject)=>{if(window.Stripe)return resolve();const s=document.createElement("script");s.src="https://js.stripe.com/v3/";s.async=true;s.onload=()=>window.Stripe?resolve():reject(new Error("Stripe could not be loaded."));s.onerror=()=>reject(new Error("Stripe could not be loaded."));document.head.appendChild(s);});}
+  function loadStripeJs(){return new Promise((resolve,reject)=>{if(typeof window.Stripe==="function")return resolve();const existing=document.querySelector("script[src^=\"https://js.stripe.com/\"]");if(existing){let settled=false;const finish=()=>{if(settled)return;settled=true;typeof window.Stripe==="function"?resolve():reject(new Error("Stripe could not be loaded. Please allow Stripe in your browser and try again."));};existing.addEventListener("load",finish,{once:true});existing.addEventListener("error",()=>{if(settled)return;settled=true;reject(new Error("Stripe could not be loaded. Please allow Stripe in your browser and try again."));},{once:true});setTimeout(finish,8000);return;}const s=document.createElement("script");s.src="https://js.stripe.com/v3/";s.async=true;s.defer=true;s.onload=()=>typeof window.Stripe==="function"?resolve():reject(new Error("Stripe could not be loaded. Please allow Stripe in your browser and try again."));s.onerror=()=>reject(new Error("Stripe could not be loaded. Please allow Stripe in your browser and try again."));document.head.appendChild(s);setTimeout(()=>{if(typeof window.Stripe!=="function")reject(new Error("Stripe could not be loaded. Please allow Stripe in your browser and try again."));},8000);});}
 
   async function open(options){
     ensureModal();
@@ -59,6 +59,27 @@
     }catch(err){
       mount.innerHTML="";
       error.textContent=err.message||"Unable to open secure checkout.";
+      if(/Stripe could not be loaded/i.test(String(err&&err.message||""))){
+        const fallback=document.createElement("button");
+        fallback.type="button";
+        fallback.className="button button-primary";
+        fallback.textContent="Continue to secure Stripe checkout →";
+        fallback.addEventListener("click",async()=>{
+          fallback.disabled=true;
+          fallback.textContent="Opening secure checkout…";
+          try{
+            const response=await fetch("/api/stripe-checkout.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({plan:options.plan||"family_pro",billing:options.billing||"annual",donation:!!options.donation,amount:options.amount||10})});
+            const data=await response.json();
+            if(!response.ok||!data.url)throw new Error(data.message||"Unable to open secure checkout.");
+            location.href=data.url;
+          }catch(fallbackError){
+            error.textContent=fallbackError.message||"Unable to open secure checkout.";
+            fallback.disabled=false;
+            fallback.textContent="Continue to secure Stripe checkout →";
+          }
+        });
+        mount.appendChild(fallback);
+      }
     }
   }
 
