@@ -50,16 +50,89 @@ try {
     } else bh_ls_response(422,['ok'=>false,'message'=>'Unsupported sign-in provider.']);
 
     $db=bh_mysql();
+
+    // Social sign-in can also be the first leader signup. We create the
+    // leader account immediately instead of requiring an email/password
+    // account first. The organiser profile starts as pending review.
     $q=$db->prepare("SELECT id,email,role,status FROM bh_users WHERE LOWER(email)=? LIMIT 1"); $q->execute([$email]); $user=$q->fetch();
-    if(!$user || ($user['role']??'')!=='leader') bh_ls_response(403,['ok'=>false,'message'=>'Create your leader account first. You can then use Google or Facebook to sign in.']);
-    if(($user['status']??'')!=='active') bh_ls_response(403,['ok'=>false,'message'=>'This leader account is not currently active.']);
+
+    if($user && ($user['role']??'')!=='leader'){
+        bh_ls_response(403,['ok'=>false,'message'=>'This email is already used by a family account. Please use a different email address for your leader account.']);
+    }
+    if($user && ($user['status']??'')!=='active'){
+        bh_ls_response(403,['ok'=>false,'message'=>'This account is not currently active.']);
+    }
+
+    $createdLeader=false;
+    if(!$user){
+        $displayName='';
+        if($provider==='google') $displayName=trim((string)($g['name']??''));
+        if($displayName==='') $displayName='New organiser';
+
+        $userColumns=[];
+        try{
+            $cq=$db->query("SELECT COLUMN_NAME,IS_NULLABLE,COLUMN_DEFAULT,EXTRA FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_users'");
+            foreach($cq->fetchAll() as $row) $userColumns[(string)$row['COLUMN_NAME']=$row;
+        }catch(Throwable $ignored){}
+
+        foreach(['email','password_hash','role'] as $required){
+            if(!isset($userColumns[$required])) bh_ls_response(500,['ok'=>false,'message'=>'Leader accounts are not available yet. Please try again shortly.']);
+        }
+
+        $fields=['email','password_hash','role']; $values=[$email,password_hash(bin2hex(random_bytes(32)),PASSWORD_DEFAULT),'leader'];
+        if(isset($userColumns['status'])){$fields[]='status';$values[]='active';}
+        $placeholders=implode(',',array_fill(0,count($fields),'?'));
+        $q=$db->prepare("INSERT INTO bh_users (".implode(',',$fields).") VALUES (".$placeholders.")");
+        $q->execute($values);
+        $userId=(int)$db->lastInsertId();
+
+        $orgColumns=[];
+        try{
+            $cq=$db->query("SELECT COLUMN_NAME,IS_NULLABLE,COLUMN_DEFAULT,EXTRA FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers'");
+            foreach($cq->fetchAll() as $row) $orgColumns[(string)$row['COLUMN_NAME']=$row;
+        }catch(Throwable $ignored){}
+
+        $nameField=isset($orgColumns['organisation_name'])?'organisation_name':(isset($orgColumns['name'])?'name':(isset($orgColumns['organisation'])?'organisation':(isset($orgColumns['business_name'])?'business_name':'')));
+        if($nameField==='' || !isset($orgColumns['slug']) || !isset($orgColumns['status'])){
+            bh_ls_response(500,['ok'=>false,'message'=>'Leader organiser setup is not available yet. Please try again shortly.']);
+        }
+
+        $slugBase=strtolower(trim((string)preg_replace('/[^a-z0-9]+/i','-', $displayName),'-'));
+        $slugBase=$slugBase!==''?$slugBase:'leader';
+        $slug=$slugBase; $n=2;
+        while(true){
+            $q=$db->prepare("SELECT id FROM bh_organisers WHERE slug=? LIMIT 1"); $q->execute([$slug]);
+            if(!$q->fetch()) break;
+            $slug=$slugBase.'-'.$n++;
+        }
+
+        $fields=[$nameField,'slug','status']; $values=[$displayName,$slug,'pending'];
+        if(isset($orgColumns['user_id'])){$fields[]='user_id';$values[]=$userId;}
+        if(isset($orgColumns['email'])){$fields[]='email';$values[]=$email;}
+        if(isset($orgColumns['description'])){$fields[]='description';$values[]='';}
+        foreach(['phone'=>null,'website'=>null] as $field=>$value){
+            if(isset($orgColumns[$field])){$fields[]=$field;$values[]=$value;}
+        }
+
+        foreach($orgColumns as $field=>$meta){
+            $required=($meta['IS_NULLABLE']??'YES')==='NO' && ($meta['COLUMN_DEFAULT']??null)===null && stripos((string)($meta['EXTRA']??''),'auto_increment')===false;
+            if($required && !in_array($field,$fields,true)){
+                bh_ls_response(500,['ok'=>false,'message'=>'Leader organiser setup is missing a required field: '.$field.'.']);
+            }
+        }
+
+        $q=$db->prepare("INSERT INTO bh_organisers (".implode(',',$fields).") VALUES (".implode(',',array_fill(0,count($fields),'?')).")");
+        $q->execute($values);
+        $createdLeader=true;
+        $user=['id'=>$userId,'email'=>$email,'role'=>'leader','status'=>'active'];
+    }
 
     session_regenerate_id(true);
     $_SESSION['bh_user_id']=(int)$user['id'];
     unset($_SESSION['bh_family_authenticated']);
     $_SESSION['bh_leader_authenticated']=true;
     $_SESSION['bh_csrf']=bin2hex(random_bytes(24));
-    bh_ls_response(200,['ok'=>true,'authenticated'=>true,'leader_authenticated'=>true,'user'=>['id'=>(int)$user['id'],'email'=>$user['email'],'role'=>'leader','status'=>$user['status']],'csrf'=>$_SESSION['bh_csrf']]);
+    bh_ls_response(200,['ok'=>true,'authenticated'=>true,'leader_authenticated'=>true,'created_leader'=>$createdLeader,'pending_review'=>$createdLeader,'user'=>['id'=>(int)$user['id'],'email'=>$user['email'],'role'=>'leader','status'=>$user['status']],'csrf'=>$_SESSION['bh_csrf']]);
 } catch(Throwable $e) {
     bh_ls_response(500,['ok'=>false,'message'=>'Leader social sign-in is temporarily unavailable.']);
 }
