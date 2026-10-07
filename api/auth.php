@@ -144,6 +144,12 @@ try {
     $db = bh_mysql();
     $configFile = __DIR__ . '/config.php';
     $config = is_file($configFile) ? require $configFile : [];
+    if (!isset($config['google']) || !is_array($config['google'])) {
+        $config['google'] = [];
+    }
+    if (defined('BH_GOOGLE_CLIENT_ID')) {
+        $config['google']['client_id'] = (string)BH_GOOGLE_CLIENT_ID;
+    }
     $action = trim((string)($_GET['action'] ?? 'me'));
 
     if (!isset($_SESSION['bh_csrf'])) {
