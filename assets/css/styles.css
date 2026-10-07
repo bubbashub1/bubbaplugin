@@ -6662,3 +6662,143 @@ body.bh-stripe-modal-open{overflow:hidden}
     width:100%;
   }
 }
+
+/* =========================================================================
+   LEADER AUTH — MOBILE REFINEMENT
+   ========================================================================= */
+@media (max-width: 900px){
+  .bh-leader-auth-page .auth-layout{
+    grid-template-columns:1fr;
+  }
+  .bh-leader-auth-page .auth-benefits{
+    order:2;
+  }
+  .bh-leader-auth-page .leader-login-pro{
+    order:3;
+  }
+}
+
+@media (max-width: 600px){
+  .bh-leader-auth-page{
+    padding-bottom:32px;
+    overflow-x:hidden;
+  }
+
+  .bh-leader-auth-page .auth-hero{
+    width:calc(100% - 24px);
+    margin:16px auto 0;
+    padding:26px 20px;
+    border-radius:18px;
+  }
+  .bh-leader-auth-page .auth-hero h1{
+    font-size:clamp(1.55rem,7vw,2rem);
+    line-height:1.12;
+  }
+  .bh-leader-auth-page .auth-hero p{
+    font-size:.95rem;
+    line-height:1.5;
+  }
+
+  .bh-leader-auth-page .auth-layout{
+    width:calc(100% - 24px);
+    margin:14px auto 0;
+    gap:14px;
+  }
+  .bh-leader-auth-page .auth-card,
+  .bh-leader-auth-page .auth-benefits{
+    width:100%;
+    padding:18px;
+    border-radius:18px;
+  }
+
+  .bh-leader-auth-page .auth-tabs{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-bottom:16px;
+  }
+  .bh-leader-auth-page .auth-tabs .button{
+    width:100%;
+    min-height:46px;
+  }
+
+  .bh-leader-auth-page #leaderAuthForm{
+    grid-template-columns:1fr;
+    gap:12px;
+  }
+  .bh-leader-auth-page #leaderAuthForm label,
+  .bh-leader-auth-page #leaderOrganisationWrap,
+  .bh-leader-auth-page #leaderTermsWrap,
+  .bh-leader-auth-page #leaderAuthSubmit,
+  .bh-leader-auth-page #leaderAuthMessage{
+    grid-column:1;
+  }
+  .bh-leader-auth-page #leaderAuthForm input{
+    min-height:50px;
+    font-size:16px;
+  }
+  .bh-leader-auth-page .auth-submit{
+    width:100%;
+    min-height:50px;
+    justify-self:stretch;
+  }
+
+  .bh-leader-auth-page .leader-social-buttons{
+    display:grid;
+    gap:9px;
+  }
+  .bh-leader-auth-page .leader-social-buttons button{
+    width:100%;
+    min-height:48px;
+  }
+
+  .bh-leader-auth-page .auth-note{
+    margin-top:16px;
+  }
+
+  .bh-leader-auth-page .auth-benefits{
+    padding:20px 18px;
+  }
+  .bh-leader-auth-page .auth-benefits ul{
+    padding-left:20px;
+  }
+
+  .bh-leader-auth-page .leader-login-pro{
+    grid-column:1 / -1;
+    width:100%;
+    margin:0;
+    padding:20px 18px;
+    border-radius:18px;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:16px;
+  }
+  .bh-leader-auth-page .leader-login-pro h2{
+    font-size:1.35rem;
+  }
+  .bh-leader-auth-page .leader-login-pro p{
+    line-height:1.5;
+  }
+  .bh-leader-auth-page .leader-login-pro .account-pro-banner-actions{
+    width:100%;
+    display:grid;
+    gap:6px;
+  }
+  .bh-leader-auth-page .leader-login-pro .account-pro-banner-actions .button{
+    width:100%;
+    min-height:48px;
+    margin-top:7px;
+  }
+}
+
+@media (max-width: 380px){
+  .bh-leader-auth-page .auth-card,
+  .bh-leader-auth-page .auth-benefits,
+  .bh-leader-auth-page .leader-login-pro{
+    padding-left:15px;
+    padding-right:15px;
+  }
+  .bh-leader-auth-page .auth-tabs .button{
+    font-size:.9rem;
+  }
+}
