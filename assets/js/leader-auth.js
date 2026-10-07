@@ -100,6 +100,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     };
   }
 
+  window.fbAsyncInit=()=>{if(window.FB&&window.BUBBAHUB_FACEBOOK_APP_ID){FB.init({appId:window.BUBBAHUB_FACEBOOK_APP_ID,cookie:true,xfbml:false,version:"v24.0"});}};
   const facebookButton=document.getElementById("leaderFacebookSignIn");
   if(facebookButton){
     facebookButton.onclick=()=>{
