@@ -35,6 +35,55 @@ function bh_send_family_welcome(string $email, string $firstName=''): bool {
 
     return bh_send_smtp_mail($email, 'Welcome to Bubba Hub 💚', $html, $plain);
 }
+function bh_create_leader_organiser(PDO $db, int $userId, string $email, string $displayName='New organiser'): int {
+    $displayName = trim($displayName) !== '' ? trim($displayName) : 'New organiser';
+    $columns = [];
+    try {
+        $q = $db->query("SHOW COLUMNS FROM bh_organisers");
+        foreach ($q->fetchAll() as $row) {
+            $field=(string)($row['Field']??'');
+            if($field!=='') $columns[$field]=[
+                'Null'=>(string)($row['Null']??'YES'),
+                'Default'=>$row['Default']??null,
+                'Extra'=>(string)($row['Extra']??'')
+            ];
+        }
+    } catch(Throwable $e) {
+        throw new RuntimeException('Leader organiser setup is not available yet.');
+    }
+
+    $nameField=isset($columns['organisation_name'])?'organisation_name':(isset($columns['name'])?'name':(isset($columns['organisation'])?'organisation':(isset($columns['business_name'])?'business_name':''));
+    if($nameField==='' || !isset($columns['slug']) || !isset($columns['status'])) {
+        throw new RuntimeException('Leader organiser setup is not available yet.');
+    }
+
+    $base=strtolower(trim((string)preg_replace('/[^a-z0-9]+/i','-', $displayName),'-'));
+    $base=$base!==''?$base:'leader';
+    $slug=$base; $n=2;
+    while(true){
+        $q=$db->prepare("SELECT id FROM bh_organisers WHERE slug=? LIMIT 1"); $q->execute([$slug]);
+        if(!$q->fetch()) break;
+        $slug=$base.'-'.$n++;
+    }
+
+    $fields=[$nameField,'slug','status']; $values=[$displayName,$slug,'pending'];
+    if(isset($columns['user_id'])){$fields[]='user_id';$values[]=$userId;}
+    if(isset($columns['email'])){$fields[]='email';$values[]=$email;}
+    if(isset($columns['description'])){$fields[]='description';$values[]='';}
+
+    foreach($columns as $field=>$meta){
+        $required=((string)($meta['Null']??'YES'))==='NO' && ($meta['Default']??null)===null && stripos((string)($meta['Extra']??''),'auto_increment')===false;
+        if($required && !in_array($field,$fields,true)) {
+            // Timestamp columns with a DB default are already covered above.
+            throw new RuntimeException('Leader organiser setup is missing a required field: '.$field.'.');
+        }
+    }
+
+    $q=$db->prepare("INSERT INTO bh_organisers (".implode(',',$fields).") VALUES (".implode(',',array_fill(0,count($fields),'?')).")");
+    $q->execute($values);
+    return (int)$db->lastInsertId();
+}
+
 function bh_b64url_encode(string $value): string {
     return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
 }
