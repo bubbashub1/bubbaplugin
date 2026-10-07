@@ -206,7 +206,7 @@ const bhInitDirectory=async()=>{
     let currentView = "grid";
     let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let cardCount = Number(localStorage.getItem("bh_directory_cards") || 3);
-    let visibleActivityCount = 12;
+    let visibleActivityCount = 6;
     let infiniteScrollObserver = null;
     let homeLocation = null;
     let homeLocationLoading = false;
@@ -771,7 +771,7 @@ const bhInitDirectory=async()=>{
         infiniteScrollObserver = new IntersectionObserver(entries => {
           if (!entries.some(entry => entry.isIntersecting)) return;
           if (visibleActivityCount >= list.length) return;
-          visibleActivityCount = Math.min(visibleActivityCount + 12, list.length);
+          visibleActivityCount = Math.min(visibleActivityCount + 6, list.length);
           render();
         }, {rootMargin:"500px 0px 500px 0px"});
         infiniteScrollObserver.observe(loadMoreTarget);
