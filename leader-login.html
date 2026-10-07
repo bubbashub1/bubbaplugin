@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Leader login · Bubba Hub</title><meta name="description" content="Sign in or create a Bubba Hub class leader account.">
-<link rel="stylesheet" href="assets/css/styles.css"></head><body>
+<link rel="stylesheet" href="assets/css/styles.css"><script src="api/google-config.php" defer></script><script src="https://accounts.google.com/gsi/client" async defer></script><script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script></head><body>
 <header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">For class leaders</a><a href="account.html">Account</a></nav><a class="button button-soft" href="account.html">My account</a></header>
 <main class="app-shell auth-page bh-leader-auth-page">
 <section class="auth-hero"><div><span class="eyebrow">Bubba Hub for class leaders</span><h1 id="leaderAuthTitle">Sign in to your leader portal</h1><p id="leaderAuthIntro">Manage your classes, venues, schedules and bookings from one dedicated account.</p></div></section>
 <section class="auth-layout"><div class="admin-panel auth-card">
 <div class="auth-tabs" role="tablist" aria-label="Leader account access"><button type="button" class="button button-soft active" data-leader-mode="login" role="tab" aria-selected="true">Sign in</button><button type="button" class="button button-soft" data-leader-mode="register" role="tab" aria-selected="false">Create account</button></div>
-<form id="leaderAuthForm" novalidate>
+<div class="leader-social-buttons"><button type="button" class="google-signin-button" id="leaderGoogleSignIn"><span class="google-mark" aria-hidden="true">G</span><span>Continue with Google</span></button><button type="button" class="facebook-signin-button" id="leaderFacebookSignIn"><span class="facebook-mark" aria-hidden="true">f</span><span>Continue with Facebook</span></button><div class="auth-divider"><span>or sign in with email</span></div></div><form id="leaderAuthForm" novalidate>
 <label id="leaderOrganisationWrap" class="leader-register-only" hidden>Class, business or organisation name<input name="organisation_name" type="text" maxlength="190" autocomplete="organization" placeholder="e.g. Little Bubbas Baby Group"></label>
 <label>Email address<input name="email" type="email" required autocomplete="email" placeholder="leader@example.com"></label>
 <label id="leaderPhoneWrap" class="leader-register-only" hidden>Phone number<input name="phone" type="tel" maxlength="80" autocomplete="tel" placeholder="Optional"></label>
