@@ -19,3 +19,201 @@
 
 
 
+
+
+/* =========================================================================
+   BUBBA HUB — ADMIN DASHBOARD FINAL POLISH
+   ========================================================================= */
+body:has(.admin-panel) {
+  background:#f7faf7;
+}
+
+body:has(.admin-panel) .app-shell {
+  width:min(1400px,calc(100% - 32px));
+  margin:0 auto;
+  padding:0 0 70px;
+}
+
+body:has(.admin-panel) .page-heading {
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:28px;
+  margin:0 0 24px;
+  padding:34px 0 28px;
+  background:transparent;
+  border-bottom:1px solid var(--bh-line,#d8e6db);
+}
+
+body:has(.admin-panel) .page-heading h1 {
+  margin:4px 0 8px;
+  font-size:clamp(2rem,4vw,3rem);
+}
+
+body:has(.admin-panel) .page-heading p {
+  margin:0;
+  color:var(--bh-muted,#617261);
+}
+
+body:has(.admin-panel) .hero-actions {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:10px;
+}
+
+body:has(.admin-panel) .admin-panel {
+  margin:0 0 20px;
+  padding:26px;
+  background:#fff;
+  border:1px solid var(--bh-line,#d8e6db);
+  border-radius:20px;
+  box-shadow:0 8px 24px rgba(20,68,0,.06);
+}
+
+body:has(.admin-panel) .admin-panel-head {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:24px;
+  margin-bottom:18px;
+}
+
+body:has(.admin-panel) .admin-panel-head h2 {
+  margin:4px 0 7px;
+  color:var(--bh-brand,#144400);
+  font-size:1.35rem;
+}
+
+body:has(.admin-panel) .admin-panel-head p {
+  max-width:780px;
+  margin:0;
+  color:var(--bh-muted,#617261);
+}
+
+body:has(.admin-panel) .deployment-note {
+  margin:0;
+  padding:12px 15px;
+  background:#f3f8f3;
+  border:1px solid var(--bh-line,#d8e6db);
+  border-radius:12px;
+  color:var(--bh-muted,#617261);
+  font-size:.92rem;
+}
+
+body:has(.admin-panel) .admin-stats {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+  margin:0 0 20px;
+}
+
+body:has(.admin-panel) .admin-stats article {
+  min-width:0;
+  padding:20px;
+  background:#fff;
+  border:1px solid var(--bh-line,#d8e6db);
+  border-radius:18px;
+  box-shadow:0 8px 24px rgba(20,68,0,.05);
+}
+
+body:has(.admin-panel) .admin-stats article span,
+body:has(.admin-panel) .admin-stats article small {
+  display:block;
+  color:var(--bh-muted,#617261);
+}
+
+body:has(.admin-panel) .admin-stats article span {
+  font-size:.82rem;
+  font-weight:800;
+}
+
+body:has(.admin-panel) .admin-stats article strong {
+  display:block;
+  margin:6px 0 2px;
+  color:var(--bh-brand,#144400);
+  font-size:2rem;
+  line-height:1;
+}
+
+body:has(.admin-panel) .admin-setting-grid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px;
+}
+
+body:has(.admin-panel) .admin-setting-card {
+  min-height:190px;
+  padding:20px;
+  background:#fff;
+  border:1px solid var(--bh-line,#d8e6db);
+  border-radius:18px;
+  box-shadow:0 6px 20px rgba(20,68,0,.05);
+  transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;
+}
+
+body:has(.admin-panel) .admin-setting-card:hover {
+  transform:translateY(-2px);
+  border-color:var(--bh-brand-mid,#416651);
+  box-shadow:0 12px 28px rgba(20,68,0,.09);
+}
+
+body:has(.admin-panel) .admin-setting-card h2 {
+  margin:8px 0 7px;
+  font-size:1.15rem;
+}
+
+body:has(.admin-panel) .admin-setting-card p {
+  color:var(--bh-muted,#617261);
+  line-height:1.5;
+}
+
+body:has(.admin-panel) .admin-setting-icon {
+  display:grid;
+  place-items:center;
+  width:42px;
+  height:42px;
+  border-radius:13px;
+  background:var(--bh-green-soft,#d8e6db);
+  color:var(--bh-brand,#144400);
+  font-size:1.25rem;
+  font-weight:900;
+}
+
+body:has(.admin-panel) .admin-setting-card .button {
+  margin-top:14px;
+}
+
+@media(max-width:1000px){
+  body:has(.admin-panel) .admin-setting-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  body:has(.admin-panel) .admin-stats {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+@media(max-width:760px){
+  body:has(.admin-panel) .app-shell {
+    width:calc(100% - 24px);
+  }
+  body:has(.admin-panel) .page-heading,
+  body:has(.admin-panel) .admin-panel-head {
+    flex-direction:column;
+    align-items:stretch;
+  }
+  body:has(.admin-panel) .hero-actions {
+    justify-content:flex-start;
+  }
+  body:has(.admin-panel) .admin-panel {
+    padding:18px;
+    border-radius:16px;
+  }
+  body:has(.admin-panel) .admin-setting-grid,
+  body:has(.admin-panel) .admin-stats {
+    grid-template-columns:1fr;
+  }
+  body:has(.admin-panel) .admin-setting-card {
+    min-height:0;
+  }
+}
