@@ -100,7 +100,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
     };
   }
 
-  window.fbAsyncInit=()=>{if(window.FB&&window.BUBBAHUB_FACEBOOK_APP_ID){FB.init({appId:window.BUBBAHUB_FACEBOOK_APP_ID,cookie:true,xfbml:false,version:"v24.0"});}};
+  const initFacebook=()=>{if(window.FB&&window.BUBBAHUB_FACEBOOK_APP_ID){try{FB.init({appId:window.BUBBAHUB_FACEBOOK_APP_ID,cookie:true,xfbml:false,version:"v24.0"});}catch(e){}}};
+  window.fbAsyncInit=initFacebook;
+  if(window.FB)initFacebook();
   const facebookButton=document.getElementById("leaderFacebookSignIn");
   if(facebookButton){
     facebookButton.onclick=()=>{
