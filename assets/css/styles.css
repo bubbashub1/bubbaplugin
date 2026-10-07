@@ -6328,3 +6328,41 @@ h1,h2,h3,h4,h5,h6,
   font-family:Calibri,Arial,Helvetica,sans-serif!important;
   font-weight:700;
 }
+
+/* BUBBA HUB — CTA SPACING FINAL */
+/* Give every primary CTA comfortable breathing room without changing layout. */
+.button,
+.button-primary,
+.button-full,
+.home-full-button,
+.directory-calendar-hero-button,
+.directory-map-action-button,
+.directory-map-hero-button,
+.directory-planner-action-button,
+.auth-submit,
+button[type="submit"],
+a[class*="cta"],
+a[class*="action-button"],
+a[class*="hero-button"]{
+  padding:14px 24px;
+  min-height:50px;
+}
+
+@media(max-width:760px){
+  .button,
+  .button-primary,
+  .button-full,
+  .home-full-button,
+  .directory-calendar-hero-button,
+  .directory-map-action-button,
+  .directory-map-hero-button,
+  .directory-planner-action-button,
+  .auth-submit,
+  button[type="submit"],
+  a[class*="cta"],
+  a[class*="action-button"],
+  a[class*="hero-button"]{
+    padding:12px 20px;
+    min-height:48px;
+  }
+}
