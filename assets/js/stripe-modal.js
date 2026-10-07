@@ -23,6 +23,8 @@
     if(mount)mount.innerHTML="";
   }
 
+  function loadStripeJs(){return new Promise((resolve,reject)=>{if(window.Stripe)return resolve();const s=document.createElement("script");s.src="https://js.stripe.com/v3/";s.async=true;s.onload=()=>window.Stripe?resolve():reject(new Error("Stripe could not be loaded."));s.onerror=()=>reject(new Error("Stripe could not be loaded."));document.head.appendChild(s);});}
+
   async function open(options){
     ensureModal();
     modal.hidden=false;
@@ -35,7 +37,7 @@
     mount.innerHTML='<div class="bh-stripe-loading">Opening secure Stripe checkout…</div>';
 
     try{
-      if(!window.Stripe)throw new Error("Stripe could not be loaded.");
+      await loadStripeJs();
       const response=await fetch("/api/stripe-checkout.php",{
         method:"POST",credentials:"same-origin",
         headers:{"Content-Type":"application/json","Accept":"application/json"},
