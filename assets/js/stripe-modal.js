@@ -95,7 +95,7 @@
   window.BHStripeModal={open,close};
 
   function bind(){
-    document.querySelectorAll("[data-stripe-payment]").forEach(button=>{
+    document.querySelectorAll("[data-stripe-payment], [data-stripe-donation]").forEach(button=>{
       if(button.dataset.stripeBound)return;
       button.dataset.stripeBound="1";
       button.addEventListener("click",()=>{
