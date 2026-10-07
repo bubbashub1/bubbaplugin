@@ -843,3 +843,98 @@
   .bh-directory .directory-popular{gap:6px;margin-top:8px;padding-top:8px}
   .bh-directory .directory-popular-chip{padding:6px 9px;font-size:11px}
 }
+
+
+/* INLINE ADVANCED SEARCH — no modal, no backdrop, no blurred overlay */
+.bh-directory .directory-more-filters{
+  width:100%;
+  margin:14px 0 20px;
+}
+.bh-directory .directory-more-filters .bh-advanced-filters{
+  width:100%;
+}
+.bh-directory .directory-more-search-toggle{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:100%;
+  min-height:52px;
+  padding:0 18px;
+  border:1px solid rgba(65,102,81,.14);
+  border-radius:16px;
+  background:#fff;
+  color:var(--bh-site-dark,#144400);
+  font:800 14px/1 "Quicksand",sans-serif;
+  cursor:pointer;
+  box-shadow:0 4px 14px rgba(20,68,0,.05);
+  transition:background .18s ease,border-color .18s ease;
+}
+.bh-directory .directory-more-search-toggle:hover,
+.bh-directory .directory-more-search-toggle[aria-expanded="true"]{
+  background:#e7f1ea;
+  border-color:rgba(60,142,150,.25);
+}
+.bh-directory .directory-more-search-panel{
+  margin-top:10px;
+  padding:18px;
+  border:1px solid rgba(65,102,81,.12);
+  border-radius:18px;
+  background:#f7fbf8;
+}
+.bh-directory .directory-more-search-panel[hidden]{display:none}
+.bh-directory .directory-more-search-panel .directory-filter-fields{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:13px;
+}
+.bh-directory .directory-more-search-panel .directory-advanced-section{
+  grid-column:1/-1;
+  margin-top:0;
+  padding-top:0;
+  border-top:0;
+}
+.bh-directory .directory-more-search-panel .directory-advanced-fields{
+  display:contents;
+}
+.bh-directory .directory-more-search-panel .directory-filter-actions{
+  display:flex;
+  gap:10px;
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid var(--bh-site-border,#dbe5dd);
+}
+.bh-directory .directory-more-search-panel .directory-filter-actions .button{
+  min-height:44px;
+}
+.bh-directory .directory-more-search-panel .directory-advanced-toggle{display:none}
+.bh-directory .directory-filters-panel,
+.bh-directory.directory-filter-open::before{
+  display:none!important;
+}
+.bh-directory .directory-load-more{
+  grid-column:1/-1;
+  padding:14px;
+  text-align:center;
+  color:var(--bh-site-muted,#617261);
+  font-size:12px;
+  font-weight:800;
+}
+.bh-directory .directory-end-message{
+  grid-column:1/-1;
+  padding:12px;
+  text-align:center;
+  color:var(--bh-site-muted,#617261);
+  font-size:12px;
+}
+@media(max-width:900px){
+  .bh-directory .directory-more-search-panel .directory-filter-fields{
+    grid-template-columns:1fr;
+  }
+  .bh-directory .directory-more-search-panel{padding:14px}
+  .bh-directory .directory-more-search-panel .directory-filter-actions{
+    flex-direction:column;
+  }
+  .bh-directory .directory-more-search-panel .directory-filter-actions .button{
+    width:100%;
+  }
+}
