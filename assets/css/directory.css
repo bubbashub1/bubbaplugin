@@ -6,8 +6,8 @@
   color:var(--bh-site-dark,#0d3b32);
 }
 .bh-directory .app-shell{
-  width:min(1380px,calc(100% - 32px));
-  max-width:1380px;
+  width:min(1400px,calc(100% - 24px));
+  max-width:1400px;
   margin:0 auto;
   min-width:0;
 }
@@ -658,7 +658,7 @@
 
 /* Small mobile */
 @media(max-width:420px){
-  .bh-directory .app-shell{width:calc(100% - 20px)}
+  .bh-directory .app-shell{width:calc(100% - 24px)}
   .bh-directory .directory-hero-search{padding:18px 13px 14px}
   .bh-directory .directory-hero-search h2{font-size:25px}
 }
