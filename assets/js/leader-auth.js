@@ -77,6 +77,40 @@ document.addEventListener("DOMContentLoaded",async()=>{
 
   setMode(mode);
 
+  const socialMessage=(text,isError=false)=>message(text,isError);
+  const socialLogin=async(provider,payload)=>{
+    socialMessage("Signing in with "+(provider==="google"?"Google":"Facebook")+"…");
+    try{
+      const r=await fetch("api/leader-social.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({provider,...payload})});
+      const d=await r.json();
+      if(!r.ok||!d.ok)throw Error(d.message||"Social sign-in could not be completed.");
+      location.replace(next);
+    }catch(err){socialMessage(err.message||"Please try again.",true);}
+  };
+
+  const googleButton=document.getElementById("leaderGoogleSignIn");
+  if(googleButton){
+    googleButton.onclick=()=>{
+      if(!window.google?.accounts?.id){socialMessage("Google sign-in is still loading. Please try again in a moment.",true);return;}
+      google.accounts.id.initialize({
+        client_id:window.BUBBAHUB_GOOGLE_CLIENT_ID||"",
+        callback:response=>socialLogin("google",{credential:response.credential})
+      });
+      google.accounts.id.prompt();
+    };
+  }
+
+  const facebookButton=document.getElementById("leaderFacebookSignIn");
+  if(facebookButton){
+    facebookButton.onclick=()=>{
+      if(!window.FB){socialMessage("Facebook sign-in is still loading. Please try again in a moment.",true);return;}
+      FB.login(response=>{
+        if(response?.authResponse?.accessToken) socialLogin("facebook",{access_token:response.authResponse.accessToken});
+        else socialMessage("Facebook sign-in was cancelled.",true);
+      },{scope:"email"});
+    };
+  }
+
   form.addEventListener("submit",async e=>{
     e.preventDefault();
     const reg=mode==="register";
