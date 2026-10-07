@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
     .map(s=>({...s,activity:a,venue:s.venue||{},date:d}))
   );
 
-  const card=x=>'<article class="calendar-event"><div class="calendar-event-time">'+bhEscape(x.time||x.start_time||"")+'</div><div class="calendar-event-main"><span class="activity-meta">'+bhEscape(x.activity.category||"Activity")+'</span><h3>'+bhEscape(x.activity.title)+'</h3><p>'+bhEscape(x.venue.name||x.venue.address||x.venue.town||"")+(x.price!==undefined&&x.price!==""?" · "+bhEscape(x.price):"")+'</p><a class="button button-soft" href="activity.html?id='+encodeURIComponent(x.activity.id)+'">View activity</a></div></article>';
+  const card=x=>{const activityUrl=typeof bhActivityUrl==="function"?bhActivityUrl(x.activity):"activity.html?slug="+encodeURIComponent(x.activity?.slug||"")+"&id="+encodeURIComponent(x.activity?.id||"");return '<article class="calendar-event"><div class="calendar-event-time">'+bhEscape(x.time||x.start_time||"")+"</div><div class=\"calendar-event-main\"><span class=\"activity-meta\">"+bhEscape(x.activity.category||"Activity")+"</span><h3>"+bhEscape(x.activity.title)+"</h3><p>"+bhEscape(x.venue.name||x.venue.address||x.venue.town||"")+(x.price!==undefined&&x.price!==""?" · "+bhEscape(x.price):"")+"</p><a class=\"button button-soft\" href=\""+bhEscape(activityUrl)+"\">View activity</a></div></article>";};
   const empty=m=>'<div class="calendar-empty"><h3>No activities</h3><p>'+bhEscape(m)+'</p><a class="button button-primary" href="directory.html">Find activities</a></div>';
 
   const list=()=>{
