@@ -135,11 +135,29 @@ p  { margin: 0 0 14px; }
   margin: 32px auto;
 }
 
-.app-shell { width: 100%; max-width: none; margin-inline: 0; }
+.app-shell {
+  width: min(1400px, calc(100% - 24px));
+  max-width: 1400px;
+  margin: 0 auto;
+  min-width: 0;
+}
 .app-shell > * { min-width: 0; }
+
+/* Keep page shells aligned with the shared .bh-site-header width. */
 .bh-directory .app-shell,
 .bh-activity .app-shell,
-.bh-map-page .app-shell { padding-inline: 15px; }
+.bh-map-page .app-shell {
+  width: min(1400px, calc(100% - 24px));
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-inline: 0;
+}
+
+@media (max-width: 900px) {
+  .bh-directory .app-shell,
+  .bh-activity .app-shell,
+  .bh-map-page .app-shell { padding-inline: 0; }
+}
 
 @media (max-width: 600px) {
   .container { width: min(100% - 24px, var(--bh-max)); }
