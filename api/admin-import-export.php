@@ -204,9 +204,9 @@ if(!$fh){if($csvTmp)@unlink($csvTmp);http_response_code(422);header('Content-Typ
 $headers=fgetcsv($fh);if(!$headers||count($headers)<1){http_response_code(422);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>'The CSV has no header row.']);exit;}
 $headers=array_map('clean_header',$headers);$rows=[];while(($r=fgetcsv($fh))!==false){if(count(array_filter($r,fn($x)=>trim((string)$x)!==''))===0)continue;$r=array_pad($r,count($headers),'');$row=[];foreach($headers as $i=>$h)$row[$h]=trim((string)($r[$i]??''));$rows[]=$row;}fclose($fh);
 $mode=($_POST['mode']??'update')==='skip'?'skip':'update';$ac=false;try{$q=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='accessibility'");$ac=(int)$q->fetchColumn()>0;}catch(Throwable $e){}
-$created=$updated=$skipped=$failed=0;$errors=[];
+$totalRows=count($rows);$offset=max(0,(int)($_POST['offset']??0));$limit=min(25,max(1,(int)($_POST['limit']??25)));$rows=array_slice($rows,$offset,$limit);$created=$updated=$skipped=$failed=0;$errors=[];
 foreach($rows as $idx=>$row){
-  $line=$idx+2;
+  $line=$offset+$idx+2;
   try{
     $title=firstv($row,['title','activity_title','activity_name','activity','class_name','class','name']);$category=firstv($row,['category','activity_category','type','class_type']);$org=firstv($row,['organisation_name','organisation','organization','organizer','organiser','company','company_name','provider','provider_name','leader','leader_name']);$venue=firstv($row,['venue_name','venue','venue_name_location','location','location_name','venue_location','address_name']);$town=firstv($row,['town','village_town_or_city','village_town_city','village_town_or_city_name','city','town_city','town_or_city','village','location_town']);
     if($title===''||$category===''||$org===''||$venue===''||$town===''){ $missing=[];if($title==='')$missing[]='title';if($category==='')$missing[]='category';if($org==='')$missing[]='organisation';if($venue==='')$missing[]='venue';if($town==='')$missing[]='town';throw new RuntimeException('Required fields missing: '.implode(', ',$missing).'.');}
@@ -243,5 +243,5 @@ foreach($rows as $idx=>$row){
   }catch(Throwable $e){if($db->inTransaction())$db->rollBack();$failed++;if(count($errors)<20)$errors[]='Row '.$line.': '.$e->getMessage();}
 }
 header('Content-Type: application/json; charset=utf-8');
-echo json_encode(['ok'=>true,'rows'=>count($rows),'created'=>$created,'updated'=>$updated,'skipped'=>$skipped,'failed'=>$failed,'errors'=>$errors],JSON_UNESCAPED_SLASHES);
+echo json_encode(['ok'=>true,'rows'=>count($rows),'total_rows'=>$totalRows,'next_offset'=>$offset+count($rows),'has_more'=>($offset+count($rows)<$totalRows),'created'=>$created,'updated'=>$updated,'skipped'=>$skipped,'failed'=>$failed,'errors'=>$errors],JSON_UNESCAPED_SLASHES);
 ?>
