@@ -13,12 +13,30 @@ document.addEventListener("DOMContentLoaded",()=>{
     status.textContent="Uploading and importing CSV…";
     try{
       const data=new FormData();data.append("csv",file);data.append("mode",document.getElementById("activityCsvMode")?.value||"update");
-      const response=await fetch("/api/admin-import-export.php",{method:"POST",credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"},body:data});
-      const raw=await response.text();let result;
-      try{result=JSON.parse(raw);}catch{throw new Error("CSV server returned an invalid or empty response (HTTP "+response.status+").");}
-      if(!response.ok||!result.ok)throw new Error(result.error||"CSV import failed (HTTP "+response.status+").");
-      status.textContent="Import complete: "+(result.created||0)+" created, "+(result.updated||0)+" updated, "+(result.skipped||0)+" skipped, "+(result.failed||0)+" failed."+(result.errors?.length?" "+result.errors.join(" "):"");
-      if(result.failed)status.classList.add("is-error");
+      let offset=0,created=0,updated=0,skipped=0,failed=0,total=0;
+      const errors=[];
+      do{
+        const chunk=new FormData();
+        chunk.append("csv",file);
+        chunk.append("mode",document.getElementById("activityCsvMode")?.value||"update");
+        chunk.append("offset",String(offset));
+        chunk.append("limit","25");
+        const response=await fetch("/api/admin-import-export.php",{method:"POST",credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"},body:chunk});
+        const raw=await response.text();
+        let result;
+        try{result=JSON.parse(raw)}catch{throw new Error("CSV server returned an invalid or empty response (HTTP "+response.status+") at row "+(offset+1)+".")}
+        if(!response.ok||!result.ok)throw new Error(result.error||"CSV import failed at row "+(offset+1)+".");
+        total=Number(result.total_rows)||0;
+        created+=Number(result.created)||0;updated+=Number(result.updated)||0;skipped+=Number(result.skipped)||0;failed+=Number(result.failed)||0;
+        if(Array.isArray(result.errors))errors.push(...result.errors.slice(0,5));
+        const next=Number(result.next_offset);
+        if(!Number.isFinite(next)||next<=offset)throw new Error("CSV import stopped without making progress at row "+(offset+1)+".");
+        offset=next;
+        status.textContent="Importing "+Math.min(offset,total)+" of "+total+" activities… "+created+" created, "+updated+" updated, "+failed+" failed.";
+        if(!result.has_more)break;
+      }while(true);
+      status.textContent="Import complete: "+created+" created, "+updated+" updated, "+skipped+" skipped, "+failed+" failed."+(errors.length?" "+errors.slice(0,8).join(" "):"");
+      if(failed)status.classList.add("is-error");
     }catch(error){status.textContent=error.message||"CSV import failed.";status.classList.add("is-error");}
     finally{button.disabled=false;}
   });
