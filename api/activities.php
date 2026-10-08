@@ -34,6 +34,11 @@ try {
         $countyColumn = false;
     }
 
+    $featuredColumn = false;
+    try { $featuredCheck=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='featured'"); $featuredColumn=((int)$featuredCheck->fetchColumn())>0; } catch (Throwable $ignored) {}
+
+    $featuredSelect = $featuredColumn ? 'a.featured' : '0 AS featured';
+
     $accessibilityColumn = false;
     try {
         $accessibilityCheck = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bh_activities' AND COLUMN_NAME = 'accessibility'");
@@ -131,6 +136,7 @@ try {
             a.booking_url
             $infoSelect,
             a.image_path,
+            $featuredSelect,
             o.id AS organiser_id,
             o.organisation_name,
             o.email AS organiser_email,
@@ -181,6 +187,7 @@ try {
                 'what_to_bring' => $row['what_to_bring'] ?: '',
                 'good_to_know' => $row['good_to_know'] ?: '',
                 'image_path' => $row['image_path'],
+                'featured' => (bool)$row['featured'],
                 'organiser' => [
                     'id' => $row['organiser_id'] !== null ? (int)$row['organiser_id'] : null,
                     'name' => $row['organisation_name'] ?: 'Bubba Hub organiser',
