@@ -90,7 +90,7 @@ body {
   width: 100%;
   color: var(--bh-text);
   background: var(--bh-white);
-  font-family: 'Quicksand', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Quicksand', Calibri, Arial, Helvetica, sans-serif;
   line-height: 1.55;
   /* `clip` (not `hidden`) so position:sticky keeps working */
   overflow-x: clip;
@@ -6332,11 +6332,12 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,select:focus
 }
 
 
-/* FONT SAFETY: use a dependable system sans-serif.
-   Prevent decorative cursive fallbacks when Google Fonts are unavailable. */
+/* FONT SAFETY: Quicksand is the brand font; Calibri is the explicit fallback.
+   Never fall back to cursive/decorative fonts when Google Fonts are unavailable. */
 html,body,
 button,input,select,textarea{
-  font-family:Calibri,Arial,Helvetica,sans-serif!important;
+  font-family:'Quicksand',Calibri,Arial,Helvetica,sans-serif!important;
+  font-synthesis:none;
 }
 h1,h2,h3,h4,h5,h6,
 .page-heading h1,.page-heading h2,
@@ -6345,8 +6346,20 @@ h1,h2,h3,h4,h5,h6,
 .my-hub-page .hub-personal-cta h2,
 .planner-toolbar-copy h2,
 .pro-section-head h2,.pro-modal h2{
-  font-family:Calibri,Arial,Helvetica,sans-serif!important;
+  font-family:'Quicksand',Calibri,Arial,Helvetica,sans-serif!important;
   font-weight:700;
+}
+
+/* Production mobile safety: desktop navigation can never leak into the
+   760px-and-under layout. The open state is controlled by the menu script. */
+@media (max-width:760px){
+  .site-header .main-nav{display:none!important;}
+  .site-header.mobile-menu-open .main-nav{display:flex!important;}
+  .site-header .mobile-nav-toggle{display:flex!important;}
+}
+@media (min-width:761px){
+  .site-header .mobile-nav-toggle{display:none!important;}
+  .site-header .main-nav{display:flex!important;}
 }
 
 /* BUBBA HUB — CTA SPACING FINAL */
