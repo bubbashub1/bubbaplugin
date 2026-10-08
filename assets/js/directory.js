@@ -709,6 +709,7 @@ const bhInitDirectory=async()=>{
       lastFilteredList = list;
       const resultsEl = $("results");
       if (!resultsEl) return;
+      const previousScrollTop = resultsEl.scrollTop;
       resultsEl.className = `activity-grid directory-view-${currentView} directory-cards-${cardCount}`;
       const visibleList = list.slice(0, visibleActivityCount);
       resultsEl.innerHTML = visibleList.map(activity => {
@@ -750,6 +751,7 @@ const bhInitDirectory=async()=>{
         );
       }
 
+      resultsEl.scrollTop = previousScrollTop;
       if (infiniteScrollObserver) infiniteScrollObserver.disconnect();
       const loadMoreTarget = resultsEl.querySelector("[data-infinite-scroll]");
       if (loadMoreTarget) {
@@ -758,7 +760,7 @@ const bhInitDirectory=async()=>{
           if (visibleActivityCount >= list.length) return;
           visibleActivityCount = Math.min(visibleActivityCount + 6, list.length);
           render();
-        }, {rootMargin:"500px 0px 500px 0px"});
+        }, {root: resultsEl, rootMargin:"120px 0px 120px 0px"});
         infiniteScrollObserver.observe(loadMoreTarget);
       }
 
