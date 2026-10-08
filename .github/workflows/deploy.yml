@@ -74,6 +74,12 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Never deploy into an unset or unexpected directory.
+          if [ -z "$REMOTE_PATH" ] || [ "$REMOTE_PATH" = "/" ] || [[ "$REMOTE_PATH" != *public_html* ]]; then
+            echo "Refusing deployment: EWEBALL_REMOTE_PATH must point to public_html." >&2
+            exit 1
+          fi
+
           if [ ! -f "OneSignalSDKWorker.js" ]; then
             echo "ERROR: OneSignalSDKWorker.js is missing from the repository root." >&2
             exit 1
