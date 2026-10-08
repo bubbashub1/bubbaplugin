@@ -30,7 +30,7 @@ function validateSessions(){const rows=[...document.querySelectorAll(".admin-ses
 const setAuthMessage=(m,e=false)=>{const x=document.querySelector("#adminAuthMessage");x.textContent=m;x.classList.toggle("is-error",e)};
 async function logout(){try{await fetch("admin-auth.php?action=logout",{credentials:"same-origin",cache:"no-store"});}finally{location.reload()}}
 const escapeHtml=v=>String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
-async function verifyAdmin(){const r=await fetch("/admin-auth.php?action=check",{credentials:"same-origin",cache:"no-store"});let d={};try{d=await r.json()}catch{}if(!r.ok||!d.ok)throw new Error(d.error||"Admin login required.");return d}
+async function verifyAdmin(){const r=await fetch("/admin-auth.php?action=check",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});let d={};try{d=await r.json()}catch{}if(!r.ok||!d.ok)throw new Error(d.error||"Admin login required.");return d}
 
 async function loadDashboard(){
  const table=document.querySelector("#adminActivities");
@@ -504,7 +504,7 @@ document.querySelector("#addSession")?.addEventListener("click",()=>addSessionRo
 document.querySelector("#adminActivities")?.addEventListener("click",async e=>{const b=e.target.closest(".admin-edit-activity");if(!b)return;try{await editActivity(b.dataset.id)}catch(err){alert(err.message)}});
 initAddressAutocomplete();
 loadVenueSuggestions();
-verifyAdmin().then(()=>{document.querySelector("#adminContent").hidden=false;loadDashboard();loadTestUsers()}).catch(()=>{location.replace("/admin-login.html?next="+encodeURIComponent(location.pathname+location.search+location.hash));});
+verifyAdmin().then(()=>{document.documentElement.classList.remove("bh-admin-auth-pending");document.body.classList.remove("bh-admin-auth-pending");document.querySelector("#adminContent").hidden=false;loadDashboard();loadTestUsers()}).catch(()=>{location.replace("/admin-login.html?next="+encodeURIComponent(location.pathname+location.search+location.hash));});
 
 
 async function importActivityCsv(){
