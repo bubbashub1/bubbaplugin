@@ -253,6 +253,33 @@ function bh_ensure_social_table(PDO $db): void {
     $db->exec("CREATE TABLE IF NOT EXISTS bh_social_accounts (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,user_id BIGINT UNSIGNED NOT NULL,provider VARCHAR(32) NOT NULL,provider_user_id VARCHAR(191) NOT NULL,email VARCHAR(255) NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY(id),UNIQUE KEY uq_provider_user(provider,provider_user_id),UNIQUE KEY uq_user_provider(user_id,provider),KEY idx_social_user(user_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 }
 
+function bh_ensure_email_verification_schema(PDO $db): void {
+    // Keep this self-healing for existing Bubba Hub databases so deployment does not
+    // depend on a manual SQL migration.
+    $db->exec("CREATE TABLE IF NOT EXISTS bh_email_verifications (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        user_id BIGINT UNSIGNED NOT NULL,
+        token_hash CHAR(64) NOT NULL,
+        expires_at DATETIME NOT NULL,
+        used_at DATETIME NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY(id),
+        UNIQUE KEY uq_email_verification_token(token_hash),
+        KEY idx_email_verification_user(user_id),
+        KEY idx_email_verification_expiry(expires_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $columns = [];
+    try {
+        $q = $db->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_users'");
+        $columns = array_map('strval', $q->fetchAll(PDO::FETCH_COLUMN));
+    } catch (Throwable $ignored) {}
+
+    if (!in_array('email_verified_at', $columns, true)) {
+        $db->exec("ALTER TABLE bh_users ADD COLUMN email_verified_at DATETIME NULL");
+    }
+}
+
 function bh_ensure_reset_table(PDO $db): void {
     $db->exec("CREATE TABLE IF NOT EXISTS bh_password_resets (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -446,6 +473,37 @@ try {
         ]);
     }
 
+    // Verification links are intentionally usable as a normal GET request.
+    if ($action === 'verify_email') {
+        try {
+            $db = bh_mysql();
+            bh_ensure_email_verification_schema($db);
+            $token = trim((string)($_GET['token'] ?? ''));
+            if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
+                bh_auth_response(400, ['ok'=>false,'error'=>'invalid_verification_token','message'=>'This verification link is not valid.']);
+            }
+            $stmt = $db->prepare("SELECT id,user_id,expires_at,used_at FROM bh_email_verifications WHERE token_hash=? LIMIT 1");
+            $stmt->execute([hash('sha256',$token)]);
+            $v=$stmt->fetch();
+            if (!$v || $v['used_at'] !== null || strtotime((string)$v['expires_at']) < time()) {
+                bh_auth_response(400, ['ok'=>false,'error'=>'verification_expired','message'=>'This verification link has expired or has already been used. Please request a new one.']);
+            }
+            $db->beginTransaction();
+            try {
+                $db->prepare("UPDATE bh_users SET email_verified_at=NOW() WHERE id=?")->execute([(int)$v['user_id']]);
+                $db->prepare("UPDATE bh_email_verifications SET used_at=NOW() WHERE id=?")->execute([(int)$v['id']]);
+                $db->commit();
+            } catch(Throwable $e) {
+                if($db->inTransaction()) $db->rollBack();
+                throw $e;
+            }
+            bh_auth_response(200,['ok'=>true,'verified'=>true,'message'=>'Your email has been verified. You can now sign in.']);
+        } catch (Throwable $e) {
+            error_log('Bubba Hub email verification failed: '.$e->getMessage());
+            bh_auth_response(500,['ok'=>false,'error'=>'verification_error','message'=>'We could not verify this email right now. Please try again shortly.']);
+        }
+    }
+
     /* ---------------- Everything below is POST-only ---------------- */
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         bh_auth_response(405, ['ok' => false, 'error' => 'method_not_allowed']);
@@ -516,6 +574,7 @@ try {
         }
 
         try {
+            bh_ensure_email_verification_schema($db);
             $db->beginTransaction();
             $stmt = $db->prepare("INSERT INTO bh_users (email,password_hash,role,status,email_verified_at) VALUES (?,?, 'leader','active',NULL)");
             $stmt->execute([$email, password_hash($password, PASSWORD_DEFAULT)]);
@@ -534,6 +593,12 @@ try {
         }
 
         /* Do not authenticate a leader until their email is verified. */
+        $base = rtrim((string)(($config['app']['base_url'] ?? '') ?: (getenv('BUBBAHUB_BASE_URL') ?: 'https://bubbahub.co.uk')), '/');
+        $verificationUrl = $base . '/api/auth.php?action=verify_email&token=' . rawurlencode($rawToken);
+        $html = '<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#144400"><h1 style="color:#416651">Verify your Bubba Hub leader account</h1><p>Thanks for registering as a Bubba Hub leader.</p><p>Please verify your email address before signing in.</p><p><a href="' . htmlspecialchars($verificationUrl, ENT_QUOTES, 'UTF-8') . '" style="display:inline-block;padding:12px 18px;background:#416651;color:#fff;text-decoration:none;border-radius:10px">Verify my email</a></p><p>This link expires in 24 hours and can only be used once.</p><p>If you did not create this account, you can ignore this email.</p></div>';
+        $plain = "Verify your Bubba Hub leader account\n\nOpen this link within 24 hours:\n{$verificationUrl}\n\nIf you did not create this account, ignore this email.";
+        require_once __DIR__.'/mailer.php';
+        $verificationEmailSent = bh_send_smtp_mail($email, 'Verify your Bubba Hub leader account', $html, $plain);
 
         bh_auth_response(201, [
             'ok'=>true,
@@ -543,11 +608,11 @@ try {
             'organiser_id'=>$organiserId,
             'user'=>['id'=>$userId,'email'=>$email,'role'=>'leader','status'=>'active'],
             'csrf'=>$_SESSION['bh_csrf'],
-            'message'=>'Account created. Please check your email and click the verification link before signing in.'
+            'message'=>'Account created. Please check your email and click the verification link before signing in.','verification_email_sent'=>$verificationEmailSent
         ]);
     }
 
-    /* ---------------- email verification ---------------- */
+    /* ---------------- email verification (legacy POST compatibility) ---------------- */
     if ($action === 'verify_email') {
         $token = trim((string)($body['token'] ?? ($_GET['token'] ?? '')));
         if (!preg_match('/^[a-f0-9]{64}$/', $token)) bh_auth_response(400, ['ok'=>false,'error'=>'invalid_verification_token','message'=>'This verification link is not valid.']);
@@ -578,7 +643,7 @@ try {
         $acctBucket = "login-acct:$ip:$email";
         bh_rate_limit($db, $acctBucket, 8, 900);
 
-        $stmt = $db->prepare("SELECT id,email,password_hash,role,status FROM bh_users WHERE email=? LIMIT 1");
+        $stmt = $db->prepare("SELECT id,email,password_hash,role,status,email_verified_at FROM bh_users WHERE email=? LIMIT 1");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
 
@@ -586,6 +651,10 @@ try {
         $passwordOk = password_verify($password, $user ? (string)$user['password_hash'] : BH_DUMMY_HASH);
         if (!$user || !$passwordOk) {
             bh_auth_response(401, ['ok' => false, 'error' => 'invalid_login', 'message' => 'That email or password is not correct.']);
+        }
+
+        if ($authContext === 'leader' && (($user['role'] ?? '') !== 'leader' || empty($user['email_verified_at']))) {
+            bh_auth_response(403, ['ok'=>false,'error'=>'email_not_verified','message'=>'Please verify your email address using the link we sent before signing in as a leader.']);
         }
 
         bh_check_account_context($user, $authContext);
@@ -609,6 +678,7 @@ try {
 
     /* ---------------- facebook ---------------- */
     if ($action === 'facebook') {
+        if ($authContext === 'leader') bh_auth_response(403,['ok'=>false,'error'=>'leader_social_disabled','message'=>'Leader accounts must register and sign in with email and password.']);
         bh_rate_limit($db, "social-ip:$ip", 30, 900);
 
         $accessToken = trim((string)($body['access_token'] ?? ''));
@@ -653,6 +723,7 @@ try {
 
     /* ---------------- google ---------------- */
     if ($action === 'google') {
+        if ($authContext === 'leader') bh_auth_response(403,['ok'=>false,'error'=>'leader_social_disabled','message'=>'Leader accounts must register and sign in with email and password.']);
         bh_rate_limit($db, "social-ip:$ip", 30, 900);
 
         // Expects the Google Identity Services JS callback: POST {credential: response.credential, context, csrf}.
