@@ -47,6 +47,35 @@ function table_columns(PDO $db,string $table): array {
 }
 function table_name(PDO $db,array $names): ?string {foreach($names as $n)if(table_columns($db,$n))return $n;return null;}
 function normalise_bool(string $v): int {return in_array(strtolower(trim($v)),['1','yes','true','y','on'],true)?1:0;}
+function discover_website_image(string $website): string {
+  $website=trim($website); if($website==='') return '';
+  if(!preg_match('~^https://~i',$website)) $website='https://'.$website;
+  $u=parse_url($website); $host=strtolower((string)($u['host']??''));
+  if($host===''||filter_var($host,FILTER_VALIDATE_IP)) return '';
+  $ip=gethostbyname($host);
+  if($ip===$host||!filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE)) return '';
+  $ch=curl_init($website);
+  curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>true,CURLOPT_MAXREDIRS=>4,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>10,CURLOPT_USERAGENT=>'Bubba Hub image discovery/1.0',CURLOPT_HTTPHEADER=>['Accept: text/html,application/xhtml+xml'],CURLOPT_ENCODING=>'']);
+  $html=curl_exec($ch); $final=(string)curl_getinfo($ch,CURLINFO_EFFECTIVE_URL); $type=(string)curl_getinfo($ch,CURLINFO_CONTENT_TYPE); $http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE); curl_close($ch);
+  if($html===false||$http<200||$http>=400||stripos($type,'text/html')===false) return '';
+  if(strlen($html)>2097152) $html=substr($html,0,2097152);
+  $candidates=[];
+  if(preg_match_all('~<meta[^>]+(?:property|name)=["\\'](?:og:image|twitter:image|twitter:image:src)["\\'][^>]+content=["\\']([^"\\']+)["\\'][^>]*>~i',$html,$m)) $candidates=array_merge($candidates,$m[1]);
+  if(preg_match_all('~<meta[^>]+content=["\\']([^"\\']+)["\\'][^>]+(?:property|name)=["\\'](?:og:image|twitter:image|twitter:image:src)["\\'][^>]*>~i',$html,$m)) $candidates=array_merge($candidates,$m[1]);
+  if(preg_match_all('~<img[^>]+src=["\\']([^"\\']+)["\\'][^>]*>~i',$html,$m)) $candidates=array_merge($candidates,array_slice($m[1],0,20));
+  $base=$final!==''?$final:$website;
+  foreach($candidates as $candidate){
+    $candidate=html_entity_decode(trim($candidate),ENT_QUOTES|ENT_HTML5,'UTF-8'); if($candidate===''||str_starts_with($candidate,'data:')) continue;
+    if(str_starts_with($candidate,'//')) $candidate='https:'.$candidate;
+    elseif(str_starts_with($candidate,'/')) {$b=parse_url($base);$candidate='https://'.($b['host']??$host).$candidate;}
+    elseif(!preg_match('~^https?://~i',$candidate)) $candidate=rtrim($base,'/').'/'.ltrim($candidate,'/');
+    $p=parse_url($candidate);$chost=strtolower((string)($p['host']??''));$cip=$chost!==''?gethostbyname($chost):'';
+    if(!in_array(strtolower((string)($p['scheme']??'')),['http','https'],true)||$chost===''||$cip===$chost||!filter_var($cip,FILTER_VALIDATE_IP,FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE)) continue;
+    return $candidate;
+  }
+  return '';
+}
+
 function optional_activity_fields(PDO $db,array $row,int $id): void {
   $cols=table_columns($db,'bh_activities');if(!$cols)return;
   $map=['booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome','what_to_bring','good_to_know','age_min_months','age_max_months'];
@@ -164,7 +193,7 @@ foreach($rows as $idx=>$row){
     $title=firstv($row,['title','activity_title','activity_name','activity','class_name','class','name']);$category=firstv($row,['category','activity_category','type','class_type']);$org=firstv($row,['organisation_name','organisation','organization','organizer','organiser','company','company_name','provider','provider_name','leader','leader_name']);$venue=firstv($row,['venue_name','venue','venue_name_location','location','location_name','venue_location','address_name']);$town=firstv($row,['town','village_town_or_city','village_town_city','village_town_or_city_name','city','town_city','town_or_city','village','location_town']);
     if($title===''||$category===''||$org===''||$venue===''||$town===''){ $missing=[];if($title==='')$missing[]='title';if($category==='')$missing[]='category';if($org==='')$missing[]='organisation';if($venue==='')$missing[]='venue';if($town==='')$missing[]='town';throw new RuntimeException('Required fields missing: '.implode(', ',$missing).'.');}
     $desc=firstv($row,['description','activity_description','details']);$age=firstv($row,['age_range','ages','age','age_group','age_groups']);$county=firstv($row,['county','area','county_area']);if(!in_array($county,['Devon','Cornwall','Plymouth','Torbay'],true))$county='';
-    $price=firstv($row,['price_from','price','cost']);$price=$price===''?null:(float)preg_replace('/[^0-9.\-]/','',$price);$status=bool_status(firstv($row,['status'],'published'));$booking=firstv($row,['booking_url','booking','booking_link']);$image=firstv($row,['image_path','image','image_url']);$email=firstv($row,['email','email_address','contact_email']);$phone=firstv($row,['phone','telephone','phone_number','contact_phone']);$website=firstv($row,['website','website_url','web','url']);$address=firstv($row,['address','venue_address','full_address','street_address']);$region=firstv($row,['region','area_region','locality','district']);$postcode=firstv($row,['postcode','post_code','postal_code','postal_code','zip']);$lat=firstv($row,['latitude','lat']);$lat=$lat===''?null:(float)$lat;$lng=firstv($row,['longitude','lng','lon']);$lng=$lng===''?null:(float)$lng;
+    $price=firstv($row,['price_from','price','cost']);$price=$price===''?null:(float)preg_replace('/[^0-9.\-]/','',$price);$status=bool_status(firstv($row,['status'],'published'));$booking=firstv($row,['booking_url','booking','booking_link']);$image=firstv($row,['image_path','image','image_url']);$email=firstv($row,['email','email_address','contact_email']);$phone=firstv($row,['phone','telephone','phone_number','contact_phone']);$website=firstv($row,['website','website_url','web','url']);if($image===''&&$website!=='')$image=discover_website_image($website);$address=firstv($row,['address','venue_address','full_address','street_address']);$region=firstv($row,['region','area_region','locality','district']);$postcode=firstv($row,['postcode','post_code','postal_code','postal_code','zip']);$lat=firstv($row,['latitude','lat']);$lat=$lat===''?null:(float)$lat;$lng=firstv($row,['longitude','lng','lon']);$lng=$lng===''?null:(float)$lng;
     $accessRaw=firstv($row,['accessibility','accessibility_options']);$access=[];foreach(preg_split('/\s*[;,|]\s*/',$accessRaw) as $v){$v=trim($v);if($v!=='')$access[]=$v;}$access=array_values(array_unique($access));$sessions=import_session_parts(firstv($row,['sessions','session_times','opening_times','schedule']));$tags=firstv($row,['tags','tag','keywords']);foreach(['booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome','what_to_bring','good_to_know','age_min_months','age_max_months'] as $k)$row[$k]=firstv($row,[$k]);
     $slug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$title),'-'));$base=$slug;$n=2;$q=$db->prepare("SELECT id,organiser_id FROM bh_activities WHERE slug=? LIMIT 1");$q->execute([$slug]);$existing=$q->fetch();if($existing&&$mode==='skip'){$skipped++;continue;}
     if($existing){$id=(int)$existing['id'];$organiserId=(int)$existing['organiser_id'];}else{$q=$db->prepare("SELECT id FROM bh_organisers WHERE organisation_name=? LIMIT 1");$q->execute([$org]);$organiserId=(int)$q->fetchColumn();if(!$organiserId){$oslug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$org),'-'));$ob=$oslug;$on=2;while(true){$q=$db->prepare("SELECT id FROM bh_organisers WHERE slug=? LIMIT 1");$q->execute([$oslug]);if(!$q->fetch())break;$oslug=$ob.'-'.$on++;}$q=$db->prepare("INSERT INTO bh_organisers (organisation_name,slug,email,phone,website,status) VALUES (?,?,?,?,?,'published')");$q->execute([$org,$oslug,$email,$phone,$website]);$organiserId=(int)$db->lastInsertId();}}
