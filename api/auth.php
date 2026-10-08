@@ -203,11 +203,22 @@ function bh_create_leader_organiser(PDO $db, int $userId, string $email, string 
     if(isset($columns['website'])){$fields[]='website';$values[]=$website!==''?$website:null;}
     if(isset($columns['description'])){$fields[]='description';$values[]='';}
 
+    /* Fill common legacy NOT NULL organiser fields automatically. */
     foreach($columns as $field=>$meta){
         $required=((string)($meta['Null']??'YES'))==='NO' && ($meta['Default']??null)===null && stripos((string)($meta['Extra']??''),'auto_increment')===false;
-        if($required && !in_array($field,$fields,true)) {
-            throw new RuntimeException('Leader organiser setup is missing a required field: '.$field.'.');
-        }
+        if(!$required || in_array($field,$fields,true)) continue;
+        $f=strtolower($field); $value='';
+        if(in_array($f,['contact_name','contact_person','leader_name','owner_name','contact_full_name'],true)) $value=$displayName;
+        elseif(in_array($f,['created_by','owner_user_id','leader_user_id','account_user_id'],true)) $value=$userId;
+        elseif(in_array($f,['terms_accepted','terms_agreed','organiser_terms_accepted','active','is_active','enabled'],true)) $value=1;
+        elseif(in_array($f,['terms_accepted_at','terms_agreed_at'],true)) $value=date('Y-m-d H:i:s');
+        elseif(str_contains($f,'email')) $value=$email;
+        elseif(str_contains($f,'phone')) $value=$phone;
+        elseif(str_contains($f,'website')) $value=$website;
+        elseif(str_contains($f,'description') || str_contains($f,'about') || str_contains($f,'notes')) $value='';
+        elseif(str_contains($f,'name') || str_contains($f,'title') || str_contains($f,'address') || str_contains($f,'town') || str_contains($f,'city') || str_contains($f,'region') || str_contains($f,'county')) $value='';
+        else throw new RuntimeException('Leader organiser setup is missing a required field: '.$field.'.');
+        $fields[]=$field; $values[]=$value;
     }
 
     $q=$db->prepare("INSERT INTO bh_organisers (".implode(',',$fields).") VALUES (".implode(',',array_fill(0,count($fields),'?')).")");
