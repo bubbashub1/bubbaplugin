@@ -118,7 +118,6 @@ const bhInitDirectory=async()=>{
       const advancedFields = $("advancedFields");
       const mobileToggle = $("filterToggle");
       const panel = $("directoryFilters");
-      const openSearch = $("openSearchFilters");
       const closeSearch = $("closeSearchFilters");
 
       if (advancedToggle && advancedFields) {
@@ -150,21 +149,6 @@ const bhInitDirectory=async()=>{
       if (mobileToggle) mobileToggle.onclick = () => setMobileOpen(!panel.classList.contains("is-open"));
       if (desktopToggle) desktopToggle.onclick = () => setMobileOpen(!panel.classList.contains("is-open"));
       if (closeSearch) closeSearch.onclick = () => setMobileOpen(false);
-      if (openSearch) openSearch.onclick = () => {
-        if (advancedFields) {
-          advancedFields.hidden = false;
-          if (advancedToggle) {
-            advancedToggle.setAttribute("aria-expanded", "true");
-            advancedToggle.innerHTML = 'More filters <span aria-hidden="true">−</span>';
-          }
-        }
-        setMobileOpen(true);
-        requestAnimationFrame(() => {
-          const target = advancedFields || panel;
-          target?.scrollIntoView({behavior:"smooth", block:"nearest"});
-        });
-      };
-
       window.addEventListener("resize", () => {
       const wasDesktop = window.__bhDirectoryDesktop;
       const isDesktop = window.innerWidth > 900;
