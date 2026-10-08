@@ -7168,3 +7168,20 @@ body,button,input,select,textarea{font-family:'Quicksand',Calibri,Arial,Helvetic
 .button:focus-visible,button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #3c8e96;outline-offset:3px}
 .auth-page input,.bh-leader-auth-page input{font:inherit}
 @media(max-width:700px){.site-header .brand-logo{height:52px;max-width:210px}.bh-main-nav a{font-size:16px;min-height:44px}.button,.button-primary,.button-soft{min-height:46px}}
+
+/* Responsive usability: small phones, tablets, landscape and narrow browser windows */
+html{overflow-x:clip;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{min-width:0;overflow-wrap:break-word}
+img,video,iframe{max-width:100%}
+input,select,textarea{max-width:100%;box-sizing:border-box}
+@media(max-width:760px){
+  .app-shell,.admin-subpage-shell,.account-shell,.auth-page{max-width:100%;min-width:0;box-sizing:border-box}
+  .auth-page input,.bh-leader-auth-page input,.account-notifications-panel input,.account-notifications-panel select{font-size:16px}
+  .auth-page .button,.bh-leader-auth-page .button{min-height:48px}
+  .auth-page form,.bh-leader-auth-page form{min-width:0}
+}
+@media(max-width:430px){
+  .site-header{gap:8px}
+  .site-header .brand-logo{max-width:min(45vw,175px);object-fit:contain}
+  .auth-page h1,.bh-leader-auth-page h1{font-size:clamp(1.75rem,8vw,2.3rem)}
+}
