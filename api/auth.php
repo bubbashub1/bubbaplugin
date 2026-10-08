@@ -184,9 +184,14 @@ try {
             bh_auth_response(503, ['ok'=>false,'error'=>'auth_service_unavailable','message'=>'Your session could not be checked right now. Please try again shortly.']);
         }
 
-        $stmt = $db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");
-        $stmt->execute([(int)$_SESSION['bh_user_id']]);
-        $user = $stmt->fetch();
+        try {
+            $stmt = $db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");
+            $stmt->execute([(int)$_SESSION['bh_user_id']]);
+            $user = $stmt->fetch();
+        } catch (Throwable $e) {
+            error_log('Bubba Hub auth user lookup failed: '.$e->getMessage());
+            bh_auth_response(503, ['ok'=>false,'error'=>'auth_user_lookup_failed','message'=>'Your account could not be checked right now. Please try again shortly.']);
+        }
 
         if (!$user || $user['status'] !== 'active') {
             if ($adminAuthenticated) {
@@ -651,6 +656,7 @@ try {
 
     bh_auth_response(400, ['ok' => false, 'error' => 'unknown_action']);
 } catch (Throwable $e) {
-    bh_auth_response(500, ['ok' => false, 'error' => 'auth_error', 'message' => $e->getMessage()]);
+    error_log('Bubba Hub auth API error: '.$e->getMessage());
+    bh_auth_response(500, ['ok' => false, 'error' => 'auth_error', 'message' => 'Authentication is temporarily unavailable. Please try again.']);
 }
 ?>
