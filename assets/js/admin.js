@@ -30,7 +30,7 @@ function validateSessions(){const rows=[...document.querySelectorAll(".admin-ses
 const setAuthMessage=(m,e=false)=>{const x=document.querySelector("#adminAuthMessage");x.textContent=m;x.classList.toggle("is-error",e)};
 async function logout(){try{await fetch("admin-auth.php?action=logout",{credentials:"same-origin",cache:"no-store"});}finally{location.reload()}}
 const escapeHtml=v=>String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
-async function verifyAdmin(){const r=await fetch("/admin-auth.php?action=check",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});let d={};try{d=await r.json()}catch{}if(!r.ok||!d.ok)throw new Error(d.error||"Admin login required.");return d}
+async function verifyAdmin(){const r=await fetch("/admin-auth.php?action=check",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});let d={};try{d=await r.json()}catch{}if(r.status===401){const e=new Error("Admin login required.");e.authRequired=true;throw e;}if(!r.ok||!d.ok)throw new Error(d.error||("Admin authentication temporarily unavailable (HTTP "+r.status+")."));return d}
 
 async function loadDashboard(){
  const table=document.querySelector("#adminActivities");
@@ -504,7 +504,7 @@ document.querySelector("#addSession")?.addEventListener("click",()=>addSessionRo
 document.querySelector("#adminActivities")?.addEventListener("click",async e=>{const b=e.target.closest(".admin-edit-activity");if(!b)return;try{await editActivity(b.dataset.id)}catch(err){alert(err.message)}});
 initAddressAutocomplete();
 loadVenueSuggestions();
-verifyAdmin().then(()=>{document.documentElement.classList.remove("bh-admin-auth-pending");document.body.classList.remove("bh-admin-auth-pending");document.querySelector("#adminContent").hidden=false;loadDashboard();loadTestUsers()}).catch(()=>{location.replace("/admin-login.html?next="+encodeURIComponent(location.pathname+location.search+location.hash));});
+verifyAdmin().then(()=>{document.documentElement.classList.remove("bh-admin-auth-pending");document.body.classList.remove("bh-admin-auth-pending");document.querySelector("#adminContent").hidden=false;loadDashboard();loadTestUsers()}).catch(error=>{if(error.authRequired){location.replace("/admin-login.html?next="+encodeURIComponent(location.pathname+location.search+location.hash));return;}document.documentElement.classList.remove("bh-admin-auth-pending");document.body.classList.remove("bh-admin-auth-pending");const panel=document.createElement("div");panel.className="admin-panel";panel.setAttribute("role","alert");panel.style.cssText="max-width:620px;margin:3rem auto;padding:2rem;text-align:center";const heading=document.createElement("h2");heading.textContent="Admin connection unavailable";const detail=document.createElement("p");detail.textContent=error.message||"Could not verify your session. Please retry.";const retry=document.createElement("button");retry.className="button button-primary";retry.textContent="Retry connection";retry.addEventListener("click",()=>location.reload());panel.append(heading,detail,retry);document.querySelector("#adminContent")?.before(panel);});
 
 
 async function importActivityCsv(){
