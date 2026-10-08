@@ -517,10 +517,12 @@ try {
 
         try {
             $db->beginTransaction();
-            $stmt = $db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?, 'leader','active')");
+            $stmt = $db->prepare("INSERT INTO bh_users (email,password_hash,role,status,email_verified_at) VALUES (?,?, 'leader','active',NULL)");
             $stmt->execute([$email, password_hash($password, PASSWORD_DEFAULT)]);
             $userId = (int)$db->lastInsertId();
             $organiserId = bh_create_leader_organiser($db, $userId, $email, $organisation, $phone, $website);
+            $rawToken=bin2hex(random_bytes(32));
+            $db->prepare("INSERT INTO bh_email_verifications (user_id,token_hash,expires_at) VALUES (?,?,DATE_ADD(NOW(),INTERVAL 24 HOUR))")->execute([$userId,hash('sha256',$rawToken)]);
             $db->commit();
         } catch (Throwable $e) {
             if ($db->inTransaction()) $db->rollBack();
@@ -531,18 +533,35 @@ try {
             bh_auth_response(500, ['ok'=>false,'error'=>'leader_registration_error','message'=>'We could not create your leader account just yet. Please try again.']);
         }
 
-        bh_login_session($userId, 'leader');
+        /* Do not authenticate a leader until their email is verified. */
 
         bh_auth_response(201, [
             'ok'=>true,
-            'authenticated'=>true,
-            'leader_authenticated'=>true,
+            'authenticated'=>false,
+            'leader_authenticated'=>false,
             'pending_review'=>true,
             'organiser_id'=>$organiserId,
             'user'=>['id'=>$userId,'email'=>$email,'role'=>'leader','status'=>'active'],
             'csrf'=>$_SESSION['bh_csrf'],
-            'message'=>'Your leader account is ready. Your organiser profile is pending review.'
+            'message'=>'Account created. Please check your email and click the verification link before signing in.'
         ]);
+    }
+
+    /* ---------------- email verification ---------------- */
+    if ($action === 'verify_email') {
+        $token = trim((string)($body['token'] ?? ($_GET['token'] ?? '')));
+        if (!preg_match('/^[a-f0-9]{64}$/', $token)) bh_auth_response(400, ['ok'=>false,'error'=>'invalid_verification_token','message'=>'This verification link is not valid.']);
+        $hash = hash('sha256', $token);
+        $stmt = $db->prepare("SELECT id,user_id,expires_at,used_at FROM bh_email_verifications WHERE token_hash=? LIMIT 1");
+        $stmt->execute([$hash]); $v=$stmt->fetch();
+        if (!$v || $v['used_at'] !== null || strtotime((string)$v['expires_at']) < time()) bh_auth_response(400, ['ok'=>false,'error'=>'verification_expired','message'=>'This verification link has expired or has already been used. Please request a new one.']);
+        $db->beginTransaction();
+        try {
+            $db->prepare("UPDATE bh_users SET email_verified_at=NOW() WHERE id=?")->execute([(int)$v['user_id']]);
+            $db->prepare("UPDATE bh_email_verifications SET used_at=NOW() WHERE id=?")->execute([(int)$v['id']]);
+            $db->commit();
+        } catch(Throwable $e) { if($db->inTransaction())$db->rollBack(); throw $e; }
+        bh_auth_response(200,['ok'=>true,'verified'=>true,'message'=>'Your email has been verified. You can now sign in.']);
     }
 
     /* ---------------- login ---------------- */
