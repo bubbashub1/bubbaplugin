@@ -82,7 +82,19 @@
 
   async function init(){
     let auth={authenticated:false,is_admin:false};
-    try{const r=await fetch(rootUrl("api/auth.php?action=me"),{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});if(r.ok)auth=await r.json();}catch(e){}
+    let authCheckFailed=false;
+    try{const r=await fetch(rootUrl("api/auth.php?action=me"),{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});if(!r.ok)throw new Error("HTTP "+r.status);const data=await r.json();if(!data||data.ok===false)throw new Error("Authentication check failed");auth=data;}catch(e){authCheckFailed=true;console.warn("Bubba Hub session check unavailable:",e.message||e);}
+    if(authCheckFailed){
+      if(isLeaderPage()||isRestricted()){
+        const main=document.querySelector("main")||document.body;
+        const notice=document.createElement("section");notice.className="admin-panel";notice.setAttribute("role","alert");notice.style.cssText="max-width:620px;margin:2rem auto;padding:1.5rem";
+        const title=document.createElement("h2");title.textContent="Connection temporarily unavailable";
+        const detail=document.createElement("p");detail.textContent="We couldn’t check your account right now. Your session has not been changed.";
+        const retry=document.createElement("button");retry.type="button";retry.className="button button-primary";retry.textContent="Retry";retry.addEventListener("click",()=>location.reload());
+        notice.append(title,detail,retry);main.replaceChildren(notice);
+      }
+      return;
+    }
     if(isLeaderPage()&&(!auth.leader_authenticated||(auth.user&&auth.user.role!=="leader"))){location.replace(leaderAuthTarget());return;}
     if(isRestricted()&&!auth.family_authenticated&&!auth.is_admin){location.replace(buildAuthTarget());return;}
     let menus=null;
