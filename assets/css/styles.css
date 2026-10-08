@@ -7195,3 +7195,8 @@ input,select,textarea{max-width:100%;box-sizing:border-box}
 .auth-page #authForm>label:not([hidden]){display:flex;}
 @media(max-width:900px){.auth-page .auth-layout{grid-template-columns:minmax(0,1fr);max-width:650px;}}
 @media(max-width:650px){.auth-page .auth-layout{width:calc(100% - 24px);}.auth-page .auth-card{padding:20px;}}
+
+/* Family auth desktop: benefits column wider than the sign-in form. */
+@media(min-width:901px){
+  .auth-page .auth-layout{grid-template-columns:minmax(0,0.85fr) minmax(0,1.15fr);}
+}
