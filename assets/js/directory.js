@@ -20,9 +20,13 @@ const bhInitDirectory=async()=>{
     }
     /* The Hero and Advanced Filters are shared async components. Wait for them
        before binding Directory controls so the same filter UI is actually wired. */
-    await Promise.all([
-      window.bhDirectoryHeroReady || Promise.resolve(),
-      window.bhAdvancedFiltersReady || Promise.resolve()
+    // Shared UI must never prevent directory results from rendering indefinitely.
+    await Promise.race([
+      Promise.allSettled([
+        window.bhDirectoryHeroReady || Promise.resolve(),
+        window.bhAdvancedFiltersReady || Promise.resolve()
+      ]),
+      new Promise(resolve => setTimeout(resolve, 2500))
     ]);
     const params = new URLSearchParams(location.search);
 
@@ -945,5 +949,5 @@ const bhInitDirectory=async()=>{
     }
   }
 };
-const bhInitDirectoryStart=()=>{const ready=window.bhDirectoryHeroReady;if(ready)ready.then(bhInitDirectory);else bhInitDirectory();};
+const bhInitDirectoryStart=()=>{void bhInitDirectory();};
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bhInitDirectoryStart,{once:true});else bhInitDirectoryStart();
