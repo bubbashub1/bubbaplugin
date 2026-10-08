@@ -100,6 +100,9 @@ try {
 
     $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
     if (session_status() !== PHP_SESSION_ACTIVE) {
+        // Keep Bubba Hub's family session separate from WordPress or other PHP apps
+        // sharing the same domain, so another application cannot overwrite PHPSESSID.
+        session_name('BUBBAHUBSESSID');
         session_set_cookie_params([
             'lifetime' => 0,
             'path' => '/',
