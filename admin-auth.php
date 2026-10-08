@@ -5,7 +5,10 @@ declare(strict_types=1);
 // /api/auth.php so the login survives navigation across browsers.
 $secure = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off');
 
+// Use a dedicated cookie name so WordPress or another PHP application on the
+// same domain cannot overwrite the admin session cookie.
 if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_name('BUBBAHUB_ADMINSESSID');
     session_set_cookie_params([
         'lifetime' => 0,
         'path' => '/',
