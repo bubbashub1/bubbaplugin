@@ -2,8 +2,9 @@ RewriteEngine On
 
 # Serve real WordPress files and directories without sending them to Bubba Hub routes.
 # WordPress core, admin, REST and plugin endpoints must remain reachable.
-RewriteRule ^(?:wp-admin|wp-content|wp-includes)(?:/|$) - [END]
-RewriteRule ^(?:wp-login\.php|wp-cron\.php|wp-json(?:/|$)|xmlrpc\.php|index\.php)$ - [END]
+RewriteRule ^(wp-admin|wp-content|wp-includes)(/|$) - [L]
+RewriteRule ^(wp-login\.php|wp-cron\.php|xmlrpc\.php|index\.php)$ - [L]
+RewriteRule ^wp-json(/|$) - [L]
 
 # Revalidate page documents after deployments; do not cache personalised responses.
 <IfModule mod_headers.c>
@@ -90,7 +91,7 @@ RewriteRule ^organiser/([^/]+)/?$ organiser.html?slug=$1 [B,L,QSA]
 # WordPress and other existing physical files/directories take priority.
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [END]
+RewriteRule ^ - [L]
 
 # Clean activity URLs: /{activity-slug}/
 # IMPORTANT: never rewrite an existing physical file as an activity slug.
@@ -104,5 +105,5 @@ RewriteRule ^([^/]+)/?$ activity.html?slug=$1 [L,QSA]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteCond %{DOCUMENT_ROOT}/index.php -f
-  RewriteRule . /index.php [END]
+  RewriteRule . /index.php [L]
 </IfModule>
