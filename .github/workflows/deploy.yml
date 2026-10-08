@@ -1,5 +1,6 @@
 name: Deploy BubbaPlugin to eWebAll
 # Production deployment workflow — main is the live source of truth.
+# Triggered on every push to main; do not remove.
 
 on:
   push:
