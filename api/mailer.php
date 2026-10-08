@@ -59,7 +59,7 @@ function bh_send_smtp_mail(
     }
 
     try {
-        $mail = new PHPMailerPHPMailerPHPMailer(true);
+        $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
         $mail->isSMTP();
         $mail->Host = $host;
         $mail->Port = $port;
@@ -67,8 +67,8 @@ function bh_send_smtp_mail(
         $mail->Username = $username;
         $mail->Password = $password;
         $mail->SMTPSecure = ($secure === 'tls' || $secure === 'starttls')
-            ? PHPMailerPHPMailerPHPMailer::ENCRYPTION_STARTTLS
-            : PHPMailerPHPMailerPHPMailer::ENCRYPTION_SMTPS;
+            ? \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS
+            : \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
         $mail->CharSet = 'UTF-8';
         $mail->setFrom($from, $fromName);
         $mail->addAddress($to);
