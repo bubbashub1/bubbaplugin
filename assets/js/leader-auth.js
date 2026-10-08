@@ -98,6 +98,13 @@ document.addEventListener("DOMContentLoaded",async()=>{
       if((d.user||{}).role!=="leader")throw Error("This account is not a class leader account.");
 
       csrf=d.csrf||csrf;
+      if(reg){
+        message(d.verification_email_sent===false
+          ?"Your account was created, but the verification email could not be sent. Please contact support before trying to sign in."
+          :(d.message||"Account created. Check your email for the verification link before signing in."));
+        submit.disabled=false;
+        return;
+      }
       location.replace(next);
     }catch(err){
       message(err.message||"Please try again.",true);
