@@ -7,9 +7,6 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const confirm=document.getElementById("leaderConfirmWrap");
   const show=document.getElementById("leaderShowPassword");
   const pass=document.getElementById("leaderPassword");
-  const orgWrap=document.getElementById("leaderOrganisationWrap");
-  const phoneWrap=document.getElementById("leaderPhoneWrap");
-  const websiteWrap=document.getElementById("leaderWebsiteWrap");
   const termsWrap=document.getElementById("leaderTermsWrap");
   const tabs=document.querySelectorAll("[data-leader-mode]");
   if(!form)return;
@@ -31,7 +28,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const reg=mode==="register";
     title.textContent=reg?"Create your leader account":"Sign in to your leader portal";
     intro.textContent=reg
-      ?"Set up a dedicated Bubba Hub account for your class, business or family activity."
+      ?"Create your simple Bubba Hub leader account. You can add your class details later."
       :"Manage your classes, venues, schedules and bookings from one dedicated account.";
     submit.textContent=reg?"Create leader account":"Sign in";
 
@@ -41,7 +38,6 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const orgInput=fieldInput(orgWrap);
     const termsInput=fieldInput(termsWrap);
     const confirmInput=fieldInput(confirm);
-    if(orgInput)orgInput.required=reg;
     if(confirmInput)confirmInput.required=reg;
     if(termsInput)termsInput.required=reg;
 
