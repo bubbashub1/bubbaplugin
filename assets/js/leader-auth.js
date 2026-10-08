@@ -69,78 +69,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
 
   setMode(mode);
 
-  const socialMessage=(text,isError=false)=>message(text,isError);
-  const socialLogin=async(provider,payload)=>{
-    socialMessage("Signing in with "+(provider==="google"?"Google":"Facebook")+"…");
-    try{
-      const r=await fetch("api/auth.php?action="+encodeURIComponent(provider),{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({context:"leader",provider,...payload})});
-      const raw=await r.text();
-      let d; try{d=JSON.parse(raw);}catch(parseError){throw Error(raw.trim()||("Server returned HTTP "+r.status+" instead of JSON."));}
-      if(!r.ok||!d.ok)throw Error(d.message||"Social sign-in could not be completed.");
-      location.replace(next);
-    }catch(err){socialMessage(err.message||"Please try again.",true);}
-  };
-
-  /* Google Identity Services:
-     Use the official rendered button rather than prompt(), which can be
-     suppressed by browser/account settings and makes the custom button appear
-     to do nothing. The GIS callback still posts the verified credential to our
-     existing leader-social.php endpoint. */
-  const googleHost=document.getElementById("leaderGoogleSignIn");
-  const initGoogle=()=>{
-    if(!googleHost||!window.google?.accounts?.id)return false;
-    const clientId=String(window.BUBBAHUB_GOOGLE_CLIENT_ID||"").trim();
-    if(!clientId){
-      googleHost.textContent="Google sign-in is not configured";
-      googleHost.setAttribute("aria-disabled","true");
-      return true;
-    }
-
-    google.accounts.id.initialize({
-      client_id:clientId,
-      callback:response=>{
-        if(response?.credential) socialLogin("google",{credential:response.credential});
-        else socialMessage("Google sign-in did not return a credential.",true);
-      },
-      ux_mode:"popup",
-      auto_select:false
-    });
-
-    googleHost.innerHTML="";
-    google.accounts.id.renderButton(googleHost,{
-      type:"standard",
-      theme:"outline",
-      size:"large",
-      text:"continue_with",
-      shape:"rectangular",
-      width:320,
-      logo_alignment:"left"
-    });
-    return true;
-  };
-
-  let googleAttempts=0;
-  const waitForGoogle=()=>{
-    if(initGoogle()||googleAttempts++>40)return;
-    setTimeout(waitForGoogle,250);
-  };
-  waitForGoogle();
-
-  const initFacebook=()=>{if(window.FB&&window.BUBBAHUB_FACEBOOK_APP_ID){try{FB.init({appId:window.BUBBAHUB_FACEBOOK_APP_ID,cookie:true,xfbml:false,version:"v24.0"});}catch(e){}}};
-  window.fbAsyncInit=initFacebook;
-  if(window.FB)initFacebook();
-
-  const facebookButton=document.getElementById("leaderFacebookSignIn");
-  if(facebookButton){
-    facebookButton.onclick=()=>{
-      if(!window.FB){socialMessage("Facebook sign-in is still loading. Please try again in a moment.",true);return;}
-      FB.login(response=>{
-        if(response?.authResponse?.accessToken) socialLogin("facebook",{access_token:response.authResponse.accessToken});
-        else socialMessage("Facebook sign-in was cancelled.",true);
-      },{scope:"email"});
-    };
-  }
-
+  /* Social sign-in is intentionally disabled for now. Leaders must verify an email address. */
   form.addEventListener("submit",async e=>{
     e.preventDefault();
     const reg=mode==="register";
