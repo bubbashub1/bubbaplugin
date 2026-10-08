@@ -7159,3 +7159,12 @@ body.bh-stripe-modal-open{overflow:hidden}
 .bh-header-search-submit{min-height:42px;padding:0 18px;border:0;border-radius:12px;background:#144400;color:#fff;font-weight:800;cursor:pointer;}
 @media(max-width:900px){.bh-header-inner{padding:8px 16px;}.bh-header-logo img{width:150px;height:56px;max-width:38vw;}.bh-main-nav{gap:2px;}.bh-main-nav a{padding:9px 11px;font-size:14px;}.bh-header-search-bar{padding-left:16px;padding-right:16px;}.bh-header-search-fields{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:700px){.bh-header-inner{min-height:68px;padding:6px 12px;}.bh-header-top-row{min-height:56px;}.bh-header-logo img{width:135px;height:52px;max-width:45vw;}.bh-mobile-menu{display:flex;flex-direction:column;justify-content:center;gap:4px;width:40px;height:40px;padding:8px;border:0;border-radius:10px;background:#e7f1ea;cursor:pointer;}.bh-mobile-menu span{display:block;width:22px;height:2px;background:#144400;border-radius:2px;}.bh-main-nav{display:none;position:absolute;left:12px;right:12px;top:68px;z-index:3000;flex-direction:column;align-items:stretch;padding:8px;background:#fff;border:1px solid #d8e6db;border-radius:16px;box-shadow:0 12px 30px rgba(18,63,49,.14);}.bh-main-nav.is-open{display:flex;}.bh-main-nav a{justify-content:flex-start;padding:12px 14px;}.bh-header-actions{gap:6px;}.bh-header-search-toggle{width:40px;height:40px;flex-basis:40px;}.bh-sign-in-btn{min-height:40px;padding:8px 13px;font-size:13px;}.bh-header-search-fields{grid-template-columns:1fr;}}
+
+/* 2026-10 visual polish: playful, clean shared UI */
+:root{--bh-radius:14px;--bh-radius-lg:24px;--bh-shadow:0 7px 22px rgba(20,68,0,.09)}
+body,button,input,select,textarea{font-family:'Quicksand',Calibri,Arial,Helvetica,sans-serif}
+.site-header .main-nav a,.bh-main-nav a{font-size:clamp(14px,1.1vw,16px);font-weight:800}
+.button,.button-primary,.button-soft,button.auth-submit{min-height:44px;border-radius:14px;font-weight:800;letter-spacing:.005em}
+.button:focus-visible,button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #3c8e96;outline-offset:3px}
+.auth-page input,.bh-leader-auth-page input{font:inherit}
+@media(max-width:700px){.site-header .brand-logo{height:52px;max-width:210px}.bh-main-nav a{font-size:16px;min-height:44px}.button,.button-primary,.button-soft{min-height:46px}}
