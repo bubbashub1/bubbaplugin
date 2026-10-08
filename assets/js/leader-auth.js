@@ -32,8 +32,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
       :"Manage your classes, venues, schedules and bookings from one dedicated account.";
     submit.textContent=reg?"Create leader account":"Sign in";
 
-    if(termsWrap)termsWrap.hidden=!reg;
+    if(termsWrap){termsWrap.hidden=!reg;termsWrap.style.display=reg?"":"none";}
     confirm.hidden=!reg;
+    confirm.style.display=reg?"":"none";
 
     const termsInput=fieldInput(termsWrap);
     const confirmInput=fieldInput(confirm);
@@ -57,6 +58,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
 
   tabs.forEach(tab=>tab.addEventListener("click",()=>setMode(tab.dataset.leaderMode)));
 
+  setMode(mode);
+
   try{
     const r=await fetch("api/auth.php?action=me",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});
     const d=await r.json();
@@ -66,8 +69,6 @@ document.addEventListener("DOMContentLoaded",async()=>{
       return;
     }
   }catch(e){}
-
-  setMode(mode);
 
   /* Social sign-in is intentionally disabled for now. Leaders must verify an email address. */
   form.addEventListener("submit",async e=>{
