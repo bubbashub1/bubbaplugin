@@ -4,7 +4,7 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
-function bh_auth_response(int $status, array $data): never {
+function bh_auth_response(int $status, array $data): void {
     http_response_code($status);
     echo json_encode($data, JSON_UNESCAPED_SLASHES);
     exit;
@@ -88,7 +88,7 @@ function bh_create_leader_organiser(PDO $db, int $userId, string $email, string 
 function bh_b64url_encode(string $value): string {
     return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
 }
-function bh_b64url_decode(string $value): string|false {
+function bh_b64url_decode(string $value) {
     $value = strtr($value, '-_', '+/');
     $pad = strlen($value) % 4;
     if ($pad) $value .= str_repeat('=', 4 - $pad);
