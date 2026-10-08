@@ -32,10 +32,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
       :"Manage your classes, venues, schedules and bookings from one dedicated account.";
     submit.textContent=reg?"Create leader account":"Sign in";
 
-    [orgWrap,phoneWrap,websiteWrap,termsWrap].forEach(el=>{if(el)el.hidden=!reg;});
+    if(termsWrap)termsWrap.hidden=!reg;
     confirm.hidden=!reg;
 
-    const orgInput=fieldInput(orgWrap);
     const termsInput=fieldInput(termsWrap);
     const confirmInput=fieldInput(confirm);
     if(confirmInput)confirmInput.required=reg;
