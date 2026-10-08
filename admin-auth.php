@@ -9,7 +9,7 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
-function respond(int $s,array $d):never{http_response_code($s);echo json_encode($d);exit;}
+function respond(int $s,array $d):void{http_response_code($s);echo json_encode($d);exit;}
 
 // Root deployment: resolve the server-only configuration without exposing it to the browser.
 $configCandidates = array_filter([
