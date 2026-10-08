@@ -10,6 +10,7 @@ if(empty($_SESSION['bh_admin_authenticated'])){
 }
 require __DIR__.'/db.php';
 $db=bh_mysql();
+try{$q=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='featured'");if((int)$q->fetchColumn()===0)$db->exec("ALTER TABLE bh_activities ADD COLUMN featured TINYINT(1) NOT NULL DEFAULT 0 AFTER status");}catch(Throwable $ignored){}
 
 function csv_row(array $row): void {
   echo implode(',',array_map(static function($v){
