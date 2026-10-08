@@ -2,15 +2,14 @@
 <html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sign in or create an account · Bubba Hub</title>
 <meta name="description" content="Sign in to your Bubba Hub family account or create a free account.">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap"><link rel="stylesheet" href="assets/css/styles.css"><script src="api/google-config.php" defer></script><script src="https://accounts.google.com/gsi/client" async defer></script><script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap"><link rel="stylesheet" href="assets/css/styles.css"></head><body>
 <header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="events.html">Events</a><a href="venues.html">Venues</a><a href="planner.html">My planner</a><a href="/calendar.html">Calendar</a><a href="my-hub.html">My Hub</a><a href="leader.html">For class leaders</a><a href="admin.html">Admin</a></nav><a class="button button-soft" href="account.html">My account</a></header>
 <main class="app-shell auth-page">
 <section class="auth-hero"><div><span class="eyebrow">Welcome to Bubba Hub</span><h1 id="authTitle">Sign in to your family account</h1><p id="authIntro">Keep your family profiles, saved activities and planner together across your devices.</p></div></section>
 <section class="auth-layout">
 <div class="admin-panel auth-card">
 <div class="auth-tabs" role="tablist" aria-label="Account access"><button type="button" class="button button-soft active" data-auth-mode="login" role="tab" aria-selected="true">Sign in</button><button type="button" class="button button-soft" data-auth-mode="register" role="tab" aria-selected="false">Create account</button></div>
-<button type="button" class="google-signin-button" id="googleSignIn"><span class="google-mark" aria-hidden="true">G</span><span>Continue with Google</span></button>
-<button type="button" class="facebook-signin-button" id="facebookSignIn"><span class="facebook-mark" aria-hidden="true">f</span><span>Continue with Facebook</span></button><div class="auth-divider"><span>or</span></div>
+
 <form id="authForm" novalidate>
 <div class="auth-name-grid" id="nameWrap" hidden><label>First name<input name="first_name" type="text" autocomplete="given-name" placeholder="First name"></label><label>Last name<input name="last_name" type="text" autocomplete="family-name" placeholder="Last name"></label></div><label>Email address<input name="email" type="email" required autocomplete="email" placeholder="you@example.com"></label>
 <label>Password<input id="authPassword" name="password" type="password" required autocomplete="current-password" minlength="8" placeholder="At least 8 characters"><span class="auth-password-row"><button type="button" class="auth-show-password" id="showPassword">Show password</button><small>Minimum 8 characters</small></span></label>
