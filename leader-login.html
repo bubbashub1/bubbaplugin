@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Leader login · Bubba Hub</title><meta name="description" content="Sign in or create a Bubba Hub class leader account.">
-<link rel="stylesheet" href="assets/css/styles.css"><script src="api/google-config.php" defer></script><script src="https://accounts.google.com/gsi/client" async defer></script><script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script></head><body>
+<link rel="stylesheet" href="assets/css/styles.css"></head><body>
 <header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">For class leaders</a><a href="account.html">Account</a></nav><a class="button button-soft" href="account.html">My account</a></header>
 
 <main class="app-shell auth-page bh-leader-auth-page">
@@ -11,8 +11,7 @@
 <div class="admin-panel auth-card">
 <div class="auth-tabs" role="tablist" aria-label="Leader account access"><button type="button" class="button button-soft active" data-leader-mode="login" role="tab" aria-selected="true">Sign in</button><button type="button" class="button button-soft" data-leader-mode="register" role="tab" aria-selected="false">Create account</button></div>
 
-<div class="leader-social-buttons">
-<div class="google-signin-button" id="leaderGoogleSignIn" role="region" aria-label="Sign up / sign in with Google"></div>
+
 <button type="button" class="facebook-signin-button" id="leaderFacebookSignIn"><span class="facebook-mark" aria-hidden="true">f</span><span>Sign up / sign in with Facebook</span></button>
 </div>
 
@@ -28,7 +27,7 @@
 <p class="library-message" id="leaderAuthMessage" role="status" aria-live="polite"></p>
 </form>
 
-<div class="auth-note"><span>🔐</span><div><strong>Keep it simple</strong><p>Create your account with your email and password. We'll ask for your class details when you're ready to set up your leader profile.</p></div></div>
+<div class="auth-note"><span>🔐</span><div><strong>Keep it simple</strong><p>Create your account with your email and password. We’ll send a verification link to your email before your leader account can be used.</p></div></div>
 
 </div>
 
