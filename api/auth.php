@@ -253,16 +253,19 @@ try {
         $email = strtolower(trim((string)($body['email'] ?? '')));
         $password = (string)($body['password'] ?? '');
         $confirm = (string)($body['confirm_password'] ?? '');
+        // Leader sign-up is intentionally as simple as family sign-up.
+        // Class/business details are completed later in the leader portal.
         $organisation = trim((string)($body['organisation_name'] ?? ''));
         $phone = trim((string)($body['phone'] ?? ''));
         $website = trim((string)($body['website'] ?? ''));
+        if ($organisation === '') $organisation = 'New Bubba Hub Leader';
         $terms = !empty($body['terms']);
         $csrf = (string)($body['csrf'] ?? '');
 
         if (empty($_SESSION['bh_csrf']) || $csrf === '' || !hash_equals((string)$_SESSION['bh_csrf'], $csrf)) {
             bh_auth_response(403, ['ok'=>false,'error'=>'csrf_invalid','message'=>'Please refresh the page and try again.']);
         }
-        if ($organisation === '' || mb_strlen($organisation) > 190) bh_auth_response(422, ['ok'=>false,'error'=>'organisation_required','message'=>'Please enter the name of your class, business or organisation.']);
+        if (mb_strlen($organisation) > 190) bh_auth_response(422, ['ok'=>false,'error'=>'organisation_invalid','message'=>'Please check your class or business name.']);
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) bh_auth_response(422, ['ok'=>false,'error'=>'invalid_email','message'=>'Please enter a valid email address.']);
         if ($phone !== '' && mb_strlen($phone) > 80) bh_auth_response(422, ['ok'=>false,'error'=>'invalid_phone','message'=>'Please check your phone number.']);
         if ($website !== '' && (!filter_var($website, FILTER_VALIDATE_URL) || !preg_match('~^https?://~i', $website))) bh_auth_response(422, ['ok'=>false,'error'=>'invalid_website','message'=>'Please enter a full website address starting with http:// or https://.']);
