@@ -8,6 +8,8 @@ $secure = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !=
 // Use a dedicated cookie name so WordPress or another PHP application on the
 // same domain cannot overwrite the admin session cookie.
 if (session_status() !== PHP_SESSION_ACTIVE) {
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_only_cookies', '1');
     session_name('BUBBAHUB_ADMINSESSID');
     session_set_cookie_params([
         'lifetime' => 0,
@@ -58,6 +60,14 @@ if ($a === 'login') {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         respond(405, ['ok'=>false, 'error'=>'POST required']);
     }
+    $origin = (string)($_SERVER['HTTP_ORIGIN'] ?? '');
+    if ($origin !== '') {
+        $originHost = parse_url($origin, PHP_URL_HOST);
+        $requestHost = explode(':', (string)($_SERVER['HTTP_HOST'] ?? ''))[0];
+        if (!$originHost || strcasecmp($originHost, $requestHost) !== 0) {
+            respond(403, ['ok'=>false, 'error'=>'Invalid request origin']);
+        }
+    }
 
     $i = json_decode((string)file_get_contents('php://input'), true);
     $u = is_array($i) ? trim((string)($i['username'] ?? '')) : '';
@@ -76,6 +86,17 @@ if ($a === 'login') {
 }
 
 if ($a === 'logout') {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        respond(405, ['ok'=>false, 'error'=>'POST required']);
+    }
+    $origin = (string)($_SERVER['HTTP_ORIGIN'] ?? '');
+    if ($origin !== '') {
+        $originHost = parse_url($origin, PHP_URL_HOST);
+        $requestHost = explode(':', (string)($_SERVER['HTTP_HOST'] ?? ''))[0];
+        if (!$originHost || strcasecmp($originHost, $requestHost) !== 0) {
+            respond(403, ['ok'=>false, 'error'=>'Invalid request origin']);
+        }
+    }
     // Admin authentication is separate from the family account. Remove only
     // the admin flag so My Hub/family session remains signed in.
     unset($_SESSION['bh_admin_authenticated']);
