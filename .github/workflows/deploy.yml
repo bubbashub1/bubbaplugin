@@ -1,4 +1,5 @@
 name: Deploy BubbaPlugin to eWebAll
+# Production deployment workflow — main is the live source of truth.
 
 on:
   push:
