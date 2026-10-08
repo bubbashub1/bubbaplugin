@@ -7185,3 +7185,13 @@ input,select,textarea{max-width:100%;box-sizing:border-box}
   .site-header .brand-logo{max-width:min(45vw,175px);object-fit:contain}
   .auth-page h1,.bh-leader-auth-page h1{font-size:clamp(1.75rem,8vw,2.3rem)}
 }
+
+/* Family authentication: fill the card and reliably hide registration-only fields. */
+.auth-page .auth-layout{width:min(calc(100% - 32px),1120px);grid-template-columns:minmax(0,1fr) minmax(270px,320px);align-items:stretch;}
+.auth-page .auth-card,.auth-page .auth-benefits{min-width:0;width:100%;box-sizing:border-box;}
+.auth-page #authForm,.auth-page #authForm input:not([type="checkbox"]),.auth-page .google-signin-button{width:100%;min-width:0;box-sizing:border-box;}
+.auth-page #authForm [hidden],.auth-page #nameWrap[hidden],.auth-page #confirmWrap[hidden],.auth-page #termsWrap[hidden],.auth-page #forgotWrap[hidden]{display:none!important;}
+.auth-page #authForm .auth-name-grid:not([hidden]){display:grid;}
+.auth-page #authForm>label:not([hidden]){display:flex;}
+@media(max-width:900px){.auth-page .auth-layout{grid-template-columns:minmax(0,1fr);max-width:650px;}}
+@media(max-width:650px){.auth-page .auth-layout{width:calc(100% - 24px);}.auth-page .auth-card{padding:20px;}}
