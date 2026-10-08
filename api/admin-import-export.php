@@ -104,7 +104,7 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
   header('Pragma: no-cache');
   echo "\xEF\xBB\xBF";
 
-  $headers=['title','category','description','age_range','age_min_months','age_max_months','county','price_from','price_per_family','price_per_session','price_free','booking_url','booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome','what_to_bring','good_to_know','image_path','image_1','image_2','image_3','status','featured','organisation_name','email','phone','website','facebook_url','instagram_url','venue_name','address','venue_address_line_1','venue_address_line_2','town','region','postcode','latitude','longitude','venue_phone','venue_email','venue_website','venue_notes','accessibility','tags','sessions'];
+  $headers=['title','category','featured','description','age_range','age_min_months','age_max_months','county','price_from','price_per_family','price_per_session','price_free','booking_url','booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome','what_to_bring','good_to_know','image_path','image_1','image_2','image_3','status','organisation_name','facebook_url','instagram_url','email','phone','website','venue_name','address','venue_address_line_1','venue_address_line_2','city','region','postcode','latitude','longitude','venue_phone','venue_email','venue_website','venue_notes','accessibility','tags','sessions'];
   csv_row($headers);
 
   $activityCols=table_columns($db,'bh_activities');
@@ -150,7 +150,7 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
     foreach($sq->fetchAll() as $s){$sessions[]=$days[(int)$s['day_of_week']].' '.substr((string)$s['start_time'],0,5).(!empty($s['end_time'])?'-'.substr((string)$s['end_time'],0,5):'').(!empty($s['term_time_only'])?' | term':'');}
 
     csv_row([
-      $a['title'],$a['category'],$a['description'],$a['age_range'],$a['age_min_months'],$a['age_max_months'],$a['county'],$a['price_from'],'','','',$a['booking_url'],$a['booking_required'],$a['drop_in_welcome'],$a['trial_available'],$a['term_time_only'],$a['holiday_sessions'],$a['siblings_welcome'],$a['what_to_bring'],$a['good_to_know'],$a['image_path'],$images[0]??'',$images[1]??'',$images[2]??'',$a['status'],!empty($a['featured'])?'true':'false',$a['organisation_name'],$a['email'],$a['phone'],$a['website'],$a['facebook_url'],$a['instagram_url'],$a['venue_name'],$a['address'],$a['address'],$a['town'],$a['region'],$a['postcode'],$a['latitude'],$a['longitude'],$a['venue_phone'],$a['venue_email'],$a['venue_website'],$a['venue_notes'],$a['accessibility'],implode(', ',$tags),implode('; ',$sessions)
+      $a['title'],$a['category'],!empty($a['featured'])?'true':'false',$a['description'],$a['age_range'],$a['age_min_months'],$a['age_max_months'],$a['county'],$a['price_from'],'','','',$a['booking_url'],$a['booking_required'],$a['drop_in_welcome'],$a['trial_available'],$a['term_time_only'],$a['holiday_sessions'],$a['siblings_welcome'],$a['what_to_bring'],$a['good_to_know'],$a['image_path'],$images[0]??'',$images[1]??'',$images[2]??'',$a['status'],$a['organisation_name'],$a['facebook_url'],$a['instagram_url'],$a['email'],$a['phone'],$a['website'],$a['venue_name'],$a['address'],$a['address'],$a['town'],$a['region'],$a['postcode'],$a['latitude'],$a['longitude'],$a['venue_phone'],$a['venue_email'],$a['venue_website'],$a['venue_notes'],$a['accessibility'],implode(', ',$tags),implode('; ',$sessions)
     ]);
   }
   exit;
