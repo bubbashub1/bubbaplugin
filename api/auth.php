@@ -524,7 +524,7 @@ try {
         bh_auth_response(400, ['ok' => false, 'error' => 'invalid_json']);
     }
 
-    if (!in_array($action, ['login','register','leader_register','google','facebook','forgot_password','reset_password','logout'], true)) {
+    if (!in_array($action, ['login','register','leader_register','leader_upgrade','google','facebook','forgot_password','reset_password','logout'], true)) {
         bh_auth_response(400, ['ok' => false, 'error' => 'unknown_action']);
     }
 
@@ -543,6 +543,39 @@ try {
 
     $authContext = trim((string)($body['context'] ?? 'family'));
     if (!in_array($authContext, ['family','leader'], true)) $authContext = 'family';
+
+    /* Upgrade an existing verified family account without creating a second user. */
+    if ($action === 'leader_upgrade') {
+        $userId = (int)($_SESSION['bh_user_id'] ?? 0);
+        if ($userId < 1 || empty($_SESSION['bh_family_authenticated'])) {
+            bh_auth_response(401, ['ok'=>false,'error'=>'login_required','message'=>'Sign in to your Bubba Hub account first.']);
+        }
+        $stmt=$db->prepare("SELECT id,email,role,status,email_verified_at FROM bh_users WHERE id=? LIMIT 1");
+        $stmt->execute([$userId]);
+        $user=$stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$user || $user['status']!=='active') bh_auth_response(403,['ok'=>false,'message'=>'Your account is not active.']);
+        if (empty($user['email_verified_at'])) bh_auth_response(403,['ok'=>false,'message'=>'Verify your email before becoming a class leader.']);
+        if ($user['role']==='leader') bh_auth_response(409,['ok'=>false,'message'=>'You already have a class leader account.']);
+        if ($user['role']!=='family') bh_auth_response(403,['ok'=>false,'message'=>'This account cannot be upgraded here.']);
+        $name=trim((string)($body['organisation_name']??''));
+        if ($name==='' || mb_strlen($name)>190) bh_auth_response(422,['ok'=>false,'message'=>'Enter your class or business name (up to 190 characters).']);
+        if (empty($body['terms'])) bh_auth_response(422,['ok'=>false,'message'=>'Please agree to the organiser terms.']);
+        try {
+            $db->beginTransaction();
+            $organiserId=bh_create_leader_organiser($db,$userId,(string)$user['email'],$name);
+            $update=$db->prepare("UPDATE bh_users SET role='leader' WHERE id=? AND role='family'");
+            $update->execute([$userId]);
+            if ($update->rowCount()!==1) throw new RuntimeException('Account was changed during upgrade.');
+            $db->commit();
+            $_SESSION['bh_family_authenticated']=true;
+            $_SESSION['bh_leader_authenticated']=true;
+            bh_auth_response(200,['ok'=>true,'organiser_id'=>$organiserId,'message'=>'Your leader profile has been created and is pending review.']);
+        } catch(Throwable $e) {
+            if ($db->inTransaction()) $db->rollBack();
+            error_log('Bubba Hub leader upgrade failed: '.$e->getMessage());
+            bh_auth_response(500,['ok'=>false,'error'=>'leader_upgrade_failed','message'=>'We could not set up your leader profile. Please contact support.']);
+        }
+    }
 
     /* ---------------- leader_register ---------------- */
     if ($action === 'leader_register') {
