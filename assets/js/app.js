@@ -920,7 +920,6 @@ void bhHydrateSaved();
           fields.hidden=false;
           fields.style.display="block";
           target.classList.add("is-open");
-          document.body.classList.add("directory-filter-open");
 
           if(toggle){
             toggle.setAttribute("aria-expanded","true");
