@@ -31,7 +31,12 @@ jobs:
       - name: Prepare SSH connection
         run: |
           mkdir -p "$RUNNER_TEMP/ssh"
-          : > "$RUNNER_TEMP/ssh/known_hosts"
+          if [ -z "${{ secrets.EWEBALL_SSH_KNOWN_HOSTS }}" ]; then
+            echo "EWEBALL_SSH_KNOWN_HOSTS secret must contain the verified SSH host public key." >&2
+            exit 1
+          fi
+          printf '%s\n' "${{ secrets.EWEBALL_SSH_KNOWN_HOSTS }}" > "$RUNNER_TEMP/ssh/known_hosts"
+          chmod 600 "$RUNNER_TEMP/ssh/known_hosts"
 
       - name: Check eWebAll SSH connection
         env:
@@ -43,7 +48,7 @@ jobs:
           ssh -p "$SSH_PORT" \
             -i "$RUNNER_TEMP/eweball_deploy_key" \
             -o IdentitiesOnly=yes \
-            -o StrictHostKeyChecking=no \
+            -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
             "$SSH_USERNAME@$SSH_HOST" '
               echo "=== CURRENT USER ==="
@@ -89,7 +94,7 @@ jobs:
             -P "$SSH_PORT" \
             -i "$RUNNER_TEMP/eweball_deploy_key" \
             -o IdentitiesOnly=yes \
-            -o StrictHostKeyChecking=no \
+            -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
             "$DEPLOY_ARCHIVE" \
             "$SSH_USERNAME@$SSH_HOST:/tmp/bubbaplugin-deploy.tar.gz"
@@ -99,7 +104,7 @@ jobs:
             -p "$SSH_PORT" \
             -i "$RUNNER_TEMP/eweball_deploy_key" \
             -o IdentitiesOnly=yes \
-            -o StrictHostKeyChecking=no \
+            -o StrictHostKeyChecking=yes \
             -o ServerAliveInterval=15 \
             -o ServerAliveCountMax=4 \
             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
@@ -111,7 +116,7 @@ jobs:
             -p "$SSH_PORT" \
             -i "$RUNNER_TEMP/eweball_deploy_key" \
             -o IdentitiesOnly=yes \
-            -o StrictHostKeyChecking=no \
+            -o StrictHostKeyChecking=yes \
             -o ServerAliveInterval=15 \
             -o ServerAliveCountMax=4 \
             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
@@ -124,7 +129,7 @@ jobs:
             -p "$SSH_PORT" \
             -i "$RUNNER_TEMP/eweball_deploy_key" \
             -o IdentitiesOnly=yes \
-            -o StrictHostKeyChecking=no \
+            -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
             "$SSH_USERNAME@$SSH_HOST" \
             "cd \"$REMOTE_PATH\" && test -f index.html && test -f OneSignalSDKWorker.js && test -f assets/css/styles.css && test -f assets/js/app.js && test -f data/activities.json && test -f schools/index.html && echo 'Remote files verified successfully.'"
