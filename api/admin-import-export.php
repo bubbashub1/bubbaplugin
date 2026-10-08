@@ -1,6 +1,18 @@
 <?php
 declare(strict_types=1);
 header('Cache-Control: no-store');
+header('Content-Type: application/json; charset=utf-8');
+ini_set('display_errors','0');
+register_shutdown_function(static function(): void {
+  $error=error_get_last();
+  if(!$error || !in_array($error['type'],[E_ERROR,E_PARSE,E_CORE_ERROR,E_COMPILE_ERROR,E_USER_ERROR],true)) return;
+  error_log('Bubba Hub CSV fatal: '.$error['message'].' at '.$error['file'].':'.$error['line']);
+  if(!headers_sent()){http_response_code(500);header('Content-Type: application/json; charset=utf-8');}
+  if(ob_get_level()>0)ob_clean();
+  echo json_encode(['ok'=>false,'error'=>'CSV import encountered a server error. Please check the PHP error log.','code'=>'csv_server_fatal']);
+});
+if($_SERVER['REQUEST_METHOD']==='POST') ob_start();
+
 $secure=(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off');
 if (session_status() !== PHP_SESSION_ACTIVE) {
   ini_set('session.use_strict_mode', '1');
@@ -218,7 +230,13 @@ foreach($rows as $idx=>$row){
     }
     else{while(true){$q=$db->prepare("SELECT id FROM bh_activities WHERE slug=? LIMIT 1");$q->execute([$slug]);if(!$q->fetch())break;$slug=$base.'-'.$n++;}$activityCols=table_columns($db,'bh_activities');$featuredCol=in_array('featured',$activityCols,true);
     $sql=$ac?"INSERT INTO bh_activities (organiser_id,title,slug,description,category,age_range,county,price_from,booking_url,image_path,status,accessibility".($featuredCol?",featured":"").") VALUES (?,?,?,?,?,?,?,?,?,?,?,?".($featuredCol?",?":"").")":"INSERT INTO bh_activities (organiser_id,title,slug,description,category,county,price_from,booking_url,image_path,status".($featuredCol?",featured":"").") VALUES (?,?,?,?,?,?,?,?,?,?".($featuredCol?",?":"").")";
-    $args=$ac?[$organiserId,$title,$slug,$desc,$category,$age,$county,$price,$booking,$image,$status,json_encode($access,JSON_UNESCAPED_SLASHES)]:[$organiserId,$title,$slug,$desc,$category,$county,$price,$booking,$image,$status];if($featuredCol)$args[]=$featured;$q=$db->prepare($sql);$q->execute($args);$id=(int)$db->lastInsertId();}
+    $args=$ac?[$organiserId,$title,$slug,$desc,$category,$age,$county,$price,$booking,$image,$status,json_encode($access,JSON_UNESCAPED_SLASHES)]:[$organiserId,$title,$slug,$desc,$category,$county,$price,$booking,$image,$status];if($featuredCol)$args[]=$featured;
+    if(!$ac && in_array('age_range',$activityCols,true)){
+      $sql=str_replace('category,county,','category,age_range,county,',$sql);
+      $sql=str_replace('VALUES (?,?,?,?,?,?,?,?,?,?', 'VALUES (?,?,?,?,?,?,?,?,?,?,?', $sql);
+      array_splice($args,5,0,[$age]);
+    }
+    $q=$db->prepare($sql);$q->execute($args);$id=(int)$db->lastInsertId();}
     $q=$db->prepare("SELECT id FROM bh_venues WHERE activity_id=? ORDER BY id LIMIT 1");$q->execute([$id]);$vid=(int)$q->fetchColumn();if($vid){$q=$db->prepare("UPDATE bh_venues SET venue_name=?,address=?,town=?,region=?,postcode=?,latitude=?,longitude=? WHERE id=?");$q->execute([$venue,$address,$town,$region,$postcode,$lat,$lng,$vid]);}else{$q=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes,leader_id) VALUES (?,?,?,?,?,?,?,?,?,NULL)");$q->execute([$id,$venue,$address,$town,$region,$postcode,$lat,$lng,'']);$vid=(int)$db->lastInsertId();}
     $db->prepare("DELETE FROM bh_sessions WHERE venue_id=?")->execute([$vid]);foreach($sessions as $s){$dur=null;if($s['end']){$aa=strtotime($s['start']);$bb=strtotime($s['end']);if($aa!==false&&$bb!==false){$dur=(int)(($bb-$aa)/60);if($dur<0)$dur+=1440;}}$q=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date) VALUES (?,?,?,?,?,?,?,?,?,?)");$q->execute([$vid,$s['day'],$s['start'],$s['end'],$dur,$price,$s['term']?1:0,'weekly',null,null]);}
     optional_activity_fields($db,$row,$id);import_tags($db,$id,$tags);import_images($db,$id,$row);$db->commit();if($existing)$updated++;else$created++;
