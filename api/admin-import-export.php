@@ -120,8 +120,9 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
   $siblings=$has('siblings_welcome')?'a.siblings_welcome':'NULL';
   $bring=$has('what_to_bring')?'a.what_to_bring':'NULL';
   $good=$has('good_to_know')?'a.good_to_know':'NULL';
+  $featuredCol=$has('featured')?'a.featured':'0';
 
-  $sql="SELECT a.id,a.title,a.category,a.description,a.age_range,$ageMin AS age_min_months,$ageMax AS age_max_months,$county AS county,a.price_from,a.booking_url,$bookingReq AS booking_required,$dropIn AS drop_in_welcome,$trial AS trial_available,$term AS term_time_only,$holiday AS holiday_sessions,$siblings AS siblings_welcome,$bring AS what_to_bring,$good AS good_to_know,a.image_path,a.status,CASE WHEN EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='featured') THEN a.featured ELSE 0 END AS featured,o.organisation_name,o.email,o.phone,o.website,o.facebook_url,o.instagram_url,v.venue_name,v.address,v.town,v.region,v.postcode,v.latitude,v.longitude,v.phone AS venue_phone,v.email AS venue_email,v.website AS venue_website,v.notes AS venue_notes,$ac AS accessibility
+  $sql="SELECT a.id,a.title,a.category,a.description,a.age_range,$ageMin AS age_min_months,$ageMax AS age_max_months,$county AS county,a.price_from,a.booking_url,$bookingReq AS booking_required,$dropIn AS drop_in_welcome,$trial AS trial_available,$term AS term_time_only,$holiday AS holiday_sessions,$siblings AS siblings_welcome,$bring AS what_to_bring,$good AS good_to_know,a.image_path,a.status,$featuredCol AS featured,o.organisation_name,o.email,o.phone,o.website,o.facebook_url,o.instagram_url,v.venue_name,v.address,v.town,v.region,v.postcode,v.latitude,v.longitude,v.phone AS venue_phone,v.email AS venue_email,v.website AS venue_website,v.notes AS venue_notes,$ac AS accessibility
     FROM bh_activities a
     LEFT JOIN bh_organisers o ON o.id=a.organiser_id
     LEFT JOIN bh_venues v ON v.activity_id=a.id AND v.id=(SELECT MIN(v2.id) FROM bh_venues v2 WHERE v2.activity_id=a.id)
