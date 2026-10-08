@@ -7200,3 +7200,34 @@ input,select,textarea{max-width:100%;box-sizing:border-box}
 @media(min-width:901px){
   .auth-page .auth-layout{grid-template-columns:minmax(0,0.85fr) minmax(0,1.15fr);}
 }
+
+/* ========================================================================== 
+   BUBBA HUB DESIGN REFERENCE — auth.html shared visual language
+   Keep page-specific grids and functional controls intact.
+   ========================================================================== */
+:root{
+  --bh-reference-header:#d8e6db;
+  --bh-reference-button:#144400;
+  --bh-reference-hover:#e78b35;
+  --bh-reference-border:#d5e3d7;
+}
+body,button,input,select,textarea{font-family:'Quicksand',Calibri,Arial,Helvetica,sans-serif;}
+.site-header{background:var(--bh-reference-header);border-bottom:1px solid var(--bh-reference-border);}
+.site-header .brand-logo{height:56px;width:auto;max-width:min(46vw,240px);object-fit:contain;}
+.site-header .main-nav a{font-weight:700;}
+.button.button-primary,.auth-submit,.site-header .button.button-primary{
+  background:var(--bh-reference-button);border-color:var(--bh-reference-button);color:#fff;
+  border-radius:999px;font-weight:700;
+}
+@media(hover:hover){
+  .button.button-primary:hover,.auth-submit:hover,.site-header .button.button-primary:hover{
+    background:var(--bh-reference-hover)!important;border-color:var(--bh-reference-hover)!important;color:#123f31!important;
+  }
+}
+.admin-panel,.auth-card,.auth-benefits{border-radius:20px;}
+input,select,textarea{max-width:100%;}
+@media(max-width:760px){
+  .site-header .brand-logo{height:50px;max-width:min(46vw,190px);}
+  button,.button,input,select,textarea{min-height:44px;}
+  input,select,textarea{font-size:16px;}
+}
