@@ -1,15 +1,31 @@
 <?php
 declare(strict_types=1);
-$secure = (
-    (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off')
-    || strtolower((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https'
-);
-session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);
-session_start();
-header('Content-Type: application/json; charset=utf-8');
-header('Cache-Control: no-store');
 
-function respond(int $s,array $d):void{http_response_code($s);echo json_encode($d);exit;}
+// Keep admin authentication on the exact same PHP session configuration as
+// /api/auth.php so the login survives navigation across browsers.
+$secure = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off');
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'secure' => $secure,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+    session_start();
+}
+
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+
+function respond(int $s, array $d): void {
+    http_response_code($s);
+    echo json_encode($d);
+    session_write_close();
+    exit;
+}
 
 // Root deployment: resolve the server-only configuration without exposing it to the browser.
 $configCandidates = array_filter([
@@ -25,32 +41,47 @@ foreach ($configCandidates as $candidate) {
         break;
     }
 }
-if(!is_file($f))respond(503,['ok'=>false,'error'=>'Admin authentication is not configured on the server.']);
-$c=require $f;
-if(!is_array($c))respond(503,['ok'=>false,'error'=>'Invalid server configuration.']);
-
-$a=(string)($_GET['action']??'check');
-
-if($a==='login'){
-    if($_SERVER['REQUEST_METHOD']!=='POST')respond(405,['ok'=>false,'error'=>'POST required']);
-    $i=json_decode((string)file_get_contents('php://input'),true);
-    $u=is_array($i)?trim((string)($i['username']??'')):'';
-    $p=is_array($i)?(string)($i['password']??''):'';
-    $eu=(string)($c['admin_username']??'');
-    $ep=(string)($c['admin_password']??'');
-    if($eu===''||$ep===''||!hash_equals($eu,$u)||!hash_equals($ep,$p))respond(401,['ok'=>false,'error'=>'Invalid username or password.']);
-    session_regenerate_id(true);
-    $_SESSION['bh_admin_authenticated']=true;
-    respond(200,['ok'=>true]);
+if (!is_file($f)) {
+    respond(503, ['ok'=>false, 'error'=>'Admin authentication is not configured on the server.']);
+}
+$c = require $f;
+if (!is_array($c)) {
+    respond(503, ['ok'=>false, 'error'=>'Invalid server configuration.']);
 }
 
-if($a==='logout'){
+$a = (string)($_GET['action'] ?? 'check');
+
+if ($a === 'login') {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        respond(405, ['ok'=>false, 'error'=>'POST required']);
+    }
+
+    $i = json_decode((string)file_get_contents('php://input'), true);
+    $u = is_array($i) ? trim((string)($i['username'] ?? '')) : '';
+    $p = is_array($i) ? (string)($i['password'] ?? '') : '';
+    $eu = (string)($c['admin_username'] ?? '');
+    $ep = (string)($c['admin_password'] ?? '');
+
+    if ($eu === '' || $ep === '' || !hash_equals($eu, $u) || !hash_equals($ep, $p)) {
+        respond(401, ['ok'=>false, 'error'=>'Invalid username or password.']);
+    }
+
+    session_regenerate_id(true);
+    $_SESSION['bh_admin_authenticated'] = true;
+    session_write_close();
+    respond(200, ['ok'=>true]);
+}
+
+if ($a === 'logout') {
     // Admin authentication is separate from the family account. Remove only
     // the admin flag so My Hub/family session remains signed in.
     unset($_SESSION['bh_admin_authenticated']);
-    respond(200,['ok'=>true]);
+    respond(200, ['ok'=>true]);
 }
 
-if(empty($_SESSION['bh_admin_authenticated']))respond(401,['ok'=>false,'error'=>'Admin login required.']);
-respond(200,['ok'=>true]);
+if (empty($_SESSION['bh_admin_authenticated'])) {
+    respond(401, ['ok'=>false, 'error'=>'Admin login required.']);
+}
+
+respond(200, ['ok'=>true]);
 ?>
