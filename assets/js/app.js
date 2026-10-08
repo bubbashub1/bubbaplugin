@@ -904,23 +904,34 @@ void bhHydrateSaved();
         filterButton.id=ids.filters;
         filterButton.addEventListener("click",async event=>{
           event.preventDefault();
+          event.stopPropagation();
           await (window.bhAdvancedFiltersReady||Promise.resolve());
-          const target=page==="calendar" ? document.getElementById("calendarFilters") : page==="map" ? document.getElementById("mapFiltersPanel") : document.getElementById("directoryFilters");
-          if(target){
-            const fields=target.querySelector("#advancedFields");
-            const toggle=target.querySelector("#advancedToggle");
-            if(fields){
-              fields.hidden=false;
-              if(toggle){
-                toggle.setAttribute("aria-expanded","true");
-                toggle.innerHTML='More search filters <span aria-hidden="true">−</span>';
-              }
-            }
-            target.classList.add("is-open");
-            document.body.classList.add("directory-filter-open");
-            const first=fields?.querySelector("select,input,button") || target.querySelector("select,input,button");
-            if(first)first.focus();
+          const target=page==="calendar"
+            ? document.getElementById("calendarFilters")
+            : page==="map"
+              ? document.getElementById("mapFiltersPanel")
+              : document.getElementById("directoryFilters");
+          const fields=target?.querySelector("#advancedFields");
+          const toggle=target?.querySelector("#advancedToggle");
+          if(!target || !fields) return;
+
+          // Open the actual inline Advanced Filters panel. Do not rely on the
+          // old modal/fuzzy overlay classes which are still present elsewhere.
+          fields.hidden=false;
+          fields.style.display="block";
+          target.classList.add("is-open");
+          document.body.classList.add("directory-filter-open");
+
+          if(toggle){
+            toggle.setAttribute("aria-expanded","true");
+            toggle.innerHTML='More search filters <span aria-hidden="true">−</span>';
           }
+
+          requestAnimationFrame(()=>{
+            target.scrollIntoView({behavior:"smooth",block:"start"});
+            const first=fields.querySelector("select,input,button");
+            if(first) first.focus({preventScroll:true});
+          });
         });
       }
         const viewLink=hero.querySelector(".directory-map-hero-button");
