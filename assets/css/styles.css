@@ -7231,3 +7231,34 @@ input,select,textarea{max-width:100%;}
   button,.button,input,select,textarea{min-height:44px;}
   input,select,textarea{font-size:16px;}
 }
+
+/* Directory: nine visible listing cards (3 columns × 3 rows) with inner scroll. */
+@media(min-width:1101px){
+  body.bh-directory #results.activity-grid.directory-view-grid{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    grid-auto-rows:minmax(0,330px);
+    gap:12px;
+    height:1014px;
+    max-height:min(78vh,1014px);
+    overflow-y:auto;
+    overflow-x:hidden;
+    overscroll-behavior-y:contain;
+    scrollbar-gutter:stable;
+    align-content:start;
+    padding:3px 8px 8px 3px;
+  }
+  body.bh-directory #results.directory-view-grid .activity-card{min-height:0;height:100%;}
+  body.bh-directory #results.directory-view-grid .activity-image{height:125px;min-height:125px;}
+  body.bh-directory #results.directory-view-grid .activity-body{padding:12px;min-height:0;flex:1;}
+  body.bh-directory #results.directory-view-grid .activity-card h3{font-size:16px;line-height:1.25;}
+  body.bh-directory #results.directory-view-grid .activity-card p{font-size:12px;margin-bottom:8px;}
+  body.bh-directory #results.directory-view-grid .activity-footer{gap:5px;}
+  body.bh-directory #results.directory-view-grid .activity-footer .button{padding:7px 9px;}
+  body.bh-directory #results.directory-view-grid .directory-load-more,
+  body.bh-directory #results.directory-view-grid .directory-end-message{grid-column:1/-1;}
+}
+@media(min-width:761px) and (max-width:1100px){
+  body.bh-directory #results.activity-grid.directory-view-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;max-height:78vh;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;}
+}
+@media(max-width:760px){body.bh-directory #results.activity-grid{max-height:none;overflow:visible;}}
