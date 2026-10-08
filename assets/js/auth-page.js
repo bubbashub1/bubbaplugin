@@ -16,7 +16,7 @@ if(google){
       if(!window.google?.accounts?.id)throw Error("Google sign-in could not be loaded. Please check your connection and try again.");
       window.google.accounts.id.initialize({client_id:window.BUBBAHUB_GOOGLE_CLIENT_ID,callback:async response=>{
         try{
-          const r=await fetch("/api/auth.php?action=google",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({credential:response.credential,csrf})});
+          const r=await fetch("/api/auth.php?action=google",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({credential:response.credential,csrf,context:"family"})});
           const d=await r.json();
           if(!r.ok||!d.ok)throw Error(d.message||"Google sign-in could not be completed.");
           location.href=next||"account.html";
@@ -32,7 +32,11 @@ if(google){
       google.removeAttribute("aria-busy");
       google.className="google-signin-button";
       google.innerHTML='<span class="google-mark" aria-hidden="true">G</span><span>'+fallbackText+'</span>';
-      google.onclick=()=>message(e.message||"Google sign-in could not be loaded. Please try again.",true);
+      google.onclick=async()=>{
+        message("Trying Google sign-in again…");
+        google.disabled=true;
+        await loadGoogle();
+      };
       message(e.message||"Google sign-in could not be loaded. Please try again.",true);
     }
   };
