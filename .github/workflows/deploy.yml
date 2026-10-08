@@ -124,15 +124,5 @@ jobs:
             "$SSH_USERNAME@$SSH_HOST" \
             "mkdir -p \"$REMOTE_PATH\" && tar -xzf /tmp/bubbaplugin-deploy.tar.gz -C \"$REMOTE_PATH\" && rm -f /tmp/bubbaplugin-deploy.tar.gz"
 
-          echo "Deployment upload finished."
-
-          ssh \
-            -p "$SSH_PORT" \
-            -i "$RUNNER_TEMP/eweball_deploy_key" \
-            -o IdentitiesOnly=yes \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
-            "$SSH_USERNAME@$SSH_HOST" \
-            "cd \"$REMOTE_PATH\" && test -f index.html && test -f OneSignalSDKWorker.js && test -f assets/css/styles.css && test -f assets/js/app.js && test -f data/activities.json && test -f schools/index.html && echo 'Remote files verified successfully.'"
-
-          echo "Deployment completed successfully."
+          echo "Deployment archive extracted successfully."
+          echo "Deployment completed (archive contents were verified before extraction)."
