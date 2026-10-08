@@ -110,7 +110,8 @@ try {
         session_start();
     }
 
-    $db = bh_mysql();
+    // Database is lazy so anonymous ?action=me checks do not depend on MySQL being available.
+    $db = null;
     $configFile = __DIR__ . '/config.php';
     $config = is_file($configFile) ? require $configFile : [];
     if (!is_array($config)) $config = [];
@@ -176,6 +177,13 @@ try {
             bh_auth_response(200, ['ok' => true, 'authenticated' => false, 'family_authenticated' => false, 'leader_authenticated' => false, 'is_admin' => false, 'csrf' => $_SESSION['bh_csrf']]);
         }
 
+        try {
+            $db = bh_mysql();
+        } catch (Throwable $e) {
+            error_log('Bubba Hub auth session lookup failed: '.$e->getMessage());
+            bh_auth_response(503, ['ok'=>false,'error'=>'auth_service_unavailable','message'=>'Your session could not be checked right now. Please try again shortly.']);
+        }
+
         $stmt = $db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");
         $stmt->execute([(int)$_SESSION['bh_user_id']]);
         $user = $stmt->fetch();
@@ -211,6 +219,9 @@ try {
             'csrf' => $_SESSION['bh_csrf'],
         ]);
     }
+
+    // All write actions require the database.
+    if ($db === null) $db = bh_mysql();
 
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         bh_auth_response(405, ['ok' => false, 'error' => 'method_not_allowed']);
