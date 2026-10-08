@@ -9,8 +9,8 @@ if(google){
       google.setAttribute("aria-busy","true");
       google.innerHTML='<span class="google-mark" aria-hidden="true">G</span><span>Connecting to Google…</span>';
       const started=Date.now();
-      while((!window.BUBBAHUB_GOOGLE_CLIENT_ID||!window.google?.accounts?.id)&&Date.now()-started<7000){
-        await new Promise(r=>setTimeout(r,100));
+      while((!window.BUBBAHUB_GOOGLE_CLIENT_ID||!window.google?.accounts?.id)&&Date.now()-started<12000){
+        await new Promise(r=>setTimeout(r,150));
       }
       if(!window.BUBBAHUB_GOOGLE_CLIENT_ID)throw Error("Google sign-in is not configured yet.");
       if(!window.google?.accounts?.id)throw Error("Google sign-in could not be loaded. Please check your connection and try again.");
