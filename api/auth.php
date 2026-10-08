@@ -235,7 +235,7 @@ function bh_check_account_context(array $user, string $ctx): void {
     if ($ctx === 'leader' && $role !== 'leader') {
         bh_auth_response(403, ['ok'=>false,'error'=>'leader_account_required','message'=>'That email is not a class leader account. Please use the family sign in or create a leader account with a separate email.']);
     }
-    if ($ctx === 'family' && !in_array($role, ['family','organiser'], true)) {
+    if ($ctx === 'family' && !in_array($role, ['family','organiser','leader'], true)) {
         bh_auth_response(403, ['ok'=>false,'error'=>'family_account_required','message'=>'Please use the Class Leader sign in for this account.']);
     }
 }
@@ -246,6 +246,7 @@ function bh_login_session(int $userId, string $ctx): void {
     unset($_SESSION['bh_family_authenticated'], $_SESSION['bh_leader_authenticated']);
     if ($ctx === 'leader') $_SESSION['bh_leader_authenticated'] = true;
     else $_SESSION['bh_family_authenticated'] = true;
+
     $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
 }
 
