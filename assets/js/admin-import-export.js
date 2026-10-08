@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     button.disabled=true;
     status.textContent="Uploading and importing CSV…";
     try{
-      const data=new FormData();data.append("file",file);data.append("mode",document.getElementById("activityCsvMode")?.value||"update");
+      const data=new FormData();data.append("csv",file);data.append("mode",document.getElementById("activityCsvMode")?.value||"update");
       const response=await fetch("/api/admin-import-export.php",{method:"POST",credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"},body:data});
       const raw=await response.text();let result;
       try{result=JSON.parse(raw);}catch{throw new Error("CSV server returned an invalid or empty response (HTTP "+response.status+").");}
