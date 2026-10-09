@@ -514,3 +514,34 @@ body.bh-directory:not(.bh-calendar-page) .directory-hero-search{
   border-top-left-radius:0!important;
   border-top-right-radius:0!important;
 }
+
+/* Visible custom Leaflet pins. Marker markup is supplied by map-core.js. */
+body.bh-directory .leaflet-marker-icon.custom-sleek-dark-marker{
+  background:transparent!important;
+  border:0!important;
+  overflow:visible!important;
+}
+body.bh-directory .custom-sleek-dark-marker .bubba-dark-pin{
+  position:relative;
+  width:28px;
+  height:28px;
+  margin:1px 0 0 4px;
+  border:3px solid #fff;
+  border-radius:50% 50% 50% 0;
+  background:#144400;
+  box-shadow:0 2px 8px rgba(0,0,0,.35);
+  transform:rotate(-45deg);
+  box-sizing:border-box;
+}
+body.bh-directory .custom-sleek-dark-marker .dark-core{
+  position:absolute;
+  width:10px;
+  height:10px;
+  left:6px;
+  top:6px;
+  border-radius:50%;
+  background:#d8e6db;
+}
+body.bh-directory .custom-sleek-dark-marker:hover .bubba-dark-pin{
+  background:#3c8e96;
+}
