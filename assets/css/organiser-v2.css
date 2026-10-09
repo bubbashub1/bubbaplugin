@@ -1,0 +1,96 @@
+/* Bubba Hub 2.0 organiser storefront — visual-only overrides. */
+body.bh-organiser-v2{background:#fffdf7;color:#174e3b;font-family:'Quicksand',Calibri,Arial,sans-serif}
+.bh-organiser-v2 .organiser-storefront-page{font-family:'Quicksand',Calibri,Arial,sans-serif;padding-top:20px!important;padding-bottom:52px!important}
+.bh-organiser-v2 .organiser-storefront-page :is(h1,h2,h3){font-family:'Quicksand',Calibri,Arial,sans-serif;letter-spacing:-.035em;font-weight:800}
+.bh-organiser-v2 .organiser-hero{
+  background:linear-gradient(125deg,#e5f1df 0%,#def1f4 74%,#fff0d0 100%);
+  border:1px solid #d1e4d4;border-radius:34px;
+  padding:clamp(22px,4vw,48px);gap:clamp(16px,3vw,36px);
+  box-shadow:0 13px 32px rgba(23,78,59,.08);color:#174e3b;
+}
+.bh-organiser-v2 .organiser-hero h1{color:#174e3b;font-size:clamp(2.4rem,5vw,4.8rem);letter-spacing:-.055em;line-height:1.05}
+.bh-organiser-v2 .organiser-hero .organiser-intro{color:#416651;font-size:clamp(.98rem,1.5vw,1.18rem)}
+.bh-organiser-v2 .organiser-hero .organiser-meta{color:#174e3b}
+.bh-organiser-v2 .organiser-brand-mark{
+  border-radius:28px;background:#fff;border:1px solid #dce8df;
+  box-shadow:0 9px 24px rgba(23,78,59,.08);color:#174e3b;
+}
+.bh-organiser-v2 .organiser-storefront-page .eyebrow{
+  background:#fff;border-color:#d1e4d4;color:#3c8e96;
+  font-size:.78rem;font-weight:800;letter-spacing:.05em;
+}
+.bh-organiser-v2 .organiser-storefront-page :is(.button,a.button,button.button){
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:43px;padding:10px 18px;border-radius:999px;
+  font-family:'Quicksand',Calibri,Arial,sans-serif;font-weight:800;
+  text-decoration:none;box-sizing:border-box;
+}
+.bh-organiser-v2 .organiser-storefront-page .button-primary{
+  background:#174e3b;border-color:#174e3b;color:#fff;
+}
+.bh-organiser-v2 .organiser-storefront-page .button-primary:hover{
+  background:#ee822c;border-color:#ee822c;color:#174e3b;
+}
+.bh-organiser-v2 .organiser-storefront-page .button-soft{
+  background:#e5f1df;border-color:#d1e4d4;color:#174e3b;
+}
+.bh-organiser-v2 .organiser-storefront-page .button-soft:hover{
+  background:#f7bf7d;border-color:#f7bf7d;color:#174e3b;
+}
+.bh-organiser-v2 .organiser-summary{gap:14px;margin-bottom:26px}
+.bh-organiser-v2 .organiser-summary-stat{
+  min-height:90px;border-radius:23px;background:#fbe4e0;
+  border:1px solid #f0dcd6;align-items:center;padding:18px 22px;
+}
+.bh-organiser-v2 .organiser-summary-stat:nth-child(3n+2){background:#def1f4;border-color:#cfe7e9}
+.bh-organiser-v2 .organiser-summary-stat:nth-child(3n+3){background:#fff0d0;border-color:#f3e5c4}
+.bh-organiser-v2 .organiser-summary-stat strong{color:#174e3b;font-size:clamp(1.5rem,2.5vw,2.2rem)}
+.bh-organiser-v2 .organiser-summary-stat span{color:#416651;font-size:.9rem}
+.bh-organiser-v2 .organiser-storefront-page :is(.organiser-venues-copy,.organiser-map-panel,.organiser-info-card,.organiser-faq,.storefront-section){
+  border-radius:25px;border:1px solid #e1ebe2;
+  box-shadow:0 8px 24px rgba(23,78,59,.055);
+}
+.bh-organiser-v2 .organiser-venues-copy,.bh-organiser-v2 .organiser-info-card{background:#fff}
+.bh-organiser-v2 .organiser-map-panel{overflow:hidden}
+.bh-organiser-v2 .organiser-venue-card{border-radius:16px;background:#f7faf6}
+.bh-organiser-v2 .organiser-faq{background:#e5f1df}
+.bh-organiser-v2 .organiser-faq details{border-radius:16px}
+.bh-organiser-v2 .organiser-storefront-page :is(.storefront-heading h2,.organiser-info-card h2,.organiser-faq h2){
+  font-size:clamp(1.5rem,2.8vw,2.25rem);color:#174e3b;
+}
+.bh-organiser-v2 .storefront-grid{gap:15px}
+.bh-organiser-v2 .storefront-card{
+  border:1px solid #e1ebe2;border-radius:23px;
+  box-shadow:0 7px 21px rgba(23,78,59,.06);background:#fff;
+}
+.bh-organiser-v2 .storefront-card-body h3{font-size:clamp(1.05rem,1.7vw,1.35rem)}
+.bh-organiser-v2 .storefront-card-body h3 a{color:#174e3b}
+.bh-organiser-v2 .storefront-card-meta span{
+  background:#e5f1df;border-color:#d1e4d4;color:#174e3b;
+}
+.bh-organiser-v2 .storefront-card-body .button-full{
+  background:#e5f1df!important;border:1px solid #d1e4d4!important;
+  color:#174e3b!important;width:max-content!important;max-width:100%;
+  min-height:38px;padding:9px 17px;
+}
+.bh-organiser-v2 .storefront-card-body .button-full:hover{
+  background:#f7bf7d!important;border-color:#f7bf7d!important;
+}
+.bh-organiser-v2 .organiser-info-card:nth-child(3n+2){background:#def1f4}
+.bh-organiser-v2 .organiser-info-card:nth-child(3n+3){background:#fff0d0}
+.bh-organiser-v2 .organiser-empty{background:#e5f1df;border-radius:24px}
+@media(max-width:760px){
+ .bh-organiser-v2 .organiser-storefront-page{padding-top:12px!important}
+ .bh-organiser-v2 .organiser-hero{grid-template-columns:1fr;border-radius:24px;padding:22px 18px}
+ .bh-organiser-v2 .organiser-brand-mark{width:105px;height:105px;font-size:32px;border-radius:22px}
+ .bh-organiser-v2 .organiser-hero h1{font-size:clamp(2.2rem,9vw,3.5rem)}
+ .bh-organiser-v2 .organiser-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .bh-organiser-v2 .organiser-storefront-page :is(.organiser-venues-copy,.organiser-map-panel,.organiser-info-card,.organiser-faq){border-radius:19px}
+}
+@media(max-width:420px){
+ .bh-organiser-v2 .organiser-summary{grid-template-columns:minmax(0,1fr)}
+ .bh-organiser-v2 .storefront-card-body .button-full{width:100%!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .bh-organiser-v2 .storefront-card{transition:none}
+}
