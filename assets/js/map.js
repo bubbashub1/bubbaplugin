@@ -48,7 +48,8 @@ const bhInitMap=async()=>{
     if ($("mapDay")) $("mapDay").value=params.get("day")||"";
     if ($("mapPrice")) $("mapPrice").value=params.get("max_price")||"";
 
-    let map=null,markers=[],heatLayer=null,viewMode="pins";
+    let map=null,markers=[],heatLayer=null,viewMode="heat";
+    const MAX_PIN_LOCATIONS=100;
     const setMapMode=mode=>{
       viewMode=mode;
       $("mapPinsMode")?.setAttribute("aria-pressed",String(mode==="pins"));
@@ -92,6 +93,16 @@ const bhInitMap=async()=>{
         return(!search||text.includes(search))&&(!category||(categoryMap[activity.category]||activity.category)===category)&&locationMatch&&ageMatches(activity,age[0],age[1])&&(!day||sessions.some(s=>s.day===day))&&priceMatch&&freeMatch&&durationMatch&&senMatch&&termMatch&&(!bookingRequired||hasBooking)&&accessibilityMatch&&(!saved||bhIsSaved(activity.id));
       });
       const valid=list.flatMap(activity=>bhVenues(activity).map(venue=>({activity,venue}))).filter(({venue})=>Number.isFinite(Number(venue.lat))&&Number.isFinite(Number(venue.long)));
+      const activeFilter=Boolean(search||category||region||town||agePreset||day||maxPrice||free||sessionLength||sen||termTime||bookingRequired||accessibility.length||saved||params.has("age_min")||params.has("age_max"));
+      const pinsAllowed=activeFilter&&valid.length>0&&valid.length<=MAX_PIN_LOCATIONS;
+      if(!pinsAllowed)viewMode="heat";
+      const pinsButton=$("mapPinsMode");
+      if(pinsButton){
+        pinsButton.disabled=!pinsAllowed;
+        pinsButton.title=!activeFilter?"Choose a filter to show pins":valid.length>MAX_PIN_LOCATIONS?"Narrow results to 100 locations or fewer to show pins":"Show individual activity pins";
+        pinsButton.setAttribute("aria-pressed",String(viewMode==="pins"));
+      }
+      $("mapHeatMode")?.setAttribute("aria-pressed",String(viewMode==="heat"));
       const icon=L.divIcon({className:"custom-sleek-dark-marker",html:'<div class="bubba-dark-pin"><div class="dark-core"></div></div>',iconSize:[36,36],iconAnchor:[18,36],popupAnchor:[0,-36]});
       if(viewMode==="heat" && typeof L.heatLayer==="function"){
         heatLayer=L.heatLayer(valid.map(({venue})=>[Number(venue.lat),Number(venue.long),1]),{radius:24,blur:18,maxZoom:13,minOpacity:0.3}).addTo(map);
@@ -106,7 +117,7 @@ const bhInitMap=async()=>{
         markers.push(L.marker([Number(venue.lat),Number(venue.long)],{icon}).addTo(map).bindPopup(popup,{maxWidth:330,minWidth:250,className:"bh-map-popup"}));
       });
       if(valid.length)map.fitBounds(L.latLngBounds(valid.map(({venue})=>[Number(venue.lat),Number(venue.long)])),{padding:[30,30],maxZoom:14});else map.setView([50.42,-3.57],10);
-      $("mapStatus").textContent=list.length+" activit"+(list.length===1?"y":"ies")+" matching your search · "+valid.length+" mapped venue"+(valid.length===1?"":"s")+" shown on map";
+      $("mapStatus").textContent=list.length+" activit"+(list.length===1?"y":"ies")+" matching your search · "+valid.length+" mapped venue"+(valid.length===1?"":"s")+(viewMode==="heat"?" in heatmap":" shown as pins")+(pinsAllowed?" · Pins available":" · Filter to 100 locations or fewer for pins");
       setTimeout(()=>map.invalidateSize(),50);
     };
     const syncUrl=()=>{
