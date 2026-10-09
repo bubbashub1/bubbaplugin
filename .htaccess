@@ -28,7 +28,7 @@ RewriteRule ^activity/([^/]+)/?$ activity.html?slug=$1 [B,L,QSA]
 
 # Dedicated authentication pages must be handled before the generic activity-slug rule.
 RewriteRule ^admin-login/?$ admin-login.html [L,QSA]
-RewriteRule ^leader-login/?$ leader-login.html [L,QSA]
+RewriteRule ^leader-login(?:\.html)?/?$ /auth.html?context=leader [R=302,L,QSA]
 
 # Admin dashboard
 # /admin/ is the canonical dashboard URL.
