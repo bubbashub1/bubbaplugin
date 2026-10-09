@@ -67,7 +67,9 @@
       if(checkout){try{checkout.destroy();}catch(_){} checkout=null;}
       mount.innerHTML="";
 
-      // Keep the checkout inside the Bubba Hub modal. Never redirect to hosted Checkout.\n      error.textContent=err.message||"Unable to open secure checkout inside the modal.";\n
+      // Keep checkout inside the Bubba Hub modal; display errors without redirecting.
+      error.textContent=err.message||"Unable to open secure checkout inside the modal.";
+
     }
   }
 
