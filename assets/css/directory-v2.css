@@ -242,3 +242,71 @@ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters .direc
 body.bh-directory:not(.bh-calendar-page).directory-filter-open::before{
   display:none!important;
 }
+
+
+/* Directory: persistent left search sidebar and expansive map/list content. */
+@media (min-width: 901px) {
+  body.bh-directory:not(.bh-calendar-page) .app-shell {
+    display:grid!important;
+    grid-template-columns:minmax(280px,320px) minmax(0,1fr);
+    gap:20px;align-items:start;
+    max-width:1600px;margin-inline:auto;
+  }
+  body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder] {
+    grid-column:1;min-width:0;position:sticky;top:18px;
+    max-height:calc(100dvh - 36px);overflow-y:auto;overscroll-behavior:contain;
+    scrollbar-width:thin;
+  }
+  body.bh-directory:not(.bh-calendar-page) .directory-layout {
+    grid-column:2;min-width:0;width:100%;margin:0!important;
+    display:block!important;
+  }
+  body.bh-directory:not(.bh-calendar-page) .directory-results-column {
+    width:100%!important;max-width:none!important;min-width:0;
+  }
+  body.bh-directory:not(.bh-calendar-page) .directory-hero-search-fields {
+    display:flex!important;flex-direction:column!important;gap:10px;
+  }
+  body.bh-directory:not(.bh-calendar-page) .directory-hero-search-fields > * {
+    width:100%;min-width:0;
+  }
+  body.bh-directory:not(.bh-calendar-page) .directory-hero-actions {
+    display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  }
+  body.bh-directory:not(.bh-calendar-page) .directory-hero-search .directory-hero-actions > :is(a,button) {
+    width:100%!important;max-width:none!important;justify-content:center!important;
+    white-space:normal!important;
+  }
+  body.bh-directory:not(.bh-calendar-page) .directory-hero-search h2 {
+    font-size:1.7rem;
+  }
+  body.bh-directory:not(.bh-calendar-page) .directory-results-heading {
+    margin-top:0;
+  }
+  body.bh-directory:not(.bh-calendar-page) #mapView {
+    height:clamp(490px,76dvh,900px);min-height:490px;
+  }
+}
+/* Advanced search opens downward inside the filter column, never as an overlay. */
+body.bh-directory:not(.bh-calendar-page) #directoryFilters,
+body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-more-search-panel {
+  position:static!important;inset:auto!important;transform:none!important;
+  width:100%;max-width:100%;box-sizing:border-box;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-more-search-panel[hidden] {
+  display:none!important;
+}
+@media (max-width:900px) {
+  body.bh-directory:not(.bh-calendar-page) .app-shell {
+    display:block!important;
+  }
+  body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder] {
+    position:static;max-height:none;overflow:visible;
+  }
+  body.bh-directory:not(.bh-calendar-page) .directory-layout {
+    width:100%;min-width:0;
+  }
+  body.bh-directory:not(.bh-calendar-page) #mapView {
+    min-height:350px;height:65dvh;
+  }
+}
