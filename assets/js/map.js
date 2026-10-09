@@ -48,12 +48,21 @@ const bhInitMap=async()=>{
     if ($("mapDay")) $("mapDay").value=params.get("day")||"";
     if ($("mapPrice")) $("mapPrice").value=params.get("max_price")||"";
 
-    let map=null,markers=[];
+    let map=null,markers=[],heatLayer=null,viewMode="pins";
+    const setMapMode=mode=>{
+      viewMode=mode;
+      $("mapPinsMode")?.setAttribute("aria-pressed",String(mode==="pins"));
+      $("mapHeatMode")?.setAttribute("aria-pressed",String(mode==="heat"));
+      render();
+    };
+    $("mapPinsMode")?.addEventListener("click",()=>setMapMode("pins"));
+    $("mapHeatMode")?.addEventListener("click",()=>setMapMode("heat"));
     const render=()=>{
       if(!map){
         map=window.bhMapEngine?.init("mapView");
       }
       markers.forEach(m=>m.remove());markers=[];
+      if(heatLayer){heatLayer.remove();heatLayer=null;}
       const search=($("mapSearch")?.value||"").trim().toLowerCase();
       const category=$("mapCategory")?.value||"",region=$("mapRegion")?.value||"",town=$("mapTown")?.value||"";
       const agePreset=$("mapAge")?.value||$("mapAgeAdvanced")?.value||"";
@@ -84,7 +93,10 @@ const bhInitMap=async()=>{
       });
       const valid=list.flatMap(activity=>bhVenues(activity).map(venue=>({activity,venue}))).filter(({venue})=>Number.isFinite(Number(venue.lat))&&Number.isFinite(Number(venue.long)));
       const icon=L.divIcon({className:"custom-sleek-dark-marker",html:'<div class="bubba-dark-pin"><div class="dark-core"></div></div>',iconSize:[36,36],iconAnchor:[18,36],popupAnchor:[0,-36]});
-      valid.forEach(({activity,venue})=>{
+      if(viewMode==="heat" && typeof L.heatLayer==="function"){
+        heatLayer=L.heatLayer(valid.map(({venue})=>[Number(venue.lat),Number(venue.long),1]),{radius:24,blur:18,maxZoom:13,minOpacity:0.3}).addTo(map);
+      }
+      if(viewMode!=="heat" || !heatLayer) valid.forEach(({activity,venue})=>{
         const sessions=bhSessions(activity),session=sessions.find(s=>s.venue_id==null||String(s.venue_id)===String(venue.id))||sessions[0]||{};
         const ageText=Array.isArray(activity.age_range)?activity.age_range.join(" · "):(activity.age_range||"All ages");
         const price=activity.price||session.price||"Price on request";
