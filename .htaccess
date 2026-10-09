@@ -46,6 +46,9 @@ RewriteRule ^admin(?:/|$) - [L]
 
 # Class leader dashboard
 RewriteRule ^leader/?$ leader.html [L,QSA]
+# Serve clean leader subpage URLs from their actual HTML files.
+RewriteCond %{DOCUMENT_ROOT}/leader/$1.html -f
+RewriteRule ^leader/([a-z0-9-]+)/?$ leader/$1.html [L,QSA]
 
 # Redirect the old nested calendar URL to the canonical root calendar.
 RewriteRule ^planner/calendar(?:\.html)?/?$ /calendar.html [R=301,L]
