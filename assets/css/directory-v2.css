@@ -450,3 +450,14 @@ body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-more-searc
 body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-advanced-filter-field :is(select,input:not([type="checkbox"])){
  border-radius:12px;
 }
+
+
+/* Popular categories now sit in the results column, immediately above the map. */
+body.bh-directory:not(.bh-calendar-page) .directory-results-column > .directory-popular{
+ display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;
+ margin:12px 0 14px;padding:12px 0;
+ border-top:1px solid #e1e9e0;border-bottom:1px solid #e1e9e0;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-results-column > .directory-popular .directory-popular-label{
+ font-weight:700;color:#416651;
+}
