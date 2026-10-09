@@ -5,7 +5,7 @@ header('Cache-Control: no-store');
 function bhBlogReply(int $code,array $body):never{http_response_code($code);echo json_encode($body,JSON_UNESCAPED_SLASHES);exit;}
 try{
 require_once __DIR__.'/db.php';
-if(session_status()!==PHP_SESSION_ACTIVE)session_start();
+if(session_status()!==PHP_SESSION_ACTIVE){session_name('BUBBAHUBSESSID');session_start();}
 $uid=(int)($_SESSION['bh_user_id']??0);
 if(!$uid)bhBlogReply(401,['ok'=>false,'message'=>'Sign in as a leader.']);
 $db=bh_mysql();
@@ -20,7 +20,7 @@ $pro=false;foreach(['plan','membership_plan','membership_tier','subscription_pla
 if(!$pro)bhBlogReply(403,['ok'=>false,'message'=>'Blog publishing requires Leader Pro.']);
 $wp=dirname(__DIR__).'/wp-load.php';
 if(!is_file($wp))bhBlogReply(503,['ok'=>false,'message'=>'WordPress is not available.']);
-require_once $wp;
+ob_start();require_once $wp;ob_end_clean();
 if(!function_exists('wp_insert_post'))bhBlogReply(503,['ok'=>false,'message'=>'WordPress publishing unavailable.']);
 $oid=(int)$org['id'];$metaKey='_bh_leader_organiser_id';
 if($_SERVER['REQUEST_METHOD']==='GET'){
@@ -43,4 +43,4 @@ $result=wp_insert_post($payload,true);
 if(is_wp_error($result))bhBlogReply(500,['ok'=>false,'message'=>'Could not save article.']);
 update_post_meta($result,$metaKey,$oid);
 bhBlogReply(200,['ok'=>true,'post_id'=>$result,'status'=>'pending']);
-}catch(Throwable $e){error_log('Leader blog: '.$e->getMessage());bhBlogReply(500,['ok'=>false,'message'=>'Blog service temporarily unavailable.']);}
+}catch(Throwable $e){error_log('Leader blog: '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine());while(ob_get_level()>0)ob_end_clean();bhBlogReply(500,['ok'=>false,'message'=>'Blog service temporarily unavailable. Please contact support with the time of this error.']);}
