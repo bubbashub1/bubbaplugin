@@ -70,3 +70,12 @@ body.bh-subpage-v2{background:#fffdf7;color:#174e3b;font-family:'Quicksand',Cali
 .bh-leader-profile-v2 .leader-profile-card .admin-form-wide{grid-column:1/-1}
 .bh-leader-profile-v2 .leader-profile-card .button-primary{background:#144400;color:#fff;border-radius:999px;min-height:44px;padding:10px 23px}
 @media(max-width:700px){.bh-leader-profile-v2 .bh-leader-hero{flex-direction:column;align-items:stretch}.bh-leader-profile-v2 .leader-profile-card .admin-form-grid{grid-template-columns:1fr}.bh-leader-profile-v2 .bh-leader-tabs{flex-wrap:nowrap;overflow-x:auto}.bh-leader-profile-v2 .bh-leader-tabs a{white-space:nowrap}}
+
+/* Distinct pastel cards and reliable Quicksand throughout leader profile. */
+.bh-leader-profile-v2,.bh-leader-profile-v2 :is(input,button,textarea,select){font-family:'Quicksand',Calibri,Arial,sans-serif}
+.bh-leader-profile-v2 .leader-profile-card{background:#fff;border-color:#e1ebe2}
+.bh-leader-profile-v2 .leader-profile-card:nth-of-type(2){background:#e9f3e8;border-color:#d5e6d6}
+.bh-leader-profile-v2 .leader-profile-card:nth-of-type(3){background:#e6f3f5;border-color:#cfe6e9}
+.bh-leader-profile-v2 .leader-profile-card:nth-of-type(4){background:#fff1d9;border-color:#f0e1bd}
+.bh-leader-profile-v2 .leader-profile-card:nth-of-type(5){background:#fbe8e5;border-color:#efd8d3}
+.bh-leader-profile-v2 .leader-profile-card :is(input,textarea,select){background:rgba(255,255,255,.94)}
