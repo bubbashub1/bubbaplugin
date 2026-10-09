@@ -408,10 +408,8 @@ const bhInitDirectory=async()=>{
         else hint.textContent="Showing "+locations.length+" mapped locations for "+list.length+" activities. Select a pin to view its activity.";
       }
       if(!locations.length)console.info("No mapped activities match the current directory filters");
-      if(locations.length){
-        const bounds=L.latLngBounds(locations.map(({venue})=>[Number(venue.lat),Number(venue.long)]));
-        if(bounds.isValid())map.fitBounds(bounds,{padding:[35,35],maxZoom:13});
-      } else map.setView([50.55,-3.75],9);
+      // Preserve the current zoom when markers are refreshed.
+      if(!locations.length && !map._bhInitialPinsFitted) map.setView([50.55,-3.75],9);
     };
 
     const calendarDateKey = date => {
