@@ -78,7 +78,7 @@
 
 
 <div class="leader-dashboard-section-head"><h2>More tools</h2><p>Everything else you need to run your classes.</p></div>
-<section class="bh-leader-portal-tools"><a href="/leader/messages.html" class="bh-leader-tool"><span>✉️</span><strong>My Messages <span id="leaderMessageCount" hidden style="background:#144400;color:#fff;border-radius:999px;padding:2px 9px;font-size:.8rem"></span></strong><small>Help requests and booking enquiries.</small></a><a href="/leader/specialisms.html" class="bh-leader-tool"><span>💚</span><strong>My Specialisms</strong><small>Choose how you can help local families.</small></a>
+<section class="bh-leader-portal-tools"><a href="/leader/messages.html" class="bh-leader-tool"><span>✉️</span><strong>My Messages <span id="leaderMessageCount" hidden style="display:none;background:#144400;color:#fff;border-radius:999px;padding:2px 9px;font-size:.8rem"></span></strong><small>Help requests and booking enquiries.</small></a><a href="/leader/specialisms.html" class="bh-leader-tool"><span>💚</span><strong>My Specialisms</strong><small>Choose how you can help local families.</small></a>
 <a href="/leader/statistics.html" class="bh-leader-tool"><span>📈</span><strong>Statistics</strong><small>See listings, sessions and bookings at a glance.</small></a>
 <a href="/leader/payments.html" class="bh-leader-tool"><span>💳</span><strong>Payments</strong><small>Understand Bubba Hub and external booking payments.</small></a>
 <a href="/leader/faqs.html" class="bh-leader-tool"><span>❓</span><strong>FAQs</strong><small>Create helpful public answers for families.</small></a>
@@ -122,6 +122,6 @@ fetch("/api/subscription.php",{credentials:"same-origin",cache:"no-store"}).then
 }).catch(()=>{});
 </script>
 <script>
-(async()=>{try{const r=await fetch('/api/leader-messages.php',{credentials:'same-origin',cache:'no-store'});if(!r.ok)return;const d=await r.json();const count=Number(d.unanswered_count||0),badge=document.getElementById('leaderMessageCount');if(badge&&count>0){badge.textContent=count+' new';badge.hidden=false;document.title='('+count+') Leader Portal · Bubba Hub';}}catch(e){}})();
+(async()=>{try{const r=await fetch('/api/leader-messages.php',{credentials:'same-origin',cache:'no-store'});if(!r.ok)return;const d=await r.json();const count=Number(d.unanswered_count||0),badge=document.getElementById('leaderMessageCount');if(badge&&count>0){badge.textContent=count+' new';badge.hidden=false;badge.style.display='inline-flex';document.title='('+count+') Leader Portal · Bubba Hub';}}catch(e){}})();
 </script><script src="/assets/js/leader-pro-nav.js"></script></body>
 </html>
