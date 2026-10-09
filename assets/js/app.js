@@ -918,17 +918,23 @@ void bhHydrateSaved();
 
           // Open the actual inline Advanced Filters panel. Do not rely on the
           // old modal/fuzzy overlay classes which are still present elsewhere.
-          fields.hidden=false;
+          const opening=page==="directory" ? fields.hidden : true;
+          fields.hidden=!opening;
           fields.style.removeProperty("display");
-          target.classList.add("is-open");
-
-          if(toggle){
-            toggle.setAttribute("aria-expanded","true");
-            toggle.innerHTML='More search filters <span aria-hidden="true">−</span>';
+          target.classList.toggle("is-open",opening);
+          if(page==="directory"){
+            filterButton.setAttribute("aria-expanded",String(opening));
+            filterButton.textContent=opening ? "− Fewer search options" : "⚙ More search options";
           }
 
+          if(toggle){
+            toggle.setAttribute("aria-expanded",String(opening));
+            toggle.innerHTML=opening ? 'More search filters <span aria-hidden="true">−</span>' : 'More search filters <span aria-hidden="true">＋</span>';
+          }
+
+          if(!opening)return;
           requestAnimationFrame(()=>{
-            target.scrollIntoView({behavior:"smooth",block:"start"});
+            if(page!=="directory")target.scrollIntoView({behavior:"smooth",block:"start"});
             const first=fields.querySelector("select,input,button");
             if(first) first.focus({preventScroll:true});
           });
