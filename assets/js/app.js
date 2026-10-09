@@ -820,12 +820,14 @@ void bhHydrateSaved();
    The filter markup lives outside the Directory Hero so one component can
    be reused by Directory, Calendar and Planner Pro. */
 (function(){
+  // The hero is fetched asynchronously; wait until its nested placeholder exists.
+  window.bhAdvancedFiltersReady=(async()=>{
+  await (window.bhDirectoryHeroReady || Promise.resolve());
   const placeholders=[...document.querySelectorAll("[data-bh-advanced-filters-placeholder]")];
   if(!placeholders.length){
-    window.bhAdvancedFiltersReady=Promise.resolve([]);
-    return;
+    return [];
   }
-  window.bhAdvancedFiltersReady=(async()=>{
+  return await (async()=>{
     try{
       const response=await fetch(new URL("components/advanced-filters.html",document.baseURI),{cache:"no-store"});
       if(!response.ok)throw new Error("Could not load advanced filters");
@@ -872,6 +874,7 @@ void bhHydrateSaved();
       console.warn("Bubba Hub advanced filters could not load.",error);
       return [];
     }
+  })();
   })();
 })();
 
