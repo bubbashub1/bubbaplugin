@@ -188,3 +188,14 @@ body.bh-directory:not(.bh-calendar-page) #results .activity-card :is(.button-pri
    max-height:none!important;overflow:visible!important;
  }
 }
+
+/* Keyword input: remove nested native input outline/border; retain the outer field focus ring. */
+body.bh-directory:not(.bh-calendar-page) .directory-hero-search-fields label:has(input[data-bh-hero-field="keyword"]) input[data-bh-hero-field="keyword"]{
+  border:0!important;border-radius:0!important;outline:0!important;
+  box-shadow:none!important;background:transparent!important;
+  appearance:none;-webkit-appearance:none;
+  padding-inline:0!important;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-search-fields label:has(input[data-bh-hero-field="keyword"]){
+  overflow:hidden;
+}
