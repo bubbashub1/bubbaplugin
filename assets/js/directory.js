@@ -401,6 +401,12 @@ const bhInitDirectory=async()=>{
       });
       try { markers=bhMapEngine.render(map,list,popupHtml,markers); }
       catch(error){console.error("Directory map pin rendering failed",error);}
+      const hint=$("directoryMapHint");
+      if(hint){
+        if(!list.length) hint.textContent="No activities match these filters. Try widening your search.";
+        else if(!locations.length) hint.textContent=list.length+" activities found, but none have valid map coordinates. Choose View Activities to see listings.";
+        else hint.textContent="Showing "+locations.length+" mapped locations for "+list.length+" activities. Select a pin to view its activity.";
+      }
       if(!locations.length)console.info("No mapped activities match the current directory filters");
       if(locations.length){
         const bounds=L.latLngBounds(locations.map(({venue})=>[Number(venue.lat),Number(venue.long)]));
@@ -1013,12 +1019,14 @@ const bhInitDirectory=async()=>{
     updateViewVisibility();
     render();
   } catch (error) {
-    const results = $("results");
-    if (results) {
-      results.innerHTML =
-        '<div class="admin-panel"><h3>Activities unavailable</h3><p>' +
-        escapeHtml(error.message || "Unable to load activities.") +
-        "</p></div>";
+    console.error("Directory initialisation failed",error);
+    const results=$("results"), mapView=$("mapView"), hint=$("directoryMapHint");
+    if(mapView)mapView.hidden=true;
+    if(hint){hint.hidden=false;hint.textContent="Activities could not be loaded. Please try again.";}
+    if(results){
+      results.hidden=false;
+      results.innerHTML='<div class="admin-panel" role="alert"><h3>Activities temporarily unavailable</h3><p>We could not load the directory. Please refresh the page or try again shortly.</p><button type="button" class="button button-primary" id="directoryRetry">Try again</button></div>';
+      document.getElementById("directoryRetry")?.addEventListener("click",()=>location.reload());
     }
   }
 };
