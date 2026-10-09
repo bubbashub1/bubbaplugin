@@ -461,3 +461,50 @@ body.bh-directory:not(.bh-calendar-page) .directory-results-column > .directory-
 body.bh-directory:not(.bh-calendar-page) .directory-results-column > .directory-popular .directory-popular-label{
  font-weight:700;color:#416651;
 }
+
+/* Expanded search is part of the main search card, not a separate green sidebar. */
+body.bh-directory:not(.bh-calendar-page) #directoryFilters{
+  margin:12px 0 0!important;padding:0!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-more-search-toggle{
+  display:none!important;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-more-search-panel:not([hidden]){
+  margin:0!important;padding:14px 0 0!important;
+  background:transparent!important;border:0!important;border-top:1px solid #dce8df!important;
+  border-radius:0!important;box-shadow:none!important;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-filter-fields{
+  display:flex!important;flex-direction:column!important;gap:12px!important;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-advanced-section{
+  display:flex;flex-direction:column;gap:12px;min-width:0;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-advanced-filter-field,
+body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-nearby-control{
+  width:100%;min-width:0;box-sizing:border-box;margin:0!important;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters :is(select,.directory-accessibility-expand,.directory-nearby-button){
+  width:100%;min-height:46px;border:1px solid #dce8df!important;
+  border-radius:14px!important;background:#fff!important;color:#144400!important;
+  font:700 .9rem 'Quicksand',Calibri,Arial,sans-serif;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-filter-label{
+  display:block;margin:0 0 6px;color:#416651;font-weight:700;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-filter-actions{
+  display:grid;grid-template-columns:1fr;gap:8px;margin-top:14px;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-filter-actions button{
+  width:100%;min-height:46px;border-radius:999px;font-weight:700;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters #applyFilters{
+  background:#144400;color:#fff;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters #clear{
+  background:#d8e6db;color:#144400;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters .filter-free{
+  display:flex;align-items:center;gap:9px;font-weight:700;color:#416651;
+}
