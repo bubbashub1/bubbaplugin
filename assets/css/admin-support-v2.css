@@ -45,3 +45,22 @@ body.bh-admin-v2,body.bh-support-sub-v2{background:#fffdf7;color:#174e3b;font-fa
  :is(.bh-admin-v2,.bh-support-sub-v2) :is(.admin-subpage-head,.page-heading,.support-hero){border-radius:22px;padding:22px 18px}
  :is(.bh-admin-v2,.bh-support-sub-v2) :is(.admin-panel,.admin-setting-card,.support-card,.support-topic-card){border-radius:18px}
 }
+
+/* Admin login is a distinct layout; preserve its form and login logic. */
+.bh-admin-v2 .auth-page{max-width:1140px;margin-inline:auto;padding:24px 15px 52px}
+.bh-admin-v2 .auth-hero{
+ background:linear-gradient(125deg,#e5f1df,#def1f4 75%,#fff0d0);
+ border:1px solid #d1e4d4;border-radius:29px;padding:clamp(23px,4vw,42px);
+ color:#174e3b;box-shadow:0 10px 26px rgba(23,78,59,.06)
+}
+.bh-admin-v2 .auth-hero h1{font-size:clamp(2.2rem,4.4vw,4rem);color:#174e3b}
+.bh-admin-v2 .auth-hero p{color:#416651}
+.bh-admin-v2 .auth-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,.7fr);gap:20px;align-items:start}
+.bh-admin-v2 .auth-card,.bh-admin-v2 .auth-benefits{
+ border:1px solid #e1ebe2;border-radius:24px;background:#fff;
+ padding:clamp(20px,3vw,30px);box-shadow:0 8px 25px rgba(23,78,59,.06)
+}
+.bh-admin-v2 .auth-benefits{background:#def1f4}
+.bh-admin-v2 .auth-card :is(input,select){min-height:43px;width:100%}
+.bh-admin-v2 .auth-submit{width:100%;justify-content:center}
+@media(max-width:760px){.bh-admin-v2 .auth-layout{grid-template-columns:minmax(0,1fr)}.bh-admin-v2 .auth-hero{border-radius:22px;padding:23px 18px}}
