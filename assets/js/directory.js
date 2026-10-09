@@ -73,16 +73,22 @@ const bhInitDirectory=async()=>{
       if (values.includes(selected)) el.value = selected;
     };
 
+    const canonicalRegion=value=>{
+      const raw=String(value||"").trim().replace(/\\s+/g," ");
+      const key=raw.toLowerCase().replace(/[–—]/g,"-");
+      const aliases={"exeter city":"Exeter","city of exeter":"Exeter","torbay borough":"Torbay","borough of torbay":"Torbay","teignbridge district":"Teignbridge","south hams district":"South Hams","cornwall council":"Cornwall","cornwall county":"Cornwall"};
+      return aliases[key]||({"exeter":"Exeter","torbay":"Torbay","teignbridge":"Teignbridge","south hams":"South Hams","cornwall":"Cornwall"}[key]||raw);
+    };
     const categoryValues = [...new Set(activities.map(x => categoryMap[x.category] || x.category).filter(Boolean))].sort();
-    const regionValues = [...new Set(activities.flatMap(x => bhVenues(x).map(v => v.region || x.region)).filter(Boolean))].sort();
+    const regionValues = [...new Set(activities.flatMap(x => bhVenues(x).map(v => canonicalRegion(v.region || x.region))).filter(Boolean))].sort();
 
     fillSelect("category", categoryValues, params.get("category") || "", "All categories");
     fillSelect("heroCategory", categoryValues, params.get("category") || "", "Category");
-    fillSelect("area", regionValues, params.get("region") || "", "All regions");
-    fillSelect("heroRegion", regionValues, params.get("region") || "", "Region");
+    fillSelect("area", regionValues, canonicalRegion(params.get("region")), "All regions");
+    fillSelect("heroRegion", regionValues, canonicalRegion(params.get("region")), "Region");
     const townsByRegion=new Map();
     activities.forEach(activity=>bhVenues(activity).forEach(venue=>{
-      const region=String(venue.region||activity.region||"").trim();
+      const region=canonicalRegion(venue.region||activity.region);
       const town=String(venue.town||activity.town||"").trim();
       if(!region||!town)return;
       if(!townsByRegion.has(region))townsByRegion.set(region,new Set());
@@ -95,7 +101,7 @@ const bhInitDirectory=async()=>{
         if($(id)){$(id).disabled=!region;$(id).title=region?"Select a town in "+region:"Select a region first";}
       }
     };
-    updateTowns(params.get("region")||"",params.get("town")||"");
+    updateTowns(canonicalRegion(params.get("region")),params.get("town")||"");
     for(const id of ["area","heroRegion"]){
       $(id)?.addEventListener("change",()=>{
         const region=$(id).value;
@@ -662,7 +668,7 @@ const bhInitDirectory=async()=>{
         ].filter(Boolean).join(" ").toLowerCase();
 
         const locationMatch = (!region && !town) || venues.some(v =>
-          (!region || String(v.region || activity.region || "").toLowerCase() === String(region).toLowerCase()) &&
+          (!region || canonicalRegion(v.region || activity.region).toLowerCase() === canonicalRegion(region).toLowerCase()) &&
           (!town || String(v.town || activity.town || "").toLowerCase() === String(town).toLowerCase())
         );
 
