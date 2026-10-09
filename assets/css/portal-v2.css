@@ -124,3 +124,20 @@
 .bh-leader-v2 .bh-support-banner .bh-support-icon{color:#174e3b}
 @media(max-width:900px){.bh-leader-v2 .bh-leader-hero{flex-direction:column;align-items:stretch}.bh-leader-v2 .bh-leader-hero .hero-actions{justify-content:flex-start}}
 @media(max-width:600px){.bh-leader-v2 .bh-leader-page{padding-top:18px}.bh-leader-v2 .bh-leader-hero .hero-actions{display:grid;grid-template-columns:1fr 1fr}.bh-leader-v2 .bh-leader-hero .hero-actions .button:first-child{grid-column:1/-1}}
+
+/* Six distinct dashboard stat colours and eight unique tool colours. */
+.bh-leader-v2,.bh-leader-v2 :is(button,input,textarea,select){font-family:'Quicksand',Calibri,Arial,sans-serif}
+.bh-leader-v2 .bh-leader-stat:nth-child(1){background:#fbe4e0}
+.bh-leader-v2 .bh-leader-stat:nth-child(2){background:#def1f4}
+.bh-leader-v2 .bh-leader-stat:nth-child(3){background:#e5f1df}
+.bh-leader-v2 .bh-leader-stat:nth-child(4){background:#fff0d0}
+.bh-leader-v2 .bh-leader-stat:nth-child(5){background:#f1e6f4}
+.bh-leader-v2 .bh-leader-stat:nth-child(6){background:#e1efe9}
+.bh-leader-v2 .bh-leader-quick-actions .bh-leader-action:nth-child(1){background:#e5f1df}
+.bh-leader-v2 .bh-leader-quick-actions .bh-leader-action:nth-child(2){background:#def1f4}
+.bh-leader-v2 .bh-leader-quick-actions .bh-leader-action:nth-child(3){background:#fff0d0}
+.bh-leader-v2 .bh-leader-quick-actions .bh-leader-action:nth-child(4){background:#fbe4e0}
+.bh-leader-v2 .bh-leader-portal-tools .bh-leader-tool:nth-child(1){background:#f1e6f4}
+.bh-leader-v2 .bh-leader-portal-tools .bh-leader-tool:nth-child(2){background:#e1efe9}
+.bh-leader-v2 .bh-leader-portal-tools .bh-leader-tool:nth-child(3){background:#f9e8d7}
+.bh-leader-v2 .bh-leader-portal-tools .bh-leader-tool:nth-child(4){background:#e5ebfa}
