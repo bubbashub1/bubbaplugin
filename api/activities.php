@@ -153,7 +153,8 @@ try {
             v.notes AS venue_notes
         FROM bh_activities a
         LEFT JOIN bh_organisers o ON o.id = a.organiser_id
-        LEFT JOIN bh_venues v ON v.activity_id = a.id
+        LEFT JOIN bh_activity_venues av ON av.activity_id = a.id
+        LEFT JOIN bh_venues v ON v.id = av.venue_id
         WHERE " . implode(' AND ', $where) . "
         ORDER BY a.title ASC, a.id ASC
     ";
