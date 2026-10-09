@@ -49,6 +49,16 @@
 @media(max-width:760px){.bh-home .home-hero{padding-bottom:26px}.bh-home .home-brush{font-size:clamp(3.3rem,14vw,5.8rem)}.bh-home .home-category-row{gap:10px}.bh-home .home-category-row>a{border-radius:20px;min-height:150px;padding:18px 12px}.bh-home .bh-category-description{font-size:.78rem}.bh-home .bh-hero-sparkle{display:none}}
 @media(max-width:430px){.bh-home .home-category-row>a{min-width:0}.bh-home .bh-quick-links a{font-size:.85rem;padding:9px 12px}}
 @media(prefers-reduced-motion:reduce){.bh-home .home-category-row>a{transition:none}}
+
+/* Linked original artwork; no external image dependencies */
+.bh-home .home-category-row>a{background-repeat:no-repeat;background-position:right bottom;background-size:48% auto}
+.bh-home .home-category-row>a:nth-child(1){background-image:url('/images/home/card-classes-art.svg')}
+.bh-home .home-category-row>a:nth-child(2){background-image:url('/images/home/card-events-art.svg')}
+.bh-home .home-category-row>a:nth-child(3){background-image:url('/images/home/card-support-art.svg')}
+.bh-home .home-category-row>a:nth-child(4){background-image:url('/images/home/card-planner-art.svg')}
+.bh-home .home-category-row>a strong,.bh-home .bh-category-description,.bh-home .bh-category-action{position:relative;z-index:1}
+.bh-home .home-hero-copy{background-image:url('/images/home/hero-family-art.svg');background-size:110px auto;background-repeat:no-repeat;background-position:right top}
+@media(max-width:760px){.bh-home .home-category-row>a{background-size:42% auto}.bh-home .home-hero-copy{background-size:70px auto}}
 </style>
 </head>
 <body class="bh-home">
