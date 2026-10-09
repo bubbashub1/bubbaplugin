@@ -7376,3 +7376,67 @@ body:not(.bh-home) :is(.badge,.tag,.pill,.category-badge){
 @media(prefers-reduced-motion:reduce){
   body:not(.bh-home) :is(.activity-card,.card-link .card){transition:none}
 }
+
+/* Bubba Hub 2.0 — directory visual refinement, preserves existing grid/filter logic */
+body.bh-directory:not(.bh-calendar-page){background:#fffdf7;color:#123f31}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-search{
+  background:linear-gradient(135deg,#e5f1df,#def1f4);
+  border:1px solid #d8e6db;
+  border-radius:28px;
+  padding:clamp(16px,2.2vw,30px);
+  box-shadow:0 12px 35px rgba(18,63,49,.075);
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-search h2{
+  font-family:'Quicksand',Calibri,Arial,sans-serif;
+  font-size:clamp(1.5rem,2.7vw,2.5rem);
+  font-weight:700;
+  letter-spacing:-.035em;
+  line-height:1.15;
+  color:#174e3b;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-search-fields label{
+  background:#fff;border:1px solid #cbded1;border-radius:15px;
+  box-shadow:0 3px 10px rgba(18,63,49,.04);
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-search-fields label:focus-within{
+  border-color:#3c8e96;box-shadow:0 0 0 3px rgba(60,142,150,.16);
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-search :is(button,.button){
+  border-radius:999px;font-weight:700;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-results-heading{
+  padding-block:12px;min-width:0;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-results-heading :is(h1,h2){
+  color:#174e3b;font-weight:700;letter-spacing:-.03em;
+}
+body.bh-directory:not(.bh-calendar-page) #results .activity-card{
+  background:#fff;border:1px solid #e0e9e2;border-radius:24px;
+  box-shadow:0 8px 24px rgba(18,63,49,.07);
+  transition:box-shadow .18s ease,transform .18s ease;
+}
+body.bh-directory:not(.bh-calendar-page) #results .activity-card:hover{
+  transform:translateY(-2px);box-shadow:0 14px 30px rgba(18,63,49,.12);
+}
+body.bh-directory:not(.bh-calendar-page) #results .activity-card :is(h2,h3){
+  font-family:'Quicksand',Calibri,Arial,sans-serif;color:#174e3b;font-weight:700;
+}
+body.bh-directory:not(.bh-calendar-page) #results .activity-image img{
+  object-fit:cover;
+}
+body.bh-directory:not(.bh-calendar-page) #results .activity-card :is(.button-primary,a.button-primary){
+  background:#174e3b;border-color:#174e3b;color:#fff;border-radius:999px;
+}
+body.bh-directory:not(.bh-calendar-page) #results .activity-card :is(.button-primary,a.button-primary):hover{
+  background:#ee822c;border-color:#ee822c;color:#123f31;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-all-link-wrap .button{
+  background:#e5f1df;color:#174e3b;border-radius:999px;
+}
+@media(max-width:760px){
+  body.bh-directory:not(.bh-calendar-page) .directory-hero-search{border-radius:22px;padding:16px}
+  body.bh-directory:not(.bh-calendar-page) #results .activity-card{border-radius:20px}
+}
+@media(prefers-reduced-motion:reduce){
+  body.bh-directory:not(.bh-calendar-page) #results .activity-card{transition:none}
+}
