@@ -13,6 +13,7 @@ window.bhMapEngine = (() => {
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors"}).addTo(map);
     return map;
   };
+  const coords = venue => ({lat:Number(venue.lat ?? venue.latitude),lng:Number(venue.long ?? venue.longitude)});
   const groups=new WeakMap();
   const clear = markers => (markers||[]).forEach(marker=>marker.remove());
   const render = (map, list, popupHtml, markers=[]) => {
@@ -29,10 +30,10 @@ window.bhMapEngine = (() => {
       spiderfyDistanceMultiplier:2
     }):null;
     const rows=list.flatMap(activity=>bhVenues(activity).map(venue=>({activity,venue})))
-      .filter(({venue})=>Number.isFinite(Number(venue.lat))&&Number.isFinite(Number(venue.long)));
+      .filter(({venue})=>{const {lat,lng}=coords(venue);return Number.isFinite(lat)&&Number.isFinite(lng)&&lat!==0&&lng!==0;});
     const icon=markerIcon();
     rows.forEach(({activity,venue})=>{
-      const marker=L.marker([Number(venue.lat),Number(venue.long)],{icon})
+      const marker=L.marker([coords(venue).lat,coords(venue).lng],{icon})
         .bindPopup(popupHtml(activity,venue),{maxWidth:340,minWidth:260,className:"bh-map-popup"});
       if(cluster)cluster.addLayer(marker);else marker.addTo(map);
       marker._bhActivityId=String(activity.id); marker._bhVenueId=String(venue.id||""); markers.push(marker);
@@ -41,7 +42,7 @@ window.bhMapEngine = (() => {
       try{map.addLayer(cluster);groups.set(map,cluster);}
       catch(error){console.warn("Marker clustering unavailable; displaying individual pins",error);cluster.clearLayers();markers.forEach(marker=>marker.addTo(map));}
     }
-    if(rows.length && !map._bhInitialPinsFitted) { map._bhInitialPinsFitted=true; map.fitBounds(L.latLngBounds(rows.map(({venue})=>[Number(venue.lat),Number(venue.long)])),{padding:[30,30],maxZoom:14}); }
+    if(rows.length && !map._bhInitialPinsFitted) { map._bhInitialPinsFitted=true; map.fitBounds(L.latLngBounds(rows.map(({venue})=>[coords(venue).lat,coords(venue).lng])),{padding:[30,30],maxZoom:14}); }
     else if(!rows.length && !map._bhInitialPinsFitted) map.setView([50.42,-3.57],10);
     return markers;
   };
