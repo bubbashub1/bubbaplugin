@@ -1,0 +1,19 @@
+name: Leader PHP syntax check
+on:
+  push:
+    paths:
+      - 'api/leader-portal.php'
+      - 'api/db.php'
+      - 'api/mailer.php'
+      - '.github/workflows/php-leader-lint.yml'
+  workflow_dispatch:
+jobs:
+  php-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check PHP syntax
+        run: |
+          php -l api/leader-portal.php
+          php -l api/db.php
+          php -l api/mailer.php
