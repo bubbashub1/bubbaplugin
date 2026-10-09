@@ -11,6 +11,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const auth=await getJson("api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}}).catch(()=>({authenticated:false}));
     adminOnly=!!auth.is_admin&&!auth.user?.id;
     csrf=auth.csrf||"";
+    if(!auth.authenticated || (!adminOnly && !auth.user?.id)) {
+      throw new Error("Please sign in to your family account to use My Hub.");
+    }
     data=await getJson("api/my-hub.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
     const merged=[...new Set([...(data.saved||[]).map(String),...bhGet(BH_KEYS.saved)])];
     if(!adminOnly&&JSON.stringify(merged)!==JSON.stringify((data.saved||[]).map(String))){const sync=await fetch("/api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"sync_saved",saved:merged,csrf})}).then(r=>r.json()).catch(()=>null);if(sync?.ok)data.saved=sync.saved||merged}
