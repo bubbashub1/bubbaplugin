@@ -48,7 +48,7 @@
           plan:options.plan||"family_pro",
           billing:options.billing||"annual",
           donation:!!options.donation,
-          amount:options.amount||10,
+          amount:Math.round(Number(options.amount||5)*100),
           embedded:true
         })
       });
@@ -85,7 +85,7 @@
           plan:button.dataset.stripePayment||"family_pro",
           billing,
           donation:button.dataset.stripeDonation==="1",
-          amount:Number(button.dataset.stripeAmount||10)
+          amount:Number(button.dataset.stripeAmount||5)
         });
       });
     });
