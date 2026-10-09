@@ -13,8 +13,12 @@ function bh_hub_json(int $status, array $data): never {
 try {
     require __DIR__ . '/db.php';
 
-    $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+    $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
     if (session_status() !== PHP_SESSION_ACTIVE) {
+        ini_set('session.use_strict_mode', '1');
+        ini_set('session.use_only_cookies', '1');
+        session_name('BUBBAHUBSESSID');
         session_set_cookie_params([
             'lifetime' => 0,
             'path' => '/',
