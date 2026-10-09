@@ -1,0 +1,56 @@
+/* Bubba Hub 2.0 activity details — scoped visuals, no booking/API changes. */
+body.bh-activity-v2{background:#fffdf7;color:#123f31;font-family:'Quicksand',Calibri,Arial,sans-serif}
+.bh-activity-v2 .app-shell{padding-top:20px;padding-bottom:45px}
+.bh-activity-v2 .app-shell :is(h1,h2,h3){font-family:'Quicksand',Calibri,Arial,sans-serif;font-weight:700;letter-spacing:-.035em;color:#174e3b}
+.bh-activity-v2 .listing-page{color:#174e3b}
+.bh-activity-v2 .listing-hero.activity-hero{
+  background:linear-gradient(125deg,#e5f1df,#def1f4 75%,#fff0d0);
+  border:1px solid #d1e4d4;border-radius:32px;overflow:hidden;
+  box-shadow:0 13px 32px rgba(23,78,59,.07);
+}
+.bh-activity-v2 .listing-hero.activity-hero h1{
+  font-size:clamp(2.1rem,4.5vw,4.2rem);line-height:1.06;
+  color:#174e3b;letter-spacing:-.045em;
+}
+.bh-activity-v2 .listing-hero.activity-hero :is(p,.eyebrow){color:#174e3b}
+.bh-activity-v2 .listing-gallery{border-radius:23px;overflow:hidden}
+.bh-activity-v2 .hero-quick-facts{display:flex;flex-wrap:wrap;gap:9px}
+.bh-activity-v2 .hero-quick-facts>*{
+  border-radius:999px;background:rgba(255,255,255,.78);
+  border:1px solid #d9e8dc;padding:8px 13px;color:#174e3b;
+}
+.bh-activity-v2 .listing-actions{display:flex;flex-wrap:wrap;gap:10px}
+.bh-activity-v2 .app-shell :is(.button,a.button,button.button){
+  display:inline-flex;align-items:center;justify-content:center;min-height:43px;
+  padding:10px 18px;border-radius:999px;font-family:'Quicksand',Calibri,Arial,sans-serif;
+  font-weight:800;text-decoration:none;box-sizing:border-box;
+}
+.bh-activity-v2 .app-shell .button-primary{background:#174e3b;border-color:#174e3b;color:#fff}
+.bh-activity-v2 .app-shell .button-primary:hover{background:#ee822c;border-color:#ee822c;color:#174e3b}
+.bh-activity-v2 .app-shell .button-soft{background:#e5f1df;border-color:#d1e4d4;color:#174e3b}
+.bh-activity-v2 .app-shell .button-soft:hover{background:#f7bf7d;border-color:#f7bf7d;color:#174e3b}
+.bh-activity-v2 .listing-layout{gap:clamp(15px,2vw,26px)}
+.bh-activity-v2 .listing-layout :is(.listing-card,.admin-panel,.good-to-know-card,.organiser-card,.booking-card,.contact-card){
+  background:#fff;border:1px solid #e1ebe2;border-radius:25px;
+  box-shadow:0 8px 25px rgba(23,78,59,.055);
+}
+.bh-activity-v2 .listing-main :is(.listing-card,.admin-panel){padding:clamp(17px,2.5vw,28px)}
+.bh-activity-v2 .listing-layout :is(.listing-card,.admin-panel,.good-to-know-card,.organiser-card,.booking-card,.contact-card) h2{
+  font-size:clamp(1.4rem,2.4vw,2rem);line-height:1.18;
+}
+.bh-activity-v2 .good-to-know-card{background:#fff0d0}
+.bh-activity-v2 .good-to-know-pill{border-radius:999px;background:#e5f1df;border:1px solid #d1e4d4}
+.bh-activity-v2 .activity-reference-organiser{background:#def1f4;border-radius:22px}
+.bh-activity-v2 .activity-reference-schedule{background:#fff}
+.bh-activity-v2 .session-row{border-radius:15px;background:#f7faf6}
+.bh-activity-v2 .listing-map{border-radius:20px;overflow:hidden}
+.bh-activity-v2 .listing-side :is(.booking-card,.contact-card){background:#e5f1df}
+.bh-activity-v2 .booking-modal,.bh-activity-v2 .contact-modal,.bh-activity-v2 .activity-organiser-edit-modal{z-index:1000}
+@media(max-width:760px){
+ .bh-activity-v2 .app-shell{padding-top:12px}
+ .bh-activity-v2 .listing-hero.activity-hero{border-radius:22px}
+ .bh-activity-v2 .listing-hero.activity-hero h1{font-size:clamp(2rem,9vw,3.1rem)}
+ .bh-activity-v2 .listing-layout :is(.listing-card,.admin-panel,.good-to-know-card,.organiser-card,.booking-card,.contact-card){border-radius:19px}
+ .bh-activity-v2 .listing-actions{gap:8px}
+}
+@media(prefers-reduced-motion:reduce){.bh-activity-v2 .app-shell .button{transition:none}}
