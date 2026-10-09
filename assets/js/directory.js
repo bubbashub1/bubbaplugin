@@ -897,21 +897,7 @@ const bhInitDirectory=async()=>{
 
     // Search stays on the current directory page: do not submit to a new URL.
     // The visible hero control must open the inline filters on mobile too.
-    const heroAdvancedButton=document.querySelector("#directoryHeroSearch [data-bh-hero-filters]");
-    const heroAdvancedFields=$("advancedFields");
-    if(heroAdvancedButton && heroAdvancedFields){
-      heroAdvancedButton.setAttribute("aria-controls","advancedFields");
-      heroAdvancedButton.setAttribute("aria-expanded",String(!heroAdvancedFields.hidden));
-      heroAdvancedButton.addEventListener("click",event=>{
-        event.preventDefault();
-        const opening=heroAdvancedFields.hidden;
-        heroAdvancedFields.hidden=!opening;
-        heroAdvancedButton.setAttribute("aria-expanded",String(opening));
-        heroAdvancedButton.textContent=opening?"− Fewer search options":"More search options →";
-        $("directoryFilters")?.classList.toggle("is-open",opening);
-        $("advancedToggle")?.setAttribute("aria-expanded",String(opening));
-      });
-    }
+    // The delegated hero filter handler above owns this button; do not bind twice.
     const heroForm=$("directoryHeroSearch");
     heroForm?.addEventListener("submit",event=>{
       event.preventDefault();
