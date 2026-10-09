@@ -895,6 +895,12 @@ void bhHydrateSaved();
       const html=await response.text();
       const page=placeholder.dataset.heroPage||(document.body.classList.contains("bh-map-page")?"map":"directory");
       placeholder.outerHTML=html;
+      // On the directory, popular categories belong above the map, not inside the sidebar.
+      if(page==="directory"){
+        const popular=document.querySelector("[data-bh-popular-categories]");
+        const mapHint=document.getElementById("directoryMapHint");
+        if(popular&&mapHint)mapHint.before(popular);
+      }
       const hero=document.querySelector("[data-bh-directory-hero]");
       const ids=page==="map"
         ?{form:"mapFilters",keyword:"mapSearch",region:"mapRegion",town:"mapTown",category:"mapCategory",day:"mapDay",filters:"openMapFilters"}
