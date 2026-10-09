@@ -7440,3 +7440,9 @@ body.bh-directory:not(.bh-calendar-page) .directory-all-link-wrap .button{
 @media(prefers-reduced-motion:reduce){
   body.bh-directory:not(.bh-calendar-page) #results .activity-card{transition:none}
 }
+
+/* Directory-specific welcoming introduction; does not alter result rendering. */
+body.bh-directory:not(.bh-calendar-page) .bh-directory-intro{padding:16px 2px 18px;max-width:780px}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-eyebrow{display:inline-block;color:#3c8e96;text-transform:uppercase;letter-spacing:.09em;font-size:.8rem;font-weight:800;margin-bottom:8px}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-intro h1{font-family:'Quicksand',Calibri,Arial,sans-serif;font-size:clamp(1.8rem,3.5vw,3rem);line-height:1.12;letter-spacing:-.045em;font-weight:700;color:#174e3b;margin:0 0 10px}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-intro p{font-size:clamp(.95rem,1.3vw,1.12rem);line-height:1.5;margin:0;color:#416651}
