@@ -21,7 +21,7 @@
     if(next&&!/\/auth\.html$/i.test(location.pathname))u.searchParams.set("next",next);
     return u.href;
   }
-  function leaderAuthTarget(){const u=rootUrl("leader-login.html");u.searchParams.set("next",nextUrl());return u.href;}
+  function leaderAuthTarget(){const u=rootUrl("auth.html");u.searchParams.set("context","leader");u.searchParams.set("next",nextUrl());return u.href;}
 
   function updateHeader(auth,menus){
     document.querySelectorAll(".site-header").forEach(header=>{
