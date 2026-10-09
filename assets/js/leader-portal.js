@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded",async()=>{
 const $=id=>document.getElementById(id);
 const api="api/leader-portal.php";
-const esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#39;"}[m])));
+const esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':'&quot;',"'":"&#39;"}[m])));
 let data=null;
 const page=document.body.dataset.leaderPage||"dashboard";
 const msg=$("portalMessage");
