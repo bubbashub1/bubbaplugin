@@ -16,6 +16,8 @@
 <a class="support-topic" href="support/family-wellbeing.html"><span>💛</span><strong>Family wellbeing</strong><small>Practical support for family life and parenting.</small></a>
 <a class="support-topic" href="support/guidance-faqs.html"><span>📚</span><strong>Guidance & FAQs</strong><small>Helpful information from trusted Bubba Hub contributors.</small></a>
 </section>
+<section class="admin-panel" id="leader-articles" aria-labelledby="leaderArticlesTitle" style="margin:24px 0;padding:clamp(20px,3vw,34px);border-radius:24px"><div class="admin-panel-head"><div><span class="eyebrow">From our local class leaders</span><h2 id="leaderArticlesTitle">Articles &amp; family guidance</h2><p>Practical ideas and experiences shared by Bubba Hub organisers.</p></div></div><div id="leaderArticlesList" class="leader-articles-grid" aria-live="polite"><p>Finding articles…</p></div></section>
+<style>.leader-articles-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.leader-article-card{padding:22px;border:1px solid #d8e6db;border-radius:20px;background:#f5faf6;display:flex;flex-direction:column;gap:9px}.leader-article-card h3{margin:0;color:#144400;font-size:1.25rem}.leader-article-card p{margin:0;line-height:1.55}.leader-article-card a{margin-top:auto;color:#144400;font-weight:800}.leader-article-card small{color:#617261}@media(max-width:850px){.leader-articles-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:550px){.leader-articles-grid{grid-template-columns:1fr}}</style>
 <section class="support-columns" id="ask">
 <div class="admin-panel"><span class="eyebrow">Private support</span><h2>Ask a question</h2><p>Your question is private between you and the responder helping you. It will not appear publicly on Bubba Hub.</p><form id="supportForm" class="support-form"><label>What can we help with?<select id="supportTopic"><option>Baby & child health</option><option>Feeding & weaning</option><option>Sleep</option><option>Pregnancy & new parents</option><option>Family wellbeing</option><option>Activities & classes</option><option>Something else</option></select></label><label>Your question<textarea id="supportQuestion" rows="7" placeholder="Tell us what you would like help with…" required></textarea></label><button class="button button-soft" id="prefillSupport" type="button">↳ Add relevant saved child information</button><p class="support-prefill-note">This only adds information to your draft. You review it before sending and nothing is shared automatically.</p><button class="button button-primary" type="submit">Send privately</button><p id="supportStatus" class="support-status" role="status"></p></form></div>
 <div class="admin-panel" id="guidance"><span class="eyebrow">Guidance</span><h2>Helpful information</h2><div class="support-faq-list"><details><summary>Who can answer my question?</summary><p>Bubba Hub can connect questions with opted-in, verified class leaders or contributors who have selected relevant areas of guidance. Their role and any relevant credentials will be shown.</p></details><details><summary>Will my question be public?</summary><p>No. Family questions are private conversations between you and the responder helping you.</p></details><details><summary>Can Bubba Hub provide professional advice?</summary><p>Bubba Hub is a community platform. Where a question needs professional help, families will be signposted to an appropriate service.</p></details><details><summary>Can a class leader create FAQs?</summary><p>Yes. Leaders can create public FAQs about their own classes, completely separate from private family questions.</p></details></div><div class="support-note"><strong>Need urgent help?</strong><p>If you have an urgent concern, contact the appropriate emergency or professional service rather than waiting for a Bubba Hub response.</p></div></div>
@@ -24,4 +26,25 @@
 </main>
 <footer class="site-footer"><div class="site-footer-grid"><div class="site-footer-brand"><a href="index.html" class="site-footer-logo" aria-label="Bubba Hub home"><img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><div class="site-footer-brand-copy"><a href="index.html" class="site-footer-title">Bubba Hub</a><p>Find, plan &amp; book family activities across Devon &amp; Cornwall.</p></div></div><div class="site-footer-column"><h2>Main menu</h2><nav class="site-footer-links" aria-label="Footer main menu"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">Account</a></nav></div><div class="site-footer-column"><h2>Explore &amp; tools</h2><nav class="site-footer-links" aria-label="Footer explore and tools"><a href="events.html">Events</a><a href="venues.html">Venues</a><a href="planner.html">Planner</a><a href="calendar.html">Calendar</a></nav></div><div class="site-footer-column"><h2>Legal &amp; contact</h2><nav class="site-footer-links" aria-label="Footer legal and contact"><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Conditions</a><a href="mailto:contact@bubbahub.co.uk">Contact Bubba Hub</a></nav></div></div><div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div></footer>
 <script src="/assets/js/app.js"></script><script src="/assets/js/help-support.js"></script>
+<script>
+(async function(){
+ const root=document.getElementById('leaderArticlesList');if(!root)return;
+ try{
+  const response=await fetch('/api/leader-articles.php',{headers:{Accept:'application/json'}});
+  if(!response.ok)throw Error('Unable to load articles');
+  const data=await response.json();if(!data.ok)throw Error('Unable to load articles');
+  root.replaceChildren();
+  if(!data.articles?.length){const p=document.createElement('p');p.textContent='New articles from local class leaders will appear here once approved.';root.append(p);return;}
+  for(const article of data.articles){
+   const card=document.createElement('article');card.className='leader-article-card';
+   const date=document.createElement('small');date.textContent=article.date||'';
+   const heading=document.createElement('h3');heading.textContent=article.title||'Article';
+   const summary=document.createElement('p');summary.textContent=article.excerpt||'';
+   const link=document.createElement('a');link.href=article.url;link.textContent='Read article →';
+   if(!/^https:\/\/bubbahub\.co\.uk(?:\/|$)/.test(link.href)){continue;}
+   card.append(date,heading,summary,link);root.append(card);
+  }
+ }catch(e){root.textContent='Articles are temporarily unavailable. Please check back soon.';}
+})();
+</script>
 </body></html>
