@@ -126,3 +126,17 @@ jobs:
 
           echo "Deployment archive extracted successfully."
           echo "Deployment completed (archive contents were verified before extraction)."
+
+      - name: Verify production pages and assets
+        run: |
+          set -euo pipefail
+          for path in / /directory /calendar /planner /account /leader-login /assets/css/styles.css /assets/js/app.js; do
+            url="https://bubbahub.co.uk${path}"
+            code=$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time 25 "$url")
+            echo "$path: HTTP $code"
+            if [ "$code" != "200" ]; then
+              echo "::error::Production verification failed: $url returned HTTP $code"
+              exit 1
+            fi
+          done
+          echo "Production smoke checks passed."
