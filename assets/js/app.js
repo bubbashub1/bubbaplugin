@@ -838,7 +838,8 @@ void bhHydrateSaved();
       filters.forEach(root=>{
         const toggle=root.querySelector("#advancedToggle");
         const fields=root.querySelector("#advancedFields");
-        if(toggle&&fields){
+        if(toggle&&fields&&!root.closest("#directoryFilters")){
+          // Directory owns its toggle in directory.js; avoid two handlers reversing each other.
           toggle.addEventListener("click",()=>{
             const open=fields.hidden;
             fields.hidden=!open;
@@ -918,7 +919,7 @@ void bhHydrateSaved();
           // Open the actual inline Advanced Filters panel. Do not rely on the
           // old modal/fuzzy overlay classes which are still present elsewhere.
           fields.hidden=false;
-          fields.style.display="block";
+          fields.style.removeProperty("display");
           target.classList.add("is-open");
 
           if(toggle){
