@@ -67,9 +67,7 @@ try {
     bh_newsletter_signup_json(200, [
         'ok'=>true,
         'welcome_email_sent'=>$welcomeEmailSent,
-        'message'=>$welcomeEmailSent
-            ? "You're subscribed to Bubba Hub updates. We've sent you a welcome email."
-            : "You're subscribed to Bubba Hub updates, but we couldn't send the welcome email yet."
+        'message'=>'Thank you. You are now subscribed to Bubba Hub Newsletter.'
     ]);
 } catch (Throwable $e) {
     error_log('[Bubba Hub newsletter] '.$e->getMessage());
