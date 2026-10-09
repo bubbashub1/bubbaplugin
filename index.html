@@ -67,6 +67,18 @@
 .bh-home .home-category-row>a strong,.bh-home .bh-category-description,.bh-home .bh-category-action{display:block;max-width:68%;text-shadow:0 1px 2px rgba(255,255,255,.8)}
 .bh-home .home-category-row>a:nth-child(5){background-image:url('/images/home/card-classes-art.svg')}
 @media(max-width:760px){.bh-home .home-hero-image{min-height:240px}.bh-home .home-category-row>a strong,.bh-home .bh-category-description,.bh-home .bh-category-action{max-width:100%}.bh-home .home-category-row>a{background-size:32% auto;background-position:right bottom}}
+
+/* 2026-10-09: fix feature-card legibility and search layout on live homepage */
+.bh-home .home-category-row>a{background-image:none!important;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;min-width:0;min-height:190px;gap:8px;overflow:hidden}
+.bh-home .home-category-row>a .home-category-icon{flex:none;position:static;transform:none}
+.bh-home .home-category-row>a strong,.bh-home .home-category-row>a .bh-category-description,.bh-home .home-category-row>a .bh-category-action{max-width:100%!important;width:auto;position:static;z-index:auto;text-shadow:none;margin:0;line-height:1.3}
+.bh-home .home-category-row>a .bh-category-description{font-size:.86rem;line-height:1.4}
+.bh-home .home-category-row>a .bh-category-action{margin-top:auto;font-size:.84rem}
+.bh-home .home-search-fields{align-items:stretch}
+.bh-home .home-search-fields>label{min-width:0}
+.bh-home .bh-quick-links{width:100%;margin-top:14px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.bh-home .bh-quick-links a{white-space:normal;text-align:center}
+@media(max-width:760px){.bh-home .home-category-row>a{min-height:165px;padding:16px 12px}.bh-home .home-category-row>a strong{font-size:1.05rem}.bh-home .home-category-row>a .bh-category-description{font-size:.8rem}}
 </style>
 </head>
 <body class="bh-home">
