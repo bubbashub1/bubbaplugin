@@ -433,3 +433,20 @@ body.bh-directory:not(.bh-calendar-page) .directory-hero-actions{
  body.bh-directory:not(.bh-calendar-page) .app-shell{display:block!important}
  body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder]{padding-top:0!important}
 }
+
+
+/* Main sidebar owns these fields; avoid duplicate controls in expanded filters. */
+body.bh-directory:not(.bh-calendar-page) #directoryFilters [data-filter-key="category"],
+body.bh-directory:not(.bh-calendar-page) #directoryFilters [data-filter-key="region"],
+body.bh-directory:not(.bh-calendar-page) #directoryFilters [data-filter-key="town"],
+body.bh-directory:not(.bh-calendar-page) #directoryFilters [data-filter-key="day"]{
+ display:none!important;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-more-search-panel:not([hidden]){
+ background:#e8f1e7;
+ border-radius:18px;
+ padding:16px 14px;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-advanced-filter-field :is(select,input:not([type="checkbox"])){
+ border-radius:12px;
+}
