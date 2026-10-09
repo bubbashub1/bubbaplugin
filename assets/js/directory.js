@@ -80,13 +80,38 @@ const bhInitDirectory=async()=>{
     fillSelect("heroCategory", categoryValues, params.get("category") || "", "Category");
     fillSelect("area", regionValues, params.get("region") || "", "All regions");
     fillSelect("heroRegion", regionValues, params.get("region") || "", "Region");
-    const townValues = [...new Set([
-      ...activities.flatMap(x => bhVenues(x).map(v => v.town || x.town)).filter(Boolean)
-    ])].sort();
-    fillSelect("heroTown", townValues, params.get("town") || "", "Town");
+    const townsByRegion=new Map();
+    activities.forEach(activity=>bhVenues(activity).forEach(venue=>{
+      const region=String(venue.region||activity.region||"").trim();
+      const town=String(venue.town||activity.town||"").trim();
+      if(!region||!town)return;
+      if(!townsByRegion.has(region))townsByRegion.set(region,new Set());
+      townsByRegion.get(region).add(town);
+    }));
+    const updateTowns=(region,selected="")=>{
+      const values=region?[...(townsByRegion.get(region)||[])].sort():[];
+      for(const [id,label] of [["town","All towns"],["heroTown","Town"]]){
+        fillSelect(id,values,selected,label);
+        if($(id)){$(id).disabled=!region;$(id).title=region?"Select a town in "+region:"Select a region first";}
+      }
+    };
+    updateTowns(params.get("region")||"",params.get("town")||"");
+    for(const id of ["area","heroRegion"]){
+      $(id)?.addEventListener("change",()=>{
+        const region=$(id).value;
+        for(const other of ["area","heroRegion"])if($(other))$(other).value=region;
+        updateTowns(region);
+        render();
+      });
+    }
+    for(const id of ["town","heroTown"]){
+      $(id)?.addEventListener("change",()=>{
+        const town=$(id).value;
+        for(const other of ["town","heroTown"])if($(other))$(other).value=town;
+        render();
+      });
+    }
     if ($("heroDay")) $("heroDay").value = params.get("day") || "";
-    fillSelect("town", townValues, params.get("town") || "", "All towns");
-
     if ($("search") && params.get("search")) $("search").value = params.get("search");
     if ($("search") && params.get("q")) $("search").value = params.get("q");
     if ($("search") && params.get("keyword")) $("search").value = params.get("keyword");
