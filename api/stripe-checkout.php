@@ -72,7 +72,21 @@ function bh_stripe_post(string $endpoint, array $params, string $secret): array 
 
 try {
     require __DIR__ . '/db.php';
-    if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+        ini_set('session.use_strict_mode', '1');
+        ini_set('session.use_only_cookies', '1');
+        session_name('BUBBAHUBSESSID');
+        session_set_cookie_params([
+            'lifetime'=>0, 'path'=>'/', 'secure'=>$secure,
+            'httponly'=>true, 'samesite'=>'Lax',
+        ]);
+        session_start();
+    }
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+        bh_stripe_response(405, ['ok'=>false,'message'=>'POST required.']);
+    }
 
     $uid = (int)($_SESSION['bh_user_id'] ?? 0);
     $stripe = bh_stripe_config();
@@ -90,7 +104,7 @@ try {
     if (!in_array($plan, ['family_pro','leader_pro'], true)) $plan='family_pro';
 
     if ($donation) {
-        $amount = (int)($input['amount'] ?? 10);
+        $amount = (int)($input['amount'] ?? 500);
         $amount = max(100, min(50000, $amount));
         $params = [
             'mode'=>'payment',
