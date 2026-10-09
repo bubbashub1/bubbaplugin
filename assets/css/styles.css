@@ -7300,3 +7300,79 @@ input,select,textarea{max-width:100%;}
   }
   body.bh-directory #results.directory-view-grid .activity-footer {margin-top:auto;}
 }
+
+/* =========================================================================
+   BUBBA HUB 2.0 — SHARED VISUAL LANGUAGE (October 2026)
+   Homepage retains its independently tested home-v2.css.
+   Styling only: no changes to behaviour, positioning of modals or JS hooks.
+   ========================================================================= */
+:root{
+  --bh-playful-orange:#ee822c;
+  --bh-playful-cream:#fffdf7;
+  --bh-playful-pink:#fbe4e0;
+  --bh-playful-blue:#def1f4;
+  --bh-playful-mint:#e5f1df;
+  --bh-playful-yellow:#fff0d0;
+  --bh-playful-lilac:#eee7f8;
+  --bh-playful-radius:22px;
+}
+body:not(.bh-home){
+  font-family:'Quicksand',Calibri,Arial,sans-serif;
+  color:#123f31;
+  background-color:var(--bh-playful-cream);
+}
+body:not(.bh-home) :is(h1,h2,h3){
+  font-family:'Quicksand',Calibri,Arial,sans-serif;
+  letter-spacing:-.025em;
+  overflow-wrap:break-word;
+}
+body:not(.bh-home) :is(.page-heading,.directory-hero,.bh-leader-hero,.account-hero){
+  border-radius:var(--bh-playful-radius);
+}
+body:not(.bh-home) :is(.card,.activity-card,.home-lower-card,.admin-setting-card,.leader-card,.account-card,.directory-card){
+  border-radius:var(--bh-playful-radius);
+}
+body:not(.bh-home) :is(.button,.button-primary,.button-soft,.button-secondary,a.button,button.button){
+  border-radius:999px;
+  font-family:'Quicksand',Calibri,Arial,sans-serif;
+  font-weight:700;
+  text-decoration:none;
+}
+body:not(.bh-home) :is(.button-primary,a.button-primary,button.button-primary){
+  background:#174e3b;
+  border-color:#174e3b;
+  color:#fff;
+}
+body:not(.bh-home) :is(.button-primary,a.button-primary,button.button-primary):hover{
+  background:var(--bh-playful-orange);
+  border-color:var(--bh-playful-orange);
+  color:#123f31;
+}
+body:not(.bh-home) :is(input:not([type=checkbox]):not([type=radio]),select,textarea){
+  font-family:'Quicksand',Calibri,Arial,sans-serif;
+  border-radius:14px;
+}
+body:not(.bh-home) :is(.site-header,.site-footer){
+  font-family:'Quicksand',Calibri,Arial,sans-serif;
+}
+body:not(.bh-home) .site-header{
+  background:#edf5ec;
+}
+body:not(.bh-home) .site-header .main-nav a{
+  font-weight:700;
+}
+body:not(.bh-home) :is(.badge,.tag,.pill,.category-badge){
+  border-radius:999px;
+}
+@media(max-width:760px){
+  body:not(.bh-home) :is(.button-primary,a.button-primary,button.button-primary){
+    min-height:44px;
+  }
+  body:not(.bh-home) :is(.card,.activity-card,.admin-setting-card){
+    max-width:100%;
+    min-width:0;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  body:not(.bh-home) :is(.activity-card,.card-link .card){transition:none}
+}
