@@ -25,7 +25,10 @@ if($_SERVER['REQUEST_METHOD']==='POST'&&$action==='send'){
  inboxReply(201,['ok'=>true,'message'=>'Your message has been sent.']);
 }
 if($user['role']!=='leader')inboxReply(403,['ok'=>false,'message'=>'Leader access required.']);
-$q=$db->prepare("SELECT id,email FROM bh_organisers WHERE user_id=? LIMIT 1");$q->execute([$uid]);$org=$q->fetch(PDO::FETCH_ASSOC);
+$org=null;
+$hasOrgUserId=false;
+try{$column=$db->query("SHOW COLUMNS FROM bh_organisers LIKE 'user_id'");$hasOrgUserId=(bool)$column->fetch(PDO::FETCH_ASSOC);}catch(Throwable $columnError){error_log('Leader inbox organiser schema: '.$columnError->getMessage());}
+if($hasOrgUserId){$q=$db->prepare("SELECT id,email FROM bh_organisers WHERE user_id=? LIMIT 1");$q->execute([$uid]);$org=$q->fetch(PDO::FETCH_ASSOC);}
 if(!$org){$q=$db->prepare("SELECT id,email FROM bh_organisers WHERE email=? LIMIT 1");$q->execute([$user['email']]);$org=$q->fetch(PDO::FETCH_ASSOC);}
 if(!$org)inboxReply(403,['ok'=>false,'message'=>'Organiser profile required.']);$oid=(int)$org['id'];
 if($_SERVER['REQUEST_METHOD']==='GET'){
