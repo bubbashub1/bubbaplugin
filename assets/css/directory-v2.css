@@ -92,3 +92,55 @@ body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-more-searc
 @media(prefers-reduced-motion:reduce){
   body.bh-directory:not(.bh-calendar-page) #results .activity-card{transition:none}
 }
+
+/* Desktop action toolbar: override legacy block-width button rules. */
+@media(min-width:761px){
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-search .directory-hero-actions{
+   display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;
+   justify-content:flex-start!important;align-items:center!important;
+   gap:10px!important;width:100%;max-width:none;
+ }
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-search .directory-hero-actions > :is(a,button){
+   display:inline-flex!important;flex:0 0 auto!important;width:auto!important;
+   max-width:none!important;min-width:0!important;margin:0!important;
+   align-items:center;justify-content:center;white-space:nowrap;
+   line-height:1.25;box-sizing:border-box;
+ }
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-actions > :is(a,button){
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid #d1e3d6;border-radius:999px;
+  box-shadow:0 3px 9px rgba(23,78,59,.055);
+  font-size:.9rem;line-height:1.25;transition:background-color .2s ease,transform .2s ease,box-shadow .2s ease;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-actions > :is(a,button):hover{
+  transform:translateY(-2px);box-shadow:0 6px 15px rgba(23,78,59,.13);
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-actions .directory-calendar-hero-button{
+  background:#def1f4;color:#174e3b;border-color:#c7e7e9;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-actions .directory-map-hero-button{
+  background:#fff0d0;color:#174e3b;border-color:#f2dfb5;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-actions .directory-planner-action-button{
+  background:#174e3b;color:#fff;border-color:#174e3b;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-actions .directory-planner-action-button:hover{
+  background:#ee822c;color:#123f31;border-color:#ee822c;
+}
+@media(max-width:760px){
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-search .directory-hero-actions{
+   display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;
+ }
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-actions > :is(a,button){
+   width:100%!important;min-width:0;white-space:normal;text-align:center;margin:0;
+ }
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-actions > :first-child{
+   grid-column:1/-1;
+ }
+}
+@media(max-width:390px){
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-search .directory-hero-actions{
+   grid-template-columns:minmax(0,1fr);
+ }
+}
