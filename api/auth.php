@@ -480,6 +480,22 @@ try {
         ]);
     }
 
+    // Render a friendly mobile-first page for verification links opened in a browser.
+    // API clients and legacy POST requests continue receiving JSON.
+    if ($action === 'verify_email' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        $verificationResponse = static function (int $status, bool $success, string $message): void {
+            http_response_code($status);
+            header('Content-Type: text/html; charset=utf-8');
+            header('Cache-Control: no-store');
+            $heading = $success ? 'Your email has been verified!' : 'We could not verify your email';
+            $description = $success ? 'You can now sign in to your Bubba Hub account and start exploring.' : $message;
+            $heading = htmlspecialchars($heading, ENT_QUOTES, 'UTF-8');
+            $description = htmlspecialchars($description, ENT_QUOTES, 'UTF-8');
+            $symbol = $success ? '&#10003;' : '!';
+            echo '<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Email verification | Bubba Hub</title><link rel="stylesheet" href="/assets/css/styles.css"><style>body{margin:0;background:#f5faf5;color:#194b36;font-family:Quicksand,Calibri,Arial,sans-serif}.bh-v-header{background:#e3f0e6;padding:18px 20px;text-align:center}.bh-v-header img{max-width:220px;width:70%;height:auto}.bh-v-card{box-sizing:border-box;max-width:650px;margin:32px auto;padding:42px 32px;border-radius:30px;background:white;box-shadow:0 6px 28px #174d3020;text-align:center}.bh-v-icon{width:108px;height:108px;display:grid;place-items:center;margin:0 auto 24px;border-radius:50%;background:#d8e6db;color:#174d30;font-size:64px;font-weight:700}.bh-v-card h1{font-size:clamp(30px,6vw,48px);line-height:1.15;margin:0 0 20px}.bh-v-card p{font-size:18px;line-height:1.6;margin:0 0 28px}.bh-v-btn{display:block;padding:17px 20px;border-radius:100px;background:#144400;color:white!important;text-decoration:none!important;font-weight:700;margin:12px 0}.bh-v-btn.secondary{background:#e3f0e6;color:#144400!important}.bh-v-help{margin-top:28px;padding:20px;border-radius:20px;background:#eaf4f4;text-align:left}.bh-v-help p{font-size:15px;margin:8px 0 0}.bh-v-help a{color:#277d85}@media(max-width:700px){.bh-v-card{margin:20px 14px;padding:34px 22px;border-radius:26px}.bh-v-header img{max-width:190px}}</style></head><body><header class="bh-v-header"><a href="/"><img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a></header><main class="bh-v-card"><div class="bh-v-icon" aria-hidden="true">'.$symbol.'</div><h1>'.$heading.'</h1><p>'.$description.'</p><a class="bh-v-btn" href="/auth.html">Sign in to your account &rarr;</a><a class="bh-v-btn secondary" href="/">Go to Bubba Hub homepage</a><div class="bh-v-help"><strong>Need help?</strong><p>If you are having trouble signing in, <a href="/help-support">visit our Support page &rarr;</a></p></div></main></body></html>';
+            exit;
+        };
+
     // Verification links are intentionally usable as a normal GET request.
     if ($action === 'verify_email') {
         try {
@@ -487,13 +503,13 @@ try {
             bh_ensure_email_verification_schema($db);
             $token = trim((string)($_GET['token'] ?? ''));
             if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
-                bh_auth_response(400, ['ok'=>false,'error'=>'invalid_verification_token','message'=>'This verification link is not valid.']);
+                $verificationResponse(400, false, 'This verification link is not valid.');
             }
             $stmt = $db->prepare("SELECT id,user_id,expires_at,used_at FROM bh_email_verifications WHERE token_hash=? LIMIT 1");
             $stmt->execute([hash('sha256',$token)]);
             $v=$stmt->fetch();
             if (!$v || $v['used_at'] !== null || strtotime((string)$v['expires_at']) < time()) {
-                bh_auth_response(400, ['ok'=>false,'error'=>'verification_expired','message'=>'This verification link has expired or has already been used. Please request a new one.']);
+                $verificationResponse(400, false, 'This verification link has expired or has already been used. Please request a new one.');
             }
             $db->beginTransaction();
             try {
@@ -504,10 +520,10 @@ try {
                 if($db->inTransaction()) $db->rollBack();
                 throw $e;
             }
-            bh_auth_response(200,['ok'=>true,'verified'=>true,'message'=>'Your email has been verified. You can now sign in.']);
+            $verificationResponse(200, true, 'Your email has been verified. You can now sign in.');
         } catch (Throwable $e) {
             error_log('Bubba Hub email verification failed: '.$e->getMessage());
-            bh_auth_response(500,['ok'=>false,'error'=>'verification_error','message'=>'We could not verify this email right now. Please try again shortly.']);
+            $verificationResponse(500, false, 'We could not verify this email right now. Please try again shortly.');
         }
     }
 
