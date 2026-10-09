@@ -7446,3 +7446,22 @@ body.bh-directory:not(.bh-calendar-page) .bh-directory-intro{padding:16px 2px 18
 body.bh-directory:not(.bh-calendar-page) .bh-directory-eyebrow{display:inline-block;color:#3c8e96;text-transform:uppercase;letter-spacing:.09em;font-size:.8rem;font-weight:800;margin-bottom:8px}
 body.bh-directory:not(.bh-calendar-page) .bh-directory-intro h1{font-family:'Quicksand',Calibri,Arial,sans-serif;font-size:clamp(1.8rem,3.5vw,3rem);line-height:1.12;letter-spacing:-.045em;font-weight:700;color:#174e3b;margin:0 0 10px}
 body.bh-directory:not(.bh-calendar-page) .bh-directory-intro p{font-size:clamp(.95rem,1.3vw,1.12rem);line-height:1.5;margin:0;color:#416651}
+
+/* Bubba Hub 2.0 final polish: consistent accessible actions, inputs and mobile rhythm.
+   Intentionally avoids overriding checkout widgets, maps and hidden controls. */
+:root{--bh-polish-green:#174e3b;--bh-polish-orange:#ee822c;--bh-polish-focus:#3c8e96}
+body :is(.button,.btn,button.button,a.button){font-family:'Quicksand',Calibri,Arial,sans-serif;font-weight:700;letter-spacing:.005em;text-decoration:none;transition:background-color .18s ease,color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+body :is(.button,.btn,button.button,a.button):focus-visible{outline:3px solid var(--bh-polish-focus);outline-offset:3px}
+body :is(.button,.btn,button.button,a.button):disabled{cursor:not-allowed;opacity:.58;transform:none}
+body :is(.button,.btn,button.button,a.button):not(:disabled):active{transform:translateY(1px)}
+body :is(.button-primary,.btn-primary):not(:disabled):hover{background:var(--bh-polish-orange);border-color:var(--bh-polish-orange);color:#173f32}
+body :is(input:not([type=checkbox]):not([type=radio]),select,textarea):focus-visible{outline:3px solid rgba(60,142,150,.32);outline-offset:2px}
+body :is(.button,.btn,a.button){max-width:100%;box-sizing:border-box}
+@media(max-width:760px){
+ body :is(.button,.btn,button.button,a.button){min-height:44px;white-space:normal;text-align:center}
+ body :is(.app-shell,.admin-subpage-shell){min-width:0}
+ body :is(.admin-panel,.subscription-card,.auth-card){min-width:0}
+}
+@media(prefers-reduced-motion:reduce){
+ body :is(.button,.btn,button.button,a.button){transition:none!important;transform:none!important}
+}
