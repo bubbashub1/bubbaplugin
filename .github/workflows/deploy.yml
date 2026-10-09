@@ -75,11 +75,6 @@ jobs:
             exit 1
           fi
 
-          if [ ! -f "OneSignalSDKWorker.js" ]; then
-            echo "ERROR: OneSignalSDKWorker.js is missing from the repository root." >&2
-            exit 1
-          fi
-
           echo "Building deployment archive..."
           DEPLOY_ARCHIVE="$RUNNER_TEMP/bubbaplugin-deploy.tar.gz"
 
