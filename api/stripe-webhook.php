@@ -111,7 +111,7 @@ try {
         // Family Pro can be purchased without first creating a normal account.
         // Stripe supplies the verified checkout email; create/link the family
         // account here and then attach the subscription to that user.
-        if ($uid <= 0 && $planFromCheckout = (($obj['metadata']['plan'] ?? 'family_pro') === 'family_pro')) {
+        if ($uid <= 0 && ($obj['metadata']['plan'] ?? 'family_pro') === 'family_pro') {
             $email = strtolower(trim((string)($obj['customer_details']['email'] ?? $obj['customer_email'] ?? '')));
             if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $q = $db->prepare("SELECT id,status FROM bh_users WHERE LOWER(email)=? LIMIT 1");
