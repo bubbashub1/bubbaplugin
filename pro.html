@@ -1,38 +1,79 @@
-<!doctype html>
-<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Bubba Hub Pro · Your family hub</title><meta name="description" content="Bubba Hub Pro gives families more ways to save, plan and organise family life.">
-<link rel="stylesheet" href="assets/css/styles.css"><style>
-.pro-demo{max-width:1180px;margin:auto}.pro-hero{background:linear-gradient(135deg,#d8e6db,#eef5ef);border-radius:28px;padding:42px;margin-bottom:24px}.pro-hero h1{font-size:clamp(2.2rem,5vw,4rem);margin:.2rem 0}.pro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.pro-card{background:#fff;border:1px solid #d8e6db;border-radius:20px;padding:22px;box-shadow:0 8px 28px rgba(20,68,0,.06)}.pro-card h2,.pro-card h3{margin-top:0}.pro-price{font-size:2.5rem;font-weight:800;color:#416651}.pro-badge{display:inline-block;background:#416651;color:#fff;border-radius:999px;padding:6px 12px;font-size:.8rem;font-weight:700}.pro-demo-note{background:#fff7dc;border:1px solid #ead38a;border-radius:14px;padding:12px 16px;margin:16px 0}.demo-list{display:grid;gap:10px;padding:0;list-style:none}.demo-list li{padding:10px 12px;background:#f5f8f5;border-radius:10px}.pro-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}.demo-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}.demo-step{padding:16px;border-radius:16px;background:#fff;border:1px solid #d8e6db;text-align:center}.demo-step strong{display:block}.demo-table{width:100%;border-collapse:collapse}.demo-table th,.demo-table td{padding:12px;text-align:left;border-bottom:1px solid #e5ebe5}.tick{font-weight:800;color:#416651}.placeholder{opacity:.7;font-style:italic}@media(max-width:800px){.pro-grid,.demo-flow{grid-template-columns:1fr}.pro-hero{padding:28px 20px}}
-</style><link rel="stylesheet" href="/assets/css/subpages-v2.css"></head>
-<body class="bh-subpage-v2">
-<header class="site-header"><a class="brand" href="index.html"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a>
-<nav class="main-nav"><a href="directory.html">Find activities</a><a href="events.html">Events</a><a href="my-hub.html">My Hub</a><a href="planner-pro.html">Planner Pro</a><a href="leader.html">Class Leaders</a></nav><a class="button button-soft" href="account.html">My account</a></header>
-<main class="app-shell pro-demo">
-<section class="pro-hero"><span class="pro-badge">BUBBA HUB PRO · DEMO</span><h1>Your family. Your plans. Your Bubba Hub.</h1><p>Save the things you love, build family plans, organise your week and keep upcoming activities together in one place.</p>
-<div class="pro-cta"><a class="button button-primary" href="#upgrade">Try Pro demo</a><a class="button button-soft" href="planner-pro.html">Open Planner Pro →</a></div></section>
-<div class="pro-demo-note"><strong>Demo mode:</strong> the cards and sample data below are placeholders. When your database is connected, these sections are designed to be replaced by API data without rebuilding the page.</div>
-<section class="pro-grid">
-<article class="pro-card"><span>👨‍👩‍👧‍👦</span><h2>Family profiles</h2><p>Keep each child's age, interests and planning needs together.</p><ul class="demo-list"><li>Holly · Age 5 <span class="placeholder">demo</span></li><li>Baby · Age 1 <span class="placeholder">demo</span></li></ul></article>
-<article class="pro-card"><span>📅</span><h2>Planner Pro</h2><p>Create separate family, school, holiday and child-focused plans.</p><ul class="demo-list"><li>Family week</li><li>School & clubs</li><li>Summer holidays</li></ul></article>
-<article class="pro-card"><span>♡</span><h2>Saved activities</h2><p>Keep favourite classes ready to add to your plans.</p><ul class="demo-list"><li>Baby Sensory Torquay</li><li>Little Explorers</li><li>Messy Play Club</li></ul></article>
+<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Welcome to Family Pro · Bubba Hub</title><meta name="description" content="Explore Bubba Hub Pro for families."><link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/account-subscription.css"><link rel="stylesheet" href="/assets/css/subpages-v2.css"><style>.pro-welcome-page{max-width:1180px;margin:auto;padding:28px 16px 64px}.pro-welcome-page .page-heading{text-align:center;padding:35px 12px}.pro-welcome-page .page-heading h1{font-size:clamp(2.1rem,5vw,3.8rem);color:#144400}.pro-welcome-page .account-subscription-content{width:100%;max-width:none}.pro-welcome-page .subscription-hero{border-radius:26px}.pro-welcome-page .subscription-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.pro-welcome-page .subscription-card{border-radius:24px}@media(max-width:720px){.pro-welcome-page .subscription-grid{grid-template-columns:1fr}}</style></head><body class="bh-subpage-v2">
+<header class="site-header"><a class="brand" href="/index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="/directory.html">Find activities</a><a href="/events.html">Events</a><a href="/venues.html">Venues</a><a href="/planner.html">My planner</a><a href="/calendar.html">Calendar</a><a href="/my-hub.html">My Hub</a><a href="/leader.html">For class leaders</a><a href="/admin.html">Admin</a></nav><a class="button button-soft" href="/account.html">My account</a></header>
+<main class="app-shell pro-welcome-page"><div class="page-heading"><div><span class="eyebrow">Welcome to Bubba Hub Pro</span><h1>More family adventures. Less organising.</h1><p>Find your next adventure and keep family life beautifully organised.</p></div></div>
+<section class="account-subscription-content">
+<div class="subscription-hero" id="subscriptionHero"><div><span class="eyebrow" id="subscriptionEyebrow">Bubba Hub Pro</span><h2 id="subscriptionTitle">Your family. Your plans. Your Bubba Hub.</h2><p id="subscriptionText">Explore Family Pro and unlock the fuller family planning experience.</p></div><span class="subscription-badge" id="subscriptionBadge">FAMILY PRO</span></div>
+<section class="subscription-grid"><article class="subscription-card"><div class="subscription-card-top"><span class="feature-icon">📅</span><span class="plan-label">Family</span></div><h2>Free account</h2><p>Find it, save it, plan it and book activities without a subscription.</p><ul><li>Find local activities and support</li><li>Save activities</li><li>Use family profiles</li><li>Build your planner</li></ul><div class="subscription-price">£0 <small>forever</small></div><span class="button button-soft subscription-current">Free plan</span></article>
+<article class="subscription-card subscription-pro"><div class="subscription-card-top"><span class="feature-icon">⭐</span><span class="plan-label">Recommended</span></div><h2>Family Pro</h2><p>Everything in Free, plus the organisation tools that make family life easier to plan, remember and manage.</p><ul><li>Everything in Free</li><li>Multiple custom planners</li><li>Plans for each child</li><li>Smart activity suggestions</li><li>My Plans weekly overview</li><li>Notes & reminders</li><li>My activity lists</li><li>Advanced calendar, printing & export</li><li>Full booking dashboard</li></ul><div class="subscription-pricing-choice" role="group" aria-label="Choose Family Pro billing"><label class="subscription-price-option"><input type="radio" name="proBilling" value="annual" checked><span><strong>£20/year</strong><small>Save £5 with annual</small></span></label><label class="subscription-price-option"><input type="radio" name="proBilling" value="monthly"><span><strong>£2.50/month</strong><small>Pay monthly</small></span></label></div><button class="button button-primary" id="proAction" type="button">Upgrade to Family Pro →</button><p id="checkoutMessage" aria-live="polite"></p></article>
 </section>
-<section class="admin-panel" style="margin-top:24px"><span class="eyebrow">A complete family journey</span><h2>From finding an activity to having it in your calendar</h2><div class="demo-flow"><div class="demo-step">1<strong>Find</strong>Browse activities</div><div class="demo-step">2<strong>Save</strong>Keep favourites</div><div class="demo-step">3<strong>Plan</strong>Add to Planner Pro</div><div class="demo-step">4<strong>Book</strong>Reserve a place</div></div></section>
-<section id="upgrade" class="pro-grid" style="margin-top:24px">
-<article class="pro-card"><span class="eyebrow">Free</span><h2>Family</h2><div class="pro-price">£0</div><p>Get started with the core Bubba Hub experience.</p><ul class="demo-list"><li class="tick">✓ Find activities</li><li class="tick">✓ Save activities</li><li class="tick">✓ Family account</li></ul><span class="button button-soft">Current demo</span></article>
-<article class="pro-card" style="border:2px solid #416651"><span class="pro-badge">LEAFLET OFFER</span><h2>Family Pro</h2><div class="pro-offer">Leaflet offer · 50% off with code <strong>WELCOME67</strong></div><p>More planning and organisation for family life.</p><ul class="demo-list"><li class="tick">✓ Personalised My Hub &amp; My Plans</li><li class="tick">✓ Multiple custom planners</li><li class="tick">✓ Plans for each child</li><li class="tick">✓ Smart activity suggestions</li><li class="tick">✓ Notes &amp; reminders</li><li class="tick">✓ My activity lists &amp; advanced calendar</li><li class="tick">✓ Full booking dashboard</li></ul><button class="button button-primary" id="activateDemo">Activate Pro demo</button></article>
-<article class="pro-card"><span class="eyebrow">Already Pro?</span><h2>Your Pro dashboard</h2><p>Jump straight into the tools that make Bubba Hub useful every week.</p><div class="pro-cta"><a class="button button-soft" href="my-hub.html">My Hub</a><a class="button button-soft" href="planner-pro.html">Planner Pro</a><a class="button button-soft" href="calendar.html">Calendar</a></div></article>
-</section>
-<section class="admin-panel" style="margin-top:24px"><span class="eyebrow">Demo data → live data</span><h2>Built with replaceable data sources</h2><table class="demo-table"><tr><th>Demo component</th><th>Future source</th></tr><tr><td>Family members</td><td><code>api/my-hub.php</code></td></tr><tr><td>Saved activities</td><td><code>api/my-hub.php</code> / favourites</td></tr><tr><td>Planner items</td><td><code>api/planner.php</code></td></tr><tr><td>Subscription</td><td><code>api/subscription.php</code> / payment system</td></tr><tr><td>Bookings</td><td><code>api/reservations.php</code></td></tr></table></section>
-<section id="support" class="admin-panel" style="margin-top:18px"><h2>Support Bubba Hub</h2><p>If Bubba Hub is useful to your family, help us keep it running with a voluntary contribution.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="button button-primary" type="button" data-stripe-payment="family_pro" data-stripe-donation="1" data-stripe-amount="5">Support · £5</button><button class="button button-soft" type="button" data-stripe-payment="family_pro" data-stripe-donation="1" data-stripe-amount="10">Support · £10</button><button class="button button-soft" type="button" data-stripe-payment="family_pro" data-stripe-donation="1" data-stripe-amount="20">Support · £20</button></div></section></main>
-<footer class="site-footer"><div class="site-footer-bottom"><span>© 2026 Bubba Hub</span><span>Devon & Cornwall</span><a href="support.html">Support Bubba Hub</a></div></footer>
+<section class="admin-panel subscription-details"><div class="admin-panel-head"><div><span class="eyebrow">Live account status</span><h2 id="liveStatusTitle">Checking your plan…</h2></div></div><div class="subscription-info-grid"><div><strong>Family Pro</strong><p id="liveStatusText">Your subscription status is checked from your Bubba Hub account.</p></div><div><strong>Billing</strong><p>Choose monthly or annual billing above. Payment is handled securely by Stripe.</p></div><div><strong>Upgrade</strong><p>Your Family Pro access is activated automatically after Stripe confirms payment.</p></div></div></section>
+<section class="admin-panel subscription-help"><h2>Support Bubba Hub</h2><p>If Bubba Hub helps your family, you can make a voluntary contribution to help keep the service running.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="button button-soft" type="button" data-stripe-payment="family_pro" data-stripe-donation="1" data-stripe-amount="5">Support Bubba Hub · £5</button></div></section><section class="admin-panel subscription-help"><h2>Ready to explore?</h2><p>Once payment is confirmed, your Family Pro status is updated automatically from Stripe.</p><a class="button button-primary" href="/my-hub.html">Explore My Hub →</a></section>
+</section></main>
+<footer class="site-footer"><div class="site-footer-grid"><div class="site-footer-brand"><a href="/index.html" class="site-footer-logo" aria-label="Bubba Hub home"><img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><div class="site-footer-brand-copy"><a href="/index.html" class="site-footer-title">Bubba Hub</a><p>Find, plan &amp; book family activities across Devon &amp; Cornwall.</p></div></div><div class="site-footer-column"><h2>Main menu</h2><nav class="site-footer-links" aria-label="Footer main menu"><a href="/directory.html">Find activities</a><a href="/my-hub.html">My Hub</a><a href="/help-support.html">Support &amp; Guidance</a><a href="/leader.html">Class Leaders</a><a href="/account.html">Account</a></nav></div><div class="site-footer-column"><h2>Explore &amp; tools</h2><nav class="site-footer-links" aria-label="Footer explore and tools"><a href="/events.html">Events</a><a href="/venues.html">Venues</a><a href="/planner.html">Planner</a><a href="/calendar.html">Calendar</a></div><div class="site-footer-column"><h2>Legal &amp; contact</h2><nav class="site-footer-links" aria-label="Legal &amp; contact"><a href="privacy.html">Privacy</a><a href="/terms.html">Terms &amp; Conditions</a><a href="mailto:contact@bubbahub.co.uk">Contact Bubba Hub</a></div></div><div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div></footer>
+<script src="/assets/js/site-auth.js"></script><script src="/assets/js/app.js"></script>
 <script>
 (async()=>{
- try{
-  const r=await fetch("api/subscription.php",{credentials:"same-origin",cache:"no-store"}),d=await r.json();
-  const b=document.getElementById("activateDemo");
-  if(d.pro&&b){b.textContent="✓ Family Pro active";b.disabled=true;b.dataset.live="1";}
- }catch(e){}
+  const subscriptionAction=document.getElementById("proAction");
+  const title=document.getElementById("liveStatusTitle");
+  const text=document.getElementById("liveStatusText");
+  const badge=document.getElementById("subscriptionBadge");
+  const msg=document.getElementById("checkoutMessage");
+  const billingInputs=[...document.querySelectorAll('input[name="proBilling"]')];
+
+  // Family Pro checkout is deliberately available to visitors. A Bubba Hub
+  // family account is created automatically from the Stripe checkout email.
+  let signedIn=false;
+  try{
+    const authResponse=await fetch("/api/auth.php?action=me",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});
+    const authData=await authResponse.json();
+    signedIn=!!(authData.authenticated||authData.family_authenticated||authData.is_admin);
+
+    if(signedIn){
+      const r=await fetch("/api/subscription.php",{credentials:"same-origin",cache:"no-store"});
+      const d=await r.json();
+      if(d.pro){
+        title.textContent="⭐ Family Pro active";
+        text.textContent="Your Family Pro access is active on this account.";
+        badge.textContent="PRO ACTIVE";
+        document.getElementById("subscriptionEyebrow").textContent="Bubba Hub Pro · Active";
+        document.getElementById("subscriptionText").textContent="Your Family Pro account is ready — explore your full family hub.";
+        subscriptionAction.textContent="Open Family Pro →";
+        billingInputs.forEach(input=>input.disabled=true);
+        subscriptionAction.onclick=()=>location.href="/pro.html";
+        return;
+      }
+    }
+  }catch(e){}
+
+  title.textContent="Family Pro";
+  text.textContent=signedIn
+    ?"Choose monthly or annual billing, then upgrade securely with Stripe Checkout."
+    :"Choose monthly or annual billing. You can create your Family Pro account as part of checkout.";
+  badge.textContent="UPGRADE";
+
+  subscriptionAction.onclick=async()=>{
+    if(window.BHStripeModal){ const selected=document.querySelector('input[name="proBilling"]:checked'); await window.BHStripeModal.open({plan:"family_pro",billing:selected?.value||"annual"}); subscriptionAction.disabled=false; subscriptionAction.textContent="Upgrade to Family Pro →"; return; }
+
+    const selected=document.querySelector('input[name="proBilling"]:checked');
+    const billing=selected ? selected.value : "annual";
+    subscriptionAction.disabled=true;
+    subscriptionAction.textContent="Opening secure checkout…";
+    msg.textContent="";
+    try{
+      const r=await fetch("/api/stripe-checkout.php",{
+        method:"POST",
+        credentials:"same-origin",
+        headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body:JSON.stringify({billing})
+      });
+      const d=await r.json();
+      if(!r.ok||!d.url) throw new Error(d.message||d.error||"Unable to start checkout.");
+      location.href=d.url;
+    }catch(e){
+      msg.textContent=e.message||"Unable to start checkout.";
+      subscriptionAction.disabled=false;
+      subscriptionAction.textContent="Upgrade to Family Pro →";
+    }
+  };
 })();
-document.getElementById('activateDemo')?.addEventListener('click',()=>{localStorage.setItem('BH_PRO_DEMO','1');document.getElementById('activateDemo').textContent='✓ Pro demo active';document.getElementById('activateDemo').disabled=true;});
-if(localStorage.getItem('BH_PRO_DEMO')==='1' && !document.getElementById('activateDemo')?.dataset.live){document.getElementById('activateDemo').textContent='✓ Pro demo active';document.getElementById('activateDemo').disabled=true;}
-</script><script src="assets/js/stripe-modal.js"></script></body></html>
+</script><script src="/assets/js/stripe-modal.js"></script></body></html>
