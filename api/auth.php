@@ -574,7 +574,7 @@ try {
         bh_auth_response(400, ['ok' => false, 'error' => 'invalid_json']);
     }
 
-    if (!in_array($action, ['login','register','leader_register','leader_upgrade','google','facebook','forgot_password','reset_password','logout'], true)) {
+    if (!in_array($action, ['login','register','leader_register','leader_upgrade','resend_verification','google','facebook','forgot_password','reset_password','logout'], true)) {
         bh_auth_response(400, ['ok' => false, 'error' => 'unknown_action']);
     }
 
@@ -593,6 +593,34 @@ try {
 
     $authContext = trim((string)($body['context'] ?? 'family'));
     if (!in_array($authContext, ['family','leader'], true)) $authContext = 'family';
+
+    /* Resend verification only to the signed-in account's registered email. */
+    if ($action === 'resend_verification') {
+        $userId=(int)($_SESSION['bh_user_id'] ?? 0);
+        if ($userId<1 || (empty($_SESSION['bh_family_authenticated']) && empty($_SESSION['bh_leader_authenticated']))) {
+            bh_auth_response(401,['ok'=>false,'message'=>'Please sign in before requesting a verification email.']);
+        }
+        bh_rate_limit($db,'verify-resend-user:'.$userId,3,3600);
+        $stmt=$db->prepare("SELECT email,email_verified_at FROM bh_users WHERE id=? AND status='active' LIMIT 1");
+        $stmt->execute([$userId]);$user=$stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$user) bh_auth_response(403,['ok'=>false,'message'=>'Your account is not active.']);
+        if (!empty($user['email_verified_at'])) bh_auth_response(200,['ok'=>true,'already_verified'=>true,'message'=>'Your email is already verified. Refresh and try again.']);
+        try {
+            bh_ensure_email_verification_schema($db);
+            $token=bin2hex(random_bytes(32));
+            $db->prepare("INSERT INTO bh_email_verifications (user_id,token_hash,expires_at) VALUES (?,?,DATE_ADD(NOW(),INTERVAL 24 HOUR))")->execute([$userId,hash('sha256',$token)]);
+            $base=rtrim((string)(($config['app']['base_url'] ?? '') ?: (getenv('BUBBAHUB_BASE_URL') ?: 'https://bubbahub.co.uk')),'/');
+            $url=$base.'/api/auth.php?action=verify_email&token='.rawurlencode($token);
+            $html='<div style="font-family:Arial,sans-serif;color:#144400;max-width:560px;margin:auto"><h2>Verify your Bubba Hub email</h2><p>Confirm your email address to continue setting up your class leader profile.</p><p><a href="'.htmlspecialchars($url,ENT_QUOTES,'UTF-8').'" style="background:#144400;color:white;padding:12px 18px;border-radius:9px;display:inline-block;text-decoration:none">Verify my email</a></p><p>This link expires in 24 hours.</p></div>';
+            require_once __DIR__.'/mailer.php';
+            $sent=bh_send_smtp_mail((string)$user['email'],'Verify your Bubba Hub email',$html,"Verify your Bubba Hub email: ".$url."\nThis link expires in 24 hours.");
+            if (!$sent) bh_auth_response(503,['ok'=>false,'message'=>'The verification email could not be sent. Please contact Bubba Hub support.']);
+            bh_auth_response(200,['ok'=>true,'message'=>'Verification email sent to your registered email address. Check your inbox and spam folder.']);
+        } catch(Throwable $e) {
+            error_log('Bubba Hub verification resend failed: '.$e->getMessage());
+            bh_auth_response(500,['ok'=>false,'message'=>'Unable to send verification email right now. Please try again later.']);
+        }
+    }
 
     /* Upgrade an existing verified family account without creating a second user. */
     if ($action === 'leader_upgrade') {
