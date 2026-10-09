@@ -50,3 +50,82 @@
 .bh-home .home-category-row a:last-child{grid-column:auto}
 @media(max-width:760px){.bh-home .home-hero{min-height:0;width:100%;padding:22px 15px 30px}.bh-home .home-hero-copy{width:100%;padding:0;margin:0}.bh-home .home-hero-image{min-height:245px}.bh-home .home-search{left:auto;right:auto;bottom:auto;padding:16px}.bh-home .home-category-row{width:100%;margin:0 auto;padding:20px 15px 35px}.bh-home .home-search-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.bh-home .home-search-fields .button{grid-column:1/-1}}
 @media(max-width:400px){.bh-home .home-search-fields{grid-template-columns:1fr}.bh-home .home-category-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Planner promotional band: correct legacy three-column layout mismatch */
+.bh-home .home-plan-band.home-plan-pro-band{
+  display:grid;
+  grid-template-columns:minmax(280px,.9fr) minmax(0,1.65fr);
+  align-items:stretch;
+  gap:clamp(20px,3vw,44px);
+  width:min(1440px,calc(100% - 30px));
+  margin:28px auto;
+  padding:clamp(24px,3vw,44px);
+  min-height:0;
+  overflow:visible;
+  border-radius:28px;
+  background:linear-gradient(135deg,#edf6e8,#e0f0e9);
+}
+.bh-home .home-plan-pro-band .home-plan-intro{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:16px;
+  min-width:0;
+  margin:0;
+}
+.bh-home .home-plan-pro-band .home-plan-photo{
+  flex:none;
+  width:100px;
+  height:100px;
+  border:6px solid #fff;
+  margin:0;
+  border-radius:50%;
+  overflow:hidden;
+}
+.bh-home .home-plan-pro-band .home-plan-photo img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.bh-home .home-plan-pro-band .home-plan-copy{min-width:0;width:100%;max-width:none}
+.bh-home .home-plan-pro-band .home-plan-copy h2{
+  font-family:'Quicksand',Calibri,Arial,sans-serif;
+  font-weight:700;
+  font-size:clamp(1.9rem,2.7vw,3.2rem);
+  line-height:1.12;
+  letter-spacing:-.035em;
+  overflow-wrap:normal;
+  word-break:normal;
+  margin:10px 0 14px;
+}
+.bh-home .home-plan-pro-band .home-plan-copy p{font-size:1rem;line-height:1.55;max-width:450px;margin:0 0 20px}
+.bh-home .home-plan-pro-band .home-plan-cards{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  min-width:0;
+  align-items:stretch;
+}
+.bh-home .home-plan-pro-band .home-plan-card{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:8px;
+  min-width:0;
+  padding:22px 18px;
+  background:#fff;
+  border-radius:22px;
+}
+.bh-home .home-plan-pro-band .home-plan-card h3{font-size:clamp(1.05rem,1.4vw,1.3rem);line-height:1.25;margin:0}
+.bh-home .home-plan-pro-band .home-plan-card p{font-size:.9rem;line-height:1.5;margin:0}
+.bh-home .home-plan-pro-band .home-plan-card ul{padding-left:18px;margin:8px 0 14px}
+.bh-home .home-plan-pro-band .home-plan-card .button{margin-top:auto;max-width:100%;white-space:normal;text-align:center}
+@media(max-width:1150px){
+ .bh-home .home-plan-band.home-plan-pro-band{grid-template-columns:1fr}
+ .bh-home .home-plan-pro-band .home-plan-intro{display:grid;grid-template-columns:100px minmax(0,1fr);align-items:center}
+ .bh-home .home-plan-pro-band .home-plan-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:700px){
+ .bh-home .home-plan-band.home-plan-pro-band{width:calc(100% - 24px);padding:20px;gap:22px}
+ .bh-home .home-plan-pro-band .home-plan-intro{grid-template-columns:1fr}
+ .bh-home .home-plan-pro-band .home-plan-cards{grid-template-columns:1fr}
+ .bh-home .home-plan-pro-band .home-plan-copy h2{font-size:clamp(1.8rem,7vw,2.6rem)}
+ .bh-home .home-plan-pro-band .home-plan-card{padding:20px}
+}
