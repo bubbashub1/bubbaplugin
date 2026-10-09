@@ -44,3 +44,11 @@ body.bh-subpage-v2{background:#fffdf7;color:#174e3b;font-family:'Quicksand',Cali
 @media print{
  .bh-subpage-v2 .app-shell :is(.page-heading,.bh-leader-hero,.subscription-hero,.account-hero,.pro-hero){box-shadow:none}
 }
+
+/* Final page-level finishing details */
+.bh-subpage-v2 .app-shell :is(.admin-panel,.subscription-card,.pricing-card,.account-panel){overflow-wrap:anywhere}
+.bh-subpage-v2 .app-shell :is(.button,.btn){border-radius:999px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding-inline:18px}
+.bh-subpage-v2 .app-shell :is(.button-primary,.btn-primary){background:#174e3b;color:#fff;border-color:#174e3b}
+.bh-subpage-v2 .app-shell :is(.button-primary,.btn-primary):not(:disabled):hover{background:#ee822c;color:#173f32;border-color:#ee822c}
+.bh-subpage-v2 .app-shell :is(.admin-panel,.subscription-card,.pricing-card,.account-panel){box-shadow:0 8px 26px rgba(23,78,59,.055)}
+@media(max-width:760px){.bh-subpage-v2 .app-shell :is(.button,.btn){max-width:100%;white-space:normal;text-align:center}}
