@@ -376,10 +376,15 @@ const bhInitDirectory=async()=>{
       markers.forEach(marker=>marker.remove());
       markers=[];
       if(directoryHeatLayer){directoryHeatLayer.remove();directoryHeatLayer=null;}
-      const locations=list.flatMap(activity=>bhVenues(activity).map(venue=>({activity,venue}))).filter(({venue})=>Number.isFinite(Number(venue.lat))&&Number.isFinite(Number(venue.long)));
+      const locations=list.flatMap(activity=>bhVenues(activity).map(venue=>({activity,venue}))).filter(({venue})=>{
+        const lat=Number(venue.lat),lng=Number(venue.long);
+        return Number.isFinite(lat)&&Number.isFinite(lng)&&lat>=49&&lat<=52&&lng>=-7&&lng<=-1;
+      });
       if(typeof L.heatLayer==="function"){
         directoryHeatLayer=L.heatLayer(locations.map(({venue})=>[Number(venue.lat),Number(venue.long),1]),{radius:24,blur:18,maxZoom:13,minOpacity:0.3}).addTo(map);
-        if(locations.length)map.fitBounds(L.latLngBounds(locations.map(({venue})=>[Number(venue.lat),Number(venue.long)])),{padding:[25,25],maxZoom:12});
+        const bounds=locations.length?L.latLngBounds(locations.map(({venue})=>[Number(venue.lat),Number(venue.long)])):null;
+        if(bounds?.isValid())map.fitBounds(bounds,{padding:[25,25],maxZoom:11});
+        else map.setView([50.55,-3.75],9);
       } else {
         markers=bhMapEngine.render(map,list,popupHtml,markers);
       }
