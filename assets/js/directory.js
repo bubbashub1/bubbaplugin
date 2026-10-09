@@ -488,12 +488,12 @@ const bhInitDirectory=async()=>{
       // show sessions after the visitor has narrowed the directory results.
       const hasCalendarFilter = () => {
         const search = $("search")?.value.trim() || "";
-        const category = $("category")?.value || "";
-        const region = $("area")?.value || "";
-        const town = $("town")?.value || "";
+        const category = $("heroCategory")?.value || $("category")?.value || "";
+        const region = $("heroRegion")?.value || $("area")?.value || "";
+        const town = $("heroTown")?.value || $("town")?.value || "";
         const minAge = Number($("ageMin")?.value ?? 0);
         const maxAge = Number($("ageMax")?.value ?? 9);
-        const day = $("day")?.value || "";
+        const day = $("heroDay")?.value || $("day")?.value || "";
         const maxPrice = $("maxPrice")?.value || "";
         const freeOnly = $("free")?.checked || false;
         return !!(search || category || region || town || day || maxPrice || freeOnly || minAge > 0 || maxAge < 9);
@@ -648,12 +648,12 @@ const bhInitDirectory=async()=>{
     const render = () => {
       updateViewVisibility();
       const search = $("search")?.value.trim().toLowerCase() || "";
-      const category = $("category")?.value || "";
-      const region = $("area")?.value || "";
-      const town = $("town")?.value || "";
+      const category = $("heroCategory")?.value || $("category")?.value || "";
+      const region = $("heroRegion")?.value || $("area")?.value || "";
+      const town = $("heroTown")?.value || $("town")?.value || "";
       const minAge = Number($("ageMin")?.value ?? 0);
       const maxAge = Number($("ageMax")?.value ?? 9);
-      const day = $("day")?.value || "";
+      const day = $("heroDay")?.value || $("day")?.value || "";
       const maxPrice = $("maxPrice")?.value || "";
       const freeOnly = $("free")?.checked || false;
       const sessionLength = $("sessionLength")?.value || "";
