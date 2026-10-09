@@ -2,6 +2,16 @@
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
+// Log startup failures even when PHP cannot reach the API exception handler.
+register_shutdown_function(static function (): void {
+    $error=error_get_last();
+    if (!$error || !in_array($error['type'],[E_ERROR,E_PARSE,E_CORE_ERROR,E_COMPILE_ERROR,E_USER_ERROR],true)) return;
+    error_log('BH leader portal fatal: '.$error['message'].' in '.$error['file'].':'.$error['line']);
+    if (headers_sent()) return;
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['ok'=>false,'error'=>'leader_portal_fatal','message'=>'Leader portal encountered a server error.','diagnostic'=>'fatal_at_line_'.$error['line']]);
+});
 try {
 require_once __DIR__.'/db.php';
 require_once __DIR__.'/mailer.php';
@@ -262,4 +272,4 @@ if($action==='save_booking'){
  $id=(int)($b['id']??0);$status=$b['status']??'';if(!in_array($status,['reserved','confirmed','cancelled','attended'],true))lp(422,['ok'=>false,'error'=>'invalid_status']);$q=$db->prepare("UPDATE bh_booking_reservations br JOIN bh_booking_slots bs ON bs.id=br.slot_id JOIN bh_activities a ON a.id=bs.activity_id SET br.status=? WHERE br.id=? AND a.organiser_id=?");$q->execute([$status,$id,$oid]);if(!$q->rowCount())lp(404,['ok'=>false,'error'=>'booking_not_found']);lp(200,['ok'=>true]);
 }
 lp(400,['ok'=>false,'error'=>'unknown_action']);
-} catch (Throwable $e) {http_response_code(500);echo json_encode(['ok'=>false,'error'=>'leader_portal_error','message'=>$e->getMessage()],JSON_UNESCAPED_SLASHES);exit;}
+} catch (Throwable $e) {error_log('BH leader portal exception: '.$e->getMessage().' in '.$e->getFile().':'.$e->getLine());http_response_code(500);echo json_encode(['ok'=>false,'error'=>'leader_portal_error','message'=>'Leader portal encountered a server error.','diagnostic'=>'exception_at_line_'.$e->getLine()],JSON_UNESCAPED_SLASHES);exit;}
