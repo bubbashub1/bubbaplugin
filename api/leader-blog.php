@@ -17,6 +17,7 @@ else{$q=$db->prepare("SELECT * FROM bh_organisers WHERE email=? LIMIT 1");$q->ex
 $org=$q->fetch(PDO::FETCH_ASSOC);
 if(!$org)bhBlogReply(403,['ok'=>false,'message'=>'Organiser profile required.']);
 $pro=false;foreach(['plan','membership_plan','membership_tier','subscription_plan','tier'] as $column){if(array_key_exists($column,$org)){$pro=in_array(strtolower(trim((string)$org[$column])),['pro','premium','ultimate'],true);break;}}
+if(!$pro){try{$t=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_user_subscriptions'");if((int)$t->fetchColumn()){ $p=$db->prepare("SELECT COUNT(*) FROM bh_user_subscriptions WHERE user_id=? AND plan='leader_pro' AND status IN ('active','trialing') AND (expires_at IS NULL OR expires_at>UTC_TIMESTAMP())");$p->execute([$uid]);$pro=(int)$p->fetchColumn()>0; }}catch(Throwable $ignored){error_log('Leader blog subscription lookup: '.$ignored->getMessage());}}
 if(!$pro)bhBlogReply(403,['ok'=>false,'message'=>'Blog publishing requires Leader Pro.']);
 $wp=dirname(__DIR__).'/wp-load.php';
 if(!is_file($wp))bhBlogReply(503,['ok'=>false,'message'=>'WordPress is not available.']);
