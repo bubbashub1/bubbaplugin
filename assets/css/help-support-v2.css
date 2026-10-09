@@ -90,3 +90,24 @@ body.bh-support{background:#fffdf7;color:#123f31;font-family:'Quicksand',Calibri
  .bh-support .support-topic{min-height:0;padding:19px;gap:9px;border-radius:20px}
 }
 @media(prefers-reduced-motion:reduce){.bh-support .support-topic{transition:none}}
+
+/* Support hub: Ask / FAQs / Blog displayed as three equal columns on desktop. */
+@media(min-width:1051px){
+ .bh-support .support-columns{
+   display:contents!important;
+ }
+ .bh-support .app-shell{
+   display:grid!important;
+   grid-template-columns:repeat(3,minmax(0,1fr));
+   gap:20px;
+ }
+ .bh-support .support-hero,
+ .bh-support .support-topic-grid,
+ .bh-support .app-shell > .admin-panel:last-of-type{
+   grid-column:1/-1;
+ }
+ .bh-support #leader-articles{grid-column:3;grid-row:3;margin:0!important;}
+ .bh-support #ask > .admin-panel:first-child{grid-column:1;grid-row:3;}
+ .bh-support #guidance{grid-column:2;grid-row:3;}
+ .bh-support #leaderArticlesList{grid-template-columns:minmax(0,1fr);}
+}
