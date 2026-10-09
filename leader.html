@@ -4,7 +4,37 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Leader Portal · Bubba Hub</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/portal-v2.css"></head>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/portal-v2.css"><style>
+/* Dashboard-only layout: less duplication, clearer priorities. */
+.bh-leader-v2 .bh-leader-page{max-width:1380px;margin:auto;padding:20px 20px 50px}
+.bh-leader-v2 .bh-leader-hero{padding:30px 34px;border-radius:22px;margin-bottom:22px;box-shadow:none}
+.bh-leader-v2 .bh-leader-hero h1{font-size:clamp(2rem,3vw,3rem);margin:5px 0 9px}
+.bh-leader-v2 .bh-leader-hero p{font-size:1rem;max-width:520px;margin:0}
+.bh-leader-v2 .bh-leader-hero .hero-actions{gap:8px}
+.bh-leader-v2 .bh-leader-stats-v2{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 20px}
+.bh-leader-v2 .bh-leader-stat{padding:18px;border-radius:18px;background:#fff!important;border:1px solid #dbe7dd;min-height:110px;box-shadow:none}
+.bh-leader-v2 .bh-leader-stat:hover{border-color:#3c8e96;background:#f4faf6!important}
+.bh-leader-v2 .bh-leader-stat small{display:none}
+.bh-leader-v2 .bh-leader-stat strong{font-size:1.8rem}
+.bh-leader-v2 .bh-leader-stat b{font-size:.85rem}
+.bh-leader-v2 .bh-leader-dashboard-grid{gap:14px;margin-bottom:26px}
+.bh-leader-v2 .bh-leader-panel{padding:22px;border-radius:18px;box-shadow:none}
+.bh-leader-v2 .bh-leader-panel h2{font-size:1.45rem}
+.bh-leader-v2 .leader-dashboard-section-head{margin:6px 0 12px}
+.bh-leader-v2 .leader-dashboard-section-head h2{font-size:1.55rem;margin:0 0 4px}
+.bh-leader-v2 .leader-dashboard-section-head p{margin:0;color:#617261}
+.bh-leader-v2 .bh-leader-portal-tools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:22px}
+.bh-leader-v2 .bh-leader-tool{background:#f5f9f5!important;border:1px solid #dce8de;border-radius:17px;min-height:116px;padding:17px}
+.bh-leader-v2 .bh-leader-tool:hover{background:#e5f1e7!important}
+.bh-leader-v2 .leader-pro-banner{padding:18px 24px;border-radius:18px;box-shadow:none;margin:0 0 20px}
+.bh-leader-v2 .leader-pro-banner h2{font-size:1.3rem;margin:3px 0}
+.bh-leader-v2 .leader-pro-banner p{font-size:.9rem;margin:0}
+.bh-leader-v2 .leader-pro-banner .eyebrow{font-size:.7rem}
+.bh-leader-v2 .bh-support-banner{border-radius:18px}
+.bh-leader-v2 .bh-leader-hidden-stats{display:none}
+@media(max-width:980px){.bh-leader-v2 .bh-leader-stats-v2,.bh-leader-v2 .bh-leader-portal-tools{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.bh-leader-v2 .bh-leader-page{padding:15px 14px 38px}.bh-leader-v2 .bh-leader-hero{padding:24px 18px}.bh-leader-v2 .bh-leader-stats-v2{gap:9px}.bh-leader-v2 .bh-leader-stat{padding:13px;min-height:98px}.bh-leader-v2 .bh-leader-stat strong{font-size:1.5rem}.bh-leader-v2 .bh-leader-panel{padding:18px}.bh-leader-v2 .leader-pro-banner{padding:20px;gap:15px}}
+</style></head>
 <body class="bh-leader-v2" data-leader-page="dashboard">
 <header class="site-header">
   <a class="brand" href="/index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a>
@@ -20,40 +50,34 @@
 
 <main class="app-shell bh-leader-page">
 <section class="page-heading bh-leader-hero">
-<div><span class="eyebrow">Welcome back</span><h1 id="leaderWelcome">Welcome back</h1><p>Manage your listings, bookings, availability and support from your Bubba Hub leader portal.</p></div>
+<div><span class="eyebrow">Welcome back</span><h1 id="leaderWelcome">Welcome back</h1><p>Your classes, schedule and bookings in one place.</p></div>
 <div class="hero-actions">
 <button class="button button-primary" type="button" id="addListingButton">＋ Add a class</button>
 <a class="button button-soft" id="leaderFrontPageLink" href="/organiser.html">View My Front Page →</a>
-<a class="button button-soft" href="/leader/profile">Account Settings →</a>
+<a class="button button-soft" href="/leader/profile">Settings →</a>
 </div>
 </section>
 
-<section class="account-pro-banner leader-pro-banner" id="leaderProBanner">
-<div><span class="eyebrow">Bubba Hub Leader Pro</span><h2 id="leaderProTitle">Get more from your leader account</h2><p id="leaderProText">Upgrade to Leader Pro for enhanced tools for your classes and organiser profile.</p></div>
-<a class="button button-primary" id="leaderProAction" href="/pro.html#leader-pro">Upgrade to Pro →</a>
-</section>
+
 
 <section class="bh-leader-stats-v2" aria-label="Your Bubba Hub stats">
 <a class="bh-leader-stat" href="/leader/classes.html"><span>🎨</span><div><strong id="statActivities">0</strong><b>My classes</b><small id="statActivitiesSub">Loading…</small></div><em>→</em></a>
 <a class="bh-leader-stat" href="/leader/venues.html"><span>📍</span><div><strong id="statVenues">0</strong><b>My venues</b><small id="statVenuesSub">Loading…</small></div><em>→</em></a>
 <a class="bh-leader-stat" href="/leader/schedule.html"><span>📅</span><div><strong id="statSessions">0</strong><b>Upcoming sessions</b><small>Scheduled sessions</small></div><em>→</em></a>
 <a class="bh-leader-stat" href="/leader/bookings.html"><span>🎟️</span><div><strong id="statBookings">0</strong><b>Bookings</b><small>Reservations received</small></div><em>→</em></a>
-<a class="bh-leader-stat" href="/leader/bookings.html"><span>↗</span><div><strong id="statMonth">0</strong><b>This month</b><small>Bookings received</small></div><em>→</em></a>
-<a class="bh-leader-stat" href="#listing-health"><span>✓</span><div><strong id="statHealth">0%</strong><b>Listing health</b><small>Profile completeness</small></div><em>→</em></a>
+
+
 </section>
 
+<div class="bh-leader-hidden-stats" aria-hidden="true"><span id="statMonth"></span><span id="statHealth"></span></div>
 <section id="listing-health" class="bh-leader-dashboard-grid">
 <div class="admin-panel bh-leader-panel"><div class="admin-panel-head"><div><span class="eyebrow">Keep your profile fresh</span><h2>Listing health</h2><p id="healthMessage">Checking your listings…</p></div><strong id="healthPercent" class="bh-health-number">0%</strong></div><div class="bh-health-bar"><span id="healthBar"></span></div><div id="healthChecks" class="bh-health-checks"></div></div>
 <div class="admin-panel bh-leader-panel"><div class="admin-panel-head"><div><span class="eyebrow">At a glance</span><h2>What needs your attention?</h2></div></div><div id="leaderAlerts" class="bh-alert-list"><p class="deployment-note">Checking your account…</p></div></div>
 </section>
 
-<section class="bh-leader-quick-actions" aria-label="Quick actions">
-<a class="bh-leader-action" href="/leader/classes.html"><span>🎨</span><strong>Manage classes</strong><small>Edit descriptions, prices and booking links.</small></a>
-<a class="bh-leader-action" href="/leader/venues.html"><span>📍</span><strong>Manage venues</strong><small>Keep your locations and map details accurate.</small></a>
-<a class="bh-leader-action" href="/leader/schedule.html"><span>📅</span><strong>Manage schedule</strong><small>Review the sessions linked to your classes.</small></a>
-<a class="bh-leader-action" href="/leader/bookings.html"><span>🎟️</span><strong>Manage bookings</strong><small>Review reservations and update statuses.</small></a>
-</section>
 
+
+<div class="leader-dashboard-section-head"><h2>More tools</h2><p>Everything else you need to run your classes.</p></div>
 <section class="bh-leader-portal-tools">
 <a href="/leader/statistics.html" class="bh-leader-tool"><span>📈</span><strong>Statistics</strong><small>See listings, sessions and bookings at a glance.</small></a>
 <a href="/leader/payments.html" class="bh-leader-tool"><span>💳</span><strong>Payments</strong><small>Understand Bubba Hub and external booking payments.</small></a>
@@ -61,6 +85,10 @@
 <a href="/leader/blog.html" class="bh-leader-tool"><span>📝</span><strong>Leader blog</strong><small>News and guidance for organisers.</small></a>
 </section>
 
+<section class="account-pro-banner leader-pro-banner" id="leaderProBanner">
+<div><span class="eyebrow">Bubba Hub Leader Pro</span><h2 id="leaderProTitle">Make more of Bubba Hub</h2><p id="leaderProText">Extra tools for your growing classes.</p></div>
+<a class="button button-primary" id="leaderProAction" href="/pro.html#leader-pro">Upgrade to Pro →</a>
+</section>
 <section class="bh-support-banner">
 <div><span class="bh-support-icon">?</span><div><span class="eyebrow">Leader support</span><h2>Need a hand?</h2><p>Get help with your listings, venues, schedules or bookings.</p></div></div>
 <div class="bh-support-actions"><a class="button button-primary" href="/leader/support.html">Leader support</a><a class="button button-soft" href="/leader/faqs.html">Leader FAQs</a></div>
