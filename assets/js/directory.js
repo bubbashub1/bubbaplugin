@@ -192,7 +192,8 @@ const bhInitDirectory=async()=>{
     let markers = [];
     const storedView = localStorage.getItem("bh_directory_view");
     // One consistent stacked listing view; the old Listings | Map toggle is removed.
-    let currentView = "grid";
+    let currentView = "map";
+    let directoryHeatLayer=null;
     let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let cardCount = Number(localStorage.getItem("bh_directory_cards") || 3);
     let visibleActivityCount = 6;
@@ -319,7 +320,7 @@ const bhInitDirectory=async()=>{
     const initMap = () => {
       if (map || !window.bhMapEngine) return;
       const mapEl = $("mapView");
-      if (!mapEl || window.innerWidth <= 900) return;
+      if (!mapEl || currentView !== "map") return;
       mapEl.hidden = false;
       mapEl.setAttribute("aria-hidden", "false");
       map = bhMapEngine.init("mapView");
@@ -341,7 +342,16 @@ const bhInitDirectory=async()=>{
           : '<img class="bh-map-popup-image" src="/wp-content/uploads/logo/placeholder.jpeg" alt="" aria-hidden="true">';
         return '<article class="bh-map-popup-card">' + image + '<div class="bh-map-popup-body"><span class="bh-map-popup-category">' + escapeHtml(category) + '</span><h3>' + escapeHtml(activity.title) + '</h3><p class="bh-map-popup-location">📍 ' + escapeHtml(venue.name || venue.town || venue.address || "") + '</p><div class="bh-map-popup-meta"><span>👶 ' + escapeHtml(age) + '</span><span>💷 ' + escapeHtml(price) + '</span>' + (time ? '<span>🕒 ' + escapeHtml(time) + '</span>' : '') + '</div><a class="button button-primary bh-map-popup-link" href="' + bhActivityUrl(activity) + '">View activity →</a></div></article>';
       };
-      markers = bhMapEngine.render(map, list, popupHtml, markers);
+      markers.forEach(marker=>marker.remove());
+      markers=[];
+      if(directoryHeatLayer){directoryHeatLayer.remove();directoryHeatLayer=null;}
+      const locations=list.flatMap(activity=>bhVenues(activity).map(venue=>({activity,venue}))).filter(({venue})=>Number.isFinite(Number(venue.lat))&&Number.isFinite(Number(venue.long)));
+      if(typeof L.heatLayer==="function"){
+        directoryHeatLayer=L.heatLayer(locations.map(({venue})=>[Number(venue.lat),Number(venue.long),1]),{radius:24,blur:18,maxZoom:13,minOpacity:0.3}).addTo(map);
+        if(locations.length)map.fitBounds(L.latLngBounds(locations.map(({venue})=>[Number(venue.lat),Number(venue.long)])),{padding:[25,25],maxZoom:12});
+      } else {
+        markers=bhMapEngine.render(map,list,popupHtml,markers);
+      }
     };
 
     const calendarDateKey = date => {
@@ -548,27 +558,17 @@ const bhInitDirectory=async()=>{
     };
 
     const updateViewVisibility = () => {
-      const results = $("results");
-      const mapView = $("mapView");
-      const calendarView = $("calendarView");
-
-      const desktopSplit = window.innerWidth > 900;
-      if (results) {
-        results.hidden = currentView === "calendar";
-        results.setAttribute("aria-hidden", results.hidden ? "true" : "false");
-      }
-      if (mapView) {
-        // Desktop always shows the 50/50 listings + map split. Mobile uses the Listings | Map toggle.
-        mapView.hidden = desktopSplit ? currentView === "calendar" : true;
-        mapView.setAttribute("aria-hidden", mapView.hidden ? "true" : "false");
-      }
-      if (calendarView) {
-        calendarView.hidden = currentView !== "calendar";
-        calendarView.setAttribute("aria-hidden", calendarView.hidden ? "true" : "false");
+      const showMap=currentView==="map";
+      const results=$("results"),mapView=$("mapView"),calendarView=$("calendarView");
+      if(results)results.hidden=showMap||currentView==="calendar";
+      if(mapView)mapView.hidden=!showMap;
+      if(calendarView)calendarView.hidden=currentView!=="calendar";
+      if($("directoryMapHint"))$("directoryMapHint").hidden=!showMap;
+      for(const [id,active] of [["directoryShowMap",showMap],["directoryShowList",currentView==="grid"]]){
+        const button=$(id);if(button)button.setAttribute("aria-pressed",String(active));
       }
     };
 
-    
     // A plain directory URL must always open unfiltered. This prevents browser
     // autofill/restored form state from silently reducing the initial results.
     const directoryFilterKeys = ["search","q","keyword","category","region","town","age_min","age_max","age_preset","day","max_price","free","sessionLength","sen","termTime","bookingRequired","accessibility","saved"];
@@ -778,7 +778,7 @@ const bhInitDirectory=async()=>{
       // Keep listings and map markers linked in both directions.
       // Render the current filtered list first so marker references exist
       // immediately when a listing is clicked.
-      if (window.innerWidth > 900 || currentView === "map") {
+      if (currentView === "map") {
         renderMap(list);
         if (map) setTimeout(() => map.invalidateSize(), 0);
       }
@@ -934,6 +934,14 @@ const bhInitDirectory=async()=>{
       };
     });
 
+    const switchDirectoryView=view=>{
+      currentView=view;
+      updateViewVisibility();
+      render();
+      if(view==="map")setTimeout(()=>map?.invalidateSize(),100);
+    };
+    $("directoryShowMap")?.addEventListener("click",()=>switchDirectoryView("map"));
+    $("directoryShowList")?.addEventListener("click",()=>switchDirectoryView("grid"));
     window.__bhDirectoryDesktop = window.innerWidth > 900;
     setupMapModal();
     document.querySelectorAll(".directory-view").forEach(button => button.classList.toggle("active", button.dataset.view === currentView));
