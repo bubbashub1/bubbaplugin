@@ -402,3 +402,34 @@ body.bh-directory:not(.bh-calendar-page) .directory-hero-actions{
     height:60dvh!important;min-height:340px!important;
   }
 }
+
+
+/* Directory L-shaped search layout: sidebar flush with top of results. */
+@media(min-width:901px){
+ body.bh-directory:not(.bh-calendar-page) .app-shell{
+   display:grid!important;
+   grid-template-columns:288px minmax(0,1fr)!important;
+   gap:18px!important;
+   align-items:start!important;
+   padding-top:0!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder]{
+   grid-column:1!important;grid-row:1!important;
+   align-self:start!important;padding-top:0!important;margin-top:0!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .directory-layout{
+   grid-column:2!important;grid-row:1!important;
+   min-width:0!important;margin-top:0!important;padding-top:0!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-fullwidth,
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-search{
+   margin-top:0!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .directory-results-heading{
+   padding-top:0!important;
+ }
+}
+@media(max-width:900px){
+ body.bh-directory:not(.bh-calendar-page) .app-shell{display:block!important}
+ body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder]{padding-top:0!important}
+}
