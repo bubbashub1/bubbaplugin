@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const sub=await subResponse.json();
     const demo=window.BH_DEMO_MODE===true || localStorage.getItem("BH_PRO_DEMO")==="1";
     if(!sub.pro && !demo){
-      document.querySelector(".pro-content")?.insertAdjacentHTML("afterbegin","<div class='admin-panel' style='margin-bottom:18px'><strong>Family Pro required</strong><p>Planner Pro is available with an active Family Pro account.</p><a class='button button-primary' href='account/subscription.html'>Upgrade to Family Pro →</a></div>");
+      document.querySelector(".pro-content")?.insertAdjacentHTML("afterbegin","<div class='admin-panel' style='margin-bottom:18px'><strong>Family Pro required</strong><p>Planner Pro is available with an active Family Pro account.</p><a class='button button-primary' href='/pro.html'>Upgrade to Family Pro →</a></div>");
       document.querySelectorAll(".pro-content button").forEach(b=>b.disabled=true);
       return;
     }
