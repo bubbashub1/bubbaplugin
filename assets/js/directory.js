@@ -924,8 +924,9 @@ const bhInitDirectory=async()=>{
       });
     }
 
-    document.querySelectorAll(".directory-popular-chip").forEach(button => {
-      button.addEventListener("click", () => {
+    document.addEventListener("click", event => {
+      const button = event.target.closest(".directory-popular-chip");
+      if (!button) return;
         const category = button.dataset.category || "";
         const select = $("category");
         const heroSelect = $("heroCategory");
@@ -946,7 +947,6 @@ const bhInitDirectory=async()=>{
         render();
         document.querySelectorAll(".directory-popular-chip").forEach(x => x.classList.remove("active"));
         button.classList.add("active");
-      });
     });
 
     // Age is intentionally a simple dropdown rather than a slider.
