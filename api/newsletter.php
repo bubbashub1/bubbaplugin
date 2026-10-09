@@ -87,7 +87,7 @@ function bh_newsletter_send(PDO $db, array $user, string $frequency, bool $force
     $toEmail=(string)$user['email'];
     $subject=bh_newsletter_subject($frequency);
     require_once __DIR__.'/mailer.php';
-    $sent=bh_send_smtp_mail($toEmail,$subject,$html,strip_tags($html),'','newsletter');
+    $sent=bh_send_smtp_mail($toEmail,$subject,$html,strip_tags($html),'','transactional');
     if ($sent) {
         $u=$db->prepare("UPDATE bh_user_preferences SET newsletter_last_sent_at=NOW() WHERE user_id=?");
         $u->execute([(int)$user['id']]);
