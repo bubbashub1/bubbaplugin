@@ -35,7 +35,7 @@ $org=null;
 if($hasOrgUserId){$o=$db->prepare("SELECT * FROM bh_organisers WHERE user_id=? LIMIT 1");$o->execute([$userId]);$org=$o->fetch();}
 else{try{$u=$db->prepare("SELECT email FROM bh_users WHERE id=? LIMIT 1");$u->execute([$userId]);$user=$u->fetch();if($user&&!empty($user['email'])){$o=$db->prepare("SELECT * FROM bh_organisers WHERE email=? LIMIT 1");$o->execute([$user['email']]);$org=$o->fetch();}}catch(Throwable $ignored){}}
 if(!$org)lp(403,['ok'=>false,'error'=>'organiser_required','message'=>'Your account is not linked to a class leader organisation yet.']);
-$oid=(int)$org['id'];$isPro=false;$imageLimit=3;foreach(['plan','membership_plan','membership_tier','subscription_plan','tier'] as $pcn){if(array_key_exists($pcn,$org)){ $pv=strtolower(trim((string)$org[$pcn]));$isPro=in_array($pv,['pro','premium','ultimate'],true);break;}}$imageLimit=$isPro?12:3;
+$oid=(int)$org['id'];$isPro=false;$imageLimit=3;foreach(['plan','membership_plan','membership_tier','subscription_plan','tier'] as $pcn){if(array_key_exists($pcn,$org)){ $pv=strtolower(trim((string)$org[$pcn]));$isPro=in_array($pv,['pro','premium','ultimate'],true);break;}}$imageLimit=$isPro?12:3;$faqLimit=$isPro?null:5;
 function lpEnsureActivityAccessibility(PDO $db): void{
  try{
   $db->exec("ALTER TABLE bh_activities ADD COLUMN accessibility TEXT NULL");
@@ -94,7 +94,7 @@ if(!$tagOptions){
  }catch(Throwable $ignored){}
 }
 sort($tagOptions,SORT_NATURAL|SORT_FLAG_CASE);
-lp(200,['ok'=>true,'organisation'=>$org,'classes'=>$classes,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions,'category_options'=>$categoryOptions,'tag_options'=>$tagOptions,'venues'=>$venues,'max_images'=>$imageLimit]);
+lp(200,['ok'=>true,'organisation'=>$org,'classes'=>$classes,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions,'category_options'=>$categoryOptions,'tag_options'=>$tagOptions,'venues'=>$venues,'max_images'=>$imageLimit,'is_pro'=>$isPro,'faq_limit'=>$faqLimit]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')lp(405,['ok'=>false,'error'=>'method_not_allowed']);
 if($_SERVER['REQUEST_METHOD']==='POST' && !empty($_FILES['image']) && ($_POST['action']??'')==='upload_activity_image'){
@@ -199,7 +199,7 @@ if($action==='save_faq'){
  $id=(int)($b['id']??0);$question=trim((string)($b['question']??''));$answer=trim((string)($b['answer']??''));$status=in_array(($b['status']??'draft'),['draft','published'],true)?$b['status']:'draft';$activityId=($b['activity_id']??'')===''?null:(int)$b['activity_id'];$sort=(int)($b['sort_order']??0);
  if($question===''||$answer==='')lp(422,['ok'=>false,'error'=>'faq_content_required','message'=>'Add both a question and an answer.']);
  if($id){$q=$db->prepare("UPDATE bh_leader_faqs SET question=?,answer=?,status=?,activity_id=?,sort_order=? WHERE id=? AND organiser_id=?");$q->execute([$question,$answer,$status,$activityId,$sort,$id,$oid]);if(!$q->rowCount())lp(404,['ok'=>false,'error'=>'faq_not_found']);}
- else{$q=$db->prepare("INSERT INTO bh_leader_faqs (organiser_id,activity_id,question,answer,status,sort_order) VALUES (?,?,?,?,?,?)");$q->execute([$oid,$activityId,$question,$answer,$status,$sort]);}
+ else{if(!$isPro){$count=$db->prepare("SELECT COUNT(*) FROM bh_leader_faqs WHERE organiser_id=? AND status<>'archived'");$count->execute([$oid]);if((int)$count->fetchColumn()>=5)lp(403,['ok'=>false,'error'=>'faq_limit_reached','message'=>'Free leaders can add up to 5 FAQs. Upgrade to Pro for unlimited FAQs.']);}$q=$db->prepare("INSERT INTO bh_leader_faqs (organiser_id,activity_id,question,answer,status,sort_order) VALUES (?,?,?,?,?,?)");$q->execute([$oid,$activityId,$question,$answer,$status,$sort]);}
  lp(200,['ok'=>true,'message'=>'FAQ saved.']);
 }
 if($action==='delete_faq'){
