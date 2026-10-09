@@ -1,0 +1,91 @@
+/* Bubba Hub 2.0 Calendar: visual layer only; keep view navigation and filters operational. */
+body.bh-calendar-v2{background:#fffdf7;color:#174e3b;font-family:'Quicksand',Calibri,Arial,sans-serif}
+.bh-calendar-v2 .calendar-page{padding-bottom:52px}
+.bh-calendar-v2 .calendar-page :is(h1,h2,h3){font-family:'Quicksand',Calibri,Arial,sans-serif;font-weight:800;letter-spacing:-.035em;color:#174e3b}
+.bh-calendar-v2 .calendar-directory-hero .directory-hero-search{
+ background:linear-gradient(120deg,#e5f1df,#def1f4 78%,#fff0d0);
+ border:1px solid #d1e4d4;border-radius:30px;padding:clamp(18px,3vw,30px);
+ box-shadow:0 12px 28px rgba(23,78,59,.07)
+}
+.bh-calendar-v2 .calendar-directory-hero .directory-hero-search h2{
+ font-size:clamp(1.6rem,3vw,2.6rem);color:#174e3b;letter-spacing:-.04em
+}
+.bh-calendar-v2 .calendar-directory-hero .directory-hero-actions{
+ display:flex;flex-direction:row;flex-wrap:wrap;gap:10px;align-items:center
+}
+.bh-calendar-v2 .calendar-directory-hero .directory-hero-actions :is(a,button){
+ display:inline-flex;flex:0 0 auto;width:auto;min-height:43px;align-items:center;justify-content:center;
+ padding:10px 17px;border-radius:999px;background:#fff;border:1px solid #d1e4d4;
+ color:#174e3b;font-weight:800;text-decoration:none
+}
+.bh-calendar-v2 .calendar-panel.planner-shell{
+ background:#fff;border:1px solid #e1ebe2;border-radius:29px;
+ box-shadow:0 12px 30px rgba(23,78,59,.075);
+ padding:clamp(17px,2.6vw,30px);gap:21px
+}
+.bh-calendar-v2 .calendar-toolbar{background:#e5f1df;border-radius:21px;padding:12px;gap:12px}
+.bh-calendar-v2 .calendar-views{display:flex;flex-wrap:wrap;gap:8px}
+.bh-calendar-v2 .calendar-view{
+ border:1px solid #d1e4d4;background:#fff;color:#174e3b;
+ border-radius:999px;min-height:43px;padding:10px 20px;
+ font-family:'Quicksand',Calibri,Arial,sans-serif;font-size:.9rem;font-weight:800
+}
+.bh-calendar-v2 .calendar-view.active{background:#174e3b;border-color:#174e3b;color:#fff}
+.bh-calendar-v2 .calendar-view:hover:not(.active){background:#def1f4}
+.bh-calendar-v2 .calendar-nav .button{
+ min-width:44px;min-height:43px;border-radius:999px;background:#fff;
+ border:1px solid #d1e4d4;color:#174e3b;font-weight:800
+}
+.bh-calendar-v2 .calendar-nav .button:hover{background:#f7bf7d;border-color:#f7bf7d}
+.bh-calendar-v2 .calendar-heading{border-color:#e1ebe2;padding-bottom:16px}
+.bh-calendar-v2 .calendar-heading h2{font-size:clamp(1.8rem,3vw,2.65rem);color:#174e3b}
+.bh-calendar-v2 .calendar-heading .eyebrow{
+ font-size:.8rem;letter-spacing:.08em;font-weight:800;text-transform:uppercase;color:#3c8e96
+}
+.bh-calendar-v2 .calendar-planner-picker{font-size:.9rem;color:#174e3b}
+.bh-calendar-v2 .calendar-planner-picker select{
+ border:1px solid #d1e4d4;border-radius:14px;background:#f7faf6;
+ color:#174e3b;min-height:44px;font-family:inherit;font-weight:700
+}
+.bh-calendar-v2 .calendar-list-day{
+ background:#f7faf6;border:1px solid #e1ebe2;border-radius:22px;padding:16px
+}
+.bh-calendar-v2 .calendar-list-day:nth-child(3n+2){background:#def1f4}
+.bh-calendar-v2 .calendar-list-day:nth-child(3n+3){background:#fff0d0}
+.bh-calendar-v2 .calendar-list-day>h3{font-size:1.15rem;color:#174e3b}
+.bh-calendar-v2 .calendar-event{
+ background:#fff;border:1px solid #e1ebe2;border-radius:17px;
+ padding:14px;box-shadow:0 5px 15px rgba(23,78,59,.04)
+}
+.bh-calendar-v2 .calendar-event-time{color:#3c8e96;font-size:.82rem}
+.bh-calendar-v2 .calendar-event-main h3{font-size:1rem;color:#174e3b}
+.bh-calendar-v2 .calendar-event-main p{font-size:.85rem;color:#416651}
+.bh-calendar-v2 .calendar-event-main .button{
+ border-radius:999px;background:#e5f1df;border:1px solid #d1e4d4;
+ color:#174e3b;font-family:inherit;font-weight:800
+}
+.bh-calendar-v2 .calendar-week-day{background:#f7faf6;border:1px solid #e1ebe2;border-radius:17px}
+.bh-calendar-v2 .calendar-week-day:nth-child(3n+2){background:#def1f4}
+.bh-calendar-v2 .calendar-week-day:nth-child(3n+3){background:#fff0d0}
+.bh-calendar-v2 .calendar-month-head{background:#e5f1df;border-color:#d1e4d4}
+.bh-calendar-v2 .calendar-month-head span{color:#174e3b;font-size:.78rem}
+.bh-calendar-v2 .calendar-month-grid{border-color:#d1e4d4}
+.bh-calendar-v2 .calendar-month-day{border-color:#e1ebe2}
+.bh-calendar-v2 .calendar-month-day:nth-child(7n+2){background:#f5faf6}
+.bh-calendar-v2 .calendar-month-number{color:#174e3b;font-size:.85rem}
+.bh-calendar-v2 .calendar-empty{background:#def1f4;border-color:#cfe7e9;border-radius:23px}
+.bh-calendar-v2 .calendar-filters-panel{border-radius:24px}
+@media(max-width:760px){
+ .bh-calendar-v2 .calendar-panel.planner-shell{border-radius:22px}
+ .bh-calendar-v2 .calendar-directory-hero .directory-hero-search{border-radius:22px}
+ .bh-calendar-v2 .calendar-toolbar{flex-direction:column;align-items:stretch}
+ .bh-calendar-v2 .calendar-views{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .bh-calendar-v2 .calendar-view{width:100%}
+ .bh-calendar-v2 .calendar-directory-hero .directory-hero-actions :is(a,button){flex:1 1 auto}
+ .bh-calendar-v2 .calendar-week-grid,.bh-calendar-v2 .calendar-content{overflow-x:auto}
+}
+@media print{
+ .bh-calendar-v2 .calendar-panel.planner-shell{box-shadow:none;border:0;padding:0}
+ .bh-calendar-v2 .calendar-toolbar,.bh-calendar-v2 .calendar-directory-hero,.bh-calendar-v2 .calendar-filters-panel{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){.bh-calendar-v2 .calendar-view{transition:none}}
