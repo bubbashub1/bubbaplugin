@@ -310,7 +310,20 @@
 
     const render = async () => {
       const state = document.getElementById("organiserState");
-      const requested = getRequestedSlug();
+      let requested = getRequestedSlug();
+      // A bare /organiser.html link from the leader portal should resolve to
+      // the signed-in leader's storefront, rather than showing a missing slug.
+      if (!requested) {
+        try {
+          const response = await fetch("/api/leader-portal.php", {credentials:"same-origin",cache:"no-store"});
+          if (response.ok) {
+            const data = await response.json();
+            const org = data.organisation || {};
+            requested = cleanSlug(org.slug || org.organisation_name || org.name || org.display_name || "");
+            if (requested) history.replaceState(null,"","/organiser.html?slug="+encodeURIComponent(requested));
+          }
+        } catch (_) {}
+      }
 
       if (!requested) {
         state.innerHTML = `
