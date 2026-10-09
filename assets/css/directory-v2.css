@@ -508,3 +508,9 @@ body.bh-directory:not(.bh-calendar-page) #directoryFilters #clear{
 body.bh-directory:not(.bh-calendar-page) #directoryFilters .filter-free{
   display:flex;align-items:center;gap:9px;font-weight:700;color:#416651;
 }
+
+/* Directory search sidebar: square top edge beneath the site header. */
+body.bh-directory:not(.bh-calendar-page) .directory-hero-search{
+  border-top-left-radius:0!important;
+  border-top-right-radius:0!important;
+}
