@@ -246,9 +246,7 @@ const bhInitDirectory=async()=>{
     const storedView = localStorage.getItem("bh_directory_view");
     // One consistent stacked listing view; the old Listings | Map toggle is removed.
     let currentView = "map";
-    let directoryHeatLayer=null;
-    let useFilteredPins=false;
-    const MAX_DIRECTORY_PINS=100;
+
     let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let cardCount = Number(localStorage.getItem("bh_directory_cards") || 3);
     let visibleActivityCount = 6;
@@ -399,24 +397,15 @@ const bhInitDirectory=async()=>{
       };
       markers.forEach(marker=>marker.remove());
       markers=[];
-      if(directoryHeatLayer){directoryHeatLayer.remove();directoryHeatLayer=null;}
       const locations=list.flatMap(activity=>bhVenues(activity).map(venue=>({activity,venue}))).filter(({venue})=>{
         const lat=Number(venue.lat),lng=Number(venue.long);
         return Number.isFinite(lat)&&Number.isFinite(lng)&&lat>=49&&lat<=52&&lng>=-7&&lng<=-1;
       });
-      const showPins=useFilteredPins && locations.length>0 && locations.length<=MAX_DIRECTORY_PINS;
-      if(!showPins && typeof L.heatLayer==="function"){
-        directoryHeatLayer=L.heatLayer(locations.map(({venue})=>[Number(venue.lat),Number(venue.long),1]),{radius:24,blur:18,maxZoom:13,minOpacity:0.3}).addTo(map);
-        const bounds=locations.length?L.latLngBounds(locations.map(({venue})=>[Number(venue.lat),Number(venue.long)])):null;
-        if(bounds?.isValid())map.fitBounds(bounds,{padding:[25,25],maxZoom:11});
-        else map.setView([50.55,-3.75],9);
-      } else if(showPins || typeof L.heatLayer!=="function") {
-        markers=bhMapEngine.render(map,list,popupHtml,markers);
-        if(locations.length){
-          const bounds=L.latLngBounds(locations.map(({venue})=>[Number(venue.lat),Number(venue.long)]));
-          if(bounds.isValid())map.fitBounds(bounds,{padding:[35,35],maxZoom:13});
-        }
-      }
+      markers=bhMapEngine.render(map,list,popupHtml,markers);
+      if(locations.length){
+        const bounds=L.latLngBounds(locations.map(({venue})=>[Number(venue.lat),Number(venue.long)]));
+        if(bounds.isValid())map.fitBounds(bounds,{padding:[35,35],maxZoom:13});
+      } else map.setView([50.55,-3.75],9);
     };
 
     const calendarDateKey = date => {
@@ -678,7 +667,6 @@ const bhInitDirectory=async()=>{
         sessionLength || sen || termTime || bookingRequired || accessibility.length ||
         minAge > 0 || maxAge < 9 || params.get("saved")
       );
-      useFilteredPins=hasActiveDirectoryFilters;
       if (!window.__bhDirectoryLastFilterKey) window.__bhDirectoryLastFilterKey = "";
       const filterKey = JSON.stringify([search,category,region,town,minAge,maxAge,day,maxPrice,freeOnly,sessionLength,sen,termTime,bookingRequired,accessibility,params.get("saved") || ""]);
       if (filterKey !== window.__bhDirectoryLastFilterKey) {
