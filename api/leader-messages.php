@@ -11,7 +11,9 @@ if(!$uid)inboxReply(401,['ok'=>false,'message'=>'Please sign in.']);
 $q=$db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");$q->execute([$uid]);$user=$q->fetch(PDO::FETCH_ASSOC);
 if(!$user||$user['status']!=='active')inboxReply(403,['ok'=>false,'message'=>'Account unavailable.']);
 $db->exec("CREATE TABLE IF NOT EXISTS bh_leader_messages (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,organiser_id BIGINT UNSIGNED NOT NULL,sender_user_id BIGINT UNSIGNED NOT NULL,subject VARCHAR(180) NOT NULL,body TEXT NOT NULL,category VARCHAR(30) NOT NULL DEFAULT 'help',reply TEXT NULL,replied_at DATETIME NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,INDEX idx_leader_messages_organiser(organiser_id,created_at),INDEX idx_leader_messages_sender(sender_user_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-try{$db->exec("ALTER TABLE bh_leader_messages ADD COLUMN sender_email VARCHAR(190) NULL");}catch(Throwable $ignored){}
+$hasSenderEmail=false;
+try{$col=$db->query("SHOW COLUMNS FROM bh_leader_messages LIKE 'sender_email'");$hasSenderEmail=(bool)$col->fetch();}catch(Throwable $schemaError){error_log('Leader inbox column check: '.$schemaError->getMessage());}
+$senderExpr=$hasSenderEmail?'COALESCE(m.sender_email,u.email)':'u.email';
 $body=json_decode((string)file_get_contents('php://input'),true);if(!is_array($body))$body=[];
 $action=(string)($body['action']??'');
 if($_SERVER['REQUEST_METHOD']==='POST'&&$action==='send'){
@@ -28,11 +30,11 @@ if(!$org){$q=$db->prepare("SELECT id,email FROM bh_organisers WHERE email=? LIMI
 if(!$org)inboxReply(403,['ok'=>false,'message'=>'Organiser profile required.']);$oid=(int)$org['id'];
 if($_SERVER['REQUEST_METHOD']==='GET'){
  $count=$db->prepare("SELECT COUNT(*) FROM bh_leader_messages WHERE organiser_id=? AND replied_at IS NULL");$count->execute([$oid]);$unread=(int)$count->fetchColumn();
- $q=$db->prepare("SELECT m.id,m.subject,m.body,m.category,m.reply,m.replied_at,m.created_at,COALESCE(m.sender_email,u.email) AS sender_email FROM bh_leader_messages m LEFT JOIN bh_users u ON u.id=m.sender_user_id WHERE m.organiser_id=? ORDER BY m.created_at DESC LIMIT 100");$q->execute([$oid]);inboxReply(200,['ok'=>true,'messages'=>$q->fetchAll(PDO::FETCH_ASSOC),'unanswered_count'=>$unread]);
+ $q=$db->prepare("SELECT m.id,m.subject,m.body,m.category,m.reply,m.replied_at,m.created_at," . $senderExpr . " AS sender_email FROM bh_leader_messages m LEFT JOIN bh_users u ON u.id=m.sender_user_id WHERE m.organiser_id=? ORDER BY m.created_at DESC LIMIT 100");$q->execute([$oid]);inboxReply(200,['ok'=>true,'messages'=>$q->fetchAll(PDO::FETCH_ASSOC),'unanswered_count'=>$unread]);
 }
 if($_SERVER['REQUEST_METHOD']==='POST'&&$action==='reply'){
  $id=(int)($body['id']??0);$reply=trim((string)($body['reply']??''));if(!$id||$reply===''||mb_strlen($reply)>5000)inboxReply(422,['ok'=>false,'message'=>'Write a reply of up to 5000 characters.']);
- $q=$db->prepare("SELECT m.id,m.subject,COALESCE(m.sender_email,u.email) AS email FROM bh_leader_messages m LEFT JOIN bh_users u ON u.id=m.sender_user_id WHERE m.id=? AND m.organiser_id=?");$q->execute([$id,$oid]);$msg=$q->fetch(PDO::FETCH_ASSOC);if(!$msg)inboxReply(404,['ok'=>false,'message'=>'Message not found.']);
+ $q=$db->prepare("SELECT m.id,m.subject," . $senderExpr . " AS email FROM bh_leader_messages m LEFT JOIN bh_users u ON u.id=m.sender_user_id WHERE m.id=? AND m.organiser_id=?");$q->execute([$id,$oid]);$msg=$q->fetch(PDO::FETCH_ASSOC);if(!$msg)inboxReply(404,['ok'=>false,'message'=>'Message not found.']);
  $q=$db->prepare("UPDATE bh_leader_messages SET reply=?,replied_at=NOW() WHERE id=? AND organiser_id=?");$q->execute([$reply,$id,$oid]);
  $sent=inboxMail((string)$msg['email'],'Re: '.$msg['subject'],"A class leader has replied to your Bubba Hub enquiry:\n\n".$reply."\n\nYou can contact the organiser through Bubba Hub.");
  inboxReply(200,['ok'=>true,'email_sent'=>$sent,'message'=>$sent?'Reply saved and emailed to the family.':'Reply saved, but email delivery could not be confirmed.']);
