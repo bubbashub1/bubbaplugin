@@ -52,3 +52,21 @@ body.bh-subpage-v2{background:#fffdf7;color:#174e3b;font-family:'Quicksand',Cali
 .bh-subpage-v2 .app-shell :is(.button-primary,.btn-primary):not(:disabled):hover{background:#ee822c;color:#173f32;border-color:#ee822c}
 .bh-subpage-v2 .app-shell :is(.admin-panel,.subscription-card,.pricing-card,.account-panel){box-shadow:0 8px 26px rgba(23,78,59,.055)}
 @media(max-width:760px){.bh-subpage-v2 .app-shell :is(.button,.btn){max-width:100%;white-space:normal;text-align:center}}
+
+/* Leader profile: match the family account card and form styling. */
+.bh-leader-profile-v2{background:#f5faf6}
+.bh-leader-profile-v2 .bh-leader-page{max-width:1380px;margin:0 auto;padding:26px 15px 54px}
+.bh-leader-profile-v2 .bh-leader-hero{margin:0 0 20px;display:flex;justify-content:space-between;align-items:center;gap:20px;background:linear-gradient(120deg,#d8e6db,#def1f4);border-radius:28px}
+.bh-leader-profile-v2 .bh-leader-tabs{background:#fff;border:1px solid #e1ebe2;border-radius:22px;padding:13px 18px;display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:22px}
+.bh-leader-profile-v2 .bh-leader-tabs a{color:#174e3b;font-weight:750;text-decoration:none;padding:8px 10px;border-radius:12px}
+.bh-leader-profile-v2 .bh-leader-tabs a:hover{background:#e5f1df}
+.bh-leader-profile-v2 .leader-profile-card{padding:clamp(22px,3vw,34px);margin-bottom:20px;border-radius:26px}
+.bh-leader-profile-v2 .leader-profile-card:nth-of-type(3n){background:#f4faf4}
+.bh-leader-profile-v2 .leader-profile-card .admin-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 20px;margin-top:22px}
+.bh-leader-profile-v2 .leader-profile-card label{display:flex;flex-direction:column;gap:7px;color:#174e3b;font-weight:750;min-width:0}
+.bh-leader-profile-v2 .leader-profile-card :is(input,textarea,select){width:100%;box-sizing:border-box;min-height:47px;padding:12px 14px;border:1px solid #cfe0d2;border-radius:14px;background:#f8fbf8;color:#174e3b;font:inherit;font-weight:500}
+.bh-leader-profile-v2 .leader-profile-card textarea{min-height:150px;resize:vertical}
+.bh-leader-profile-v2 .leader-profile-card :is(input,textarea,select):focus-visible{outline:3px solid rgba(60,142,150,.2);border-color:#3c8e96}
+.bh-leader-profile-v2 .leader-profile-card .admin-form-wide{grid-column:1/-1}
+.bh-leader-profile-v2 .leader-profile-card .button-primary{background:#144400;color:#fff;border-radius:999px;min-height:44px;padding:10px 23px}
+@media(max-width:700px){.bh-leader-profile-v2 .bh-leader-hero{flex-direction:column;align-items:stretch}.bh-leader-profile-v2 .leader-profile-card .admin-form-grid{grid-template-columns:1fr}.bh-leader-profile-v2 .bh-leader-tabs{flex-wrap:nowrap;overflow-x:auto}.bh-leader-profile-v2 .bh-leader-tabs a{white-space:nowrap}}
