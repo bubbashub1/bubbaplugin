@@ -32,3 +32,21 @@
 @media(max-width:760px){.bh-home .home-hero{display:flex;flex-direction:column;align-items:stretch;padding:22px 15px 30px;gap:16px}.bh-home .home-hero-copy{order:0;padding:0}.bh-home h1.home-brush{font-size:clamp(3.7rem,14vw,6rem)}.bh-home .home-hero-image{order:1;min-height:245px;aspect-ratio:1.55;border-radius:34% 42% 25% 30% / 25% 35% 30% 30%}.bh-home .home-search{order:2;padding:16px;border-radius:22px}.bh-home .home-search-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.bh-home .home-search-fields button{grid-column:1/-1}.bh-home .home-category-row{grid-template-columns:repeat(2,minmax(0,1fr));padding:20px 15px 35px;gap:11px}.bh-home .home-category-row>a{padding:17px;min-height:225px;border-radius:21px}.bh-home .home-category-row .bh-category-description{font-size:.8rem}}
 @media(max-width:400px){.bh-home .home-search-fields{grid-template-columns:1fr}.bh-home .home-category-row>a{padding:14px}.bh-home .home-category-row strong{font-size:1rem}.bh-home .bh-quick-links a{padding:9px 12px;font-size:.84rem}}
 @media(prefers-reduced-motion:reduce){.bh-home .home-category-row>a{transition:none}}
+
+
+/* Explicitly neutralise legacy homepage rules in styles.css */
+.bh-home .home-hero{width:100%;max-width:none;min-height:0;margin:0;border-radius:0;overflow:hidden}
+.bh-home .home-hero-image{position:relative;inset:auto;z-index:auto;display:block;min-width:0}
+.bh-home .home-hero-copy{width:100%;min-width:0;max-width:none;margin:0;text-align:left;padding:22px 0 35px}
+.bh-home .home-brush,.bh-home h1.home-brush{display:block;width:auto;max-width:100%;padding:0;background:none;transform:none;clip-path:none;overflow:visible;text-align:left;color:#174e3b;font-family:'Quicksand',Calibri,Arial,sans-serif;font-weight:700}
+.bh-home .home-hero-copy p,.bh-home .home-hero-copy .bh-hero-subtitle,.bh-home .home-hero-copy .bh-hero-detail{color:#174e3b;text-shadow:none;font-size:clamp(1rem,1.7vw,1.35rem);line-height:1.4;margin:12px 0}
+.bh-home .home-search{position:relative;left:auto;right:auto;bottom:auto;top:auto;width:100%;margin:0;border:0;background:#fff}
+.bh-home .home-search h2{color:#174e3b;font-size:1.05rem}
+.bh-home .home-search-fields .button{background:#174e3b!important;color:#fff!important;min-width:125px}
+.bh-home .home-search-fields .button:hover{background:#ee822c!important;color:#123f31!important}
+.bh-home .home-search-fields input,.bh-home .home-search-fields select{font-size:clamp(14px,1vw,16px)}
+.bh-home .home-category-row{width:100%;max-width:1440px;margin:0 auto;padding:32px 20px 46px}
+.bh-home .home-category-row a{width:auto;max-width:none;min-width:0;justify-content:flex-start;background-image:none!important}
+.bh-home .home-category-row a:last-child{grid-column:auto}
+@media(max-width:760px){.bh-home .home-hero{min-height:0;width:100%;padding:22px 15px 30px}.bh-home .home-hero-copy{width:100%;padding:0;margin:0}.bh-home .home-hero-image{min-height:245px}.bh-home .home-search{left:auto;right:auto;bottom:auto;padding:16px}.bh-home .home-category-row{width:100%;margin:0 auto;padding:20px 15px 35px}.bh-home .home-search-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.bh-home .home-search-fields .button{grid-column:1/-1}}
+@media(max-width:400px){.bh-home .home-search-fields{grid-template-columns:1fr}.bh-home .home-category-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
