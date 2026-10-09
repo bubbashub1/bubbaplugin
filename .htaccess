@@ -53,6 +53,9 @@ RewriteRule ^leader/([a-z0-9-]+)/?$ leader/$1.html [L,QSA]
 # Redirect the old nested calendar URL to the canonical root calendar.
 RewriteRule ^planner/calendar(?:\.html)?/?$ /calendar.html [R=301,L]
 
+# Redirect old family URL to the real family account page.
+RewriteRule ^family(?:\.html)?/?$ /account/family.html [R=302,L,NE]
+
 # Clean section URLs
 RewriteRule ^my-hub/?$ my-hub.html [L,QSA]
 RewriteRule ^planner/?$ planner.html [L,QSA]
