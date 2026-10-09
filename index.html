@@ -12,6 +12,26 @@
   <link rel="stylesheet" href="/assets/css/styles.css">
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script src="/assets/js/onesignal.js" defer></script>
+<style>
+/* Bubba Hub playful homepage concept — scoped to homepage only */
+.bh-home{background:#fffdf7}
+.bh-home .home-hero{position:relative;isolation:isolate}
+.bh-home .home-hero-copy{position:relative;z-index:1}
+.bh-home .home-brush{font-family:'Quicksand',Calibri,Arial,sans-serif;font-weight:700;letter-spacing:-.045em;line-height:1.08}
+.bh-home .home-search{border-radius:28px;box-shadow:0 16px 45px rgba(20,68,0,.12)}
+.bh-home .home-search .button-primary{border-radius:999px;background:#ed812c;color:#173e2c;font-weight:700}
+.bh-home .home-category-row{gap:16px}
+.bh-home .home-category-row>a{border-radius:28px;background:#f7e7dc;box-shadow:0 10px 25px rgba(20,68,0,.07);transition:transform .2s ease,box-shadow .2s ease}
+.bh-home .home-category-row>a:nth-child(2){background:#d9eff1}
+.bh-home .home-category-row>a:nth-child(3){background:#e1edda}
+.bh-home .home-category-row>a:nth-child(4){background:#fff0cf}
+.bh-home .home-category-row>a:nth-child(5){background:#ece6f8}
+.bh-home .home-category-row>a:hover{transform:translateY(-4px);box-shadow:0 15px 30px rgba(20,68,0,.13)}
+.bh-home .home-section-heading h2,.bh-home .home-plan-copy h2{font-weight:700;letter-spacing:-.035em}
+.bh-home .home-plan-card{border-radius:26px}
+@media(max-width:760px){.bh-home .home-category-row{gap:10px}.bh-home .home-category-row>a{border-radius:20px}.bh-home .home-brush{letter-spacing:-.03em}}
+@media(prefers-reduced-motion:reduce){.bh-home .home-category-row>a{transition:none}}
+</style>
 </head>
 <body class="bh-home">
 <header class="site-header home-header">
@@ -35,7 +55,7 @@
   <section class="home-hero">
     <div class="home-hero-image" aria-hidden="true"></div>
     <div class="home-hero-copy">
-      <span class="home-brush">Your Family Hub<br>for Finding, Planning &amp;<br>Booking Family Activities</span>
+      <span class="home-brush">Find. <span style="color:#3c8e96">Plan.</span> <span style="color:#ed812c">Book.</span></span><h1 style="font-size:clamp(1.2rem,2.4vw,2rem);margin:14px 0 0">Your family hub for brilliant little adventures</h1>
       <p>Local groups, classes, services and events<br>for pregnancy, babies and toddlers across<br>Devon &amp; Cornwall.</p>
     </div>
 
