@@ -1,3 +1,5 @@
+DirectoryIndex index.html index.php
+
 RewriteEngine On
 
 # Revalidate page documents after deployments; do not cache personalised responses.
@@ -19,6 +21,9 @@ RewriteEngine On
 </IfModule>
 
 RewriteBase /
+
+# Serve the custom homepage before WordPress can redirect the root request.
+RewriteRule ^$ index.html [L]
 
 # Treat /index and /index/ as the homepage, not an activity slug.
 RewriteRule ^index/?$ index.html [L,QSA]
