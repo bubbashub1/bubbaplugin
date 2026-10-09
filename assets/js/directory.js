@@ -245,7 +245,7 @@ const bhInitDirectory=async()=>{
     let markers = [];
     const storedView = localStorage.getItem("bh_directory_view");
     // One consistent stacked listing view; the old Listings | Map toggle is removed.
-    let currentView = "map";
+    let currentView = "grid";
 
     let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let cardCount = Number(localStorage.getItem("bh_directory_cards") || 3);
