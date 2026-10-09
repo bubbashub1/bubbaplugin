@@ -96,7 +96,14 @@ try {
     $type = (string)($event['type'] ?? '');
     $obj = $event['data']['object'] ?? [];
 
-    if ($type === 'checkout.session.completed') {
+    if ($type === 'checkout.session.completed' || $type === 'checkout.session.async_payment_succeeded') {
+        // Never grant paid access for an incomplete or unpaid checkout.
+        if (($obj['mode'] ?? '') !== 'subscription') {
+            echo json_encode(['received'=>true]); exit;
+        }
+        if (($obj['payment_status'] ?? '') !== 'paid' && ($obj['payment_status'] ?? '') !== 'no_payment_required') {
+            echo json_encode(['received'=>true]); exit;
+        }
         $uid = (int)($obj['metadata']['user_id'] ?? $obj['client_reference_id'] ?? 0);
         $subscriptionId = is_string($obj['subscription'] ?? null) ? $obj['subscription'] : null;
         $customerId = is_string($obj['customer'] ?? null) ? $obj['customer'] : null;
@@ -104,7 +111,7 @@ try {
         // Family Pro can be purchased without first creating a normal account.
         // Stripe supplies the verified checkout email; create/link the family
         // account here and then attach the subscription to that user.
-        if ($uid <= 0) {
+        if ($uid <= 0 && $planFromCheckout = (($obj['metadata']['plan'] ?? 'family_pro') === 'family_pro')) {
             $email = strtolower(trim((string)($obj['customer_details']['email'] ?? $obj['customer_email'] ?? '')));
             if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $q = $db->prepare("SELECT id,status FROM bh_users WHERE LOWER(email)=? LIMIT 1");
@@ -155,6 +162,11 @@ try {
         if (!$uid && $subscriptionId !== '') {
             $q=$db->prepare("SELECT user_id FROM bh_user_subscriptions WHERE stripe_subscription_id=? LIMIT 1");
             $q->execute([$subscriptionId]); $uid=(int)$q->fetchColumn();
+        }
+        if ($uid && $plan === 'leader_pro') {
+            $roleQ=$db->prepare("SELECT role FROM bh_users WHERE id=? LIMIT 1");
+            $roleQ->execute([$uid]);
+            if ($roleQ->fetchColumn() !== 'leader') $uid=0;
         }
         if ($uid) {
             $expires = !empty($obj['current_period_end']) ? date('Y-m-d H:i:s',(int)$obj['current_period_end']) : null;
