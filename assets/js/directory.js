@@ -395,13 +395,13 @@ const bhInitDirectory=async()=>{
           : '<img class="bh-map-popup-image" src="/wp-content/uploads/logo/placeholder.jpeg" alt="" aria-hidden="true">';
         return '<article class="bh-map-popup-card">' + image + '<div class="bh-map-popup-body"><span class="bh-map-popup-category">' + escapeHtml(category) + '</span><h3>' + escapeHtml(activity.title) + '</h3><p class="bh-map-popup-location">📍 ' + escapeHtml(venue.name || venue.town || venue.address || "") + '</p><div class="bh-map-popup-meta"><span>👶 ' + escapeHtml(age) + '</span><span>💷 ' + escapeHtml(price) + '</span>' + (time ? '<span>🕒 ' + escapeHtml(time) + '</span>' : '') + '</div><a class="button button-primary bh-map-popup-link" href="' + bhActivityUrl(activity) + '">View activity →</a></div></article>';
       };
-      markers.forEach(marker=>marker.remove());
-      markers=[];
       const locations=list.flatMap(activity=>bhVenues(activity).map(venue=>({activity,venue}))).filter(({venue})=>{
         const lat=Number(venue.lat),lng=Number(venue.long);
         return Number.isFinite(lat)&&Number.isFinite(lng)&&lat>=49&&lat<=52&&lng>=-7&&lng<=-1;
       });
-      markers=bhMapEngine.render(map,list,popupHtml,markers);
+      try { markers=bhMapEngine.render(map,list,popupHtml,markers); }
+      catch(error){console.error("Directory map pin rendering failed",error);}
+      if(!locations.length)console.info("No mapped activities match the current directory filters");
       if(locations.length){
         const bounds=L.latLngBounds(locations.map(({venue})=>[Number(venue.lat),Number(venue.long)]));
         if(bounds.isValid())map.fitBounds(bounds,{padding:[35,35],maxZoom:13});
