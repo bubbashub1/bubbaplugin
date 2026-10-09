@@ -25,7 +25,6 @@ window.bhMapEngine = (() => {
       spiderfyOnMaxZoom:true,
       showCoverageOnHover:false,
       zoomToBoundsOnClick:true,
-      disableClusteringAtZoom:17,
       maxClusterRadius:38,
       spiderfyDistanceMultiplier:2
     }):null;
