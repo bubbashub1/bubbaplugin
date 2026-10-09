@@ -880,6 +880,17 @@ const bhInitDirectory=async()=>{
       });
     }
 
+    // Search stays on the current directory page: do not submit to a new URL.
+    const heroForm=$("directoryHeroSearch");
+    heroForm?.addEventListener("submit",event=>{
+      event.preventDefault();
+      render();
+      if(currentView==="map")setTimeout(()=>map?.invalidateSize(),80);
+    });
+    heroForm?.querySelector('button[type="submit"]')?.addEventListener("click",event=>{
+      event.preventDefault();
+      render();
+    });
     if ($("mainSearchButton")) $("mainSearchButton").addEventListener("click", render);
     if ($("search")) $("search").addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); render(); } });
 
