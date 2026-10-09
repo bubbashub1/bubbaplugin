@@ -699,7 +699,7 @@ const bhInitDirectory=async()=>{
           (!town || String(v.town || activity.town || "").toLowerCase() === String(town).toLowerCase())
         );
 
-        const sessionMatch = sessions.some(session => !day || session.day === day);
+        const sessionMatch = !day || sessions.some(session => session.day === day);
         const price = Number(activity.price_value ?? sessions[0]?.price_value ?? 0);
         const priceMatch = !maxPrice || (maxPrice === "over30" ? price > 30 : price <= Number(maxPrice));
         const freeMatch = !freeOnly || price === 0 || String(activity.price || "").toLowerCase().includes("free");
