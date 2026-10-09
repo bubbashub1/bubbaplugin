@@ -1,0 +1,80 @@
+/* Bubba Hub 2.0 — My Hub visual refresh. Presentation only; preserve JS IDs and auth. */
+body.bh-my-hub{background:#fffdf7;color:#123f31;font-family:'Quicksand',Calibri,Arial,sans-serif}
+.bh-my-hub .my-hub-page{padding-top:22px;padding-bottom:48px}
+.bh-my-hub .my-hub-page :is(h1,h2,h3){font-family:'Quicksand',Calibri,Arial,sans-serif;font-weight:700;letter-spacing:-.035em;color:#174e3b}
+.bh-my-hub .my-hub-hero{
+  background:linear-gradient(125deg,#e5f1df 0%,#def1f4 75%,#fff0d0 100%);
+  color:#174e3b;border:1px solid #d1e4d4;border-radius:34px;
+  box-shadow:0 14px 36px rgba(23,78,59,.09);
+  padding:clamp(24px,4vw,52px);overflow:hidden;
+}
+.bh-my-hub .my-hub-hero :is(h1,h2,p,.eyebrow){color:#174e3b}
+.bh-my-hub .my-hub-hero h1{font-size:clamp(2.8rem,6vw,5.5rem);line-height:1.02;letter-spacing:-.055em;margin:8px 0 12px}
+.bh-my-hub .my-hub-hero p{font-size:clamp(1rem,1.6vw,1.22rem);line-height:1.5;max-width:560px}
+.bh-my-hub .my-hub-hero .eyebrow,.bh-my-hub .my-hub-page .eyebrow{
+  font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#3c8e96;
+}
+.bh-my-hub .my-hub-page :is(.button,a.button,button.button){
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:43px;padding:10px 19px;border-radius:999px;
+  font-family:'Quicksand',Calibri,Arial,sans-serif;font-weight:800;
+  text-decoration:none;line-height:1.25;box-sizing:border-box;
+}
+.bh-my-hub .my-hub-page .button-primary{background:#174e3b;border-color:#174e3b;color:#fff}
+.bh-my-hub .my-hub-page .button-primary:hover{background:#ee822c;border-color:#ee822c;color:#123f31}
+.bh-my-hub .my-hub-page .button-soft{background:#e5f1df;border-color:#d1e4d4;color:#174e3b}
+.bh-my-hub .my-hub-page .button-soft:hover{background:#f7bf7d;border-color:#f7bf7d;color:#174e3b}
+.bh-my-hub .my-hub-hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+.bh-my-hub .my-hub-hero-actions .button-soft{background:#fff;border-color:#d1e4d4}
+.bh-my-hub .my-hub-page #myHubApp{gap:24px}
+.bh-my-hub .my-hub-page :is(.hub-welcome,.hub-brief,.hub-panel,.hub-suggestions){
+  border:1px solid #e1ebe2;border-radius:26px;background:#fff;
+  box-shadow:0 9px 28px rgba(23,78,59,.06);
+}
+.bh-my-hub .my-hub-page .hub-welcome{background:#fff;padding:clamp(20px,3vw,32px)}
+.bh-my-hub .my-hub-page .hub-welcome h2{font-size:clamp(1.5rem,2.8vw,2.2rem)}
+.bh-my-hub .my-hub-page .hub-stat{border-radius:22px;border:1px solid #e1ebe2;box-shadow:0 6px 20px rgba(23,78,59,.05);background:#fff}
+.bh-my-hub .my-hub-page .hub-stat:nth-child(4n+1){background:#fbe4e0}
+.bh-my-hub .my-hub-page .hub-stat:nth-child(4n+2){background:#def1f4}
+.bh-my-hub .my-hub-page .hub-stat:nth-child(4n+3){background:#e5f1df}
+.bh-my-hub .my-hub-page .hub-stat:nth-child(4n+4){background:#fff0d0}
+.bh-my-hub .my-hub-page .hub-stat strong{font-size:clamp(1.5rem,2.6vw,2.1rem);color:#174e3b}
+.bh-my-hub .my-hub-page .hub-personal-cta{
+  border-radius:28px;background:#174e3b;color:#fff;padding:clamp(20px,3vw,32px);
+  box-shadow:0 10px 25px rgba(23,78,59,.12);
+}
+.bh-my-hub .my-hub-page .hub-personal-cta :is(h2,p,.eyebrow){color:#fff}
+.bh-my-hub .my-hub-page .hub-personal-cta h2{font-size:clamp(1.5rem,2.8vw,2.2rem)}
+.bh-my-hub .my-hub-page .hub-personal-cta .button-primary{background:#f7bf7d;color:#174e3b;border-color:#f7bf7d}
+.bh-my-hub .my-hub-page .hub-personal-cta .button-soft{background:#fff;color:#174e3b}
+.bh-my-hub .my-hub-page :is(.hub-brief-head h2,.hub-suggestions-head h2,.hub-panel .admin-panel-head h2){font-size:clamp(1.4rem,2.5vw,2rem)}
+.bh-my-hub .my-hub-page .hub-family-card{background:#f5f9f4;border:1px solid #dfe9df;border-radius:20px}
+.bh-my-hub .my-hub-page .family-avatar{background:#def1f4;color:#174e3b;border-radius:17px}
+.bh-my-hub .my-hub-page :is(.hub-list-card,.hub-booking-card,.hub-brief-item){
+  background:#f7faf6;border-radius:17px;border:1px solid #edf2eb;
+}
+.bh-my-hub .my-hub-page :is(.hub-list-card,.hub-booking-card,.hub-brief-item):hover{background:#e5f1df}
+.bh-my-hub .my-hub-page .hub-suggestion-card{background:#def1f4;border-color:#cfe7e9;border-radius:21px}
+.bh-my-hub .my-hub-page .hub-suggestion-card:nth-child(3n+2){background:#fbe4e0;border-color:#f4d9d5}
+.bh-my-hub .my-hub-page .hub-suggestion-card:nth-child(3n+3){background:#fff0d0;border-color:#f3e5c4}
+.bh-my-hub .my-hub-page .hub-tools-grid .feature-card{
+  border-radius:25px;border:0;min-height:205px;padding:23px;
+  background:#fbe4e0;box-shadow:none;color:#174e3b;
+  transition:transform .18s ease;
+}
+.bh-my-hub .my-hub-page .hub-tools-grid .feature-card:nth-child(2){background:#def1f4}
+.bh-my-hub .my-hub-page .hub-tools-grid .feature-card:nth-child(3){background:#e5f1df}
+.bh-my-hub .my-hub-page .hub-tools-grid .feature-card:nth-child(4){background:#fff0d0}
+.bh-my-hub .my-hub-page .hub-tools-grid .feature-card:hover{transform:translateY(-3px)}
+.bh-my-hub .my-hub-page .hub-tools-grid .feature-card h3{font-size:1.22rem;color:#174e3b}
+.bh-my-hub .my-hub-page .hub-upcoming-ticker{border-radius:18px;background:#e5f1df;border-color:#d1e4d4}
+@media(max-width:760px){
+ .bh-my-hub .my-hub-page{padding-top:14px}
+ .bh-my-hub .my-hub-hero{border-radius:24px;padding:24px 18px}
+ .bh-my-hub .my-hub-hero h1{font-size:clamp(2.6rem,11vw,4.5rem)}
+ .bh-my-hub .my-hub-page :is(.hub-welcome,.hub-brief,.hub-panel,.hub-suggestions){border-radius:21px}
+ .bh-my-hub .my-hub-page .hub-tools-grid .feature-card{min-height:0}
+}
+@media(prefers-reduced-motion:reduce){
+ .bh-my-hub .my-hub-page .hub-tools-grid .feature-card{transition:none}
+}
