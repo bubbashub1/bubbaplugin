@@ -545,3 +545,47 @@ body.bh-directory .custom-sleek-dark-marker .dark-core{
 body.bh-directory .custom-sleek-dark-marker:hover .bubba-dark-pin{
   background:#3c8e96;
 }
+
+/* Mobile directory: stacked, usable search and full-width interactive map. */
+@media (max-width:900px){
+ body.bh-directory:not(.bh-calendar-page) .app-shell,
+ body.bh-directory:not(.bh-calendar-page) .directory-layout,
+ body.bh-directory:not(.bh-calendar-page) .directory-results-column{
+   display:block!important;width:100%!important;max-width:100%!important;
+   min-width:0!important;box-sizing:border-box!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder]{
+   position:relative!important;top:auto!important;max-height:none!important;
+   overflow:visible!important;width:100%!important;min-width:0!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-search{
+   width:100%!important;max-width:100%!important;box-sizing:border-box!important;
+   overflow:visible!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-search-fields{
+   display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-search .directory-hero-actions,
+ body.bh-directory:not(.bh-calendar-page) .directory-search-advanced-link{
+   display:block!important;visibility:visible!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) #directoryFilters{
+   position:static!important;display:block!important;visibility:visible!important;
+   height:auto!important;max-height:none!important;overflow:visible!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) #advancedFields:not([hidden]){
+   display:block!important;visibility:visible!important;height:auto!important;
+   max-height:none!important;overflow:visible!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions{
+   display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+   gap:8px!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions > *{
+   width:100%!important;min-width:0!important;box-sizing:border-box!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) #mapView:not([hidden]){
+   display:block!important;width:100%!important;height:58dvh!important;
+   min-height:360px!important;max-height:none!important;
+ }
+}
