@@ -397,7 +397,7 @@
               <button type="button" class="bh-modal-close" data-contact-close aria-label="Close contact form">×</button>
               <span class="eyebrow">Contact organiser</span>
               <h2 id="organiserContactTitle">Message ${bhEscape(name)}</h2>
-              <p class="bh-modal-intro">Send an enquiry directly to the organiser. Your email app will open with the message ready to send.</p>
+              <p class="bh-modal-intro">Send an enquiry directly to the organiser. Send a private enquiry through Bubba Hub. Sign in to send a message directly.</p>
               <form id="organiserContactForm" class="bh-contact-form">
                 <label><span>Your name</span><input name="name" type="text" autocomplete="name" required></label>
                 <label><span>Email address</span><input name="email" type="email" autocomplete="email" required></label>
@@ -405,7 +405,7 @@
                 <label><span>Message</span><textarea name="message" rows="5" required placeholder="What would you like to ask?"></textarea></label>
                 <div class="bh-contact-form-actions">
                   <button type="button" class="button button-soft" data-contact-close>Cancel</button>
-                  <button type="submit" class="button button-primary">Open email</button>
+                  <button type="submit" class="button button-primary">Send message</button>
                 </div>
               </form>
             </div>
@@ -514,23 +514,25 @@
           if (event.key === "Escape" && contactModal && !contactModal.hidden) closeContactModal();
         });
 
-        contactForm?.addEventListener("submit", event => {
+        contactForm?.addEventListener("submit", async event => {
           event.preventDefault();
           const formData = new FormData(contactForm);
           const subject = "Bubba Hub enquiry for " + name;
-          const body = [
-            "Hello " + name + ",",
-            "",
-            String(formData.get("message") || "").trim(),
-            "",
-            "Name: " + String(formData.get("name") || "").trim(),
-            "Email: " + String(formData.get("email") || "").trim(),
-            "Phone: " + String(formData.get("phone") || "").trim()
-          ].join("\n");
-          window.location.href = "mailto:" + encodeURIComponent(email) +
-            "?subject=" + encodeURIComponent(subject) +
-            "&body=" + encodeURIComponent(body);
-          closeContactModal();
+          const message = String(formData.get("message") || "").trim() + "\n\nName: " + String(formData.get("name") || "").trim() + "\nEmail: " + String(formData.get("email") || "").trim() + "\nPhone: " + String(formData.get("phone") || "").trim();
+          const button = contactForm.querySelector('[type="submit"]');
+          button.disabled = true;
+          let feedback = contactForm.querySelector('[role="status"]');
+          if (!feedback) { feedback = document.createElement("p"); feedback.setAttribute("role","status"); contactForm.append(feedback); }
+          feedback.textContent = "Sending your enquiry…";
+          try {
+            const response = await fetch("/api/leader-messages.php", {method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"send",organiser_slug:organiserSlug,subject,message,category:"help"})});
+            const result = await response.json();
+            if (!response.ok || !result.ok) throw Error(result.message || "Could not send your enquiry.");
+            feedback.textContent = "Your message has been sent to the organiser.";
+            contactForm.reset();
+          } catch (error) {
+            feedback.textContent = error.message + (error.message.includes("sign in") ? " Please sign in and try again." : "");
+          } finally { button.disabled = false; }
         });
 
         await renderMap(venues);
