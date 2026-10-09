@@ -50,3 +50,12 @@
 .bh-home .home-category-row a:last-child{grid-column:auto}
 @media(max-width:760px){.bh-home .home-hero{min-height:0;width:100%;padding:22px 15px 30px}.bh-home .home-hero-copy{width:100%;padding:0;margin:0}.bh-home .home-hero-image{min-height:245px}.bh-home .home-search{left:auto;right:auto;bottom:auto;padding:16px}.bh-home .home-category-row{width:100%;margin:0 auto;padding:20px 15px 35px}.bh-home .home-search-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.bh-home .home-search-fields .button{grid-column:1/-1}}
 @media(max-width:400px){.bh-home .home-search-fields{grid-template-columns:1fr}.bh-home .home-category-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Hero photograph removed at user request: centred copy, no empty photo column. */
+.bh-home .home-hero{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}
+.bh-home .home-hero-copy{grid-column:1;grid-row:1;max-width:900px;width:100%;text-align:center;margin-inline:auto;padding:36px 0 28px}
+.bh-home .home-hero-copy h1.home-brush,.bh-home .home-brush{text-align:center}
+.bh-home .bh-hero-subtitle,.bh-home .bh-hero-detail{margin-left:auto!important;margin-right:auto!important}
+.bh-home .home-search{grid-column:1;grid-row:2}
+.bh-home .home-hero-image{display:none!important;background-image:none!important}
+@media(max-width:760px){.bh-home .home-hero-copy{order:0;text-align:center;padding:18px 0}.bh-home .home-hero-copy h1.home-brush{text-align:center}.bh-home .home-search{order:1}}
