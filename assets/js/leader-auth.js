@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   if(!form)return;
 
   const qs=new URLSearchParams(location.search);
-  const next=qs.get("next")||"/leader/";
+  const next=(()=>{const candidate=qs.get("next")||"/leader/";try{const u=new URL(candidate,location.origin);return u.origin===location.origin&&/^https?:$/.test(u.protocol)?u.pathname+u.search+u.hash:"/leader/"}catch{return "/leader/"}})();
   let mode=qs.get("mode")==="register"?"register":"login";
   let csrf="";
 
