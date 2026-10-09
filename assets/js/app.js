@@ -998,10 +998,8 @@ void bhHydrateSaved();
 window.bhPopulatePopularCategories = async function(container) {
   if (!container) return;
   try {
-    const response = await fetch(new URL("data/activities.json", document.baseURI), { cache: "no-store" });
-    if (!response.ok) throw new Error("activities data unavailable");
-    const data = await response.json();
-    const items = Array.isArray(data) ? data : (Array.isArray(data.activities) ? data.activities : []);
+    // Use the published directory API, not the legacy static demo JSON.
+    const items = await bhActivities();
     const counts = new Map();
     items.forEach(item => {
       const raw = item.category || item.categories || item.type || "";
