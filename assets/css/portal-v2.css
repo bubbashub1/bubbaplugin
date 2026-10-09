@@ -1,0 +1,110 @@
+/* Bubba Hub 2.0: Account, authentication and leader dashboard. Visual only. */
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2){background:#fffdf7;color:#174e3b;font-family:'Quicksand',Calibri,Arial,sans-serif}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) :is(h1,h2,h3){font-family:'Quicksand',Calibri,Arial,sans-serif;font-weight:800;letter-spacing:-.035em;color:#174e3b}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) .app-shell{padding-top:22px;padding-bottom:52px}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) .eyebrow{color:#3c8e96;font-weight:800;letter-spacing:.06em}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) :is(.page-heading,.auth-hero,.bh-leader-hero){
+ background:linear-gradient(125deg,#e5f1df 0%,#def1f4 75%,#fff0d0 100%);
+ border:1px solid #d1e4d4;border-radius:32px;padding:clamp(23px,4vw,48px);
+ box-shadow:0 12px 30px rgba(23,78,59,.07);color:#174e3b
+}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) :is(.page-heading,.auth-hero,.bh-leader-hero) h1{
+ font-size:clamp(2.2rem,4.5vw,4.6rem);line-height:1.07;letter-spacing:-.05em;color:#174e3b
+}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) :is(.page-heading,.auth-hero,.bh-leader-hero) p{
+ color:#416651;font-size:clamp(1rem,1.5vw,1.2rem);line-height:1.55
+}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) :is(a.button,button.button){
+ border-radius:999px;min-height:43px;padding:10px 19px;
+ font-family:'Quicksand',Calibri,Arial,sans-serif;font-weight:800;text-decoration:none
+}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) .button-primary{
+ background:#174e3b;border-color:#174e3b;color:#fff
+}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) .button-primary:hover{
+ background:#ee822c;border-color:#ee822c;color:#174e3b
+}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) .button-soft{
+ background:#e5f1df;border-color:#d1e4d4;color:#174e3b
+}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) .button-soft:hover{
+ background:#f7bf7d;border-color:#f7bf7d;color:#174e3b
+}
+.bh-account-v2 .account-welcome-note{
+ background:#fff0d0;border:1px solid #f3e5c4;border-radius:24px;
+ padding:clamp(17px,2.5vw,27px);box-shadow:none
+}
+.bh-account-v2 .account-welcome-icon{
+ display:grid;place-items:center;border-radius:19px;background:#fff;width:58px;height:58px
+}
+.bh-account-v2 .account-pro-banner,.bh-leader-v2 .leader-pro-banner{
+ background:#174e3b;border:0;border-radius:27px;
+ padding:clamp(22px,3vw,35px);color:#fff;box-shadow:0 10px 28px rgba(23,78,59,.12)
+}
+.bh-account-v2 .account-pro-banner :is(h2,p,.eyebrow),.bh-leader-v2 .leader-pro-banner :is(h2,p,.eyebrow){color:#fff}
+.bh-account-v2 .account-pro-banner .button-primary,.bh-leader-v2 .leader-pro-banner .button-primary{
+ background:#f7bf7d;border-color:#f7bf7d;color:#174e3b
+}
+.bh-account-v2 .account-section-label h2{font-size:clamp(1.6rem,3vw,2.5rem)}
+.bh-account-v2 .account-dashboard-grid{gap:17px}
+.bh-account-v2 .account-dashboard-card{
+ border:1px solid transparent;border-radius:26px;background:#fbe4e0;
+ padding:clamp(20px,2.5vw,29px);box-shadow:none;min-width:0
+}
+.bh-account-v2 .account-dashboard-card:nth-child(4n+2){background:#def1f4}
+.bh-account-v2 .account-dashboard-card:nth-child(4n+3){background:#e5f1df}
+.bh-account-v2 .account-dashboard-card:nth-child(4n+4){background:#fff0d0}
+.bh-account-v2 .account-dashboard-card h3{font-size:1.25rem}
+.bh-account-v2 .account-dashboard-card .feature-icon{
+ display:grid;place-items:center;background:rgba(255,255,255,.7);border-radius:18px;width:57px;height:57px
+}
+.bh-account-v2 .account-dashboard-card .card-link{color:#174e3b;font-weight:800}
+.bh-account-v2 :is(.account-leader-card,.account-account-access){
+ background:#fff;border:1px solid #e1ebe2;border-radius:24px;
+ box-shadow:0 7px 22px rgba(23,78,59,.05)
+}
+.bh-auth-v2 .auth-layout{gap:22px}
+.bh-auth-v2 .auth-card{
+ background:#fff;border:1px solid #e1ebe2;border-radius:27px;
+ padding:clamp(20px,3vw,34px);box-shadow:0 12px 30px rgba(23,78,59,.07)
+}
+.bh-auth-v2 .auth-benefits{background:#def1f4;border:1px solid #cfe7e9;border-radius:26px;padding:clamp(20px,3vw,32px)}
+.bh-auth-v2 .auth-pro-cta{background:#fff0d0;border-radius:21px;padding:19px}
+.bh-auth-v2 .auth-tabs{display:flex;gap:9px;padding:6px;background:#e5f1df;border-radius:999px}
+.bh-auth-v2 .auth-tabs .button{flex:1;border-radius:999px}
+.bh-auth-v2 .auth-tabs .active{background:#174e3b;color:#fff;border-color:#174e3b}
+.bh-auth-v2 .auth-card :is(input,select){
+ min-height:43px;border:1px solid #d1e4d4;border-radius:13px;background:#f8fbf8;
+ color:#174e3b;font-family:inherit;max-width:100%;box-sizing:border-box
+}
+.bh-auth-v2 .auth-card :is(input,select):focus-visible{
+ outline:3px solid rgba(60,142,150,.22);outline-offset:1px;border-color:#3c8e96
+}
+.bh-auth-v2 .auth-submit{width:100%;justify-content:center}
+.bh-leader-v2 .bh-leader-hero .hero-actions{display:flex;flex-wrap:wrap;gap:10px}
+.bh-leader-v2 .bh-leader-stats-v2{gap:14px}
+.bh-leader-v2 .bh-leader-stat{
+ border:1px solid #e1ebe2;border-radius:24px;background:#fbe4e0;
+ color:#174e3b;box-shadow:none;padding:20px
+}
+.bh-leader-v2 .bh-leader-stat:nth-child(4n+2){background:#def1f4}
+.bh-leader-v2 .bh-leader-stat:nth-child(4n+3){background:#e5f1df}
+.bh-leader-v2 .bh-leader-stat:nth-child(4n+4){background:#fff0d0}
+.bh-leader-v2 .bh-leader-stat :is(strong,b,small){color:#174e3b}
+.bh-leader-v2 .bh-leader-dashboard-grid{gap:18px}
+.bh-leader-v2 :is(.bh-leader-panel,.admin-panel){
+ background:#fff;border:1px solid #e1ebe2;border-radius:25px;
+ box-shadow:0 8px 25px rgba(23,78,59,.055)
+}
+.bh-leader-v2 :is(.bh-leader-action,.bh-leader-tool){
+ background:#e5f1df;border:1px solid #d1e4d4;border-radius:18px;color:#174e3b
+}
+.bh-leader-v2 :is(.bh-leader-action,.bh-leader-tool):nth-child(3n+2){background:#def1f4}
+.bh-leader-v2 :is(.bh-leader-action,.bh-leader-tool):nth-child(3n+3){background:#fff0d0}
+.bh-leader-v2 .bh-support-banner{background:#def1f4;border-radius:24px;border-color:#cfe7e9}
+@media(max-width:760px){
+ :is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) :is(.page-heading,.auth-hero,.bh-leader-hero){border-radius:23px;padding:24px 18px}
+ :is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) :is(.page-heading,.auth-hero,.bh-leader-hero) h1{font-size:clamp(2.1rem,9vw,3.5rem)}
+ .bh-auth-v2 .auth-card,.bh-auth-v2 .auth-benefits{border-radius:20px}
+ .bh-leader-v2 .bh-leader-stat{border-radius:19px}
+}
