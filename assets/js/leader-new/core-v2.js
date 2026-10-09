@@ -1,3 +1,4 @@
+async function readApiJson(response){const raw=await response.text();if(!raw.trim())throw Error("Class setup service returned an empty response (HTTP "+response.status+"). Please check the PHP error log.");let data;try{data=JSON.parse(raw)}catch(e){throw Error("Class setup service returned invalid JSON (HTTP "+response.status+"). Please check the PHP error log.");}return data;}
 (()=>{"use strict";
 const Q=id=>document.getElementById(id);
 const API="../api/leader-portal.php";
@@ -9,7 +10,7 @@ const state={current:1,meta:{categories:[],tags:[],accessibility:[],venues:[],ma
 const register=(name,init,validate)=>{if(init)state.inits.push(init);if(validate)state.validators[name]=validate};
 const say=(t,ok)=>{const m=Q("formMessage");if(m){m.textContent=t||"";m.className=ok?"bh-ok":"bh-error"}};
 const addOpt=(s,v,on)=>{v=String(v||"").trim();if(!v)return;let o=[...s.options].find(x=>x.value.toLowerCase()===v.toLowerCase());if(o)o.selected=on||o.selected;else s.add(new Option(v,v,!!on))};
-const post=async body=>{let r=await fetch(API,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(body)}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.message||d.error||"The class could not be submitted.");return d};
+const post=async body=>{let r=await fetch(API,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(body)}),d=await readApiJson(r);if(!r.ok||!d.ok)throw Error(d.message||d.error||"The class could not be submitted.");return d};
 const syncDescription=()=>{if(Q("descriptionEditor"))Q("description").value=Q("descriptionEditor").innerHTML.trim()};
 const schedule=()=>[...document.querySelectorAll(".bh-row")].map(r=>({day:r.querySelector(".day").value,start:r.querySelector(".start").value,end:r.querySelector(".end").value}));
 function saveDraft(){
