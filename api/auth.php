@@ -486,13 +486,41 @@ try {
         $verificationResponse = static function (int $status, bool $success, string $message): void {
             http_response_code($status);
             header('Content-Type: text/html; charset=utf-8');
-            header('Cache-Control: no-store');
-            $heading = $success ? 'Welcome to Bubba Hub!' : 'We could not verify your email';
-            $description = $success ? 'Your email address is verified. Your Bubba Hub account is ready — sign in to get started.' : $message;
+            header('Cache-Control: no-store, private');
+            header('X-Robots-Tag: noindex, nofollow');
+            $heading = $success ? 'Welcome to Bubba Hub!' : 'This verification link is no longer valid';
+            $description = $success
+                ? 'Thank you for confirming your email address. You can now sign in to your Bubba Hub account and start exploring.'
+                : $message;
             $heading = htmlspecialchars($heading, ENT_QUOTES, 'UTF-8');
             $description = htmlspecialchars($description, ENT_QUOTES, 'UTF-8');
-            $symbol = $success ? '&#10003;' : '!';
-            echo '<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Email verification | Bubba Hub</title><link rel="stylesheet" href="/assets/css/styles.css"><style>body{margin:0;background:#f5faf5;color:#194b36;font-family:Quicksand,Calibri,Arial,sans-serif}.bh-v-header{background:#e3f0e6;padding:18px 20px;text-align:center}.bh-v-header img{max-width:220px;width:70%;height:auto}.bh-v-card{box-sizing:border-box;max-width:650px;margin:32px auto;padding:42px 32px;border-radius:30px;background:white;box-shadow:0 6px 28px #174d3020;text-align:center}.bh-v-icon{width:108px;height:108px;display:grid;place-items:center;margin:0 auto 24px;border-radius:50%;background:#d8e6db;color:#174d30;font-size:64px;font-weight:700}.bh-v-card h1{font-size:clamp(30px,6vw,48px);line-height:1.15;margin:0 0 20px}.bh-v-card p{font-size:18px;line-height:1.6;margin:0 0 28px}.bh-v-btn{display:block;padding:17px 20px;border-radius:100px;background:#144400;color:white!important;text-decoration:none!important;font-weight:700;margin:12px 0}.bh-v-btn.secondary{background:#e3f0e6;color:#144400!important}.bh-v-help{margin-top:28px;padding:20px;border-radius:20px;background:#eaf4f4;text-align:left}.bh-v-help p{font-size:15px;margin:8px 0 0}.bh-v-help a{color:#277d85}@media(max-width:700px){.bh-v-card{margin:20px 14px;padding:34px 22px;border-radius:26px}.bh-v-header img{max-width:190px}}</style></head><body><header class="bh-v-header"><a href="/"><img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a></header><main class="bh-v-card"><div class="bh-v-icon" aria-hidden="true">'.$symbol.'</div><h1>'.$heading.'</h1><p>'.$description.'</p><a class="bh-v-btn" href="/auth.html?context=leader">Sign in to Bubba Hub &rarr;</a><a class="bh-v-btn secondary" href="/">Go to Bubba Hub homepage</a><div class="bh-v-help"><strong>Need help?</strong><p>If you are having trouble signing in, <a href="/help-support">visit our Support page &rarr;</a></p></div></main></body></html>';
+            $icon = $success ? '&#10003;' : '&#9993;';
+            $cardClass = $success ? 'success' : 'failure';
+            $extra = $success
+                ? '<div class="bh-v-features"><span>&#128197; <strong>Find activities</strong></span><span>&#9825; <strong>Plan your week</strong></span><span>&#127912; <strong>Class leaders</strong></span></div>'
+                : '<p class="bh-v-note">If you have already verified your email, you can sign in. Otherwise, please contact our support team for help with a new link.</p>';
+            echo '<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Email verification | Bubba Hub</title><link rel="stylesheet" href="/assets/css/styles.css"><style>
+            body{margin:0;background:#f8faf7;color:#194b36;font-family:Quicksand,Calibri,Arial,sans-serif}
+            .bh-v-header{padding:24px 18px 12px;text-align:center;background:white}
+            .bh-v-header img{width:min(310px,78vw);height:auto;max-height:120px;object-fit:contain}
+            .bh-v-card{box-sizing:border-box;max-width:650px;margin:24px auto 32px;padding:36px 30px 24px;border-radius:32px;text-align:center;background:linear-gradient(155deg,#eef7ed 0%,#fff 68%);border:1px solid #dce9dc}
+            .bh-v-card.failure{background:linear-gradient(155deg,#fff2eb 0%,#fff 70%);border-color:#f2e4dc}
+            .bh-v-icon{display:grid;place-items:center;width:100px;height:100px;margin:0 auto 22px;border-radius:50%;background:#c8e7c0;color:#144400;font-size:60px;font-weight:800}
+            .failure .bh-v-icon{background:#f9d5d4;color:#a83f40;font-size:55px}
+            .bh-v-card h1{font-size:clamp(31px,6vw,46px);line-height:1.12;letter-spacing:-.035em;margin:0 0 18px;color:#144400;font-weight:800}
+            .bh-v-card p{font-size:18px;line-height:1.6;margin:0 auto 24px;max-width:510px}
+            .bh-v-btn{display:block;padding:17px 20px;border-radius:999px;background:#144400;color:white!important;text-decoration:none!important;font-size:17px;font-weight:800;margin:12px 0}
+            .bh-v-btn:hover,.bh-v-btn:focus{background:#df863e;color:#144400!important}
+            .bh-v-btn.secondary{background:#dcebd9;color:#144400!important}
+            .bh-v-features{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;background:#fff;border-radius:22px;padding:20px 8px;margin:24px 0}
+            .bh-v-features span{font-size:14px;line-height:1.5;color:#144400}
+            .bh-v-features strong{display:block}
+            .bh-v-note{font-size:15px!important}
+            .bh-v-help{margin:22px auto 0;padding:20px;border-radius:20px;background:#def0f1;text-align:left}
+            .bh-v-help p{font-size:15px;margin:8px 0 0}.bh-v-help a{color:#206d77;font-weight:700}
+            .bh-v-footer{padding:0 16px 28px;text-align:center}
+            @media(max-width:700px){.bh-v-card{margin:14px 12px 24px;padding:30px 20px 20px;border-radius:28px}.bh-v-header img{max-height:100px}.bh-v-features{padding:16px 4px}.bh-v-features span{font-size:12px}}
+            </style></head><body><header class="bh-v-header"><a href="/"><img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a></header><main class="bh-v-card '.$cardClass.'"><div class="bh-v-icon" aria-hidden="true">'.$icon.'</div><h1>'.$heading.'</h1><p>'.$description.'</p><a class="bh-v-btn" href="/auth.html?context=leader">Sign in to Bubba Hub &rarr;</a>'.$extra.'<a class="bh-v-btn secondary" href="/">Go to Bubba Hub homepage &rarr;</a><div class="bh-v-help"><strong>Need help?</strong><p>Visit <a href="/help-support">Support &amp; Guidance &rarr;</a> if you have trouble accessing your account.</p></div></main><footer class="bh-v-footer">Bubba Hub South West</footer></body></html>';
             exit;
         };
 
