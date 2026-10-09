@@ -123,6 +123,13 @@
     </section>
   </div>
 
+  <section class="admin-panel hub-panel" id="my-messages" aria-labelledby="myMessagesHeading">
+    <div class="admin-panel-head">
+      <div><span class="eyebrow">Your private conversations</span><h2 id="myMessagesHeading">My Messages</h2><p>View your support questions, submission status and replies.</p></div>
+      <a class="button button-soft" href="/help-support#ask">Ask another question →</a>
+    </div>
+    <div id="hubSupportMessages" aria-live="polite"><p>Loading your messages…</p></div>
+  </section>
   <section class="hub-tools-grid">
     <a class="feature-card" href="account/preferences.html"><span class="feature-icon">⚙</span><h3>Preferences</h3><p>Set the areas, days and family planning options Bubba Hub should use for you.</p></a>
     <a class="feature-card" href="account/consent.html"><span class="feature-icon">🔒</span><h3>Booking consent</h3><p>Manage the information and permissions you choose to share during bookings.</p></a>
@@ -139,6 +146,7 @@
 <script src="assets/js/app.js"></script>
 <script src="assets/js/inspire-me.js" defer></script>
 <script src="assets/js/my-hub.js"></script>
+<script src="/assets/js/hub-messages.js" defer></script>
 <script>(async()=>{try{const r=await fetch("api/subscription.php",{credentials:"same-origin",cache:"no-store"}),d=await r.json();if(d.pro){const e=document.getElementById("hubProStatus");if(e)e.hidden=false}else{const p=document.getElementById("hubProPitch");if(p)p.hidden=false}}catch(e){}})();</script>
 </body>
 </html>
