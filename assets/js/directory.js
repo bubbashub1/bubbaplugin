@@ -215,6 +215,28 @@ const bhInitDirectory=async()=>{
         });
       } catch (_) {}
     };
+    // One delegated handler survives asynchronous hero/filter component loading.
+    // It also avoids two competing click handlers toggling the panel twice.
+    document.addEventListener("click",async event=>{
+      const trigger=event.target.closest('[data-bh-hero-filters]');
+      if(!trigger||!document.body.classList.contains("bh-directory"))return;
+      event.preventDefault();
+      await (window.bhAdvancedFiltersReady||Promise.resolve());
+      const panel=document.getElementById("directoryFilters");
+      const fields=panel?.querySelector("#advancedFields");
+      if(!fields){
+        console.warn("Advanced search fields are unavailable");
+        return;
+      }
+      const open=fields.hidden;
+      fields.hidden=!open;
+      panel.classList.toggle("is-open",open);
+      trigger.setAttribute("aria-expanded",String(open));
+      trigger.textContent=open?"− Fewer search options":"More search options →";
+      const innerToggle=panel.querySelector("#advancedToggle");
+      if(innerToggle)innerToggle.setAttribute("aria-expanded",String(open));
+      if(open)requestAnimationFrame(()=>fields.scrollIntoView({behavior:"smooth",block:"nearest"}));
+    });
     setupAdvancedSearch();
 
     void applyAdvancedFilterSettings();
