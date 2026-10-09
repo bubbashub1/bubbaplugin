@@ -1,0 +1,46 @@
+/* Bubba Hub 2.0 secondary portal pages — scoped styling only. */
+body.bh-subpage-v2{background:#fffdf7;color:#174e3b;font-family:'Quicksand',Calibri,Arial,sans-serif}
+.bh-subpage-v2 .app-shell{padding-top:20px;padding-bottom:52px}
+.bh-subpage-v2 .app-shell :is(h1,h2,h3){font-family:'Quicksand',Calibri,Arial,sans-serif;font-weight:800;letter-spacing:-.035em;color:#174e3b}
+.bh-subpage-v2 .app-shell :is(.page-heading,.bh-leader-hero,.subscription-hero,.account-hero,.pro-hero){
+ background:linear-gradient(125deg,#e5f1df,#def1f4 75%,#fff0d0);
+ border:1px solid #d1e4d4;border-radius:29px;
+ padding:clamp(22px,3.5vw,42px);box-shadow:0 10px 26px rgba(23,78,59,.06);color:#174e3b
+}
+.bh-subpage-v2 .app-shell :is(.page-heading,.bh-leader-hero,.subscription-hero,.account-hero,.pro-hero) h1{
+ font-size:clamp(2.1rem,4vw,4rem);line-height:1.08;color:#174e3b
+}
+.bh-subpage-v2 .app-shell :is(.page-heading,.bh-leader-hero,.subscription-hero,.account-hero,.pro-hero) p{color:#416651;line-height:1.55}
+.bh-subpage-v2 .app-shell .eyebrow{color:#3c8e96;font-weight:800;letter-spacing:.06em}
+.bh-subpage-v2 .app-shell :is(.admin-panel,.bh-leader-panel,.account-panel,.subscription-card,.pricing-card,.pro-price-card){
+ border:1px solid #e1ebe2;border-radius:24px;background:#fff;
+ box-shadow:0 7px 24px rgba(23,78,59,.055)
+}
+.bh-subpage-v2 .app-shell :is(.bh-leader-stat,.feature-card,.account-card,.subscription-feature){
+ border:1px solid #e1ebe2;border-radius:21px;background:#e5f1df
+}
+.bh-subpage-v2 .app-shell :is(.bh-leader-stat,.feature-card,.account-card,.subscription-feature):nth-child(3n+2){background:#def1f4}
+.bh-subpage-v2 .app-shell :is(.bh-leader-stat,.feature-card,.account-card,.subscription-feature):nth-child(3n+3){background:#fff0d0}
+.bh-subpage-v2 .app-shell :is(a.button,button.button,input[type=submit]){
+ min-height:42px;border-radius:999px;padding:10px 17px;
+ font-family:'Quicksand',Calibri,Arial,sans-serif;font-weight:800;text-decoration:none
+}
+.bh-subpage-v2 .app-shell .button-primary{background:#174e3b;border-color:#174e3b;color:#fff}
+.bh-subpage-v2 .app-shell .button-primary:hover{background:#ee822c;border-color:#ee822c;color:#174e3b}
+.bh-subpage-v2 .app-shell .button-soft{background:#e5f1df;border-color:#d1e4d4;color:#174e3b}
+.bh-subpage-v2 .app-shell .button-soft:hover{background:#f7bf7d;border-color:#f7bf7d;color:#174e3b}
+.bh-subpage-v2 .app-shell :is(input:not([type=checkbox]):not([type=radio]),select,textarea){
+ max-width:100%;box-sizing:border-box;border-radius:13px;border-color:#d1e4d4;
+ font-family:'Quicksand',Calibri,Arial,sans-serif
+}
+.bh-subpage-v2 .app-shell :is(input,select,textarea):focus-visible{outline:3px solid rgba(60,142,150,.24);outline-offset:1px}
+.bh-subpage-v2 .app-shell :is(table,.table-wrap){border-radius:15px}
+.bh-subpage-v2 .app-shell :is(.bh-leader-dashboard-grid,.account-dashboard-grid){gap:17px}
+@media(max-width:760px){
+ .bh-subpage-v2 .app-shell :is(.page-heading,.bh-leader-hero,.subscription-hero,.account-hero,.pro-hero){border-radius:22px;padding:22px 18px}
+ .bh-subpage-v2 .app-shell :is(.admin-panel,.bh-leader-panel,.account-panel,.subscription-card,.pricing-card){border-radius:18px}
+ .bh-subpage-v2 .app-shell :is(.page-heading,.bh-leader-hero,.subscription-hero,.account-hero,.pro-hero) h1{font-size:clamp(2rem,9vw,3rem)}
+}
+@media print{
+ .bh-subpage-v2 .app-shell :is(.page-heading,.bh-leader-hero,.subscription-hero,.account-hero,.pro-hero){box-shadow:none}
+}
