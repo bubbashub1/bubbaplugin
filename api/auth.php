@@ -182,21 +182,27 @@ function bh_create_leader_organiser(PDO $db, int $userId, string $email, string 
     }
 
     $nameField=isset($columns['organisation_name'])?'organisation_name':(isset($columns['name'])?'name':(isset($columns['organisation'])?'organisation':(isset($columns['business_name'])?'business_name':'')));
-    if($nameField==='' || !isset($columns['slug']) || !isset($columns['status'])) {
-        throw new RuntimeException('Leader organiser setup is not available yet.');
+    if($nameField==='') {
+        throw new RuntimeException('Leader organiser setup is missing its organisation name column.');
     }
 
-    $base=strtolower(trim((string)preg_replace('/[^a-z0-9]+/i','-', $displayName),'-'));
-    $base=$base!==''?$base:'leader';
-    $slug=$base; $n=2;
-    for ($i = 0; $i < 50; $i++) {
-        $q=$db->prepare("SELECT id FROM bh_organisers WHERE slug=? LIMIT 1"); $q->execute([$slug]);
-        if(!$q->fetch()) break;
-        $slug=$base.'-'.$n++;
+    // Older live bh_organisers schemas have no slug/status columns.
+    // Only populate optional fields when the actual table supports them.
+    $fields=[$nameField]; $values=[$displayName];
+    if(isset($columns['slug'])) {
+        $base=strtolower(trim((string)preg_replace('/[^a-z0-9]+/i','-', $displayName),'-'));
+        $base=$base!==''?$base:'leader';
+        $slug=$base; $n=2;
+        for ($i=0; $i<50; $i++) {
+            $q=$db->prepare("SELECT id FROM bh_organisers WHERE slug=? LIMIT 1");
+            $q->execute([$slug]);
+            if(!$q->fetch()) break;
+            $slug=$base.'-'.$n++;
+        }
+        if($i>=50) $slug=$base.'-'.bin2hex(random_bytes(4));
+        $fields[]='slug'; $values[]=$slug;
     }
-    if ($i >= 50) $slug = $base . '-' . bin2hex(random_bytes(4));
-
-    $fields=[$nameField,'slug','status']; $values=[$displayName,$slug,'pending'];
+    if(isset($columns['status'])) { $fields[]='status'; $values[]='pending'; }
     if(isset($columns['user_id'])){$fields[]='user_id';$values[]=$userId;}
     if(isset($columns['email'])){$fields[]='email';$values[]=$email;}
     if(isset($columns['phone'])){$fields[]='phone';$values[]=$phone!==''?$phone:null;}
