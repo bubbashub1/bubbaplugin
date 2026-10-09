@@ -5,7 +5,7 @@ header('Cache-Control: no-store');
 try {
 require_once __DIR__.'/db.php';
 require_once __DIR__.'/mailer.php';
-session_start();
+if(session_status()!==PHP_SESSION_ACTIVE){session_name('BUBBAHUBSESSID');session_start();}
 function lp(int $s,array $d): void{http_response_code($s);echo json_encode($d,JSON_UNESCAPED_SLASHES);exit;}
 function lpEnsureExpertise(PDO $db): void{
  try{$db->exec("CREATE TABLE IF NOT EXISTS bh_leader_expertise (organiser_id BIGINT UNSIGNED NOT NULL, topic_key VARCHAR(80) NOT NULL, enabled TINYINT(1) NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, PRIMARY KEY (organiser_id,topic_key), INDEX idx_leader_expertise_topic (topic_key)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");}catch(Throwable $ignored){}
@@ -35,7 +35,8 @@ $org=null;
 if($hasOrgUserId){$o=$db->prepare("SELECT * FROM bh_organisers WHERE user_id=? LIMIT 1");$o->execute([$userId]);$org=$o->fetch();}
 else{try{$u=$db->prepare("SELECT email FROM bh_users WHERE id=? LIMIT 1");$u->execute([$userId]);$user=$u->fetch();if($user&&!empty($user['email'])){$o=$db->prepare("SELECT * FROM bh_organisers WHERE email=? LIMIT 1");$o->execute([$user['email']]);$org=$o->fetch();}}catch(Throwable $ignored){}}
 if(!$org)lp(403,['ok'=>false,'error'=>'organiser_required','message'=>'Your account is not linked to a class leader organisation yet.']);
-$oid=(int)$org['id'];$isPro=false;$imageLimit=3;foreach(['plan','membership_plan','membership_tier','subscription_plan','tier'] as $pcn){if(array_key_exists($pcn,$org)){ $pv=strtolower(trim((string)$org[$pcn]));$isPro=in_array($pv,['pro','premium','ultimate'],true);break;}}$imageLimit=$isPro?12:3;$faqLimit=$isPro?null:5;
+$oid=(int)$org['id'];$isPro=false;$imageLimit=3;foreach(['plan','membership_plan','membership_tier','subscription_plan','tier'] as $pcn){if(array_key_exists($pcn,$org)){ $pv=strtolower(trim((string)$org[$pcn]));$isPro=in_array($pv,['pro','premium','ultimate'],true);break;}}try{$t=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_user_subscriptions'");if((int)$t->fetchColumn()){$p=$db->prepare("SELECT COUNT(*) FROM bh_user_subscriptions WHERE user_id=? AND plan='leader_pro' AND status IN ('active','trialing') AND (expires_at IS NULL OR expires_at>UTC_TIMESTAMP())");$p->execute([$userId]);if((int)$p->fetchColumn()>0)$isPro=true;}}catch(Throwable $ignored){error_log('Leader portal subscription lookup: '.$ignored->getMessage());}
+$imageLimit=$isPro?12:3;$faqLimit=$isPro?null:5;
 function lpEnsureActivityAccessibility(PDO $db): void{
  try{
   $db->exec("ALTER TABLE bh_activities ADD COLUMN accessibility TEXT NULL");
