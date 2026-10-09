@@ -822,7 +822,12 @@ void bhHydrateSaved();
 (function(){
   // The hero is fetched asynchronously; wait until its nested placeholder exists.
   window.bhAdvancedFiltersReady=(async()=>{
-  await (window.bhDirectoryHeroReady || Promise.resolve());
+  // Defer one microtask: the hero loader below has not assigned its promise yet.
+  // Without this, advanced filters resolve to [] before the hero placeholder exists.
+  await Promise.resolve();
+  if(document.querySelector("[data-bh-directory-hero-placeholder]")){
+    await (window.bhDirectoryHeroReady || Promise.resolve());
+  }
   const placeholders=[...document.querySelectorAll("[data-bh-advanced-filters-placeholder]")];
   if(!placeholders.length){
     return [];
