@@ -54,3 +54,56 @@ body.bh-activity-v2{background:#fffdf7;color:#123f31;font-family:'Quicksand',Cal
  .bh-activity-v2 .listing-actions{gap:8px}
 }
 @media(prefers-reduced-motion:reduce){.bh-activity-v2 .app-shell .button{transition:none}}
+
+
+/* Activity detail refinement: remove empty vertical space and align useful content. */
+.bh-activity-v2 .app-shell{max-width:1500px;margin-inline:auto;padding-inline:clamp(14px,2vw,28px)}
+.bh-activity-v2 .listing-layout{
+  display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);
+  align-items:start;gap:clamp(18px,2vw,28px);
+}
+.bh-activity-v2 .listing-main,.bh-activity-v2 .listing-side{
+  min-width:0;display:flex;flex-direction:column;gap:18px;
+}
+.bh-activity-v2 .listing-layout :is(.listing-main,.listing-side)>*{
+  margin-top:0!important;margin-bottom:0!important;
+}
+.bh-activity-v2 .activity-reference-about,
+.bh-activity-v2 .activity-reference-schedule,
+.bh-activity-v2 .activity-reference-contact,
+.bh-activity-v2 .activity-useful-info{
+  padding:clamp(16px,2vw,25px);min-height:0!important;
+}
+.bh-activity-v2 .activity-reference-about .listing-description{
+  line-height:1.7;overflow-wrap:anywhere;
+}
+.bh-activity-v2 .activity-reference-about .listing-description p{
+  margin:0 0 12px;
+}
+.bh-activity-v2 .activity-reference-about .listing-description p:last-child{margin-bottom:0}
+.bh-activity-v2 .activity-reference-about .activity-keyword-tags{margin-bottom:10px}
+.bh-activity-v2 .activity-reference-contact .listing-map{
+  height:clamp(230px,28vw,340px)!important;min-height:230px;
+}
+.bh-activity-v2 .activity-reference-addresses{margin-top:12px}
+.bh-activity-v2 .activity-address-row{gap:12px;align-items:center}
+.bh-activity-v2 .activity-address-row span{overflow-wrap:anywhere}
+.bh-activity-v2 .activity-reference-organiser{
+  margin-top:14px;padding:14px;border:1px solid #d7e6dc;
+}
+.bh-activity-v2 .listing-claim-wrap{margin-top:12px}
+.bh-activity-v2 .listing-side>.organiser-card{display:none!important}
+.bh-activity-v2 .activity-useful-info:has(.activity-info-badges:empty):not(:has(p)){display:none}
+.bh-activity-v2 .activity-reference-schedule .venue-schedule{
+  padding:15px;border-radius:17px;border:1px solid #dce8de;
+  background:#f7faf6;
+}
+.bh-activity-v2 .activity-reference-schedule .venue-schedule h3{margin:0 0 5px}
+.bh-activity-v2 .activity-reference-schedule .venue-schedule p{margin:0}
+.bh-activity-v2 .activity-reference-schedule .session-list:empty{display:none}
+.bh-activity-v2 .listing-bottom{margin-top:22px}
+@media(max-width:850px){
+ .bh-activity-v2 .listing-layout{grid-template-columns:minmax(0,1fr)}
+ .bh-activity-v2 .listing-main,.bh-activity-v2 .listing-side{gap:14px}
+ .bh-activity-v2 .activity-reference-contact .listing-map{height:260px!important}
+}
