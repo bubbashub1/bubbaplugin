@@ -903,7 +903,7 @@ void bhHydrateSaved();
         });
         const filterButton=hero.querySelector("[data-bh-hero-filters]");if(filterButton){
         filterButton.id=ids.filters;
-        filterButton.addEventListener("click",async event=>{
+        if(page!=="directory")filterButton.addEventListener("click",async event=>{
           event.preventDefault();
           event.stopPropagation();
           await (window.bhAdvancedFiltersReady||Promise.resolve());
