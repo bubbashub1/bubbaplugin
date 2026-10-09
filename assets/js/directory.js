@@ -408,7 +408,15 @@ const bhInitDirectory=async()=>{
         else hint.textContent="Showing "+locations.length+" mapped locations for "+list.length+" activities. Select a pin to view its activity.";
       }
       if(!locations.length)console.info("No mapped activities match the current directory filters");
-      // Preserve the current zoom when markers are refreshed.
+      // Fit newly filtered pins into view rather than leaving them offscreen.
+      const locationKey=locations.map(({activity,venue})=>String(activity.id)+":"+String(venue.id)).sort().join("|");
+      if(locations.length && map._bhDirectoryLocationKey!==locationKey){
+        map._bhDirectoryLocationKey=locationKey;
+        const bounds=L.latLngBounds(locations.map(({venue})=>[
+          Number(venue.lat ?? venue.latitude),Number(venue.long ?? venue.longitude)
+        ]));
+        if(bounds.isValid())map.fitBounds(bounds,{padding:[35,35],maxZoom:13});
+      }
       if(!locations.length && !map._bhInitialPinsFitted) map.setView([50.55,-3.75],9);
     };
 
