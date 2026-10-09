@@ -1,0 +1,30 @@
+/* Leader Blog — Bubba Hub Quicksand and distinct pastel cards */
+.bh-leader-blog-v2{font-family:'Quicksand',Calibri,Arial,sans-serif;background:#f6faf7;color:#174e3b}
+.bh-leader-blog-v2 :is(button,input,textarea){font-family:inherit}
+.bh-leader-blog-v2 .bh-leader-page{max-width:1420px;margin:auto;padding:28px 16px 65px}
+.bh-leader-blog-v2 .bh-leader-hero{display:flex;justify-content:space-between;align-items:center;gap:25px;margin-bottom:18px}
+.bh-leader-blog-v2 .bh-leader-hero h1{font-size:clamp(2.2rem,4.5vw,4rem)}
+.bh-leader-blog-nav{display:flex;gap:12px;flex-wrap:wrap;background:white;border:1px solid #dce9df;border-radius:20px;padding:14px 18px;margin-bottom:20px}
+.bh-leader-blog-nav a{font-weight:800;text-decoration:none;color:#174e3b;padding:9px 12px;border-radius:12px}
+.bh-leader-blog-nav a:hover{background:#e5f1df}
+.bh-blog-intro{display:flex;align-items:center;justify-content:space-between;gap:22px;background:#def1f4;border:1px solid #cde4e8;border-radius:27px;padding:clamp(24px,3vw,38px);margin-bottom:20px}
+.bh-blog-intro h2,.bh-blog-heading h2,.bh-blog-upgrade h2{font-size:clamp(1.45rem,2.5vw,2.1rem);margin:8px 0}
+.bh-blog-intro p{max-width:690px;line-height:1.65}.bh-blog-illustration{font-size:clamp(3rem,6vw,6rem)}
+.bh-blog-upgrade{background:#fff0d0;border:1px solid #eedeb5;border-radius:25px;padding:30px;margin-bottom:20px}
+.bh-blog-workspace{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(310px,.85fr);gap:20px;align-items:start}
+.bh-blog-compose,.bh-blog-library{border:1px solid #dce9df;border-radius:27px;padding:clamp(20px,2.6vw,34px);min-width:0;box-shadow:0 8px 26px rgba(23,78,59,.04)}
+.bh-blog-compose{background:#fff}.bh-blog-library{background:#e5f1df}
+.bh-blog-heading{display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:22px}.bh-blog-heading p{margin:4px 0;color:#416651}.bh-blog-pencil{font-size:2rem}
+.bh-blog-form{display:grid;gap:20px}.bh-blog-form label{display:grid;gap:9px;font-weight:800;color:#174e3b}
+.bh-blog-form :is(input,textarea){width:100%;box-sizing:border-box;background:#f8fbf8;border:1px solid #cddfd1;border-radius:15px;padding:14px 16px;font-size:1rem;color:#174e3b}
+.bh-blog-form textarea{resize:vertical;min-height:260px;line-height:1.65}
+.bh-blog-form :is(input,textarea):focus{outline:3px solid #c9e8e6;border-color:#3c8e96}
+.bh-blog-editor-foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;font-size:.9rem;color:#416651}
+.bh-blog-buttons{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.bh-blog-article{background:#fff;border:1px solid #d5e5d7;border-radius:19px;padding:19px;margin-bottom:13px}
+.bh-blog-article h3{margin:9px 0;font-size:1.13rem}.bh-blog-article p{color:#416651;margin:0 0 14px}
+.bh-blog-article .bh-blog-status{display:inline-flex;border-radius:999px;background:#fff0d0;color:#174e3b;font-weight:800;font-size:.8rem;padding:6px 11px}
+.bh-blog-article .button{min-height:36px}
+#blogMessage:not(:empty),#blogStatus:not(:empty){margin-top:15px;padding:14px 18px;background:#fff0d0;border-radius:13px}
+@media(max-width:880px){.bh-blog-workspace{grid-template-columns:1fr}.bh-leader-blog-v2 .bh-leader-hero{flex-direction:column;align-items:start}}
+@media(max-width:560px){.bh-blog-intro{align-items:start}.bh-blog-illustration{font-size:2.5rem}.bh-blog-editor-foot{display:block}.bh-blog-buttons .button{width:100%;justify-content:center}}
