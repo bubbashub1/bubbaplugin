@@ -32,13 +32,41 @@ const bhInitMap=async()=>{
     const params=new URLSearchParams(location.search);
     const categoryValues=[...new Set(activities.map(x=>categoryMap[x.category]||x.category).filter(Boolean))].sort();
     const regionValues=[...new Set(activities.flatMap(x=>bhVenues(x).map(v=>v.region||x.region)).filter(Boolean))].sort();
-    const townValues=[...new Set(activities.flatMap(x=>bhVenues(x).map(v=>v.town||x.town)).filter(Boolean))].sort();
+    const townsByRegion=new Map();
+    activities.forEach(activity=>bhVenues(activity).forEach(venue=>{
+      const region=String(venue.region||activity.region||"").trim();
+      const town=String(venue.town||activity.town||"").trim();
+      if(!region||!town)return;
+      if(!townsByRegion.has(region))townsByRegion.set(region,new Set());
+      townsByRegion.get(region).add(town);
+    }));
     fill("mapCategory",categoryValues,params.get("category")||"","All categories");
     fill("mapRegion",regionValues,params.get("region")||"","All regions");
-    fill("mapTown",townValues,params.get("town")||"","All towns");
     fill("category",categoryValues,params.get("category")||"","All categories");
     fill("area",regionValues,params.get("region")||"","All regions");
-    fill("town",townValues,params.get("town")||"","All towns");
+    const updateTowns=(region,selected="")=>{
+      const values=region?[...(townsByRegion.get(region)||[])].sort():[];
+      for(const [id,label] of [["mapTown","All towns"],["town","All towns"]]){
+        fill(id,values,selected,label);
+        if($(id)){$(id).disabled=!region;$(id).title=region?"Select a town in "+region:"Select a region first";}
+      }
+    };
+    updateTowns(params.get("region")||"",params.get("town")||"");
+    for(const id of ["mapRegion","area"]){
+      $(id)?.addEventListener("change",()=>{
+        const region=$(id).value;
+        for(const other of ["mapRegion","area"])if($(other))$(other).value=region;
+        updateTowns(region);
+        syncUrl();render();
+      });
+    }
+    for(const id of ["mapTown","town"]){
+      $(id)?.addEventListener("change",()=>{
+        const town=$(id).value;
+        for(const other of ["mapTown","town"])if($(other))$(other).value=town;
+        syncUrl();render();
+      });
+    }
     if ($("mapSearch")) $("mapSearch").value=params.get("keyword")||params.get("search")||params.get("q")||"";
     if ($("mapRegion")) $("mapRegion").value=params.get("region")||"";
     if ($("mapTown")) $("mapTown").value=params.get("town")||"";
