@@ -34,6 +34,22 @@
 .bh-leader-v2 .bh-leader-hidden-stats{display:none}
 @media(max-width:980px){.bh-leader-v2 .bh-leader-stats-v2,.bh-leader-v2 .bh-leader-portal-tools{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.bh-leader-v2 .bh-leader-page{padding:15px 14px 38px}.bh-leader-v2 .bh-leader-hero{padding:24px 18px}.bh-leader-v2 .bh-leader-stats-v2{gap:9px}.bh-leader-v2 .bh-leader-stat{padding:13px;min-height:98px}.bh-leader-v2 .bh-leader-stat strong{font-size:1.5rem}.bh-leader-v2 .bh-leader-panel{padding:18px}.bh-leader-v2 .leader-pro-banner{padding:20px;gap:15px}}
+
+/* Simple entryway dashboard: navigation first, no busy statistics panels. */
+.bh-leader-v2 .leader-entry{margin:0 0 26px}
+.bh-leader-v2 .leader-entry-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.bh-leader-v2 .leader-entry-card{display:flex;flex-direction:column;align-items:flex-start;min-height:192px;padding:23px;border:1px solid #d8e6db;border-radius:22px;background:#f5faf6;color:#144400;text-decoration:none;box-shadow:0 5px 18px rgba(20,68,0,.035);transition:transform .16s ease,border-color .16s ease,background .16s ease}
+.bh-leader-v2 .leader-entry-card:hover,.bh-leader-v2 .leader-entry-card:focus-visible{transform:translateY(-3px);border-color:#3c8e96;background:#eaf4ed;text-decoration:none}
+.bh-leader-v2 .leader-entry-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:#dceee8;font-size:1.55rem;margin-bottom:14px}
+.bh-leader-v2 .leader-entry-card strong{font-size:1.15rem;font-weight:800;margin-bottom:5px}
+.bh-leader-v2 .leader-entry-card small{font-size:.89rem;line-height:1.5;color:#526d5d}
+.bh-leader-v2 .leader-entry-arrow{margin-top:auto;padding-top:18px;font-weight:800;color:#144400}
+.bh-leader-v2 .leader-entry-feature{background:#d8e6db;border-color:#9fb7a5}
+.bh-leader-v2 #leaderMessageCount:not([hidden]){display:inline-flex!important;align-items:center;border-radius:999px;background:#144400;color:white;padding:2px 8px;font-size:.72rem;vertical-align:middle}
+.bh-leader-v2 #leaderMessageCount[hidden]{display:none!important}
+.bh-leader-v2 .leader-entry-card[hidden]{display:none!important}
+@media(max-width:900px){.bh-leader-v2 .leader-entry-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.bh-leader-v2 .leader-entry-grid{grid-template-columns:1fr;gap:12px}.bh-leader-v2 .leader-entry-card{min-height:155px;padding:18px}.bh-leader-v2 .leader-entry-icon{width:42px;height:42px;margin-bottom:9px}}
 </style></head>
 <body class="bh-leader-v2" data-leader-page="dashboard">
 <header class="site-header">
@@ -60,30 +76,27 @@
 
 
 
-<section class="bh-leader-stats-v2" aria-label="Your Bubba Hub stats">
-<a class="bh-leader-stat" href="/leader/classes.html"><span>🎨</span><div><strong id="statActivities">0</strong><b>My classes</b><small id="statActivitiesSub">Loading…</small></div><em>→</em></a>
-<a class="bh-leader-stat" href="/leader/venues.html"><span>📍</span><div><strong id="statVenues">0</strong><b>My venues</b><small id="statVenuesSub">Loading…</small></div><em>→</em></a>
-<a class="bh-leader-stat" href="/leader/schedule.html"><span>📅</span><div><strong id="statSessions">0</strong><b>Upcoming sessions</b><small>Scheduled sessions</small></div><em>→</em></a>
-<a class="bh-leader-stat" href="/leader/bookings.html"><span>🎟️</span><div><strong id="statBookings">0</strong><b>Bookings</b><small>Reservations received</small></div><em>→</em></a>
-
-
+<section class="leader-entry" aria-label="Leader portal sections">
+  <div class="leader-dashboard-section-head"><h2>What would you like to do?</h2><p>Choose a section to manage your classes and account.</p></div>
+  <div class="leader-entry-grid">
+    <a class="leader-entry-card leader-entry-feature" href="/leader/new.html"><span class="leader-entry-icon">＋</span><strong>Add a class</strong><small>Create a new activity listing for families to discover.</small><span class="leader-entry-arrow">Explore →</span></a>
+    <a class="leader-entry-card" href="/leader/classes.html"><span class="leader-entry-icon">🎨</span><strong>My classes</strong><small>Manage your listings and class information.</small><span class="leader-entry-arrow">Open →</span></a>
+    <a class="leader-entry-card" href="/leader/schedule.html"><span class="leader-entry-icon">📅</span><strong>My schedule</strong><small>View and manage upcoming sessions.</small><span class="leader-entry-arrow">Open →</span></a>
+    <a class="leader-entry-card" href="/leader/venues.html"><span class="leader-entry-icon">📍</span><strong>My venues</strong><small>Keep your class locations up to date.</small><span class="leader-entry-arrow">Open →</span></a>
+    <a class="leader-entry-card" href="/leader/bookings.html"><span class="leader-entry-icon">🎟️</span><strong>Bookings</strong><small>Review bookings and reservations.</small><span class="leader-entry-arrow">Open →</span></a>
+    <a class="leader-entry-card" href="/leader/messages.html"><span class="leader-entry-icon">✉️</span><strong>My Messages <span id="leaderMessageCount" hidden style="display:none"></span></strong><small>Help requests and booking enquiries.</small><span class="leader-entry-arrow">Open →</span></a>
+    <a class="leader-entry-card" href="/leader/profile.html"><span class="leader-entry-icon">⚙️</span><strong>My profile</strong><small>Update your organiser storefront and settings.</small><span class="leader-entry-arrow">Open →</span></a>
+    <a class="leader-entry-card" href="/leader/specialisms.html"><span class="leader-entry-icon">💚</span><strong>My Specialisms</strong><small>Choose how you can help local families.</small><span class="leader-entry-arrow">Open →</span></a>
+    <a class="leader-entry-card" href="/leader/faqs.html"><span class="leader-entry-icon">❓</span><strong>FAQs</strong><small>Answer common questions from families.</small><span class="leader-entry-arrow">Open →</span></a>
+    <a class="leader-entry-card" href="/leader/statistics.html"><span class="leader-entry-icon">📈</span><strong>Statistics</strong><small>See how your classes are performing.</small><span class="leader-entry-arrow">Open →</span></a>
+    <a class="leader-entry-card" href="/leader/payments.html"><span class="leader-entry-icon">💳</span><strong>Payments</strong><small>View payment information and guidance.</small><span class="leader-entry-arrow">Open →</span></a>
+    <a class="leader-entry-card" href="/leader/blog.html" data-pro-only hidden><span class="leader-entry-icon">📝</span><strong>Leader blog</strong><small>Write articles for local families.</small><span class="leader-entry-arrow">Open →</span></a>
+  </div>
 </section>
-
-<div class="bh-leader-hidden-stats" aria-hidden="true"><span id="statMonth"></span><span id="statHealth"></span></div>
-<section id="listing-health" class="bh-leader-dashboard-grid">
-<div class="admin-panel bh-leader-panel"><div class="admin-panel-head"><div><span class="eyebrow">Keep your profile fresh</span><h2>Listing health</h2><p id="healthMessage">Checking your listings…</p></div><strong id="healthPercent" class="bh-health-number">0%</strong></div><div class="bh-health-bar"><span id="healthBar"></span></div><div id="healthChecks" class="bh-health-checks"></div></div>
-<div class="admin-panel bh-leader-panel"><div class="admin-panel-head"><div><span class="eyebrow">At a glance</span><h2>What needs your attention?</h2></div></div><div id="leaderAlerts" class="bh-alert-list"><p class="deployment-note">Checking your account…</p></div></div>
-</section>
-
-
-
-<div class="leader-dashboard-section-head"><h2>More tools</h2><p>Everything else you need to run your classes.</p></div>
-<section class="bh-leader-portal-tools"><a href="/leader/messages.html" class="bh-leader-tool"><span>✉️</span><strong>My Messages <span id="leaderMessageCount" hidden style="display:none;background:#144400;color:#fff;border-radius:999px;padding:2px 9px;font-size:.8rem"></span></strong><small>Help requests and booking enquiries.</small></a><a href="/leader/specialisms.html" class="bh-leader-tool"><span>💚</span><strong>My Specialisms</strong><small>Choose how you can help local families.</small></a>
-<a href="/leader/statistics.html" class="bh-leader-tool"><span>📈</span><strong>Statistics</strong><small>See listings, sessions and bookings at a glance.</small></a>
-<a href="/leader/payments.html" class="bh-leader-tool"><span>💳</span><strong>Payments</strong><small>Understand Bubba Hub and external booking payments.</small></a>
-<a href="/leader/faqs.html" class="bh-leader-tool"><span>❓</span><strong>FAQs</strong><small>Create helpful public answers for families.</small></a>
-<a href="/leader/blog.html" class="bh-leader-tool" data-pro-only hidden><span>📝</span><strong>Leader blog</strong><small>Write articles for local families.</small></a>
-</section>
+<div class="leader-dashboard-data" hidden aria-hidden="true">
+ <span id="statActivities"></span><span id="statActivitiesSub"></span><span id="statVenues"></span><span id="statVenuesSub"></span><span id="statSessions"></span><span id="statBookings"></span><span id="statMonth"></span><span id="statHealth"></span>
+ <section id="listing-health"><span id="healthMessage"></span><span id="healthPercent"></span><span id="healthBar"></span><span id="healthChecks"></span><span id="leaderAlerts"></span></section>
+</div>
 
 <section class="account-pro-banner leader-pro-banner" id="leaderProBanner">
 <div><span class="eyebrow">Bubba Hub Leader Pro</span><h2 id="leaderProTitle">Make more of Bubba Hub</h2><p id="leaderProText">Extra tools for your growing classes.</p></div>
