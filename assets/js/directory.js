@@ -694,10 +694,13 @@ const bhInitDirectory=async()=>{
           ...venues.flatMap(v => [v.name, v.town, v.region, v.address, v.postcode])
         ].filter(Boolean).join(" ").toLowerCase();
 
-        const locationMatch = (!region && !town) || venues.some(v =>
-          (!region || canonicalRegion(v.region || activity.region).toLowerCase() === canonicalRegion(region).toLowerCase()) &&
-          (!town || String(v.town || activity.town || "").toLowerCase() === String(town).toLowerCase())
-        );
+        const locationMatch = (!region && !town) || venues.some(v => {
+          const venueRegion=canonicalRegion(v.region || activity.region || "");
+          const activityRegion=canonicalRegion(activity.region || "");
+          const regionMatch=!region || [venueRegion,activityRegion].some(value=>value.toLowerCase()===canonicalRegion(region).toLowerCase());
+          const townMatch=!town || [v.town,activity.town].some(value=>String(value||"").trim().toLowerCase()===String(town).trim().toLowerCase());
+          return regionMatch && townMatch;
+        });
 
         const sessionMatch = !day || sessions.some(session => session.day === day);
         const price = Number(activity.price_value ?? sessions[0]?.price_value ?? 0);
