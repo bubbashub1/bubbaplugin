@@ -23,6 +23,9 @@ RewriteBase /
 # Treat /index and /index/ as the homepage, not an activity slug.
 RewriteRule ^index/?$ index.html [L,QSA]
 
+# Resolve canonical activity URLs before the generic slug fallback.
+RewriteRule ^activity/([^/]+)/?$ activity.html?slug=$1 [B,L,QSA]
+
 # Dedicated authentication pages must be handled before the generic activity-slug rule.
 RewriteRule ^admin-login/?$ admin-login.html [L,QSA]
 RewriteRule ^leader-login/?$ leader-login.html [L,QSA]
