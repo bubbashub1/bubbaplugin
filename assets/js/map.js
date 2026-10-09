@@ -30,18 +30,24 @@ const bhInitMap=async()=>{
   try{
     const activities=await bhActivities();
     const params=new URLSearchParams(location.search);
+    const canonicalRegion=value=>{
+      const raw=String(value||"").trim().replace(/\\s+/g," ");
+      const key=raw.toLowerCase().replace(/[–—]/g,"-");
+      const aliases={"exeter city":"Exeter","city of exeter":"Exeter","torbay borough":"Torbay","borough of torbay":"Torbay","teignbridge district":"Teignbridge","south hams district":"South Hams","cornwall council":"Cornwall","cornwall county":"Cornwall"};
+      return aliases[key]||({"exeter":"Exeter","torbay":"Torbay","teignbridge":"Teignbridge","south hams":"South Hams","cornwall":"Cornwall"}[key]||raw);
+    };
     const categoryValues=[...new Set(activities.map(x=>categoryMap[x.category]||x.category).filter(Boolean))].sort();
-    const regionValues=[...new Set(activities.flatMap(x=>bhVenues(x).map(v=>v.region||x.region)).filter(Boolean))].sort();
+    const regionValues=[...new Set(activities.flatMap(x=>bhVenues(x).map(v=>canonicalRegion(v.region||x.region))).filter(Boolean))].sort();
     const townsByRegion=new Map();
     activities.forEach(activity=>bhVenues(activity).forEach(venue=>{
-      const region=String(venue.region||activity.region||"").trim();
+      const region=canonicalRegion(venue.region||activity.region);
       const town=String(venue.town||activity.town||"").trim();
       if(!region||!town)return;
       if(!townsByRegion.has(region))townsByRegion.set(region,new Set());
       townsByRegion.get(region).add(town);
     }));
     fill("mapCategory",categoryValues,params.get("category")||"","All categories");
-    fill("mapRegion",regionValues,params.get("region")||"","All regions");
+    fill("mapRegion",regionValues,canonicalRegion(params.get("region")),"All regions");
     fill("category",categoryValues,params.get("category")||"","All categories");
     fill("area",regionValues,params.get("region")||"","All regions");
     const updateTowns=(region,selected="")=>{
@@ -51,7 +57,7 @@ const bhInitMap=async()=>{
         if($(id)){$(id).disabled=!region;$(id).title=region?"Select a town in "+region:"Select a region first";}
       }
     };
-    updateTowns(params.get("region")||"",params.get("town")||"");
+    updateTowns(canonicalRegion(params.get("region")),params.get("town")||"");
     for(const id of ["mapRegion","area"]){
       $(id)?.addEventListener("change",()=>{
         const region=$(id).value;
@@ -68,7 +74,7 @@ const bhInitMap=async()=>{
       });
     }
     if ($("mapSearch")) $("mapSearch").value=params.get("keyword")||params.get("search")||params.get("q")||"";
-    if ($("mapRegion")) $("mapRegion").value=params.get("region")||"";
+    if ($("mapRegion")) $("mapRegion").value=canonicalRegion(params.get("region"));
     if ($("mapTown")) $("mapTown").value=params.get("town")||"";
     if ($("mapCategory")) $("mapCategory").value=params.get("category")||"";
     if ($("mapAge")) $("mapAge").value=params.get("age_preset")||"";
@@ -103,7 +109,7 @@ const bhInitMap=async()=>{
       const list=activities.filter(activity=>{
         const venues=bhVenues(activity),sessions=bhSessions(activity);
         const text=[activity.title,activity.description,activity.category,activity.organiser_name,activity.county,activity.age_range,...venues.flatMap(v=>[v.name,v.town,v.region,v.address,v.postcode])].filter(Boolean).join(" ").toLowerCase();
-        const locationMatch=(!region&&!town)||venues.some(v=>(!region||String(v.region||activity.region||"").toLowerCase()===region.toLowerCase())&&(!town||String(v.town||activity.town||"").toLowerCase()===town.toLowerCase()));
+        const locationMatch=(!region&&!town)||venues.some(v=>(!region||canonicalRegion(v.region||activity.region).toLowerCase()===canonicalRegion(region).toLowerCase())&&(!town||String(v.town||activity.town||"").toLowerCase()===town.toLowerCase()));
         const rawPrice=activity.price_value??sessions[0]?.price_value;
         const price=Number(rawPrice);
         const priceKnown=rawPrice!==null&&rawPrice!==undefined&&rawPrice!==""&&Number.isFinite(price);
