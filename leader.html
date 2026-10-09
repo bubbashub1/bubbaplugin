@@ -23,10 +23,8 @@
 <div><span class="eyebrow">Welcome back</span><h1 id="leaderWelcome">Welcome back</h1><p>Manage your listings, bookings, availability and support from your Bubba Hub leader portal.</p></div>
 <div class="hero-actions">
 <button class="button button-primary" type="button" id="addListingButton">＋ Add a class</button>
-<a class="button button-soft" href="/api/leader-portal.php?csv=template">Download CSV template</a>
-<button class="button button-soft" type="button" id="csvImportButton">Upload CSV</button>
-<a class="button button-soft" href="/directory.html">View directory</a>
-<input id="csvImportInput" type="file" accept=".csv,text/csv" hidden>
+<a class="button button-soft" id="leaderFrontPageLink" href="/leader/profile.html">View My Front Page →</a>
+<a class="button button-soft" href="/leader/profile.html">Account Settings →</a>
 </div>
 </section>
 
@@ -84,7 +82,7 @@
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/leader-demo.js"></script>
 <script src="/assets/js/leader-portal.js"></script>
-<script src="/assets/js/leader-csv.js"></script>
+
 <script>
 fetch("/api/subscription.php",{credentials:"same-origin",cache:"no-store"}).then(r=>r.json()).then(d=>{
  const a=document.getElementById("leaderProAction"); if(!a)return;
