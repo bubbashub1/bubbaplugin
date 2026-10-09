@@ -12,6 +12,62 @@
   <link rel="stylesheet" href="/assets/css/styles.css">
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script src="/assets/js/onesignal.js" defer></script>
+<style>
+/* Bubba Hub 2.0 homepage-only visual prototype. Existing forms and JS IDs retained. */
+.bh-home .home-hero{background-image:url("/images/home/bubba-playful-shapes.svg");background-repeat:no-repeat;background-position:right bottom;background-size:cover}
+.bh-home{background:#fffdf7;color:#123f31}
+.bh-home .home-hero{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 0 95%,#dce9d5 0,transparent 45%),#fffdf7;padding-bottom:34px}
+.bh-home .home-hero::before{content:"";position:absolute;inset:auto -8% -65px -8%;height:170px;background:#dce9d5;border-radius:50% 50% 0 0;z-index:-1}
+.bh-home .home-hero-copy{position:relative;z-index:2}
+.bh-home .home-brush{display:block;font-family:'Quicksand',Calibri,Arial,sans-serif;font-weight:700;letter-spacing:-.055em;line-height:.96;font-size:clamp(3.5rem,8vw,7.6rem);color:#174e3b}
+.bh-home .home-brush .word{display:block}
+.bh-home .home-brush .word-plan{color:#278d96}
+.bh-home .home-brush .word-book{color:#ee822c}
+.bh-home .bh-hero-kicker{display:block;font-weight:700;letter-spacing:.09em;text-transform:uppercase;font-size:.84rem;color:#174e3b;margin-bottom:15px}
+.bh-home .bh-hero-subtitle{font-size:clamp(1.05rem,2vw,1.45rem);font-weight:700;line-height:1.35;max-width:440px;margin:20px 0 10px}
+.bh-home .home-hero-copy>p{max-width:460px}
+.bh-home .home-hero-image{border-radius:45% 55% 42% 50% / 40% 38% 52% 55%;overflow:hidden}
+.bh-home .home-search{position:relative;z-index:3;border-radius:32px;background:#fff;box-shadow:0 16px 45px rgba(20,68,0,.12);padding:18px}
+.bh-home .home-search .button-primary{border-radius:999px;background:#ee822c;color:#173e2c;font-weight:700}
+.bh-home .home-search .button-primary:hover{background:#d66e1c;color:#fff}
+.bh-home .home-category-row{gap:16px;align-items:stretch}
+.bh-home .home-category-row>a{border-radius:28px;background:#fbe4e0;box-shadow:0 10px 25px rgba(20,68,0,.07);transition:transform .2s ease,box-shadow .2s ease;padding:24px 16px;min-height:170px}
+.bh-home .home-category-row>a:nth-child(2){background:#def1f4}
+.bh-home .home-category-row>a:nth-child(3){background:#e5f1df}
+.bh-home .home-category-row>a:nth-child(4){background:#fff0d0}
+.bh-home .home-category-row>a:nth-child(5){background:#eee7f8}
+.bh-home .home-category-row>a:hover{transform:translateY(-4px);box-shadow:0 15px 30px rgba(20,68,0,.13)}
+.bh-home .home-category-row>a strong{font-size:clamp(1.05rem,1.6vw,1.45rem);line-height:1.16}
+.bh-home .bh-category-description{display:block;font-size:.85rem;line-height:1.45;margin-top:10px;font-weight:500}
+.bh-home .bh-category-action{display:inline-block;margin-top:12px;font-weight:700;color:#174e3b}
+.bh-home .home-section-heading h2,.bh-home .home-plan-copy h2{font-weight:700;letter-spacing:-.035em}
+.bh-home .home-plan-card,.bh-home .home-lower-card{border-radius:26px}
+.bh-home .bh-quick-links{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:12px auto 0}
+.bh-home .bh-quick-links a{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;background:#f5fbf3;color:#174e3b;border-radius:999px;font-weight:700;text-decoration:none}
+.bh-home .bh-quick-links a:hover{background:#dcebd9}
+.bh-home .bh-hero-sparkle{position:absolute;right:5%;top:14%;font-size:clamp(2rem,5vw,4rem);color:#ee822c;pointer-events:none}
+@media(max-width:760px){.bh-home .home-hero{padding-bottom:26px}.bh-home .home-brush{font-size:clamp(3.3rem,14vw,5.8rem)}.bh-home .home-category-row{gap:10px}.bh-home .home-category-row>a{border-radius:20px;min-height:150px;padding:18px 12px}.bh-home .bh-category-description{font-size:.78rem}.bh-home .bh-hero-sparkle{display:none}}
+@media(max-width:430px){.bh-home .home-category-row>a{min-width:0}.bh-home .bh-quick-links a{font-size:.85rem;padding:9px 12px}}
+@media(prefers-reduced-motion:reduce){.bh-home .home-category-row>a{transition:none}}
+
+/* Linked original artwork; no external image dependencies */
+.bh-home .home-category-row>a{background-repeat:no-repeat;background-position:right bottom;background-size:48% auto}
+.bh-home .home-category-row>a:nth-child(1){background-image:url('/images/home/card-classes-art.svg')}
+.bh-home .home-category-row>a:nth-child(2){background-image:url('/images/home/card-events-art.svg')}
+.bh-home .home-category-row>a:nth-child(3){background-image:url('/images/home/card-support-art.svg')}
+.bh-home .home-category-row>a:nth-child(4){background-image:url('/images/home/card-planner-art.svg')}
+.bh-home .home-category-row>a strong,.bh-home .bh-category-description,.bh-home .bh-category-action{position:relative;z-index:1}
+.bh-home .home-hero-copy{background-image:url('/images/home/hero-family-art.svg');background-size:110px auto;background-repeat:no-repeat;background-position:right top}
+@media(max-width:760px){.bh-home .home-category-row>a{background-size:42% auto}.bh-home .home-hero-copy{background-size:70px auto}}
+
+/* Photo-forward hero, using the existing bundled homepage photography. */
+.bh-home .home-hero-image{background-image:url('/images/home/gemini_generated_image_dbeql8dbeql8dbeq-20260927-181224-80709b.jpeg');background-position:center;background-size:cover;min-height:320px;box-shadow:0 12px 30px rgba(20,68,0,.10)}
+.bh-home .home-hero-copy{background-image:none}
+.bh-home .home-category-row>a{background-size:38% auto;background-position:right bottom}
+.bh-home .home-category-row>a strong,.bh-home .bh-category-description,.bh-home .bh-category-action{display:block;max-width:68%;text-shadow:0 1px 2px rgba(255,255,255,.8)}
+.bh-home .home-category-row>a:nth-child(5){background-image:url('/images/home/card-classes-art.svg')}
+@media(max-width:760px){.bh-home .home-hero-image{min-height:240px}.bh-home .home-category-row>a strong,.bh-home .bh-category-description,.bh-home .bh-category-action{max-width:100%}.bh-home .home-category-row>a{background-size:32% auto;background-position:right bottom}}
+</style>
 </head>
 <body class="bh-home">
 <header class="site-header home-header">
@@ -33,9 +89,9 @@
 
 <main>
   <section class="home-hero">
-    <div class="home-hero-image" aria-hidden="true"></div>
-    <div class="home-hero-copy">
-      <span class="home-brush">Your Family Hub<br>for Finding, Planning &amp;<br>Booking Family Activities</span>
+    <div class="home-hero-image" aria-hidden="true"></div><span class="bh-hero-sparkle" aria-hidden="true">☀</span>
+    <div class="home-hero-copy"><span class="bh-hero-kicker">Family activities in Devon &amp; Cornwall</span>
+      <h1 class="home-brush"><span class="word">Find.</span><span class="word word-plan">Plan.</span><span class="word word-book">Book.</span></h1><p class="bh-hero-subtitle">Discover amazing activities, classes and events for your family.</p>
       <p>Local groups, classes, services and events<br>for pregnancy, babies and toddlers across<br>Devon &amp; Cornwall.</p>
     </div>
 
@@ -49,16 +105,16 @@
         <label><span>◷</span><select id="heroDay" name="day"><option value="">Day</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select></label>
         <button class="button button-primary" type="submit">Search</button>
       </div>
-      <a class="home-advanced-link" href="directory.html">More filters →</a>
+      <div class="bh-quick-links"><a href="directory.html">☷ More filters</a><a href="calendar.html">▦ View Calendar</a><a href="map.html">⌖ View Map</a><a href="directory.html">☰ View Activities</a></div>
     </form>
   </section>
 
   <section class="home-category-row" aria-label="Explore Bubba Hub">
-    <a href="directory.html?category=Groups%20%26%20Classes"><span class="home-category-icon pink">♟</span><strong>Groups<br>&amp; Classes</strong></a>
-    <a href="events.html"><span class="home-category-icon teal">♧</span><strong>Activities<br>&amp; Events</strong></a>
-    <a href="help-support.html"><span class="home-category-icon green">✚</span><strong>Services<br>&amp; Support</strong></a>
-    <a href="planner.html"><span class="home-category-icon purple">⌗</span><strong>Plan Your<br>Family Life</strong></a>
-    <a href="leader.html"><span class="home-category-icon yellow">♙</span><strong>Connect<br>with Leaders</strong></a>
+    <a href="directory.html?category=Groups%20%26%20Classes"><span class="home-category-icon pink">♟</span><strong>Groups<br>&amp; Classes</strong><span class="bh-category-description">From baby classes to toddler groups and family activities.</span><span class="bh-category-action">Find activities →</span></a>
+    <a href="events.html"><span class="home-category-icon teal">♧</span><strong>Activities<br>&amp; Events</strong><span class="bh-category-description">See what’s happening near you, from daily fun to special events.</span><span class="bh-category-action">View events →</span></a>
+    <a href="help-support.html"><span class="home-category-icon green">✚</span><strong>Services<br>&amp; Support</strong><span class="bh-category-description">Helpful advice, local resources and family support in one place.</span><span class="bh-category-action">Get support →</span></a>
+    <a href="planner.html"><span class="home-category-icon purple">⌗</span><strong>Plan Your<br>Family Life</strong><span class="bh-category-description">Save favourites and plan your week without missing an activity.</span><span class="bh-category-action">Create your planner →</span></a>
+    <a href="leader.html"><span class="home-category-icon yellow">♙</span><strong>Connect<br>with Leaders</strong><span class="bh-category-description">Meet local organisers and discover what they offer.</span><span class="bh-category-action">Explore leaders →</span></a>
   </section>
 
   <section class="home-section">
