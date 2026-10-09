@@ -396,7 +396,7 @@ const bhInitDirectory=async()=>{
         return '<article class="bh-map-popup-card">' + image + '<div class="bh-map-popup-body"><span class="bh-map-popup-category">' + escapeHtml(category) + '</span><h3>' + escapeHtml(activity.title) + '</h3><p class="bh-map-popup-location">📍 ' + escapeHtml(venue.name || venue.town || venue.address || "") + '</p><div class="bh-map-popup-meta"><span>👶 ' + escapeHtml(age) + '</span><span>💷 ' + escapeHtml(price) + '</span>' + (time ? '<span>🕒 ' + escapeHtml(time) + '</span>' : '') + '</div><a class="button button-primary bh-map-popup-link" href="' + bhActivityUrl(activity) + '">View activity →</a></div></article>';
       };
       const locations=list.flatMap(activity=>bhVenues(activity).map(venue=>({activity,venue}))).filter(({venue})=>{
-        const lat=Number(venue.lat),lng=Number(venue.long);
+        const lat=Number(venue.lat ?? venue.latitude),lng=Number(venue.long ?? venue.longitude);
         return Number.isFinite(lat)&&Number.isFinite(lng)&&lat>=49&&lat<=52&&lng>=-7&&lng<=-1;
       });
       try { markers=bhMapEngine.render(map,list,popupHtml,markers); }
