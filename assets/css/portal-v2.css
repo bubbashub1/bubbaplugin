@@ -108,3 +108,19 @@
  .bh-auth-v2 .auth-card,.bh-auth-v2 .auth-benefits{border-radius:20px}
  .bh-leader-v2 .bh-leader-stat{border-radius:19px}
 }
+
+/* Leader dashboard: align hero, cards and support with the site-wide Bubba Hub theme. */
+.bh-leader-v2 .bh-leader-page{padding-top:clamp(22px,3vw,42px);padding-bottom:35px}
+.bh-leader-v2 .bh-leader-hero{margin-top:0;overflow:visible;display:flex;align-items:center;justify-content:space-between;gap:22px;background:#d8e6db;border-radius:28px;padding:clamp(22px,3vw,38px);color:#174e3b}
+.bh-leader-v2 .bh-leader-hero :is(h1,p,.eyebrow){color:#174e3b}
+.bh-leader-v2 .bh-leader-hero h1{font-size:clamp(2rem,4vw,3.6rem);line-height:1.12;margin:8px 0 12px}
+.bh-leader-v2 .bh-leader-hero .hero-actions{align-items:center;justify-content:flex-end;gap:10px}
+.bh-leader-v2 .bh-leader-hero .button{white-space:normal;text-align:center}
+.bh-leader-v2 .bh-leader-stat{min-width:0}
+.bh-leader-v2 .bh-leader-stat strong{font-size:clamp(1.35rem,2vw,1.8rem)}
+.bh-leader-v2 :is(.bh-leader-action,.bh-leader-tool){min-height:145px;padding:20px;transition:transform .16s ease,box-shadow .16s ease}
+.bh-leader-v2 :is(.bh-leader-action,.bh-leader-tool):hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(23,78,59,.1)}
+.bh-leader-v2 .bh-support-banner :is(h2,p,.eyebrow){color:#174e3b}
+.bh-leader-v2 .bh-support-banner .bh-support-icon{color:#174e3b}
+@media(max-width:900px){.bh-leader-v2 .bh-leader-hero{flex-direction:column;align-items:stretch}.bh-leader-v2 .bh-leader-hero .hero-actions{justify-content:flex-start}}
+@media(max-width:600px){.bh-leader-v2 .bh-leader-page{padding-top:18px}.bh-leader-v2 .bh-leader-hero .hero-actions{display:grid;grid-template-columns:1fr 1fr}.bh-leader-v2 .bh-leader-hero .hero-actions .button:first-child{grid-column:1/-1}}
