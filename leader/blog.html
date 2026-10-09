@@ -13,7 +13,7 @@
 <section class="bh-blog-upgrade" id="blogUpgrade" hidden><span class="eyebrow">Leader Pro</span><h2>Start sharing your expertise</h2><p>Blog publishing is included with Leader Pro. You can still answer common questions using your free leader FAQs.</p><div class="bh-blog-buttons"><a class="button button-primary" href="/subscription.html">Explore Leader Pro →</a><a class="button button-soft" href="/leader/faqs">Manage FAQs</a></div></section>
 <section class="bh-blog-workspace" id="blogEditor" hidden>
 <div class="bh-blog-compose"><div class="bh-blog-heading"><div><span class="eyebrow">Create content</span><h2 id="blogEditorTitle">Write an article</h2><p>Keep it welcoming, useful and relevant to families.</p></div><span class="bh-blog-pencil" aria-hidden="true">📝</span></div>
-<form id="postForm" class="bh-blog-form"><input type="hidden" name="post_id">
+<form id="postForm" class="bh-blog-form" method="post" action="/api/leader-blog.php"><input type="hidden" name="post_id">
 <label>Article title<input name="title" maxlength="180" required placeholder="e.g. What to expect at your first baby class"></label>
 <label>Your article<textarea name="content" rows="14" maxlength="30000" required placeholder="Introduce your topic, share your advice and help families feel confident..."></textarea></label>
 <div class="bh-blog-editor-foot"><span>Articles are submitted for approval before publication.</span><div class="bh-blog-buttons"><button class="button button-soft" type="button" id="blogClear">Clear editor</button><button class="button button-primary" type="submit">Submit for approval →</button></div></div></form><p id="blogMessage" role="status" aria-live="polite"></p></div>
