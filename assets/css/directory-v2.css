@@ -199,3 +199,46 @@ body.bh-directory:not(.bh-calendar-page) .directory-hero-search-fields label:has
 body.bh-directory:not(.bh-calendar-page) .directory-hero-search-fields label:has(input[data-bh-hero-field="keyword"]){
   overflow:hidden;
 }
+
+/* Advanced search lives inside the hero, expanding its height instead of opening a modal. */
+body.bh-directory:not(.bh-calendar-page) .directory-hero-search{
+  height:auto!important;max-height:none!important;overflow:visible!important;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters{
+  display:block!important;position:static!important;inset:auto!important;
+  width:100%!important;max-width:none!important;height:auto!important;
+  max-height:none!important;overflow:visible!important;
+  margin:14px 0 0!important;padding:0!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  transform:none!important;opacity:1!important;visibility:visible!important;
+  backdrop-filter:none!important;z-index:auto!important;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters::before,
+body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters::after{
+  content:none!important;display:none!important;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters .directory-more-search-toggle{
+  display:none!important;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields[hidden]{
+  display:none!important;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]){
+  display:block!important;position:static!important;
+  width:100%!important;height:auto!important;max-height:none!important;
+  overflow:visible!important;transform:none!important;visibility:visible!important;
+  opacity:1!important;margin:0!important;
+  background:#e5f1df!important;border:1px solid #d1e4d4!important;
+  border-radius:22px!important;padding:clamp(14px,2vw,24px)!important;
+  box-shadow:none!important;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters .bh-advanced-filters{
+  position:static!important;width:100%!important;max-width:none!important;
+  background:transparent!important;box-shadow:none!important;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters .directory-filter-fields{
+  position:static!important;max-height:none!important;
+}
+body.bh-directory:not(.bh-calendar-page).directory-filter-open::before{
+  display:none!important;
+}
