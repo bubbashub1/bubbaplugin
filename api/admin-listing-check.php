@@ -218,8 +218,8 @@ if($action==='create_draft'){
  lc_insert_activity($db,[$org,$r['title'],$slug,$desc],$county);$aid=(int)$db->lastInsertId();
  $db->prepare("UPDATE bh_listing_check_results SET draft_activity_id=?,updated_at=NOW() WHERE id=?")->execute([$aid,$id]);lc_out(200,['ok'=>true,'draft_activity_id'=>$aid]);
 }
-if($action!=='scan')lc_out(400,['ok'=>false,'error'=>'Unknown action.']);
-$mode=(string)($input['mode']??'existing');$region=trim((string)($input['region']??''));$query=trim((string)($input['query']??''));$cfg=[];
+if($action!=='scan'&&$action!=='scan_preview')lc_out(400,['ok'=>false,'error'=>'Unknown action.']);
+$preview=$action==='scan_preview';$previewRows=[];$mode=(string)($input['mode']??'existing');$region=trim((string)($input['region']??''));$query=trim((string)($input['query']??''));$cfg=[];
 try{
  $items=[];
  if($mode==='existing'){
@@ -234,12 +234,12 @@ try{
   $sql="SELECT a.id,a.title,a.slug,a.status,a.description,a.booking_url,$countySql AS county,COALESCE(v.town,'') town,COALESCE(v.region,'') region,COALESCE(a.website,'') activity_website,COALESCE(o.website,'') organiser_website,COALESCE(v.website,'') venue_website FROM bh_activities a $venueJoin LEFT JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.status IN ('published','pending','draft')";
   $params=[];if($region){$sql.=" AND (v.region=?".($countySql==='NULL'?'':" OR ".$countySql."=?").")";$params=$countySql==='NULL'?[$region]:[$region,$region];}$sql.=" ORDER BY a.id";
   $offset=max(0,min(100000,(int)($input['offset']??0)));
-  $sql.=' LIMIT 20 OFFSET '.$offset;
+  $sql.=' LIMIT '.($preview?5:20).' OFFSET '.$offset;
   $st=$db->prepare($sql);$st->execute($params);$activities=$st->fetchAll();
   foreach($activities as $a){
    $title=trim((string)$a['title']);$website='';$sourceLabel='';foreach(['activity_website'=>'Activity website','organiser_website'=>'Organiser website','venue_website'=>'Venue website'] as $field=>$label){$candidate=trim((string)($a[$field]??''));if($candidate!==''&&lc_safe_url($candidate)!==''){$website=$candidate;$sourceLabel=$label;break;}}$q='"'.$title.'"';if($region)$q.=' '. $region;if($query)$q.=' '.$query;
    $page=$website?lc_fetch($website):['ok'=>false,'signals'=>[],'text'=>'','title'=>''];
-   $snapshot=$website?lc_snapshot($db,lc_norm_url($website),$page):['state'=>'unavailable'];
+   $snapshot=$preview?['state'=>'not_saved_preview']:($website?lc_snapshot($db,lc_norm_url($website),$page):['state'=>'unavailable']);
    $sources=[];foreach(['activity_website'=>'Activity website','organiser_website'=>'Organiser website','venue_website'=>'Venue website'] as $field=>$label){$candidate=trim((string)($a[$field]??''));if($candidate!==''&&lc_safe_url($candidate)!=='')$sources[]=['label'=>$label,'url'=>lc_safe_url($candidate)];}
    $changes=[];$score=0;
    if(!empty($page['ok'])&&!empty($page['signals'])){
@@ -251,12 +251,14 @@ try{
    $label=$changes?'Review website notice':'Not independently verified';
    $websiteEvidence=empty($website)?'No website recorded.':(!empty($page['ok'])?$sourceLabel.' reachable; snapshot: '.($snapshot['state']??'unknown').'. Review differences manually.':'Website unavailable or blocked; NOT evidence of closure.');
    $socialEvidence='Social posts not independently searched; add public URLs to the source check.';
-   $key=lc_key($title,$website);$existing=$db->prepare("SELECT id FROM bh_listing_check_results WHERE title=? AND website_key=? AND activity_id=? ORDER BY id DESC LIMIT 1");$existing->execute([$title,$key,$a['id']]);$rid=$existing->fetchColumn();
+   if($preview){$previewRows[]=['activity_id'=>(int)$a['id'],'title'=>$title,'selected_source'=>$sourceLabel,'url'=>$website,'reachable'=>!empty($page['ok']),'http'=>$page['http']??null,'signals'=>$page['signals']??[],'sources'=>$sources,'note'=>'Preview only; no findings or snapshots saved.'];continue;}$key=lc_key($title,$website);$existing=$db->prepare("SELECT id FROM bh_listing_check_results WHERE title=? AND website_key=? AND activity_id=? ORDER BY id DESC LIMIT 1");$existing->execute([$title,$key,$a['id']]);$rid=$existing->fetchColumn();
    $payload=[$a['id'],$title,$website,$key,$stt,$label,min(100,max(0,$score)),$a['town'],$a['region'],$websiteEvidence,$socialEvidence,json_encode($changes),json_encode(array_slice($sources,0,10)),$q];
    if($rid){$u=$db->prepare("UPDATE bh_listing_check_results SET activity_id=?,title=?,website=?,website_key=?,status=?,label=?,confidence=?,town=?,region=?,website_evidence=?,social_evidence=?,changes_json=?,sources_json=?,search_query=?,reviewed_at=NULL WHERE id=? AND status<>'dismissed'");$u->execute([$a['id'],$title,$website,$key,$stt,$label,min(100,max(0,$score)),$a['town'],$a['region'],$websiteEvidence,$socialEvidence,json_encode($changes),json_encode(array_slice($sources,0,10)),$q,$rid]);}
    else{$u=$db->prepare("INSERT INTO bh_listing_check_results (activity_id,title,website,website_key,status,label,confidence,town,region,website_evidence,social_evidence,changes_json,sources_json,search_query) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");$u->execute($payload);}
   }
+  if($preview)lc_out(200,['ok'=>true,'preview'=>true,'processed'=>count($previewRows),'results'=>$previewRows,'database_writes'=>false]);
  }else{
+  if($preview)lc_out(422,['ok'=>false,'error'=>'Preview supports existing listings only.']);
   // Free, targeted discovery from administrator-supplied public pages.
   // Never claim that this crawls the whole internet or bypasses social login.
   $scope=trim($query.' '.$region);
