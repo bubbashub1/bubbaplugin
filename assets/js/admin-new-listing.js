@@ -159,7 +159,7 @@ document.getElementById('adminScreenshotRead')?.addEventListener('click',async()
  const file=input?.files?.[0];if(!file){message.textContent='Choose a timetable image first.';return;}
  if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024){message.textContent='Use a PNG, JPEG or WebP image under 5 MB.';return;}
  const url=URL.createObjectURL(file);preview.hidden=true;preview.style.display='none';preview.onload=()=>{preview.hidden=false;preview.style.display='block';URL.revokeObjectURL(url)};preview.onerror=()=>{preview.hidden=true;preview.style.display='none';URL.revokeObjectURL(url);message.textContent='Could not display this image. Please choose another screenshot.'};preview.src=url;
- if(typeof window.TextDetector!=='function'){message.textContent='Automatic screenshot reading is not supported by this browser. You can view the screenshot here and enter the sessions manually, or paste the timetable text above.';return;}
+ if(typeof window.TextDetector!=='function'){message.textContent='This browser cannot read timetable text directly. The screenshot is displayed for reference; use Paste your schedule or + Add session. Automatic cross-browser recognition is not yet available.';return;}
  message.textContent='Reading timetable image…';
  try{const bitmap=await createImageBitmap(file);let blocks;try{blocks=await new TextDetector().detect(bitmap)}finally{bitmap.close?.()}
  const extracted=blocks.map(b=>b.rawValue).filter(Boolean).join('\\n');if(!extracted.trim())throw Error('No readable timetable text found.');
