@@ -1,5 +1,8 @@
 <?php
 declare(strict_types=1);
+ini_set('session.use_strict_mode', '1');
+ini_set('session.use_only_cookies', '1');
+session_name('BUBBAHUB_ADMINSESSID');
 session_start();
 header('Content-Type: application/json; charset=utf-8'); header('Cache-Control: no-store');
 const MAX_IMAGE_BYTES=8388608; const ALLOWED_FOLDERS=['general','home','listings','logos']; const ALLOWED_EXTENSIONS=['jpg','jpeg','png','webp','gif'];
