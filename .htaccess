@@ -97,6 +97,11 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^organiser/([^/]+)/?$ organiser.html?slug=$1 [B,L,QSA]
 
+# WordPress REST API: the editor and publishing requests require JSON.
+# Route these before the generic activity-slug fallback.
+RewriteRule ^wp-json/?$ index.php?rest_route=/ [L,QSA]
+RewriteRule ^wp-json/(.*)$ index.php?rest_route=/$1 [B,L,QSA]
+
 # Clean activity URLs: /{activity-slug}/
 # IMPORTANT: never rewrite an existing physical file as an activity slug.
 RewriteCond %{REQUEST_FILENAME} !-f
