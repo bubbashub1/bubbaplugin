@@ -7465,3 +7465,6 @@ body :is(.button,.btn,a.button){max-width:100%;box-sizing:border-box}
 @media(prefers-reduced-motion:reduce){
  body :is(.button,.btn,button.button,a.button){transition:none!important;transform:none!important}
 }
+
+/* WordPress content within the Bubba Hub shell. */
+.bh-wp-page{padding:32px 15px 64px;min-height:55vh}.bh-wp-page article{max-width:1180px;margin:auto}.bh-wp-content{overflow-wrap:anywhere;line-height:1.7}.bh-wp-content img,.bh-wp-content video{max-width:100%;height:auto}.bh-wp-content iframe{max-width:100%;width:100%;aspect-ratio:16/9;border:0}.bh-wp-content figure{margin:1.5em 0}.bh-wp-content .wp-block-columns{flex-wrap:wrap}.bh-wp-content table{display:block;max-width:100%;overflow-x:auto}
