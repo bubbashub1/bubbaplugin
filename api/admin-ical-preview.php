@@ -21,7 +21,30 @@ $ch=curl_init($url);
 curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>12,CURLOPT_MAXREDIRS=>0,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_RESOLVE=>[$host.':443:'.$ips[0]],CURLOPT_USERAGENT=>'BubbaHubCalendarImporter/1.0',CURLOPT_MAXFILESIZE=>1048576]);
 $body=curl_exec($ch);$code=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);
 if(!is_string($body)||strlen($body)>1048576||$code!==200)fail(422,'Could not retrieve the public calendar feed (HTTP '.$code.').');
-if(!str_contains($body,'BEGIN:VCALENDAR'))fail(422,'The URL did not return an iCalendar feed.');
+if(!str_contains($body,'BEGIN:VCALENDAR')){
+ if(!preg_match('/(^|\\.)bookwhen\\.com$/i',$host))fail(422,'This booking page is not an iCalendar feed. Enter a public .ics URL.');
+ $found=[];
+ // Public Bookwhen pages may expose structured Event data without an ICS link.
+ if(class_exists('DOMDocument')){
+  $dom=new DOMDocument();libxml_use_internal_errors(true);$dom->loadHTML($body);libxml_clear_errors();
+  $xpath=new DOMXPath($dom);
+  foreach($xpath->query('//script[@type="application/ld+json"]') as $script){
+   $json=json_decode($script->textContent,true);if(!is_array($json))continue;
+   $queue=[$json];
+   while($queue){$item=array_pop($queue);if(!is_array($item))continue;
+    $types=(array)($item['@type']??[]);if(in_array('Event',$types,true)&&!empty($item['startDate'])){
+     try{$dt=(new DateTimeImmutable($item['startDate']))->setTimezone(new DateTimeZone('Europe/London'));$end=!empty($item['endDate'])?(new DateTimeImmutable($item['endDate']))->setTimezone(new DateTimeZone('Europe/London')):null;
+      $key=($item['@id']??$item['url']??'').$dt->format('c');
+      $found[$key]=['title'=>(string)($item['name']??'Class session'),'day_of_week'=>(int)$dt->format('N'),'start_time'=>$dt->format('H:i'),'end_time'=>$end?$end->format('H:i'):'','start_date'=>$dt->format('Y-m-d'),'end_date'=>$dt->format('Y-m-d'),'frequency'=>'once','url'=>(string)($item['url']??$url),'uid'=>(string)($item['@id']??$key)];
+     }catch(Throwable $ignored){}
+    }
+    foreach($item as $v){if(is_array($v))$queue[]=$v;}
+   }
+  }
+ }
+ if(!$found)fail(422,'This public Bookwhen page does not expose importable calendar events. Please use its public iCalendar feed, or add sessions manually.');
+ echo json_encode(['ok'=>true,'data'=>array_slice(array_values($found),0,150),'skipped_recurring'=>0,'source'=>'bookwhen_public_page']);exit;
+}
 $lines=preg_split('/\r\n|\n|\r/',$body);$unfold=[];
 foreach($lines as $line){if(preg_match('/^[ \t]/',$line)&&$unfold){$unfold[count($unfold)-1].=substr($line,1);}else{$unfold[]=$line;}}
 $events=[];$event=null;$skippedRecurring=0;
