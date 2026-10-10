@@ -2,7 +2,10 @@
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
-$secure=(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off'); session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']); session_start();
+$secure=(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off'); session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']); ini_set('session.use_strict_mode', '1');
+ini_set('session.use_only_cookies', '1');
+session_name('BUBBAHUB_ADMINSESSID');
+session_start();
 function defaults():array{return [
 'main'=>[['label'=>'Find activities','url'=>'directory.html'],['label'=>'My Hub','url'=>'my-hub.html'],['label'=>'Support & Guidance','url'=>'help-support.html'],['label'=>'Class Leaders','url'=>'leader.html'],['label'=>'Account','url'=>'account.html']],
 'footer_main'=>[['label'=>'Find activities','url'=>'directory.html'],['label'=>'My Hub','url'=>'my-hub.html'],['label'=>'Support & Guidance','url'=>'help-support.html'],['label'=>'Class Leaders','url'=>'leader.html'],['label'=>'Account','url'=>'account.html']],
