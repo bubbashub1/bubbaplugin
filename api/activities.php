@@ -116,7 +116,7 @@ try {
             SELECT 1
             FROM bh_sessions s2
             JOIN bh_venues v2 ON v2.id = s2.venue_id
-            WHERE v2.activity_id = a.id
+            WHERE s2.activity_id = a.id
               AND s2.day_of_week = :day
         )";
         $params[':day'] = $day;
@@ -349,12 +349,7 @@ try {
         ],
     ], JSON_UNESCAPED_SLASHES);
 } catch (Throwable $e) {
+    error_log('Bubba Hub activities API failed: ' . $e->getMessage());
     http_response_code(500);
-
-    echo json_encode([
-        'ok' => false,
-        'error' => 'Unable to load activities.',
-        'error_type' => get_class($e),
-        'message' => $e->getMessage(),
-    ], JSON_UNESCAPED_SLASHES);
+    echo json_encode(['ok'=>false,'error'=>'Unable to load activities. Please try again.'], JSON_UNESCAPED_SLASHES);
 }
