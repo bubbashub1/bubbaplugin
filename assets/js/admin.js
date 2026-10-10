@@ -484,7 +484,7 @@ document.querySelector("#deployLatest")?.addEventListener("click",async()=>{
  button.disabled=true;
  status.textContent="Starting deployment…";
  try{
-  const response=await fetch("deploy.php",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",cache:"no-store"});
+  const response=await fetch("/deploy.php",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",cache:"no-store"});
   let data={};
   try{data=await response.json()}catch{}
   if(!response.ok||!data.ok)throw new Error(data.error||"Deployment failed");

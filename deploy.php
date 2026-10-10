@@ -1,6 +1,19 @@
 <?php
 declare(strict_types=1);
-session_start();
+// Match the dedicated admin login cookie; the default PHP session is separate.
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_only_cookies', '1');
+    session_name('BUBBAHUB_ADMINSESSID');
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'secure' => !empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+    session_start();
+}
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
