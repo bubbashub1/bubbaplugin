@@ -55,6 +55,35 @@ if(categoryInput){
  wrapper.appendChild(custom);
  form.addEventListener('submit',event=>{if(!selected.size){event.preventDefault();status.textContent='Choose at least one category.';status.classList.add('is-error');} },true);
 }
+// Existing venues are searchable using the browser's built-in datalist.
+const venueSelect=document.getElementById('existingVenueSelect');
+const venueName=form.elements.namedItem('venue_name');
+if(venueSelect){
+ const venueSearch=document.createElement('input');venueSearch.type='search';venueSearch.placeholder='Filter venues by name, town or postcode';venueSearch.setAttribute('aria-label','Search existing venues');venueSelect.before(venueSearch);
+ const venueMessage=document.createElement('small');venueSelect.after(venueMessage);
+ let venues=[];
+ const renderVenues=()=>{
+  const query=venueSearch.value.trim().toLowerCase();const current=venueSelect.value;
+  venueSelect.replaceChildren(new Option('Add new venue / enter manually',''));
+  venues.filter(v=>[v.name,v.town,v.postcode,v.address].some(s=>String(s||'').toLowerCase().includes(query))).slice(0,200).forEach(v=>venueSelect.add(new Option([v.name,v.town,v.postcode].filter(Boolean).join(' · '),String(v.id))));
+  if([...venueSelect.options].some(o=>o.value===current))venueSelect.value=current;
+ };
+ venueSearch.addEventListener('input',renderVenues);
+ venueSelect.addEventListener('change',()=>{
+  const v=venues.find(x=>String(x.id)===venueSelect.value);if(!v)return;
+  const fields={venue_name:v.name,address:v.address,town:v.town,region:v.region,postcode:v.postcode};
+  Object.entries(fields).forEach(([name,value])=>{const field=form.elements.namedItem(name);if(field)field.value=value||'';});
+  const county=form.elements.namedItem('county');if(county&&/exeter|devon/i.test(v.region||''))county.value='Devon';
+  venueMessage.textContent='✓ Existing venue details copied. You can review them before saving.';
+ });
+ try{
+  const response=await fetch('/api/venues.php',{credentials:'same-origin',cache:'no-store'});
+  const payload=await response.json();if(!response.ok||!payload.ok)throw Error(payload.error||'Could not load venues');
+  venues=Array.isArray(payload.data)?payload.data:[];renderVenues();
+  if(original){const current=venues.find(v=>String(v.name||'').trim().toLowerCase()===String(original.venue_name||'').trim().toLowerCase()&&String(v.postcode||'').trim().toLowerCase()===String(original.postcode||'').trim().toLowerCase());if(current)venueSelect.value=String(current.id);}
+  venueMessage.textContent=venues.length+' existing venues available.';
+ }catch(error){venueMessage.textContent='Venue lookup unavailable; you can still enter venue details manually.';renderVenues();}
+}
 button.disabled=false;
 }catch(e){status.textContent=e.message;status.classList.add('is-error');return;}
 // Seven-step admin editor, matching the class leader's new listing workflow.
