@@ -11,7 +11,7 @@ preset.addEventListener('change',applyPreset);
 free.addEventListener('change',()=>{price.disabled=free.checked;if(free.checked)price.value='0';});
 if(!id){preset.value='0-12';applyPreset();}
 if(id){status.textContent='Loading listing…';const r=await fetch('/api/admin-activities.php?id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load listing.');original=d.data;for(const el of form.elements){if(el.name&&Object.hasOwn(original,el.name))el.value=original[el.name]??'';}const lo=original.age_min_months,hi=original.age_max_months;
-const match=Object.entries(presets).find(([,v])=>Number(lo)===v[0]&&(hi==null||hi==='')?false:false);
+
 const existing=Object.entries(presets).find(([,v])=>lo!==null&&lo!==undefined&&lo!==''&&Number(lo)===v[0]&&((hi===null||hi===undefined||hi==='')?v[1]===null:Number(hi)===v[1]));
 preset.value=existing?.[0]||'';
 if(original.price_free!==undefined)free.checked=String(original.price_free)==='1';
@@ -34,9 +34,9 @@ if(categoryInput){
  const addName=name=>{name=String(name||'').trim();if(name&&!names.has(name.toLowerCase()))names.set(name.toLowerCase(),name);};
  selected.forEach(addName);
  try{
-  const response=await fetch('/api/admin-activities.php',{credentials:'same-origin',cache:'no-store'});
+  const response=await fetch('/api/admin-activities.php?action=categories',{credentials:'same-origin',cache:'no-store'});
   const payload=await response.json();
-  if(response.ok&&payload.ok) (payload.data||[]).forEach(a=>String(a.category||'').split(',').forEach(addName));
+  if(response.ok&&payload.ok) (payload.data||[]).forEach(addName);
  }catch(error){console.warn('Categories unavailable:',error);}
  const sync=()=>{categoryInput.value=[...selected].join(', ');};
  const render=()=>{
@@ -48,8 +48,9 @@ if(categoryInput){
   });
  };
  render();sync();
+ const search=document.createElement('input');search.type='search';search.placeholder='Search categories';search.setAttribute('aria-label','Search categories');wrapper.insertBefore(search,options);search.addEventListener('input',()=>{const term=search.value.trim().toLowerCase();[...options.children].forEach(label=>{label.hidden=!label.textContent.toLowerCase().includes(term);});});
  const custom=document.createElement('input');custom.type='text';custom.placeholder='Add another category and press Enter';custom.style.marginTop='10px';
- custom.addEventListener('keydown',event=>{if(event.key!=='Enter')return;event.preventDefault();const name=custom.value.trim();if(!name)return;addName(name);selected.add(names.get(name.toLowerCase()));custom.value='';render();sync();});
+ custom.addEventListener('keydown',event=>{if(event.key!=='Enter')return;event.preventDefault();const values=custom.value.split(',').map(x=>x.trim()).filter(Boolean);if(!values.length)return;values.forEach(name=>{addName(name);selected.add(names.get(name.toLowerCase()));});custom.value='';render();sync();search.dispatchEvent(new Event('input'));});
  wrapper.appendChild(custom);
  form.addEventListener('submit',event=>{if(!selected.size){event.preventDefault();status.textContent='Choose at least one category.';status.classList.add('is-error');} },true);
 }
@@ -78,6 +79,6 @@ form.addEventListener('submit',async e=>{e.preventDefault();const body={...(orig
 body.price_free=free.checked?1:0;body.price_per_family=!free.checked&&unit.value==='per_family'?1:0;body.price_per_session=!free.checked&&unit.value==='per_session'?1:0;body.pricing_unit=unit.value;body.id=original?.id||null;body.sessions=original?.sessions||[];body.venues=(original?.venues||[]).slice(1).map(v=>({...v,latitude:v.latitude??'',longitude:v.longitude??''}));body.accessibility=original?.accessibility||[];
 body.latitude=original?.latitude??'';body.longitude=original?.longitude??'';body.sessions=body.sessions.map(s=>({...s,price:s.price??'',start_date:s.start_date??'',end_date:s.end_date??''}));
 button.disabled=true;status.textContent='Saving listing…';status.classList.remove('is-error');
-try{const r=await fetch('/api/admin-activities.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(body)});if(r.status===401){redirect();return;}const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not save listing.');status.textContent='✓ Listing saved successfully.';if(!original)form.reset();
+try{const r=await fetch('/api/admin-activities.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(body)});if(r.status===401){redirect();return;}const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not save listing.');status.textContent='✓ Listing saved successfully.';if(!original){original={id:d.id};location.href='/admin/admin-activities-add-listing.html?id='+encodeURIComponent(d.id);}
 }catch(err){status.textContent=err.message;status.classList.add('is-error');}finally{button.disabled=false;}});
 });
