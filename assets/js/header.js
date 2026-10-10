@@ -47,6 +47,33 @@
       const logo=header.querySelector(".bh-header-logo img");
       if(logo) logo.src="/wp-content/uploads/logo/logoheader.png";
 
+      // Personalise the loaded shared header from the current server session.
+      const signIn=header.querySelector('.bh-sign-in-btn');
+      if(signIn){
+        void (async()=>{
+          try{
+            const response=await fetch(appUrl('api/auth.php?action=me'),{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
+            if(!response.ok)return;
+            const auth=await response.json();
+            if(auth.ok===false||!(auth.family_authenticated||auth.leader_authenticated||auth.authenticated))return;
+            const first=String(auth.user?.first_name||'').trim().split(/\s+/)[0];
+            signIn.textContent=first?'Hello '+first:'Hello there';
+            signIn.href=appUrl(auth.user?.role==='leader'?'leader/':'my-hub');
+            signIn.classList.add('bh-header-greeting');
+            const button=document.createElement('button');button.type='button';button.className='bh-sign-in-btn bh-header-signout';button.textContent='Sign out';
+            signIn.after(button);
+            button.addEventListener('click',async()=>{
+              button.disabled=true;button.textContent='Signing out…';
+              try{
+                const result=await fetch(appUrl('api/auth.php?action=logout'),{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({csrf:auth.csrf||''})});
+                const data=await result.json();if(!result.ok||data.ok===false)throw Error('Sign out failed');
+                location.assign(appUrl('index.html'));
+              }catch(e){button.disabled=false;button.textContent='Retry sign out';button.title='Unable to sign out. Please try again.';}
+            });
+          }catch(e){console.warn('Bubba Hub header session check unavailable.');}
+        })();
+      }
+
       const searchForm=header.querySelector(".bh-header-search-bar");
       if(searchForm){
         searchForm.action=appUrl("directory.html");

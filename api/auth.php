@@ -445,7 +445,7 @@ try {
         }
 
         try {
-            $stmt = $db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");
+            $stmt = $db->prepare("SELECT * FROM bh_users WHERE id=? LIMIT 1");
             $stmt->execute([(int)$_SESSION['bh_user_id']]);
             $user = $stmt->fetch();
         } catch (Throwable $e) {
@@ -475,6 +475,7 @@ try {
                 'email' => $user['email'],
                 'role' => $user['role'],
                 'status' => $user['status'],
+                'first_name' => (string)($user['first_name'] ?? ''),
             ],
             'csrf' => $_SESSION['bh_csrf'],
         ]);
