@@ -104,23 +104,55 @@ const addSession=(s={})=>{
 (original?.sessions||[]).forEach(addSession);
 document.getElementById('adminAddSession')?.addEventListener('click',()=>addSession());
 
+
 const importButton=document.getElementById('adminIcalPreview');
+const importMessage=document.getElementById('adminIcalMessage'),importResults=document.getElementById('adminIcalResults');
+const previewImportedSessions=(entries,note='')=>{
+ importResults.replaceChildren();
+ importMessage.textContent=entries.length+' dated events found.'+(note?' '+note:'');
+ const checks=[],list=document.createElement('div');
+ entries.forEach(event=>{
+  const label=document.createElement('label');label.style.cssText='display:flex;gap:10px;align-items:center;padding:8px 0';
+  const check=document.createElement('input');check.type='checkbox';check.checked=true;checks.push([check,event]);
+  label.append(check,document.createTextNode(event.start_date+' '+event.start_time+' — '+event.title));list.append(label);
+ });
+ importResults.append(list);
+ if(!entries.length)return;
+ const add=document.createElement('button');add.type='button';add.className='button button-primary';add.textContent='Add selected sessions';
+ add.addEventListener('click',()=>{
+  const known=new Set([...scheduleRows.children].map(row=>{const v={};row.querySelectorAll('[data-session-field]').forEach(el=>v[el.dataset.sessionField]=el.value);return [v.start_date,v.start_time,v.day_of_week].join('|');}));
+  let count=0;
+  checks.forEach(([check,event])=>{const key=[event.start_date,event.start_time,event.day_of_week].join('|');if(check.checked&&!known.has(key)){addSession(event);known.add(key);count++;}});
+  importMessage.textContent=count+' sessions added. Review and Save listing to store them.';importResults.replaceChildren();
+ });
+ importResults.append(add);
+};
 importButton?.addEventListener('click',async()=>{
- const url=document.getElementById('adminIcalUrl').value.trim(),message=document.getElementById('adminIcalMessage'),results=document.getElementById('adminIcalResults');
- results.replaceChildren();message.textContent='Loading calendar…';importButton.disabled=true;
+ const url=document.getElementById('adminIcalUrl').value.trim();importResults.replaceChildren();importMessage.textContent='Loading calendar…';importButton.disabled=true;
  try{
   const response=await fetch('/api/admin-ical-preview.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
   const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'Calendar could not be loaded.');
-  const entries=data.data||[];message.textContent=entries.length+' dated events found.'+(data.skipped_recurring?' '+data.skipped_recurring+' recurrence rules need manual handling.':'');
-  const list=document.createElement('div');const checks=[];
-  entries.forEach(event=>{const label=document.createElement('label');label.style.cssText='display:flex;gap:10px;align-items:center;padding:8px 0';const check=document.createElement('input');check.type='checkbox';check.checked=true;checks.push([check,event]);label.append(check,document.createTextNode(event.start_date+' '+event.start_time+' — '+event.title));list.append(label);});
-  results.append(list);
-  if(entries.length){const add=document.createElement('button');add.type='button';add.className='button button-primary';add.textContent='Add selected sessions';add.addEventListener('click',()=>{
-   const known=new Set([...scheduleRows.children].map(row=>{const v={};row.querySelectorAll('[data-session-field]').forEach(el=>v[el.dataset.sessionField]=el.value);return [v.start_date,v.start_time,v.day_of_week].join('|');}));
-   let count=0;checks.forEach(([check,event])=>{const key=[event.start_date,event.start_time,event.day_of_week].join('|');if(check.checked&&!known.has(key)){addSession(event);known.add(key);count++;}});
-   message.textContent=count+' sessions added to the editor. Review and Save listing to store them.';results.replaceChildren();
-  });results.append(add);}
- }catch(error){message.textContent=error.message;}finally{importButton.disabled=false;}
+  previewImportedSessions(data.data||[],data.skipped_recurring?data.skipped_recurring+' recurrence rules require manual handling.':'');
+ }catch(error){importMessage.textContent=error.message;}finally{importButton.disabled=false;}
+});
+document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',()=>{
+ const text=document.getElementById('adminBookwhenText').value,rows=text.split(/\\r?\\n/);
+ const months=['january','february','march','april','may','june','july','august','september','october','november','december'];
+ let month=-1,year=new Date().getFullYear(),day=null;const events=[];
+ for(const raw of rows){
+  const line=raw.replace(/[|]/g,' ').replace(/\\s+/g,' ').trim();if(!line)continue;
+  const heading=line.match(/^(January|February|March|April|May|June|July|August|September|October|November|December)\\s*,?\\s*(\\d{4})?$/i);
+  if(heading){month=months.indexOf(heading[1].toLowerCase());if(heading[2])year=Number(heading[2]);continue;}
+  const match=line.match(/^(?:(\\d{1,2})\\s+(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\\s+)?(\\d{1,2})(?::(\\d{2}))?\\s*(am|pm)\\s*(?:BST|GMT)?\\s+(.+)$/i);
+  if(!match||month<0)continue;
+  if(match[1])day=Number(match[1]);if(!day||day<1||day>31)continue;
+  const h=Number(match[2])%12+(match[4].toLowerCase()==='pm'?12:0);
+  const date=new Date(Date.UTC(year,month,day));if(date.getUTCMonth()!==month)continue;
+  const title=match[5].replace(/^\\[Button:\\s*/,'').replace(/\\]$/,'').trim();if(!title)continue;
+  events.push({title,day_of_week:((date.getUTCDay()+6)%7)+1,start_time:String(h).padStart(2,'0')+':'+String(Number(match[3]||0)).padStart(2,'0'),end_time:'',start_date:date.toISOString().slice(0,10),end_date:date.toISOString().slice(0,10),frequency:'once'});
+  if(events.length>=150)break;
+ }
+ previewImportedSessions(events,'Pasted timetable preview; confirm dates and course durations before saving.');
 });
 const collectSessions=()=>[...scheduleRows.children].map(row=>{const s={venue_index:Number(row.dataset.venueIndex||0)};row.querySelectorAll('[data-session-field]').forEach(el=>s[el.dataset.sessionField]=el.type==='checkbox'?(el.checked?1:0):el.value);return s;}).filter(s=>s.day_of_week||s.start_time);
  // Seven-step admin editor, matching the class leader's new listing workflow.
