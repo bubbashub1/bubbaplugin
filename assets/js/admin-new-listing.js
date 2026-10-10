@@ -154,6 +154,19 @@ document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',(
  }
  previewImportedSessions(events,'Pasted timetable preview; confirm dates and course durations before saving.');
 });
+document.getElementById('adminScreenshotRead')?.addEventListener('click',async()=>{
+ const input=document.getElementById('adminScheduleScreenshot'),message=document.getElementById('adminScreenshotMessage'),preview=document.getElementById('adminScreenshotPreview');
+ const file=input?.files?.[0];if(!file){message.textContent='Choose a timetable image first.';return;}
+ if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024){message.textContent='Use a PNG, JPEG or WebP image under 5 MB.';return;}
+ const url=URL.createObjectURL(file);preview.src=url;preview.hidden=false;preview.onload=()=>URL.revokeObjectURL(url);
+ if(typeof window.TextDetector!=='function'){message.textContent='Automatic screenshot reading is not supported by this browser. You can view the screenshot here and enter the sessions manually, or paste the timetable text above.';return;}
+ message.textContent='Reading timetable image…';
+ try{const bitmap=await createImageBitmap(file);let blocks;try{blocks=await new TextDetector().detect(bitmap)}finally{bitmap.close?.()}
+ const extracted=blocks.map(b=>b.rawValue).filter(Boolean).join('\\n');if(!extracted.trim())throw Error('No readable timetable text found.');
+ document.getElementById('adminBookwhenText').value=extracted;
+ message.textContent='Text extracted into the timetable box above. Check the dates and times, then select Preview pasted timetable. Screenshot recognition can make mistakes.';
+ }catch(error){message.textContent='Could not read this image automatically. Please enter the sessions manually or paste the timetable text.';}
+});
 const collectSessions=()=>[...scheduleRows.children].map(row=>{const s={venue_index:Number(row.dataset.venueIndex||0)};row.querySelectorAll('[data-session-field]').forEach(el=>s[el.dataset.sessionField]=el.type==='checkbox'?(el.checked?1:0):el.value);return s;}).filter(s=>s.day_of_week||s.start_time);
  // Seven-step admin editor, matching the class leader's new listing workflow.
 const steps=[['Basics',['title','organisation_name','description']],['About',['category','age_preset','age_range','price_from','pricing_unit','block_length_weeks','price_free']],['Extra',['booking_url','email','phone','website','status']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address']],['Photos',['image_path']],['Review',[]]];
