@@ -5,6 +5,9 @@ header('Cache-Control: no-store');
 
 $secure=(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off');
 session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);
+ini_set('session.use_strict_mode', '1');
+ini_set('session.use_only_cookies', '1');
+session_name('BUBBAHUB_ADMINSESSID');
 session_start();
 
 function bh_region_response(int $status,array $data): never{
