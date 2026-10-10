@@ -159,7 +159,7 @@ function lc_title_tokens(string $title):array {
 function lc_existing_match(PDO $db,string $title,string $url,string $region=''):?array {
  $host=strtolower((string)(parse_url($url,PHP_URL_HOST)??''));
  $host=preg_replace('/^www\\./','',$host);
- $q=$db->query("SELECT a.id,a.title,COALESCE(o.website,'') website,COALESCE(v.town,'') town,COALESCE(v.region,'') region FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_venues v ON v.id=(SELECT vv.id FROM bh_venues vv WHERE vv.activity_id=a.id ORDER BY vv.id LIMIT 1) LIMIT 1000");
+ $q=$db->query("SELECT a.id,a.title,COALESCE(o.website,'') website FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id ORDER BY a.id DESC LIMIT 1000");
  $candidate=lc_title_tokens($title);
  $best=null;$bestScore=0;
  foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){
@@ -170,7 +170,7 @@ function lc_existing_match(PDO $db,string $title,string $url,string $region=''):
   $union=count(array_unique(array_merge($candidate,$tokens)));
   $titleScore=$union?($intersection/$union):0;
   $sameHost=$host!==''&&$actual!==''&&$host===$actual;
-  $sameRegion=$region!==''&&strcasecmp($region,(string)$row['region'])===0;
+  $sameRegion=false; // Venue region is not available in this organiser-only matching query.
   $score=(int)round($titleScore*70)+($sameHost?25:0)+($sameRegion?5:0);
   // A shared organiser domain alone is not enough to match distinct classes.
   if($titleScore>=0.55&&$score>$bestScore){$bestScore=$score;$best=$row;}
