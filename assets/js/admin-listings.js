@@ -1,0 +1,10 @@
+(async function(){
+const rows=document.getElementById('listingRows'),search=document.getElementById('listingSearch'),filter=document.getElementById('listingStatus'),message=document.getElementById('listingMessage'),retry=document.getElementById('retryListings'),count=document.getElementById('listingCount');
+const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let all=[];
+function render(){const q=search.value.trim().toLowerCase(),status=filter.value;const list=all.filter(a=>(!status||(a.status==='publish'?'published':a.status)===status)&&[a.title,a.organisation_name,a.town,a.category,a.region].join(' ').toLowerCase().includes(q));count.textContent=list.length+' of '+all.length+' listings';rows.innerHTML=list.map(a=>'<tr><td><strong>'+escape(a.title)+'</strong><br><small>'+escape(a.organisation_name)+'</small></td><td>'+escape(a.town||'—')+'</td><td>'+escape(a.session_summary||'—')+'</td><td>'+escape(a.status)+'</td><td><a class="button button-soft" href="/admin/admin-activities-add-listing.html?id='+encodeURIComponent(a.id)+'">Edit</a></td></tr>').join('')||'<tr><td colspan="5">No listings found.</td></tr>';}
+async function load(){message.textContent='';retry.hidden=true;try{const r=await fetch('/api/admin-activities.php',{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});if(r.status===401){location.replace('/admin-login.html?next='+encodeURIComponent(location.pathname));return;}const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load listings.');all=Array.isArray(d.data)?d.data:[];render();}catch(e){count.textContent='Listings unavailable';message.textContent=e.message;retry.hidden=false;}}
+search.addEventListener('input',render);filter.addEventListener('change',render);retry.addEventListener('click',load);
+document.querySelector('[data-admin-logout]').addEventListener('click',async()=>{await fetch('/admin-auth.php?action=logout',{method:'POST',credentials:'same-origin'});location.href='/admin-login.html';});
+await load();
+})();
