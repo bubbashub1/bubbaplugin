@@ -8,6 +8,13 @@ session_start();
 function bh_admin_response(int $status,array $data): never{http_response_code($status);echo json_encode($data,JSON_UNESCAPED_SLASHES);exit;}
 if(empty($_SESSION['bh_admin_authenticated']))bh_admin_response(401,['ok'=>false,'error'=>'Admin login required.']);
 try{require __DIR__.'/db.php';$db=bh_mysql();
+ $_SESSION['bh_listing_csrf']??=bin2hex(random_bytes(32));
+ if($_SERVER['REQUEST_METHOD']==='GET'&&($_GET['action']??'')==='leaders'){
+  $hasUserId=(bool)$db->query("SHOW COLUMNS FROM bh_organisers LIKE 'user_id'")->fetch();
+  $join=$hasUserId?'u.id=o.user_id':'u.email=o.email';
+  $q=$db->query("SELECT o.id,o.organisation_name,u.email FROM bh_organisers o JOIN bh_users u ON ".$join." WHERE u.role='leader' AND u.status='active' AND o.status<>'suspended' ORDER BY o.organisation_name,o.id");
+  bh_admin_response(200,['ok'=>true,'data'=>$q->fetchAll(),'csrf'=>$_SESSION['bh_listing_csrf']]);
+ }
  $accessibilityColumn=false;
  try{$ac=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='accessibility'");$accessibilityColumn=((int)$ac->fetchColumn())>0;}catch(Throwable $ignored){}
  if($_SERVER['REQUEST_METHOD']==='GET'){
@@ -23,11 +30,33 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
   $countyColumn=false;
   try{$cc=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='county'");$countyColumn=((int)$cc->fetchColumn())>0;}catch(Throwable $ignored){}
   $countySelect=$countyColumn?'a.county':'NULL AS county';
-  $stmt=$db->query("SELECT a.id,a.title,a.category,a.age_range,$countySelect,a.price_from,a.status,o.id organiser_id,COALESCE(o.organisation_name,'') AS organisation_name,MIN(v.town) AS town,MIN(v.region) AS region,COUNT(DISTINCT v.id) venue_count,(SELECT GROUP_CONCAT(DISTINCT CONCAT(CASE s.day_of_week WHEN 1 THEN 'Mon' WHEN 2 THEN 'Tue' WHEN 3 THEN 'Wed' WHEN 4 THEN 'Thu' WHEN 5 THEN 'Fri' WHEN 6 THEN 'Sat' WHEN 7 THEN 'Sun' END,' ',LEFT(s.start_time,5)) ORDER BY s.day_of_week,s.start_time SEPARATOR ', ') FROM bh_sessions s INNER JOIN bh_venues sv ON sv.id=s.venue_id WHERE sv.activity_id=a.id) AS session_summary FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_venues v ON v.activity_id=a.id GROUP BY a.id,a.title,a.category,a.age_range,a.price_from,a.status,o.id,o.organisation_name".($countyColumn?",a.county":"")." ORDER BY a.updated_at DESC,a.id DESC");bh_admin_response(200,['ok'=>true,'data'=>$stmt->fetchAll()]);
+  $stmt=$db->query("SELECT a.id,a.title,a.category,a.age_range,$countySelect,a.price_from,a.status,o.id organiser_id,COALESCE(o.organisation_name,'') AS organisation_name,MIN(v.town) AS town,MIN(v.region) AS region,COUNT(DISTINCT v.id) venue_count,(SELECT GROUP_CONCAT(DISTINCT CONCAT(CASE s.day_of_week WHEN 1 THEN 'Mon' WHEN 2 THEN 'Tue' WHEN 3 THEN 'Wed' WHEN 4 THEN 'Thu' WHEN 5 THEN 'Fri' WHEN 6 THEN 'Sat' WHEN 7 THEN 'Sun' END,' ',LEFT(s.start_time,5)) ORDER BY s.day_of_week,s.start_time SEPARATOR ', ') FROM bh_sessions s INNER JOIN bh_venues sv ON sv.id=s.venue_id WHERE sv.activity_id=a.id) AS session_summary FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_venues v ON v.activity_id=a.id WHERE a.status<>'archived' GROUP BY a.id,a.title,a.category,a.age_range,a.price_from,a.status,o.id,o.organisation_name".($countyColumn?",a.county":"")." ORDER BY a.updated_at DESC,a.id DESC");bh_admin_response(200,['ok'=>true,'data'=>$stmt->fetchAll(),'csrf'=>$_SESSION['bh_listing_csrf']]);
  }
  if($_SERVER['REQUEST_METHOD']!=='POST')bh_admin_response(405,['ok'=>false,'error'=>'GET or POST required.']);
  $input=json_decode((string)file_get_contents('php://input'),true);if(!is_array($input))bh_admin_response(400,['ok'=>false,'error'=>'Invalid JSON.']);
  $id=(int)($input['id']??0);
+ $listingAction=$input['action']??'';
+ if(in_array($listingAction,['delete','assign_leader'],true)){
+  if(!hash_equals($_SESSION['bh_listing_csrf'],(string)($input['csrf']??'')))bh_admin_response(403,['ok'=>false,'error'=>'Please refresh the page and try again.']);
+  if($id<1)bh_admin_response(422,['ok'=>false,'error'=>'Choose a listing.']);
+  $db->beginTransaction();
+  try{
+   $q=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND status<>'archived' FOR UPDATE");$q->execute([$id]);
+   if(!$q->fetch()){$db->rollBack();bh_admin_response(404,['ok'=>false,'error'=>'Listing not found.']);}
+   if($listingAction==='delete'){
+    $db->prepare("UPDATE bh_activities SET status='archived' WHERE id=?")->execute([$id]);
+   }else{
+    $organiserId=(int)($input['organiser_id']??0);
+    $hasUserId=(bool)$db->query("SHOW COLUMNS FROM bh_organisers LIKE 'user_id'")->fetch();
+    $join=$hasUserId?'u.id=o.user_id':'u.email=o.email';
+    $q=$db->prepare("SELECT o.id FROM bh_organisers o JOIN bh_users u ON ".$join." WHERE o.id=? AND u.role='leader' AND u.status='active' AND o.status<>'suspended' LIMIT 1");$q->execute([$organiserId]);
+    if(!$q->fetch()){$db->rollBack();bh_admin_response(422,['ok'=>false,'error'=>'Choose an active registered leader organisation.']);}
+    $db->prepare("UPDATE bh_activities SET organiser_id=? WHERE id=?")->execute([$organiserId,$id]);
+   }
+   $db->commit();bh_admin_response(200,['ok'=>true]);
+  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+ }
+
  $activityCountyColumn=false;
  try{$cc=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='county'");$activityCountyColumn=((int)$cc->fetchColumn())>0;}catch(Throwable $ignored){}$title=trim((string)($input['title']??''));$description=trim((string)($input['description']??''));$category=trim((string)($input['category']??''));$ageRange=trim((string)($input['age_range']??''));$county=trim((string)($input['county']??''));if($county!==''&&!in_array($county,['Devon','Cornwall','Plymouth','Torbay'],true))$county='';$priceFrom=($input['price_from']??'')===''?null:(float)$input['price_from'];$bookingUrl=trim((string)($input['booking_url']??''));$organisationName=trim((string)($input['organisation_name']??''));$email=trim((string)($input['email']??''));$phone=trim((string)($input['phone']??''));$website=trim((string)($input['website']??''));$venueName=trim((string)($input['venue_name']??''));$address=trim((string)($input['address']??''));$town=trim((string)($input['town']??''));$region=trim((string)($input['region']??''));$postcode=trim((string)($input['postcode']??''));$latitude=($input['latitude']??'')===''?null:(float)$input['latitude'];$longitude=($input['longitude']??'')===''?null:(float)$input['longitude'];$imagePath=trim((string)($input['image_path']??''));$status=in_array(($input['status']??'published'),['published','draft'],true)?$input['status']:'published';$accessibility=json_encode(array_values(array_unique(array_filter((array)($input['accessibility']??[]),'is_string'))),JSON_UNESCAPED_SLASHES);
  if($title===''||$organisationName===''||$venueName===''||$town===''||$category==='')bh_admin_response(422,['ok'=>false,'error'=>'Title, organisation, category, venue and town are required.']);
