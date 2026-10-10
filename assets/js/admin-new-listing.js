@@ -6,14 +6,14 @@ button.disabled=true;
 try{const auth=await fetch('/admin-auth.php?action=check',{credentials:'same-origin',cache:'no-store'});if(auth.status===401){redirect();return;}const check=await auth.json();if(!auth.ok||!check.ok)throw Error('Could not verify admin access.');
 const presets={'0-6':[0,6,'0–6 months'],'6-12':[6,12,'6–12 months'],'0-12':[0,12,'0–12 months'],'12-48':[12,48,'1–4 years'],'48+':[48,null,'4+ years']};
 const preset=form.elements.namedItem('age_preset'),free=form.elements.namedItem('price_free'),price=form.elements.namedItem('price_from'),unit=form.elements.namedItem('pricing_unit');
-const applyPreset=()=>{const v=presets[preset.value];if(!v)return;form.elements.namedItem('age_min_months').value=v[0];form.elements.namedItem('age_max_months').value=v[1]??'';form.elements.namedItem('age_range').value=v[2];};
+const applyPreset=()=>{const keys=[...preset.selectedOptions].map(o=>o.value).filter(v=>presets[v]);if(!keys.length)return;const values=keys.map(k=>presets[k]);form.elements.namedItem('age_min_months').value=Math.min(...values.map(v=>v[0]));form.elements.namedItem('age_max_months').value=values.some(v=>v[1]===null)?'':Math.max(...values.map(v=>v[1]));form.elements.namedItem('age_range').value=values.map(v=>v[2]).join(', ');};
 preset.addEventListener('change',applyPreset);
 free.addEventListener('change',()=>{price.disabled=free.checked;if(free.checked)price.value='0';});
-if(!id){preset.value='0-12';applyPreset();}
+if(!id){[...preset.options].forEach(o=>o.selected=o.value==='0-12');applyPreset();}
 if(id){status.textContent='Loading listing…';const r=await fetch('/api/admin-activities.php?id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load listing.');original=d.data;for(const el of form.elements){if(el.name&&Object.hasOwn(original,el.name))el.value=original[el.name]??'';}const lo=original.age_min_months,hi=original.age_max_months;
 
 const existing=Object.entries(presets).find(([,v])=>lo!==null&&lo!==undefined&&lo!==''&&Number(lo)===v[0]&&((hi===null||hi===undefined||hi==='')?v[1]===null:Number(hi)===v[1]));
-preset.value=existing?.[0]||'';
+const savedLabels=String(original.age_range||'').split(',').map(s=>s.trim());const matches=Object.entries(presets).filter(([,v])=>savedLabels.includes(v[2])).map(([k])=>k);[...preset.options].forEach(o=>o.selected=matches.length?matches.includes(o.value):o.value===(existing?.[0]||''));
 if(original.price_free!==undefined)free.checked=String(original.price_free)==='1';
 if(original.pricing_unit)unit.value=original.pricing_unit;
 else if(String(original.price_per_family)==='1')unit.value='per_family';
@@ -105,7 +105,7 @@ steps.forEach(([name],i)=>{const b=document.createElement('button');b.type='butt
 back.addEventListener('click',()=>{step=Math.max(0,step-1);renderStep();});
 next.addEventListener('click',()=>{const required=labels.filter(l=>!l.hidden).map(l=>l.querySelector('[required]')).filter(Boolean);const invalid=required.find(el=>!el.value.trim());if(invalid){invalid.reportValidity();return;}step=Math.min(6,step+1);renderStep();});
 renderStep();
-form.addEventListener('submit',async e=>{e.preventDefault();const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};
+form.addEventListener('submit',async e=>{e.preventDefault();const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};delete body.age_preset;
 body.price_free=free.checked?1:0;body.price_per_family=!free.checked&&unit.value==='per_family'?1:0;body.price_per_session=!free.checked&&unit.value==='per_session'?1:0;body.pricing_unit=unit.value;body.id=original?.id||null;body.sessions=original?.sessions||[];body.venues=(original?.venues||[]).slice(1).map(v=>({...v,latitude:v.latitude??'',longitude:v.longitude??''}));body.accessibility=original?.accessibility||[];
 body.latitude=original?.latitude??'';body.longitude=original?.longitude??'';body.sessions=body.sessions.map(s=>({...s,price:s.price??'',start_date:s.start_date??'',end_date:s.end_date??''}));
 button.disabled=true;status.textContent='Saving listing…';status.classList.remove('is-error');
