@@ -496,7 +496,7 @@ document.querySelector("#deployLatest")?.addEventListener("click",async()=>{
  }
 });
 document.querySelector("#addVenue")?.addEventListener("click",()=>addAdditionalVenue());
-document.querySelector("#newActivity")?.addEventListener("click",()=>{location.href="admin/admin-activities-add-listing.html";});
+document.querySelector("#newActivity")?.addEventListener("click",()=>{location.href="/admin/admin-activities-add-listing.html";});
 document.querySelector("#cancelActivity")?.addEventListener("click",closeEditor);
 document.querySelector("#cancelActivity2")?.addEventListener("click",closeEditor);
 document.querySelector("#activityForm")?.addEventListener("submit",createActivity);
