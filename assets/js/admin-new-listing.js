@@ -184,6 +184,9 @@ document.getElementById('adminScreenshotRead')?.addEventListener('click',async()
    extracted=result.data?.text||'';
   }
   if(!extracted.trim())throw Error('No readable timetable text was found.');
+  const recognisableDates=(extracted.match(/\\b(?:January|February|March|April|May|June|July|August|September|October|November|December|Mon(?:day)?|Tue(?:sday)?|Wed(?:nesday)?|Thu(?:rsday)?|Fri(?:day)?|Sat(?:urday)?|Sun(?:day)?)\\b/gi)||[]).length;
+  const recognisableTimes=(extracted.match(/\\b\\d{1,2}(?::\\d{2})?\\s*(?:am|pm)\\b/gi)||[]).length;
+  if(recognisableDates<1||recognisableTimes<1)throw Error('The screenshot was read, but no reliable timetable dates and times were recognised. Try a tightly cropped screenshot at higher resolution. Existing pasted text has been preserved.');
   document.getElementById('adminBookwhenText').value=extracted;
   document.querySelector('#adminBookwhenText')?.closest('details')?.setAttribute('open','');
   message.textContent='Screenshot text extracted. Check dates, times and class names in Paste your schedule, then select Preview pasted timetable. Recognition may contain errors.';
