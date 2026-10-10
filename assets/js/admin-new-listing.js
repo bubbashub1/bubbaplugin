@@ -103,6 +103,25 @@ const addSession=(s={})=>{
 };
 (original?.sessions||[]).forEach(addSession);
 document.getElementById('adminAddSession')?.addEventListener('click',()=>addSession());
+
+const importButton=document.getElementById('adminIcalPreview');
+importButton?.addEventListener('click',async()=>{
+ const url=document.getElementById('adminIcalUrl').value.trim(),message=document.getElementById('adminIcalMessage'),results=document.getElementById('adminIcalResults');
+ results.replaceChildren();message.textContent='Loading calendar…';importButton.disabled=true;
+ try{
+  const response=await fetch('/api/admin-ical-preview.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
+  const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'Calendar could not be loaded.');
+  const entries=data.data||[];message.textContent=entries.length+' dated events found.'+(data.skipped_recurring?' '+data.skipped_recurring+' recurrence rules need manual handling.':'');
+  const list=document.createElement('div');const checks=[];
+  entries.forEach(event=>{const label=document.createElement('label');label.style.cssText='display:flex;gap:10px;align-items:center;padding:8px 0';const check=document.createElement('input');check.type='checkbox';check.checked=true;checks.push([check,event]);label.append(check,document.createTextNode(event.start_date+' '+event.start_time+' — '+event.title));list.append(label);});
+  results.append(list);
+  if(entries.length){const add=document.createElement('button');add.type='button';add.className='button button-primary';add.textContent='Add selected sessions';add.addEventListener('click',()=>{
+   const known=new Set([...scheduleRows.children].map(row=>{const v={};row.querySelectorAll('[data-session-field]').forEach(el=>v[el.dataset.sessionField]=el.value);return [v.start_date,v.start_time,v.day_of_week].join('|');}));
+   let count=0;checks.forEach(([check,event])=>{const key=[event.start_date,event.start_time,event.day_of_week].join('|');if(check.checked&&!known.has(key)){addSession(event);known.add(key);count++;}});
+   message.textContent=count+' sessions added to the editor. Review and Save listing to store them.';results.replaceChildren();
+  });results.append(add);}
+ }catch(error){message.textContent=error.message;}finally{importButton.disabled=false;}
+});
 const collectSessions=()=>[...scheduleRows.children].map(row=>{const s={venue_index:Number(row.dataset.venueIndex||0)};row.querySelectorAll('[data-session-field]').forEach(el=>s[el.dataset.sessionField]=el.type==='checkbox'?(el.checked?1:0):el.value);return s;}).filter(s=>s.day_of_week||s.start_time);
  // Seven-step admin editor, matching the class leader's new listing workflow.
 const steps=[['Basics',['title','organisation_name','description']],['About',['category','age_preset','age_range','price_from','pricing_unit','price_free']],['Extra',['booking_url','email','phone','website','status']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address']],['Photos',['image_path']],['Review',[]]];
