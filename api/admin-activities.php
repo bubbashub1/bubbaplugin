@@ -1,7 +1,10 @@
 <?php
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8'); header('Cache-Control: no-store');
-$secure=(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off'); session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']); session_start();
+$secure=(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off'); session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']); ini_set('session.use_strict_mode', '1');
+ini_set('session.use_only_cookies', '1');
+session_name('BUBBAHUB_ADMINSESSID');
+session_start();
 function bh_admin_response(int $status,array $data): never{http_response_code($status);echo json_encode($data,JSON_UNESCAPED_SLASHES);exit;}
 if(empty($_SESSION['bh_admin_authenticated']))bh_admin_response(401,['ok'=>false,'error'=>'Admin login required.']);
 try{require __DIR__.'/db.php';$db=bh_mysql();
