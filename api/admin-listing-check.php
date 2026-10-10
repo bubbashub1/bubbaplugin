@@ -83,19 +83,32 @@ function lc_norm_url(string $url):string{
  $host=strtolower((string)$p['host']);$host=preg_replace('/^www\./','',$host);$path=rtrim((string)($p['path']??'/'),'/');
  return 'https://'.$host.($path&&$path!=='/'?$path:'');
 }
-function lc_google(string $q,array $cfg):array{
- $key=(string)($cfg['google_search_api_key']??'');$cx=(string)($cfg['google_search_cx']??'');
- if($key===''||$cx==='')throw new RuntimeException('Google search is not configured. Add BH_GOOGLE_SEARCH_API_KEY and BH_GOOGLE_SEARCH_CX to wp-config.php.');
- $url='https://customsearch.googleapis.com/customsearch/v1?'.http_build_query(['key'=>$key,'cx'=>$cx,'q'=>$q,'num'=>10,'safe'=>'active']);
- $ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>15,CURLOPT_FOLLOWLOCATION=>true,CURLOPT_USERAGENT=>'Bubba Hub Listing Check/1.0']);$raw=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);
- if($raw===false)throw new RuntimeException('Google search request could not be completed.');
- if($http>=400){$gd=json_decode((string)$raw,true);$detail=(string)($gd['error']['message']??'');throw new RuntimeException('Google search request failed (HTTP '.$http.').'.($detail?' '.$detail:''));}
- $d=json_decode($raw,true);if(!is_array($d))return [];
- return is_array($d['items']??null)?$d['items']:[];
+// Listing Check deliberately uses no paid APIs or free-trial services.
+function lc_google(string $q,array $cfg):array {return [];}
+function lc_safe_url(string $url):string {
+ $url=lc_norm_url($url);$p=parse_url($url);
+ if(!is_array($p)||!in_array(strtolower((string)($p['scheme']??'')),['https','http'],true))return '';
+ $host=strtolower((string)($p['host']??''));
+ if(!$host||$host==='localhost'||str_ends_with($host,'.local')||str_ends_with($host,'.internal')||filter_var($host,FILTER_VALIDATE_IP))return '';
+ // Avoid fetching internal addresses resolved from attacker-controlled DNS.
+ $ips=gethostbynamel($host);if(!$ips)return '';
+ foreach($ips as $ip)if(!filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE))return '';
+ return $url;
+}
+function lc_public_sources(array $input):array {
+ $urls=$input['sources']??[];
+ if(!is_array($urls))return [];
+ $out=[];
+ foreach(array_slice($urls,0,10) as $url){
+  if(!is_string($url))continue;
+  $safe=lc_safe_url($url);
+  if($safe!=='')$out[]=$safe;
+ }
+ return array_values(array_unique($out));
 }
 function lc_fetch(string $url):array{
- $url=lc_norm_url($url);if($url==='')return ['ok'=>false,'text'=>'','title'=>''];
- $ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>12,CURLOPT_FOLLOWLOCATION=>true,CURLOPT_MAXREDIRS=>4,CURLOPT_USERAGENT=>'Mozilla/5.0 (compatible; BubbaHubListingCheck/1.0)']);$raw=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$final=(string)curl_getinfo($ch,CURLINFO_EFFECTIVE_URL);curl_close($ch);
+ $url=lc_safe_url($url);if($url==='')return ['ok'=>false,'text'=>'','title'=>''];
+ $ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>12,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_MAXREDIRS=>0,CURLOPT_PROTOCOLS=>CURLPROTO_HTTP|CURLPROTO_HTTPS,CURLOPT_USERAGENT=>'Mozilla/5.0 (compatible; BubbaHubListingCheck/1.0)']);$raw=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$final=(string)curl_getinfo($ch,CURLINFO_EFFECTIVE_URL);curl_close($ch);
  if($raw===false||$http>=400)return ['ok'=>false,'http'=>$http,'text'=>'','title'=>'','url'=>$final?:$url];
  $title='';if(preg_match('/<title[^>]*>(.*?)<\/title>/is',$raw,$m))$title=trim(html_entity_decode(strip_tags($m[1]),ENT_QUOTES|ENT_HTML5,'UTF-8'));
  $text=preg_replace('/\s+/',' ',strip_tags($raw));$text=trim(html_entity_decode((string)$text,ENT_QUOTES|ENT_HTML5,'UTF-8'));
@@ -146,7 +159,7 @@ if($action==='create_draft'){
  $db->prepare("UPDATE bh_listing_check_results SET draft_activity_id=?,updated_at=NOW() WHERE id=?")->execute([$aid,$id]);lc_out(200,['ok'=>true,'draft_activity_id'=>$aid]);
 }
 if($action!=='scan')lc_out(400,['ok'=>false,'error'=>'Unknown action.']);
-$mode=(string)($input['mode']??'existing');$region=trim((string)($input['region']??''));$query=trim((string)($input['query']??''));$cfg=lc_config();
+$mode=(string)($input['mode']??'existing');$region=trim((string)($input['region']??''));$query=trim((string)($input['query']??''));$cfg=[];
 try{
  $items=[];
  if($mode==='existing'){
@@ -156,39 +169,39 @@ try{
   $st=$db->prepare($sql);$st->execute($params);$activities=$st->fetchAll();
   foreach($activities as $a){
    $title=trim((string)$a['title']);$website=trim((string)$a['website']);$q='"'.$title.'"';if($region)$q.=' '. $region;if($query)$q.=' '.$query;
-   $search=lc_google($q,$cfg);$match=lc_match($search,$title,$website);$page=$website?lc_fetch($website):['ok'=>false,'signals'=>[],'text'=>'','title'=>''];
-   $socialSearch=lc_google('"'.$title.'" Facebook Instagram '.($region?:''),$cfg);
-   $sources=[];foreach(array_merge($search,$socialSearch) as $it){if(!empty($it['link']))$sources[]=['label'=>(string)($it['title']??'Source'),'url'=>(string)$it['link']];}
-   $changes=$match?lc_changes($a,$match['item'],$page):[];$score=$match?(int)$match['score']:0;
-   $missing=(!$match&&(!$page['ok']||$page['signals']));
-   if($page['ok']&&!empty($page['signals']))$score=max($score,80);
-   $stt=$changes?'changed':($missing?'missing':'same');$label=$stt==='changed'?'Changed':($stt==='missing'?'Possible missing':'No change');
-   if($page['ok']&&$page['signals']){$changes[]= ['field'=>'Website evidence','before'=>'Current listing','after'=>implode(', ',$page['signals'])];$stt='changed';$label='Changed';}
-   $websiteEvidence=$page['ok']?('Website reachable'.($page['title']?' · '.$page['title']:'').(!empty($page['signals'])?' · Notice: '.implode(', ',$page['signals']):' · No closure/change notice detected')):'Website could not be reached.';
-   $socialEvidence=count($socialSearch)?'Google found '.count($socialSearch).' relevant social/search results.':'No relevant social/search result found.';
+   $page=$website?lc_fetch($website):['ok'=>false,'signals'=>[],'text'=>'','title'=>''];
+   $sources=[];if($website)$sources[]=['label'=>'Organiser website','url'=>lc_safe_url($website)];
+   $changes=[];$score=0;
+   if(!empty($page['ok'])&&!empty($page['signals'])){
+    $changes[]=['field'=>'Possible website notice','before'=>'Requires review','after'=>implode(', ',$page['signals'])];
+    $score=30;
+   }
+   $stt=$changes?'changed':'same';
+   $label=$changes?'Review website notice':'Not independently verified';
+   $websiteEvidence=empty($website)?'No website recorded.':(!empty($page['ok'])?'Website reachable; check any notices manually.':'Website unavailable or blocked; NOT evidence of closure.');
+   $socialEvidence='Social posts not independently searched; add public URLs to the source check.';
    $key=lc_key($title,$website);$existing=$db->prepare("SELECT id FROM bh_listing_check_results WHERE title=? AND website_key=? AND activity_id=? ORDER BY id DESC LIMIT 1");$existing->execute([$title,$key,$a['id']]);$rid=$existing->fetchColumn();
    $payload=[$a['id'],$title,$website,$key,$stt,$label,min(100,max(0,$score)),$a['town'],$a['region'],$websiteEvidence,$socialEvidence,json_encode($changes),json_encode(array_slice($sources,0,10)),$q];
    if($rid){$u=$db->prepare("UPDATE bh_listing_check_results SET activity_id=?,title=?,website=?,website_key=?,status=?,label=?,confidence=?,town=?,region=?,website_evidence=?,social_evidence=?,changes_json=?,sources_json=?,search_query=?,reviewed_at=NULL WHERE id=?");$u->execute([$a['id'],$title,$website,$key,$stt,$label,min(100,max(0,$score)),$a['town'],$a['region'],$websiteEvidence,$socialEvidence,json_encode($changes),json_encode(array_slice($sources,0,10)),$q,$rid]);}
    else{$u=$db->prepare("INSERT INTO bh_listing_check_results (activity_id,title,website,website_key,status,label,confidence,town,region,website_evidence,social_evidence,changes_json,sources_json,search_query) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");$u->execute($payload);}
   }
  }else{
-  $scope=trim($query.' '.($region?:'Devon Cornwall'));if($scope==='')$scope='baby toddler classes Devon Cornwall';
-  $search=lc_google($scope,$cfg);
-  foreach($search as $it){
-   $title=trim(strip_tags((string)($it['title']??'')));$url=lc_norm_url((string)($it['link']??''));if($title===''||$url==='')continue;
-   if(preg_match('#(wikipedia|youtube\.com|google\.com|tripadvisor|yell\.com)#i',$url))continue;
-   $key=lc_key($title,$url);$dup=$db->prepare("SELECT id FROM bh_listing_check_results WHERE website_key=? AND title=? LIMIT 1");$dup->execute([$key,$title]);if($dup->fetchColumn())continue;
-   $page=lc_fetch($url);$title2=$page['title']?:$title;$websiteEvidence=$page['ok']?'Website reachable'.(!empty($page['signals'])?' · '.implode(', ',$page['signals']):''):'Website could not be reached.';
-   $social=lc_google('"'.$title.'" Facebook Instagram', $cfg);$sources=[['label'=>$title,'url'=>$url]];foreach($social as $si)if(!empty($si['link']))$sources[]=['label'=>(string)($si['title']??'Social result'),'url'=>(string)$si['link']];
-   $town=$region;$confidence=$page['ok']?88:65;$stt='new';$label='New opportunity';$ins=$db->prepare("INSERT INTO bh_listing_check_results (title,website,website_key,status,label,confidence,town,region,website_evidence,social_evidence,sources_json,search_query) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");$ins->execute([$title2,$url,$key,$stt,$label,$confidence,$town,$region,$websiteEvidence,count($social)?'Relevant social/search results found.':'No social result found.',json_encode($sources),$scope]);$newId=(int)$db->lastInsertId();
-   if($confidence>=75){
-    $orgSlug='listing-check-'.strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',(string)$title2),'-')).'-'.$newId;$orgName=trim((string)$title2)?:'New listing';
-    $db->prepare("INSERT INTO bh_organisers (organisation_name,slug,description,website,status) VALUES (?,?,?,?, 'draft')")->execute([$orgName,$orgSlug,'Discovered by Listing Check. Assign/claim the real organiser before publishing.',$url]);$org=(int)$db->lastInsertId();
-    $slug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',(string)$title2),'-'));if($slug==='')$slug='listing-check-'.$newId;$base=$slug;$n=2;while(true){$x=$db->prepare("SELECT COUNT(*) FROM bh_activities WHERE slug=?");$x->execute([$slug]);if(!(int)$x->fetchColumn())break;$slug=$base.'-'.$n++;}
-    $county=in_array($region,['Plymouth','Torbay'],true)?$region:(str_contains(strtolower($region),'cornwall')?'Cornwall':(str_contains(strtolower($region),'devon')?'Devon':null));
-    lc_insert_activity($db,[$org,$title2,$slug,'Discovered by Bubba Hub Listing Check. Review the external source before publishing.'],$county);$draftId=(int)$db->lastInsertId();
-    $db->prepare("UPDATE bh_listing_check_results SET draft_activity_id=? WHERE id=?")->execute([$draftId,$newId]);
-   }
+  // Free, targeted discovery from administrator-supplied public pages.
+  // Never claim that this crawls the whole internet or bypasses social login.
+  $scope=trim($query.' '.$region);
+  $sourcesToCheck=lc_public_sources($input);
+  if(!$sourcesToCheck)lc_out(422,['ok'=>false,'error'=>'Enter one or more public source URLs (websites, event pages or accessible social posts). No paid search API is used.']);
+  foreach($sourcesToCheck as $url){
+   $page=lc_fetch($url);
+   if(empty($page['ok']))continue;
+   $title=trim((string)($page['title']??''));if($title==='')continue;
+   if($query!==''&&!str_contains(mb_strtolower($title.' '.($page['text']??'')),mb_strtolower($query)))continue;
+   $key=lc_key($title,$url);
+   $dup=$db->prepare("SELECT id FROM bh_listing_check_results WHERE website_key=? AND title=? LIMIT 1");
+   $dup->execute([$key,$title]);if($dup->fetchColumn())continue;
+   $ins=$db->prepare("INSERT INTO bh_listing_check_results (title,website,website_key,status,label,confidence,town,region,website_evidence,social_evidence,sources_json,search_query) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
+   $ins->execute([$title,$url,$key,'new','Review candidate',20,'',$region,'Public page available; activity details not independently verified.','Social platform restrictions may prevent access.',json_encode([['label'=>'Public source','url'=>$url]]),$scope]);
+   // Never auto-create organiser or activity records from unverified pages.
   }
  }
  $rows=lc_results($db);lc_out(200,['ok'=>true,'results'=>$rows,'summary'=>lc_summary($rows)]);
