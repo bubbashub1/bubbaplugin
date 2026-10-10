@@ -140,18 +140,33 @@ function lc_snapshot(PDO $db,string $url,array $page):array {
  $q->execute([$url,$key,$hash,mb_substr((string)($page['title']??''),0,500),mb_substr($text,0,1500)]);
  return ['state'=>$previous?($changed?'changed':'unchanged'):'baseline','previous'=>$previous];
 }
-function lc_existing_match(PDO $db,string $title,string $url):?array {
- $host=(string)(parse_url($url,PHP_URL_HOST)??'');
- $host=preg_replace('/^www\\./','',strtolower($host));
- if($host!==''){
-  $q=$db->prepare("SELECT a.id,a.title,o.website FROM bh_activities a JOIN bh_organisers o ON o.id=a.organiser_id WHERE o.website LIKE ? LIMIT 50");
-  $q->execute(['%'.$host.'%']);
-  foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){
-   $actual=(string)(parse_url(lc_norm_url((string)$row['website']),PHP_URL_HOST)??'');
-   if(preg_replace('/^www\\./','',strtolower($actual))===$host)return $row;
-  }
+function lc_title_tokens(string $title):array {
+ $title=mb_strtolower(html_entity_decode(strip_tags($title),ENT_QUOTES|ENT_HTML5,'UTF-8'));
+ $title=preg_replace('/[^\\p{L}\\p{N}]+/u',' ',$title);
+ $stop=['the','and','for','with','classes','class','activities','activity','home','welcome','events','devon','cornwall'];
+ $words=array_filter(explode(' ',trim($title)),static fn($w)=>mb_strlen($w)>2&&!in_array($w,$stop,true));
+ return array_values(array_unique($words));
+}
+function lc_existing_match(PDO $db,string $title,string $url,string $region=''):?array {
+ $host=strtolower((string)(parse_url($url,PHP_URL_HOST)??''));
+ $host=preg_replace('/^www\\./','',$host);
+ $q=$db->query("SELECT a.id,a.title,COALESCE(o.website,'') website,COALESCE(v.town,'') town,COALESCE(v.region,'') region FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_venues v ON v.id=(SELECT vv.id FROM bh_venues vv WHERE vv.activity_id=a.id ORDER BY vv.id LIMIT 1) LIMIT 1000");
+ $candidate=lc_title_tokens($title);
+ $best=null;$bestScore=0;
+ foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){
+  $actual=strtolower((string)(parse_url(lc_norm_url((string)$row['website']),PHP_URL_HOST)??''));
+  $actual=preg_replace('/^www\\./','',$actual);
+  $tokens=lc_title_tokens((string)$row['title']);
+  $intersection=count(array_intersect($candidate,$tokens));
+  $union=count(array_unique(array_merge($candidate,$tokens)));
+  $titleScore=$union?($intersection/$union):0;
+  $sameHost=$host!==''&&$actual!==''&&$host===$actual;
+  $sameRegion=$region!==''&&strcasecmp($region,(string)$row['region'])===0;
+  $score=(int)round($titleScore*70)+($sameHost?25:0)+($sameRegion?5:0);
+  // A shared organiser domain alone is not enough to match distinct classes.
+  if($titleScore>=0.55&&$score>$bestScore){$bestScore=$score;$best=$row;}
  }
- return null;
+ return $bestScore>=55?['activity'=>$best,'score'=>$bestScore]:null;
 }
 function lc_match(array $items,string $title,string $website):?array{
  $nk=mb_strtolower(preg_replace('/[^a-z0-9]+/i','',html_entity_decode($title)));
@@ -237,7 +252,7 @@ try{
    $title=trim((string)($page['title']??''));if($title==='')continue;
    if($query!==''&&!str_contains(mb_strtolower($title.' '.($page['text']??'')),mb_strtolower($query)))continue;
    $key=lc_key($title,$url);
-   $matched=lc_existing_match($db,$title,$url);
+   $matched=lc_existing_match($db,$title,$url,$region);
    if($matched)continue;
    $dup=$db->prepare("SELECT id FROM bh_listing_check_results WHERE website_key=? AND title=? LIMIT 1");
    $dup->execute([$key,$title]);if($dup->fetchColumn())continue;
