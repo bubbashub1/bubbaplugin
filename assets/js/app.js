@@ -910,6 +910,10 @@ void bhHydrateSaved();
       if(hero){
         /* Keep page-specific hero styling attached to the loaded component, not the placeholder. */
         hero.classList.toggle("calendar-directory-hero",page==="calendar");
+        if(page==="calendar"){
+          const filters=hero.querySelector("#directoryFilters");
+          if(filters){filters.id="calendarFilters";filters.classList.add("calendar-filters-panel");}
+        }
         const form=hero.querySelector("[data-bh-hero-form]");
         if(form){form.id=ids.form;form.action=page==="map"?"map.html":page==="calendar"?"calendar.html":"directory.html";}
         Object.entries({keyword:ids.keyword,region:ids.region,town:ids.town,category:ids.category,day:ids.day}).forEach(([key,id])=>{
@@ -932,11 +936,11 @@ void bhHydrateSaved();
 
           // Open the actual inline Advanced Filters panel. Do not rely on the
           // old modal/fuzzy overlay classes which are still present elsewhere.
-          const opening=page==="directory" ? fields.hidden : true;
+          const opening=(page==="directory"||page==="calendar") ? fields.hidden : true;
           fields.hidden=!opening;
           fields.style.removeProperty("display");
           target.classList.toggle("is-open",opening);
-          if(page==="directory"){
+          if(page==="directory"||page==="calendar"){
             filterButton.setAttribute("aria-expanded",String(opening));
             filterButton.textContent=opening ? "− Fewer search options" : "⚙ More search options";
           }
