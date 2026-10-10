@@ -598,7 +598,18 @@ try {
     if ($action === 'resend_verification') {
         $userId=(int)($_SESSION['bh_user_id'] ?? 0);
         if ($userId<1 || (empty($_SESSION['bh_family_authenticated']) && empty($_SESSION['bh_leader_authenticated']))) {
-            bh_auth_response(401,['ok'=>false,'message'=>'Please sign in before requesting a verification email.']);
+            // Leaders cannot log in until verified. Permit a generic, rate-limited
+            // resend request without revealing whether an email is registered.
+            $email=strtolower(trim((string)($body['email'] ?? '')));
+            if (!filter_var($email,FILTER_VALIDATE_EMAIL) || strlen($email)>190) {
+                bh_auth_response(200,['ok'=>true,'message'=>'If an unverified account exists, a new verification link will be sent.']);
+            }
+            bh_rate_limit($db,'verify-resend-ip:'.hash('sha256',(string)($_SERVER['REMOTE_ADDR'] ?? 'unknown')),5,3600);
+            bh_rate_limit($db,'verify-resend-email:'.hash('sha256',$email),3,3600);
+            $lookup=$db->prepare("SELECT id FROM bh_users WHERE email=? AND role='leader' AND status='active' AND email_verified_at IS NULL LIMIT 1");
+            $lookup->execute([$email]);
+            $userId=(int)$lookup->fetchColumn();
+            if ($userId<1) bh_auth_response(200,['ok'=>true,'message'=>'If an unverified account exists, a new verification link will be sent.']);
         }
         bh_rate_limit($db,'verify-resend-user:'.$userId,3,3600);
         $stmt=$db->prepare("SELECT email,email_verified_at FROM bh_users WHERE id=? AND status='active' LIMIT 1");
