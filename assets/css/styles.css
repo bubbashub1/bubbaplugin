@@ -7488,3 +7488,8 @@ body.bh-article-page{background:#fff;color:#174e3b;font-family:'Quicksand',Calib
 .bh-article-page .bh-wp-content a{color:#276e74;text-underline-offset:3px}
 .bh-article-page .bh-wp-content :is(.alignwide,.alignfull){max-width:100%;margin-left:0;margin-right:0}
 @media(max-width:560px){.bh-article-page .bh-wp-page{padding:24px 15px 48px}.bh-article-page .bh-wp-content blockquote{padding:18px}}
+
+.bh-header-greeting{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+button.bh-header-signout{font:inherit;cursor:pointer;white-space:nowrap}
+button.bh-header-signout:disabled{opacity:.65;cursor:wait}
+@media(max-width:700px){.bh-header-greeting{max-width:105px;padding-left:8px;padding-right:8px}.bh-header-signout{padding-left:8px;padding-right:8px}}
