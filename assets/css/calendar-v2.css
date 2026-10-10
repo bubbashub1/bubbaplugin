@@ -89,3 +89,54 @@ body.bh-calendar-v2{background:#fffdf7;color:#174e3b;font-family:'Quicksand',Cal
  .bh-calendar-v2 .calendar-toolbar,.bh-calendar-v2 .calendar-directory-hero,.bh-calendar-v2 .calendar-filters-panel{display:none!important}
 }
 @media(prefers-reduced-motion:reduce){.bh-calendar-v2 .calendar-view{transition:none}}
+
+/* Directory-matched search sidebar; calendar views retain their own styling. */
+.bh-calendar-v2 .calendar-directory-hero .directory-hero-search{background:#fff;border:1px solid #e1ebe2;border-radius:0 0 28px 28px;padding:clamp(18px,2.5vw,30px);box-shadow:0 15px 40px rgba(23,78,59,.09)}
+.bh-calendar-v2 .directory-hero-search-fields label{display:flex;align-items:center;min-width:0;min-height:52px;padding:0 12px;border:1px solid #dce8df;border-radius:14px;background:#fff}
+.bh-calendar-v2 .directory-hero-search-fields :is(input,select){min-width:0;width:100%;border:0;outline:0;box-shadow:none;background:transparent;font:700 .92rem 'Quicksand',Calibri,Arial,sans-serif;color:#174e3b}
+.bh-calendar-v2 .directory-hero-search-fields label:focus-within{border-color:#3c8e96;box-shadow:0 0 0 3px rgba(60,142,150,.13)}
+.bh-calendar-v2 .directory-hero-search-fields button{min-height:52px;border-radius:999px;background:#f7bf7d;color:#174e3b;font-weight:800}
+.bh-calendar-v2 .directory-hero-search-fields button:hover{background:#ee822c}
+.bh-calendar-v2 .directory-hero-actions{margin-top:8px}
+.bh-calendar-v2 .calendar-directory-hero .directory-search-advanced-link{background:#e5f1df;color:#174e3b;border:1px solid #cfe3d2}
+.bh-calendar-v2 #calendarFilters{margin:12px 0 0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}
+.bh-calendar-v2 #calendarFilters .directory-more-search-toggle{display:none!important}
+.bh-calendar-v2 #calendarFilters .directory-more-search-panel:not([hidden]){position:static!important;margin:0;padding:14px 0 0;background:transparent;border:0;border-top:1px solid #dce8df;border-radius:0;box-shadow:none}
+.bh-calendar-v2 #calendarFilters :is(.directory-filter-fields,.directory-advanced-section){display:flex;flex-direction:column;gap:12px;min-width:0}
+.bh-calendar-v2 #calendarFilters .directory-advanced-filter-field{width:100%;min-width:0;box-sizing:border-box;margin:0}
+.bh-calendar-v2 #calendarFilters :is(select,.directory-accessibility-expand,.directory-nearby-button){width:100%;min-height:46px;border:1px solid #dce8df;border-radius:14px;background:#fff;color:#144400;font:700 .9rem 'Quicksand',Calibri,Arial,sans-serif}
+.bh-calendar-v2 #calendarFilters .directory-filter-label{display:block;margin:0 0 6px;color:#416651;font-weight:700}
+.bh-calendar-v2 #calendarFilters .directory-filter-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:14px}
+.bh-calendar-v2 #calendarFilters .directory-filter-actions button{width:100%;min-height:46px;border-radius:999px;font-weight:700}
+.bh-calendar-v2 #calendarFilters #applyFilters{background:#144400;color:#fff}
+.bh-calendar-v2 #calendarFilters #clear{background:#d8e6db;color:#144400}
+.bh-calendar-v2 .directory-popular{margin-top:15px}
+.bh-calendar-v2 .calendar-page.app-shell{max-width:1600px;padding-top:0;align-items:start}
+.bh-calendar-v2 .calendar-directory-hero{padding-top:0!important;min-width:0}
+.bh-calendar-v2 .directory-hero-fullwidth{margin:0}
+.bh-calendar-v2 .directory-hero-search-fields{display:flex!important;flex-direction:column!important;gap:10px}
+.bh-calendar-v2 .directory-hero-search-fields>*{width:100%;box-sizing:border-box}
+.bh-calendar-v2 .directory-hero-actions{display:flex!important;flex-direction:column!important;align-items:stretch!important}
+.bh-calendar-v2 .directory-hero-actions>button{width:100%!important;white-space:normal}
+.bh-calendar-v2 #calendarFilters{position:static!important;inset:auto!important;transform:none!important;display:block!important;width:100%;max-height:none!important;overflow:visible!important}
+.bh-calendar-v2 #calendarFilters #advancedFields[hidden]{display:none!important}
+.bh-calendar-v2 #calendarFilters #advancedFields:not([hidden]){display:block!important}
+.bh-calendar-v2 .calendar-intro h1{margin:7px 0 9px;font-size:clamp(1.8rem,3vw,2.7rem);line-height:1.14}
+.bh-calendar-v2 .calendar-intro p{color:#416651;line-height:1.55;margin:0 0 14px}
+.bh-calendar-v2 .calendar-intro .button{border-radius:999px;background:#d8e6db;color:#144400}
+.bh-calendar-v2 .calendar-panel.planner-shell{min-width:0;box-sizing:border-box}
+.bh-calendar-v2 .calendar-content{overflow-x:auto}
+.bh-calendar-v2 .calendar-directory-hero .directory-hero-search h2{font-size:1.7rem;font-weight:700}
+.bh-calendar-v2 :is(button,a,select,input):focus-visible{outline:3px solid #3c8e96;outline-offset:3px}
+@media(min-width:901px){
+ .bh-calendar-v2 .calendar-page.app-shell{display:grid;grid-template-columns:288px minmax(0,1fr);gap:18px}
+ .bh-calendar-v2 .calendar-directory-hero{position:sticky;top:18px;max-height:calc(100dvh - 36px);overflow-y:auto;scrollbar-width:thin}
+}
+@media(max-width:900px){
+ .bh-calendar-v2 .calendar-page.app-shell{display:block}
+ .bh-calendar-v2 .calendar-directory-hero{position:static;margin-bottom:18px}
+ .bh-calendar-v2 .directory-hero-search-fields{display:grid!important;grid-template-columns:minmax(0,1fr)!important}
+ .bh-calendar-v2 .calendar-toolbar{flex-direction:column;align-items:stretch}
+ .bh-calendar-v2 .calendar-week-grid{grid-template-columns:repeat(7,150px)}
+}
+@media print{.bh-calendar-v2 .calendar-page.app-shell{display:block}}

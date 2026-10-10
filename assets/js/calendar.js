@@ -366,8 +366,14 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
   const modal=document.getElementById("calendarFilters");
   if(modal){
     const componentClear=document.getElementById("clear");
-    if(componentClear)componentClear.hidden=true;
-    const close=()=>{modal.classList.remove("is-open");document.body.classList.remove("directory-filter-open")};
+    if(componentClear)componentClear.hidden=false;
+    const close=()=>{
+      modal.classList.remove("is-open");
+      const fields=modal.querySelector("#advancedFields");if(fields)fields.hidden=true;
+      const button=document.getElementById("openCalendarFilters");
+      if(button){button.setAttribute("aria-expanded","false");button.textContent="⚙ More search options";}
+      document.body.classList.remove("directory-filter-open");
+    };
     document.getElementById("calendarCloseSearchFilters")?.addEventListener("click",close);
     const setField=(id,value)=>{const el=document.getElementById(id);if(el)el.value=value||""};
     const setCheck=(id,value)=>{const el=document.getElementById(id);if(el)el.checked=!!value};
