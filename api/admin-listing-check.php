@@ -232,7 +232,7 @@ try{
   elseif(in_array('activity_id',$venueCols,true))$venueJoin="LEFT JOIN bh_venues v ON v.id=(SELECT vv.id FROM bh_venues vv WHERE vv.activity_id=a.id LIMIT 1)";
   else $venueJoin="LEFT JOIN bh_venues v ON 1=0";
   $sql="SELECT a.id,a.title,a.slug,a.status,a.description,a.booking_url,$countySql AS county,COALESCE(v.town,'') town,COALESCE(v.region,'') region,COALESCE(o.website,'') website FROM bh_activities a $venueJoin LEFT JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.status IN ('published','pending','draft')";
-  $params=[];if($region){$sql.=" AND (v.region=? OR ".$countySql."=?)";$params=[$region,$region];}$sql.=" ORDER BY a.id";
+  $params=[];if($region){$sql.=" AND (v.region=?".($countySql==='NULL'?'':" OR ".$countySql."=?").")";$params=$countySql==='NULL'?[$region]:[$region,$region];}$sql.=" ORDER BY a.id";
   $offset=max(0,min(100000,(int)($input['offset']??0)));
   $sql.=' LIMIT 20 OFFSET '.$offset;
   $st=$db->prepare($sql);$st->execute($params);$activities=$st->fetchAll();
@@ -253,7 +253,7 @@ try{
    $socialEvidence='Social posts not independently searched; add public URLs to the source check.';
    $key=lc_key($title,$website);$existing=$db->prepare("SELECT id FROM bh_listing_check_results WHERE title=? AND website_key=? AND activity_id=? ORDER BY id DESC LIMIT 1");$existing->execute([$title,$key,$a['id']]);$rid=$existing->fetchColumn();
    $payload=[$a['id'],$title,$website,$key,$stt,$label,min(100,max(0,$score)),$a['town'],$a['region'],$websiteEvidence,$socialEvidence,json_encode($changes),json_encode(array_slice($sources,0,10)),$q];
-   if($rid){$u=$db->prepare("UPDATE bh_listing_check_results SET activity_id=?,title=?,website=?,website_key=?,status=?,label=?,confidence=?,town=?,region=?,website_evidence=?,social_evidence=?,changes_json=?,sources_json=?,search_query=?,reviewed_at=NULL WHERE id=?");$u->execute([$a['id'],$title,$website,$key,$stt,$label,min(100,max(0,$score)),$a['town'],$a['region'],$websiteEvidence,$socialEvidence,json_encode($changes),json_encode(array_slice($sources,0,10)),$q,$rid]);}
+   if($rid){$u=$db->prepare("UPDATE bh_listing_check_results SET activity_id=?,title=?,website=?,website_key=?,status=?,label=?,confidence=?,town=?,region=?,website_evidence=?,social_evidence=?,changes_json=?,sources_json=?,search_query=?,reviewed_at=NULL WHERE id=? AND status<>'dismissed'");$u->execute([$a['id'],$title,$website,$key,$stt,$label,min(100,max(0,$score)),$a['town'],$a['region'],$websiteEvidence,$socialEvidence,json_encode($changes),json_encode(array_slice($sources,0,10)),$q,$rid]);}
    else{$u=$db->prepare("INSERT INTO bh_listing_check_results (activity_id,title,website,website_key,status,label,confidence,town,region,website_evidence,social_evidence,changes_json,sources_json,search_query) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");$u->execute($payload);}
   }
  }else{
@@ -279,5 +279,5 @@ try{
   }
  }
  $rows=lc_results($db);lc_out(200,['ok'=>true,'results'=>$rows,'summary'=>lc_summary($rows)]);
-}catch(Throwable $e){lc_out(500,['ok'=>false,'error'=>$e->getMessage()]);}
+}catch(Throwable $e){error_log('Listing Check scan failed: '.$e->getMessage());lc_out(500,['ok'=>false,'error'=>'Listing Check could not finish. Check the server error log.']);}
 ?>
