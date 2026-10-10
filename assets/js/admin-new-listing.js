@@ -40,6 +40,25 @@ if(categoryInput){
 }
 button.disabled=false;
 }catch(e){status.textContent=e.message;status.classList.add('is-error');return;}
+// Seven-step admin editor, matching the class leader's new listing workflow.
+const steps=[['Basics',['title','organisation_name','description']],['About',['category','age_range','price_from']],['Extra',['booking_url','email','phone','website','status']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address']],['Photos',['image_path']],['Review',[]]];
+const stepNav=document.getElementById('adminListingSteps');
+const back=document.getElementById('adminListingBack'),next=document.getElementById('adminListingNext'),save=document.getElementById('adminListingSubmit');
+const labels=[...form.querySelectorAll('.admin-form-grid > label')];
+let step=0;
+const review=document.createElement('div');review.className='bh-review';review.hidden=true;form.querySelector('.admin-form-grid').after(review);
+const renderStep=()=>{
+ const current=steps[step];
+ labels.forEach(label=>{const name=label.querySelector('[name]')?.name;label.hidden=step!==6&&!current[1].includes(name);label.style.display=label.hidden?'none':'';});
+ review.hidden=step!==6;
+ if(step===6){review.replaceChildren();labels.forEach(label=>{const el=label.querySelector('[name]');if(!el)return;const line=document.createElement('p');const strong=document.createElement('strong');strong.textContent=label.textContent.trim()+': ';line.append(strong,document.createTextNode(el.value||'—'));review.append(line);});}
+ back.hidden=step===0;next.hidden=step===6;save.hidden=step!==6;
+ [...stepNav.children].forEach((b,i)=>{b.classList.toggle('active',i===step);b.setAttribute('aria-current',i===step?'step':'false');});
+};
+steps.forEach(([name],i)=>{const b=document.createElement('button');b.type='button';b.className='bh-step';b.innerHTML='<span>'+(i+1)+'</span>'+name;b.addEventListener('click',()=>{step=i;renderStep();});stepNav.append(b);});
+back.addEventListener('click',()=>{step=Math.max(0,step-1);renderStep();});
+next.addEventListener('click',()=>{const required=labels.filter(l=>!l.hidden).map(l=>l.querySelector('[required]')).filter(Boolean);const invalid=required.find(el=>!el.value.trim());if(invalid){invalid.reportValidity();return;}step=Math.min(6,step+1);renderStep();});
+renderStep();
 form.addEventListener('submit',async e=>{e.preventDefault();const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};
 body.id=original?.id||null;body.sessions=original?.sessions||[];body.venues=(original?.venues||[]).slice(1).map(v=>({...v,latitude:v.latitude??'',longitude:v.longitude??''}));body.accessibility=original?.accessibility||[];
 body.latitude=original?.latitude??'';body.longitude=original?.longitude??'';body.sessions=body.sessions.map(s=>({...s,price:s.price??'',start_date:s.start_date??'',end_date:s.end_date??''}));
