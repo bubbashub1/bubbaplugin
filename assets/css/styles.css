@@ -7468,3 +7468,23 @@ body :is(.button,.btn,a.button){max-width:100%;box-sizing:border-box}
 
 /* WordPress content within the Bubba Hub shell. */
 .bh-wp-page{padding:32px 15px 64px;min-height:55vh}.bh-wp-page article{max-width:1180px;margin:auto}.bh-wp-content{overflow-wrap:anywhere;line-height:1.7}.bh-wp-content img,.bh-wp-content video{max-width:100%;height:auto}.bh-wp-content iframe{max-width:100%;width:100%;aspect-ratio:16/9;border:0}.bh-wp-content figure{margin:1.5em 0}.bh-wp-content .wp-block-columns{flex-wrap:wrap}.bh-wp-content table{display:block;max-width:100%;overflow-x:auto}
+
+/* WordPress articles: a clean white reading page inside the shared site shell. */
+body.bh-article-page{background:#fff;color:#174e3b;font-family:'Quicksand',Calibri,Arial,sans-serif}
+.bh-article-page .bh-wp-page{background:#fff;padding:32px 20px 72px}
+.bh-article-page .bh-wp-page article{max-width:800px;margin:0 auto}
+.bh-article-back{display:inline-block;margin:0 0 24px;color:#416651;font-weight:700;text-decoration:none}
+.bh-article-back:hover{text-decoration:underline}
+.bh-article-page [data-wp-title]{font-size:clamp(2rem,4.2vw,3.25rem);line-height:1.15;letter-spacing:-.035em;margin:0 0 28px;color:#174e3b;overflow-wrap:anywhere}
+.bh-article-page .bh-wp-content{font-size:clamp(1rem,1.2vw,1.125rem);line-height:1.8;color:#294c3e}
+.bh-article-page .bh-wp-content p{margin:0 0 1.25em}
+.bh-article-page .bh-wp-content :is(h2,h3,h4){color:#174e3b;line-height:1.3;margin:1.6em 0 .7em;letter-spacing:-.02em}
+.bh-article-page .bh-wp-content h2{font-size:clamp(1.4rem,2.4vw,1.85rem)}
+.bh-article-page .bh-wp-content h3{font-size:1.35rem}
+.bh-article-page .bh-wp-content :is(ul,ol){padding-left:1.5em;margin:0 0 1.5em}
+.bh-article-page .bh-wp-content li{margin:.65em 0;padding-left:.2em}
+.bh-article-page .bh-wp-content blockquote{margin:28px 0;padding:22px 24px;border-left:4px solid #3c8e96;border-radius:0 16px 16px 0;background:#f0f7f3}
+.bh-article-page .bh-wp-content blockquote p:last-child{margin-bottom:0}
+.bh-article-page .bh-wp-content a{color:#276e74;text-underline-offset:3px}
+.bh-article-page .bh-wp-content :is(.alignwide,.alignfull){max-width:100%;margin-left:0;margin-right:0}
+@media(max-width:560px){.bh-article-page .bh-wp-page{padding:24px 15px 48px}.bh-article-page .bh-wp-content blockquote{padding:18px}}
