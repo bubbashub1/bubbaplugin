@@ -122,6 +122,13 @@ try {
         $params[':day'] = $day;
     }
 
+    // Older installations may not have the optional activity/venue junction table.
+    // Fall back to venues referenced by sessions without changing the database.
+    $hasActivityVenues = (bool)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activity_venues'")->fetchColumn();
+    $venueJoin = $hasActivityVenues
+        ? "LEFT JOIN bh_activity_venues av ON av.activity_id = a.id LEFT JOIN bh_venues v ON v.id = av.venue_id"
+        : "LEFT JOIN bh_venues v ON v.id = (SELECT s3.venue_id FROM bh_sessions s3 WHERE s3.activity_id = a.id AND s3.venue_id IS NOT NULL ORDER BY s3.id LIMIT 1)";
+
     $sql = "
         SELECT
             a.id,
@@ -153,8 +160,7 @@ try {
             v.notes AS venue_notes
         FROM bh_activities a
         LEFT JOIN bh_organisers o ON o.id = a.organiser_id
-        LEFT JOIN bh_activity_venues av ON av.activity_id = a.id
-        LEFT JOIN bh_venues v ON v.id = av.venue_id
+        $venueJoin
         WHERE " . implode(' AND ', $where) . "
         ORDER BY a.title ASC, a.id ASC
     ";
