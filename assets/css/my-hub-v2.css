@@ -78,3 +78,19 @@ body.bh-my-hub{background:#fffdf7;color:#123f31;font-family:'Quicksand',Calibri,
 @media(prefers-reduced-motion:reduce){
  .bh-my-hub .my-hub-page .hub-tools-grid .feature-card{transition:none}
 }
+
+/* Keep the greeting, main actions and optional Pro offer in separate rows. */
+.bh-my-hub .my-hub-page .my-hub-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:24px 32px}
+.bh-my-hub .my-hub-hero-copy{min-width:0}
+.bh-my-hub .my-hub-hero h1{font-size:clamp(2.6rem,5vw,4.5rem);overflow-wrap:anywhere}
+.bh-my-hub .hub-pro-status:not([hidden]){display:inline-flex;margin:0 12px 10px 0}
+.bh-my-hub .hub-pro-pitch:not([hidden]){grid-column:1 / -1;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px 20px;padding:20px 0 0;border-top:1px solid rgba(23,78,59,.15);line-height:1.5}
+.bh-my-hub .hub-pro-pitch strong{white-space:nowrap}
+.bh-my-hub .hub-pro-pitch .button{justify-self:end}
+@media(max-width:900px){
+ .bh-my-hub .my-hub-page .my-hub-hero{grid-template-columns:minmax(0,1fr);gap:20px}
+ .bh-my-hub .my-hub-hero-actions{justify-content:flex-start}
+ .bh-my-hub .hub-pro-pitch:not([hidden]){grid-template-columns:minmax(0,1fr)}
+ .bh-my-hub .hub-pro-pitch .button{justify-self:start}
+}
+@media(max-width:560px){.bh-my-hub .hub-pro-pitch .button{width:100%}}
