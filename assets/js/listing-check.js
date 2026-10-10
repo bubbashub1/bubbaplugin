@@ -33,7 +33,6 @@ async function load(){
  try{const d=await request("results");results=d.results||[];renderSummary(d.summary||{});render()}catch(e){status(e.message,true)}
 }
 async function run(mode,button){
- if(mode==="existing")scanOffset=0;
  busy(button,true);status(mode==="existing"?"Checking existing listings…":"Checking supplied public pages…");
  $("#listingCheckResults").innerHTML='<div class="listing-check-empty"><strong>Checking sources…</strong><div class="listing-check-progress"><span></span></div></div>';
  try{const d=await request("scan",{mode,region:$("#checkRegion").value,query:$("#checkQuery").value,offset:scanOffset,sources:($("#checkSources")?.value||"").split(/\r?\n/).map(x=>x.trim()).filter(Boolean)});results=d.results||[];renderSummary(d.summary||{});render();if(mode==="existing"&&d.next_offset!==null&&d.next_offset!==undefined){scanOffset=d.next_offset;status("Checked 20 activities. Continue to check the next batch.");const btn=$("#checkExisting");btn.textContent="Check next 20 listings";}else{scanOffset=0;$("#checkExisting").textContent="Check existing listings";status("✓ Listing Check complete. "+results.length+" findings ready to review.")}}catch(e){status(e.message,true);load()}finally{busy(button,false)}
