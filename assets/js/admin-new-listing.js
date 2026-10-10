@@ -136,23 +136,33 @@ importButton?.addEventListener('click',async()=>{
  }catch(error){importMessage.textContent=error.message;}finally{importButton.disabled=false;}
 });
 document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',()=>{
- const text=document.getElementById('adminBookwhenText').value,rows=text.split(/\\r?\\n/);
+ const field=document.getElementById('adminBookwhenText'),rows=field.value.split(/\r?\n/);
+ const button=document.getElementById('adminBookwhenPastePreview');
+ let feedback=document.getElementById('adminPastePreviewMessage');
+ if(!feedback){feedback=document.createElement('p');feedback.id='adminPastePreviewMessage';feedback.setAttribute('role','status');button.after(feedback);}
  const months=['january','february','march','april','may','june','july','august','september','october','november','december'];
- let month=-1,year=new Date().getFullYear(),day=null;const events=[];
+ let month=-1,year=new Date().getFullYear(),day=null;const events=[],seen=new Set();
+ const clock=(hour,minute,meridian)=>String(Number(hour)%12+(meridian.toLowerCase()==='pm'?12:0)).padStart(2,'0')+':'+String(Number(minute||0)).padStart(2,'0');
  for(const raw of rows){
-  const line=raw.replace(/[|]/g,' ').replace(/\\s+/g,' ').trim();if(!line)continue;
-  const heading=line.match(/^(January|February|March|April|May|June|July|August|September|October|November|December)\\s*,?\\s*(\\d{4})?$/i);
-  if(heading){month=months.indexOf(heading[1].toLowerCase());if(heading[2])year=Number(heading[2]);continue;}
-  const match=line.match(/^(?:(\\d{1,2})\\s+(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\\s+)?(\\d{1,2})(?::(\\d{2}))?\\s*(am|pm)\\s*(?:BST|GMT)?\\s+(.+)$/i);
-  if(!match||month<0)continue;
-  if(match[1])day=Number(match[1]);if(!day||day<1||day>31)continue;
-  const h=Number(match[2])%12+(match[4].toLowerCase()==='pm'?12:0);
+  const line=raw.replace(/[|]/g,' ').replace(/\s+/g,' ').trim();if(!line)continue;
+  const heading=line.match(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\s*,?\s*(20\d{2})\b/i);
+  if(heading){month=months.indexOf(heading[1].toLowerCase());year=Number(heading[2]);}
+  if(month<0)continue;
+  const match=line.match(/(?:^|\s)(?:(\d{1,2})\s+(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\w*\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b\s*(?:BST|GMT|ST)?\s+(.+)/i);
+  if(!match)continue;
+  if(match[1])day=Number(match[1]);
+  if(!day||day<1||day>31)continue;
   const date=new Date(Date.UTC(year,month,day));if(date.getUTCMonth()!==month)continue;
-  const title=match[5].replace(/^\\[Button:\\s*/,'').replace(/\\]$/,'').trim();if(!title)continue;
-  events.push({title,day_of_week:((date.getUTCDay()+6)%7)+1,start_time:String(h).padStart(2,'0')+':'+String(Number(match[3]||0)).padStart(2,'0'),end_time:'',start_date:date.toISOString().slice(0,10),end_date:date.toISOString().slice(0,10),frequency:'once'});
+  const title=match[5].replace(/^ST\b/i,'').replace(/^\[Button:\s*/,'').replace(/\]$/,'').trim();
+  if(!title||/^(log in|sign in|view details|book now)$/i.test(title))continue;
+  const start_time=clock(match[2],match[3],match[4]),start_date=date.toISOString().slice(0,10),key=start_date+'|'+start_time+'|'+title.toLowerCase();
+  if(seen.has(key))continue;seen.add(key);
+  events.push({title,day_of_week:((date.getUTCDay()+6)%7)+1,start_time,end_time:'',start_date,end_date:start_date,frequency:'once'});
   if(events.length>=150)break;
  }
- previewImportedSessions(events,'Pasted timetable preview; confirm dates and course durations before saving.');
+ feedback.textContent=events.length?events.length+' possible session(s) found. Review dates and times below before adding.':'No sessions could be recognised. Try cropping the screenshot to the timetable, or use lines such as October, 2026 followed by 12 Mon 10am Budding Babies.';
+ previewImportedSessions(events,'Review the extracted dates and class names carefully; OCR may contain mistakes.');
+ const results=document.getElementById('adminIcalResults');if(results&&events.length)results.scrollIntoView({behavior:'smooth',block:'nearest'});
 });
 document.getElementById('adminScreenshotRead')?.addEventListener('click',async()=>{
  const input=document.getElementById('adminScheduleScreenshot'),message=document.getElementById('adminScreenshotMessage'),preview=document.getElementById('adminScreenshotPreview');
