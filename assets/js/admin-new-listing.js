@@ -159,13 +159,26 @@ document.getElementById('adminScreenshotRead')?.addEventListener('click',async()
  const file=input?.files?.[0];if(!file){message.textContent='Choose a timetable image first.';return;}
  if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024){message.textContent='Use a PNG, JPEG or WebP image under 5 MB.';return;}
  const url=URL.createObjectURL(file);preview.hidden=true;preview.style.display='none';preview.onload=()=>{preview.hidden=false;preview.style.display='block';URL.revokeObjectURL(url)};preview.onerror=()=>{preview.hidden=true;preview.style.display='none';URL.revokeObjectURL(url);message.textContent='Could not display this image. Please choose another screenshot.'};preview.src=url;
- if(typeof window.TextDetector!=='function'){message.textContent='This browser cannot read timetable text directly. The screenshot is displayed for reference; use Paste your schedule or + Add session. Automatic cross-browser recognition is not yet available.';return;}
  message.textContent='Reading timetable image…';
- try{const bitmap=await createImageBitmap(file);let blocks;try{blocks=await new TextDetector().detect(bitmap)}finally{bitmap.close?.()}
- const extracted=blocks.map(b=>b.rawValue).filter(Boolean).join('\\n');if(!extracted.trim())throw Error('No readable timetable text found.');
- document.getElementById('adminBookwhenText').value=extracted;
- message.textContent='Text extracted into the timetable box above. Check the dates and times, then select Preview pasted timetable. Screenshot recognition can make mistakes.';
- }catch(error){message.textContent='Could not read this image automatically. Please enter the sessions manually or paste the timetable text.';}
+ const button=document.getElementById('adminScreenshotRead');button.disabled=true;
+ try{
+  let extracted='';
+  if(typeof window.TextDetector==='function'){
+   try{const bitmap=await createImageBitmap(file);try{const blocks=await new TextDetector().detect(bitmap);extracted=blocks.map(b=>b.rawValue).filter(Boolean).join('\\n')}finally{bitmap.close?.()}}catch(e){console.warn('Native screenshot recognition unavailable:',e)}
+  }
+  if(!extracted.trim()){
+   if(!window.Tesseract){
+    await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';script.onload=resolve;script.onerror=()=>reject(Error('Screenshot reader could not load. Please check your connection.'));document.head.appendChild(script)});
+   }
+   const result=await window.Tesseract.recognize(file,'eng',{logger:progress=>{if(progress.status==='recognizing text')message.textContent='Reading screenshot… '+Math.round(progress.progress*100)+'%'}});
+   extracted=result.data?.text||'';
+  }
+  if(!extracted.trim())throw Error('No readable timetable text was found.');
+  document.getElementById('adminBookwhenText').value=extracted;
+  document.querySelector('#adminBookwhenText')?.closest('details')?.setAttribute('open','');
+  message.textContent='Screenshot text extracted. Check dates, times and class names in Paste your schedule, then select Preview pasted timetable. Recognition may contain errors.';
+ }catch(error){message.textContent=(error.message||'Screenshot recognition failed.')+' You can still paste your schedule or add sessions manually.'}
+ finally{button.disabled=false;}
 });
 const collectSessions=()=>[...scheduleRows.children].map(row=>{const s={venue_index:Number(row.dataset.venueIndex||0)};row.querySelectorAll('[data-session-field]').forEach(el=>s[el.dataset.sessionField]=el.type==='checkbox'?(el.checked?1:0):el.value);return s;}).filter(s=>s.day_of_week||s.start_time);
  // Seven-step admin editor, matching the class leader's new listing workflow.
