@@ -99,6 +99,7 @@ function lc_safe_url(string $url):string {
  $url=lc_norm_url($url);$p=parse_url($url);
  if(!is_array($p)||!in_array(strtolower((string)($p['scheme']??'')),['https','http'],true))return '';
  $host=strtolower((string)($p['host']??''));
+ if(isset($p['user'])||isset($p['pass'])||isset($p['port']))return '';
  if(!$host||$host==='localhost'||str_ends_with($host,'.local')||str_ends_with($host,'.internal')||filter_var($host,FILTER_VALIDATE_IP))return '';
  // Avoid fetching internal addresses resolved from attacker-controlled DNS.
  $ips=gethostbynamel($host);if(!$ips)return '';
@@ -118,8 +119,8 @@ function lc_public_sources(array $input):array {
 }
 function lc_fetch(string $url):array{
  $url=lc_safe_url($url);if($url==='')return ['ok'=>false,'text'=>'','title'=>''];
- $ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>12,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_MAXREDIRS=>0,CURLOPT_PROTOCOLS=>CURLPROTO_HTTP|CURLPROTO_HTTPS,CURLOPT_USERAGENT=>'Mozilla/5.0 (compatible; BubbaHubListingCheck/1.0)']);$raw=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$final=(string)curl_getinfo($ch,CURLINFO_EFFECTIVE_URL);curl_close($ch);
- if($raw===false||$http>=400)return ['ok'=>false,'http'=>$http,'text'=>'','title'=>'','url'=>$final?:$url];
+ $ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>12,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_MAXREDIRS=>0,CURLOPT_PROTOCOLS=>CURLPROTO_HTTP|CURLPROTO_HTTPS,CURLOPT_MAXFILESIZE=>1048576,CURLOPT_USERAGENT=>'Mozilla/5.0 (compatible; BubbaHubListingCheck/1.0)']);$raw=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$final=(string)curl_getinfo($ch,CURLINFO_EFFECTIVE_URL);curl_close($ch);
+ if($raw===false||$http>=300||strlen((string)$raw)>1048576)return ['ok'=>false,'http'=>$http,'text'=>'','title'=>'','url'=>$final?:$url];
  $title='';if(preg_match('/<title[^>]*>(.*?)<\/title>/is',$raw,$m))$title=trim(html_entity_decode(strip_tags($m[1]),ENT_QUOTES|ENT_HTML5,'UTF-8'));
  $text=preg_replace('/\s+/',' ',strip_tags($raw));$text=trim(html_entity_decode((string)$text,ENT_QUOTES|ENT_HTML5,'UTF-8'));
  $signals=[];
@@ -201,12 +202,13 @@ try{
   $countySql=lc_has_county($db)?'a.county':'NULL';
   $sql="SELECT a.id,a.title,a.slug,a.status,a.description,a.booking_url,$countySql AS county,COALESCE(v.town,'') town,COALESCE(v.region,'') region,COALESCE(o.website,'') website FROM bh_activities a LEFT JOIN bh_venues v ON v.id=(SELECT vv.id FROM bh_venues vv WHERE vv.activity_id=a.id ORDER BY vv.id LIMIT 1) LEFT JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.status IN ('published','pending','draft')";
   $params=[];if($region){$sql.=" AND (v.region=? OR ".$countySql."=?)";$params=[$region,$region];}$sql.=" ORDER BY a.id";
+  $sql.=' LIMIT 20';
   $st=$db->prepare($sql);$st->execute($params);$activities=$st->fetchAll();
   foreach($activities as $a){
    $title=trim((string)$a['title']);$website=trim((string)$a['website']);$q='"'.$title.'"';if($region)$q.=' '. $region;if($query)$q.=' '.$query;
    $page=$website?lc_fetch($website):['ok'=>false,'signals'=>[],'text'=>'','title'=>''];
    $snapshot=$website?lc_snapshot($db,lc_norm_url($website),$page):['state'=>'unavailable'];
-   $sources=[];if($website)$sources[]=['label'=>'Organiser website','url'=>lc_safe_url($website)];
+   $sources=[];if($website&&lc_safe_url($website)!=='')$sources[]=['label'=>'Organiser website','url'=>lc_safe_url($website)];
    $changes=[];$score=0;
    if(!empty($page['ok'])&&!empty($page['signals'])){
     $changes[]=['field'=>'Possible website notice','before'=>'Requires review','after'=>implode(', ',$page['signals'])];
