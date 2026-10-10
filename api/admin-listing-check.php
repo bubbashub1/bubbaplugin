@@ -96,15 +96,23 @@ function lc_norm_url(string $url):string{
 // Listing Check deliberately uses no paid APIs or free-trial services.
 function lc_google(string $q,array $cfg):array {return [];}
 function lc_safe_url(string $url):string {
- $url=lc_norm_url($url);$p=parse_url($url);
- if(!is_array($p)||!in_array(strtolower((string)($p['scheme']??'')),['https','http'],true))return '';
- $host=strtolower((string)($p['host']??''));
+ $url=trim($url);
+ if($url===''||strlen($url)>500||preg_match('/[\\x00-\\x20\\x7f]/',$url))return '';
+ if(!preg_match('#^https?://#i',$url))$url='https://'.$url;
+ $p=parse_url($url);
+ if(!is_array($p)||!in_array(strtolower((string)($p['scheme']??'')),['http','https'],true))return '';
  if(isset($p['user'])||isset($p['pass'])||isset($p['port']))return '';
- if(!$host||$host==='localhost'||str_ends_with($host,'.local')||str_ends_with($host,'.internal')||filter_var($host,FILTER_VALIDATE_IP))return '';
- // Avoid fetching internal addresses resolved from attacker-controlled DNS.
- $ips=gethostbynamel($host);if(!$ips)return '';
- foreach($ips as $ip)if(!filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE))return '';
+ $host=strtolower((string)($p['host']??''));
+ if($host===''||$host==='localhost'||str_ends_with($host,'.local')||str_ends_with($host,'.internal')||filter_var($host,FILTER_VALIDATE_IP))return '';
+ if(!preg_match('/^[a-z0-9.-]+$/',$host)||!str_contains($host,'.'))return '';
  return $url;
+}
+function lc_public_ipv4(string $url):?array {
+ $host=(string)parse_url($url,PHP_URL_HOST);
+ $ips=gethostbynamel($host);
+ if(!$ips)return null;
+ foreach($ips as $ip)if(!filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4|FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE))return null;
+ return ['host'=>$host,'ip'=>$ips[0]];
 }
 function lc_public_sources(array $input):array {
  $urls=$input['sources']??[];
@@ -119,7 +127,8 @@ function lc_public_sources(array $input):array {
 }
 function lc_fetch(string $url):array{
  $url=lc_safe_url($url);if($url==='')return ['ok'=>false,'text'=>'','title'=>''];
- $ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>12,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_MAXREDIRS=>0,CURLOPT_PROTOCOLS=>CURLPROTO_HTTP|CURLPROTO_HTTPS,CURLOPT_MAXFILESIZE=>1048576,CURLOPT_USERAGENT=>'Mozilla/5.0 (compatible; BubbaHubListingCheck/1.0)']);$raw=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$final=(string)curl_getinfo($ch,CURLINFO_EFFECTIVE_URL);curl_close($ch);
+ $resolved=lc_public_ipv4($url);if(!$resolved)return ['ok'=>false,'text'=>'','title'=>''];
+ $ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_RESOLVE=>[$resolved['host'].':443:'.$resolved['ip'],$resolved['host'].':80:'.$resolved['ip']],CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>12,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_MAXREDIRS=>0,CURLOPT_PROTOCOLS=>CURLPROTO_HTTP|CURLPROTO_HTTPS,CURLOPT_MAXFILESIZE=>1048576,CURLOPT_USERAGENT=>'Mozilla/5.0 (compatible; BubbaHubListingCheck/1.0)']);$raw=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$final=(string)curl_getinfo($ch,CURLINFO_EFFECTIVE_URL);curl_close($ch);
  if($raw===false||$http>=300||strlen((string)$raw)>1048576)return ['ok'=>false,'http'=>$http,'text'=>'','title'=>'','url'=>$final?:$url];
  $title='';if(preg_match('/<title[^>]*>(.*?)<\/title>/is',$raw,$m))$title=trim(html_entity_decode(strip_tags($m[1]),ENT_QUOTES|ENT_HTML5,'UTF-8'));
  $text=preg_replace('/\s+/',' ',strip_tags($raw));$text=trim(html_entity_decode((string)$text,ENT_QUOTES|ENT_HTML5,'UTF-8'));
@@ -195,7 +204,7 @@ function lc_summary(array $rows):array{
  $s=['total'=>0,'changed'=>0,'missing'=>0,'new'=>0,'same'=>0];foreach($rows as $r){$s['total']++;if(isset($s[$r['status']]))$s[$r['status']]++;}return $s;
 }
 $input=json_decode((string)file_get_contents('php://input'),true);$action=(string)($input['action']??'results');
-if($action==='results'){ $rows=lc_results($db);lc_out(200,['ok'=>true,'results'=>$rows,'summary'=>lc_summary($rows)]); }
+if($action==='results'){ $rows=lc_results($db);lc_out(200,['ok'=>true,'results'=>$rows,'summary'=>lc_summary($rows),'processed'=>isset($activities)?count($activities):count($sourcesToCheck??[]),'next_offset'=>isset($activities)&&count($activities)===20?$offset+20:null]); }
 if($action==='dismiss'){ $id=(int)($input['id']??0);$q=$db->prepare("UPDATE bh_listing_check_results SET status='dismissed',reviewed_at=NOW() WHERE id=?");$q->execute([$id]);lc_out(200,['ok'=>true]); }
 if($action==='create_draft'){
  $id=(int)($input['id']??0);$q=$db->prepare("SELECT * FROM bh_listing_check_results WHERE id=?");$q->execute([$id]);$r=$q->fetch();if(!$r)lc_out(404,['ok'=>false,'error'=>'Listing Check result not found.']);if((int)($r['draft_activity_id']??0)>0)lc_out(200,['ok'=>true,'draft_activity_id'=>(int)$r['draft_activity_id']]);
@@ -215,9 +224,17 @@ try{
  $items=[];
  if($mode==='existing'){
   $countySql=lc_has_county($db)?'a.county':'NULL';
-  $sql="SELECT a.id,a.title,a.slug,a.status,a.description,a.booking_url,$countySql AS county,COALESCE(v.town,'') town,COALESCE(v.region,'') region,COALESCE(o.website,'') website FROM bh_activities a LEFT JOIN bh_venues v ON v.id=(SELECT vv.id FROM bh_venues vv WHERE vv.activity_id=a.id ORDER BY vv.id LIMIT 1) LEFT JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.status IN ('published','pending','draft')";
+  $hasLink=(bool)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activity_venues'")->fetchColumn();
+  $hasSessions=(bool)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_sessions'")->fetchColumn();
+  $venueCols=$db->query("SHOW COLUMNS FROM bh_venues")->fetchAll(PDO::FETCH_COLUMN);
+  if($hasLink)$venueJoin="LEFT JOIN bh_venues v ON v.id=(SELECT av.venue_id FROM bh_activity_venues av WHERE av.activity_id=a.id LIMIT 1)";
+  elseif($hasSessions)$venueJoin="LEFT JOIN bh_venues v ON v.id=(SELECT ss.venue_id FROM bh_sessions ss WHERE ss.activity_id=a.id AND ss.venue_id IS NOT NULL LIMIT 1)";
+  elseif(in_array('activity_id',$venueCols,true))$venueJoin="LEFT JOIN bh_venues v ON v.id=(SELECT vv.id FROM bh_venues vv WHERE vv.activity_id=a.id LIMIT 1)";
+  else $venueJoin="LEFT JOIN bh_venues v ON 1=0";
+  $sql="SELECT a.id,a.title,a.slug,a.status,a.description,a.booking_url,$countySql AS county,COALESCE(v.town,'') town,COALESCE(v.region,'') region,COALESCE(o.website,'') website FROM bh_activities a $venueJoin LEFT JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.status IN ('published','pending','draft')";
   $params=[];if($region){$sql.=" AND (v.region=? OR ".$countySql."=?)";$params=[$region,$region];}$sql.=" ORDER BY a.id";
-  $sql.=' LIMIT 20';
+  $offset=max(0,min(100000,(int)($input['offset']??0)));
+  $sql.=' LIMIT 20 OFFSET '.$offset;
   $st=$db->prepare($sql);$st->execute($params);$activities=$st->fetchAll();
   foreach($activities as $a){
    $title=trim((string)$a['title']);$website=trim((string)$a['website']);$q='"'.$title.'"';if($region)$q.=' '. $region;if($query)$q.=' '.$query;
