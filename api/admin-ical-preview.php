@@ -10,7 +10,7 @@ if($_SERVER['REQUEST_METHOD']!=='POST')fail(405,'POST required.');
 $input=json_decode(file_get_contents('php://input'),true);
 $url=trim((string)($input['url']??''));
 $p=parse_url($url);
-if(!$p||strtolower($p['scheme']??'')!=='https'||empty($p['host'])||isset($p['user'])||isset($p['pass'])||isset($p['fragment'])||isset($p['port']))fail(422,'Use a public HTTPS .ics feed URL.');
+if(!$p||strtolower($p['scheme']??'')!=='https'||empty($p['host'])||isset($p['user'])||isset($p['pass'])||isset($p['port']))fail(422,'Enter a public HTTPS booking page or calendar feed URL.');
 $host=$p['host'];
 if(!preg_match('/^[a-z0-9.-]+$/i',$host)||!str_contains($host,'.'))fail(422,'Invalid feed host.');
 $ips=gethostbynamel($host);
@@ -65,7 +65,7 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
    $found[$key]=['title'=>mb_substr($title,0,180),'day_of_week'=>(int)$dt->format('N'),'start_time'=>$start,'end_time'=>'','start_date'=>$dt->format('Y-m-d'),'end_date'=>$dt->format('Y-m-d'),'frequency'=>'once','url'=>$url,'uid'=>$key];
   }
  }
- if(!$found)fail(422,'Bookwhen did not include timetable events in the server response. This page may load sessions through JavaScript; a provider-specific data connector is required. No sessions were imported.');
+ if(!$found)fail(422,'Bookwhen loads this schedule dynamically. Automatic extraction from this public URL is not supported yet. Use Paste timetable below, or a public iCalendar feed.');
  echo json_encode(['ok'=>true,'data'=>array_slice(array_values($found),0,150),'skipped_recurring'=>0,'source'=>'bookwhen_public_page']);exit;
 }
 $lines=preg_split('/\r\n|\n|\r/',$body);$unfold=[];
