@@ -10,8 +10,11 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 function lc_out(int $code,array $data):never{http_response_code($code);echo json_encode($data,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);exit;}
 if(empty($_SESSION['bh_admin_authenticated']))lc_out(401,['ok'=>false,'error'=>'Admin login required.']);
+$earlyInput=json_decode((string)file_get_contents('php://input'),true)?:[];
+$earlyAction=(string)($earlyInput['action']??'results');
 try {
 $db=bh_mysql();
+if($earlyAction!=='scan_preview'){
 $db->exec("CREATE TABLE IF NOT EXISTS bh_listing_check_results (
  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
  activity_id BIGINT UNSIGNED NULL,
@@ -46,6 +49,7 @@ $db->exec("CREATE TABLE IF NOT EXISTS bh_listing_check_results (
  checked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
  INDEX idx_source_checked(source_key,checked_at)
  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+}
 } catch(Throwable $e) {
  lc_out(500,['ok'=>false,'error'=>'Listing Check database setup failed. Please check server logs.']);
 }
@@ -203,7 +207,7 @@ function lc_results(PDO $db):array{
 function lc_summary(array $rows):array{
  $s=['total'=>0,'changed'=>0,'missing'=>0,'new'=>0,'same'=>0];foreach($rows as $r){$s['total']++;if(isset($s[$r['status']]))$s[$r['status']]++;}return $s;
 }
-$input=json_decode((string)file_get_contents('php://input'),true);$action=(string)($input['action']??'results');
+$input=$earlyInput;$action=$earlyAction;
 if($action==='results'){ $rows=lc_results($db);lc_out(200,['ok'=>true,'results'=>$rows,'summary'=>lc_summary($rows),'processed'=>isset($activities)?count($activities):count($sourcesToCheck??[]),'next_offset'=>isset($activities)&&count($activities)===20?$offset+20:null]); }
 if($action==='dismiss'){ $id=(int)($input['id']??0);$q=$db->prepare("UPDATE bh_listing_check_results SET status='dismissed',reviewed_at=NOW() WHERE id=?");$q->execute([$id]);lc_out(200,['ok'=>true]); }
 if($action==='create_draft'){
