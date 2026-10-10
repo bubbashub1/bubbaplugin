@@ -1,7 +1,11 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__.'/db.php';
-session_start();
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_name('BUBBAHUB_ADMINSESSID');
+    session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off','httponly'=>true,'samesite'=>'Lax']);
+    session_start();
+}
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 function lc_out(int $code,array $data):never{http_response_code($code);echo json_encode($data,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);exit;}
@@ -33,7 +37,7 @@ $db->exec("CREATE TABLE IF NOT EXISTS bh_listing_check_results (
  INDEX idx_lc_identity(title,website_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 } catch(Throwable $e) {
- lc_out(500,['ok'=>false,'error'=>'Listing Check database setup failed: '.$e->getMessage()]);
+ lc_out(500,['ok'=>false,'error'=>'Listing Check database setup failed. Please check server logs.']);
 }
 
 function lc_config():array{
