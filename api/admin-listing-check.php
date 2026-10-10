@@ -36,6 +36,16 @@ $db->exec("CREATE TABLE IF NOT EXISTS bh_listing_check_results (
  INDEX idx_lc_status(status),
  INDEX idx_lc_identity(title,website_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+ $db->exec("CREATE TABLE IF NOT EXISTS bh_listing_check_snapshots (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ source_url VARCHAR(500) NOT NULL,
+ source_key CHAR(64) NOT NULL,
+ content_hash CHAR(64) NOT NULL,
+ page_title VARCHAR(500) NULL,
+ excerpt TEXT NULL,
+ checked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ INDEX idx_source_checked(source_key,checked_at)
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 } catch(Throwable $e) {
  lc_out(500,['ok'=>false,'error'=>'Listing Check database setup failed. Please check server logs.']);
 }
@@ -117,6 +127,31 @@ function lc_fetch(string $url):array{
  $social=[];if(preg_match_all("#https?://(?:www\\.)?(?:facebook\\.com|instagram\\.com|tiktok\\.com)/[^\\\"'\\s<>]+#i",$raw,$sm))$social=array_values(array_unique($sm[0]));
  return ['ok'=>true,'http'=>$http,'title'=>$title,'text'=>mb_substr($text,0,30000),'signals'=>$signals,'social'=>$social,'url'=>$final?:$url];
 }
+function lc_snapshot(PDO $db,string $url,array $page):array {
+ $key=hash('sha256',$url);
+ $q=$db->prepare("SELECT content_hash,checked_at FROM bh_listing_check_snapshots WHERE source_key=? ORDER BY id DESC LIMIT 1");
+ $q->execute([$key]);$previous=$q->fetch(PDO::FETCH_ASSOC)?:null;
+ if(empty($page['ok']))return ['state'=>'unavailable','previous'=>$previous];
+ $text=trim((string)($page['text']??''));
+ $hash=hash('sha256',preg_replace('/\\s+/u',' ',$text));
+ $changed=$previous&&$previous['content_hash']!==$hash;
+ $q=$db->prepare("INSERT INTO bh_listing_check_snapshots (source_url,source_key,content_hash,page_title,excerpt) VALUES (?,?,?,?,?)");
+ $q->execute([$url,$key,$hash,mb_substr((string)($page['title']??''),0,500),mb_substr($text,0,1500)]);
+ return ['state'=>$previous?($changed?'changed':'unchanged'):'baseline','previous'=>$previous];
+}
+function lc_existing_match(PDO $db,string $title,string $url):?array {
+ $host=(string)(parse_url($url,PHP_URL_HOST)??'');
+ $host=preg_replace('/^www\\./','',strtolower($host));
+ if($host!==''){
+  $q=$db->prepare("SELECT a.id,a.title,o.website FROM bh_activities a JOIN bh_organisers o ON o.id=a.organiser_id WHERE o.website LIKE ? LIMIT 50");
+  $q->execute(['%'.$host.'%']);
+  foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){
+   $actual=(string)(parse_url(lc_norm_url((string)$row['website']),PHP_URL_HOST)??'');
+   if(preg_replace('/^www\\./','',strtolower($actual))===$host)return $row;
+  }
+ }
+ return null;
+}
 function lc_match(array $items,string $title,string $website):?array{
  $nk=mb_strtolower(preg_replace('/[^a-z0-9]+/i','',html_entity_decode($title)));
  $domain=parse_url(lc_norm_url($website),PHP_URL_HOST);$domain=$domain?preg_replace('/^www\./','',strtolower($domain)):'';
@@ -170,15 +205,17 @@ try{
   foreach($activities as $a){
    $title=trim((string)$a['title']);$website=trim((string)$a['website']);$q='"'.$title.'"';if($region)$q.=' '. $region;if($query)$q.=' '.$query;
    $page=$website?lc_fetch($website):['ok'=>false,'signals'=>[],'text'=>'','title'=>''];
+   $snapshot=$website?lc_snapshot($db,lc_norm_url($website),$page):['state'=>'unavailable'];
    $sources=[];if($website)$sources[]=['label'=>'Organiser website','url'=>lc_safe_url($website)];
    $changes=[];$score=0;
    if(!empty($page['ok'])&&!empty($page['signals'])){
     $changes[]=['field'=>'Possible website notice','before'=>'Requires review','after'=>implode(', ',$page['signals'])];
     $score=30;
    }
+   if(($snapshot['state']??'')==='changed'){$changes[]=['field'=>'Website content','before'=>'Previous snapshot','after'=>'Page content changed since last successful check'];$score=max($score,65);}
    $stt=$changes?'changed':'same';
    $label=$changes?'Review website notice':'Not independently verified';
-   $websiteEvidence=empty($website)?'No website recorded.':(!empty($page['ok'])?'Website reachable; check any notices manually.':'Website unavailable or blocked; NOT evidence of closure.');
+   $websiteEvidence=empty($website)?'No website recorded.':(!empty($page['ok'])?'Website reachable; snapshot: '.($snapshot['state']??'unknown').'. Review differences manually.':'Website unavailable or blocked; NOT evidence of closure.');
    $socialEvidence='Social posts not independently searched; add public URLs to the source check.';
    $key=lc_key($title,$website);$existing=$db->prepare("SELECT id FROM bh_listing_check_results WHERE title=? AND website_key=? AND activity_id=? ORDER BY id DESC LIMIT 1");$existing->execute([$title,$key,$a['id']]);$rid=$existing->fetchColumn();
    $payload=[$a['id'],$title,$website,$key,$stt,$label,min(100,max(0,$score)),$a['town'],$a['region'],$websiteEvidence,$socialEvidence,json_encode($changes),json_encode(array_slice($sources,0,10)),$q];
@@ -194,9 +231,12 @@ try{
   foreach($sourcesToCheck as $url){
    $page=lc_fetch($url);
    if(empty($page['ok']))continue;
+   $snapshot=lc_snapshot($db,$url,$page);
    $title=trim((string)($page['title']??''));if($title==='')continue;
    if($query!==''&&!str_contains(mb_strtolower($title.' '.($page['text']??'')),mb_strtolower($query)))continue;
    $key=lc_key($title,$url);
+   $matched=lc_existing_match($db,$title,$url);
+   if($matched)continue;
    $dup=$db->prepare("SELECT id FROM bh_listing_check_results WHERE website_key=? AND title=? LIMIT 1");
    $dup->execute([$key,$title]);if($dup->fetchColumn())continue;
    $ins=$db->prepare("INSERT INTO bh_listing_check_results (title,website,website_key,status,label,confidence,town,region,website_evidence,social_evidence,sources_json,search_query) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
