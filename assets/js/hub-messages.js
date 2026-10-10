@@ -4,7 +4,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   try{
     const response=await fetch("/api/support.php",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});
-    const data=await response.json();
+    let data;
+    try{data=await response.json();}catch{throw Error("Messages are temporarily unavailable. Please try again shortly.");}
     if(!response.ok||!data.ok)throw Error(data.error==="login_required"?"Sign in to view your messages.":"Messages are temporarily unavailable.");
     const items=Array.isArray(data.questions)?data.questions:[];
     if(!items.length){root.innerHTML='<p>No messages yet. Your private questions and replies will appear here.</p>';return;}
