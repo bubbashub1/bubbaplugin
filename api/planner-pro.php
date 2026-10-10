@@ -13,7 +13,10 @@ function bh_pro_response(int $status, array $data): never {
 try {
     require __DIR__ . '/db.php';
     $db = bh_mysql();
-    if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_name('BUBBAHUBSESSID');
+        session_start();
+    }
 
     if (empty($_SESSION['bh_user_id'])) {
         bh_pro_response(401, ['ok'=>false,'error'=>'login_required']);
