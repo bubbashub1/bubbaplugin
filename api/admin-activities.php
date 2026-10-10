@@ -75,7 +75,12 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
  $free=!empty($input['price_free']);$unit=(string)($input['pricing_unit']??'per_session');
  if(!in_array($unit,['per_session','per_block','per_family'],true))$unit='per_session';
  if($free)$priceFrom=0.0;
- $optional=['age_min_months'=>$ageMin,'age_max_months'=>$ageMax,'price_free'=>$free?1:0,'price_per_family'=>!$free&&$unit==='per_family'?1:0,'price_per_session'=>!$free&&$unit==='per_session'?1:0,'pricing_unit'=>$unit];
+ $blockWeeks=null;
+ if(!$free&&$unit==='per_block'){$rawWeeks=$input['block_length_weeks']??null;if(!is_numeric($rawWeeks)||(int)$rawWeeks!=(float)$rawWeeks||(int)$rawWeeks<1||(int)$rawWeeks>104)bh_admin_response(422,['ok'=>false,'error'=>'Enter a block length between 1 and 104 weeks.']);$blockWeeks=(int)$rawWeeks;}
+ // Keep this field persistent for new and existing listings.
+ $blockCol=$db->query("SHOW COLUMNS FROM bh_activities LIKE 'block_length_weeks'")->fetch();
+ if(!$blockCol){$db->exec("ALTER TABLE bh_activities ADD COLUMN block_length_weeks SMALLINT UNSIGNED NULL DEFAULT NULL");}
+ $optional=['age_min_months'=>$ageMin,'age_max_months'=>$ageMax,'price_free'=>$free?1:0,'price_per_family'=>!$free&&$unit==='per_family'?1:0,'price_per_session'=>!$free&&$unit==='per_session'?1:0,'pricing_unit'=>$unit,'block_length_weeks'=>$blockWeeks];
  $cols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);
  $optional=array_intersect_key($optional,array_flip($cols));
  $db->beginTransaction();
