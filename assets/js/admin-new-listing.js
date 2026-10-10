@@ -86,7 +86,25 @@ if(venueSelect){
 }
 button.disabled=false;
 }catch(e){status.textContent=e.message;status.classList.add('is-error');return;}
-// Seven-step admin editor, matching the class leader's new listing workflow.
+// Schedule editor: preserves existing sessions and supports multiple new sessions.
+const scheduleSection=document.getElementById('adminListingSchedule'),scheduleRows=document.getElementById('adminScheduleRows');
+const addSession=(s={})=>{
+ const row=document.createElement('div');row.className='bh-card';row.style.cssText='padding:14px;margin:12px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px';
+ const fields=[['day_of_week','Day','select'],['start_time','Start time','time'],['end_time','End time','time'],['frequency','Frequency','select'],['start_date','First date (optional)','date'],['end_date','Last date (optional)','date'],['price','Session price (£)','number']];
+ for(const [name,label,type] of fields){
+  const wrap=document.createElement('label');wrap.textContent=label;
+  let control;
+  if(type==='select'){control=document.createElement('select');const options=name==='day_of_week'?[['','Choose day'],['1','Monday'],['2','Tuesday'],['3','Wednesday'],['4','Thursday'],['5','Friday'],['6','Saturday'],['7','Sunday']]:[['weekly','Weekly'],['fortnightly','Fortnightly'],['monthly','Monthly'],['once','One-off']];options.forEach(([value,text])=>control.add(new Option(text,value)));}
+  else{control=document.createElement('input');control.type=type;if(type==='number'){control.min='0';control.step='0.01';}}
+  control.dataset.sessionField=name;control.value=s[name]??(name==='frequency'?'weekly':'');wrap.appendChild(control);row.appendChild(wrap);
+ }
+ const term=document.createElement('label');const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.dataset.sessionField='term_time_only';checkbox.checked=String(s.term_time_only??'0')==='1';term.append(checkbox,document.createTextNode(' Term-time only'));row.appendChild(term);
+ const remove=document.createElement('button');remove.type='button';remove.className='button button-soft';remove.textContent='Remove session';remove.onclick=()=>row.remove();row.appendChild(remove);row.dataset.venueIndex=String(s.venue_index??0);scheduleRows.appendChild(row);
+};
+(original?.sessions||[]).forEach(addSession);
+document.getElementById('adminAddSession')?.addEventListener('click',()=>addSession());
+const collectSessions=()=>[...scheduleRows.children].map(row=>{const s={venue_index:Number(row.dataset.venueIndex||0)};row.querySelectorAll('[data-session-field]').forEach(el=>s[el.dataset.sessionField]=el.type==='checkbox'?(el.checked?1:0):el.value);return s;}).filter(s=>s.day_of_week||s.start_time);
+ // Seven-step admin editor, matching the class leader's new listing workflow.
 const steps=[['Basics',['title','organisation_name','description']],['About',['category','age_preset','age_range','price_from','pricing_unit','price_free']],['Extra',['booking_url','email','phone','website','status']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address']],['Photos',['image_path']],['Review',[]]];
 const stepNav=document.getElementById('adminListingSteps');
 const back=document.getElementById('adminListingBack'),next=document.getElementById('adminListingNext'),save=document.getElementById('adminListingSubmit');
@@ -96,7 +114,7 @@ const review=document.createElement('div');review.className='bh-review';review.h
 const renderStep=()=>{
  const current=steps[step];
  labels.forEach(label=>{const name=label.querySelector('[name]')?.name;label.hidden=step!==6&&!current[1].includes(name);label.style.display=label.hidden?'none':'';});
- review.hidden=step!==6;
+ review.hidden=step!==6;if(scheduleSection)scheduleSection.hidden=step!==3;
  if(step===6){review.replaceChildren();labels.forEach(label=>{const el=label.querySelector('[name]');if(!el)return;const line=document.createElement('p');const strong=document.createElement('strong');strong.textContent=label.textContent.trim()+': ';line.append(strong,document.createTextNode(el.value||'—'));review.append(line);});}
  back.hidden=step===0;next.hidden=step===6;save.hidden=step!==6;
  [...stepNav.children].forEach((b,i)=>{b.classList.toggle('active',i===step);b.setAttribute('aria-current',i===step?'step':'false');});
@@ -106,9 +124,9 @@ back.addEventListener('click',()=>{step=Math.max(0,step-1);renderStep();});
 next.addEventListener('click',()=>{const required=labels.filter(l=>!l.hidden).map(l=>l.querySelector('[required]')).filter(Boolean);const invalid=required.find(el=>!el.value.trim());if(invalid){invalid.reportValidity();return;}step=Math.min(6,step+1);renderStep();});
 renderStep();
 form.addEventListener('submit',async e=>{e.preventDefault();const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};delete body.age_preset;
-body.price_free=free.checked?1:0;body.price_per_family=!free.checked&&unit.value==='per_family'?1:0;body.price_per_session=!free.checked&&unit.value==='per_session'?1:0;body.pricing_unit=unit.value;body.id=original?.id||null;body.sessions=original?.sessions||[];body.venues=(original?.venues||[]).slice(1).map(v=>({...v,latitude:v.latitude??'',longitude:v.longitude??''}));body.accessibility=original?.accessibility||[];
+body.price_free=free.checked?1:0;body.price_per_family=!free.checked&&unit.value==='per_family'?1:0;body.price_per_session=!free.checked&&unit.value==='per_session'?1:0;body.pricing_unit=unit.value;body.id=original?.id||null;body.sessions=collectSessions();body.venues=(original?.venues||[]).slice(1).map(v=>({...v,latitude:v.latitude??'',longitude:v.longitude??''}));body.accessibility=original?.accessibility||[];
 body.latitude=original?.latitude??'';body.longitude=original?.longitude??'';body.sessions=body.sessions.map(s=>({...s,price:s.price??'',start_date:s.start_date??'',end_date:s.end_date??''}));
-button.disabled=true;status.textContent='Saving listing…';status.classList.remove('is-error');
+if(body.sessions.some(s=>!s.day_of_week||!s.start_time||s.end_time&&s.end_time<=s.start_time)){status.textContent='Each session needs a day and start time, and its end time must be later than its start time.';status.classList.add('is-error');step=3;renderStep();return;}button.disabled=true;status.textContent='Saving listing…';status.classList.remove('is-error');
 try{const r=await fetch('/api/admin-activities.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(body)});if(r.status===401){redirect();return;}const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not save listing.');status.textContent='✓ Listing saved successfully.';if(!original){original={id:d.id};location.href='/admin/admin-activities-add-listing.html?id='+encodeURIComponent(d.id);}
 }catch(err){status.textContent=err.message;status.classList.add('is-error');}finally{button.disabled=false;}});
 });
