@@ -31,7 +31,8 @@ if(categoryInput){
  const options=wrapper.querySelector('.bh-category-options');
  const selected=new Set(String(categoryInput.value||'').split(',').map(x=>x.trim()).filter(Boolean));
  const names=new Map();
- const addName=name=>{name=String(name||'').trim();if(name&&!names.has(name.toLowerCase()))names.set(name.toLowerCase(),name);};
+ const decodeName=value=>{const el=document.createElement('textarea');el.innerHTML=String(value||'');return el.value;};
+ const addName=name=>{name=decodeName(name).trim();if(name&&!names.has(name.toLowerCase()))names.set(name.toLowerCase(),name);};
  selected.forEach(addName);
  try{
   const response=await fetch('/api/admin-activities.php?action=categories',{credentials:'same-origin',cache:'no-store'});
