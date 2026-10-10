@@ -102,6 +102,10 @@ RewriteRule ^organiser/([^/]+)/?$ organiser.html?slug=$1 [B,L,QSA]
 RewriteRule ^wp-json/?$ index.php?rest_route=/ [L,QSA]
 RewriteRule ^wp-json/(.*)$ index.php?rest_route=/$1 [B,L,QSA]
 
+# WordPress content inside the custom site shell.
+RewriteRule ^promo/?$ wordpress-content.html [L,QSA]
+RewriteRule ^(?:pages|articles)/[a-z0-9-]+/?$ wordpress-content.html [L,QSA]
+
 # Clean activity URLs: /{activity-slug}/
 # IMPORTANT: never rewrite an existing physical file as an activity slug.
 RewriteCond %{REQUEST_FILENAME} !-f
