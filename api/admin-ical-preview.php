@@ -42,7 +42,30 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
    }
   }
  }
- if(!$found)fail(422,'This public Bookwhen page does not expose importable calendar events. Please use its public iCalendar feed, or add sessions manually.');
+
+ // Fallback for server-rendered Bookwhen timetable rows (no JSON-LD).
+ // Never infer dates from course names; require a real date heading/attribute.
+ if(!$found&&isset($dom)){
+  $xpath=new DOMXPath($dom);
+  $rows=$xpath->query('//tr | //li | //*[@data-date or @data-start or @data-start-time or @datetime]');
+  foreach($rows as $node){
+   if(count($found)>=150)break;
+   $date='';
+   foreach(['data-date','data-start','data-start-time','datetime'] as $attr){if($node->hasAttribute($attr)){$date=trim($node->getAttribute($attr));break;}}
+   if(!preg_match('/^\\d{4}-\\d{2}-\\d{2}/',$date))continue;
+   $text=trim(preg_replace('/\\s+/u',' ',$node->textContent));
+   if(!preg_match('/\\b(\\d{1,2})(?::(\\d{2}))?\\s*(am|pm)\\b/i',$text,$tm))continue;
+   $hour=(int)$tm[1]%12+(strtolower($tm[3])==='pm'?12:0);
+   $start=sprintf('%02d:%02d',$hour,(int)($tm[2]??0));
+   $title=preg_replace('/\\b\\d{1,2}(?::\\d{2})?\\s*(?:am|pm)\\b/i','',$text,1);
+   $title=trim($title);
+   if($title==='')continue;
+   try{$dt=new DateTimeImmutable(substr($date,0,10),new DateTimeZone('Europe/London'));}catch(Throwable $ignored){continue;}
+   $key=$dt->format('Y-m-d').'|'.$start.'|'.$title;
+   $found[$key]=['title'=>mb_substr($title,0,180),'day_of_week'=>(int)$dt->format('N'),'start_time'=>$start,'end_time'=>'','start_date'=>$dt->format('Y-m-d'),'end_date'=>$dt->format('Y-m-d'),'frequency'=>'once','url'=>$url,'uid'=>$key];
+  }
+ }
+ if(!$found)fail(422,'Bookwhen did not include timetable events in the server response. This page may load sessions through JavaScript; a provider-specific data connector is required. No sessions were imported.');
  echo json_encode(['ok'=>true,'data'=>array_slice(array_values($found),0,150),'skipped_recurring'=>0,'source'=>'bookwhen_public_page']);exit;
 }
 $lines=preg_split('/\r\n|\n|\r/',$body);$unfold=[];
