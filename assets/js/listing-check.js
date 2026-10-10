@@ -32,9 +32,9 @@ async function load(){
  try{const d=await request("results");results=d.results||[];renderSummary(d.summary||{});render()}catch(e){status(e.message,true)}
 }
 async function run(mode,button){
- busy(button,true);status(mode==="existing"?"Checking existing listings…":"Searching for new local listings…");
+ busy(button,true);status(mode==="existing"?"Checking existing listings…":"Checking supplied public pages…");
  $("#listingCheckResults").innerHTML='<div class="listing-check-empty"><strong>Checking sources…</strong><div class="listing-check-progress"><span></span></div></div>';
- try{const d=await request("scan",{mode,region:$("#checkRegion").value,query:$("#checkQuery").value});results=d.results||[];renderSummary(d.summary||{});render();status("✓ Listing Check complete. "+results.length+" findings ready to review.")}catch(e){status(e.message,true);load()}finally{busy(button,false)}
+ try{const d=await request("scan",{mode,region:$("#checkRegion").value,query:$("#checkQuery").value,sources:($("#checkSources")?.value||"").split(/\r?\n/).map(x=>x.trim()).filter(Boolean)});results=d.results||[];renderSummary(d.summary||{});render();status("✓ Listing Check complete. "+results.length+" findings ready to review.")}catch(e){status(e.message,true);load()}finally{busy(button,false)}
 }
 document.addEventListener("click",async e=>{
  const create=e.target.closest(".lc-create-draft");if(create){busy(create,true);try{const d=await request("create_draft",{id:create.dataset.id});status("✓ Draft created. Open Activities to review it.");await load()}catch(err){status(err.message,true)}finally{busy(create,false)}return}
