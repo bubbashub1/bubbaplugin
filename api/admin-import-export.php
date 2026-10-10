@@ -77,9 +77,9 @@ function discover_website_image(string $website): string {
   if($html===false||$http<200||$http>=400||stripos($type,'text/html')===false) return '';
   if(strlen($html)>2097152) $html=substr($html,0,2097152);
   $candidates=[];
-  if(preg_match_all('~<meta[^>]+(?:property|name)=["\\'](?:og:image|twitter:image|twitter:image:src)["\\'][^>]+content=["\\']([^"\\']+)["\\'][^>]*>~i',$html,$m)) $candidates=array_merge($candidates,$m[1]);
-  if(preg_match_all('~<meta[^>]+content=["\\']([^"\\']+)["\\'][^>]+(?:property|name)=["\\'](?:og:image|twitter:image|twitter:image:src)["\\'][^>]*>~i',$html,$m)) $candidates=array_merge($candidates,$m[1]);
-  if(preg_match_all('~<img[^>]+src=["\\']([^"\\']+)["\\'][^>]*>~i',$html,$m)) $candidates=array_merge($candidates,array_slice($m[1],0,20));
+  if(preg_match_all('~<meta[^>]+(?:property|name)=["\'](?:og:image|twitter:image|twitter:image:src)["\'][^>]+content=["\']([^"\']+)["\'][^>]*>~i',$html,$m)) $candidates=array_merge($candidates,$m[1]);
+  if(preg_match_all('~<meta[^>]+content=["\']([^"\']+)["\'][^>]+(?:property|name)=["\'](?:og:image|twitter:image|twitter:image:src)["\'][^>]*>~i',$html,$m)) $candidates=array_merge($candidates,$m[1]);
+  if(preg_match_all('~<img[^>]+src=["\']([^"\']+)["\'][^>]*>~i',$html,$m)) $candidates=array_merge($candidates,array_slice($m[1],0,20));
   $base=$final!==''?$final:$website;
   foreach($candidates as $candidate){
     $candidate=html_entity_decode(trim($candidate),ENT_QUOTES|ENT_HTML5,'UTF-8'); if($candidate===''||str_starts_with($candidate,'data:')) continue;
