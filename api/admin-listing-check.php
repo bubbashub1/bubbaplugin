@@ -40,6 +40,20 @@ $db->exec("CREATE TABLE IF NOT EXISTS bh_listing_check_results (
  lc_out(500,['ok'=>false,'error'=>'Listing Check database setup failed. Please check server logs.']);
 }
 
+function lc_has_county(PDO $db): bool {
+ static $has=null;
+ if($has===null){
+  $q=$db->query("SHOW COLUMNS FROM bh_activities LIKE 'county'");
+  $has=(bool)$q->fetch();
+ }
+ return $has;
+}
+function lc_insert_activity(PDO $db,array $values,?string $county): void {
+ $columns='organiser_id,title,slug,description';$placeholders='?,?,?,?';
+ if(lc_has_county($db)){$columns.=',county';$placeholders.=',?';$values[]=$county;}
+ $db->prepare("INSERT INTO bh_activities (".$columns.",status) VALUES (".$placeholders.",'draft')")->execute($values);
+}
+
 function lc_config():array{
  $wpConfigs=array_filter([
   dirname(__DIR__).'/wp-config.php',
@@ -127,9 +141,8 @@ if($action==='create_draft'){
  $org=(int)$db->lastInsertId();
  $slug=trim((string)$r['title']);$slug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$slug),'-'));if($slug==='')$slug='listing-check-'.$id;$base=$slug;$n=2;while(true){$x=$db->prepare("SELECT COUNT(*) FROM bh_activities WHERE slug=?");$x->execute([$slug]);if(!(int)$x->fetchColumn())break;$slug=$base.'-'.$n++;}
  $desc='Discovered by Bubba Hub Listing Check. Review the external source before publishing.';
- $ins=$db->prepare("INSERT INTO bh_activities (organiser_id,title,slug,description,county,status) VALUES (?,?,?,?,?,'draft')");
  $county=in_array($r['region'],['Plymouth','Torbay'],true)?$r['region']:(str_contains(strtolower((string)$r['region']),'cornwall')?'Cornwall':(str_contains(strtolower((string)$r['region']),'devon')?'Devon':null));
- $ins->execute([$org,$r['title'],$slug,$desc,$county]);$aid=(int)$db->lastInsertId();
+ lc_insert_activity($db,[$org,$r['title'],$slug,$desc],$county);$aid=(int)$db->lastInsertId();
  $db->prepare("UPDATE bh_listing_check_results SET draft_activity_id=?,updated_at=NOW() WHERE id=?")->execute([$aid,$id]);lc_out(200,['ok'=>true,'draft_activity_id'=>$aid]);
 }
 if($action!=='scan')lc_out(400,['ok'=>false,'error'=>'Unknown action.']);
@@ -137,8 +150,9 @@ $mode=(string)($input['mode']??'existing');$region=trim((string)($input['region'
 try{
  $items=[];
  if($mode==='existing'){
-  $sql="SELECT a.id,a.title,a.slug,a.status,a.description,a.booking_url,a.county,COALESCE(v.town,'') town,COALESCE(v.region,'') region,COALESCE(o.website,'') website FROM bh_activities a LEFT JOIN bh_venues v ON v.id=(SELECT vv.id FROM bh_venues vv WHERE vv.activity_id=a.id ORDER BY vv.id LIMIT 1) LEFT JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.status IN ('published','pending','draft')";
-  $params=[];if($region){$sql.=" AND (v.region=? OR a.county=?)";$params=[$region,$region];}$sql.=" ORDER BY a.id";
+  $countySql=lc_has_county($db)?'a.county':'NULL';
+  $sql="SELECT a.id,a.title,a.slug,a.status,a.description,a.booking_url,$countySql AS county,COALESCE(v.town,'') town,COALESCE(v.region,'') region,COALESCE(o.website,'') website FROM bh_activities a LEFT JOIN bh_venues v ON v.id=(SELECT vv.id FROM bh_venues vv WHERE vv.activity_id=a.id ORDER BY vv.id LIMIT 1) LEFT JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.status IN ('published','pending','draft')";
+  $params=[];if($region){$sql.=" AND (v.region=? OR ".$countySql."=?)";$params=[$region,$region];}$sql.=" ORDER BY a.id";
   $st=$db->prepare($sql);$st->execute($params);$activities=$st->fetchAll();
   foreach($activities as $a){
    $title=trim((string)$a['title']);$website=trim((string)$a['website']);$q='"'.$title.'"';if($region)$q.=' '. $region;if($query)$q.=' '.$query;
@@ -172,7 +186,7 @@ try{
     $db->prepare("INSERT INTO bh_organisers (organisation_name,slug,description,website,status) VALUES (?,?,?,?, 'draft')")->execute([$orgName,$orgSlug,'Discovered by Listing Check. Assign/claim the real organiser before publishing.',$url]);$org=(int)$db->lastInsertId();
     $slug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',(string)$title2),'-'));if($slug==='')$slug='listing-check-'.$newId;$base=$slug;$n=2;while(true){$x=$db->prepare("SELECT COUNT(*) FROM bh_activities WHERE slug=?");$x->execute([$slug]);if(!(int)$x->fetchColumn())break;$slug=$base.'-'.$n++;}
     $county=in_array($region,['Plymouth','Torbay'],true)?$region:(str_contains(strtolower($region),'cornwall')?'Cornwall':(str_contains(strtolower($region),'devon')?'Devon':null));
-    $db->prepare("INSERT INTO bh_activities (organiser_id,title,slug,description,county,status) VALUES (?,?,?,?,?,'draft')")->execute([$org,$title2,$slug,'Discovered by Bubba Hub Listing Check. Review the external source before publishing.',$county]);$draftId=(int)$db->lastInsertId();
+    lc_insert_activity($db,[$org,$title2,$slug,'Discovered by Bubba Hub Listing Check. Review the external source before publishing.'],$county);$draftId=(int)$db->lastInsertId();
     $db->prepare("UPDATE bh_listing_check_results SET draft_activity_id=? WHERE id=?")->execute([$draftId,$newId]);
    }
   }
