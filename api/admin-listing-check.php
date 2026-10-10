@@ -231,16 +231,16 @@ try{
   elseif($hasSessions)$venueJoin="LEFT JOIN bh_venues v ON v.id=(SELECT ss.venue_id FROM bh_sessions ss WHERE ss.activity_id=a.id AND ss.venue_id IS NOT NULL LIMIT 1)";
   elseif(in_array('activity_id',$venueCols,true))$venueJoin="LEFT JOIN bh_venues v ON v.id=(SELECT vv.id FROM bh_venues vv WHERE vv.activity_id=a.id LIMIT 1)";
   else $venueJoin="LEFT JOIN bh_venues v ON 1=0";
-  $sql="SELECT a.id,a.title,a.slug,a.status,a.description,a.booking_url,$countySql AS county,COALESCE(v.town,'') town,COALESCE(v.region,'') region,COALESCE(o.website,'') website FROM bh_activities a $venueJoin LEFT JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.status IN ('published','pending','draft')";
+  $sql="SELECT a.id,a.title,a.slug,a.status,a.description,a.booking_url,$countySql AS county,COALESCE(v.town,'') town,COALESCE(v.region,'') region,COALESCE(a.website,'') activity_website,COALESCE(o.website,'') organiser_website,COALESCE(v.website,'') venue_website FROM bh_activities a $venueJoin LEFT JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.status IN ('published','pending','draft')";
   $params=[];if($region){$sql.=" AND (v.region=?".($countySql==='NULL'?'':" OR ".$countySql."=?").")";$params=$countySql==='NULL'?[$region]:[$region,$region];}$sql.=" ORDER BY a.id";
   $offset=max(0,min(100000,(int)($input['offset']??0)));
   $sql.=' LIMIT 20 OFFSET '.$offset;
   $st=$db->prepare($sql);$st->execute($params);$activities=$st->fetchAll();
   foreach($activities as $a){
-   $title=trim((string)$a['title']);$website=trim((string)$a['website']);$q='"'.$title.'"';if($region)$q.=' '. $region;if($query)$q.=' '.$query;
+   $title=trim((string)$a['title']);$website='';$sourceLabel='';foreach(['activity_website'=>'Activity website','organiser_website'=>'Organiser website','venue_website'=>'Venue website'] as $field=>$label){$candidate=trim((string)($a[$field]??''));if($candidate!==''&&lc_safe_url($candidate)!==''){$website=$candidate;$sourceLabel=$label;break;}}$q='"'.$title.'"';if($region)$q.=' '. $region;if($query)$q.=' '.$query;
    $page=$website?lc_fetch($website):['ok'=>false,'signals'=>[],'text'=>'','title'=>''];
    $snapshot=$website?lc_snapshot($db,lc_norm_url($website),$page):['state'=>'unavailable'];
-   $sources=[];if($website&&lc_safe_url($website)!=='')$sources[]=['label'=>'Organiser website','url'=>lc_safe_url($website)];
+   $sources=[];foreach(['activity_website'=>'Activity website','organiser_website'=>'Organiser website','venue_website'=>'Venue website'] as $field=>$label){$candidate=trim((string)($a[$field]??''));if($candidate!==''&&lc_safe_url($candidate)!=='')$sources[]=['label'=>$label,'url'=>lc_safe_url($candidate)];}
    $changes=[];$score=0;
    if(!empty($page['ok'])&&!empty($page['signals'])){
     $changes[]=['field'=>'Possible website notice','before'=>'Requires review','after'=>implode(', ',$page['signals'])];
@@ -249,7 +249,7 @@ try{
    if(($snapshot['state']??'')==='changed'){$changes[]=['field'=>'Website content','before'=>'Previous snapshot','after'=>'Page content changed since last successful check'];$score=max($score,65);}
    $stt=$changes?'changed':'same';
    $label=$changes?'Review website notice':'Not independently verified';
-   $websiteEvidence=empty($website)?'No website recorded.':(!empty($page['ok'])?'Website reachable; snapshot: '.($snapshot['state']??'unknown').'. Review differences manually.':'Website unavailable or blocked; NOT evidence of closure.');
+   $websiteEvidence=empty($website)?'No website recorded.':(!empty($page['ok'])?$sourceLabel.' reachable; snapshot: '.($snapshot['state']??'unknown').'. Review differences manually.':'Website unavailable or blocked; NOT evidence of closure.');
    $socialEvidence='Social posts not independently searched; add public URLs to the source check.';
    $key=lc_key($title,$website);$existing=$db->prepare("SELECT id FROM bh_listing_check_results WHERE title=? AND website_key=? AND activity_id=? ORDER BY id DESC LIMIT 1");$existing->execute([$title,$key,$a['id']]);$rid=$existing->fetchColumn();
    $payload=[$a['id'],$title,$website,$key,$stt,$label,min(100,max(0,$score)),$a['town'],$a['region'],$websiteEvidence,$socialEvidence,json_encode($changes),json_encode(array_slice($sources,0,10)),$q];
