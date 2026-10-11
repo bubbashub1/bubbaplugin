@@ -14,6 +14,12 @@ const BH_DUMMY_HASH = '$2y$10$abcdefghijklmnopqrstuuabcdefghijklmnopqrstuvwxyzAB
  * Generic helpers
  * ---------------------------------------------------------------------- */
 
+function bh_staging_skip_email_verification(): bool {
+    // Staging-only: require both the expected hostname and explicitly configured base URL.
+    return strtolower((string)($_SERVER['HTTP_HOST'] ?? '')) === 'staging.bubbahub.co.uk'
+        && getenv('BUBBAHUB_BASE_URL') === 'https://staging.bubbahub.co.uk';
+}
+
 function bh_auth_response(int $status, array $data): void {
     http_response_code($status);
     echo json_encode($data, JSON_UNESCAPED_SLASHES);
@@ -644,7 +650,7 @@ try {
         $stmt->execute([$userId]);
         $user=$stmt->fetch(PDO::FETCH_ASSOC);
         if (!$user || $user['status']!=='active') bh_auth_response(403,['ok'=>false,'message'=>'Your account is not active.']);
-        if (empty($user['email_verified_at'])) bh_auth_response(403,['ok'=>false,'message'=>'Verify your email before becoming a class leader.']);
+        if (empty($user['email_verified_at']) && !bh_staging_skip_email_verification()) bh_auth_response(403,['ok'=>false,'message'=>'Verify your email before becoming a class leader.']);
         if ($user['role']==='leader') bh_auth_response(409,['ok'=>false,'message'=>'You already have a class leader account.']);
         if ($user['role']!=='family') bh_auth_response(403,['ok'=>false,'message'=>'This account cannot be upgraded here.']);
         $name=trim((string)($body['organisation_name']??''));
@@ -699,12 +705,15 @@ try {
         try {
             bh_ensure_email_verification_schema($db);
             $db->beginTransaction();
-            $stmt = $db->prepare("INSERT INTO bh_users (email,password_hash,role,status,email_verified_at) VALUES (?,?, 'leader','active',NULL)");
+            $stagingSkipVerification = bh_staging_skip_email_verification();
+            $stmt = $db->prepare("INSERT INTO bh_users (email,password_hash,role,status,email_verified_at) VALUES (?,?, 'leader','active',".($stagingSkipVerification ? "NOW()" : "NULL").")");
             $stmt->execute([$email, password_hash($password, PASSWORD_DEFAULT)]);
             $userId = (int)$db->lastInsertId();
             $organiserId = bh_create_leader_organiser($db, $userId, $email, $organisation, $phone, $website);
-            $rawToken=bin2hex(random_bytes(32));
-            $db->prepare("INSERT INTO bh_email_verifications (user_id,token_hash,expires_at) VALUES (?,?,DATE_ADD(NOW(),INTERVAL 24 HOUR))")->execute([$userId,hash('sha256',$rawToken)]);
+            if (!$stagingSkipVerification) {
+                $rawToken=bin2hex(random_bytes(32));
+                $db->prepare("INSERT INTO bh_email_verifications (user_id,token_hash,expires_at) VALUES (?,?,DATE_ADD(NOW(),INTERVAL 24 HOUR))")->execute([$userId,hash('sha256',$rawToken)]);
+            }
             $db->commit();
         } catch (Throwable $e) {
             if ($db->inTransaction()) $db->rollBack();
@@ -713,6 +722,17 @@ try {
             }
             error_log('Bubba Hub leader registration failed: '.$e->getMessage());
             bh_auth_response(500, ['ok'=>false,'error'=>'leader_registration_error','message'=>'We could not create your leader account just yet. Please try again.']);
+        }
+
+        if ($stagingSkipVerification) {
+            bh_auth_response(201, [
+                'ok'=>true, 'authenticated'=>false, 'leader_authenticated'=>false,
+                'pending_review'=>true, 'organiser_id'=>$organiserId,
+                'user'=>['id'=>$userId,'email'=>$email,'role'=>'leader','status'=>'active'],
+                'csrf'=>$_SESSION['bh_csrf'],
+                'message'=>'Staging test account created. You can sign in without email verification.',
+                'verification_email_sent'=>true
+            ]);
         }
 
         /* Do not authenticate a leader until their email is verified. */
@@ -776,7 +796,7 @@ try {
             bh_auth_response(401, ['ok' => false, 'error' => 'invalid_login', 'message' => 'That email or password is not correct.']);
         }
 
-        if ($authContext === 'leader' && (($user['role'] ?? '') !== 'leader' || empty($user['email_verified_at']))) {
+        if ($authContext === 'leader' && (($user['role'] ?? '') !== 'leader' || (empty($user['email_verified_at']) && !bh_staging_skip_email_verification()))) {
             bh_auth_response(403, ['ok'=>false,'error'=>'email_not_verified','message'=>'Please verify your email address using the link we sent before signing in as a leader.']);
         }
 
