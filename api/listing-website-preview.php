@@ -24,5 +24,20 @@ $title=$meta('og:title');if(!$title){$nodes=$doc->getElementsByTagName('title');
 $description=$meta('og:description')?:$meta('description');
 if(!$description){$nodes=$xp->query('//main//p|//article//p');foreach($nodes?:[] as $node){$v=trim(preg_replace('/\\s+/u',' ',$node->textContent));if(mb_strlen($v)>70){$description=$v;break;}}}
 $title=mb_substr(strip_tags($title),0,160);$description=mb_substr(strip_tags($description),0,1200);
-$keywords=$meta('keywords');$tags=array_slice(array_values(array_unique(array_filter(array_map('trim',explode(',',$keywords))))),0,12);
-echo json_encode(['ok'=>true,'title'=>$title,'description'=>$description,'tags'=>$tags,'source'=>$url,'message'=>'Review and edit all suggested information before saving.'],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+$keywords=$meta('keywords');
+$search=mb_strtolower($title.' '.$description.' '.$keywords);
+$taxonomy=[
+ 'Baby classes'=>['baby class','baby massage','baby yoga','newborn','baby sensory'],
+ 'Toddler groups'=>['toddler','stay and play','playgroup','pre-school','preschool'],
+ 'Music & movement'=>['music','singing','dance','movement','rhythm'],
+ 'Swimming'=>['swim','aquatic','pool','water confidence'],
+ 'Soft play'=>['soft play','indoor play','play centre'],
+ 'Family activities'=>['family','children','kids','parent and child'],
+];
+$categories=[];
+foreach($taxonomy as $category=>$phrases){foreach($phrases as $phrase){if(mb_strpos($search,$phrase)!==false){$categories[]=$category;break;}}}
+$tagVocabulary=['baby massage','baby yoga','baby sensory','newborn','bonding','toddler','playgroup','stay and play','music','singing','dance','swimming','water confidence','soft play','outdoor','nature','arts and crafts','sensory','pregnancy','antenatal','postnatal','breastfeeding','parent support','siblings','storytime','library','free'];
+$detected=[];foreach($tagVocabulary as $term){if(mb_strpos($search,$term)!==false)$detected[]=$term;}
+$tags=array_slice(array_values(array_unique(array_filter(array_map('trim',explode(',',$keywords))))),0,12);
+$tags=array_slice(array_values(array_unique(array_merge($detected,$tags))),0,12);
+echo json_encode(['ok'=>true,'title'=>$title,'description'=>$description,'categories'=>$categories,'tags'=>$tags,'source'=>$url,'message'=>'Review and edit all suggested information before saving.'],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
