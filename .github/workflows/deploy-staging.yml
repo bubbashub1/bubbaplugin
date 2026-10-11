@@ -1,0 +1,61 @@
+name: Deploy Bubba Hub Staging
+
+on:
+  push:
+    branches: [staging-site]
+  workflow_dispatch:
+
+concurrency:
+  group: eweball-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EWEBALL_SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/eweball_key"
+          chmod 600 "$RUNNER_TEMP/eweball_key"
+          ssh-keygen -y -f "$RUNNER_TEMP/eweball_key" >/dev/null
+
+      - name: Validate staging target and upload
+        env:
+          SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
+          SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+        run: |
+          set -euo pipefail
+          : "${SSH_HOST:?Missing SSH host}"
+          : "${SSH_USERNAME:?Missing SSH username}"
+          : "${SSH_PORT:?Missing SSH port}"
+          SSH=(ssh -p "$SSH_PORT" -i "$RUNNER_TEMP/eweball_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new)
+          SCP=(scp -P "$SSH_PORT" -i "$RUNNER_TEMP/eweball_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new)
+          REMOTE="$SSH_USERNAME@$SSH_HOST"
+          "${SSH[@]}" "$REMOTE" 'set -eu; test -d "$HOME/staging_html"; test -d "$HOME/public_html"; test "$(realpath "$HOME/staging_html")" != "$(realpath "$HOME/public_html")"; test -w "$HOME/staging_html"'
+          tar --exclude='./.git' --exclude='./.github' --exclude='./.env' --exclude='./.env.*' --exclude='./github-deploy-config.php' --exclude='./README.md' -czf "$RUNNER_TEMP/staging.tar.gz" .
+          "${SCP[@]}" "$RUNNER_TEMP/staging.tar.gz" "$REMOTE:staging-deploy-${GITHUB_RUN_ID}.tar.gz"
+          "${SSH[@]}" "$REMOTE" "DEPLOY_FILE=staging-deploy-${GITHUB_RUN_ID}.tar.gz sh -s" <<'REMOTE_SCRIPT'
+          set -eu
+          target="$HOME/staging_html"
+          archive="$HOME/$DEPLOY_FILE"
+          trap 'rm -f "$archive"' EXIT
+          test -d "$target"
+          test -w "$target"
+          test "$(realpath "$target")" != "$(realpath "$HOME/public_html")"
+          tar -tzf "$archive" >/dev/null
+          tar -xzf "$archive" -C "$target"
+          REMOTE_SCRIPT
+
+      - name: Verify staging homepage
+        run: |
+          set -euo pipefail
+          code=$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time 30 https://staging.bubbahub.co.uk/)
+          echo "Staging homepage HTTP $code"
+          test "$code" = 200
