@@ -13,7 +13,7 @@ $ips=gethostbynamel($host);
 if(!$ips)fail('Website could not be resolved.');
 foreach($ips as $ip){if(!filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE))fail('Private addresses are not supported.');}
 $ch=curl_init($url);
-curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>12,CURLOPT_MAXREDIRS=>0,CURLOPT_USERAGENT=>'BubbaHubListingPreview/1.0',CURLOPT_HTTPHEADER=>['Accept: text/html'],CURLOPT_PROTOCOLS=>CURLPROTO_HTTP|CURLPROTO_HTTPS,CURLOPT_MAXFILESIZE=>1048576]);
+curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>12,CURLOPT_MAXREDIRS=>0,CURLOPT_USERAGENT=>'BubbaHubListingPreview/1.0',CURLOPT_HTTPHEADER=>['Accept: text/html'],CURLOPT_PROTOCOLS=>CURLPROTO_HTTP|CURLPROTO_HTTPS,CURLOPT_MAXFILESIZE=>1048576,CURLOPT_RESOLVE=>[$host.':'.(strtolower((string)parse_url($url,PHP_URL_SCHEME))==='https'?'443':'80').':'.$ips[0]]]);
 $html=curl_exec($ch);$status=(int)curl_getinfo($ch,CURLINFO_RESPONSE_CODE);$type=(string)curl_getinfo($ch,CURLINFO_CONTENT_TYPE);curl_close($ch);
 if(!is_string($html)||$status>=300||$status<200||stripos($type,'text/html')===false)fail('This website could not be read. Try a direct class page or enter details manually.');
 $html=substr($html,0,1048576);
