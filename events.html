@@ -15,7 +15,7 @@
       <h1>Events &amp; sessions</h1>
       <p>See upcoming family sessions pulled from the Bubba Hub activity directory.</p>
     </div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap"><a class="button button-primary" href="/event-submit.html">Post an event</a><a class="button button-soft" href="directory.html">Find activities</a></div>
+    <a class="button button-primary" href="directory.html">Find activities</a>
   </section>
 
   <section class="section events-page-section">
@@ -38,7 +38,7 @@
       <div><span class="eyebrow">Next 90 days</span><h2 id="eventsTitle">Upcoming</h2></div>
       <span class="status" id="eventsCount"></span>
     </div>
-    <div id="communityEvents" class="events-grid" aria-live="polite"></div><div id="eventsList" class="events-grid" aria-live="polite"><div class="listing-loading"><p>Loading sessions…</p></div></div>
+    <div id="eventsList" class="events-grid" aria-live="polite"><div class="listing-loading"><p>Loading sessions…</p></div></div>
   </section>
 </main>
 <footer class="site-footer"><div class="site-footer-grid"><div class="site-footer-brand"><a href="index.html" class="site-footer-logo" aria-label="Bubba Hub home"><img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><div class="site-footer-brand-copy"><a href="index.html" class="site-footer-title">Bubba Hub</a><p>Find, plan &amp; book family activities across Devon &amp; Cornwall.</p></div></div><div class="site-footer-column"><h2>Main menu</h2><nav class="site-footer-links" aria-label="Footer main menu"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">Account</a></nav></div><div class="site-footer-column"><h2>Explore &amp; tools</h2><nav class="site-footer-links" aria-label="Footer explore and tools"><a href="events.html">Events</a><a href="venues.html">Venues</a><a href="planner.html">Planner</a><a href="/calendar.html">Calendar</a></nav></div><div class="site-footer-column"><h2>Legal &amp; contact</h2><nav class="site-footer-links" aria-label="Footer legal and contact"><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Conditions</a><a href="mailto:contact@bubbahub.co.uk">Contact Bubba Hub</a></nav></div></div><div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div></footer>
@@ -105,26 +105,6 @@ document.addEventListener("DOMContentLoaded",async()=>{
     [day,town,category].forEach(el=>el.addEventListener("change",render));
     render();
   }catch(e){list.innerHTML='<div class="empty-state"><h3>Events unavailable</h3><p>'+esc(e.message||"Could not load sessions.")+'</p><a class="button button-primary" href="directory.html">Find activities</a></div>'}
-  try {
-    const response=await fetch('/api/events.php?action=list',{credentials:'same-origin'});
-    const data=await response.json();
-    if(data.ok && Array.isArray(data.events) && data.events.length){
-      const container=document.getElementById('communityEvents');
-      const heading=document.createElement('h2');heading.textContent='Community events';container.appendChild(heading);
-      for(const event of data.events){
-        const card=document.createElement('article');card.className='event-card';
-        const body=document.createElement('div');body.className='event-card-body';
-        const h=document.createElement('h3');h.textContent=event.title;body.appendChild(h);
-        for(const line of [event.starts_at,event.location,event.description]){
-          const p=document.createElement('p');p.textContent=line||'';body.appendChild(p);
-        }
-        if(event.booking_mode==='external' && /^https?:\\/\\//i.test(event.booking_url||'')){
-          const link=document.createElement('a');link.className='button button-soft';link.textContent='Book event';link.href=event.booking_url;link.rel='noopener noreferrer';link.target='_blank';body.appendChild(link);
-        }
-        card.appendChild(body);container.appendChild(card);
-      }
-    }
-  } catch(error) { console.warn('Community events unavailable',error); }
   const logout=document.getElementById("siteLogout");
   if(logout)logout.addEventListener("click",async()=>{try{await fetch("api/auth.php?action=logout",{credentials:"same-origin"});}finally{location.href="index.html"}});
 });
