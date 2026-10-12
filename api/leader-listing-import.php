@@ -9,6 +9,12 @@ if(empty($_SESSION['bh_user_id']))fail(401,'Sign in as a class leader first');
 require_once __DIR__.'/db.php';
 $db=bh_mysql();$q=$db->prepare("SELECT role,status FROM bh_users WHERE id=?");$q->execute([(int)$_SESSION['bh_user_id']]);$user=$q->fetch();
 if(!$user||$user['role']!=='leader'||$user['status']!=='active')fail(403,'Class leader account required');
+$orgQuery=$db->prepare("SELECT * FROM bh_organisers WHERE user_id=? LIMIT 1");
+try{$orgQuery->execute([(int)$_SESSION['bh_user_id']]);$org=$orgQuery->fetch(PDO::FETCH_ASSOC);}catch(Throwable $e){fail(503,'Organiser lookup unavailable');}
+if(!$org)fail(403,'Linked organiser account required');
+$isPro=false;
+foreach(['plan','membership_plan','membership_tier','subscription_plan','tier'] as $column){if(isset($org[$column])&&in_array(strtolower(trim((string)$org[$column])),['pro','premium','ultimate'],true)){$isPro=true;break;}}
+try{$subscription=$db->prepare("SELECT COUNT(*) FROM bh_user_subscriptions WHERE user_id=? AND plan='leader_pro' AND status IN ('active','trialing') AND (expires_at IS NULL OR expires_at>UTC_TIMESTAMP())");$subscription->execute([(int)$_SESSION['bh_user_id']]);if((int)$subscription->fetchColumn()>0)$isPro=true;}catch(Throwable $ignored){}
 $input=json_decode((string)file_get_contents('php://input'),true);
 $url=trim((string)($input['url']??''));$p=parse_url($url);
 if(!$p||strtolower((string)($p['scheme']??''))!=='https'||empty($p['host'])||isset($p['user'])||isset($p['pass'])||isset($p['port'])||strlen($url)>1000)fail(422,'Enter a public HTTPS URL');
@@ -22,6 +28,27 @@ curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>fals
 $body=curl_exec($ch);$code=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);
 if(!is_string($body)||strlen($body)>1048576||$code!==200)fail(422,'Could not read this public page');
 $mode=(string)($input['mode']??'website');
+$listingId=(int)($input['listing_id']??0);
+if(!in_array($mode,['website','schedule'],true))fail(422,'Unsupported import type');
+if($listingId<=0)fail(422,'Select an existing listing to use the monthly import allowance');
+$ownership=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND organiser_id=? LIMIT 1");
+$ownership->execute([$listingId,(int)$org['id']]);
+if(!$ownership->fetchColumn())fail(403,'This listing does not belong to your organisation');
+if(!$isPro){
+ try{$db->exec("CREATE TABLE IF NOT EXISTS bh_listing_import_usage (listing_id BIGINT UNSIGNED NOT NULL, import_type VARCHAR(16) NOT NULL, month_key CHAR(7) NOT NULL, used INT UNSIGNED NOT NULL DEFAULT 0, PRIMARY KEY (listing_id,import_type,month_key)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");}
+ catch(Throwable $e){fail(503,'Import quota service unavailable');}
+ $limit=$mode==='website'?1:3;$month=gmdate('Y-m');
+ $db->beginTransaction();
+ try{
+  $db->prepare("INSERT IGNORE INTO bh_listing_import_usage (listing_id,import_type,month_key,used) VALUES (?,?,?,0)")->execute([$listingId,$mode,$month]);
+  $usage=$db->prepare("SELECT used FROM bh_listing_import_usage WHERE listing_id=? AND import_type=? AND month_key=? FOR UPDATE");
+  $usage->execute([$listingId,$mode,$month]);$used=(int)$usage->fetchColumn();
+  if($used>=$limit){$db->rollBack();fail(429,'Monthly import allowance reached. Try again next month or upgrade to Leader Pro.');}
+  $db->prepare("UPDATE bh_listing_import_usage SET used=used+1 WHERE listing_id=? AND import_type=? AND month_key=?")->execute([$listingId,$mode,$month]);
+  $db->commit();
+ }catch(Throwable $e){if($db->inTransaction())$db->rollBack();fail(503,'Import quota service unavailable');}
+}
+
 if($mode==='schedule'){
  $sessions=[];
  if(str_contains($body,'BEGIN:VCALENDAR')){
