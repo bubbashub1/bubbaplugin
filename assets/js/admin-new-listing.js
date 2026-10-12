@@ -1,5 +1,18 @@
 document.addEventListener('DOMContentLoaded',async()=>{
 const form=document.getElementById('newListingForm');if(!form)return;
+const importButton=document.getElementById('listingUrlImport');
+if(importButton)importButton.addEventListener('click',async()=>{
+ const url=document.getElementById('listingSourceUrl').value.trim(),message=document.getElementById('listingUrlMessage');
+ if(!url){message.textContent='Paste a public website URL first.';return;}
+ importButton.disabled=true;message.textContent='Reading public page metadata…';
+ try{
+  const response=await fetch('/api/admin-listing-url-preview.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
+  const result=await response.json();if(!response.ok||!result.ok)throw Error(result.error||'Could not read page');
+  let count=0;for(const [name,value] of Object.entries(result.data||{})){const field=form.elements.namedItem(name);if(!field||!value||field.value.trim())continue;field.value=value;field.dispatchEvent(new Event('change',{bubbles:true}));count++;}
+  message.textContent=count+' fields suggested. Check every value before saving. No AI used.';
+ }catch(error){message.textContent=(error.message||'Import unavailable')+'. You can enter details manually.';}
+ finally{importButton.disabled=false;}
+});
 const status=document.getElementById('newListingStatus'),button=form.querySelector('button[type="submit"]'),id=new URLSearchParams(location.search).get('id');let original=null;
 const redirect=()=>location.replace('/admin-login.html?next='+encodeURIComponent(location.pathname+location.search));
 button.disabled=true;
