@@ -9,7 +9,17 @@ if(importButton)importButton.addEventListener('click',async()=>{
   const response=await fetch('/api/admin-listing-url-preview.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
   const result=await response.json();if(!response.ok||!result.ok)throw Error(result.error||'Could not read page');
   let count=0;for(const [name,value] of Object.entries(result.data||{})){const field=form.elements.namedItem(name);if(!field||!value||field.value.trim())continue;field.value=value;field.dispatchEvent(new Event('change',{bubbles:true}));count++;}
-  message.textContent=count+' fields suggested. Check every value before saving. No AI used.';
+  message.textContent=count+' fields suggested. Checking for a public timetable…';
+  const scheduleUrl=document.getElementById('adminIcalUrl');
+  if(scheduleUrl && !scheduleUrl.value.trim())scheduleUrl.value=url;
+  try{
+   const calendarResponse=await fetch('/api/admin-ical-preview.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
+   const calendar=await calendarResponse.json();
+   if(calendarResponse.ok&&calendar.ok&&Array.isArray(calendar.data)&&calendar.data.length){
+    previewImportedSessions(calendar.data,calendar.skipped_recurring?calendar.skipped_recurring+' recurring entries need manual review.':'');
+    message.textContent=count+' listing fields suggested and '+calendar.data.length+' sessions ready for review in Step 4: Schedule. Nothing has been saved.';
+   }else{message.textContent=count+' listing fields suggested. No readable public timetable was found; you can import an ICS feed or add sessions manually.';}
+  }catch(_error){message.textContent=count+' listing fields suggested. Timetable import unavailable; you can add sessions manually.';}
  }catch(error){message.textContent=(error.message||'Import unavailable')+'. You can enter details manually.';}
  finally{importButton.disabled=false;}
 });
