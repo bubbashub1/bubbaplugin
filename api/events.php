@@ -7,7 +7,11 @@ function respond(int $status,array $body): never {http_response_code($status);ec
 try {
   require_once __DIR__.'/db.php';
   $action=(string)($_GET['action']??'list');
-  if (!in_array($action,['list','submit','import'],true)) respond(404,['ok'=>false,'error'=>'Unknown action']);
+  if (!in_array($action,['list','submit','import','pending','moderate'],true)) respond(404,['ok'=>false,'error'=>'Unknown action']);
+  if (in_array($action,['pending','moderate'],true)) {
+    if(session_status()!==PHP_SESSION_ACTIVE){session_name('BUBBAHUBSESSID');session_start();}
+    if(empty($_SESSION['bh_admin_authenticated'])) respond(403,['ok'=>false,'error'=>'Admin access required']);
+  }
   if ($action==='import') respond(422,['ok'=>false,'error'=>'Automatic URL extraction is not available yet. Please enter the event details manually.']);
   if (($action==='submit' && $_SERVER['REQUEST_METHOD']!=='POST') || ($action==='list' && $_SERVER['REQUEST_METHOD']!=='GET')) respond(405,['ok'=>false,'error'=>'Method not allowed']);
   if ($action==='submit' && (int)($_SERVER['CONTENT_LENGTH']??0)>20000) respond(413,['ok'=>false,'error'=>'Submission too large']);
@@ -21,6 +25,21 @@ try {
     status VARCHAR(20) NOT NULL DEFAULT 'pending', created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_status_start (status,starts_at), INDEX idx_contact_created (contact_email,created_at)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+  if ($action==='pending') {
+    if($_SERVER['REQUEST_METHOD']!=='GET') respond(405,['ok'=>false,'error'=>'Method not allowed']);
+    $stmt=$db->query("SELECT id,title,description,category,starts_at,ends_at,location,booking_mode,booking_url,source_url,contact_email,status,created_at FROM bh_events WHERE status='pending' ORDER BY created_at DESC LIMIT 100");
+    respond(200,['ok'=>true,'events'=>$stmt->fetchAll()]);
+  }
+  if ($action==='moderate') {
+    if($_SERVER['REQUEST_METHOD']!=='POST') respond(405,['ok'=>false,'error'=>'Method not allowed']);
+    $input=json_decode((string)file_get_contents('php://input'),true);
+    $id=filter_var($input['id']??null,FILTER_VALIDATE_INT);
+    $status=$input['status']??'';
+    if(!$id||!in_array($status,['published','rejected'],true)) respond(422,['ok'=>false,'error'=>'Invalid moderation request']);
+    $stmt=$db->prepare("UPDATE bh_events SET status=? WHERE id=? AND status='pending'");
+    $stmt->execute([$status,$id]);
+    respond($stmt->rowCount()?200:404,['ok'=>(bool)$stmt->rowCount()]);
+  }
   if ($action==='list') {
     $stmt=$db->query("SELECT id,title,description,category,starts_at,ends_at,location,booking_mode,booking_url FROM bh_events WHERE status='published' AND ends_at>=NOW() AND starts_at<DATE_ADD(NOW(), INTERVAL 90 DAY) ORDER BY starts_at ASC LIMIT 100");
     respond(200,['ok'=>true,'events'=>$stmt->fetchAll()]);
