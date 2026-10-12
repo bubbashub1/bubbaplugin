@@ -6,17 +6,27 @@ function fail(int $code,string $error): never {http_response_code($code);echo js
 if($_SERVER['REQUEST_METHOD']!=='POST')fail(405,'POST required');
 if(strtolower((string)($_SERVER['HTTP_SEC_FETCH_SITE']??''))==='cross-site')fail(403,'Cross-site requests are not permitted');
 session_name('BUBBAHUBSESSID');session_start();
-if(empty($_SESSION['bh_user_id']))fail(401,'Sign in as a class leader first');
+$leaderId=(int)($_SESSION['bh_user_id']??0);
+$isAdmin=false;
+if(!$leaderId){
+ session_write_close();
+ session_name('BUBBAHUB_ADMINSESSID');session_start();
+ $isAdmin=!empty($_SESSION['bh_admin_authenticated']);
+ if(!$isAdmin)fail(401,'Sign in as a class leader or administrator');
+}
+
 require_once __DIR__.'/db.php';
-$db=bh_mysql();$q=$db->prepare("SELECT role,status FROM bh_users WHERE id=?");$q->execute([(int)$_SESSION['bh_user_id']]);$user=$q->fetch();
-if(!$user||$user['role']!=='leader'||$user['status']!=='active')fail(403,'Class leader account required');
-$orgQuery=$db->prepare("SELECT * FROM bh_organisers WHERE user_id=? LIMIT 1");
-try{$orgQuery->execute([(int)$_SESSION['bh_user_id']]);$org=$orgQuery->fetch(PDO::FETCH_ASSOC);}catch(Throwable $e){fail(503,'Organiser lookup unavailable');}
-if(!$org)fail(403,'Linked organiser account required');
-$isPro=false;
-foreach(['plan','membership_plan','membership_tier','subscription_plan','tier'] as $column){if(isset($org[$column])&&in_array(strtolower(trim((string)$org[$column])),['pro','premium','ultimate'],true)){$isPro=true;break;}}
-try{$subscription=$db->prepare("SELECT COUNT(*) FROM bh_user_subscriptions WHERE user_id=? AND plan='leader_pro' AND status IN ('active','trialing') AND (expires_at IS NULL OR expires_at>UTC_TIMESTAMP())");$subscription->execute([(int)$_SESSION['bh_user_id']]);if((int)$subscription->fetchColumn()>0)$isPro=true;}catch(Throwable $ignored){}
-$raw=file_get_contents('php://input',false,null,0,4097);if(!is_string($raw)||strlen($raw)>4096)fail(413,'Request too large');
+$db=bh_mysql();
+$org=null;$isPro=$isAdmin;
+if(!$isAdmin){
+ $q=$db->prepare("SELECT role,status FROM bh_users WHERE id=?");$q->execute([$leaderId]);$user=$q->fetch();
+ if(!$user||$user['role']!=='leader'||$user['status']!=='active')fail(403,'Class leader account required');
+ $orgQuery=$db->prepare("SELECT * FROM bh_organisers WHERE user_id=? LIMIT 1");
+ try{$orgQuery->execute([$leaderId]);$org=$orgQuery->fetch(PDO::FETCH_ASSOC);}catch(Throwable $e){fail(503,'Organiser lookup unavailable');}
+ if(!$org)fail(403,'Linked organiser account required');
+ foreach(['plan','membership_plan','membership_tier','subscription_plan','tier'] as $column){if(isset($org[$column])&&in_array(strtolower(trim((string)$org[$column])),['pro','premium','ultimate'],true)){$isPro=true;break;}}
+ try{$subscription=$db->prepare("SELECT COUNT(*) FROM bh_user_subscriptions WHERE user_id=? AND plan='leader_pro' AND status IN ('active','trialing') AND (expires_at IS NULL OR expires_at>UTC_TIMESTAMP())");$subscription->execute([$leaderId]);if((int)$subscription->fetchColumn()>0)$isPro=true;}catch(Throwable $ignored){}
+}
 $input=json_decode($raw,true);if(!is_array($input))fail(400,'Invalid JSON');
 $url=trim((string)($input['url']??''));$p=parse_url($url);
 if(!$p||strtolower((string)($p['scheme']??''))!=='https'||empty($p['host'])||isset($p['user'])||isset($p['pass'])||isset($p['port'])||strlen($url)>1000)fail(422,'Enter a public HTTPS URL');
@@ -32,7 +42,7 @@ if(!is_string($body)||strlen($body)>1048576||$code!==200)fail(422,'Could not rea
 $mode=(string)($input['mode']??'website');
 $listingId=(int)($input['listing_id']??0);
 if(!in_array($mode,['website','schedule'],true))fail(422,'Unsupported import type');
-if($listingId>0){
+if($listingId>0&&!$isAdmin){
  $ownership=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND organiser_id=? LIMIT 1");
  $ownership->execute([$listingId,(int)$org['id']]);
  if(!$ownership->fetchColumn())fail(403,'This listing does not belong to your organisation');
