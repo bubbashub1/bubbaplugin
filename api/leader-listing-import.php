@@ -30,25 +30,26 @@ if(!is_string($body)||strlen($body)>1048576||$code!==200)fail(422,'Could not rea
 $mode=(string)($input['mode']??'website');
 $listingId=(int)($input['listing_id']??0);
 if(!in_array($mode,['website','schedule'],true))fail(422,'Unsupported import type');
-if($listingId<=0)fail(422,'Select an existing listing to use the monthly import allowance');
-$ownership=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND organiser_id=? LIMIT 1");
-$ownership->execute([$listingId,(int)$org['id']]);
-if(!$ownership->fetchColumn())fail(403,'This listing does not belong to your organisation');
+if($listingId>0){
+ $ownership=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND organiser_id=? LIMIT 1");
+ $ownership->execute([$listingId,(int)$org['id']]);
+ if(!$ownership->fetchColumn())fail(403,'This listing does not belong to your organisation');
+}
+$listingKey=$listingId>0?'listing:'.$listingId:'new-draft';
 if(!$isPro){
- try{$db->exec("CREATE TABLE IF NOT EXISTS bh_listing_import_usage (listing_id BIGINT UNSIGNED NOT NULL, import_type VARCHAR(16) NOT NULL, month_key CHAR(7) NOT NULL, used INT UNSIGNED NOT NULL DEFAULT 0, PRIMARY KEY (listing_id,import_type,month_key)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");}
+ try{$db->exec("CREATE TABLE IF NOT EXISTS bh_listing_import_usage_v2 (user_id BIGINT UNSIGNED NOT NULL, listing_key VARCHAR(80) NOT NULL, import_type VARCHAR(16) NOT NULL, month_key CHAR(7) NOT NULL, used INT UNSIGNED NOT NULL DEFAULT 0, PRIMARY KEY (user_id,listing_key,import_type,month_key)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");}
  catch(Throwable $e){fail(503,'Import quota service unavailable');}
  $limit=$mode==='website'?1:3;$month=gmdate('Y-m');
  $db->beginTransaction();
  try{
-  $db->prepare("INSERT IGNORE INTO bh_listing_import_usage (listing_id,import_type,month_key,used) VALUES (?,?,?,0)")->execute([$listingId,$mode,$month]);
-  $usage=$db->prepare("SELECT used FROM bh_listing_import_usage WHERE listing_id=? AND import_type=? AND month_key=? FOR UPDATE");
-  $usage->execute([$listingId,$mode,$month]);$used=(int)$usage->fetchColumn();
+  $db->prepare("INSERT IGNORE INTO bh_listing_import_usage_v2 (user_id,listing_key,import_type,month_key,used) VALUES (?,?,?,?,0)")->execute([(int)$_SESSION['bh_user_id'],$listingKey,$mode,$month]);
+  $usage=$db->prepare("SELECT used FROM bh_listing_import_usage_v2 WHERE user_id=? AND listing_key=? AND import_type=? AND month_key=? FOR UPDATE");
+  $usage->execute([(int)$_SESSION['bh_user_id'],$listingKey,$mode,$month]);$used=(int)$usage->fetchColumn();
   if($used>=$limit){$db->rollBack();fail(429,'Monthly import allowance reached. Try again next month or upgrade to Leader Pro.');}
-  $db->prepare("UPDATE bh_listing_import_usage SET used=used+1 WHERE listing_id=? AND import_type=? AND month_key=?")->execute([$listingId,$mode,$month]);
+  $db->prepare("UPDATE bh_listing_import_usage_v2 SET used=used+1 WHERE user_id=? AND listing_key=? AND import_type=? AND month_key=?")->execute([(int)$_SESSION['bh_user_id'],$listingKey,$mode,$month]);
   $db->commit();
  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();fail(503,'Import quota service unavailable');}
 }
-
 if($mode==='schedule'){
  $sessions=[];
  if(str_contains($body,'BEGIN:VCALENDAR')){
