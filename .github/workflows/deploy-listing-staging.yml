@@ -1,0 +1,69 @@
+name: Deploy Add Listing Wizard to Staging
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eweball-staging-listing
+  cancel-in-progress: false
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: staging
+    steps:
+      - name: Checkout listing branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/add-listing-wizard
+          persist-credentials: false
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          php -l api/leader-listing-import.php
+          php -l api/leader-portal.php
+          php -l api/admin-listing-url-preview.php
+
+      - name: Validate staging destination
+        env:
+          REMOTE_PATH: ${{ secrets.EWEBALL_STAGING_REMOTE_PATH }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$REMOTE_PATH" || "$REMOTE_PATH" != /* || "$REMOTE_PATH" == *".."* || "${REMOTE_PATH%/}" != */staging_html ]]; then
+            echo "::error::EWEBALL_STAGING_REMOTE_PATH must be an absolute path ending in /staging_html."
+            exit 1
+          fi
+
+      - name: Deploy changed listing files only
+        env:
+          SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
+          SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+          SSH_PRIVATE_KEY: ${{ secrets.EWEBALL_SSH_PRIVATE_KEY }}
+          REMOTE_PATH: ${{ secrets.EWEBALL_STAGING_REMOTE_PATH }}
+        run: |
+          set -euo pipefail
+          test -n "$SSH_HOST" && test -n "$SSH_USERNAME" && test -n "$SSH_PORT" && test -n "$SSH_PRIVATE_KEY"
+          [[ "$REMOTE_PATH" == /* && "$REMOTE_PATH" != *".."* && "${REMOTE_PATH%/}" == */staging_html ]]
+          KEY="$RUNNER_TEMP/staging_deploy_key"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEY"
+          chmod 600 "$KEY"
+          ssh-keygen -y -f "$KEY" >/dev/null
+          FILES=(
+            admin/admin-activities-add-listing.html
+            api/admin-listing-url-preview.php
+            api/leader-listing-import.php
+            api/leader-portal.php
+            assets/js/admin-new-listing.js
+            assets/js/leader-new/url-import.js
+            leader/new.html
+          )
+          tar -czf "$RUNNER_TEMP/listing-staging.tar.gz" "${FILES[@]}"
+          scp -P "$SSH_PORT" -i "$KEY" -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new "$RUNNER_TEMP/listing-staging.tar.gz" "$SSH_USERNAME@$SSH_HOST:/tmp/bubbahub-listing-staging-${GITHUB_RUN_ID}.tar.gz"
+          ssh -p "$SSH_PORT" -i "$KEY" -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new "$SSH_USERNAME@$SSH_HOST" "set -eu; test -d '$REMOTE_PATH'; test -f '$REMOTE_PATH/wp-config.php'; tar -tzf '/tmp/bubbahub-listing-staging-${GITHUB_RUN_ID}.tar.gz' >/dev/null; tar -xzf '/tmp/bubbahub-listing-staging-${GITHUB_RUN_ID}.tar.gz' -C '$REMOTE_PATH'; rm -f '/tmp/bubbahub-listing-staging-${GITHUB_RUN_ID}.tar.gz'"
+          echo "Listing files deployed to staging_html only."
