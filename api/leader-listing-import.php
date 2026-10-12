@@ -18,7 +18,7 @@ $ips=gethostbynamel($host);if(!$ips)fail(422,'Host not found');
 foreach($ips as $ip)if(!filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE))fail(422,'Public sites only');
 if(!function_exists('curl_init'))fail(503,'URL import unavailable');
 $ch=curl_init($url);
-curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>12,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_RESOLVE=>[$host.':443:'.$ips[0]],CURLOPT_MAXFILESIZE=>1048576,CURLOPT_USERAGENT=>'BubbaHubListingImporter/1.0']);
+curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>12,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_RESOLVE=>[$host.':443:'.$ips[0]],CURLOPT_MAXFILESIZE=>1048576,CURLOPT_USERAGENT=>'BubbaHubListingImporter/1.0',CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2]);
 $body=curl_exec($ch);$code=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);
 if(!is_string($body)||strlen($body)>1048576||$code!==200)fail(422,'Could not read this public page');
 $mode=(string)($input['mode']??'website');
@@ -30,7 +30,7 @@ if($mode==='schedule'){
    if(str_contains($event,'RRULE:')||str_contains($event,'STATUS:CANCELLED'))continue;
    if(!preg_match('/^DTSTART(?:;[^:]*)?:(\\d{8}T\\d{6}Z?)/m',$event,$m))continue;
    try{$dt=new DateTimeImmutable($m[1],str_ends_with($m[1],'Z')?new DateTimeZone('UTC'):new DateTimeZone('Europe/London'));$dt=$dt->setTimezone(new DateTimeZone('Europe/London'));}catch(Throwable $e){continue;}
-   $end='';if(preg_match('/^DTEND(?:;[^:]*)?:(\\d{8}T\\d{6}Z?)/m',$event,$em)){try{$end=(new DateTimeImmutable($em[1]))->setTimezone(new DateTimeZone('Europe/London'))->format('H:i');}catch(Throwable $e){}}
+   $end='';if(preg_match('/^DTEND(?:;[^:]*)?:(\\d{8}T\\d{6}Z?)/m',$event,$em)){try{$end=(new DateTimeImmutable($em[1],str_ends_with($em[1],'Z')?new DateTimeZone('UTC'):new DateTimeZone('Europe/London')))->setTimezone(new DateTimeZone('Europe/London'))->format('H:i');}catch(Throwable $e){}}
    $sessions[]=['day'=>$dt->format('l'),'start'=>$dt->format('H:i'),'end'=>$end,'date'=>$dt->format('Y-m-d')];
   }
  }
