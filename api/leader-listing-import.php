@@ -41,14 +41,15 @@ $listingKey=$listingId>0?'listing:'.$listingId:'new-draft';
 if(!$isPro){
  try{$db->exec("CREATE TABLE IF NOT EXISTS bh_listing_import_usage_v2 (user_id BIGINT UNSIGNED NOT NULL, listing_key VARCHAR(80) NOT NULL, import_type VARCHAR(16) NOT NULL, month_key CHAR(7) NOT NULL, used INT UNSIGNED NOT NULL DEFAULT 0, PRIMARY KEY (user_id,listing_key,import_type,month_key)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");}
  catch(Throwable $e){fail(503,'Import quota service unavailable');}
- $limit=$mode==='website'?1:3;$month=gmdate('Y-m');
- $db->beginTransaction();
+}
+function chargeImport(PDO $db,int $userId,string $listingKey,string $mode): void {
+ $month=gmdate('Y-m');$limit=$mode==='website'?1:3;
  try{
-  $db->prepare("INSERT IGNORE INTO bh_listing_import_usage_v2 (user_id,listing_key,import_type,month_key,used) VALUES (?,?,?,?,0)")->execute([(int)$_SESSION['bh_user_id'],$listingKey,$mode,$month]);
-  $usage=$db->prepare("SELECT used FROM bh_listing_import_usage_v2 WHERE user_id=? AND listing_key=? AND import_type=? AND month_key=? FOR UPDATE");
-  $usage->execute([(int)$_SESSION['bh_user_id'],$listingKey,$mode,$month]);$used=(int)$usage->fetchColumn();
-  if($used>=$limit){$db->rollBack();fail(429,'Monthly import allowance reached. Try again next month or upgrade to Leader Pro.');}
-  $db->prepare("UPDATE bh_listing_import_usage_v2 SET used=used+1 WHERE user_id=? AND listing_key=? AND import_type=? AND month_key=?")->execute([(int)$_SESSION['bh_user_id'],$listingKey,$mode,$month]);
+  $db->beginTransaction();
+  $db->prepare("INSERT IGNORE INTO bh_listing_import_usage_v2 (user_id,listing_key,import_type,month_key,used) VALUES (?,?,?,?,0)")->execute([$userId,$listingKey,$mode,$month]);
+  $stmt=$db->prepare("UPDATE bh_listing_import_usage_v2 SET used=used+1 WHERE user_id=? AND listing_key=? AND import_type=? AND month_key=? AND used<?");
+  $stmt->execute([$userId,$listingKey,$mode,$month,$limit]);
+  if($stmt->rowCount()!==1){$db->rollBack();fail(429,'Monthly import allowance reached. Try again next month or upgrade to Leader Pro.');}
   $db->commit();
  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();fail(503,'Import quota service unavailable');}
 }
@@ -64,6 +65,8 @@ if($mode==='schedule'){
    $sessions[]=['day'=>$dt->format('l'),'start'=>$dt->format('H:i'),'end'=>$end,'date'=>$dt->format('Y-m-d')];
   }
  }
+ if(!$sessions)fail(422,'No importable dated calendar events found; allowance unchanged');
+ if(!$isPro)chargeImport($db,(int)$_SESSION['bh_user_id'],$listingKey,$mode);
  echo json_encode(['ok'=>true,'sessions'=>$sessions,'note'=>'Only dated public iCalendar events are supported; recurring rules and dynamic pages need manual entry.']);exit;
 }
 if(!class_exists('DOMDocument'))fail(503,'HTML metadata reader unavailable');
@@ -72,4 +75,6 @@ $read=static function(string $query)use($xp): string {$n=$xp->query($query);retu
 $title=$read("//meta[@property='og:title']/@content")?:$read('//h1[1]')?:$read('//title[1]');
 $desc=$read("//meta[@property='og:description']/@content")?:$read("//meta[@name='description']/@content");
 $clean=static fn(string $s,int $n): string =>mb_substr(trim(preg_replace('/\\s+/u',' ',strip_tags($s))),0,$n);
+if($title===''&&$desc==='')fail(422,'No usable metadata found; allowance unchanged');
+if(!$isPro)chargeImport($db,(int)$_SESSION['bh_user_id'],$listingKey,$mode);
 echo json_encode(['ok'=>true,'data'=>['title'=>$clean($title,150),'description'=>$clean($desc,4000),'booking_url'=>$url],'note'=>'Public metadata only; check all details.']);
