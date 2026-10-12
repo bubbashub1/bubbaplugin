@@ -53,6 +53,11 @@ function chargeImport(PDO $db,int $userId,string $listingKey,string $mode): void
   $db->commit();
  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();fail(503,'Import quota service unavailable');}
 }
+if(!$isPro){
+ $check=$db->prepare("SELECT used FROM bh_listing_import_usage_v2 WHERE user_id=? AND listing_key=? AND import_type=? AND month_key=?");
+ $check->execute([(int)$_SESSION['bh_user_id'],$listingKey,$mode,gmdate('Y-m')]);
+ if((int)$check->fetchColumn()>=($mode==='website'?1:3))fail(429,'Monthly import allowance reached. Try again next month or upgrade to Leader Pro.');
+}
 if($mode==='schedule'){
  $sessions=[];
  if(str_contains($body,'BEGIN:VCALENDAR')){
