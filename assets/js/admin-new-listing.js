@@ -203,6 +203,21 @@ const stepNav=document.getElementById('adminListingSteps');
 const back=document.getElementById('adminListingBack'),next=document.getElementById('adminListingNext'),save=document.getElementById('adminListingSubmit');
 const labels=[...form.querySelectorAll('.admin-form-grid > label')];
 let step=0;
+const validateStep=(index)=>{
+ if(index===6)return true;
+ const names=steps[index][1];
+ for(const name of names){
+  const field=form.elements.namedItem(name);
+  if(!field||field.disabled||!field.required)continue;
+  if(!field.checkValidity()){field.reportValidity();status.textContent='Please complete the highlighted field before continuing.';status.classList.add('is-error');return false;}
+ }
+ if(index===1 && !String(form.elements.namedItem('category')?.value||'').trim()){status.textContent='Choose at least one category.';status.classList.add('is-error');return false;}
+ if(index===3){
+  const sessions=collectSessions();
+  if(sessions.some(s=>!s.day_of_week||!s.start_time||(s.end_time&&s.end_time<=s.start_time))){status.textContent='Check session days and times before continuing.';status.classList.add('is-error');return false;}
+ }
+ status.textContent='';status.classList.remove('is-error');return true;
+};
 const review=document.createElement('div');review.className='bh-review';review.hidden=true;form.querySelector('.admin-form-grid').after(review);
 const renderStep=()=>{
  const current=steps[step];
@@ -212,9 +227,9 @@ const renderStep=()=>{
  back.hidden=step===0;next.hidden=step===6;save.hidden=step!==6;
  [...stepNav.children].forEach((b,i)=>{b.classList.toggle('active',i===step);b.setAttribute('aria-current',i===step?'step':'false');});
 };
-steps.forEach(([name],i)=>{const b=document.createElement('button');b.type='button';b.className='bh-step';b.innerHTML='<span>'+(i+1)+'</span>'+name;b.addEventListener('click',()=>{step=i;renderStep();});stepNav.append(b);});
+steps.forEach(([name],i)=>{const b=document.createElement('button');b.type='button';b.className='bh-step';b.innerHTML='<span>'+(i+1)+'</span>'+name;b.addEventListener('click',()=>{if(i>step){for(let j=step;j<i;j++){if(!validateStep(j)){step=j;renderStep();return;}}}step=i;renderStep();});stepNav.append(b);});
 back.addEventListener('click',()=>{step=Math.max(0,step-1);renderStep();});
-next.addEventListener('click',()=>{const required=labels.filter(l=>!l.hidden).map(l=>l.querySelector('[required]')).filter(Boolean);const invalid=required.find(el=>!el.value.trim());if(invalid){invalid.reportValidity();return;}step=Math.min(6,step+1);renderStep();});
+next.addEventListener('click',()=>{if(!validateStep(step))return;step=Math.min(6,step+1);renderStep();});
 renderStep();
 form.addEventListener('submit',async e=>{e.preventDefault();status.textContent='Checking listing…';status.classList.remove('is-error');const requiredNames=['title','organisation_name','venue_name','town','category'];const missing=requiredNames.find(name=>!String(form.elements.namedItem(name)?.value||'').trim());if(missing){status.textContent='Please complete '+missing.replaceAll('_',' ')+' before saving.';status.classList.add('is-error');step=['title','organisation_name'].includes(missing)?0:missing==='category'?1:4;renderStep();return;}const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};delete body.age_preset;
 body.price_free=free.checked?1:0;body.price_per_family=!free.checked&&unit.value==='per_family'?1:0;body.price_per_session=!free.checked&&unit.value==='per_session'?1:0;body.pricing_unit=unit.value;body.block_length_weeks=unit.value==='per_block'&&!free.checked?Number(blockWeeks.value):null;body.id=original?.id||null;body.sessions=collectSessions();body.venues=(original?.venues||[]).slice(1).map(v=>({...v,latitude:v.latitude??'',longitude:v.longitude??''}));body.accessibility=original?.accessibility||[];
