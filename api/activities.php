@@ -125,9 +125,12 @@ try {
     // Older installations may not have the optional activity/venue junction table.
     // Fall back to venues referenced by sessions without changing the database.
     $hasActivityVenues = (bool)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activity_venues'")->fetchColumn();
-    $venueJoin = $hasActivityVenues
-        ? "LEFT JOIN bh_activity_venues av ON av.activity_id = a.id LEFT JOIN bh_venues v ON v.id = av.venue_id"
-        : "LEFT JOIN bh_venues v ON v.id = (SELECT s3.venue_id FROM bh_sessions s3 WHERE s3.activity_id = a.id AND s3.venue_id IS NOT NULL ORDER BY s3.id LIMIT 1)";
+    $directVenueLink = (bool)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_venues' AND COLUMN_NAME='activity_id'")->fetchColumn();
+    $venueJoin = $directVenueLink
+        ? "LEFT JOIN bh_venues v ON v.activity_id = a.id"
+        : ($hasActivityVenues
+            ? "LEFT JOIN bh_activity_venues av ON av.activity_id = a.id LEFT JOIN bh_venues v ON v.id = av.venue_id"
+            : "LEFT JOIN bh_venues v ON v.id = (SELECT s3.venue_id FROM bh_sessions s3 WHERE s3.activity_id = a.id AND s3.venue_id IS NOT NULL ORDER BY s3.id LIMIT 1)");
 
     $sql = "
         SELECT
