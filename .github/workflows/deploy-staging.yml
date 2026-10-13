@@ -16,6 +16,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate listing PHP syntax before upload
+        run: |
+          set -euo pipefail
+          php -l api/leader-listing-import.php
+          php -l api/leader-portal.php
+          php -l api/admin-listing-url-preview.php
+
       - name: Prepare SSH key
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EWEBALL_SSH_PRIVATE_KEY }}
