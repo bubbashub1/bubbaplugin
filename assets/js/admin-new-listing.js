@@ -157,7 +157,7 @@ const previewImportedSessions=(entries,note='')=>{
  importResults.append(add);
 };
 importButton?.addEventListener('click',async()=>{
- const url=document.getElementById('adminIcalUrl').value.trim();importResults.replaceChildren();importMessage.textContent='Loading calendar…';importButton.disabled=true;
+ const url=document.getElementById('adminIcalUrl').value.trim();importResults.replaceChildren();importMessage.textContent='Checking booking page for classes and session times…';importButton.disabled=true;
  try{
   const response=await fetch('/api/admin-ical-preview.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
   const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'Calendar could not be loaded.');
@@ -195,35 +195,6 @@ document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',(
  feedback.textContent=events.length?events.length+' possible session(s) found. '+(assumedMonth?'Month was missing from the first rows, so the current month was assumed; verify every date. ':'')+'Class names and end times must be confirmed before saving.':'No sessions recognised. Use a screenshot showing the month and rows such as 12 Mon 10am BST, or enter sessions manually.';
  previewImportedSessions(events,'Please confirm all dates, class names and finishing times. No sessions have been saved.'+(assumedMonth?' Initial month was assumed.':''));
  if(events.length)document.getElementById('adminIcalResults')?.scrollIntoView({behavior:'smooth',block:'nearest'});
-});
-document.getElementById('adminScreenshotRead')?.addEventListener('click',async()=>{
- const input=document.getElementById('adminScheduleScreenshot'),message=document.getElementById('adminScreenshotMessage'),preview=document.getElementById('adminScreenshotPreview');
- const file=input?.files?.[0];if(!file){message.textContent='Choose a timetable image first.';return;}
- if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024){message.textContent='Use a PNG, JPEG or WebP image under 5 MB.';return;}
- const url=URL.createObjectURL(file);preview.hidden=true;preview.style.display='none';preview.onload=()=>{preview.hidden=false;preview.style.display='block';URL.revokeObjectURL(url)};preview.onerror=()=>{preview.hidden=true;preview.style.display='none';URL.revokeObjectURL(url);message.textContent='Could not display this image. Please choose another screenshot.'};preview.src=url;
- message.textContent='Reading timetable image…';
- const button=document.getElementById('adminScreenshotRead');button.disabled=true;
- try{
-  let extracted='';
-  if(typeof window.TextDetector==='function'){
-   try{const bitmap=await createImageBitmap(file);try{const blocks=await new TextDetector().detect(bitmap);extracted=blocks.map(b=>b.rawValue).filter(Boolean).join('\\n')}finally{bitmap.close?.()}}catch(e){console.warn('Native screenshot recognition unavailable:',e)}
-  }
-  if(!extracted.trim()){
-   if(!window.Tesseract){
-    await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';script.onload=resolve;script.onerror=()=>reject(Error('Screenshot reader could not load. Please check your connection.'));document.head.appendChild(script)});
-   }
-   const result=await window.Tesseract.recognize(file,'eng',{logger:progress=>{if(progress.status==='recognizing text')message.textContent='Reading screenshot… '+Math.round(progress.progress*100)+'%'}});
-   extracted=result.data?.text||'';
-  }
-  if(!extracted.trim())throw Error('No readable timetable text was found.');
-  const recognisableDates=(extracted.match(/\\b(?:January|February|March|April|May|June|July|August|September|October|November|December|Mon(?:day)?|Tue(?:sday)?|Wed(?:nesday)?|Thu(?:rsday)?|Fri(?:day)?|Sat(?:urday)?|Sun(?:day)?)\\b/gi)||[]).length;
-  const recognisableTimes=(extracted.match(/\\b\\d{1,2}(?::\\d{2})?\\s*(?:am|pm)\\b/gi)||[]).length;
-  if(recognisableDates<1||recognisableTimes<1)throw Error('The screenshot was read, but no reliable timetable dates and times were recognised. Try a tightly cropped screenshot at higher resolution. Existing pasted text has been preserved.');
-  document.getElementById('adminBookwhenText').value=extracted;
-  document.querySelector('#adminBookwhenText')?.closest('details')?.setAttribute('open','');
-  message.textContent='Screenshot text extracted. Check dates, times and class names in Paste your schedule, then select Preview pasted timetable. Recognition may contain errors.';
- }catch(error){message.textContent=(error.message||'Screenshot recognition failed.')+' You can still paste your schedule or add sessions manually.'}
- finally{button.disabled=false;}
 });
 const collectSessions=()=>[...scheduleRows.children].map(row=>{const s={venue_index:Number(row.dataset.venueIndex||0)};row.querySelectorAll('[data-session-field]').forEach(el=>s[el.dataset.sessionField]=el.type==='checkbox'?(el.checked?1:0):el.value);return s;}).filter(s=>s.day_of_week||s.start_time);
  // Seven-step admin editor, matching the class leader's new listing workflow.
