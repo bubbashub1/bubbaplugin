@@ -23,31 +23,42 @@ $meta=function($key)use($xp){$nodes=$xp->query('//meta[@name="'.$key.'" or @prop
 $title=$meta('og:title');if(!$title){$nodes=$doc->getElementsByTagName('title');$title=$nodes->length?trim($nodes->item(0)->textContent):'';}
 $summary=$meta('og:description')?:$meta('description');
 $description='';
-$blocks=[];
-$scopes=['//main','//article','//*[@itemprop="articleBody"]','//*[contains(concat(" ",normalize-space(@class)," ")," entry-content ")]','//*[contains(concat(" ",normalize-space(@class)," ")," page-content ")]'];
+$bestScore=-999;
+$bestBlocks=[];
+$scopes=['//article','//*[@itemprop="articleBody"]','//*[contains(concat(" ",normalize-space(@class)," ")," entry-content ")]','//*[contains(concat(" ",normalize-space(@class)," ")," page-content ")]','//main'];
 foreach($scopes as $scope){
- $nodes=$xp->query($scope);
- if(!$nodes||!$nodes->length)continue;
- foreach($nodes as $container){
-  $paragraphs=$xp->query('.//p|.//li',$container);
+ $containers=$xp->query($scope);
+ if(!$containers)continue;
+ foreach($containers as $container){
+  $paragraphs=$xp->query('.//p',$container);
   if(!$paragraphs)continue;
-  $candidate=[];
+  $candidate=[];$score=0;
   foreach($paragraphs as $node){
-   $parent=$node->parentNode;$skip=false;
-   while($parent&&$parent!==$container){if($parent instanceof DOMElement&&in_array(strtolower($parent->tagName),['nav','footer','header','aside','form'],true)){$skip=true;break;}$parent=$parent->parentNode;}
+   $skip=false;$parent=$node;
+   while($parent&&$parent!==$container){
+    if($parent instanceof DOMElement){
+     $tag=strtolower($parent->tagName);
+     $identity=strtolower($parent->getAttribute('class').' '.$parent->getAttribute('id'));
+     if(in_array($tag,['nav','footer','header','aside','form'],true)||preg_match('/\\b(location|venue|address|postcode|directory|footer|sidebar|map|booking-widget|find-a-class)\\b/i',$identity)){$skip=true;break;}
+    }
+    $parent=$parent->parentNode;
+   }
    if($skip)continue;
    $v=trim((string)preg_replace('/\\s+/u',' ',$node->textContent));
-   if(mb_strlen($v)<45||mb_strlen($v)>1800)continue;
+   $len=mb_strlen($v);
+   if($len<75||$len>1600)continue;
    if(preg_match('/^(cookie|privacy policy|terms and conditions|subscribe|sign up|book now|follow us)/iu',$v))continue;
-   if(!in_array($v,$candidate,true))$candidate[]=$v;
-   if(count($candidate)>=10)break;
+   if(preg_match('/\\b(?:road|street|avenue|postcode|post code|church|community centre|village hall|sports hall|leisure centre)\\b/iu',$v)&&$len<210)continue;
+   if(preg_match('/\\b[A-Z]{1,2}[0-9][A-Z0-9]?\\s*[0-9][A-Z]{2}\\b/u',$v))continue;
+   $relevance=preg_match_all('/\\b(class(?:es)?|bab(?:y|ies)|toddler(?:s)?|sensory|storytell(?:ing)?|play|music|movement|parent(?:s)?|development|session(?:s)?|pregnan(?:t|cy)|massage|yoga|learn|children)\\b/iu',$v);
+   if($relevance<2)continue;
+   if(!in_array($v,$candidate,true)){$candidate[]=$v;$score+=min(6,$relevance)*10+min(300,$len)/50;}
+   if(count($candidate)>=8)break;
   }
-  if(mb_strlen(implode("\\n\\n",$candidate))>mb_strlen(implode("\\n\\n",$blocks)))$blocks=$candidate;
+  if($score>$bestScore&&count($candidate)>=2){$bestScore=$score;$bestBlocks=$candidate;}
  }
- if(mb_strlen(implode("\\n\\n",$blocks))>=450)break;
 }
-$description=$blocks?implode("\n\n",$blocks):$summary;
-if($description===''&&$summary!=='')$description=$summary;
+$description=$bestBlocks?implode("\n\n",$bestBlocks):$summary;
 $title=mb_substr(strip_tags($title),0,160);
 $description=mb_substr(strip_tags($description),0,4000);
 $keywords=$meta('keywords');
