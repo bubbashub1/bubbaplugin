@@ -40,6 +40,12 @@ if(categoryInput){
   if(response.ok&&payload.ok) (payload.data||[]).forEach(addName);
  }catch(error){console.warn('Categories unavailable:',error);}
  const sync=()=>{categoryInput.value=[...selected].join(', ');};
+ // Website suggestions must update the picker state, not only its hidden input.
+ categoryInput.addEventListener('bh:apply-categories',event=>{
+  const incoming=Array.isArray(event.detail)?event.detail:[];
+  incoming.forEach(value=>{const name=String(value||'').trim();if(!name)return;addName(name);selected.add(names.get(name.toLowerCase()));});
+  render();sync();
+ });
  const render=()=>{
   options.replaceChildren();
   [...names.values()].sort((a,b)=>a.localeCompare(b)).forEach(name=>{
