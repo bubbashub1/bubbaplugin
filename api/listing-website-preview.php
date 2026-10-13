@@ -98,6 +98,23 @@ foreach(array_slice($pages,0,3) as $pageUrl){
  if($pageBlocks)$extra[]=implode("\n\n",$pageBlocks);
 }
 $aboutDescription=mb_substr(implode("\n\n",$extra),0,3000);
+// Resolve only public HTTPS images on the same website; never fetch image bytes server-side.
+$imageCandidates=[];
+foreach(['logo','og:image','twitter:image'] as $property){
+ $value=$meta($property);
+ if($value!=='')$imageCandidates[]=$value;
+}
+foreach($xp->query('//link[contains(translate(@rel,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"),"icon")]/@href')?:[] as $node)$imageCandidates[]=$node->nodeValue;
+$imageUrl='';
+foreach($imageCandidates as $candidate){
+ $candidate=trim((string)$candidate);
+ if(str_starts_with($candidate,'//'))$candidate='https:'.$candidate;
+ elseif(str_starts_with($candidate,'/'))$candidate=$origin.$candidate;
+ elseif(!str_starts_with($candidate,'https://'))continue;
+ $parts=parse_url($candidate);
+ if(!$parts||strtolower((string)($parts['host']??''))!==strtolower($host)||isset($parts['user'])||isset($parts['pass'])||isset($parts['port']))continue;
+ $imageUrl=$candidate;break;
+}
 $keywords=$meta('keywords');
 $search=mb_strtolower($title.' '.$description.' '.$keywords);
 $taxonomy=[
@@ -114,4 +131,4 @@ $tagVocabulary=['baby massage','baby yoga','baby sensory','newborn','bonding','t
 $detected=[];foreach($tagVocabulary as $term){if(mb_strpos($search,$term)!==false)$detected[]=$term;}
 $tags=array_slice(array_values(array_unique(array_filter(array_map('trim',explode(',',$keywords))))),0,12);
 $tags=array_slice(array_values(array_unique(array_merge($detected,$tags))),0,12);
-echo json_encode(['ok'=>true,'title'=>$title,'description'=>$description,'about_description'=>$aboutDescription,'categories'=>$categories,'tags'=>$tags,'source'=>$url,'message'=>'Review and edit all suggested information before saving.'],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+echo json_encode(['ok'=>true,'title'=>$title,'description'=>$description,'about_description'=>$aboutDescription,'image_url'=>$imageUrl,'categories'=>$categories,'tags'=>$tags,'source'=>$url,'message'=>'Review and edit all suggested information before saving.'],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
