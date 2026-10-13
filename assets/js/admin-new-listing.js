@@ -100,11 +100,14 @@ const addSession=(s={})=>{
  for(const [name,label,type] of fields){
   const wrap=document.createElement('label');wrap.textContent=label;
   let control;
-  if(type==='select'){control=document.createElement('select');const options=name==='day_of_week'?[['','Choose day'],['1','Monday'],['2','Tuesday'],['3','Wednesday'],['4','Thursday'],['5','Friday'],['6','Saturday'],['7','Sunday']]:[['weekly','Weekly'],['fortnightly','Fortnightly'],['monthly','Monthly'],['once','One-off']];options.forEach(([value,text])=>control.add(new Option(text,value)));}
+  if(type==='select'){control=document.createElement('select');const options=name==='day_of_week'?[['','Choose day'],['1','Monday'],['2','Tuesday'],['3','Wednesday'],['4','Thursday'],['5','Friday'],['6','Saturday'],['7','Sunday']]:[['weekly','Weekly'],['seven_weeks','7-week block'],['fortnightly','Fortnightly'],['monthly','Monthly'],['once','One-off']];options.forEach(([value,text])=>control.add(new Option(text,value)));}
   else{control=document.createElement('input');control.type=type;if(name==='class_name'){control.maxLength=160;control.placeholder='e.g. Baby Explorers';}if(type==='number'){control.min='0';control.step='0.01';}}
   control.dataset.sessionField=name;control.value=s[name]??(name==='frequency'?'weekly':'');wrap.appendChild(control);row.appendChild(wrap);
  }
- const term=document.createElement('label');const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.dataset.sessionField='term_time_only';checkbox.checked=String(s.term_time_only??'0')==='1';term.append(checkbox,document.createTextNode(' Term-time only'));row.appendChild(term);
+ const term=document.createElement('label');const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.dataset.sessionField='term_time_only';checkbox.checked=String(s.term_time_only??'0')==='1';term.append(checkbox,document.createTextNode(' Term-time only (school term dates)'));row.appendChild(term);
+ const frequency=row.querySelector('[data-session-field="frequency"]');const first=row.querySelector('[data-session-field="start_date"]');const last=row.querySelector('[data-session-field="end_date"]');
+ const updateBlockEnd=()=>{if(frequency.value!=='seven_weeks'||!first.value)return;const date=new Date(first.value+'T12:00:00');if(Number.isNaN(date.getTime()))return;date.setDate(date.getDate()+48);const value=[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');if(!last.value||last.dataset.autoBlockEnd==='1'){last.value=value;last.dataset.autoBlockEnd='1';}};
+ last.addEventListener('input',()=>{last.dataset.autoBlockEnd='0';});first.addEventListener('change',updateBlockEnd);frequency.addEventListener('change',updateBlockEnd);
  const remove=document.createElement('button');remove.type='button';remove.className='button button-soft';remove.textContent='Remove session';remove.onclick=()=>row.remove();row.appendChild(remove);row.dataset.venueIndex=String(s.venue_index??0);scheduleRows.appendChild(row);
 };
 (original?.sessions||[]).forEach(addSession);
