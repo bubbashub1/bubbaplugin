@@ -96,12 +96,12 @@ button.disabled=false;
 const scheduleSection=document.getElementById('adminListingSchedule'),scheduleRows=document.getElementById('adminScheduleRows');
 const addSession=(s={})=>{
  const row=document.createElement('div');row.className='bh-card';row.style.cssText='padding:14px;margin:12px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px';
- const fields=[['day_of_week','Day','select'],['start_time','Start time','time'],['end_time','End time','time'],['frequency','Frequency','select'],['start_date','First date (optional)','date'],['end_date','Last date (optional)','date'],['price','Session price (£)','number']];
+ const fields=[['class_name','Class name (optional)','text'],['day_of_week','Day','select'],['start_time','Start time','time'],['end_time','End time','time'],['frequency','Frequency','select'],['start_date','First date (optional)','date'],['end_date','Last date (optional)','date'],['price','Session price (£)','number']];
  for(const [name,label,type] of fields){
   const wrap=document.createElement('label');wrap.textContent=label;
   let control;
   if(type==='select'){control=document.createElement('select');const options=name==='day_of_week'?[['','Choose day'],['1','Monday'],['2','Tuesday'],['3','Wednesday'],['4','Thursday'],['5','Friday'],['6','Saturday'],['7','Sunday']]:[['weekly','Weekly'],['fortnightly','Fortnightly'],['monthly','Monthly'],['once','One-off']];options.forEach(([value,text])=>control.add(new Option(text,value)));}
-  else{control=document.createElement('input');control.type=type;if(type==='number'){control.min='0';control.step='0.01';}}
+  else{control=document.createElement('input');control.type=type;if(name==='class_name'){control.maxLength=160;control.placeholder='e.g. Baby Explorers';}if(type==='number'){control.min='0';control.step='0.01';}}
   control.dataset.sessionField=name;control.value=s[name]??(name==='frequency'?'weekly':'');wrap.appendChild(control);row.appendChild(wrap);
  }
  const term=document.createElement('label');const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.dataset.sessionField='term_time_only';checkbox.checked=String(s.term_time_only??'0')==='1';term.append(checkbox,document.createTextNode(' Term-time only'));row.appendChild(term);
