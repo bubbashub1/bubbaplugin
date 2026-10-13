@@ -29,7 +29,7 @@ const suggestTags=(source)=>{
  const candidates=['sensory play','storytelling','messy play','baby massage','baby yoga','music and movement','singing','dance','arts and crafts','stay and play','playgroup','toddler group','baby development','outdoor activities','nature','swimming','pregnancy','parent support','soft play','early years'];
  const current=tagField.value.split(',').map(t=>t.trim()).filter(Boolean);
  const existing=new Set(current.map(t=>t.toLowerCase()));
- for(const tag of candidates){if(new RegExp(tag.replace(/[-/\\^$*+?.()|[\]{}]/g,'\\const categoryInput=form.querySelector').replace(/ /g,'\\s+'),'i').test(text)&&!existing.has(tag)){current.push(tag);existing.add(tag)}}
+ for(const tag of candidates){if(text.includes(tag)&&!existing.has(tag)){current.push(tag);existing.add(tag)}}
  tagField.value=current.slice(0,20).join(', ');
 };
 document.getElementById('adminPosterApply')?.addEventListener('click',()=>suggestTags(document.getElementById('adminPosterText')?.value||''));
@@ -268,7 +268,7 @@ document.getElementById('adminPosterApply')?.addEventListener('click',()=>{
 });
 const collectSessions=()=>[...scheduleRows.children].map(row=>{const s={venue_index:Number(row.dataset.venueIndex||0)};row.querySelectorAll('[data-session-field]').forEach(el=>s[el.dataset.sessionField]=el.type==='checkbox'?(el.checked?1:0):el.value);return s;}).filter(s=>s.day_of_week||s.start_time);
  // Seven-step admin editor, matching the class leader's new listing workflow.
-const steps=[['Basics',['title','organisation_name']],['About',['description','category','age_preset','age_range','price_from','pricing_unit','block_length_weeks','price_free']],['Extra',['booking_url','email','phone','website','status']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address']],['Photos',['image_path']],['Review',[]]];
+const steps=[['Basics',['title','organisation_name']],['About',['description','category','tags','age_preset','age_range','price_from','pricing_unit','block_length_weeks','price_free']],['Extra',['booking_url','email','phone','website','status']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address']],['Photos',['image_path']],['Review',[]]];
 const stepNav=document.getElementById('adminListingSteps');
 const back=document.getElementById('adminListingBack'),next=document.getElementById('adminListingNext'),save=document.getElementById('adminListingSubmit');
 const labels=[...form.querySelectorAll('.admin-form-grid > label')];
