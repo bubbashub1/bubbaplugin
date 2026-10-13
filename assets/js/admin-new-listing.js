@@ -196,6 +196,42 @@ document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',(
  previewImportedSessions(events,'Please confirm all dates, class names and finishing times. No sessions have been saved.'+(assumedMonth?' Initial month was assumed.':''));
  if(events.length)document.getElementById('adminIcalResults')?.scrollIntoView({behavior:'smooth',block:'nearest'});
 });
+// Optional on-device poster OCR. No image is uploaded to a third-party OCR service.
+document.getElementById('adminPosterRead')?.addEventListener('click',async()=>{
+ const file=document.getElementById('adminPosterImage').files?.[0],message=document.getElementById('adminPosterMessage'),preview=document.getElementById('adminPosterPreview');
+ if(!file){message.textContent='Choose a poster first.';return;}
+ if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024){message.textContent='Choose PNG, JPEG or WebP under 5 MB.';return;}
+ const url=URL.createObjectURL(file);preview.src=url;preview.hidden=false;preview.onload=()=>URL.revokeObjectURL(url);
+ if(typeof window.TextDetector!=='function'){message.textContent='This browser does not support on-device text recognition. You can paste poster text below instead.';return;}
+ message.textContent='Reading poster…';
+ try{const bitmap=await createImageBitmap(file);let blocks;try{blocks=await new TextDetector().detect(bitmap);}finally{bitmap.close?.();}
+ document.getElementById('adminPosterText').value=blocks.map(x=>x.rawValue).filter(Boolean).join('\n');
+ message.textContent='Poster text recognised. Review it and choose Apply recognised details.';
+ }catch(error){message.textContent='Could not recognise text from this image. You can paste the text manually.';}
+});
+document.getElementById('adminPosterApply')?.addEventListener('click',()=>{
+ const message=document.getElementById('adminPosterMessage'),text=document.getElementById('adminPosterText').value.trim();
+ if(!text){message.textContent='No poster text to apply.';return;}
+ const lines=text.split(/\n/).map(x=>x.trim()).filter(Boolean);
+ const setEmpty=(name,value)=>{const field=form.elements.namedItem(name);if(field&&value&&!field.value.trim()){field.value=value;field.dispatchEvent(new Event('input',{bubbles:true}));}};
+ const title=lines.find(x=>/stay\s*(?:&|and)\s*play|baby\s*class|toddler\s*group|sensory|playgroup|music\s*class/i.test(x)&&x.length<85);
+ setEmpty('title',title);
+ const age=text.match(/(?:suitable\s*for\s*)?(\d+)\s*[-–]\s*(\d+)\s*(years?|months?)/i);
+ if(age)setEmpty('age_range',age[1]+'–'+age[2]+' '+age[3]);
+ const phone=text.match(/(?:\+44\s?\d|0\d)[\d\s]{8,15}/);if(phone)setEmpty('phone',phone[0].trim());
+ const postcode=text.match(/\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b/i);if(postcode)setEmpty('postcode',postcode[0].toUpperCase());
+ const website=text.match(/(?:https?:\/\/)?(?:www\.)?[a-z0-9-]+\.(?:co\.uk|org\.uk|com|uk)(?:\/[^\s]*)?/i);if(website)setEmpty('website',website[0].startsWith('http')?website[0]:'https://'+website[0]);
+ const price=text.match(/£\s*(\d+(?:\.\d{1,2})?)/);if(price)setEmpty('price_from',price[1]);
+ if(/per\s+family/i.test(text)){const unit=form.elements.namedItem('pricing_unit');if(unit)unit.value='per_family';}
+ const dayNames=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+ const day=dayNames.find(d=>new RegExp('\\b'+d+'s?\\b','i').test(text));
+ const times=text.match(/(\d{1,2}(?:[:.]\d{2})?\s*(?:am|pm))\s*[-–to]+\s*(\d{1,2}(?:[:.]\d{2})?\s*(?:am|pm))/i);
+ const parseTime=value=>{const m=value.match(/(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm)/i);if(!m)return '';let h=Number(m[1])%12;if(m[3].toLowerCase()==='pm')h+=12;return String(h).padStart(2,'0')+':'+(m[2]||'00');};
+ if(day&&times){addSession({class_name:title||'',day_of_week:String(dayNames.indexOf(day)+1),start_time:parseTime(times[1]),end_time:parseTime(times[2]),frequency:'weekly'});}
+ const description=lines.filter(x=>x.length>38&&!/https?:|www\.|£|postcode|registered charity|telephone/i.test(x)).slice(0,5).join('\n\n');
+ setEmpty('description',description);
+ message.textContent='Recognised details applied where fields were empty'+(day&&times?'; one session added':'')+'. Review every field before saving.';
+});
 const collectSessions=()=>[...scheduleRows.children].map(row=>{const s={venue_index:Number(row.dataset.venueIndex||0)};row.querySelectorAll('[data-session-field]').forEach(el=>s[el.dataset.sessionField]=el.type==='checkbox'?(el.checked?1:0):el.value);return s;}).filter(s=>s.day_of_week||s.start_time);
  // Seven-step admin editor, matching the class leader's new listing workflow.
 const steps=[['Basics',['title','organisation_name','description']],['About',['category','age_preset','age_range','price_from','pricing_unit','block_length_weeks','price_free']],['Extra',['booking_url','email','phone','website','status']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address']],['Photos',['image_path']],['Review',[]]];
