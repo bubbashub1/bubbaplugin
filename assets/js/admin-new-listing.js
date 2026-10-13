@@ -215,7 +215,28 @@ document.getElementById('adminPosterRead')?.addEventListener('click',async()=>{
  if(!file){message.textContent='Choose a poster first.';return;}
  if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024){message.textContent='Choose PNG, JPEG or WebP under 5 MB.';return;}
  const url=URL.createObjectURL(file);preview.src=url;preview.hidden=false;preview.onload=()=>URL.revokeObjectURL(url);
- if(typeof window.TextDetector!=='function'){message.textContent='This browser does not support on-device text recognition. You can paste poster text below instead.';return;}
+ if(typeof window.TextDetector!=='function'){
+ message.textContent='Loading poster text reader…';
+ try{
+  if(!window.Tesseract){
+   await new Promise((resolve,reject)=>{
+    const script=document.createElement('script');
+    script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+    script.onload=resolve;script.onerror=()=>reject(new Error('OCR library could not load'));
+    document.head.appendChild(script);
+   });
+  }
+  message.textContent='Reading poster… this may take a moment.';
+  const result=await window.Tesseract.recognize(file,'eng',{logger:progress=>{
+   if(progress.status==='recognizing text')message.textContent='Reading poster… '+Math.round((progress.progress||0)*100)+'%';
+  }});
+  const recognised=String(result?.data?.text||'').trim();
+  if(!recognised)throw new Error('No text detected');
+  document.getElementById('adminPosterText').value=recognised;
+  message.textContent='Poster text recognised. Review it and choose Apply recognised details.';
+ }catch(error){message.textContent='Automatic poster reading was unavailable ('+String(error.message||error)+'). You can paste poster text below instead.';}
+ return;
+}
  message.textContent='Reading poster…';
  try{const bitmap=await createImageBitmap(file);let blocks;try{blocks=await new TextDetector().detect(bitmap);}finally{bitmap.close?.();}
  document.getElementById('adminPosterText').value=blocks.map(x=>x.rawValue).filter(Boolean).join('\n');
