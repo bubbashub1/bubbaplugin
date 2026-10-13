@@ -240,9 +240,11 @@ const stepNav=document.getElementById('adminListingSteps');
 const back=document.getElementById('adminListingBack'),next=document.getElementById('adminListingNext'),save=document.getElementById('adminListingSubmit');
 const labels=[...form.querySelectorAll('.admin-form-grid > label')];
 let step=0;
-const review=document.createElement('div');review.className='bh-review';review.hidden=true;form.querySelector('.admin-form-grid').after(review);
+const review=document.createElement('div');review.className='bh-review';review.hidden=true;form.querySelector('.admin-form-grid:last-of-type').after(review);
+const identity=document.getElementById('adminListingIdentity');
 const renderStep=()=>{
  const current=steps[step];
+ if(identity)identity.hidden=step!==0&&step!==6;
  labels.forEach(label=>{const field=label.querySelector('[name]');const name=field?.name;label.hidden=step!==6&&!current[1].includes(name)&&!(step===4&&label.querySelector('#existingVenueSelect'));label.style.display=label.hidden?'none':'';if(field&&field.required){field.disabled=label.hidden;}});
  review.hidden=step!==6;if(scheduleSection)scheduleSection.hidden=step!==3;
  if(step===6){review.replaceChildren();labels.forEach(label=>{const el=label.querySelector('[name]');if(!el)return;const line=document.createElement('p');const strong=document.createElement('strong');strong.textContent=label.textContent.trim()+': ';line.append(strong,document.createTextNode(el.value||'—'));review.append(line);});}
