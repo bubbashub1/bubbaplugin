@@ -242,10 +242,15 @@ const labels=[...form.querySelectorAll('.admin-form-grid > label')];
 let step=0;
 const review=document.createElement('div');review.className='bh-review';review.hidden=true;form.querySelector('.admin-form-grid:last-of-type').after(review);
 const identity=document.getElementById('adminListingIdentity');
+const websiteImport=document.getElementById('bhAutoFillRun')?.closest('section');
+const posterImport=document.getElementById('adminPosterImage')?.closest('.bh-card');
+form.noValidate=true;
 const renderStep=()=>{
  const current=steps[step];
- if(identity)identity.hidden=step!==0&&step!==6;
- labels.forEach(label=>{const field=label.querySelector('[name]');const name=field?.name;label.hidden=step!==6&&!current[1].includes(name)&&!(step===4&&label.querySelector('#existingVenueSelect'));label.style.display=label.hidden?'none':'';if(field&&field.required){field.disabled=label.hidden;}});
+ if(identity)identity.hidden=step!==0;
+ if(websiteImport)websiteImport.hidden=step!==0;
+ if(posterImport)posterImport.hidden=step!==0;
+ labels.forEach(label=>{const field=label.querySelector('[name]');const name=field?.name;label.hidden=step===6||(!current[1].includes(name)&&!(step===4&&label.querySelector('#existingVenueSelect')));label.style.display=label.hidden?'none':'';});
  review.hidden=step!==6;if(scheduleSection)scheduleSection.hidden=step!==3;
  if(step===6){review.replaceChildren();labels.forEach(label=>{const el=label.querySelector('[name]');if(!el)return;const line=document.createElement('p');const strong=document.createElement('strong');strong.textContent=label.textContent.trim()+': ';line.append(strong,document.createTextNode(el.value||'—'));review.append(line);});}
  back.hidden=step===0;next.hidden=step===6;save.hidden=step!==6;
