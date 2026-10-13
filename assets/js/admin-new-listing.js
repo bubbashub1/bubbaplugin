@@ -1,11 +1,12 @@
 document.addEventListener('DOMContentLoaded',async()=>{
 const form=document.getElementById('newListingForm');if(!form)return;
 const status=document.getElementById('newListingStatus'),button=form.querySelector('button[type="submit"]'),id=new URLSearchParams(location.search).get('id');let original=null;
+const preset=form.elements.namedItem('age_preset'),free=form.elements.namedItem('price_free'),price=form.elements.namedItem('price_from'),unit=form.elements.namedItem('pricing_unit');
 const redirect=()=>location.replace('/admin-login.html?next='+encodeURIComponent(location.pathname+location.search));
 button.disabled=true;
 try{const auth=await fetch('/admin-auth.php?action=check',{credentials:'same-origin',cache:'no-store'});if(auth.status===401){redirect();return;}const check=await auth.json();if(!auth.ok||!check.ok)throw Error('Could not verify admin access.');
 const presets={'0-6':[0,6,'0–6 months'],'6-12':[6,12,'6–12 months'],'0-12':[0,12,'0–12 months'],'12-48':[12,48,'1–4 years'],'48+':[48,null,'4+ years']};
-const preset=form.elements.namedItem('age_preset'),free=form.elements.namedItem('price_free'),price=form.elements.namedItem('price_from'),unit=form.elements.namedItem('pricing_unit');
+
 const blockWeeks=form.elements.namedItem('block_length_weeks'),blockField=document.getElementById('blockWeeksField');const syncBlockWeeks=()=>{const show=unit.value==='per_block'&&!free.checked;blockField.hidden=!show;blockWeeks.required=show;blockWeeks.disabled=!show;if(!show)blockWeeks.value='';};unit.addEventListener('change',syncBlockWeeks);free.addEventListener('change',syncBlockWeeks);const applyPreset=()=>{const keys=[...preset.selectedOptions].map(o=>o.value).filter(v=>presets[v]);if(!keys.length)return;const values=keys.map(k=>presets[k]);form.elements.namedItem('age_min_months').value=Math.min(...values.map(v=>v[0]));form.elements.namedItem('age_max_months').value=values.some(v=>v[1]===null)?'':Math.max(...values.map(v=>v[1]));form.elements.namedItem('age_range').value=values.map(v=>v[2]).join(', ');};
 preset.addEventListener('change',applyPreset);
 free.addEventListener('change',()=>{price.disabled=free.checked;if(free.checked)price.value='0';});
