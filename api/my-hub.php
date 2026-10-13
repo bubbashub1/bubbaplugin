@@ -380,6 +380,7 @@ try {
 
     bh_hub_json(400, ['ok' => false, 'error' => 'unknown_action']);
 } catch (Throwable $e) {
-    bh_hub_json(500, ['ok' => false, 'error' => 'my_hub_error', 'message' => $e->getMessage()]);
+    error_log('Bubba Hub My Hub API failed: ' . $e->getMessage());
+    bh_hub_json(500, ['ok' => false, 'error' => 'my_hub_error', 'message' => 'My Hub is temporarily unavailable. Please try again.']);
 }
 ?>
