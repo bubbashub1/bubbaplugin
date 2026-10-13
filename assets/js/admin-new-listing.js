@@ -61,6 +61,26 @@ if(categoryInput){
  wrapper.appendChild(custom);
  form.addEventListener('submit',event=>{if(!selected.size){event.preventDefault();status.textContent='Choose at least one category.';status.classList.add('is-error');} },true);
 }
+// Suggest county and region only for recognised towns; never guess unknown locations.
+const townField=form.elements.namedItem('town'),countyField=form.elements.namedItem('county'),regionField=form.elements.namedItem('region');
+const areaByTown={
+ 'torquay':['Torbay','Torbay'],'paignton':['Torbay','Torbay'],'brixham':['Torbay','Torbay'],
+ 'newton abbot':['Devon','Teignbridge'],'teignmouth':['Devon','Teignbridge'],'dawlish':['Devon','Teignbridge'],'bovey tracey':['Devon','Teignbridge'],'kingsteignton':['Devon','Teignbridge'],'ashburton':['Devon','Teignbridge'],
+ 'exeter':['Devon','Exeter'],'whimple':['Devon','East Devon'],'exmouth':['Devon','East Devon'],'sidmouth':['Devon','East Devon'],
+ 'totnes':['Devon','South Hams'],'kingsbridge':['Devon','South Hams'],'dartmouth':['Devon','South Hams'],'ivybridge':['Devon','South Hams'],
+ 'plymouth':['Plymouth','Plymouth'],'truro':['Cornwall','Cornwall'],'falmouth':['Cornwall','Cornwall'],'newquay':['Cornwall','Cornwall']
+};
+function suggestArea(){
+ if(!townField||!countyField||!regionField)return;
+ const raw=townField.value.trim().toLowerCase();
+ const key=raw.replace(/\\s*,.*$/,'').replace(/\\s+[a-z]{1,2}\\d.*$/,'').trim();
+ const match=areaByTown[key];
+ if(match){countyField.value=match[0];regionField.value=match[1];}
+ else if(!raw){countyField.value='';regionField.value='';}
+ else{countyField.value='';regionField.value='';}
+}
+townField?.addEventListener('change',suggestArea);
+townField?.addEventListener('blur',suggestArea);
 // Existing venues are searchable using the browser's built-in datalist.
 const venueSelect=document.getElementById('existingVenueSelect');
 const venueName=form.elements.namedItem('venue_name');
@@ -79,7 +99,7 @@ if(venueSelect){
   const v=venues.find(x=>String(x.id)===venueSelect.value);if(!v)return;
   const fields={venue_name:v.name,address:v.address,town:v.town,region:v.region,postcode:v.postcode};
   Object.entries(fields).forEach(([name,value])=>{const field=form.elements.namedItem(name);if(field)field.value=value||'';});
-  const county=form.elements.namedItem('county');if(county&&/exeter|devon/i.test(v.region||''))county.value='Devon';
+  suggestArea();
   venueMessage.textContent='✓ Existing venue details copied. You can review them before saving.';
  });
  try{
