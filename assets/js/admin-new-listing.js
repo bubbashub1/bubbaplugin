@@ -22,6 +22,18 @@ else if(String(original.price_per_session)==='1')unit.value='per_session';
 price.disabled=free.checked;
 document.querySelector('h1').textContent='Edit listing';document.title='Edit listing · Admin · Bubba Hub';status.textContent='';}
 // Reuse existing category names, allowing multiple selections without duplicate listings.
+const tagField=form.elements.namedItem('tags');
+const suggestTags=(source)=>{
+ if(!tagField||!source)return;
+ const text=String(source).toLowerCase();
+ const candidates=['sensory play','storytelling','messy play','baby massage','baby yoga','music and movement','singing','dance','arts and crafts','stay and play','playgroup','toddler group','baby development','outdoor activities','nature','swimming','pregnancy','parent support','soft play','early years'];
+ const current=tagField.value.split(',').map(t=>t.trim()).filter(Boolean);
+ const existing=new Set(current.map(t=>t.toLowerCase()));
+ for(const tag of candidates){if(new RegExp(tag.replace(/[-/\\^$*+?.()|[\]{}]/g,'\\const categoryInput=form.querySelector').replace(/ /g,'\\s+'),'i').test(text)&&!existing.has(tag)){current.push(tag);existing.add(tag)}}
+ tagField.value=current.slice(0,20).join(', ');
+};
+document.getElementById('adminPosterApply')?.addEventListener('click',()=>suggestTags(document.getElementById('adminPosterText')?.value||''));
+document.getElementById('bhAutoFillRun')?.addEventListener('click',()=>setTimeout(()=>suggestTags([form.elements.namedItem('description')?.value,document.getElementById('bhAutoFillAboutText')?.value,document.getElementById('bhAutoFillTagInput')?.value].join(' ')),1200));
 const categoryInput=form.querySelector('[name="category"]');
 if(categoryInput){
  const wrapper=document.createElement('div');
@@ -260,7 +272,7 @@ steps.forEach(([name],i)=>{const b=document.createElement('button');b.type='butt
 back.addEventListener('click',()=>{step=Math.max(0,step-1);renderStep();});
 next.addEventListener('click',()=>{const required=labels.filter(l=>!l.hidden).map(l=>l.querySelector('[required]')).filter(Boolean);const invalid=required.find(el=>!el.value.trim());if(invalid){invalid.reportValidity();return;}step=Math.min(6,step+1);renderStep();});
 renderStep();
-form.addEventListener('submit',async e=>{e.preventDefault();status.textContent='Checking listing…';try{status.classList.remove('is-error');const requiredNames=['title','organisation_name','venue_name','town','category'];const missing=requiredNames.find(name=>!String(form.elements.namedItem(name)?.value||'').trim());if(missing){status.textContent='Please complete '+missing.replaceAll('_',' ')+' before saving.';status.classList.add('is-error');step=['title','organisation_name'].includes(missing)?0:missing==='category'?1:4;renderStep();return;}const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};delete body.age_preset;
+form.addEventListener('submit',async e=>{e.preventDefault();status.textContent='Checking listing…';try{status.classList.remove('is-error');const requiredNames=['title','organisation_name','venue_name','town','category'];const missing=requiredNames.find(name=>!String(form.elements.namedItem(name)?.value||'').trim());if(missing){status.textContent='Please complete '+missing.replaceAll('_',' ')+' before saving.';status.classList.add('is-error');step=['title','organisation_name'].includes(missing)?0:missing==='category'?1:4;renderStep();return;}const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};delete body.age_preset;body.tags=String(tagField?.value||"").split(",").map(t=>t.trim()).filter(Boolean).slice(0,20).join(", ");
 body.price_free=free.checked?1:0;body.price_per_family=!free.checked&&unit.value==='per_family'?1:0;body.price_per_session=!free.checked&&unit.value==='per_session'?1:0;body.pricing_unit=unit.value;body.block_length_weeks=unit.value==='per_block'&&!free.checked?Number(blockWeeks.value):null;body.id=original?.id||null;body.sessions=collectSessions();body.venues=(original?.venues||[]).slice(1).map(v=>({...v,latitude:v.latitude??'',longitude:v.longitude??''}));body.accessibility=original?.accessibility||[];
 body.latitude=original?.latitude??'';body.longitude=original?.longitude??'';body.sessions=body.sessions.map(s=>({...s,price:s.price??'',start_date:s.start_date??'',end_date:s.end_date??''}));
 if(body.sessions.some(s=>!s.day_of_week||!s.start_time||s.end_time&&s.end_time<=s.start_time)){status.textContent='Each session needs a day and start time, and its end time must be later than its start time.';status.classList.add('is-error');step=3;renderStep();return;}button.disabled=true;status.textContent='Saving listing…';status.classList.remove('is-error');
