@@ -21,9 +21,35 @@ libxml_use_internal_errors(true);$doc=new DOMDocument();$doc->loadHTML('<?xml en
 $xp=new DOMXPath($doc);
 $meta=function($key)use($xp){$nodes=$xp->query('//meta[@name="'.$key.'" or @property="'.$key.'"]/@content');return $nodes&&$nodes->length?trim($nodes->item(0)->nodeValue):'';};
 $title=$meta('og:title');if(!$title){$nodes=$doc->getElementsByTagName('title');$title=$nodes->length?trim($nodes->item(0)->textContent):'';}
-$description=$meta('og:description')?:$meta('description');
-if(!$description){$nodes=$xp->query('//main//p|//article//p');foreach($nodes?:[] as $node){$v=trim(preg_replace('/\\s+/u',' ',$node->textContent));if(mb_strlen($v)>70){$description=$v;break;}}}
-$title=mb_substr(strip_tags($title),0,160);$description=mb_substr(strip_tags($description),0,1200);
+$summary=$meta('og:description')?:$meta('description');
+$description='';
+$blocks=[];
+$scopes=['//main','//article','//*[@itemprop="articleBody"]','//*[contains(concat(" ",normalize-space(@class)," ")," entry-content ")]','//*[contains(concat(" ",normalize-space(@class)," ")," page-content ")]'];
+foreach($scopes as $scope){
+ $nodes=$xp->query($scope);
+ if(!$nodes||!$nodes->length)continue;
+ foreach($nodes as $container){
+  $paragraphs=$xp->query('.//p|.//li',$container);
+  if(!$paragraphs)continue;
+  $candidate=[];
+  foreach($paragraphs as $node){
+   $parent=$node->parentNode;$skip=false;
+   while($parent&&$parent!==$container){if($parent instanceof DOMElement&&in_array(strtolower($parent->tagName),['nav','footer','header','aside','form'],true)){$skip=true;break;}$parent=$parent->parentNode;}
+   if($skip)continue;
+   $v=trim((string)preg_replace('/\\s+/u',' ',$node->textContent));
+   if(mb_strlen($v)<45||mb_strlen($v)>1800)continue;
+   if(preg_match('/^(cookie|privacy policy|terms and conditions|subscribe|sign up|book now|follow us)/iu',$v))continue;
+   if(!in_array($v,$candidate,true))$candidate[]=$v;
+   if(count($candidate)>=10)break;
+  }
+  if(mb_strlen(implode("\\n\\n",$candidate))>mb_strlen(implode("\\n\\n",$blocks)))$blocks=$candidate;
+ }
+ if(mb_strlen(implode("\\n\\n",$blocks))>=450)break;
+}
+$description=$blocks?implode("\n\n",$blocks):$summary;
+if($description===''&&$summary!=='')$description=$summary;
+$title=mb_substr(strip_tags($title),0,160);
+$description=mb_substr(strip_tags($description),0,4000);
 $keywords=$meta('keywords');
 $search=mb_strtolower($title.' '.$description.' '.$keywords);
 $taxonomy=[
