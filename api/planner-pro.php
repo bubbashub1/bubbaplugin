@@ -52,6 +52,16 @@ try {
 
     if (!isset($_SESSION['bh_csrf'])) $_SESSION['bh_csrf']=bin2hex(random_bytes(24));
 
+    // Legacy databases may have subscriptions but not the Planner Pro state table.
+    // Create only the missing table; never modify or replace existing planner data.
+    $db->exec("CREATE TABLE IF NOT EXISTS bh_planner_pro_state (
+        user_id BIGINT UNSIGNED NOT NULL,
+        state_json LONGTEXT NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
     if ($_SERVER['REQUEST_METHOD']==='GET') {
         $stmt=$db->prepare("SELECT state_json,updated_at FROM bh_planner_pro_state WHERE user_id=? LIMIT 1");
         $stmt->execute([$userId]); $row=$stmt->fetch();
