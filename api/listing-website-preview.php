@@ -61,6 +61,43 @@ foreach($scopes as $scope){
 $description=$bestBlocks?implode("\n\n",$bestBlocks):$summary;
 $title=mb_substr(strip_tags($title),0,160);
 $description=mb_substr(strip_tags($description),0,4000);
+// Enrich the preview with a same-host homepage and About page (no cross-site crawling).
+$origin=strtolower((string)parse_url($url,PHP_URL_SCHEME)).'://'.$host;
+$aboutUrls=[];
+foreach($xp->query('//a[@href]')?:[] as $link){
+ $label=mb_strtolower(trim((string)$link->textContent));
+ $href=trim((string)$link->getAttribute('href'));
+ if(!preg_match('/\\b(about us|about me|our story|meet the team|who we are|meet your leader|about)\\b/u',$label.' '.$href))continue;
+ if(str_starts_with($href,'/'))$candidate=$origin.$href;
+ elseif(str_starts_with($href,'https://'))$candidate=$href;
+ else continue;
+ $parts=parse_url($candidate);
+ if(!$parts||strtolower((string)($parts['host']??''))!==strtolower($host)||isset($parts['port'])||isset($parts['user'])||isset($parts['pass']))continue;
+ $aboutUrls[]=$candidate;
+ if(count($aboutUrls)>=2)break;
+}
+$pages=array_values(array_unique(array_merge([$origin.'/'],$aboutUrls)));
+$extra=[];
+foreach(array_slice($pages,0,3) as $pageUrl){
+ if($pageUrl===$url)continue;
+ $pageCh=curl_init($pageUrl);
+ curl_setopt_array($pageCh,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>4,CURLOPT_TIMEOUT=>8,CURLOPT_USERAGENT=>'BubbaHubListingPreview/1.0',CURLOPT_HTTPHEADER=>['Accept: text/html'],CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_MAXFILESIZE=>1048576,CURLOPT_RESOLVE=>[$host.':443:'.$ips[0]]]);
+ $pageHtml=curl_exec($pageCh);$pageStatus=(int)curl_getinfo($pageCh,CURLINFO_RESPONSE_CODE);$pageType=(string)curl_getinfo($pageCh,CURLINFO_CONTENT_TYPE);curl_close($pageCh);
+ if(!is_string($pageHtml)||strlen($pageHtml)>1048576||$pageStatus!==200||stripos($pageType,'text/html')===false)continue;
+ $pageDoc=new DOMDocument();$old=libxml_use_internal_errors(true);$pageDoc->loadHTML($pageHtml,LIBXML_NONET|LIBXML_NOERROR|LIBXML_NOWARNING);libxml_clear_errors();libxml_use_internal_errors($old);
+ $pageXp=new DOMXPath($pageDoc);$pageBlocks=[];
+ foreach($pageXp->query('//main//p|//article//p')?:[] as $paragraph){
+  $value=trim((string)preg_replace('/\\s+/u',' ',$paragraph->textContent));
+  if(mb_strlen($value)<90||mb_strlen($value)>1200)continue;
+  if(preg_match('/\\b[A-Z]{1,2}[0-9][A-Z0-9]?\\s*[0-9][A-Z]{2}\\b/u',$value))continue;
+  if(preg_match('/\\b(?:road|street|postcode|venues|locations)\\b/iu',$value)&&mb_strlen($value)<220)continue;
+  if(!preg_match('/\\b(baby|babies|children|toddler|class|sensory|play|parent|story|family|families|development|pregnancy|experience|qualified|founder|leader)\\b/iu',$value))continue;
+  if(!in_array($value,$pageBlocks,true))$pageBlocks[]=$value;
+  if(count($pageBlocks)>=4)break;
+ }
+ if($pageBlocks)$extra[]=implode("\n\n",$pageBlocks);
+}
+$aboutDescription=mb_substr(implode("\n\n",$extra),0,3000);
 $keywords=$meta('keywords');
 $search=mb_strtolower($title.' '.$description.' '.$keywords);
 $taxonomy=[
@@ -77,4 +114,4 @@ $tagVocabulary=['baby massage','baby yoga','baby sensory','newborn','bonding','t
 $detected=[];foreach($tagVocabulary as $term){if(mb_strpos($search,$term)!==false)$detected[]=$term;}
 $tags=array_slice(array_values(array_unique(array_filter(array_map('trim',explode(',',$keywords))))),0,12);
 $tags=array_slice(array_values(array_unique(array_merge($detected,$tags))),0,12);
-echo json_encode(['ok'=>true,'title'=>$title,'description'=>$description,'categories'=>$categories,'tags'=>$tags,'source'=>$url,'message'=>'Review and edit all suggested information before saving.'],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+echo json_encode(['ok'=>true,'title'=>$title,'description'=>$description,'about_description'=>$aboutDescription,'categories'=>$categories,'tags'=>$tags,'source'=>$url,'message'=>'Review and edit all suggested information before saving.'],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
