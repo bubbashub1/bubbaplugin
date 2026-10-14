@@ -47,12 +47,6 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
  if(in_array($listingAction,['delete','assign_leader'],true)){
   if(!hash_equals($_SESSION['bh_listing_csrf'],(string)($input['csrf']??'')))bh_admin_response(403,['ok'=>false,'error'=>'Please refresh the page and try again.']);
   if($id<1)bh_admin_response(422,['ok'=>false,'error'=>'Choose a listing.']);
-  $db->exec("CREATE TABLE IF NOT EXISTS bh_import_sources (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,activity_id BIGINT UNSIGNED NOT NULL,source_url VARCHAR(2048) NOT NULL,url_hash CHAR(64) NOT NULL,last_checked_at DATETIME NULL,next_check_at DATETIME NOT NULL,check_status VARCHAR(32) NOT NULL DEFAULT 'pending',last_error TEXT NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,UNIQUE KEY unique_source (activity_id,url_hash),KEY due_sources (next_check_at,check_status)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
- // Preserve per-session names on older staging databases lacking the column.
- $sessionSchema=$db->query("SHOW COLUMNS FROM bh_sessions")->fetchAll(PDO::FETCH_COLUMN);
- if(!in_array('class_name',$sessionSchema,true)){
-  $db->exec("ALTER TABLE bh_sessions ADD COLUMN class_name VARCHAR(160) NULL DEFAULT NULL");
- }
  $db->beginTransaction();
   try{
    $q=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND status<>'archived' FOR UPDATE");$q->execute([$id]);
@@ -103,6 +97,13 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
  $optional=['age_min_months'=>$ageMin,'age_max_months'=>$ageMax,'price_free'=>$free?1:0,'price_per_family'=>!$free&&$unit==='per_family'?1:0,'price_per_session'=>!$free&&$unit==='per_session'?1:0,'pricing_unit'=>$unit,'block_length_weeks'=>$blockWeeks];
  $cols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);
  $optional=array_intersect_key($optional,array_flip($cols));
+  $db->exec("CREATE TABLE IF NOT EXISTS bh_import_sources (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,activity_id BIGINT UNSIGNED NOT NULL,source_url VARCHAR(2048) NOT NULL,url_hash CHAR(64) NOT NULL,last_checked_at DATETIME NULL,next_check_at DATETIME NOT NULL,check_status VARCHAR(32) NOT NULL DEFAULT 'pending',last_error TEXT NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,UNIQUE KEY unique_source (activity_id,url_hash),KEY due_sources (next_check_at,check_status)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+ // Preserve per-session names on older staging databases lacking the column.
+ $sessionSchema=$db->query("SHOW COLUMNS FROM bh_sessions")->fetchAll(PDO::FETCH_COLUMN);
+ if(!in_array('class_name',$sessionSchema,true)){
+  $db->exec("ALTER TABLE bh_sessions ADD COLUMN class_name VARCHAR(160) NULL DEFAULT NULL");
+ }
+
  $submittedSessions=(array)($input['sessions']??[]);
  foreach($submittedSessions as $index=>$session){
   $day=(int)($session['day_of_week']??0);
