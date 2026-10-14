@@ -178,7 +178,7 @@ const importButton=document.getElementById('adminIcalPreview');
 const importMessage=document.getElementById('adminIcalMessage'),importResults=document.getElementById('adminIcalResults');
 const previewImportedSessions=(entries,note='')=>{
  importResults.replaceChildren();
- importMessage.textContent=entries.length+' possible class or course record(s) found. Review every field before adding.'+(note?' '+note:'');
+ importMessage.textContent=entries.length+' possible class record(s) found. Review every field before adding.'+(note?' '+note:'');
  const checks=[],list=document.createElement('div');
  const field=(parent,label,value,type='text')=>{
   const wrap=document.createElement('label');wrap.textContent=label;wrap.style.cssText='display:flex;flex-direction:column;gap:4px;font-size:13px';
@@ -186,8 +186,8 @@ const previewImportedSessions=(entries,note='')=>{
  };
  entries.forEach((event,index)=>{
   const card=document.createElement('fieldset');card.style.cssText='border:1px solid #ced7c7;border-radius:12px;padding:12px;margin:10px 0';
-  const legend=document.createElement('legend');legend.textContent='Course '+(index+1);card.append(legend);
-  const selected=document.createElement('label');const check=document.createElement('input');check.type='checkbox';check.checked=!/confirm/i.test(event.title||'');selected.append(check,document.createTextNode(' Include this course'));card.append(selected);
+  const legend=document.createElement('legend');legend.textContent='Class '+(index+1);card.append(legend);
+  const selected=document.createElement('label');const check=document.createElement('input');check.type='checkbox';check.checked=!/confirm/i.test(event.title||'');selected.append(check,document.createTextNode(' Include this class'));card.append(selected);
   const grid=document.createElement('div');grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-top:10px';
   const title=field(grid,'Class name',event.class_name||event.title);
   const venue=document.createElement('label');venue.textContent='Venue';venue.style.cssText='display:flex;flex-direction:column;gap:4px;font-size:13px';
@@ -211,7 +211,7 @@ const previewImportedSessions=(entries,note='')=>{
   for(const row of checks){
    if(!row.check.checked)continue;
    const title=row.title.value.trim(),start=row.startTime.value,end=row.endTime.value,from=row.from.value,to=row.to.value;
-   if(!title||/confirm/i.test(title)||!start||!end||!from||!to||to<from){importMessage.textContent='Complete class name, start/end times and valid dates for each selected course.';return;}
+   if(!title||/confirm/i.test(title)||!start||!end||!from||!to||to<from){importMessage.textContent='Complete class name, start/end times and valid dates for each selected class.';return;}
    const key=[from,start,row.daySelect.value,title].join('|');if(known.has(key))continue;
    addSession({...row.event,title,class_name:title,venue_index:Number(row.location.value),day_of_week:Number(row.daySelect.value),start_time:start,end_time:end,start_date:from,end_date:to,price:row.price.value});
    known.add(key);count++;
