@@ -22,7 +22,35 @@ curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>fals
 $body=curl_exec($ch);$code=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);
 if(!is_string($body)||strlen($body)>1048576||$code!==200)fail(422,'Could not retrieve the public calendar feed (HTTP '.$code.').');
 if(!str_contains($body,'BEGIN:VCALENDAR')){
- if(!preg_match('/(^|\\.)bookwhen\\.com$/i',$host))fail(422,'This booking page is not an iCalendar feed. Enter a public .ics URL.');
+ $isBookwhen=(bool)preg_match('/(^|\\.)bookwhen\\.com$/i',$host);
+ $isBloom=(bool)preg_match('/(^|\\.)bloombabyclasses\\.com$/i',$host);
+ if(!$isBookwhen&&!$isBloom)fail(422,'This page does not contain an iCalendar feed. Try the public timetable text importer.');
+ if($isBloom){
+  $found=[];
+  if(class_exists('DOMDocument')){
+   $dom=new DOMDocument();libxml_use_internal_errors(true);$dom->loadHTML($body);libxml_clear_errors();
+   $xpath=new DOMXPath($dom);
+   foreach($xpath->query('//script[@type="application/ld+json"]') as $script){
+    $json=json_decode($script->textContent,true);if(!is_array($json))continue;
+    $queue=[$json];
+    while($queue){
+     $item=array_pop($queue);if(!is_array($item))continue;
+     if(in_array('Event',(array)($item['@type']??[]),true)&&!empty($item['startDate'])){
+      try{
+       $start=(new DateTimeImmutable($item['startDate']))->setTimezone(new DateTimeZone('Europe/London'));
+       $end=!empty($item['endDate'])?(new DateTimeImmutable($item['endDate']))->setTimezone(new DateTimeZone('Europe/London')):null;
+       $key=($item['@id']??$item['url']??'').$start->format('c');
+       $found[$key]=['title'=>(string)($item['name']??'Class session'),'day_of_week'=>(int)$start->format('N'),'start_time'=>$start->format('H:i'),'end_time'=>$end?$end->format('H:i'):'','start_date'=>$start->format('Y-m-d'),'end_date'=>$start->format('Y-m-d'),'frequency'=>'once','url'=>(string)($item['url']??$url),'uid'=>$key];
+      }catch(Throwable $ignored){}
+     }
+     foreach($item as $value)if(is_array($value))$queue[]=$value;
+    }
+   }
+  }
+  if(!$found)fail(422,'Bloom timetable retrieved, but no dated class events were exposed in the public page HTML. Expand Paste your schedule and preview the weekly blocks instead.');
+  echo json_encode(['ok'=>true,'data'=>array_slice(array_values($found),0,150),'skipped_recurring'=>0,'source'=>'bloom_public_page']);exit;
+ }
+
  $found=[];
  // Public Bookwhen pages may expose structured Event data without an ICS link.
  if(class_exists('DOMDocument')){
