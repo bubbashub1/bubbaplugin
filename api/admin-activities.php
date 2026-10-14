@@ -47,7 +47,8 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
  if(in_array($listingAction,['delete','assign_leader'],true)){
   if(!hash_equals($_SESSION['bh_listing_csrf'],(string)($input['csrf']??'')))bh_admin_response(403,['ok'=>false,'error'=>'Please refresh the page and try again.']);
   if($id<1)bh_admin_response(422,['ok'=>false,'error'=>'Choose a listing.']);
-  $db->beginTransaction();
+  $db->exec("CREATE TABLE IF NOT EXISTS bh_import_sources (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,activity_id BIGINT UNSIGNED NOT NULL,source_url VARCHAR(2048) NOT NULL,url_hash CHAR(64) NOT NULL,last_checked_at DATETIME NULL,next_check_at DATETIME NOT NULL,check_status VARCHAR(32) NOT NULL DEFAULT 'pending',last_error TEXT NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,UNIQUE KEY unique_source (activity_id,url_hash),KEY due_sources (next_check_at,check_status)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+ $db->beginTransaction();
   try{
    $q=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND status<>'archived' FOR UPDATE");$q->execute([$id]);
    if(!$q->fetch()){$db->rollBack();bh_admin_response(404,['ok'=>false,'error'=>'Listing not found.']);}
@@ -65,7 +66,6 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
   // does not remove previously saved sources.
   $sourceUrls=(array)($input['import_source_urls']??[]);
   if($sourceUrls){
-   $db->exec("CREATE TABLE IF NOT EXISTS bh_import_sources (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,activity_id BIGINT UNSIGNED NOT NULL,source_url VARCHAR(2048) NOT NULL,url_hash CHAR(64) NOT NULL,last_checked_at DATETIME NULL,next_check_at DATETIME NOT NULL,check_status VARCHAR(32) NOT NULL DEFAULT 'pending',last_error TEXT NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,UNIQUE KEY unique_source (activity_id,url_hash),KEY due_sources (next_check_at,check_status)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
    $saveSource=$db->prepare("INSERT INTO bh_import_sources (activity_id,source_url,url_hash,next_check_at) VALUES (?,?,?,DATE_ADD(UTC_TIMESTAMP(),INTERVAL 42 DAY)) ON DUPLICATE KEY UPDATE source_url=VALUES(source_url)");
    foreach(array_unique($sourceUrls) as $sourceUrl){
     $sourceUrl=trim((string)$sourceUrl);
