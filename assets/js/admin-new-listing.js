@@ -176,6 +176,20 @@ document.getElementById('adminAddSession')?.addEventListener('click',()=>addSess
 
 const importButton=document.getElementById('adminIcalPreview');
 const importMessage=document.getElementById('adminIcalMessage'),importResults=document.getElementById('adminIcalResults');
+const matchImportedVenue=(event)=>{
+ const name=String(event.venue_name||'').trim(),postcode=String(event.postcode||'').replace(/\\s+/g,'').toUpperCase();
+ if(!name&&!postcode)return 0;
+ const normal=value=>String(value||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+ const existing=[{venue_name:form.elements.namedItem('venue_name')?.value||'',postcode:form.elements.namedItem('postcode')?.value||''},...collectVenues()];
+ const index=existing.findIndex(v=>{
+  const sameName=name&&normal(v.venue_name)===normal(name);
+  const samePostcode=postcode&&String(v.postcode||'').replace(/\\s+/g,'').toUpperCase()===postcode;
+  return sameName&&(samePostcode||!postcode||!v.postcode);
+ });
+ if(index>=0)return index;
+ addVenue({venue_name:name,postcode:event.postcode||'',booking_url:event.url||''});
+ return existing.length;
+};
 const previewImportedSessions=(entries,note='')=>{
  importResults.replaceChildren();
  importMessage.textContent=entries.length+' possible class record(s) found. Review every field before adding.'+(note?' '+note:'');
@@ -191,7 +205,7 @@ const previewImportedSessions=(entries,note='')=>{
   const grid=document.createElement('div');grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-top:10px';
   const title=field(grid,'Class name',event.class_name||event.title);
   const venue=document.createElement('label');venue.textContent='Venue';venue.style.cssText='display:flex;flex-direction:column;gap:4px;font-size:13px';
-  const location=document.createElement('select');location.style.width='100%';venueOptions().forEach(o=>location.add(new Option(o.label,o.value)));location.value=String(event.venue_index??0);venue.append(location);grid.append(venue);
+  const location=document.createElement('select');location.style.width='100%';venueOptions().forEach(o=>location.add(new Option(o.label,o.value)));location.value=String(matchImportedVenue(event));venue.append(location);grid.append(venue);
   const day=document.createElement('label');day.textContent='Day';day.style.cssText='display:flex;flex-direction:column;gap:4px;font-size:13px';const daySelect=document.createElement('select');['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].forEach((name,i)=>daySelect.add(new Option(name,String(i+1))));daySelect.value=String(event.day_of_week||1);day.append(daySelect);grid.append(day);
   const startTime=field(grid,'Start time',event.start_time,'time');
   const endTime=field(grid,'End time (confirm)',event.end_time,'time');
