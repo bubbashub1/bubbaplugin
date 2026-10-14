@@ -143,7 +143,7 @@ document.getElementById('adminAddVenue')?.addEventListener('click',()=>addVenue(
 form.elements.namedItem('venue_name')?.addEventListener('input',syncVenueSelectors);
 // Postcode geocoding: user may override the coordinates at any time.
 function addLocationLookup(container,field){if(!container)return;const postcode=field('postcode'),lat=field('latitude'),lon=field('longitude');if(!postcode||!lat||!lon)return;
- const town=field('town'),region=field('region');
+ const town=field('town'),region=field('region'),address=field('address');
  const populateRegion=record=>{
   if(!region||region.value.trim())return;
   const district=String(record.admin_district||'').trim(),county=String(record.admin_county||'').trim(),ward=String(record.admin_ward||'').trim();
@@ -164,7 +164,17 @@ function addLocationLookup(container,field){if(!container)return;const postcode=
  const button=document.createElement('button');button.type='button';button.className='button button-soft';button.textContent='Find map location from postcode';
  const message=document.createElement('small');message.setAttribute('role','status');const map=document.createElement('iframe');map.title='Venue location preview';map.loading='lazy';map.style.cssText='width:100%;height:220px;border:0;border-radius:12px;margin-top:10px';map.hidden=true;
  const preview=()=>{const a=Number(lat.value),b=Number(lon.value);if(!lat.value||!lon.value||!Number.isFinite(a)||!Number.isFinite(b)||Math.abs(a)>90||Math.abs(b)>180){map.hidden=true;return;}const delta=.008;map.src='https://www.openstreetmap.org/export/embed.html?bbox='+encodeURIComponent([b-delta,a-delta,b+delta,a+delta].join(','))+'&layer=mapnik&marker='+encodeURIComponent(a+','+b);map.hidden=false;};
- button.addEventListener('click',async()=>{const value=postcode.value.trim();if(!value){message.textContent='Enter a postcode first.';return;}button.disabled=true;message.textContent='Finding coordinates…';try{const response=await fetch('https://api.postcodes.io/postcodes/'+encodeURIComponent(value));const result=await response.json();if(!response.ok||!result.result)throw Error('Postcode not found');lat.value=result.result.latitude;lon.value=result.result.longitude;populateRegion(result.result);message.textContent='Coordinates found. Check the preview and adjust manually if needed.';preview();}catch(error){message.textContent='Could not look up this postcode. Enter latitude and longitude manually.';}finally{button.disabled=false;}});
+ button.addEventListener('click',async()=>{const value=postcode.value.trim();if(!value){message.textContent='Enter a postcode first.';return;}button.disabled=true;message.textContent='Finding coordinates…';try{const response=await fetch('https://api.postcodes.io/postcodes/'+encodeURIComponent(value));const result=await response.json();if(!response.ok||!result.result)throw Error('Postcode not found');lat.value=result.result.latitude;lon.value=result.result.longitude;populateRegion(result.result);
+ if(address&&!address.value.trim()){
+  const r=result.result;
+  const parts=[String(r.admin_ward||'').trim(),String(r.admin_district||'').trim(),String(r.admin_county||'').trim(),String(r.country||'').trim()].filter(Boolean);
+  const unique=parts.filter((part,i)=>parts.findIndex(p=>p.toLowerCase()===part.toLowerCase())===i);
+  const townName=String(town?.value||'').trim();
+  const area=townName?[townName,...unique.filter(p=>p.toLowerCase()!==townName.toLowerCase())]:unique;
+  address.value=[...area,String(r.postcode||value).toUpperCase()].join(', ');
+  address.dispatchEvent(new Event('input',{bubbles:true}));
+ }
+ message.textContent='Coordinates and available address area found. Confirm the street and building manually; postcode lookup cannot identify a full property address.';preview();}catch(error){message.textContent='Could not look up this postcode. Enter latitude and longitude manually.';}finally{button.disabled=false;}});
  lat.addEventListener('change',preview);lon.addEventListener('change',preview);container.append(button,message,map);preview();
 }
 addLocationLookup(document.getElementById('adminAdditionalVenues'), key=>form.elements.namedItem(key));
