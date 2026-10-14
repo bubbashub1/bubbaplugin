@@ -247,7 +247,19 @@ foreach($rows as $idx=>$row){
     }
     $q=$db->prepare($sql);$q->execute($args);$id=(int)$db->lastInsertId();}
     $q=$db->prepare("SELECT id FROM bh_venues WHERE activity_id=? ORDER BY id LIMIT 1");$q->execute([$id]);$vid=(int)$q->fetchColumn();if($vid){$q=$db->prepare("UPDATE bh_venues SET venue_name=?,address=?,town=?,region=?,postcode=?,latitude=?,longitude=? WHERE id=?");$q->execute([$venue,$address,$town,$region,$postcode,$lat,$lng,$vid]);}else{$q=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes,leader_id) VALUES (?,?,?,?,?,?,?,?,?,NULL)");$q->execute([$id,$venue,$address,$town,$region,$postcode,$lat,$lng,'']);$vid=(int)$db->lastInsertId();}
-    $db->prepare("DELETE FROM bh_sessions WHERE venue_id=?")->execute([$vid]);foreach($sessions as $s){$dur=null;if($s['end']){$aa=strtotime($s['start']);$bb=strtotime($s['end']);if($aa!==false&&$bb!==false){$dur=(int)(($bb-$aa)/60);if($dur<0)$dur+=1440;}}$q=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date) VALUES (?,?,?,?,?,?,?,?,?,?)");$q->execute([$vid,$s['day'],$s['start'],$s['end'],$dur,$price,$s['term']?1:0,'weekly',null,null]);}
+    $sessionCols=table_columns($db,'bh_sessions');
+    $hasSessionActivityId=in_array('activity_id',$sessionCols,true);
+    if($hasSessionActivityId){$db->prepare("DELETE FROM bh_sessions WHERE venue_id=? AND activity_id=?")->execute([$vid,$id]);}
+    else{$db->prepare("DELETE FROM bh_sessions WHERE venue_id=?")->execute([$vid]);}
+    foreach($sessions as $s){
+      $dur=null;
+      if($s['end']){$aa=strtotime($s['start']);$bb=strtotime($s['end']);if($aa!==false&&$bb!==false){$dur=(int)(($bb-$aa)/60);if($dur<0)$dur+=1440;}}
+      $columns=$hasSessionActivityId?'activity_id,venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date':'venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date';
+      $values=$hasSessionActivityId?[$id,$vid,$s['day'],$s['start'],$s['end'],$dur,$price,$s['term']?1:0,'weekly',null,null]:[$vid,$s['day'],$s['start'],$s['end'],$dur,$price,$s['term']?1:0,'weekly',null,null];
+      $marks=implode(',',array_fill(0,count($values),'?'));
+      $q=$db->prepare("INSERT INTO bh_sessions ($columns) VALUES ($marks)");
+      $q->execute($values);
+    }
     optional_activity_fields($db,$row,$id);import_tags($db,$id,$tags);import_images($db,$id,$row);$db->commit();if($existing)$updated++;else$created++;
   }catch(Throwable $e){if($db->inTransaction())$db->rollBack();$failed++;if(count($errors)<20)$errors[]='Row '.$line.': '.$e->getMessage();}
 }
