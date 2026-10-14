@@ -142,14 +142,14 @@ const addVenue=(venue={})=>{
 document.getElementById('adminAddVenue')?.addEventListener('click',()=>addVenue());
 form.elements.namedItem('venue_name')?.addEventListener('input',syncVenueSelectors);
 // Postcode geocoding: user may override the coordinates at any time.
-const addLocationLookup=(container,field)=>{if(!container)return;const postcode=field('postcode'),lat=field('latitude'),lon=field('longitude');if(!postcode||!lat||!lon)return;
+function addLocationLookup(container,field){if(!container)return;const postcode=field('postcode'),lat=field('latitude'),lon=field('longitude');if(!postcode||!lat||!lon)return;
  const button=document.createElement('button');button.type='button';button.className='button button-soft';button.textContent='Find map location from postcode';
  const message=document.createElement('small');message.setAttribute('role','status');const map=document.createElement('iframe');map.title='Venue location preview';map.loading='lazy';map.style.cssText='width:100%;height:220px;border:0;border-radius:12px;margin-top:10px';map.hidden=true;
  const preview=()=>{const a=Number(lat.value),b=Number(lon.value);if(!lat.value||!lon.value||!Number.isFinite(a)||!Number.isFinite(b)||Math.abs(a)>90||Math.abs(b)>180){map.hidden=true;return;}const delta=.008;map.src='https://www.openstreetmap.org/export/embed.html?bbox='+encodeURIComponent([b-delta,a-delta,b+delta,a+delta].join(','))+'&layer=mapnik&marker='+encodeURIComponent(a+','+b);map.hidden=false;};
  button.addEventListener('click',async()=>{const value=postcode.value.trim();if(!value){message.textContent='Enter a postcode first.';return;}button.disabled=true;message.textContent='Finding coordinates…';try{const response=await fetch('https://api.postcodes.io/postcodes/'+encodeURIComponent(value));const result=await response.json();if(!response.ok||!result.result)throw Error('Postcode not found');lat.value=result.result.latitude;lon.value=result.result.longitude;message.textContent='Coordinates found. Check the preview and adjust manually if needed.';preview();}catch(error){message.textContent='Could not look up this postcode. Enter latitude and longitude manually.';}finally{button.disabled=false;}});
  lat.addEventListener('change',preview);lon.addEventListener('change',preview);container.append(button,message,map);preview();
-};
-addLocationLookup(document.getElementById('adminAdditionalVenues')?.parentElement, key=>form.elements.namedItem(key));
+}
+addLocationLookup(document.getElementById('adminAdditionalVenues'), key=>form.elements.namedItem(key));
 extraVenueRows?.addEventListener('click',event=>{if(event.target.id!=='adminAddVenue')return;});
 const collectVenues=()=>[...extraVenueRows.children].map(row=>({id:Number(row.dataset.savedId)||0,...Object.fromEntries([...row.querySelectorAll('[data-vfield]')].map(input=>[input.dataset.vfield,input.value.trim()]))}));
 // Schedule editor: preserves existing sessions and supports multiple new sessions.
