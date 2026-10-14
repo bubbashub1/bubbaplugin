@@ -438,7 +438,14 @@ const renderStep=()=>{
 };
 steps.forEach(([name],i)=>{const b=document.createElement('button');b.type='button';b.className='bh-step';b.innerHTML='<span>'+(i+1)+'</span>'+name;b.addEventListener('click',()=>{step=i;renderStep();});stepNav.append(b);});
 back.addEventListener('click',()=>{step=Math.max(0,step-1);renderStep();});
-next.addEventListener('click',()=>{const required=labels.filter(l=>!l.hidden).map(l=>l.querySelector('[required]')).filter(Boolean);const invalid=required.find(el=>!el.value.trim());if(invalid){invalid.reportValidity();return;}step=Math.min(6,step+1);renderStep();});
+next.addEventListener('click',()=>{
+ const hasImported=step===4&&collectVenues().some(v=>v.venue_name.trim()&&v.town.trim());
+ const required=labels.filter(l=>!l.hidden).map(l=>l.querySelector('[required]')).filter(Boolean).filter(el=>!(hasImported&&['venue_name','town'].includes(el.name)));
+ const invalid=required.find(el=>!String(el.value||'').trim());
+ if(invalid){invalid.reportValidity();return;}
+ step=Math.min(6,step+1);renderStep();
+ document.getElementById('adminListingSteps')?.scrollIntoView({block:'start',behavior:'smooth'});
+});
 renderStep();
 form.addEventListener('submit',async e=>{e.preventDefault();status.textContent='Checking listing…';try{status.classList.remove('is-error');const importedLocations=collectVenues().filter(v=>v.venue_name);
 if(importedLocations.length&&!String(form.elements.namedItem('town')?.value||'').trim()){
