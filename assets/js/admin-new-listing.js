@@ -212,6 +212,29 @@ document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',(
  const months=['january','february','march','april','may','june','july','august','september','october','november','december'];
  let month=-1,year=new Date().getFullYear(),day=null,assumedMonth=false;const events=[],seen=new Set();
  const clock=(h,m,ampm)=>String(Number(h)%12+(ampm.toLowerCase()==='pm'?12:0)).padStart(2,'0')+':'+String(Number(m||0)).padStart(2,'0');
+ // Weekly block text, including Bloom Baby Classes copied timetables.
+ const weeklyEvents=[];let currentTitle='',currentVenue='',currentBlockPrice='',termStart='',termEnd='';
+ const days={monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6,sunday:7};
+ const dateISO=(day,month,year)=>{const index=months.indexOf(month.toLowerCase());if(index<0)return '';const date=new Date(Date.UTC(Number(year),index,Number(day)));return date.getUTCMonth()===index&&date.getUTCDate()===Number(day)?date.toISOString().slice(0,10):'';};
+ for(const raw of rows){
+  const line=raw.trim();if(!line)continue;
+  if(/^[^,]+,\\s*[A-Z]{1,2}[0-9][A-Z0-9]?\\s*[0-9][A-Z]{2}$/i.test(line))currentVenue=line;
+  const priceMatch=line.match(/^Cost:\\s*£\\s*([0-9]+(?:\\.[0-9]{1,2})?)/i);if(priceMatch)currentBlockPrice=priceMatch[1];
+  if(/CLASS|BUSY BEES|CATERPILLARS|BLOOM BABY/i.test(line)&&!/Remaining Classes/i.test(line))currentTitle=line;
+  const range=line.match(/([0-9]{1,2})\\s+([A-Za-z]+)\\s+(20[0-9]{2})\\s*[-–]\\s*([0-9]{1,2})\\s+([A-Za-z]+)\\s+(20[0-9]{2})/);
+  if(range){termStart=dateISO(range[1],range[2],range[3]);termEnd=dateISO(range[4],range[5],range[6]);}
+  const weekly=line.match(/Every\\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\\s+at\\s+([0-9]{1,2})(?::([0-9]{2}))?\\s*(am|pm)/i);
+  if(weekly&&termStart&&termEnd){
+   const start=clock(weekly[2],weekly[3],weekly[4]),day=days[weekly[1].toLowerCase()],key=termStart+'|'+day+'|'+start;
+   if(!seen.has(key)){seen.add(key);weeklyEvents.push({title:currentTitle||'Class name to confirm',class_name:currentTitle||'Class name to confirm',day_of_week:day,start_time:start,end_time:'',start_date:termStart,end_date:termEnd,frequency:'weekly',price:'',venue_hint:currentVenue,block_price:currentBlockPrice});}
+   termStart='';termEnd='';
+  }
+ }
+ if(weeklyEvents.length){
+  feedback.textContent=weeklyEvents.length+' weekly class block(s) recognised. Check the class name, location and end time. Block prices are not session prices.';
+  previewImportedSessions(weeklyEvents,'Weekly timetable detected. Select the correct venue for each class before saving.');
+  return;
+ }
  for(const raw of rows){
   const line=raw.replace(/[|]/g,' ').replace(/\s+/g,' ').trim();if(!line)continue;
   const heading=line.match(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\s*,?\s*(20\d{2})?\b/i);
