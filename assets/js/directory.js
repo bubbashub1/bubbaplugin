@@ -29,6 +29,12 @@ const bhInitDirectory=async()=>{
       new Promise(resolve => setTimeout(resolve, 2500))
     ]);
     const params = new URLSearchParams(location.search);
+    const sortControl = $("directorySort");
+    if (sortControl) {
+      const initialSort = params.get("sort") || "updated";
+      if ([...sortControl.options].some(option => option.value === initialSort)) sortControl.value = initialSort;
+      sortControl.addEventListener("change", () => render());
+    }
 
     const categoryMap = {
       "Baby classes": "Baby",
@@ -749,6 +755,14 @@ const bhInitDirectory=async()=>{
           })
           .map(item => item.activity);
       }
+
+      const sortMode = sortControl?.value || "updated";
+      const titleCompare = (a, b) => String(a.title || "").localeCompare(String(b.title || ""), "en-GB", {sensitivity:"base"});
+      const updatedValue = item => { const timestamp = Date.parse(String(item.updated_at || "").replace(" ", "T")); return Number.isFinite(timestamp) ? timestamp : 0; };
+      if (sortMode === "az") list.sort((a,b) => titleCompare(a,b));
+      else if (sortMode === "za") list.sort((a,b) => titleCompare(b,a));
+      else if (sortMode === "oldest") list.sort((a,b) => updatedValue(a)-updatedValue(b) || titleCompare(a,b));
+      else list.sort((a,b) => updatedValue(b)-updatedValue(a) || Number(b.id || 0)-Number(a.id || 0));
 
       if ($("count")) $("count").textContent =
         `${list.length} activit${list.length === 1 ? "y" : "ies"} found` +
