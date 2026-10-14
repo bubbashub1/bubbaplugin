@@ -105,7 +105,21 @@ document.addEventListener("DOMContentLoaded",async()=>{
     else statusNote.textContent="Your account is signed in, but the planner could not be saved right now. Your local planner is still safe.";
   }
 
-  items=await bhActivities();const byId=new Map(items.map(item=>[String(item.id),item]));
+  items=await bhActivities();
+  // A newly selected session may belong to an activity outside the directory's
+  // initial page. Fetch those planned activities explicitly before rendering.
+  const plannedIds=bhGet(BH_KEYS.planner).map(String);
+  const loadedIds=new Set(items.map(item=>String(item.id)));
+  for(const activityId of plannedIds){
+    if(loadedIds.has(activityId)||!/^\\d+$/.test(activityId))continue;
+    try{
+      const response=await fetch('/api/activities.php?id='+encodeURIComponent(activityId)+'&per_page=1',{cache:'no-store',credentials:'same-origin'});
+      const payload=await response.json();
+      const activity=(payload.data||[]).find(item=>String(item.id)===activityId);
+      if(response.ok&&payload.ok&&activity){items.push(activity);loadedIds.add(activityId);}
+    }catch(error){console.warn('Could not load planned activity',activityId,error);}
+  }
+  const byId=new Map(items.map(item=>[String(item.id),item]));
 
   function mondayOf(d){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()),n=x.getDay();x.setDate(x.getDate()-(n===0?6:n-1));return x}
   function dateForDay(dayNum){const m=mondayOf(today),x=new Date(m);x.setDate(m.getDate()+dayNum-1);return x}
