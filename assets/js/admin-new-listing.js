@@ -231,6 +231,7 @@ const previewImportedSessions=(entries,note='')=>{
   const input=document.createElement('input');input.type=type;input.value=value??'';input.style.cssText='width:100%;min-width:0';wrap.append(input);parent.append(wrap);return input;
  };
  entries.forEach((event,index)=>{
+  try{
   const card=document.createElement('fieldset');card.style.cssText='border:1px solid #ced7c7;border-radius:12px;padding:12px;margin:10px 0';
   const legend=document.createElement('legend');legend.textContent='Class '+(index+1);card.append(legend);
   const selected=document.createElement('label');const check=document.createElement('input');check.type='checkbox';check.checked=!/confirm/i.test(event.title||'');selected.append(check,document.createTextNode(' Include this class'));card.append(selected);
@@ -243,7 +244,10 @@ const previewImportedSessions=(entries,note='')=>{
    warning.textContent='Possible existing venue match: '+directoryMatch.name+' · '+(directoryMatch.town||'')+' · '+(directoryMatch.postcode||'')+'. Existing address and map coordinates will be suggested. Confirm before saving.';
    card.append(warning);
   }
-  const matchedVenueIndex=matchImportedVenue(event);const location=document.createElement('select');location.style.width='100%';venueOptions().forEach(o=>location.add(new Option(o.label,o.value)));location.value=String(matchedVenueIndex);venue.append(location);grid.append(venue);
+  let matchedVenueIndex=0;
+  try{matchedVenueIndex=matchImportedVenue(event);}
+  catch(error){const warning=document.createElement('p');warning.textContent='Venue could not be prepared automatically: '+error.message+'. You can still review the class.';card.append(warning);}
+  const location=document.createElement('select');location.style.width='100%';venueOptions().forEach(o=>location.add(new Option(o.label,o.value)));location.value=String(matchedVenueIndex);venue.append(location);grid.append(venue);
   const day=document.createElement('label');day.textContent='Day';day.style.cssText='display:flex;flex-direction:column;gap:4px;font-size:13px';const daySelect=document.createElement('select');['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].forEach((name,i)=>daySelect.add(new Option(name,String(i+1))));daySelect.value=String(event.day_of_week||1);day.append(daySelect);grid.append(day);
   const startTime=field(grid,'Start time',event.start_time,'time');
   const endTime=field(grid,'End time (confirm)',event.end_time,'time');
@@ -253,6 +257,9 @@ const previewImportedSessions=(entries,note='')=>{
   if(event.block_price){const note=document.createElement('p');note.textContent='Source block price: £'+event.block_price+' (not a per-session price)';card.append(note);}
   card.append(grid);list.append(card);
   checks.push({check,title,location,daySelect,startTime,endTime,from,to,price,event});
+  }catch(error){
+   const warning=document.createElement('p');warning.textContent='Class '+(index+1)+' could not be displayed: '+error.message;list.append(warning);
+  }
  });
  importResults.append(list);
  if(!entries.length)return;
