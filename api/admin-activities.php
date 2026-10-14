@@ -61,7 +61,20 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
     if(!$q->fetch()){$db->rollBack();bh_admin_response(422,['ok'=>false,'error'=>'Choose an active registered leader organisation.']);}
     $db->prepare("UPDATE bh_activities SET organiser_id=? WHERE id=?")->execute([$organiserId,$id]);
    }
-   $db->commit();bh_admin_response(200,['ok'=>true]);
+   // Persist booking sources for scheduled six-week checks. An empty submission
+  // does not remove previously saved sources.
+  $sourceUrls=(array)($input['import_source_urls']??[]);
+  if($sourceUrls){
+   $db->exec("CREATE TABLE IF NOT EXISTS bh_import_sources (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,activity_id BIGINT UNSIGNED NOT NULL,source_url VARCHAR(2048) NOT NULL,url_hash CHAR(64) NOT NULL,last_checked_at DATETIME NULL,next_check_at DATETIME NOT NULL,check_status VARCHAR(32) NOT NULL DEFAULT 'pending',last_error TEXT NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,UNIQUE KEY unique_source (activity_id,url_hash),KEY due_sources (next_check_at,check_status)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+   $saveSource=$db->prepare("INSERT INTO bh_import_sources (activity_id,source_url,url_hash,next_check_at) VALUES (?,?,?,DATE_ADD(UTC_TIMESTAMP(),INTERVAL 42 DAY)) ON DUPLICATE KEY UPDATE source_url=VALUES(source_url)");
+   foreach(array_unique($sourceUrls) as $sourceUrl){
+    $sourceUrl=trim((string)$sourceUrl);
+    $parts=parse_url($sourceUrl);
+    if(!$parts||strtolower((string)($parts['scheme']??''))!=='https'||empty($parts['host'])||isset($parts['user'])||isset($parts['pass'])||strlen($sourceUrl)>2048)continue;
+    $saveSource->execute([$id,$sourceUrl,hash('sha256',$sourceUrl)]);
+   }
+  }
+  $db->commit();bh_admin_response(200,['ok'=>true]);
   }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
  }
 
