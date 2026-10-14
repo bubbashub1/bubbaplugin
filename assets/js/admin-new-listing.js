@@ -246,7 +246,7 @@ const previewImportedSessions=(entries,note='')=>{
    card.append(warning);
   }
   let matchedVenueIndex=0;
-  try{matchedVenueIndex=event.venue_name&&event.postcode?matchImportedVenue(event):0;}
+  try{const candidate=[{venue_name:form.elements.namedItem('venue_name')?.value||'',postcode:form.elements.namedItem('postcode')?.value||''},...collectVenues()];const found=candidate.findIndex(v=>event.venue_name&&event.postcode&&venueKey(v.venue_name)===venueKey(event.venue_name)&&postcodeKey(v.postcode)===postcodeKey(event.postcode));matchedVenueIndex=found>=0?found:0;}
   catch(error){const warning=document.createElement('p');warning.textContent='Venue could not be prepared automatically: '+error.message+'. You can still review the class.';card.append(warning);}
   const location=document.createElement('select');location.style.width='100%';
   venueOptions().forEach(o=>location.add(new Option(o.label,o.value)));
@@ -276,7 +276,7 @@ const previewImportedSessions=(entries,note='')=>{
    const title=row.title.value.trim(),start=row.startTime.value,end=row.endTime.value,from=row.from.value,to=row.to.value;
    if(!title||/confirm/i.test(title)||!start||!from||!to||to<from){importMessage.textContent='Complete class name, start time and valid dates for each selected class.';return;}
    const key=[from,start,row.daySelect.value,title].join('|');if(known.has(key))continue;
-   const venueIndex=Number(row.location.value);
+   const venueIndex=Number(row.location.value)===0&&row.event.venue_name&&row.event.postcode?matchImportedVenue(row.event):Number(row.location.value);
    addSession({...row.event,title,class_name:title,venue_index:venueIndex,day_of_week:Number(row.daySelect.value),start_time:start,end_time:end,start_date:from,end_date:to,price:row.price.value});
    known.add(key);count++;
   }
