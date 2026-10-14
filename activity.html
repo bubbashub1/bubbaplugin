@@ -211,7 +211,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const selected=getSessionSelections()[String(a.id)]||[];
     document.querySelectorAll('.bh-session-plan').forEach(button=>{
       const chosen=selected.includes(String(button.dataset.sessionId));
-      button.textContent=chosen?'✓ In Planner':'+ Add to Planner';
+      button.textContent=chosen?'✓':'+';button.title=chosen?'Remove from Planner':'Add to Planner';button.setAttribute('aria-label',(chosen?'Remove ':'Add ')+(button.dataset.className||'session')+(chosen?' from Planner':' to Planner'));
       button.setAttribute('aria-pressed',String(chosen));
     });
   };
