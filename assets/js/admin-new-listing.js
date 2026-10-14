@@ -235,12 +235,21 @@ const previewImportedSessions=(entries,note='')=>{
  importResults.append(add);
 };
 importButton?.addEventListener('click',async()=>{
- const url=document.getElementById('adminIcalUrl').value.trim();importResults.replaceChildren();importMessage.textContent='Checking booking page for classes and session times…';importButton.disabled=true;
+ const urls=[...new Set(document.getElementById('adminIcalUrl').value.split(/[\\s,]+/).map(v=>v.trim()).filter(Boolean))];
+ importResults.replaceChildren();if(!urls.length){importMessage.textContent='Enter at least one booking URL.';return;}
+ importButton.disabled=true;const all=[],errors=[];
  try{
-  const response=await fetch('/api/admin-ical-preview.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
-  const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'Calendar could not be loaded.');
-  previewImportedSessions(data.data||[],data.skipped_recurring?data.skipped_recurring+' recurrence rules require manual handling.':'');
- }catch(error){importMessage.textContent=error.message;}finally{importButton.disabled=false;}
+  for(let i=0;i<urls.length;i++){
+   const url=urls[i];importMessage.textContent='Checking booking page '+(i+1)+' of '+urls.length+'…';
+   try{
+    const response=await fetch('/api/admin-ical-preview.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
+    const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'No classes found');
+    for(const entry of data.data||[])all.push({...entry,url:entry.url||url,source_url:url});
+   }catch(error){errors.push('URL '+(i+1)+': '+error.message);}
+  }
+  const seen=new Set(),unique=all.filter(event=>{const key=[event.title,event.start_date,event.end_date,event.start_time,event.day_of_week,event.venue_name,event.postcode].map(v=>String(v||'').toLowerCase().trim()).join('|');if(seen.has(key))return false;seen.add(key);return true;});
+  previewImportedSessions(unique,urls.length+' URL(s) checked. '+(errors.length?errors.join(' | '):''));
+ }finally{importButton.disabled=false;}
 });
 document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',()=>{
  const field=document.getElementById('adminBookwhenText'),rows=field.value.split(/\r?\n/);
