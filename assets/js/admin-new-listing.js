@@ -143,10 +143,28 @@ document.getElementById('adminAddVenue')?.addEventListener('click',()=>addVenue(
 form.elements.namedItem('venue_name')?.addEventListener('input',syncVenueSelectors);
 // Postcode geocoding: user may override the coordinates at any time.
 function addLocationLookup(container,field){if(!container)return;const postcode=field('postcode'),lat=field('latitude'),lon=field('longitude');if(!postcode||!lat||!lon)return;
+ const town=field('town'),region=field('region');
+ const populateRegion=record=>{
+  if(!region||region.value.trim())return;
+  const district=String(record.admin_district||'').trim(),county=String(record.admin_county||'').trim(),ward=String(record.admin_ward||'').trim();
+  const label=[district,county,ward].join(' ').toLowerCase();
+  if(/torbay|torquay|paignton|brixham/.test(label))region.value='Torbay';
+  else if(/teignbridge|newton abbot|dawlish|teignmouth/.test(label))region.value='Teignbridge';
+  else if(/south hams/.test(label))region.value='South Hams';
+  else if(/north devon/.test(label))region.value='North Devon';
+  else if(/torridge/.test(label))region.value='Torridge';
+  else if(/mid devon/.test(label))region.value='Mid Devon';
+  else if(/east devon/.test(label))region.value='East Devon';
+  else if(/west devon/.test(label))region.value='West Devon';
+  else if(/exeter/.test(label))region.value='Exeter';
+  else if(/plymouth/.test(label))region.value='Plymouth';
+  else if(district)region.value=district;
+  if(region.value)region.dispatchEvent(new Event('change',{bubbles:true}));
+ };
  const button=document.createElement('button');button.type='button';button.className='button button-soft';button.textContent='Find map location from postcode';
  const message=document.createElement('small');message.setAttribute('role','status');const map=document.createElement('iframe');map.title='Venue location preview';map.loading='lazy';map.style.cssText='width:100%;height:220px;border:0;border-radius:12px;margin-top:10px';map.hidden=true;
  const preview=()=>{const a=Number(lat.value),b=Number(lon.value);if(!lat.value||!lon.value||!Number.isFinite(a)||!Number.isFinite(b)||Math.abs(a)>90||Math.abs(b)>180){map.hidden=true;return;}const delta=.008;map.src='https://www.openstreetmap.org/export/embed.html?bbox='+encodeURIComponent([b-delta,a-delta,b+delta,a+delta].join(','))+'&layer=mapnik&marker='+encodeURIComponent(a+','+b);map.hidden=false;};
- button.addEventListener('click',async()=>{const value=postcode.value.trim();if(!value){message.textContent='Enter a postcode first.';return;}button.disabled=true;message.textContent='Finding coordinates…';try{const response=await fetch('https://api.postcodes.io/postcodes/'+encodeURIComponent(value));const result=await response.json();if(!response.ok||!result.result)throw Error('Postcode not found');lat.value=result.result.latitude;lon.value=result.result.longitude;message.textContent='Coordinates found. Check the preview and adjust manually if needed.';preview();}catch(error){message.textContent='Could not look up this postcode. Enter latitude and longitude manually.';}finally{button.disabled=false;}});
+ button.addEventListener('click',async()=>{const value=postcode.value.trim();if(!value){message.textContent='Enter a postcode first.';return;}button.disabled=true;message.textContent='Finding coordinates…';try{const response=await fetch('https://api.postcodes.io/postcodes/'+encodeURIComponent(value));const result=await response.json();if(!response.ok||!result.result)throw Error('Postcode not found');lat.value=result.result.latitude;lon.value=result.result.longitude;populateRegion(result.result);message.textContent='Coordinates found. Check the preview and adjust manually if needed.';preview();}catch(error){message.textContent='Could not look up this postcode. Enter latitude and longitude manually.';}finally{button.disabled=false;}});
  lat.addEventListener('change',preview);lon.addEventListener('change',preview);container.append(button,message,map);preview();
 }
 addLocationLookup(document.getElementById('adminAdditionalVenues'), key=>form.elements.namedItem(key));
