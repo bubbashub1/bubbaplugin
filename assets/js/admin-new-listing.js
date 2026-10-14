@@ -125,6 +125,23 @@ if(venueSelect){
 }
 button.disabled=false;
 }catch(e){status.textContent=e.message;status.classList.add('is-error');return;}
+// Master listing: edit any number of venues, each with its own sessions.
+const extraVenueRows=document.getElementById('adminExtraVenueRows');
+const venueOptions=()=>[{value:'0',label:'Main location: '+(form.elements.namedItem('venue_name')?.value||'Venue 1')},...[...extraVenueRows.children].map((row,i)=>({value:String(i+1),label:'Location '+(i+2)+': '+(row.querySelector('[data-vfield="venue_name"]')?.value||'New location')}))];
+const syncVenueSelectors=()=>document.querySelectorAll('[data-session-venue]').forEach(select=>{const selected=select.value;select.replaceChildren(...venueOptions().map(o=>new Option(o.label,o.value)));select.value=venueOptions().some(o=>o.value===selected)?selected:'0';});
+const addVenue=(venue={})=>{
+ const row=document.createElement('fieldset');row.className='bh-card';row.style.cssText='padding:14px;margin:12px 0;border:1px solid #ced7c7;border-radius:14px';
+ const legend=document.createElement('legend');legend.textContent='Class location';row.append(legend);row.dataset.savedId=String(venue.id||0);
+ [['venue_name','Venue name','text'],['town','Town','text'],['region','Region','text'],['postcode','Postcode','text'],['address','Full address','text'],['latitude','Latitude (optional)','number'],['longitude','Longitude (optional)','number'],['booking_url','Booking URL for this location (optional)','url']].forEach(([key,label,type])=>{
+ const wrap=document.createElement('label');wrap.textContent=label;wrap.style.cssText='display:block;margin:8px 0';const input=document.createElement('input');input.type=type;input.dataset.vfield=key;input.value=venue[key]??'';input.style.width='100%';if(type==='number'){input.step='any';input.min=key==='latitude'?'-90':'-180';input.max=key==='latitude'?'90':'180';}wrap.append(input);row.append(wrap);
+ });
+ const remove=document.createElement('button');remove.type='button';remove.className='button button-soft';remove.textContent='Remove unsaved location';remove.addEventListener('click',()=>{if(Number(row.dataset.savedId)){status.textContent='Saved locations cannot be removed here yet. You can edit their details.';status.classList.add('is-error');return;}row.remove();syncVenueSelectors();});row.append(remove);
+ row.addEventListener('input',syncVenueSelectors);extraVenueRows.append(row);syncVenueSelectors();
+};
+(original?.venues||[]).slice(1).forEach(addVenue);
+document.getElementById('adminAddVenue')?.addEventListener('click',()=>addVenue());
+form.elements.namedItem('venue_name')?.addEventListener('input',syncVenueSelectors);
+const collectVenues=()=>[...extraVenueRows.children].map(row=>({id:Number(row.dataset.savedId)||0,...Object.fromEntries([...row.querySelectorAll('[data-vfield]')].map(input=>[input.dataset.vfield,input.value.trim()]))}));
 // Schedule editor: preserves existing sessions and supports multiple new sessions.
 const scheduleSection=document.getElementById('adminListingSchedule'),scheduleRows=document.getElementById('adminScheduleRows');
 const addSession=(s={})=>{
@@ -141,7 +158,7 @@ const addSession=(s={})=>{
  const frequency=row.querySelector('[data-session-field="frequency"]');const first=row.querySelector('[data-session-field="start_date"]');const last=row.querySelector('[data-session-field="end_date"]');
  const updateBlockEnd=()=>{if(frequency.value!=='seven_weeks'||!first.value)return;const date=new Date(first.value+'T12:00:00');if(Number.isNaN(date.getTime()))return;date.setDate(date.getDate()+48);const value=[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');if(!last.value||last.dataset.autoBlockEnd==='1'){last.value=value;last.dataset.autoBlockEnd='1';}};
  last.addEventListener('input',()=>{last.dataset.autoBlockEnd='0';});first.addEventListener('change',updateBlockEnd);frequency.addEventListener('change',updateBlockEnd);
- const remove=document.createElement('button');remove.type='button';remove.className='button button-soft';remove.textContent='Remove session';remove.onclick=()=>row.remove();row.appendChild(remove);row.dataset.venueIndex=String(s.venue_index??0);scheduleRows.appendChild(row);
+ const remove=document.createElement('button');remove.type='button';remove.className='button button-soft';remove.textContent='Remove session';remove.onclick=()=>row.remove();row.appendChild(remove);const locationLabel=document.createElement('label');locationLabel.textContent='Location';const locationSelect=document.createElement('select');locationSelect.dataset.sessionVenue='1';venueOptions().forEach(o=>locationSelect.add(new Option(o.label,o.value)));locationSelect.value=String(s.venue_index??0);locationLabel.append(locationSelect);row.prepend(locationLabel);scheduleRows.appendChild(row);
 };
 (original?.sessions||[]).forEach(addSession);
 document.getElementById('adminAddSession')?.addEventListener('click',()=>addSession());
@@ -266,7 +283,7 @@ document.getElementById('adminPosterApply')?.addEventListener('click',()=>{
  setEmpty('description',description);
  message.textContent='Recognised details applied where fields were empty'+(day&&times?'; one session added':'')+'. Review every field before saving.';
 });
-const collectSessions=()=>[...scheduleRows.children].map(row=>{const s={venue_index:Number(row.dataset.venueIndex||0)};row.querySelectorAll('[data-session-field]').forEach(el=>s[el.dataset.sessionField]=el.type==='checkbox'?(el.checked?1:0):el.value);return s;}).filter(s=>s.day_of_week||s.start_time);
+const collectSessions=()=>[...scheduleRows.children].map(row=>{const s={venue_index:Number(row.querySelector('[data-session-venue]')?.value||0)};row.querySelectorAll('[data-session-field]').forEach(el=>s[el.dataset.sessionField]=el.type==='checkbox'?(el.checked?1:0):el.value);return s;}).filter(s=>s.day_of_week||s.start_time);
  // Seven-step admin editor, matching the class leader's new listing workflow.
 const steps=[['Basics',['title','organisation_name']],['About',['description','category','tags','age_preset','age_range','price_from','pricing_unit','block_length_weeks','price_free']],['Extra',['booking_url','email','phone','website','status']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address']],['Photos',['image_path']],['Review',[]]];
 const stepNav=document.getElementById('adminListingSteps');
@@ -284,7 +301,7 @@ const renderStep=()=>{
  if(websiteImport)websiteImport.hidden=step!==0;
  if(posterImport)posterImport.hidden=step!==0;
  labels.forEach(label=>{const field=label.querySelector('[name]');const name=field?.name;label.hidden=step===6||(!current[1].includes(name)&&!(step===4&&label.querySelector('#existingVenueSelect')));label.style.display=label.hidden?'none':'';});
- review.hidden=step!==6;if(scheduleSection)scheduleSection.hidden=step!==3;
+ review.hidden=step!==6;const extraSection=document.getElementById('adminAdditionalVenues');if(extraSection)extraSection.hidden=step!==4;if(scheduleSection)scheduleSection.hidden=step!==3;
  if(step===6){review.replaceChildren();labels.forEach(label=>{const el=label.querySelector('[name]');if(!el)return;const line=document.createElement('p');const strong=document.createElement('strong');strong.textContent=label.textContent.trim()+': ';line.append(strong,document.createTextNode(el.value||'—'));review.append(line);});}
  back.hidden=step===0;next.hidden=step===6;save.hidden=step!==6;
  [...stepNav.children].forEach((b,i)=>{b.classList.toggle('active',i===step);b.setAttribute('aria-current',i===step?'step':'false');});
@@ -294,7 +311,7 @@ back.addEventListener('click',()=>{step=Math.max(0,step-1);renderStep();});
 next.addEventListener('click',()=>{const required=labels.filter(l=>!l.hidden).map(l=>l.querySelector('[required]')).filter(Boolean);const invalid=required.find(el=>!el.value.trim());if(invalid){invalid.reportValidity();return;}step=Math.min(6,step+1);renderStep();});
 renderStep();
 form.addEventListener('submit',async e=>{e.preventDefault();status.textContent='Checking listing…';try{status.classList.remove('is-error');const requiredNames=['title','organisation_name','venue_name','town','category'];const missing=requiredNames.find(name=>!String(form.elements.namedItem(name)?.value||'').trim());if(missing){status.textContent='Please complete '+missing.replaceAll('_',' ')+' before saving.';status.classList.add('is-error');step=['title','organisation_name'].includes(missing)?0:missing==='category'?1:4;renderStep();return;}const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};delete body.age_preset;body.tags=String(form.elements.namedItem("tags")?.value||"").split(",").map(t=>t.trim()).filter(Boolean).slice(0,20).join(", ");
-body.price_free=free.checked?1:0;body.price_per_family=!free.checked&&unit.value==='per_family'?1:0;body.price_per_session=!free.checked&&unit.value==='per_session'?1:0;body.pricing_unit=unit.value;body.block_length_weeks=unit.value==='per_block'&&!free.checked?Number(blockWeeks.value):null;body.id=original?.id||null;body.sessions=collectSessions();body.venues=(original?.venues||[]).slice(1).map(v=>({...v,latitude:v.latitude??'',longitude:v.longitude??''}));body.accessibility=original?.accessibility||[];
+body.price_free=free.checked?1:0;body.price_per_family=!free.checked&&unit.value==='per_family'?1:0;body.price_per_session=!free.checked&&unit.value==='per_session'?1:0;body.pricing_unit=unit.value;body.block_length_weeks=unit.value==='per_block'&&!free.checked?Number(blockWeeks.value):null;body.id=original?.id||null;body.sessions=collectSessions();body.venues=collectVenues();body.accessibility=original?.accessibility||[];
 body.latitude=original?.latitude??'';body.longitude=original?.longitude??'';body.sessions=body.sessions.map(s=>({...s,price:s.price??'',start_date:s.start_date??'',end_date:s.end_date??''}));
 if(body.sessions.some(s=>!s.day_of_week||!s.start_time||s.end_time&&s.end_time<=s.start_time)){status.textContent='Each session needs a day and start time, and its end time must be later than its start time.';status.classList.add('is-error');step=3;renderStep();return;}button.disabled=true;status.textContent='Saving listing…';status.classList.remove('is-error');
 try{const r=await fetch('/api/admin-activities.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(body)});if(r.status===401){redirect();return;}const raw=await r.text();let d;try{d=JSON.parse(raw);}catch{throw Error('Server returned an invalid response (HTTP '+r.status+').');}if(!r.ok||!d.ok)throw Error(d.error||'Could not save listing (HTTP '+r.status+').');status.textContent='✓ Listing saved successfully.';if(!original){original={id:d.id};location.href='/admin/admin-activities-add-listing.html?id='+encodeURIComponent(d.id);}
