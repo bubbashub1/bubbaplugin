@@ -143,7 +143,7 @@ document.getElementById('adminAddVenue')?.addEventListener('click',()=>addVenue(
 form.elements.namedItem('venue_name')?.addEventListener('input',syncVenueSelectors);
 // Postcode geocoding: user may override the coordinates at any time.
 function addLocationLookup(container,field){if(!container)return;const postcode=field('postcode'),lat=field('latitude'),lon=field('longitude');if(!postcode||!lat||!lon)return;
- const town=field('town'),region=field('region'),address=field('address');
+ const town=field('town'),region=field('region'),address=field('address'),venueName=field('venue_name');
  const populateRegion=record=>{
   if(!region||region.value.trim())return;
   const district=String(record.admin_district||'').trim(),county=String(record.admin_county||'').trim(),ward=String(record.admin_ward||'').trim();
@@ -164,13 +164,16 @@ function addLocationLookup(container,field){if(!container)return;const postcode=
  const button=document.createElement('button');button.type='button';button.className='button button-soft';button.textContent='Find map location from postcode';
  const message=document.createElement('small');message.setAttribute('role','status');const map=document.createElement('iframe');map.title='Venue location preview';map.loading='lazy';map.style.cssText='width:100%;height:220px;border:0;border-radius:12px;margin-top:10px';map.hidden=true;
  const preview=()=>{const a=Number(lat.value),b=Number(lon.value);if(!lat.value||!lon.value||!Number.isFinite(a)||!Number.isFinite(b)||Math.abs(a)>90||Math.abs(b)>180){map.hidden=true;return;}const delta=.008;map.src='https://www.openstreetmap.org/export/embed.html?bbox='+encodeURIComponent([b-delta,a-delta,b+delta,a+delta].join(','))+'&layer=mapnik&marker='+encodeURIComponent(a+','+b);map.hidden=false;};
- button.addEventListener('click',async()=>{const value=postcode.value.trim();if(!value){message.textContent='Enter a postcode first.';return;}button.disabled=true;message.textContent='Finding coordinates…';try{const response=await fetch('https://api.postcodes.io/postcodes/'+encodeURIComponent(value));const result=await response.json();if(!response.ok||!result.result)throw Error('Postcode not found');lat.value=result.result.latitude;lon.value=result.result.longitude;populateRegion(result.result);
+ button.addEventListener('click',async()=>{const value=postcode.value.trim();if(!value){message.textContent='Enter a postcode first.';return;}button.disabled=true;message.textContent='Finding coordinates…';try{const response=await fetch('https://api.postcodes.io/postcodes/'+encodeURIComponent(value));const result=await response.json();if(!response.ok||!result.result)throw Error('Postcode not found');lat.value=result.result.latitude;lon.value=result.result.longitude;
+ const district=String(result.result.admin_district||'').trim();
+ if(town&&!town.value.trim()&&district){town.value=district;town.dispatchEvent(new Event('change',{bubbles:true}));}
+ populateRegion(result.result);
  if(address&&!address.value.trim()){
   const r=result.result;
   const parts=[String(r.admin_ward||'').trim(),String(r.admin_district||'').trim(),String(r.admin_county||'').trim(),String(r.country||'').trim()].filter(Boolean);
   const unique=parts.filter((part,i)=>parts.findIndex(p=>p.toLowerCase()===part.toLowerCase())===i);
   const townName=String(town?.value||'').trim();
-  const area=townName?[townName,...unique.filter(p=>p.toLowerCase()!==townName.toLowerCase())]:unique;
+  const area=[String(venueName?.value||'').trim(),...(townName?[townName,...unique.filter(p=>p.toLowerCase()!==townName.toLowerCase())]:unique)].filter(Boolean);
   address.value=[...area,String(r.postcode||value).toUpperCase()].join(', ');
   address.dispatchEvent(new Event('input',{bubbles:true}));
  }
@@ -418,7 +421,15 @@ steps.forEach(([name],i)=>{const b=document.createElement('button');b.type='butt
 back.addEventListener('click',()=>{step=Math.max(0,step-1);renderStep();});
 next.addEventListener('click',()=>{const required=labels.filter(l=>!l.hidden).map(l=>l.querySelector('[required]')).filter(Boolean);const invalid=required.find(el=>!el.value.trim());if(invalid){invalid.reportValidity();return;}step=Math.min(6,step+1);renderStep();});
 renderStep();
-form.addEventListener('submit',async e=>{e.preventDefault();status.textContent='Checking listing…';try{status.classList.remove('is-error');const requiredNames=['title','organisation_name','venue_name','town','category'];const missing=requiredNames.find(name=>!String(form.elements.namedItem(name)?.value||'').trim());if(missing){status.textContent='Please complete '+missing.replaceAll('_',' ')+' before saving.';status.classList.add('is-error');step=['title','organisation_name'].includes(missing)?0:missing==='category'?1:4;renderStep();return;}const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};delete body.age_preset;body.tags=String(form.elements.namedItem("tags")?.value||"").split(",").map(t=>t.trim()).filter(Boolean).slice(0,20).join(", ");
+form.addEventListener('submit',async e=>{e.preventDefault();status.textContent='Checking listing…';try{status.classList.remove('is-error');const importedLocations=collectVenues().filter(v=>v.venue_name&&v.town);
+if(importedLocations.length){
+ const primary=importedLocations[0];
+ for(const key of ['venue_name','town','region','postcode','address','latitude','longitude']){
+  const field=form.elements.namedItem(key);
+  if(field&&!String(field.value||'').trim()&&primary[key])field.value=primary[key];
+ }
+}
+const requiredNames=['title','organisation_name','venue_name','town','category'];const missing=requiredNames.find(name=>!String(form.elements.namedItem(name)?.value||'').trim());if(missing){status.textContent='Please complete '+missing.replaceAll('_',' ')+' before saving.';status.classList.add('is-error');step=['title','organisation_name'].includes(missing)?0:missing==='category'?1:4;renderStep();return;}const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};delete body.age_preset;body.tags=String(form.elements.namedItem("tags")?.value||"").split(",").map(t=>t.trim()).filter(Boolean).slice(0,20).join(", ");
 body.price_free=free.checked?1:0;body.price_per_family=!free.checked&&unit.value==='per_family'?1:0;body.price_per_session=!free.checked&&unit.value==='per_session'?1:0;body.pricing_unit=unit.value;body.block_length_weeks=unit.value==='per_block'&&!free.checked?Number(blockWeeks.value):null;body.id=original?.id||null;body.sessions=collectSessions();body.venues=collectVenues();body.accessibility=original?.accessibility||[];
 body.latitude=form.elements.namedItem('latitude')?.value||'';body.longitude=form.elements.namedItem('longitude')?.value||'';body.sessions=body.sessions.map(s=>({...s,price:s.price??'',start_date:s.start_date??'',end_date:s.end_date??''}));
 if(body.sessions.some(s=>!s.day_of_week||!s.start_time||s.end_time&&s.end_time<=s.start_time)){status.textContent='Each session needs a day and start time, and its end time must be later than its start time.';status.classList.add('is-error');step=3;renderStep();return;}button.disabled=true;status.textContent='Saving listing…';status.classList.remove('is-error');
