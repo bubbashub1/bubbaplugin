@@ -234,6 +234,9 @@ try {
         $ids = array_keys($activities);
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
+        $sessionColumns = $db->query("SHOW COLUMNS FROM bh_sessions")->fetchAll(PDO::FETCH_COLUMN);
+        $sessionNameColumn = in_array('class_name', $sessionColumns, true) ? 'class_name' : (in_array('title', $sessionColumns, true) ? 'title' : null);
+        $sessionNameSelect = $sessionNameColumn ? ', s.`' . $sessionNameColumn . '` AS class_name' : '';
         $sessionSql = "
             SELECT
                 s.id,
@@ -248,6 +251,7 @@ try {
                 s.frequency,
                 s.start_date,
                 s.end_date
+                {$sessionNameSelect}
             FROM bh_sessions s
             INNER JOIN bh_venues v ON v.id = s.venue_id
             WHERE v.activity_id IN ($placeholders)
@@ -264,6 +268,7 @@ try {
             $activities[$activityId]['sessions'][] = [
                 'id' => (int)$session['id'],
                 'venue_id' => (int)$session['venue_id'],
+                'class_name' => (string)($session['class_name'] ?? ''),
                 'day_of_week' => (int)$session['day_of_week'],
                 'start_time' => $session['start_time'],
                 'end_time' => $session['end_time'],
