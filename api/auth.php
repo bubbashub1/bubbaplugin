@@ -483,7 +483,7 @@ try {
 
     // Render a friendly mobile-first page for verification links opened in a browser.
     // Browser verification links render branded HTML, never raw JSON.
-    if ($action === 'verify_email' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    if ($action === 'verify_email' && in_array($_SERVER['REQUEST_METHOD'], ['GET','POST'], true)) {
         $verificationResponse = static function (int $status, bool $success, string $message): void {
             http_response_code($status);
             header('Content-Type: text/html; charset=utf-8');
@@ -525,19 +525,35 @@ try {
             exit;
         };
 
-    // Verification links are intentionally usable as a normal GET request.
+    // GET only displays confirmation: automated email scanners cannot consume tokens.
         try {
             $db = bh_mysql();
             bh_ensure_email_verification_schema($db);
-            $token = trim((string)($_GET['token'] ?? ''));
+            $token = trim((string)(($_SERVER['REQUEST_METHOD'] === 'POST' ? $_POST['token'] : $_GET['token']) ?? ''));
             if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
                 $verificationResponse(400, false, 'This verification link is not valid.');
             }
             $stmt = $db->prepare("SELECT id,user_id,expires_at,used_at FROM bh_email_verifications WHERE token_hash=? LIMIT 1");
             $stmt->execute([hash('sha256',$token)]);
             $v=$stmt->fetch();
-            if (!$v || $v['used_at'] !== null || strtotime((string)$v['expires_at']) < time()) {
-                $verificationResponse(400, false, 'This verification link has expired or has already been used. Please request a new one.');
+            if (!$v) {
+                $verificationResponse(400, false, 'This verification link is invalid. Please request a fresh link from the sign-in page.');
+            }
+            $account = $db->prepare("SELECT email_verified_at FROM bh_users WHERE id=? LIMIT 1");
+            $account->execute([(int)$v['user_id']]);
+            if ($account->fetchColumn()) {
+                $verificationResponse(200, true, 'Your email is already verified. You can sign in.');
+            }
+            if ($v['used_at'] !== null || strtotime((string)$v['expires_at']) < time()) {
+                $verificationResponse(400, false, 'This verification link has expired or has already been used. Please request a fresh link.');
+            }
+            if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+                header('Content-Type: text/html; charset=utf-8');
+                header('Cache-Control: no-store, private');
+                header('X-Robots-Tag: noindex, nofollow');
+                $safeToken = htmlspecialchars($token, ENT_QUOTES, 'UTF-8');
+                echo '<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Confirm your email | Bubba Hub</title><style>body{font-family:Quicksand,Calibri,Arial,sans-serif;background:#eef7ed;color:#144400;text-align:center;padding:40px 16px}main{max-width:480px;margin:auto;background:white;padding:32px;border-radius:24px}button{background:#144400;color:white;border:0;border-radius:25px;padding:16px 28px;font-size:17px;cursor:pointer}</style></head><body><main><h1>Verify your Bubba Hub email</h1><p>Press the button below to confirm your class leader email address.</p><form method="post" action="/api/auth.php?action=verify_email"><input type="hidden" name="token" value="'.$safeToken.'"><button type="submit">Verify my email</button></form></main></body></html>';
+                exit;
             }
             $db->beginTransaction();
             try {
