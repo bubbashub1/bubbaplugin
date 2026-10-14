@@ -246,13 +246,11 @@ const previewImportedSessions=(entries,note='')=>{
    card.append(warning);
   }
   let matchedVenueIndex=0;
-  try{const existing=[{venue_name:form.elements.namedItem('venue_name')?.value||'',postcode:form.elements.namedItem('postcode')?.value||''},...collectVenues()];const matched=existing.findIndex(v=>venueKey(v.venue_name)===venueKey(event.venue_name)&&postcodeKey(v.postcode)===postcodeKey(event.postcode)&&event.venue_name&&event.postcode);matchedVenueIndex=matched>=0?matched:0;}
+  try{matchedVenueIndex=event.venue_name&&event.postcode?matchImportedVenue(event):0;}
   catch(error){const warning=document.createElement('p');warning.textContent='Venue could not be prepared automatically: '+error.message+'. You can still review the class.';card.append(warning);}
   const location=document.createElement('select');location.style.width='100%';
   venueOptions().forEach(o=>location.add(new Option(o.label,o.value)));
-  if(event.venue_name&&event.postcode){
-   const pending=document.createElement('option');pending.value='import';pending.textContent='Imported: '+event.venue_name+' ('+event.postcode+')';location.add(pending);location.value=matchedVenueIndex>0?String(matchedVenueIndex):'import';
-  }else location.value=String(matchedVenueIndex);
+  location.value=String(matchedVenueIndex);
   venue.append(location);grid.append(venue);
   const day=document.createElement('label');day.textContent='Day';day.style.cssText='display:flex;flex-direction:column;gap:4px;font-size:13px';const daySelect=document.createElement('select');['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].forEach((name,i)=>daySelect.add(new Option(name,String(i+1))));daySelect.value=String(event.day_of_week||1);day.append(daySelect);grid.append(day);
   const startTime=field(grid,'Start time',event.start_time,'time');
@@ -278,7 +276,7 @@ const previewImportedSessions=(entries,note='')=>{
    const title=row.title.value.trim(),start=row.startTime.value,end=row.endTime.value,from=row.from.value,to=row.to.value;
    if(!title||/confirm/i.test(title)||!start||!from||!to||to<from){importMessage.textContent='Complete class name, start time and valid dates for each selected class.';return;}
    const key=[from,start,row.daySelect.value,title].join('|');if(known.has(key))continue;
-   const venueIndex=row.location.value==='import'?matchImportedVenue(row.event):Number(row.location.value);
+   const venueIndex=Number(row.location.value);
    addSession({...row.event,title,class_name:title,venue_index:venueIndex,day_of_week:Number(row.daySelect.value),start_time:start,end_time:end,start_date:from,end_date:to,price:row.price.value});
    known.add(key);count++;
   }
@@ -442,7 +440,12 @@ steps.forEach(([name],i)=>{const b=document.createElement('button');b.type='butt
 back.addEventListener('click',()=>{step=Math.max(0,step-1);renderStep();});
 next.addEventListener('click',()=>{const required=labels.filter(l=>!l.hidden).map(l=>l.querySelector('[required]')).filter(Boolean);const invalid=required.find(el=>!el.value.trim());if(invalid){invalid.reportValidity();return;}step=Math.min(6,step+1);renderStep();});
 renderStep();
-form.addEventListener('submit',async e=>{e.preventDefault();status.textContent='Checking listing…';try{status.classList.remove('is-error');const importedLocations=collectVenues().filter(v=>v.venue_name&&v.town);
+form.addEventListener('submit',async e=>{e.preventDefault();status.textContent='Checking listing…';try{status.classList.remove('is-error');const importedLocations=collectVenues().filter(v=>v.venue_name);
+if(importedLocations.length&&!String(form.elements.namedItem('town')?.value||'').trim()){
+ const first=importedLocations[0];
+ const inferred=first.town||first.venue_name;
+ if(!first.town){const row=[...extraVenueRows.children].find(r=>r.querySelector('[data-vfield="venue_name"]')?.value===first.venue_name);const townInput=row?.querySelector('[data-vfield="town"]');if(townInput)townInput.value=inferred;}
+}
 if(importedLocations.length){
  const primary=importedLocations[0];
  for(const key of ['venue_name','town','region','postcode','address','latitude','longitude']){
@@ -450,7 +453,7 @@ if(importedLocations.length){
   if(field&&!String(field.value||'').trim()&&primary[key])field.value=primary[key];
  }
 }
-const requiredNames=['title','organisation_name','venue_name','town','category'];const missing=requiredNames.find(name=>!String(form.elements.namedItem(name)?.value||'').trim());if(missing){status.textContent='Please complete '+missing.replaceAll('_',' ')+' before saving.';status.classList.add('is-error');step=['title','organisation_name'].includes(missing)?0:missing==='category'?1:4;renderStep();return;}const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};delete body.age_preset;body.tags=String(form.elements.namedItem("tags")?.value||"").split(",").map(t=>t.trim()).filter(Boolean).slice(0,20).join(", ");
+const requiredNames=['title','organisation_name','category',...(collectVenues().some(v=>v.venue_name)?[]:['venue_name','town'])];const missing=requiredNames.find(name=>!String(form.elements.namedItem(name)?.value||'').trim());if(missing){status.textContent='Please complete '+missing.replaceAll('_',' ')+' before saving.';status.classList.add('is-error');step=['title','organisation_name'].includes(missing)?0:missing==='category'?1:4;renderStep();return;}const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};delete body.age_preset;body.tags=String(form.elements.namedItem("tags")?.value||"").split(",").map(t=>t.trim()).filter(Boolean).slice(0,20).join(", ");
 body.price_free=free.checked?1:0;body.price_per_family=!free.checked&&unit.value==='per_family'?1:0;body.price_per_session=!free.checked&&unit.value==='per_session'?1:0;body.pricing_unit=unit.value;body.block_length_weeks=unit.value==='per_block'&&!free.checked?Number(blockWeeks.value):null;body.id=original?.id||null;body.sessions=collectSessions();body.venues=collectVenues();body.accessibility=original?.accessibility||[];
 body.latitude=form.elements.namedItem('latitude')?.value||'';body.longitude=form.elements.namedItem('longitude')?.value||'';body.sessions=body.sessions.map(s=>({...s,price:s.price??'',start_date:s.start_date??'',end_date:s.end_date??''}));
 if(body.sessions.some(s=>!s.day_of_week||!s.start_time||s.end_time&&s.end_time<=s.start_time)){status.textContent='Each session needs a day and start time, and its end time must be later than its start time.';status.classList.add('is-error');step=3;renderStep();return;}button.disabled=true;status.textContent='Saving listing…';status.classList.remove('is-error');
