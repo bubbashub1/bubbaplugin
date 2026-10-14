@@ -161,7 +161,18 @@ if($_SERVER['REQUEST_METHOD']==='POST' && ($_POST['action']??'')==='import_csv')
    $values=[$title,$slug,$description,$category,$age,$ageMin,$ageMax,$accessJson,$r['tags'],$price,$perFamily,$perSession,$r['booking_url'],$r['schedule'],$bool($r['booking_required']),$bool($r['drop_in_welcome']),$bool($r['trial_available']),$bool($r['term_time_only']),$bool($r['holiday_sessions']),$bool($r['siblings_welcome']),$r['what_to_bring'],$r['good_to_know'],'draft',$oid];
    if($hasCounty){$q=$db->prepare("INSERT INTO bh_activities (title,slug,description,category,age_range,age_min_months,age_max_months,accessibility,tags,county,price_from,price_per_family,price_per_session,booking_url,weekly_schedule,booking_required,drop_in_welcome,trial_available,term_time_only,holiday_sessions,siblings_welcome,what_to_bring,good_to_know,status,organiser_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");$q->execute(array_merge([$title,$slug,$description,$category,$age,$ageMin,$ageMax,$accessJson,$r['tags'],''],array_slice($values, 9)));}
    else{$q=$db->prepare("INSERT INTO bh_activities (title,slug,description,category,age_range,age_min_months,age_max_months,accessibility,tags,price_from,price_per_family,price_per_session,booking_url,weekly_schedule,booking_required,drop_in_welcome,trial_available,term_time_only,holiday_sessions,siblings_welcome,what_to_bring,good_to_know,status,organiser_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");$q->execute($values);}
-   $activityId=(int)$db->lastInsertId();if($photos)$db->prepare("UPDATE bh_activities SET image_path=? WHERE id=?")->execute([$photos[0],$activityId]);
+   $activityId=(int)$db->lastInsertId();
+// Carry the single server-owned new-listing draft allowance into this listing.
+// This is in the same transaction as class creation, so a failed submission does not consume the draft.
+try{
+ $quotaExists=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_listing_import_usage_v2'");
+ if($quotaExists&&(int)$quotaExists->fetchColumn()>0){
+  $move=$db->prepare("INSERT INTO bh_listing_import_usage_v2 (user_id,listing_key,import_type,month_key,used) SELECT user_id,?,import_type,month_key,used FROM bh_listing_import_usage_v2 WHERE user_id=? AND listing_key='new-draft' ON DUPLICATE KEY UPDATE used=used+VALUES(used)");
+  $move->execute(['listing:'.$activityId,$userId]);
+  $db->prepare("DELETE FROM bh_listing_import_usage_v2 WHERE user_id=? AND listing_key='new-draft'")->execute([$userId]);
+ }
+}catch(Throwable $e){throw new RuntimeException('Unable to transfer listing import allowances',0,$e);}
+if($photos)$db->prepare("UPDATE bh_activities SET image_path=? WHERE id=?")->execute([$photos[0],$activityId]);
    $vq=$db->prepare("INSERT INTO bh_venues (venue_name,address,town,region,postcode,latitude,longitude,notes,activity_id) VALUES (?,?,?,?,?,?,?,?,?)");$vq->execute([$venueName,$r['address'],$town,$r['region'],$r['postcode'],$r['latitude']===''?null:$r['latitude'],$r['longitude']===''?null:$r['longitude'],'',$activityId]);
    $created++;$createdIds[]=$activityId;
   }
