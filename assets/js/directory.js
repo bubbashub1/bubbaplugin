@@ -831,9 +831,12 @@ const bhInitDirectory=async()=>{
         infiniteScrollObserver = new IntersectionObserver(entries => {
           if (!entries.some(entry => entry.isIntersecting)) return;
           if (visibleActivityCount >= list.length) return;
+          // Disconnect before rendering; otherwise the old observer may fire
+          // repeatedly while the new sentinel is inserted.
+          infiniteScrollObserver?.disconnect();
           visibleActivityCount = Math.min(visibleActivityCount + 6, list.length);
           render();
-        }, {root: resultsEl, rootMargin:"120px 0px 120px 0px"});
+        }, {root: resultsEl, rootMargin:"0px"});
         infiniteScrollObserver.observe(loadMoreTarget);
       }
 
