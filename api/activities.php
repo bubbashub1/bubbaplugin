@@ -234,7 +234,7 @@ try {
         $sessionSql = "
             SELECT
                 s.id,
-                v.activity_id,
+                s.activity_id,
                 s.venue_id,
                 s.day_of_week,
                 s.start_time,
@@ -247,7 +247,7 @@ try {
                 s.end_date
             FROM bh_sessions s
             INNER JOIN bh_venues v ON v.id = s.venue_id
-            WHERE v.activity_id IN ($placeholders)
+            WHERE s.activity_id IN ($placeholders)
             ORDER BY s.day_of_week ASC, s.start_time ASC
         ";
 
