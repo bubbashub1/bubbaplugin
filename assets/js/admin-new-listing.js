@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 const form=document.getElementById('newListingForm');if(!form)return;
 const status=document.getElementById('newListingStatus'),button=form.querySelector('button[type="submit"]'),id=new URLSearchParams(location.search).get('id');let original=null;
 const preset=form.elements.namedItem('age_preset'),free=form.elements.namedItem('price_free'),price=form.elements.namedItem('price_from'),unit=form.elements.namedItem('pricing_unit');
+let directoryVenues=[];
 const redirect=()=>location.replace('/admin-login.html?next='+encodeURIComponent(location.pathname+location.search));
 button.disabled=true;
 try{const auth=await fetch('/admin-auth.php?action=check',{credentials:'same-origin',cache:'no-store'});if(auth.status===401){redirect();return;}const check=await auth.json();if(!auth.ok||!check.ok)throw Error('Could not verify admin access.');
@@ -76,7 +77,7 @@ if(categoryInput){
 }
 // Suggest county and region only for recognised towns; never guess unknown locations.
 const townField=form.elements.namedItem('town'),countyField=form.elements.namedItem('county'),regionField=form.elements.namedItem('region');
-let directoryVenues=[];
+
 const areaByTown={
  'torquay':['Torbay','Torbay'],'paignton':['Torbay','Torbay'],'brixham':['Torbay','Torbay'],
  'newton abbot':['Devon','Teignbridge'],'teignmouth':['Devon','Teignbridge'],'dawlish':['Devon','Teignbridge'],'bovey tracey':['Devon','Teignbridge'],'kingsteignton':['Devon','Teignbridge'],'ashburton':['Devon','Teignbridge'],
