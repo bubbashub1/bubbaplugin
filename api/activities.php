@@ -116,7 +116,7 @@ try {
             SELECT 1
             FROM bh_sessions s2
             JOIN bh_venues v2 ON v2.id = s2.venue_id
-            WHERE s2.activity_id = a.id
+            WHERE v2.activity_id = a.id
               AND s2.day_of_week = :day
         )";
         $params[':day'] = $day;
@@ -130,7 +130,7 @@ try {
         ? "LEFT JOIN bh_venues v ON v.activity_id = a.id"
         : ($hasActivityVenues
             ? "LEFT JOIN bh_activity_venues av ON av.activity_id = a.id LEFT JOIN bh_venues v ON v.id = av.venue_id"
-            : "LEFT JOIN bh_venues v ON v.id = (SELECT s3.venue_id FROM bh_sessions s3 WHERE s3.activity_id = a.id AND s3.venue_id IS NOT NULL ORDER BY s3.id LIMIT 1)");
+            : "LEFT JOIN bh_venues v ON v.id = (SELECT s3.venue_id FROM bh_sessions s3 INNER JOIN bh_venues v3 ON v3.id=s3.venue_id WHERE v3.activity_id = a.id AND s3.venue_id IS NOT NULL ORDER BY s3.id LIMIT 1)");
 
     $sql = "
         SELECT
