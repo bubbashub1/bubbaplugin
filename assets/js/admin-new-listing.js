@@ -443,15 +443,12 @@ renderStep();
 form.addEventListener('submit',async e=>{e.preventDefault();status.textContent='Checking listing…';try{status.classList.remove('is-error');const importedLocations=collectVenues().filter(v=>v.venue_name);
 if(importedLocations.length&&!String(form.elements.namedItem('town')?.value||'').trim()){
  const first=importedLocations[0];
- const inferred=first.town||first.venue_name;
- if(!first.town){const row=[...extraVenueRows.children].find(r=>r.querySelector('[data-vfield="venue_name"]')?.value===first.venue_name);const townInput=row?.querySelector('[data-vfield="town"]');if(townInput)townInput.value=inferred;}
-}
-if(importedLocations.length){
- const primary=importedLocations[0];
+ if(!first.town){status.textContent='Please confirm the town for '+first.venue_name+' in Additional locations before saving.';status.classList.add('is-error');step=4;renderStep();return;}
  for(const key of ['venue_name','town','region','postcode','address','latitude','longitude']){
-  const field=form.elements.namedItem(key);
-  if(field&&!String(field.value||'').trim()&&primary[key])field.value=primary[key];
+  const field=form.elements.namedItem(key);if(field)field.value=first[key]||'';
  }
+ const firstRow=[...extraVenueRows.children].find(row=>row.querySelector('[data-vfield="venue_name"]')?.value===first.venue_name&&postcodeKey(row.querySelector('[data-vfield="postcode"]')?.value)===postcodeKey(first.postcode));
+ if(firstRow){firstRow.remove();scheduleRows.querySelectorAll('[data-session-venue]').forEach(select=>{const previous=Number(select.value);select.value=String(previous===1?0:previous>1?previous-1:0);});syncVenueSelectors();}
 }
 const requiredNames=['title','organisation_name','category',...(collectVenues().some(v=>v.venue_name)?[]:['venue_name','town'])];const missing=requiredNames.find(name=>!String(form.elements.namedItem(name)?.value||'').trim());if(missing){status.textContent='Please complete '+missing.replaceAll('_',' ')+' before saving.';status.classList.add('is-error');step=['title','organisation_name'].includes(missing)?0:missing==='category'?1:4;renderStep();return;}const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};delete body.age_preset;body.tags=String(form.elements.namedItem("tags")?.value||"").split(",").map(t=>t.trim()).filter(Boolean).slice(0,20).join(", ");
 body.price_free=free.checked?1:0;body.price_per_family=!free.checked&&unit.value==='per_family'?1:0;body.price_per_session=!free.checked&&unit.value==='per_session'?1:0;body.pricing_unit=unit.value;body.block_length_weeks=unit.value==='per_block'&&!free.checked?Number(blockWeeks.value):null;body.id=original?.id||null;body.sessions=collectSessions();body.venues=collectVenues();body.accessibility=original?.accessibility||[];
