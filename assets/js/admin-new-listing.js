@@ -217,7 +217,7 @@ const matchImportedVenue=(event)=>{
  if(!name&&!postcode)return 0;
  const normal=value=>String(value||'').toLowerCase().replace(/[^a-z0-9]/g,'');
  const existing=[{venue_name:form.elements.namedItem('venue_name')?.value||'',postcode:form.elements.namedItem('postcode')?.value||''},...collectVenues()];
- const index=existing.findIndex(v=>name&&postcode&&normal(v.venue_name)===normal(name)&&postcodeKey(v.postcode)===postcode);
+ const index=existing.findIndex(v=>name&&normal(v.venue_name)===normal(name)&&(!postcode||!postcodeKey(v.postcode)||postcodeKey(v.postcode)===postcode));
  if(index>=0)return index;
  const directoryMatch=findDirectoryVenue(name,event.postcode);
  addVenue({venue_name:name,postcode:event.postcode||'',town:directoryMatch?.town||'',region:directoryMatch?.region||'',address:directoryMatch?.address||'',latitude:directoryMatch?.latitude??'',longitude:directoryMatch?.longitude??'',booking_url:event.source_url||event.url||''});
