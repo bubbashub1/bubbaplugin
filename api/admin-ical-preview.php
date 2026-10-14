@@ -53,11 +53,11 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
    $days=['monday'=>1,'tuesday'=>2,'wednesday'=>3,'thursday'=>4,'friday'=>5,'saturday'=>6,'sunday'=>7];
    $text=trim(preg_replace('/[ \\t]+/u',' ',preg_replace('/\\r\\n?/','\\n',$dom->textContent)));
    // Course headings include the programme and are followed by dates, venue and price.
-   $chunks=preg_split('/(?=PAYG\\s+CATERPILLAR\\s+CLUB|WAITING\\s+LIST\\s+CATERPILLAR\\s+CLUB|CATERPILLAR\\s+CLUB\\s+NOV\\/DEC\\s+TERM|BUSY\\s+BEES\\s+CLASS)/iu',$text,-1,PREG_SPLIT_NO_EMPTY);
+   $chunks=preg_split('/(?=(?:PAYG\\s+)?(?:BUSY\\s+BEES|CATERPILLAR\\s+CLUB)|WAITING\\s+LIST\\s+CATERPILLAR\\s+CLUB)/iu',$text,-1,PREG_SPLIT_NO_EMPTY);
    foreach($chunks as $chunk){
     if(count($found)>=150)break;
     $chunk=trim($chunk);
-    if(!preg_match('/^(PAYG\\s+CATERPILLAR\\s+CLUB|WAITING\\s+LIST\\s+CATERPILLAR\\s+CLUB|CATERPILLAR\\s+CLUB\\s+NOV\\/DEC\\s+TERM|BUSY\\s+BEES\\s+CLASS)/iu',$chunk))continue;
+    if(!preg_match('/^((?:PAYG\\s+)?(?:BUSY\\s+BEES|CATERPILLAR\\s+CLUB)|WAITING\\s+LIST\\s+CATERPILLAR\\s+CLUB)/iu',$chunk))continue;
     $isPayg=(bool)preg_match('/^PAYG/iu',$chunk);
     $isWaiting=(bool)preg_match('/^WAITING\\s+LIST/iu',$chunk);
     $title=preg_match('/CATERPILLAR/iu',$chunk)?'Caterpillar Club':'Busy Bees';
