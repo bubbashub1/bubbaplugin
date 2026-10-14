@@ -60,13 +60,13 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
      if($to<$from)continue;
      $hour=(int)$match[8][0]%12+(strtolower($match[10][0])==='pm'?12:0);
      $time=sprintf('%02d:%02d',$hour,(int)($match[9][0]??0));
-     $before=substr($text,max(0,$match[0][1]-400),min(400,$match[0][1]));
+     $before=substr($text,max(0,$match[0][1]-220),min(220,$match[0][1]));
      $title='Class name to confirm';
      $lines=preg_split('/\\R/u',$before);
      foreach(array_reverse($lines?:[]) as $candidate){
       $candidate=trim($candidate);
       if($candidate===''||preg_match('/Remaining\\s+Classes|Availability|Cost:|Price:|Every\\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/iu',$candidate))continue;
-      if(preg_match('/\\b(?:BUSY BEES|CATERPILLARS|BLOOM BABY|CLASS\\s*[0-9]+)\\b/iu',$candidate)){$title=mb_substr($candidate,0,160);break;}
+      if(preg_match('/\\b(?:BUSY BEES|CATERPILLARS|BLOOM BABY|CLASS\\s*[0-9]+)\\b/iu',$candidate)&&!preg_match('/Remaining\\s+Classes/i',$candidate)){$title=mb_substr($candidate,0,160);break;}
      }
      $key=$from->format('Y-m-d').$time.strtolower($match[7][0]);
      $found[$key]=['title'=>$title,'day_of_week'=>$days[strtolower($match[7][0])],'start_time'=>$time,'end_time'=>'','start_date'=>$from->format('Y-m-d'),'end_date'=>$to->format('Y-m-d'),'frequency'=>'weekly','url'=>$url,'uid'=>$key];
@@ -74,7 +74,7 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
    }
   }
   if(!$found)fail(422,'Bloom timetable retrieved, but no dated class events were exposed in the public page HTML. Expand Paste your schedule and preview the weekly blocks instead.');
-  echo json_encode(['ok'=>true,'data'=>array_slice(array_values($found),0,150),'skipped_recurring'=>0,'source'=>'bloom_public_page']);exit;
+  echo json_encode(['ok'=>true,'data'=>array_slice(array_values($found),0,150),'skipped_recurring'=>0,'source'=>'bloom_public_page','note'=>'Weekly course blocks: verify class names, venue, end times and whether dates are current before adding.']);exit;
  }
 
  $found=[];
