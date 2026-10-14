@@ -211,12 +211,12 @@ const previewImportedSessions=(entries,note='')=>{
   for(const row of checks){
    if(!row.check.checked)continue;
    const title=row.title.value.trim(),start=row.startTime.value,end=row.endTime.value,from=row.from.value,to=row.to.value;
-   if(!title||/confirm/i.test(title)||!start||!end||!from||!to||to<from){importMessage.textContent='Complete class name, start/end times and valid dates for each selected class.';return;}
+   if(!title||/confirm/i.test(title)||!start||!from||!to||to<from){importMessage.textContent='Complete class name, start time and valid dates for each selected class.';return;}
    const key=[from,start,row.daySelect.value,title].join('|');if(known.has(key))continue;
    addSession({...row.event,title,class_name:title,venue_index:Number(row.location.value),day_of_week:Number(row.daySelect.value),start_time:start,end_time:end,start_date:from,end_date:to,price:row.price.value});
    known.add(key);count++;
   }
-  importMessage.textContent=count+' reviewed classes added. Save the listing when ready.';importResults.replaceChildren();
+  importMessage.textContent=count?count+' reviewed classes added below. Confirm finishing times and save the listing when ready.':'No new classes added. Select at least one class, or check for duplicates.';if(count){importResults.replaceChildren();scheduleRows.lastElementChild?.scrollIntoView({behavior:'smooth',block:'center'});}
  });
  importResults.append(add);
 };
