@@ -162,7 +162,7 @@ try {
         LEFT JOIN bh_organisers o ON o.id = a.organiser_id
         $venueJoin
         WHERE " . implode(' AND ', $where) . "
-        ORDER BY a.title ASC, a.id ASC
+        ORDER BY a.updated_at DESC, a.id DESC
     ";
 
     $stmt = $db->prepare($sql);
