@@ -114,7 +114,7 @@ try {
     if ($day !== null && $day >= 1 && $day <= 7) {
         $where[] = "EXISTS (
             SELECT 1
-            FROM bh_sessions s2
+            FROM bh_activity_schedules s2
             JOIN bh_venues v2 ON v2.id = s2.venue_id
             WHERE s2.activity_id = a.id
               AND s2.day_of_week = :day
@@ -127,7 +127,7 @@ try {
     $hasActivityVenues = (bool)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activity_venues'")->fetchColumn();
     $venueJoin = $hasActivityVenues
         ? "LEFT JOIN bh_activity_venues av ON av.activity_id = a.id LEFT JOIN bh_venues v ON v.id = av.venue_id"
-        : "LEFT JOIN bh_venues v ON v.id = (SELECT s3.venue_id FROM bh_sessions s3 WHERE s3.activity_id = a.id AND s3.venue_id IS NOT NULL ORDER BY s3.id LIMIT 1)";
+        : "LEFT JOIN bh_venues v ON v.id = (SELECT s3.venue_id FROM bh_activity_schedules s3 WHERE s3.activity_id = a.id AND s3.venue_id IS NOT NULL ORDER BY s3.id LIMIT 1)";
 
     $sql = "
         SELECT
@@ -239,13 +239,13 @@ try {
                 s.day_of_week,
                 s.start_time,
                 s.end_time,
-                s.duration_minutes,
-                s.price,
+                TIMESTAMPDIFF(MINUTE, s.start_time, s.end_time) AS duration_minutes,
+                NULL AS price,
                 s.term_time_only,
-                s.frequency,
+                NULL AS frequency,
                 s.start_date,
                 s.end_date
-            FROM bh_sessions s
+            FROM bh_activity_schedules s
             INNER JOIN bh_venues v ON v.id = s.venue_id
             WHERE s.activity_id IN ($placeholders)
             ORDER BY s.day_of_week ASC, s.start_time ASC
