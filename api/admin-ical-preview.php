@@ -57,7 +57,7 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
    foreach($chunks as $chunk){
     if(count($found)>=150)break;
     $chunk=trim($chunk);
-    if(!preg_match('/^((?:PAYG\\s+)?(?:BUSY\\s+BEES|CATERPILLAR\\s+CLUB)|WAITING\\s+LIST\\s+CATERPILLAR\\s+CLUB)/iu',$chunk))continue;
+    if(!preg_match('/^(?:(?:PAYG\\s+)?(?:BUSY\\s+BEES|CATERPILLAR\\s+CLUB)|WAITING\\s+LIST\\s+CATERPILLAR\\s+CLUB)/iu',$chunk))continue;
     $isPayg=(bool)preg_match('/^PAYG/iu',$chunk);
     $isWaiting=(bool)preg_match('/^WAITING\\s+LIST/iu',$chunk);
     $title=preg_match('/CATERPILLAR/iu',$chunk)?'Caterpillar Club':'Busy Bees';
