@@ -501,7 +501,11 @@ for(const row of expected){
  else remaining.splice(match,1);
 }
 if(savedSessions.length!==body.sessions.length||unmatched.length){
- const example=unmatched.slice(0,3).map(row=>'#'+row.index+' '+(row.name||'[blank name]')+' / '+row.time+' / '+(row.date||'no date')).join('; ');
+ const example=unmatched.slice(0,3).map(row=>{
+ const candidates=actual.filter(savedRow=>savedRow.day===row.day&&savedRow.time===row.time);
+ const found=candidates[0];
+ return '#'+row.index+' expected '+JSON.stringify({name:row.name,venue:row.venue,date:row.date,time:row.time})+'; returned '+(found?JSON.stringify({name:found.name,venue:found.venue,date:found.date,time:found.time}):'no matching day/time');
+}).join('; ');
  status.textContent='⚠ Timetable saved: '+body.sessions.length+' submitted / '+savedSessions.length+' returned. '+unmatched.length+' row(s) differ in class name, venue, date or time.'+(example?' Examples: '+example:'')+' Reload the editor before making further changes.';
  status.classList.add('is-error');
 }else{
