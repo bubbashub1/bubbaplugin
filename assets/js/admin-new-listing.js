@@ -178,21 +178,45 @@ const importButton=document.getElementById('adminIcalPreview');
 const importMessage=document.getElementById('adminIcalMessage'),importResults=document.getElementById('adminIcalResults');
 const previewImportedSessions=(entries,note='')=>{
  importResults.replaceChildren();
- importMessage.textContent=entries.length+' dated events found.'+(note?' '+note:'');
+ importMessage.textContent=entries.length+' possible class or course record(s) found. Review every field before adding.'+(note?' '+note:'');
  const checks=[],list=document.createElement('div');
- entries.forEach(event=>{
-  const label=document.createElement('label');label.style.cssText='display:flex;gap:10px;align-items:center;padding:8px 0';
-  const check=document.createElement('input');check.type='checkbox';check.checked=true;checks.push([check,event]);
-  label.append(check,document.createTextNode(event.start_date+' '+event.start_time+' — '+event.title));list.append(label);
+ const field=(parent,label,value,type='text')=>{
+  const wrap=document.createElement('label');wrap.textContent=label;wrap.style.cssText='display:flex;flex-direction:column;gap:4px;font-size:13px';
+  const input=document.createElement('input');input.type=type;input.value=value??'';input.style.cssText='width:100%;min-width:0';wrap.append(input);parent.append(wrap);return input;
+ };
+ entries.forEach((event,index)=>{
+  const card=document.createElement('fieldset');card.style.cssText='border:1px solid #ced7c7;border-radius:12px;padding:12px;margin:10px 0';
+  const legend=document.createElement('legend');legend.textContent='Course '+(index+1);card.append(legend);
+  const selected=document.createElement('label');const check=document.createElement('input');check.type='checkbox';check.checked=!/confirm/i.test(event.title||'');selected.append(check,document.createTextNode(' Include this course'));card.append(selected);
+  const grid=document.createElement('div');grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-top:10px';
+  const title=field(grid,'Class name',event.class_name||event.title);
+  const venue=document.createElement('label');venue.textContent='Venue';venue.style.cssText='display:flex;flex-direction:column;gap:4px;font-size:13px';
+  const location=document.createElement('select');location.style.width='100%';venueOptions().forEach(o=>location.add(new Option(o.label,o.value)));location.value=String(event.venue_index??0);venue.append(location);grid.append(venue);
+  const day=document.createElement('label');day.textContent='Day';day.style.cssText='display:flex;flex-direction:column;gap:4px;font-size:13px';const daySelect=document.createElement('select');['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].forEach((name,i)=>daySelect.add(new Option(name,String(i+1))));daySelect.value=String(event.day_of_week||1);day.append(daySelect);grid.append(day);
+  const startTime=field(grid,'Start time',event.start_time,'time');
+  const endTime=field(grid,'End time (confirm)',event.end_time,'time');
+  const from=field(grid,'First date',event.start_date,'date');
+  const to=field(grid,'Last date',event.end_date,'date');
+  const price=field(grid,'Price per session (£)',event.price||'','number');price.step='0.01';
+  if(event.block_price){const note=document.createElement('p');note.textContent='Source block price: £'+event.block_price+' (not a per-session price)';card.append(note);}
+  card.append(grid);list.append(card);
+  checks.push({check,title,location,daySelect,startTime,endTime,from,to,price,event});
  });
  importResults.append(list);
  if(!entries.length)return;
- const add=document.createElement('button');add.type='button';add.className='button button-primary';add.textContent='Add selected sessions';
+ const add=document.createElement('button');add.type='button';add.className='button button-primary';add.textContent='Add reviewed classes';
  add.addEventListener('click',()=>{
-  const known=new Set([...scheduleRows.children].map(row=>{const v={};row.querySelectorAll('[data-session-field]').forEach(el=>v[el.dataset.sessionField]=el.value);return [v.start_date,v.start_time,v.day_of_week].join('|');}));
   let count=0;
-  checks.forEach(([check,event])=>{const key=[event.start_date,event.start_time,event.day_of_week].join('|');if(check.checked&&!known.has(key)){addSession(event);known.add(key);count++;}});
-  importMessage.textContent=count+' sessions added. Review and Save listing to store them.';importResults.replaceChildren();
+  const known=new Set([...scheduleRows.children].map(row=>{const v={};row.querySelectorAll('[data-session-field]').forEach(el=>v[el.dataset.sessionField]=el.value);return [v.start_date,v.start_time,v.day_of_week,v.class_name].join('|');}));
+  for(const row of checks){
+   if(!row.check.checked)continue;
+   const title=row.title.value.trim(),start=row.startTime.value,end=row.endTime.value,from=row.from.value,to=row.to.value;
+   if(!title||/confirm/i.test(title)||!start||!end||!from||!to||to<from){importMessage.textContent='Complete class name, start/end times and valid dates for each selected course.';return;}
+   const key=[from,start,row.daySelect.value,title].join('|');if(known.has(key))continue;
+   addSession({...row.event,title,class_name:title,venue_index:Number(row.location.value),day_of_week:Number(row.daySelect.value),start_time:start,end_time:end,start_date:from,end_date:to,price:row.price.value});
+   known.add(key);count++;
+  }
+  importMessage.textContent=count+' reviewed classes added. Save the listing when ready.';importResults.replaceChildren();
  });
  importResults.append(add);
 };
