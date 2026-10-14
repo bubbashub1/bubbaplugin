@@ -489,8 +489,8 @@ const check=await fetch('/api/admin-activities.php?id='+encodeURIComponent(d.id|
 const saved=await check.json();
 if(!check.ok||!saved.ok)throw Error('Listing saved, but timetable verification failed. Please reload before editing again.');
 const savedSessions=Array.isArray(saved.data?.sessions)?saved.data.sessions:[];
-const normalTime=value=>String(value||'').trim().slice(0,5);
-const normalName=value=>String(value||'').trim().replace(/\\s+/g,' ').toLowerCase();
+const normalTime=value=>{const v=String(value||'').trim();const match=v.match(/^(\\d{1,2}):(\\d{2})/);return match?match[1].padStart(2,'0')+':'+match[2]:v;};
+const normalName=value=>String(value||'').trim().replace(/\s+/g,' ').toLowerCase();
 const expected=body.sessions.map((row,index)=>({index:index+1,name:normalName(row.class_name),day:Number(row.day_of_week),time:normalTime(row.start_time),venue:Number(row.venue_index||0),date:String(row.start_date||'').slice(0,10)}));
 const actual=savedSessions.map(row=>({name:normalName(row.class_name),day:Number(row.day_of_week),time:normalTime(row.start_time),venue:Number(row.venue_index||0),date:String(row.start_date||'').slice(0,10)}));
 const remaining=actual.slice();
