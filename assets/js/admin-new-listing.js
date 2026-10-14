@@ -97,6 +97,7 @@ townField?.addEventListener('blur',suggestArea);
 // Existing venues are searchable using the browser's built-in datalist.
 const venueSelect=document.getElementById('existingVenueSelect');
 const venueName=form.elements.namedItem('venue_name');
+let directoryVenues=[];
 if(venueSelect){
  const venueSearch=document.createElement('input');venueSearch.type='search';venueSearch.placeholder='Filter venues by name, town or postcode';venueSearch.setAttribute('aria-label','Search existing venues');venueSelect.before(venueSearch);
  const venueMessage=document.createElement('small');venueSelect.after(venueMessage);
@@ -118,7 +119,7 @@ if(venueSelect){
  try{
   const response=await fetch('/api/venues.php',{credentials:'same-origin',cache:'no-store'});
   const payload=await response.json();if(!response.ok||!payload.ok)throw Error(payload.error||'Could not load venues');
-  venues=Array.isArray(payload.data)?payload.data:[];renderVenues();
+  venues=Array.isArray(payload.data)?payload.data:[];directoryVenues=venues;renderVenues();
   if(original){const current=venues.find(v=>String(v.name||'').trim().toLowerCase()===String(original.venue_name||'').trim().toLowerCase()&&String(v.postcode||'').trim().toLowerCase()===String(original.postcode||'').trim().toLowerCase());if(current)venueSelect.value=String(current.id);}
   venueMessage.textContent=venues.length+' existing venues available.';
  }catch(error){venueMessage.textContent='Venue lookup unavailable; you can still enter venue details manually.';renderVenues();}
@@ -207,18 +208,18 @@ document.getElementById('adminAddSession')?.addEventListener('click',()=>addSess
 
 const importButton=document.getElementById('adminIcalPreview');
 const importMessage=document.getElementById('adminIcalMessage'),importResults=document.getElementById('adminIcalResults');
+const venueKey=value=>String(value||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const postcodeKey=value=>String(value||'').toUpperCase().replace(/\\s+/g,'');
+const findDirectoryVenue=(name,postcode)=>directoryVenues.find(v=>venueKey(v.name)===venueKey(name)&&postcodeKey(v.postcode)===postcodeKey(postcode)&&name&&postcode);
 const matchImportedVenue=(event)=>{
  const name=String(event.venue_name||'').trim(),postcode=String(event.postcode||'').replace(/\s+/g,'').toUpperCase();
  if(!name&&!postcode)return 0;
  const normal=value=>String(value||'').toLowerCase().replace(/[^a-z0-9]/g,'');
  const existing=[{venue_name:form.elements.namedItem('venue_name')?.value||'',postcode:form.elements.namedItem('postcode')?.value||''},...collectVenues()];
- const index=existing.findIndex(v=>{
-  const sameName=name&&normal(v.venue_name)===normal(name);
-  const samePostcode=postcode&&String(v.postcode||'').replace(/\s+/g,'').toUpperCase()===postcode;
-  return sameName&&(samePostcode||!postcode||!v.postcode);
- });
+ const index=existing.findIndex(v=>name&&postcode&&normal(v.venue_name)===normal(name)&&postcodeKey(v.postcode)===postcode);
  if(index>=0)return index;
- addVenue({venue_name:name,postcode:event.postcode||'',booking_url:event.source_url||event.url||''});
+ const directoryMatch=findDirectoryVenue(name,event.postcode);
+ addVenue({venue_name:name,postcode:event.postcode||'',town:directoryMatch?.town||'',region:directoryMatch?.region||'',address:directoryMatch?.address||'',latitude:directoryMatch?.latitude??'',longitude:directoryMatch?.longitude??'',booking_url:event.source_url||event.url||''});
  return existing.length;
 };
 const previewImportedSessions=(entries,note='')=>{
@@ -236,6 +237,12 @@ const previewImportedSessions=(entries,note='')=>{
   const grid=document.createElement('div');grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-top:10px';
   const title=field(grid,'Class name',event.class_name||event.title);
   const venue=document.createElement('label');venue.textContent='Venue';venue.style.cssText='display:flex;flex-direction:column;gap:4px;font-size:13px';
+  const directoryMatch=findDirectoryVenue(event.venue_name,event.postcode);
+  if(directoryMatch){
+   const warning=document.createElement('p');warning.style.cssText='padding:8px;border:1px solid #c68b36;border-radius:8px';
+   warning.textContent='Possible existing venue match: '+directoryMatch.name+' · '+(directoryMatch.town||'')+' · '+(directoryMatch.postcode||'')+'. Existing address and map coordinates will be suggested. Confirm before saving.';
+   card.append(warning);
+  }
   const matchedVenueIndex=matchImportedVenue(event);const location=document.createElement('select');location.style.width='100%';venueOptions().forEach(o=>location.add(new Option(o.label,o.value)));location.value=String(matchedVenueIndex);venue.append(location);grid.append(venue);
   const day=document.createElement('label');day.textContent='Day';day.style.cssText='display:flex;flex-direction:column;gap:4px;font-size:13px';const daySelect=document.createElement('select');['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].forEach((name,i)=>daySelect.add(new Option(name,String(i+1))));daySelect.value=String(event.day_of_week||1);day.append(daySelect);grid.append(day);
   const startTime=field(grid,'Start time',event.start_time,'time');
