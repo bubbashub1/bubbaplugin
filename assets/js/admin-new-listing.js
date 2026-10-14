@@ -76,6 +76,7 @@ if(categoryInput){
 }
 // Suggest county and region only for recognised towns; never guess unknown locations.
 const townField=form.elements.namedItem('town'),countyField=form.elements.namedItem('county'),regionField=form.elements.namedItem('region');
+let directoryVenues=[];
 const areaByTown={
  'torquay':['Torbay','Torbay'],'paignton':['Torbay','Torbay'],'brixham':['Torbay','Torbay'],
  'newton abbot':['Devon','Teignbridge'],'teignmouth':['Devon','Teignbridge'],'dawlish':['Devon','Teignbridge'],'bovey tracey':['Devon','Teignbridge'],'kingsteignton':['Devon','Teignbridge'],'ashburton':['Devon','Teignbridge'],
@@ -97,7 +98,6 @@ townField?.addEventListener('blur',suggestArea);
 // Existing venues are searchable using the browser's built-in datalist.
 const venueSelect=document.getElementById('existingVenueSelect');
 const venueName=form.elements.namedItem('venue_name');
-let directoryVenues=[];
 if(venueSelect){
  const venueSearch=document.createElement('input');venueSearch.type='search';venueSearch.placeholder='Filter venues by name, town or postcode';venueSearch.setAttribute('aria-label','Search existing venues');venueSelect.before(venueSearch);
  const venueMessage=document.createElement('small');venueSelect.after(venueMessage);
