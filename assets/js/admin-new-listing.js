@@ -274,13 +274,13 @@ const previewImportedSessions=(entries,note='')=>{
   for(const row of checks){
    if(!row.check.checked)continue;
    const title=row.title.value.trim(),start=row.startTime.value,end=row.endTime.value,from=row.from.value,to=row.to.value;
-   if(!title||/confirm/i.test(title)||!start||!from||!to||to<from){importMessage.textContent='Complete class name, start time and valid dates for each selected class.';return;}
+   if(!title||/confirm/i.test(title)||!start||(from&&to&&to<from)){row.check.closest('fieldset').style.borderColor='#b42318';importMessage.textContent='Class '+(checks.indexOf(row)+1)+' needs a confirmed name, start time and valid date order. Other reviewed classes have not been saved yet.';return;}
    const key=[from,start,row.daySelect.value,title].join('|');if(known.has(key))continue;
    const venueIndex=Number(row.location.value)===0&&row.event.venue_name&&row.event.postcode?matchImportedVenue(row.event):Number(row.location.value);
    addSession({...row.event,title,class_name:title,venue_index:venueIndex,day_of_week:Number(row.daySelect.value),start_time:start,end_time:end,start_date:from,end_date:to,price:row.price.value});
    known.add(key);count++;
   }
-  importMessage.textContent=count?count+' reviewed classes added below. Confirm finishing times and save the listing when ready.':'No new classes added. Select at least one class, or check for duplicates.';if(count){importResults.replaceChildren();step=3;renderStep();scheduleRows.lastElementChild?.scrollIntoView({behavior:'smooth',block:'center'});}
+  importMessage.textContent=count?count+' reviewed classes added below. Confirm finishing times and save the listing when ready.':'No new classes added. Select at least one class, or check for duplicates.';if(count){importResults.replaceChildren();step=3;renderStep();status.textContent=count+' imported sessions ready to save. Continue to Review and click Save listing; these are not in the database yet.';scheduleRows.lastElementChild?.scrollIntoView({behavior:'smooth',block:'center'});}
  });
  importResults.append(add);
 };
