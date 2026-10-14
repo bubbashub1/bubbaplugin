@@ -47,6 +47,27 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
     }
    }
   }
+  // Extract visible weekly timetable blocks when the public HTML contains them.
+  if(!$found&&isset($dom)){
+   $text=trim(preg_replace('/[ \\t]+/u',' ',preg_replace('/\\r\\n?/','\\n',$dom->textContent)));
+   $pattern='/([0-9]{1,2})\\s+(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(20[0-9]{2})\\s*[-–]\\s*([0-9]{1,2})\\s+(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(20[0-9]{2}).{0,500}?Every\\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\\s+at\\s+([0-9]{1,2})(?::([0-9]{2}))?\\s*(am|pm)/isu';
+   preg_match_all($pattern,$text,$matches,PREG_SET_ORDER|PREG_OFFSET_CAPTURE);
+   $days=['monday'=>1,'tuesday'=>2,'wednesday'=>3,'thursday'=>4,'friday'=>5,'saturday'=>6,'sunday'=>7];
+   foreach(array_slice($matches,0,150) as $match){
+    try{
+     $from=new DateTimeImmutable($match[1][0].' '.$match[2][0].' '.$match[3][0],new DateTimeZone('Europe/London'));
+     $to=new DateTimeImmutable($match[4][0].' '.$match[5][0].' '.$match[6][0],new DateTimeZone('Europe/London'));
+     if($to<$from)continue;
+     $hour=(int)$match[8][0]%12+(strtolower($match[10][0])==='pm'?12:0);
+     $time=sprintf('%02d:%02d',$hour,(int)($match[9][0]??0));
+     $before=substr($text,max(0,$match[0][1]-400),min(400,$match[0][1]));
+     preg_match('/([^\\n]{4,160}(?:CLASS|Busy Bees|Caterpillars)[^\\n]{0,120})/iu',$before,$name);
+     $title=trim($name[1]??'Class name to confirm');
+     $key=$from->format('Y-m-d').$time.strtolower($match[7][0]);
+     $found[$key]=['title'=>$title,'day_of_week'=>$days[strtolower($match[7][0])],'start_time'=>$time,'end_time'=>'','start_date'=>$from->format('Y-m-d'),'end_date'=>$to->format('Y-m-d'),'frequency'=>'weekly','url'=>$url,'uid'=>$key];
+    }catch(Throwable $ignored){}
+   }
+  }
   if(!$found)fail(422,'Bloom timetable retrieved, but no dated class events were exposed in the public page HTML. Expand Paste your schedule and preview the weekly blocks instead.');
   echo json_encode(['ok'=>true,'data'=>array_slice(array_values($found),0,150),'skipped_recurring'=>0,'source'=>'bloom_public_page']);exit;
  }
