@@ -199,6 +199,16 @@ const addSession=(s={})=>{
  }
  const term=document.createElement('label');const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.dataset.sessionField='term_time_only';checkbox.checked=String(s.term_time_only??'0')==='1';term.append(checkbox,document.createTextNode(' Term-time only (school term dates)'));row.appendChild(term);
  const frequency=row.querySelector('[data-session-field="frequency"]');const first=row.querySelector('[data-session-field="start_date"]');const last=row.querySelector('[data-session-field="end_date"]');
+ const termDates={'2026-27':[['2026-09-03','2026-10-25'],['2026-11-02','2026-12-18'],['2027-01-04','2027-02-14'],['2027-02-22','2027-03-25'],['2027-04-12','2027-05-30'],['2027-06-07','2027-07-23']]};
+ const termHint=document.createElement('small');termHint.style.cssText='display:block;grid-column:1/-1;color:#416651';
+ const firstClassOnOrAfter=(date,day)=>{const d=new Date(date+'T12:00:00');const wanted=Number(day)%7;d.setDate(d.getDate()+(wanted-d.getDay()+7)%7);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');};
+ const applySchoolTermStart=()=>{if(!checkbox.checked)return;const day=row.querySelector('[data-session-field="day_of_week"]')?.value;if(!day)return;const today=new Date().toISOString().slice(0,10);const terms=termDates['2026-27'];const term=terms.find(([start,end])=>end>=today)||terms[0];const proposed=firstClassOnOrAfter(term[0],day);if(!first.value||first.dataset.termAuto==='1'){first.value=proposed;first.dataset.termAuto='1';}termHint.textContent='Council term dates (2026/27): first class '+proposed+'. Half-terms and individual school INSET days must still be excluded from the published calendar.';};
+ checkbox.addEventListener('change',applySchoolTermStart);
+ row.querySelector('[data-session-field="day_of_week"]')?.addEventListener('change',()=>{if(checkbox.checked&&first.dataset.termAuto==='1')applySchoolTermStart();});
+ first.addEventListener('change',()=>{first.dataset.termAuto='0';});
+ row.appendChild(termHint);
+ if(checkbox.checked)applySchoolTermStart();
+
  const updateBlockEnd=()=>{if(frequency.value!=='seven_weeks'||!first.value)return;const date=new Date(first.value+'T12:00:00');if(Number.isNaN(date.getTime()))return;date.setDate(date.getDate()+48);const value=[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');if(!last.value||last.dataset.autoBlockEnd==='1'){last.value=value;last.dataset.autoBlockEnd='1';}};
  last.addEventListener('input',()=>{last.dataset.autoBlockEnd='0';});first.addEventListener('change',updateBlockEnd);frequency.addEventListener('change',updateBlockEnd);
  const remove=document.createElement('button');remove.type='button';remove.className='button button-soft';remove.textContent='Remove session';remove.onclick=()=>row.remove();row.appendChild(remove);const locationLabel=document.createElement('label');locationLabel.textContent='Location';const locationSelect=document.createElement('select');locationSelect.dataset.sessionVenue='1';venueOptions().forEach(o=>locationSelect.add(new Option(o.label,o.value)));locationSelect.value=String(s.venue_index??0);locationLabel.append(locationSelect);row.prepend(locationLabel);scheduleRows.appendChild(row);
