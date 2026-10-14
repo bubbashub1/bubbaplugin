@@ -188,7 +188,7 @@ const collectVenues=()=>[...extraVenueRows.children].map(row=>({id:Number(row.da
 // Schedule editor: preserves existing sessions and supports multiple new sessions.
 const scheduleSection=document.getElementById('adminListingSchedule'),scheduleRows=document.getElementById('adminScheduleRows');
 const addSession=(s={})=>{
- const row=document.createElement('div');row.className='bh-card';row.style.cssText='padding:14px;margin:12px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px';
+ const row=document.createElement('div');row.dataset.sessionId=String(s.id||'');row.className='bh-card';row.style.cssText='padding:14px;margin:12px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px';
  const fields=[['class_name','Class name (optional)','text'],['day_of_week','Day','select'],['start_time','Start time','time'],['end_time','End time','time'],['frequency','Frequency','select'],['start_date','First date (optional)','date'],['end_date','Last date (optional)','date'],['price','Session price (£)','number']];
  for(const [name,label,type] of fields){
   const wrap=document.createElement('label');wrap.textContent=label;
@@ -413,7 +413,7 @@ document.getElementById('adminPosterApply')?.addEventListener('click',()=>{
  setEmpty('description',description);
  message.textContent='Recognised details applied where fields were empty'+(day&&times?'; one session added':'')+'. Review every field before saving.';
 });
-const collectSessions=()=>[...scheduleRows.children].map(row=>{const s={venue_index:Number(row.querySelector('[data-session-venue]')?.value||0)};row.querySelectorAll('[data-session-field]').forEach(el=>s[el.dataset.sessionField]=el.type==='checkbox'?(el.checked?1:0):el.value);return s;}).filter(s=>s.day_of_week||s.start_time);
+const collectSessions=()=>[...scheduleRows.children].map(row=>{const s={id:Number(row.dataset.sessionId||0),venue_index:Number(row.querySelector('[data-session-venue]')?.value||0)};row.querySelectorAll('[data-session-field]').forEach(el=>s[el.dataset.sessionField]=el.type==='checkbox'?(el.checked?1:0):el.value);return s;}).filter(s=>s.day_of_week||s.start_time);
  // Seven-step admin editor, matching the class leader's new listing workflow.
 const steps=[['Basics',['title','organisation_name']],['About',['description','category','tags','age_preset','age_range','price_from','pricing_unit','block_length_weeks','price_free']],['Extra',['booking_url','email','phone','website','status']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address','latitude','longitude']],['Photos',['image_path']],['Review',[]]];
 const stepNav=document.getElementById('adminListingSteps');
