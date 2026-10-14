@@ -218,12 +218,12 @@ document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',(
  const dateISO=(day,month,year)=>{const index=months.indexOf(month.toLowerCase());if(index<0)return '';const date=new Date(Date.UTC(Number(year),index,Number(day)));return date.getUTCMonth()===index&&date.getUTCDate()===Number(day)?date.toISOString().slice(0,10):'';};
  for(const raw of rows){
   const line=raw.trim();if(!line)continue;
-  if(/^[^,]+,\\s*[A-Z]{1,2}[0-9][A-Z0-9]?\\s*[0-9][A-Z]{2}$/i.test(line))currentVenue=line;
-  const priceMatch=line.match(/^Cost:\\s*£\\s*([0-9]+(?:\\.[0-9]{1,2})?)/i);if(priceMatch)currentBlockPrice=priceMatch[1];
+  if(/^[^,]+,\s*[A-Z]{1,2}[0-9][A-Z0-9]?\s*[0-9][A-Z]{2}$/i.test(line))currentVenue=line;
+  const priceMatch=line.match(/^Cost:\s*£\s*([0-9]+(?:\.[0-9]{1,2})?)/i);if(priceMatch)currentBlockPrice=priceMatch[1];
   if(/CLASS|BUSY BEES|CATERPILLARS|BLOOM BABY/i.test(line)&&!/Remaining Classes/i.test(line))currentTitle=line;
-  const range=line.match(/([0-9]{1,2})\\s+([A-Za-z]+)\\s+(20[0-9]{2})\\s*[-–]\\s*([0-9]{1,2})\\s+([A-Za-z]+)\\s+(20[0-9]{2})/);
+  const range=line.match(/([0-9]{1,2})\s+([A-Za-z]+)\s+(20[0-9]{2})\s*[-–]\s*([0-9]{1,2})\s+([A-Za-z]+)\s+(20[0-9]{2})/);
   if(range){termStart=dateISO(range[1],range[2],range[3]);termEnd=dateISO(range[4],range[5],range[6]);}
-  const weekly=line.match(/Every\\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\\s+at\\s+([0-9]{1,2})(?::([0-9]{2}))?\\s*(am|pm)/i);
+  const weekly=line.match(/Every\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+at\s+([0-9]{1,2})(?::([0-9]{2}))?\s*(am|pm)/i);
   if(weekly&&termStart&&termEnd){
    const start=clock(weekly[2],weekly[3],weekly[4]),day=days[weekly[1].toLowerCase()],key=termStart+'|'+day+'|'+start;
    if(!seen.has(key)){seen.add(key);weeklyEvents.push({title:currentTitle||'Class name to confirm',class_name:currentTitle||'Class name to confirm',day_of_week:day,start_time:start,end_time:'',start_date:termStart,end_date:termEnd,frequency:'weekly',price:'',venue_hint:currentVenue,block_price:currentBlockPrice});}
