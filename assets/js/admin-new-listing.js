@@ -86,7 +86,7 @@ const areaByTown={
 function suggestArea(){
  if(!townField||!countyField||!regionField)return;
  const raw=townField.value.trim().toLowerCase();
- const key=raw.replace(/\\s*,.*$/,'').replace(/\\s+[a-z]{1,2}\\d.*$/,'').trim();
+ const key=raw.replace(/\s*,.*$/,'').replace(/\s+[a-z]{1,2}\\d.*$/,'').trim();
  const match=areaByTown[key];
  if(match){countyField.value=match[0];regionField.value=match[1];}
  else if(!raw){countyField.value='';regionField.value='';}
@@ -177,13 +177,13 @@ document.getElementById('adminAddSession')?.addEventListener('click',()=>addSess
 const importButton=document.getElementById('adminIcalPreview');
 const importMessage=document.getElementById('adminIcalMessage'),importResults=document.getElementById('adminIcalResults');
 const matchImportedVenue=(event)=>{
- const name=String(event.venue_name||'').trim(),postcode=String(event.postcode||'').replace(/\\s+/g,'').toUpperCase();
+ const name=String(event.venue_name||'').trim(),postcode=String(event.postcode||'').replace(/\s+/g,'').toUpperCase();
  if(!name&&!postcode)return 0;
  const normal=value=>String(value||'').toLowerCase().replace(/[^a-z0-9]/g,'');
  const existing=[{venue_name:form.elements.namedItem('venue_name')?.value||'',postcode:form.elements.namedItem('postcode')?.value||''},...collectVenues()];
  const index=existing.findIndex(v=>{
   const sameName=name&&normal(v.venue_name)===normal(name);
-  const samePostcode=postcode&&String(v.postcode||'').replace(/\\s+/g,'').toUpperCase()===postcode;
+  const samePostcode=postcode&&String(v.postcode||'').replace(/\s+/g,'').toUpperCase()===postcode;
   return sameName&&(samePostcode||!postcode||!v.postcode);
  });
  if(index>=0)return index;
@@ -235,7 +235,7 @@ const previewImportedSessions=(entries,note='')=>{
  importResults.append(add);
 };
 importButton?.addEventListener('click',async()=>{
- const urls=[...new Set(document.getElementById('adminIcalUrl').value.split(/[\\s,]+/).map(v=>v.trim()).filter(Boolean))];
+ const urls=[...new Set(document.getElementById('adminIcalUrl').value.split(/[\s,]+/).map(v=>v.trim()).filter(Boolean))];
  importResults.replaceChildren();if(!urls.length){importMessage.textContent='Enter at least one booking URL.';return;}
  importButton.disabled=true;const all=[],errors=[];
  try{
