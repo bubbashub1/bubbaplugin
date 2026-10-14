@@ -245,7 +245,7 @@ const previewImportedSessions=(entries,note='')=>{
    card.append(warning);
   }
   let matchedVenueIndex=0;
-  try{matchedVenueIndex=matchImportedVenue(event);}
+  try{const existing=[{venue_name:form.elements.namedItem('venue_name')?.value||'',postcode:form.elements.namedItem('postcode')?.value||''},...collectVenues()];const matched=existing.findIndex(v=>venueKey(v.venue_name)===venueKey(event.venue_name)&&postcodeKey(v.postcode)===postcodeKey(event.postcode)&&event.venue_name&&event.postcode);matchedVenueIndex=matched>=0?matched:0;}
   catch(error){const warning=document.createElement('p');warning.textContent='Venue could not be prepared automatically: '+error.message+'. You can still review the class.';card.append(warning);}
   const location=document.createElement('select');location.style.width='100%';venueOptions().forEach(o=>location.add(new Option(o.label,o.value)));location.value=String(matchedVenueIndex);venue.append(location);grid.append(venue);
   const day=document.createElement('label');day.textContent='Day';day.style.cssText='display:flex;flex-direction:column;gap:4px;font-size:13px';const daySelect=document.createElement('select');['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].forEach((name,i)=>daySelect.add(new Option(name,String(i+1))));daySelect.value=String(event.day_of_week||1);day.append(daySelect);grid.append(day);
@@ -272,7 +272,8 @@ const previewImportedSessions=(entries,note='')=>{
    const title=row.title.value.trim(),start=row.startTime.value,end=row.endTime.value,from=row.from.value,to=row.to.value;
    if(!title||/confirm/i.test(title)||!start||!from||!to||to<from){importMessage.textContent='Complete class name, start time and valid dates for each selected class.';return;}
    const key=[from,start,row.daySelect.value,title].join('|');if(known.has(key))continue;
-   addSession({...row.event,title,class_name:title,venue_index:Number(row.location.value),day_of_week:Number(row.daySelect.value),start_time:start,end_time:end,start_date:from,end_date:to,price:row.price.value});
+   const venueIndex=Number(row.location.value)===0&&row.event.venue_name&&row.event.postcode?matchImportedVenue(row.event):Number(row.location.value);
+   addSession({...row.event,title,class_name:title,venue_index:venueIndex,day_of_week:Number(row.daySelect.value),start_time:start,end_time:end,start_date:from,end_date:to,price:row.price.value});
    known.add(key);count++;
   }
   importMessage.textContent=count?count+' reviewed classes added below. Confirm finishing times and save the listing when ready.':'No new classes added. Select at least one class, or check for duplicates.';if(count){importResults.replaceChildren();scheduleRows.lastElementChild?.scrollIntoView({behavior:'smooth',block:'center'});}
