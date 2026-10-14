@@ -170,7 +170,7 @@ const addSession=(s={})=>{
  last.addEventListener('input',()=>{last.dataset.autoBlockEnd='0';});first.addEventListener('change',updateBlockEnd);frequency.addEventListener('change',updateBlockEnd);
  const remove=document.createElement('button');remove.type='button';remove.className='button button-soft';remove.textContent='Remove session';remove.onclick=()=>row.remove();row.appendChild(remove);const locationLabel=document.createElement('label');locationLabel.textContent='Location';const locationSelect=document.createElement('select');locationSelect.dataset.sessionVenue='1';venueOptions().forEach(o=>locationSelect.add(new Option(o.label,o.value)));locationSelect.value=String(s.venue_index??0);locationLabel.append(locationSelect);row.prepend(locationLabel);scheduleRows.appendChild(row);
 };
-(original?.sessions||[]).forEach(addSession);
+(original?.sessions||[]).forEach(session=>{const index=(original?.venues||[]).findIndex(venue=>Number(venue.id)===Number(session.venue_id));addSession({...session,venue_index:index>=0?index:0});});
 document.getElementById('adminAddSession')?.addEventListener('click',()=>addSession());
 
 
