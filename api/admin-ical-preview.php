@@ -47,29 +47,40 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
     }
    }
   }
-  // Extract visible weekly timetable blocks when the public HTML contains them.
+  // Parse self-contained timetable cards, not adjacent dates in a flattened page.
   if(!$found&&isset($dom)){
-   $text=trim(preg_replace('/[ \\t]+/u',' ',preg_replace('/\\r\\n?/','\\n',$dom->textContent)));
-   $pattern='/([0-9]{1,2})\\s+(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(20[0-9]{2})\\s*[-–]\\s*([0-9]{1,2})\\s+(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(20[0-9]{2}).{0,500}?Every\\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\\s+at\\s+([0-9]{1,2})(?::([0-9]{2}))?\\s*(am|pm)/isu';
-   preg_match_all($pattern,$text,$matches,PREG_SET_ORDER|PREG_OFFSET_CAPTURE);
+   $xpath=new DOMXPath($dom);
    $days=['monday'=>1,'tuesday'=>2,'wednesday'=>3,'thursday'=>4,'friday'=>5,'saturday'=>6,'sunday'=>7];
-   foreach(array_slice($matches,0,150) as $match){
+   $text=trim(preg_replace('/[ \\t]+/u',' ',preg_replace('/\\r\\n?/','\\n',$dom->textContent)));
+   // Course headings include the programme and are followed by dates, venue and price.
+   $chunks=preg_split('/(?=PAYG\\s+CATERPILLAR\\s+CLUB|WAITING\\s+LIST\\s+CATERPILLAR\\s+CLUB|CATERPILLAR\\s+CLUB\\s+NOV\\/DEC\\s+TERM|BUSY\\s+BEES\\s+CLASS)/iu',$text,-1,PREG_SPLIT_NO_EMPTY);
+   foreach($chunks as $chunk){
+    if(count($found)>=150)break;
+    $chunk=trim($chunk);
+    if(!preg_match('/^(PAYG\\s+CATERPILLAR\\s+CLUB|WAITING\\s+LIST\\s+CATERPILLAR\\s+CLUB|CATERPILLAR\\s+CLUB\\s+NOV\\/DEC\\s+TERM|BUSY\\s+BEES\\s+CLASS)/iu',$chunk))continue;
+    $isPayg=(bool)preg_match('/^PAYG/iu',$chunk);
+    $isWaiting=(bool)preg_match('/^WAITING\\s+LIST/iu',$chunk);
+    $title=preg_match('/CATERPILLAR/iu',$chunk)?'Caterpillar Club':'Busy Bees';
+    $frequency='weekly';$from=null;$to=null;$day=0;$time='';
     try{
-     $from=new DateTimeImmutable($match[1][0].' '.$match[2][0].' '.$match[3][0],new DateTimeZone('Europe/London'));
-     $to=new DateTimeImmutable($match[4][0].' '.$match[5][0].' '.$match[6][0],new DateTimeZone('Europe/London'));
-     if($to<$from)continue;
-     $hour=(int)$match[8][0]%12+(strtolower($match[10][0])==='pm'?12:0);
-     $time=sprintf('%02d:%02d',$hour,(int)($match[9][0]??0));
-     $before=substr($text,max(0,$match[0][1]-220),min(220,$match[0][1]));
-     $title='Class name to confirm';
-     $lines=preg_split('/\\R/u',$before);
-     foreach(array_reverse($lines?:[]) as $candidate){
-      $candidate=trim($candidate);
-      if($candidate===''||preg_match('/Remaining\\s+Classes|Availability|Cost:|Price:|Every\\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/iu',$candidate))continue;
-      if(preg_match('/\\b(?:BUSY BEES|CATERPILLARS|BLOOM BABY|CLASS\\s*[0-9]+)\\b/iu',$candidate)&&!preg_match('/Remaining\\s+Classes/i',$candidate)){$title=mb_substr($candidate,0,160);break;}
+     if(preg_match('/([0-9]{1,2})\\s+(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(20[0-9]{2})\\s*[-–]\\s*([0-9]{1,2})\\s+(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(20[0-9]{2})/iu',$chunk,$m)){
+      $from=new DateTimeImmutable("$m[1] $m[2] $m[3]");$to=new DateTimeImmutable("$m[4] $m[5] $m[6]");
+     }elseif(preg_match('/([0-9]{1,2})\\s+(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(20[0-9]{2})\\s+([0-9]{1,2})(?::([0-9]{2}))?\\s*(am|pm)/iu',$chunk,$m)){
+      $from=new DateTimeImmutable("$m[1] $m[2] $m[3]");$to=$from;$frequency='once';
      }
-     $key=$from->format('Y-m-d').$time.strtolower($match[7][0]);
-     $found[$key]=['title'=>$title,'day_of_week'=>$days[strtolower($match[7][0])],'start_time'=>$time,'end_time'=>'','start_date'=>$from->format('Y-m-d'),'end_date'=>$to->format('Y-m-d'),'frequency'=>'weekly','url'=>$url,'uid'=>$key];
+     if(!$from||!$to||$to<$from)continue;
+     if(preg_match('/Every\\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\\s+at\\s+([0-9]{1,2})(?::([0-9]{2}))?\\s*(am|pm)/iu',$chunk,$m)){
+      $day=$days[strtolower($m[1])];$hour=(int)$m[2]%12+(strtolower($m[4])==='pm'?12:0);$time=sprintf('%02d:%02d',$hour,(int)($m[3]??0));
+     }elseif(preg_match('/\\b([0-9]{1,2})(?::([0-9]{2}))?\\s*(am|pm)/iu',$chunk,$m)){
+      $day=(int)$from->format('N');$hour=(int)$m[1]%12+(strtolower($m[3])==='pm'?12:0);$time=sprintf('%02d:%02d',$hour,(int)($m[2]??0));
+     }
+     if(!$day||!$time)continue;
+     $venue='';$postcode='';
+     if(preg_match('/(Abbotsham Village Hall|Newport Methodist Church|Tomlin Hall)[^\\n]*?(EX[0-9]{2}\\s*[0-9][A-Z]{2})/iu',$chunk,$vm)){$venue=$vm[1];$postcode=$vm[2];}
+     $price='';
+     if(preg_match('/Cost:\\s*£\\s*([0-9]+(?:\\.[0-9]{1,2})?)/iu',$chunk,$pm))$price=$pm[1];
+     $key=$from->format('Y-m-d').'|'.$day.'|'.$time.'|'.$title.'|'.$venue;
+     $found[$key]=['title'=>$title,'day_of_week'=>$day,'start_time'=>$time,'end_time'=>'','start_date'=>$from->format('Y-m-d'),'end_date'=>$to->format('Y-m-d'),'frequency'=>$frequency,'venue_name'=>$venue,'postcode'=>$postcode,'price'=>$frequency==='once'?$price:'','block_price'=>$frequency==='weekly'?$price:'','booking_type'=>$isWaiting?'waiting_list':($isPayg?'payg':'block'),'url'=>$url,'uid'=>$key];
     }catch(Throwable $ignored){}
    }
   }
