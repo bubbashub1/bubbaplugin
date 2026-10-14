@@ -105,13 +105,20 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
  }
 
  $submittedSessions=(array)($input['sessions']??[]);
+ $seenSessionKeys=[];
  foreach($submittedSessions as $index=>$session){
   $day=(int)($session['day_of_week']??0);
   $start=trim((string)($session['start_time']??''));
   if($day<1||$day>7||!preg_match('/^([01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?$/',$start)){
    bh_admin_response(422,['ok'=>false,'error'=>'Class '.($index+1).' needs a valid weekday and start time. No sessions were deleted or saved.']);
   }
- }
+
+  $venueIndex=(int)($session['venue_index']??0);
+  $sessionKey=implode('|',[$venueIndex,$day,substr($start,0,5),strtolower(trim((string)($session['class_name']??''))),(string)($session['start_date']??''),(string)($session['end_date']??'')]);
+  if(isset($seenSessionKeys[$sessionKey])){
+   bh_admin_response(422,['ok'=>false,'error'=>'Duplicate class rows '.($seenSessionKeys[$sessionKey]+1).' and '.($index+1).' have identical venue, name, weekday, time and dates. Remove one before saving. No sessions were changed.']);
+  }
+  $seenSessionKeys[$sessionKey]=$index; }
  $db->beginTransaction();
  try{
   if($id>0){$q=$db->prepare("SELECT organiser_id FROM bh_activities WHERE id=?");$q->execute([$id]);$existing=$q->fetch();if(!$existing)bh_admin_response(404,['ok'=>false,'error'=>'Activity not found.']);$organiserId=(int)$existing['organiser_id'];$q=$db->prepare("UPDATE bh_organisers SET organisation_name=?,email=?,phone=?,website=? WHERE id=?");$q->execute([$organisationName,$email,$phone,$website,$organiserId]);if($activityCountyColumn){$q=$db->prepare("UPDATE bh_activities SET title=?,description=?,category=?,age_range=?,county=?,price_from=?,booking_url=?,image_path=?,status=?,accessibility=? WHERE id=?");$q->execute([$title,$description,$category,$ageRange,$county,$priceFrom,$bookingUrl,$imagePath,$status,$accessibility,$id]);}else{$q=$db->prepare("UPDATE bh_activities SET title=?,description=?,category=?,age_range=?,price_from=?,booking_url=?,image_path=?,status=?,accessibility=? WHERE id=?");$q->execute([$title,$description,$category,$ageRange,$priceFrom,$bookingUrl,$imagePath,$status,$accessibility,$id]);}$q=$db->prepare("SELECT id FROM bh_venues WHERE activity_id=? ORDER BY id LIMIT 1");$q->execute([$id]);$venueId=(int)$q->fetchColumn();if(!$venueId){$q=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes) VALUES (?,?,?,?,?,?,?,?,?)");$q->execute([$id,$venueName,$address,$town,$region,$postcode,$latitude,$longitude,'']);$venueId=(int)$db->lastInsertId();}else{$q=$db->prepare("UPDATE bh_venues SET venue_name=?,address=?,town=?,region=?,postcode=?,latitude=?,longitude=? WHERE id=?");$q->execute([$venueName,$address,$town,$region,$postcode,$latitude,$longitude,$venueId]);}
