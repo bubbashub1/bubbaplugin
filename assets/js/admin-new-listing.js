@@ -466,12 +466,25 @@ const check=await fetch('/api/admin-activities.php?id='+encodeURIComponent(d.id|
 const saved=await check.json();
 if(!check.ok||!saved.ok)throw Error('Listing saved, but timetable verification failed. Please reload before editing again.');
 const savedSessions=Array.isArray(saved.data?.sessions)?saved.data.sessions:[];
-const sameNames=body.sessions.every(row=>!String(row.class_name||'').trim()||savedSessions.some(item=>String(item.class_name||'').trim()===String(row.class_name||'').trim()&&Number(item.day_of_week)===Number(row.day_of_week)&&String(item.start_time||'').slice(0,5)===String(row.start_time||'').slice(0,5)));
-if(body.sessions.length&& (savedSessions.length!==body.sessions.length||!sameNames)){
- status.textContent='⚠ Listing saved, but timetable does not match: '+body.sessions.length+' submitted / '+savedSessions.length+' returned. Check class names and session rows before leaving.';
+const normalTime=value=>String(value||'').trim().slice(0,5);
+const normalName=value=>String(value||'').trim().replace(/\\s+/g,' ').toLowerCase();
+const expected=body.sessions.map((row,index)=>({index:index+1,name:normalName(row.class_name),day:Number(row.day_of_week),time:normalTime(row.start_time),venue:Number(row.venue_index||0),date:String(row.start_date||'').slice(0,10)}));
+const actual=savedSessions.map(row=>({name:normalName(row.class_name),day:Number(row.day_of_week),time:normalTime(row.start_time),venue:Number(row.venue_index||0),date:String(row.start_date||'').slice(0,10)}));
+const remaining=actual.slice();
+const unmatched=[];
+for(const row of expected){
+ const match=remaining.findIndex(savedRow=>savedRow.name===row.name&&savedRow.day===row.day&&savedRow.time===row.time&&savedRow.venue===row.venue&&savedRow.date===row.date);
+ if(match<0)unmatched.push(row);
+ else remaining.splice(match,1);
+}
+if(savedSessions.length!==body.sessions.length||unmatched.length){
+ const example=unmatched.slice(0,3).map(row=>'#'+row.index+' '+(row.name||'[blank name]')+' / '+row.time+' / '+(row.date||'no date')).join('; ');
+ status.textContent='⚠ Timetable saved: '+body.sessions.length+' submitted / '+savedSessions.length+' returned. '+unmatched.length+' row(s) differ in class name, venue, date or time.'+(example?' Examples: '+example:'')+' Reload the editor before making further changes.';
  status.classList.add('is-error');
 }else{
- status.textContent='✓ Listing saved and verified: '+savedSessions.length+' session(s), with class names checked.';
-}if(!original){original={id:d.id};location.href='/admin/admin-activities-add-listing.html?id='+encodeURIComponent(d.id);}
+ status.textContent='✓ Timetable verified: '+savedSessions.length+' sessions match the editor, including class names, venues, dates and times.';
+ status.classList.remove('is-error');
+}
+if(!original){original={id:d.id};location.href='/admin/admin-activities-add-listing.html?id='+encodeURIComponent(d.id);}
 }catch(err){status.textContent=err.message;status.classList.add('is-error');}finally{button.disabled=false;}}catch(err){console.error('Listing preparation failed',err);status.textContent='Could not prepare listing: '+(err?.message||'Unknown error')+'. Please review the form and try again.';status.classList.add('is-error');button.disabled=false;}});
 });
