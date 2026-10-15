@@ -107,3 +107,54 @@ body.bh-activity-v2{background:#fffdf7;color:#123f31;font-family:'Quicksand',Cal
  .bh-activity-v2 .listing-main,.bh-activity-v2 .listing-side{gap:14px}
  .bh-activity-v2 .activity-reference-contact .listing-map{height:260px!important}
 }
+
+/* Shared timetable grid: align headings, values and planner action. */
+.bh-activity-v2 .activity-reference-schedule .session-list{width:100%;min-width:0}
+.bh-activity-v2 .activity-reference-schedule .bh-session-head,
+.bh-activity-v2 .activity-reference-schedule .bh-compact-session{
+  display:grid!important;
+  grid-template-columns:minmax(0,2fr) minmax(72px,1fr) minmax(78px,1fr) minmax(65px,1fr) 34px!important;
+  column-gap:10px!important;
+  align-items:center!important;
+  width:100%;
+  box-sizing:border-box;
+}
+.bh-activity-v2 .activity-reference-schedule .bh-session-head{padding:9px 10px!important}
+.bh-activity-v2 .activity-reference-schedule .bh-compact-session{
+  padding:7px 10px!important;
+  min-height:42px!important;
+  margin:0!important;
+}
+.bh-activity-v2 .activity-reference-schedule .bh-compact-session>*{
+  min-width:0;
+  margin:0!important;
+  text-align:left;
+  overflow-wrap:break-word;
+}
+.bh-activity-v2 .activity-reference-schedule .bh-compact-session>strong{font-weight:700}
+.bh-activity-v2 .activity-reference-schedule .bh-compact-session .bh-session-plan{
+  grid-column:5!important;
+  justify-self:center!important;
+  align-self:center!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:28px!important;height:28px!important;
+  min-width:28px!important;min-height:28px!important;
+  max-width:28px!important;
+  margin:0!important;padding:0!important;
+  border-radius:50%!important;
+  white-space:nowrap!important;
+}
+@media(max-width:600px){
+  .bh-activity-v2 .activity-reference-schedule .venue-schedule{padding:10px}
+  .bh-activity-v2 .activity-reference-schedule .bh-session-head,
+  .bh-activity-v2 .activity-reference-schedule .bh-compact-session{
+    grid-template-columns:minmax(0,1.6fr) minmax(42px,.75fr) minmax(56px,.85fr) minmax(48px,.75fr) 28px!important;
+    column-gap:5px!important;
+    font-size:12px;
+  }
+  .bh-activity-v2 .activity-reference-schedule .bh-session-head{padding:8px 4px!important}
+  .bh-activity-v2 .activity-reference-schedule .bh-compact-session{padding:7px 4px!important}
+  .bh-activity-v2 .activity-reference-schedule .bh-compact-session strong small{font-size:10px!important}
+}
