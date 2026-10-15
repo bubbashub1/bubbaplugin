@@ -15,7 +15,7 @@ try{
  if(mb_strlen($q)>100||!in_array($role,['','family','leader'],true)||!in_array($status,['','active','pending','suspended','inactive'],true))admin_users_reply(422,['ok'=>false,'error'=>'invalid_filters']);
  $page=min(1000,max(1,(int)($_GET['page']??1)));$size=25;$offset=($page-1)*$size;
  $where=[];$params=[];
- if($q!==''){$where[]='(email LIKE :q)';$params['q']='%'.str_replace(['%','_'],['\\%','\\_'],$q).'%';}
+ if($q!==''){$where[]='(email LIKE :q)';$params['q']='%'.str_replace(['%','_','\\'],['\\%','\\_','\\\\'],$q).'%';}
  if($role!==''){$where[]='role=:role';$params['role']=$role;}
  if($status!==''){$where[]='status=:status';$params['status']=$status;}
  $condition=$where?' WHERE '.implode(' AND ',$where):'';
