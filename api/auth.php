@@ -747,7 +747,10 @@ try {
             'organiser_id'=>$organiserId,
             'user'=>['id'=>$userId,'email'=>$email,'role'=>'leader','status'=>'active'],
             'csrf'=>$_SESSION['bh_csrf'],
-            'message'=>'Account created. Please check your email and click the verification link before signing in.','verification_email_sent'=>$verificationEmailSent
+            'message'=>$verificationEmailSent
+                ? 'Account created. Please check your email and click the verification link before signing in.'
+                : 'Your account was created, but we could not send the verification email. Please use Resend verification on the sign-in page or contact Bubba Hub support.',
+            'verification_email_sent'=>$verificationEmailSent
         ]);
     }
 
