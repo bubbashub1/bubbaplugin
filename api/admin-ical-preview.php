@@ -22,7 +22,72 @@ curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>fals
 $body=curl_exec($ch);$code=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);
 if(!is_string($body)||strlen($body)>1048576||$code!==200)fail(422,'Could not retrieve the public calendar feed (HTTP '.$code.').');
 if(!str_contains($body,'BEGIN:VCALENDAR')){
- if(!preg_match('/(^|\\.)bookwhen\\.com$/i',$host))fail(422,'This booking page is not an iCalendar feed. Enter a public .ics URL.');
+ $isBookwhen=(bool)preg_match('/(^|\\.)bookwhen\\.com$/i',$host);
+ $isBloom=(bool)preg_match('/(^|\\.)bloombabyclasses\\.com$/i',$host);
+ if(!$isBookwhen&&!$isBloom)fail(422,'This page does not contain an iCalendar feed. Try the public timetable text importer.');
+ if($isBloom){
+  $found=[];
+  if(class_exists('DOMDocument')){
+   $dom=new DOMDocument();libxml_use_internal_errors(true);$dom->loadHTML($body);libxml_clear_errors();
+   $xpath=new DOMXPath($dom);
+   foreach($xpath->query('//script[@type="application/ld+json"]') as $script){
+    $json=json_decode($script->textContent,true);if(!is_array($json))continue;
+    $queue=[$json];
+    while($queue){
+     $item=array_pop($queue);if(!is_array($item))continue;
+     if(in_array('Event',(array)($item['@type']??[]),true)&&!empty($item['startDate'])){
+      try{
+       $start=(new DateTimeImmutable($item['startDate']))->setTimezone(new DateTimeZone('Europe/London'));
+       $end=!empty($item['endDate'])?(new DateTimeImmutable($item['endDate']))->setTimezone(new DateTimeZone('Europe/London')):null;
+       $key=($item['@id']??$item['url']??'').$start->format('c');
+       $found[$key]=['title'=>(string)($item['name']??'Class session'),'day_of_week'=>(int)$start->format('N'),'start_time'=>$start->format('H:i'),'end_time'=>$end?$end->format('H:i'):'','start_date'=>$start->format('Y-m-d'),'end_date'=>$start->format('Y-m-d'),'frequency'=>'once','url'=>(string)($item['url']??$url),'uid'=>$key];
+      }catch(Throwable $ignored){}
+     }
+     foreach($item as $value)if(is_array($value))$queue[]=$value;
+    }
+   }
+  }
+  // Parse self-contained timetable cards, not adjacent dates in a flattened page.
+  if(!$found&&isset($dom)){
+   $xpath=new DOMXPath($dom);
+   $days=['monday'=>1,'tuesday'=>2,'wednesday'=>3,'thursday'=>4,'friday'=>5,'saturday'=>6,'sunday'=>7];
+   $text=trim(preg_replace('/[ \\t]+/u',' ',preg_replace('/\\r\\n?/','\\n',$dom->textContent)));
+   // Course headings include the programme and are followed by dates, venue and price.
+   $chunks=preg_split('/(?=(?:PAYG\\s+)?(?:BUSY\\s+BEES|CATERPILLAR\\s+CLUB)|WAITING\\s+LIST\\s+CATERPILLAR\\s+CLUB)/iu',$text,-1,PREG_SPLIT_NO_EMPTY);
+   foreach($chunks as $chunk){
+    if(count($found)>=150)break;
+    $chunk=trim($chunk);
+    if(!preg_match('/^(?:(?:PAYG\\s+)?(?:BUSY\\s+BEES|CATERPILLAR\\s+CLUB)|WAITING\\s+LIST\\s+CATERPILLAR\\s+CLUB)/iu',$chunk))continue;
+    $isPayg=(bool)preg_match('/^PAYG/iu',$chunk);
+    $isWaiting=(bool)preg_match('/^WAITING\\s+LIST/iu',$chunk);
+    $title=preg_match('/CATERPILLAR/iu',$chunk)?'Caterpillar Club':'Busy Bees';
+    $frequency='weekly';$from=null;$to=null;$day=0;$time='';
+    try{
+     if(preg_match('/([0-9]{1,2})\\s+(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(20[0-9]{2})\\s*[-–]\\s*([0-9]{1,2})\\s+(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(20[0-9]{2})/iu',$chunk,$m)){
+      $from=new DateTimeImmutable("$m[1] $m[2] $m[3]");$to=new DateTimeImmutable("$m[4] $m[5] $m[6]");
+     }elseif(preg_match('/([0-9]{1,2})\\s+(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(20[0-9]{2})\\s+([0-9]{1,2})(?::([0-9]{2}))?\\s*(am|pm)/iu',$chunk,$m)){
+      $from=new DateTimeImmutable("$m[1] $m[2] $m[3]");$to=$from;$frequency='once';
+     }
+     if(!$from||!$to||$to<$from)continue;
+     if(preg_match('/Every\\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\\s+at\\s+([0-9]{1,2})(?::([0-9]{2}))?\\s*(am|pm)/iu',$chunk,$m)){
+      $day=$days[strtolower($m[1])];$hour=(int)$m[2]%12+(strtolower($m[4])==='pm'?12:0);$time=sprintf('%02d:%02d',$hour,(int)($m[3]??0));
+     }elseif(preg_match('/\\b([0-9]{1,2})(?::([0-9]{2}))?\\s*(am|pm)/iu',$chunk,$m)){
+      $day=(int)$from->format('N');$hour=(int)$m[1]%12+(strtolower($m[3])==='pm'?12:0);$time=sprintf('%02d:%02d',$hour,(int)($m[2]??0));
+     }
+     if(!$day||!$time)continue;
+     $venue='';$postcode='';
+     if(preg_match('/(Abbotsham Village Hall|Newport Methodist Church|Tomlin Hall)[^\\n]*?(EX[0-9]{2}\\s*[0-9][A-Z]{2})/iu',$chunk,$vm)){$venue=$vm[1];$postcode=$vm[2];}
+     $price='';
+     if(preg_match('/Cost:\\s*£\\s*([0-9]+(?:\\.[0-9]{1,2})?)/iu',$chunk,$pm))$price=$pm[1];
+     $key=$from->format('Y-m-d').'|'.$day.'|'.$time.'|'.$title.'|'.$venue;
+     $found[$key]=['title'=>$title,'day_of_week'=>$day,'start_time'=>$time,'end_time'=>'','start_date'=>$from->format('Y-m-d'),'end_date'=>$to->format('Y-m-d'),'frequency'=>$frequency,'venue_name'=>$venue,'postcode'=>$postcode,'price'=>$frequency==='once'?$price:'','block_price'=>$frequency==='weekly'?$price:'','booking_type'=>$isWaiting?'waiting_list':($isPayg?'payg':'block'),'url'=>$url,'uid'=>$key];
+    }catch(Throwable $ignored){}
+   }
+  }
+  if(!$found)fail(422,'Bloom timetable retrieved, but no dated class events were exposed in the public page HTML. Expand Paste your schedule and preview the weekly blocks instead.');
+  echo json_encode(['ok'=>true,'data'=>array_slice(array_values($found),0,150),'skipped_recurring'=>0,'source'=>'bloom_public_page','note'=>'Weekly course blocks: verify class names, venue, end times and whether dates are current before adding.']);exit;
+ }
+
  $found=[];
  // Public Bookwhen pages may expose structured Event data without an ICS link.
  if(class_exists('DOMDocument')){

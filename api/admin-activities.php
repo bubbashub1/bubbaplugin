@@ -22,6 +22,7 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
   $q=$db->query("SELECT o.id,o.organisation_name,u.email FROM bh_organisers o JOIN bh_users u ON ".$join." WHERE u.role='leader' AND u.status='active' AND o.status<>'suspended' ORDER BY o.organisation_name,o.id");
   bh_admin_response(200,['ok'=>true,'data'=>$q->fetchAll(),'csrf'=>$_SESSION['bh_listing_csrf']]);
  }
+ $venueBookingColumn=false;try{$venueBookingColumn=(bool)$db->query("SHOW COLUMNS FROM bh_venues LIKE 'booking_url'")->fetch();if(!$venueBookingColumn&&$_SERVER['REQUEST_METHOD']==='POST'){$db->exec("ALTER TABLE bh_venues ADD COLUMN booking_url VARCHAR(2048) NULL DEFAULT NULL");$venueBookingColumn=true;}}catch(Throwable $ignored){}
  $accessibilityColumn=false;
  try{$ac=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='accessibility'");$accessibilityColumn=((int)$ac->fetchColumn())>0;}catch(Throwable $ignored){}
  if($_SERVER['REQUEST_METHOD']==='GET'){
@@ -31,7 +32,7 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
    try{$cc=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='county'");$countyColumn=((int)$cc->fetchColumn())>0;}catch(Throwable $ignored){}
    $countySelect=$countyColumn?'a.county':'NULL AS county';
    $q=$db->prepare("SELECT a.*,$countySelect,o.organisation_name,o.email,o.phone,o.website,v.id venue_id,v.venue_name,v.address,v.town,v.region,v.postcode,v.latitude,v.longitude FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_venues v ON v.activity_id=a.id WHERE a.id=? ORDER BY v.id LIMIT 1");$q->execute([$id]);$a=$q->fetch();if(!$a)bh_admin_response(404,['ok'=>false,'error'=>'Activity not found.']);
-   $q=$db->prepare("SELECT id,venue_name,address,town,region,postcode,latitude,longitude FROM bh_venues WHERE activity_id=? ORDER BY id");$q->execute([$id]);$a['venues']=$q->fetchAll();$rawAccessibility=$a['accessibility']??null;$a['accessibility']=[];if($accessibilityColumn&&$rawAccessibility!==null){$decoded=json_decode((string)$rawAccessibility,true);$a['accessibility']=is_array($decoded)?$decoded:[];}$a['sessions']=[];foreach($a['venues'] as $vi=>$venue){$sq=$db->prepare("SELECT id,venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date FROM bh_sessions WHERE venue_id=? ORDER BY day_of_week,start_time");$sq->execute([(int)$venue['id']]);foreach($sq->fetchAll() as $session){$session['venue_index']=$vi;$a['sessions'][]=$session;}}$a['id']=(int)$a['id'];$a['price_from']=$a['price_from']!==null?(float)$a['price_from']:null;$a['latitude']=$a['latitude']!==null?(float)$a['latitude']:null;$a['longitude']=$a['longitude']!==null?(float)$a['longitude']:null;
+   $q=$db->prepare("SELECT id,venue_name,address,town,region,postcode,latitude,longitude FROM bh_venues WHERE activity_id=? ORDER BY id");$q->execute([$id]);$a['venues']=$q->fetchAll();$rawAccessibility=$a['accessibility']??null;$a['accessibility']=[];if($accessibilityColumn&&$rawAccessibility!==null){$decoded=json_decode((string)$rawAccessibility,true);$a['accessibility']=is_array($decoded)?$decoded:[];}$a['sessions']=[];foreach($a['venues'] as $vi=>$venue){$sessionCols=$db->query("SHOW COLUMNS FROM bh_sessions")->fetchAll(PDO::FETCH_COLUMN);$sessionNameCol=in_array('class_name',$sessionCols,true)?'class_name':(in_array('title',$sessionCols,true)?'title':null);$nameSelect=$sessionNameCol?",`".$sessionNameCol."` AS class_name":",'' AS class_name";$sq=$db->prepare("SELECT id,venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date".$nameSelect." FROM bh_sessions WHERE venue_id=? ORDER BY day_of_week,start_time");$sq->execute([(int)$venue['id']]);foreach($sq->fetchAll() as $session){$session['venue_index']=$vi;$a['sessions'][]=$session;}}$a['id']=(int)$a['id'];$a['price_from']=$a['price_from']!==null?(float)$a['price_from']:null;$a['latitude']=$a['latitude']!==null?(float)$a['latitude']:null;$a['longitude']=$a['longitude']!==null?(float)$a['longitude']:null;
    bh_admin_response(200,['ok'=>true,'data'=>$a]);
   }
   $countyColumn=false;
@@ -46,7 +47,7 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
  if(in_array($listingAction,['delete','assign_leader'],true)){
   if(!hash_equals($_SESSION['bh_listing_csrf'],(string)($input['csrf']??'')))bh_admin_response(403,['ok'=>false,'error'=>'Please refresh the page and try again.']);
   if($id<1)bh_admin_response(422,['ok'=>false,'error'=>'Choose a listing.']);
-  $db->beginTransaction();
+ $db->beginTransaction();
   try{
    $q=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND status<>'archived' FOR UPDATE");$q->execute([$id]);
    if(!$q->fetch()){$db->rollBack();bh_admin_response(404,['ok'=>false,'error'=>'Listing not found.']);}
@@ -60,13 +61,26 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
     if(!$q->fetch()){$db->rollBack();bh_admin_response(422,['ok'=>false,'error'=>'Choose an active registered leader organisation.']);}
     $db->prepare("UPDATE bh_activities SET organiser_id=? WHERE id=?")->execute([$organiserId,$id]);
    }
-   $db->commit();bh_admin_response(200,['ok'=>true]);
+   // Persist booking sources for scheduled six-week checks. An empty submission
+  // does not remove previously saved sources.
+  $sourceUrls=(array)($input['import_source_urls']??[]);
+  if($sourceUrls){
+   $saveSource=$db->prepare("INSERT INTO bh_import_sources (activity_id,source_url,url_hash,next_check_at) VALUES (?,?,?,DATE_ADD(UTC_TIMESTAMP(),INTERVAL 42 DAY)) ON DUPLICATE KEY UPDATE source_url=VALUES(source_url)");
+   foreach(array_unique($sourceUrls) as $sourceUrl){
+    $sourceUrl=trim((string)$sourceUrl);
+    $parts=parse_url($sourceUrl);
+    if(!$parts||strtolower((string)($parts['scheme']??''))!=='https'||empty($parts['host'])||isset($parts['user'])||isset($parts['pass'])||strlen($sourceUrl)>2048)continue;
+    $saveSource->execute([$id,$sourceUrl,hash('sha256',$sourceUrl)]);
+   }
+  }
+  $db->commit();bh_admin_response(200,['ok'=>true]);
   }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
  }
 
  $activityCountyColumn=false;
  try{$cc=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='county'");$activityCountyColumn=((int)$cc->fetchColumn())>0;}catch(Throwable $ignored){}$title=trim((string)($input['title']??''));$description=trim((string)($input['description']??''));$category=trim((string)($input['category']??''));$ageRange=trim((string)($input['age_range']??''));$county=trim((string)($input['county']??''));if($county!==''&&!in_array($county,['Devon','Cornwall','Plymouth','Torbay'],true))$county='';$priceFrom=($input['price_from']??'')===''?null:(float)$input['price_from'];$bookingUrl=trim((string)($input['booking_url']??''));$organisationName=trim((string)($input['organisation_name']??''));$email=trim((string)($input['email']??''));$phone=trim((string)($input['phone']??''));$website=trim((string)($input['website']??''));$venueName=trim((string)($input['venue_name']??''));$address=trim((string)($input['address']??''));$town=trim((string)($input['town']??''));$region=trim((string)($input['region']??''));$postcode=trim((string)($input['postcode']??''));$latitude=($input['latitude']??'')===''?null:(float)$input['latitude'];$longitude=($input['longitude']??'')===''?null:(float)$input['longitude'];$imagePath=trim((string)($input['image_path']??''));$status=in_array(($input['status']??'published'),['published','draft'],true)?$input['status']:'published';$accessibility=json_encode(array_values(array_unique(array_filter((array)($input['accessibility']??[]),'is_string'))),JSON_UNESCAPED_SLASHES);
  if($title===''||$organisationName===''||$venueName===''||$town===''||$category==='')bh_admin_response(422,['ok'=>false,'error'=>'Title, organisation, category, venue and town are required.']);
+ $tags=implode(', ',array_slice(array_unique(array_filter(array_map('trim',explode(',',(string)($input['tags']??''))))),0,20));
  $categoryNames=[];foreach(explode(',',$category) as $name){$name=trim(preg_replace('/\\s+/u',' ',$name));if($name==='')continue;$key=mb_strtolower($name);$categoryNames[$key]=$name;}
  $category=implode(', ',array_values($categoryNames));
  if(count($categoryNames)>30)bh_admin_response(422,['ok'=>false,'error'=>'Too many categories.']);
@@ -83,18 +97,85 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
  $optional=['age_min_months'=>$ageMin,'age_max_months'=>$ageMax,'price_free'=>$free?1:0,'price_per_family'=>!$free&&$unit==='per_family'?1:0,'price_per_session'=>!$free&&$unit==='per_session'?1:0,'pricing_unit'=>$unit,'block_length_weeks'=>$blockWeeks];
  $cols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);
  $optional=array_intersect_key($optional,array_flip($cols));
+  $db->exec("CREATE TABLE IF NOT EXISTS bh_import_sources (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,activity_id BIGINT UNSIGNED NOT NULL,source_url VARCHAR(2048) NOT NULL,url_hash CHAR(64) NOT NULL,last_checked_at DATETIME NULL,next_check_at DATETIME NOT NULL,check_status VARCHAR(32) NOT NULL DEFAULT 'pending',last_error TEXT NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,UNIQUE KEY unique_source (activity_id,url_hash),KEY due_sources (next_check_at,check_status)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+ // Preserve per-session names on older staging databases lacking the column.
+ $sessionSchema=$db->query("SHOW COLUMNS FROM bh_sessions")->fetchAll(PDO::FETCH_COLUMN);
+ if(!in_array('class_name',$sessionSchema,true)){
+  $db->exec("ALTER TABLE bh_sessions ADD COLUMN class_name VARCHAR(160) NULL DEFAULT NULL");
+ }
+
+ $submittedSessions=(array)($input['sessions']??[]);
+ $seenSessionKeys=[];
+ foreach($submittedSessions as $index=>$session){
+  $day=(int)($session['day_of_week']??0);
+  $start=trim((string)($session['start_time']??''));
+  if($day<1||$day>7||!preg_match('/^([01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?$/',$start)){
+   bh_admin_response(422,['ok'=>false,'error'=>'Class '.($index+1).' needs a valid weekday and start time. No sessions were deleted or saved.']);
+  }
+
+  $venueIndex=(int)($session['venue_index']??0);
+  $sessionKey=implode('|',[$venueIndex,$day,substr($start,0,5),strtolower(trim((string)($session['class_name']??''))),(string)($session['start_date']??''),(string)($session['end_date']??'')]);
+  if(isset($seenSessionKeys[$sessionKey])){
+   bh_admin_response(422,['ok'=>false,'error'=>'Duplicate class rows '.($seenSessionKeys[$sessionKey]+1).' and '.($index+1).' have identical venue, name, weekday, time and dates. Remove one before saving. No sessions were changed.']);
+  }
+  $seenSessionKeys[$sessionKey]=$index; }
  $db->beginTransaction();
  try{
   if($id>0){$q=$db->prepare("SELECT organiser_id FROM bh_activities WHERE id=?");$q->execute([$id]);$existing=$q->fetch();if(!$existing)bh_admin_response(404,['ok'=>false,'error'=>'Activity not found.']);$organiserId=(int)$existing['organiser_id'];$q=$db->prepare("UPDATE bh_organisers SET organisation_name=?,email=?,phone=?,website=? WHERE id=?");$q->execute([$organisationName,$email,$phone,$website,$organiserId]);if($activityCountyColumn){$q=$db->prepare("UPDATE bh_activities SET title=?,description=?,category=?,age_range=?,county=?,price_from=?,booking_url=?,image_path=?,status=?,accessibility=? WHERE id=?");$q->execute([$title,$description,$category,$ageRange,$county,$priceFrom,$bookingUrl,$imagePath,$status,$accessibility,$id]);}else{$q=$db->prepare("UPDATE bh_activities SET title=?,description=?,category=?,age_range=?,price_from=?,booking_url=?,image_path=?,status=?,accessibility=? WHERE id=?");$q->execute([$title,$description,$category,$ageRange,$priceFrom,$bookingUrl,$imagePath,$status,$accessibility,$id]);}$q=$db->prepare("SELECT id FROM bh_venues WHERE activity_id=? ORDER BY id LIMIT 1");$q->execute([$id]);$venueId=(int)$q->fetchColumn();if(!$venueId){$q=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes) VALUES (?,?,?,?,?,?,?,?,?)");$q->execute([$id,$venueName,$address,$town,$region,$postcode,$latitude,$longitude,'']);$venueId=(int)$db->lastInsertId();}else{$q=$db->prepare("UPDATE bh_venues SET venue_name=?,address=?,town=?,region=?,postcode=?,latitude=?,longitude=? WHERE id=?");$q->execute([$venueName,$address,$town,$region,$postcode,$latitude,$longitude,$venueId]);}
-   $additionalVenues=[];foreach((array)($input['venues']??[]) as $venue){$vn=trim((string)($venue['venue_name']??''));$vt=trim((string)($venue['town']??''));if($vn===''||$vt==='')continue;$vid=(int)($venue['id']??0);$va=trim((string)($venue['address']??''));$vr=trim((string)($venue['region']??''));$vp=trim((string)($venue['postcode']??''));$vlat=($venue['latitude']??'')===''?null:(float)$venue['latitude'];$vlon=($venue['longitude']??'')===''?null:(float)$venue['longitude'];if($vid>0){$vq=$db->prepare("UPDATE bh_venues SET venue_name=?,address=?,town=?,region=?,postcode=?,latitude=?,longitude=? WHERE id=? AND activity_id=?");$vq->execute([$vn,$va,$vt,$vr,$vp,$vlat,$vlon,$vid,$id]);}else{$vq=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes) VALUES (?,?,?,?,?,?,?,?,?)");$vq->execute([$id,$vn,$va,$vt,$vr,$vp,$vlat,$vlon,'']);$vid=(int)$db->lastInsertId();}$additionalVenues[]=$vid;}$venueIds=[$venueId,...$additionalVenues];foreach($venueIds as $vid)$db->prepare("DELETE FROM bh_sessions WHERE venue_id=?")->execute([$vid]);$action='updated';
+   $additionalVenues=[];foreach((array)($input['venues']??[]) as $venue){$vn=trim((string)($venue['venue_name']??''));$vt=trim((string)($venue['town']??''));if($vn===''||$vt==='')continue;$vid=(int)($venue['id']??0);$va=trim((string)($venue['address']??''));$vr=trim((string)($venue['region']??''));$vp=trim((string)($venue['postcode']??''));$vlat=($venue['latitude']??'')===''?null:(float)$venue['latitude'];$vlon=($venue['longitude']??'')===''?null:(float)$venue['longitude'];if($vid>0){$vq=$db->prepare("UPDATE bh_venues SET venue_name=?,address=?,town=?,region=?,postcode=?,latitude=?,longitude=? WHERE id=? AND activity_id=?");$vq->execute([$vn,$va,$vt,$vr,$vp,$vlat,$vlon,$vid,$id]);}else{$vq=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes) VALUES (?,?,?,?,?,?,?,?,?)");$vq->execute([$id,$vn,$va,$vt,$vr,$vp,$vlat,$vlon,'']);$vid=(int)$db->lastInsertId();}$additionalVenues[]=$vid;}$venueIds=[$venueId,...$additionalVenues];$incomingSessions=$submittedSessions;
+   // Recover existing class names by stable session ID before replacing rows.
+   // Never silently erase an existing name when the editor submits an empty one.
+   if($incomingSessions){
+    $nameCols=$db->query("SHOW COLUMNS FROM bh_sessions")->fetchAll(PDO::FETCH_COLUMN);
+    if(in_array('class_name',$nameCols,true)){
+     $previous=$db->prepare("SELECT id,class_name FROM bh_sessions WHERE venue_id=?");
+     $oldNames=[];
+     foreach($venueIds as $vid){$previous->execute([$vid]);foreach($previous->fetchAll(PDO::FETCH_ASSOC) as $previousRow){$oldNames[(int)$previousRow['id']]=(string)($previousRow['class_name']??'');}}
+     foreach($incomingSessions as &$incomingSession){
+      $oldId=(int)($incomingSession['id']??0);
+      if(trim((string)($incomingSession['class_name']??''))===''&&$oldId>0&&!empty($oldNames[$oldId]))$incomingSession['class_name']=$oldNames[$oldId];
+     }
+     unset($incomingSession);
+    }
+    foreach($venueIds as $vid)$db->prepare("DELETE FROM bh_sessions WHERE venue_id=?")->execute([$vid]);
+   }$action='updated';
   }else{
    $slug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$title),'-'));$baseSlug=$slug;$n=2;while(true){$q=$db->prepare("SELECT id FROM bh_activities WHERE slug=? LIMIT 1");$q->execute([$slug]);if(!$q->fetch())break;$slug=$baseSlug.'-'.$n++;}
    $q=$db->prepare("SELECT id FROM bh_organisers WHERE organisation_name=? LIMIT 1");$q->execute([$organisationName]);$organiserId=$q->fetchColumn();
-   if(!$organiserId){$oslug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$organisationName),'-'));$q=$db->prepare("INSERT INTO bh_organisers (organisation_name,slug,description,email,phone,website,status) VALUES (?,?,?,?,?,?, 'published')");$q->execute([$organisationName,$oslug,'',$email,$phone,$website]);$organiserId=(int)$db->lastInsertId();}
-   if($activityCountyColumn){$q=$db->prepare("INSERT INTO bh_activities (organiser_id,title,slug,description,category,age_range,county,price_from,booking_url,image_path,status,accessibility) VALUES (?,?,?,?,?,?,?,?,?,?,'published',?)");$q->execute([$organiserId,$title,$slug,$description,$category,$ageRange,$county,$priceFrom,$bookingUrl,$imagePath,$accessibility]);}else{$q=$db->prepare("INSERT INTO bh_activities (organiser_id,title,slug,description,category,age_range,price_from,booking_url,image_path,status,accessibility) VALUES (?,?,?,?,?,?,?,?,?,'published',?)");$q->execute([$organiserId,$title,$slug,$description,$category,$ageRange,$priceFrom,$bookingUrl,$imagePath,$accessibility]);}$id=(int)$db->lastInsertId();$additionalVenues=[];foreach((array)($input['venues']??[]) as $venue){$vn=trim((string)($venue['venue_name']??''));$vt=trim((string)($venue['town']??''));if($vn===''||$vt==='')continue;$vq=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes) VALUES (?,?,?,?,?,?,?,?,?)");$vq->execute([$id,$vn,trim((string)($venue['address']??'')),$vt,trim((string)($venue['region']??'')),trim((string)($venue['postcode']??'')),($venue['latitude']??'')===''?null:(float)$venue['latitude'],($venue['longitude']??'')===''?null:(float)$venue['longitude'],'']);$additionalVenues[]=(int)$db->lastInsertId();}$q=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes) VALUES (?,?,?,?,?,?,?,?,?)");$q->execute([$id,$venueName,$address,$town,$region,$postcode,$latitude,$longitude,'']);$venueId=(int)$db->lastInsertId();$action='created';
+   if(!$organiserId){
+    // Organiser schemas vary between deployments: insert only columns that exist.
+    $available=$db->query("SHOW COLUMNS FROM bh_organisers")->fetchAll(PDO::FETCH_COLUMN);
+    $values=['organisation_name'=>$organisationName,'slug'=>strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$organisationName),'-')),'description'=>'','email'=>$email,'phone'=>$phone,'website'=>$website,'status'=>'published'];
+    $columns=array_values(array_intersect(array_keys($values),$available));
+    if(!in_array('organisation_name',$columns,true))throw new RuntimeException('Organiser table is missing organisation_name.');
+    $names=implode(',',array_map(static fn($name)=>'`'.$name.'`',$columns));
+    $marks=implode(',',array_fill(0,count($columns),'?'));
+    $q=$db->prepare("INSERT INTO bh_organisers (".$names.") VALUES (".$marks.")");
+    $q->execute(array_map(static fn($name)=>$values[$name],$columns));
+    $organiserId=(int)$db->lastInsertId();
+   }
+   if($activityCountyColumn){$q=$db->prepare("INSERT INTO bh_activities (organiser_id,title,slug,description,category,age_range,county,price_from,booking_url,image_path,status,accessibility) VALUES (?,?,?,?,?,?,?,?,?,?,'published',?)");$q->execute([$organiserId,$title,$slug,$description,$category,$ageRange,$county,$priceFrom,$bookingUrl,$imagePath,$accessibility]);}else{$q=$db->prepare("INSERT INTO bh_activities (organiser_id,title,slug,description,category,age_range,price_from,booking_url,image_path,status,accessibility) VALUES (?,?,?,?,?,?,?,?,?,'published',?)");$q->execute([$organiserId,$title,$slug,$description,$category,$ageRange,$priceFrom,$bookingUrl,$imagePath,$accessibility]);}$id=(int)$db->lastInsertId();if($id<1)throw new RuntimeException('Activity ID was not generated. Check bh_activities primary key AUTO_INCREMENT before saving.');$q=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes) VALUES (?,?,?,?,?,?,?,?,?)");$q->execute([$id,$venueName,$address,$town,$region,$postcode,$latitude,$longitude,'']);$venueId=(int)$db->lastInsertId();$additionalVenues=[];foreach((array)($input['venues']??[]) as $venue){$vn=trim((string)($venue['venue_name']??''));$vt=trim((string)($venue['town']??''));if($vn===''||$vt==='')continue;$vq=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes) VALUES (?,?,?,?,?,?,?,?,?)");$vq->execute([$id,$vn,trim((string)($venue['address']??'')),$vt,trim((string)($venue['region']??'')),trim((string)($venue['postcode']??'')),($venue['latitude']??'')===''?null:(float)$venue['latitude'],($venue['longitude']??'')===''?null:(float)$venue['longitude'],'']);$additionalVenues[]=(int)$db->lastInsertId();}$action='created';
   }
+  if($venueBookingColumn){
+   $db->prepare("UPDATE bh_venues SET booking_url=? WHERE id=? AND activity_id=?")->execute([trim((string)($input['booking_url']??'')),$venueId,$id]);
+   foreach((array)($input['venues']??[]) as $index=>$venue){
+    if(!isset($additionalVenues[$index]))continue;
+    $db->prepare("UPDATE bh_venues SET booking_url=? WHERE id=? AND activity_id=?")->execute([trim((string)($venue['booking_url']??'')),$additionalVenues[$index],$id]);
+   }
+  }
+  $tagColumn=$db->query("SHOW COLUMNS FROM bh_activities LIKE 'tags'")->fetch();
+  if($tagColumn){$db->prepare("UPDATE bh_activities SET tags=? WHERE id=?")->execute([$tags,$id]);}
   if($optional){$set=implode(',',array_map(static fn($k)=>"`".$k."`=?",array_keys($optional)));$q=$db->prepare("UPDATE bh_activities SET ".$set." WHERE id=?");$q->execute([...array_values($optional),$id]);}
-  $sessionVenueIds=[$venueId,...$additionalVenues];foreach((array)($input['sessions']??[]) as $s){$venueIndex=(int)($s['venue_index']??0);$sessionVenueId=$sessionVenueIds[$venueIndex]??$venueId;$day=(int)($s['day_of_week']??0);$start=trim((string)($s['start_time']??''));$end=trim((string)($s['end_time']??''));if($day<1||$day>7||$start==='')continue;$duration=null;if($end!==''){$aa=strtotime($start);$bb=strtotime($end);if($aa!==false&&$bb!==false){$duration=(int)(($bb-$aa)/60);if($duration<0)$duration+=1440;}}$price=($s['price']??'')===''?$priceFrom:(float)$s['price'];$term=!empty($s['term_time_only'])?1:0;$frequency=trim((string)($s['frequency']??'weekly'))?:'weekly';$startDate=($s['start_date']??'')!==''?$s['start_date']:null;$endDate=($s['end_date']??'')!==''?$s['end_date']:null;$q=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date) VALUES (?,?,?,?,?,?,?,?,?,?)");$q->execute([$sessionVenueId,$day,$start,$end!==''?$end:null,$duration,$price,$term,$frequency,$startDate,$endDate]);}
+  $sessionVenueIds=[$venueId,...$additionalVenues];$savedSessionCount=0;foreach($incomingSessions as $s){$venueIndex=(int)($s['venue_index']??0);$sessionVenueId=$sessionVenueIds[$venueIndex]??$venueId;$day=(int)($s['day_of_week']??0);$start=trim((string)($s['start_time']??''));$end=trim((string)($s['end_time']??''));if($day<1||$day>7||$start==='')continue;$duration=null;if($end!==''){$aa=strtotime($start);$bb=strtotime($end);if($aa!==false&&$bb!==false){$duration=(int)(($bb-$aa)/60);if($duration<0)$duration+=1440;}}$price=($s['price']??'')===''?$priceFrom:(float)$s['price'];$term=!empty($s['term_time_only'])?1:0;$frequency=trim((string)($s['frequency']??'weekly'))?:'weekly';$startDate=($s['start_date']??'')!==''?$s['start_date']:null;$endDate=($s['end_date']??'')!==''?$s['end_date']:null;$className=mb_substr(trim((string)($s['class_name']??'')),0,160);
+  $sessionCols=$db->query("SHOW COLUMNS FROM bh_sessions")->fetchAll(PDO::FETCH_COLUMN);
+  $nameCol=in_array('class_name',$sessionCols,true)?'class_name':(in_array('title',$sessionCols,true)?'title':null);
+  if($nameCol!==null){
+   $q=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date,`".$nameCol."`) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
+   $q->execute([$sessionVenueId,$day,$start,$end!==''?$end:null,$duration,$price,$term,$frequency,$startDate,$endDate,$className]);
+  }else{
+   $q=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date) VALUES (?,?,?,?,?,?,?,?,?,?)");
+   $q->execute([$sessionVenueId,$day,$start,$end!==''?$end:null,$duration,$price,$term,$frequency,$startDate,$endDate]);
+  }$savedSessionCount++;}
   // Synchronise the canonical taxonomy and its activity relationship inside this transaction.
   if($categoryNames){
    $categoryCols=$db->query("SHOW COLUMNS FROM bh_categories")->fetchAll(PDO::FETCH_COLUMN);
@@ -113,7 +194,7 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
     }
    }
   }
-  $db->commit();bh_admin_response(200,['ok'=>true,'id'=>$id,'action'=>$action]);
+  $db->commit();bh_admin_response(200,['ok'=>true,'id'=>$id,'action'=>$action,'sessions_saved'=>$savedSessionCount]);
  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
 }catch(Throwable $e){bh_admin_response(500,['ok'=>false,'error_type'=>get_class($e),'error'=>$e->getMessage()]);}
 ?>

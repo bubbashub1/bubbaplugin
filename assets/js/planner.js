@@ -105,7 +105,21 @@ document.addEventListener("DOMContentLoaded",async()=>{
     else statusNote.textContent="Your account is signed in, but the planner could not be saved right now. Your local planner is still safe.";
   }
 
-  items=await bhActivities();const byId=new Map(items.map(item=>[String(item.id),item]));
+  items=await bhActivities();
+  // A newly selected session may belong to an activity outside the directory's
+  // initial page. Fetch those planned activities explicitly before rendering.
+  const plannedIds=bhGet(BH_KEYS.planner).map(String);
+  const loadedIds=new Set(items.map(item=>String(item.id)));
+  for(const activityId of plannedIds){
+    if(loadedIds.has(activityId)||!/^\\d+$/.test(activityId))continue;
+    try{
+      const response=await fetch('/api/activities.php?id='+encodeURIComponent(activityId)+'&per_page=1',{cache:'no-store',credentials:'same-origin'});
+      const payload=await response.json();
+      const activity=(payload.data||[]).find(item=>String(item.id)===activityId);
+      if(response.ok&&payload.ok&&activity){items.push(activity);loadedIds.add(activityId);}
+    }catch(error){console.warn('Could not load planned activity',activityId,error);}
+  }
+  const byId=new Map(items.map(item=>[String(item.id),item]));
 
   function mondayOf(d){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()),n=x.getDay();x.setDate(x.getDate()-(n===0?6:n-1));return x}
   function dateForDay(dayNum){const m=mondayOf(today),x=new Date(m);x.setDate(m.getDate()+dayNum-1);return x}
@@ -123,10 +137,12 @@ document.addEventListener("DOMContentLoaded",async()=>{
   }
   function getEntries(){
     const entries=[];
+    let selectedSessions={};try{selectedSessions=JSON.parse(localStorage.getItem('bhPlannerSessionSelections')||'{}')||{}}catch{}
+
     localPlanned().forEach(id=>{
       const activity=byId.get(String(id));if(!activity)return;
       const sessions=typeof bhSessions==="function"?bhSessions(activity):[];
-      if(sessions.length) sessions.forEach(session=>{
+      if(sessions.length) sessions.filter(session=>!Array.isArray(selectedSessions[String(id)])||selectedSessions[String(id)].includes(String(session.id))).forEach(session=>{
         const day=Number(session.day_of_week||0);
         if(day>=1&&day<=7&&occurrenceAllowed(session,dateForDay(day)))entries.push({activity,session,day,date:dateForDay(day)});
       });
@@ -236,7 +252,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
 
   function bindPlannerActions(){
     results.querySelectorAll(".planner-remove").forEach(button=>button.addEventListener("click",async()=>{
-      const id=button.dataset.id;bhTogglePlanned(id);render();if(signedIn)await plannerPost({action:"set_activity",activity_id:Number(id),planned:false,visited:false});
+      const id=button.dataset.id;bhTogglePlanned(id);try{const selected=JSON.parse(localStorage.getItem('bhPlannerSessionSelections')||'{}');delete selected[String(id)];localStorage.setItem('bhPlannerSessionSelections',JSON.stringify(selected))}catch{}render();if(signedIn)await plannerPost({action:"set_activity",activity_id:Number(id),planned:false,visited:false});
     }));
     results.querySelectorAll(".planner-visit").forEach(button=>button.addEventListener("click",async()=>{
       const id=button.dataset.id,visitedNow=!localVisited().includes(String(id)),list=localVisited(),index=list.indexOf(String(id));
