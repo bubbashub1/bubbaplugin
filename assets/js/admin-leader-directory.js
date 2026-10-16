@@ -50,7 +50,7 @@ rows.addEventListener('click',async event=>{
    });controls.append(btn);
   }
   detailContent.append(controls);
-  if(!orgs.length){detailContent.textContent='No linked organiser found. This account may need an organiser profile linked before it can use the leader portal.';return;}
+  if(!orgs.length){const note=document.createElement('p');note.textContent='No linked organiser found. This account may need an organiser profile linked before it can use the leader portal.';detailContent.append(note);return;}
   for(const org of orgs){
    const section=document.createElement('section'),heading=document.createElement('h3');heading.textContent=org.name||'Organiser #'+org.id;section.append(heading);
    const link=document.createElement('a');link.href='/admin/admin-activities-listings.html';link.textContent='Manage activity listings →';section.append(link);
