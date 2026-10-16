@@ -684,10 +684,11 @@ try {
     }
 
 
+require_once __DIR__.'/turnstile-settings.php';
 /** Verify registration challenges server-side. Enforce only when both keys are configured. */
 function bh_turnstile_registration_verify(array $body): void {
-    $site=trim((string)getenv('BUBBAHUB_TURNSTILE_SITE_KEY'));
-    $secret=trim((string)getenv('BUBBAHUB_TURNSTILE_SECRET_KEY'));
+    $site=trim((string)bh_turnstile_setting('BUBBAHUB_TURNSTILE_SITE_KEY'));
+    $secret=trim((string)bh_turnstile_setting('BUBBAHUB_TURNSTILE_SECRET_KEY'));
     if ($site==='' && $secret==='') return; // rollout disabled until explicitly configured
     if ($site==='' || $secret==='') bh_auth_response(503,['ok'=>false,'error'=>'turnstile_configuration_incomplete']);
     $token=(string)($body['turnstile_token']??'');
