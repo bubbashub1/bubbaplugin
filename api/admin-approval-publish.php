@@ -24,6 +24,7 @@ $note=trim((string)($input['note']??''));
 if(mb_strlen($note)>2000)approval_publish_reply(422,['ok'=>false,'error'=>'note_too_long']);
 try{
  require_once __DIR__.'/db.php';$db=bh_mysql();
+ $db->exec("CREATE TABLE IF NOT EXISTS bh_admin_approval_reviews (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,item_type VARCHAR(20) NOT NULL,item_id BIGINT UNSIGNED NOT NULL,decision VARCHAR(40) NOT NULL,note TEXT NOT NULL,admin_session_hash CHAR(64) NOT NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,INDEX item_history (item_type,item_id,created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
  $db->beginTransaction();
  $stmt=$db->prepare("SELECT id,title,status,organiser_id FROM bh_activities WHERE id=? FOR UPDATE");
  $stmt->execute([$id]);$item=$stmt->fetch(PDO::FETCH_ASSOC);
@@ -32,7 +33,7 @@ try{
  if(trim((string)$item['title'])===''||(int)$item['organiser_id']<1){$db->rollBack();approval_publish_reply(409,['ok'=>false,'error'=>'listing_missing_organiser_or_title']);}
  $stmt=$db->prepare("SELECT 1 FROM bh_organisers WHERE id=? LIMIT 1");$stmt->execute([(int)$item['organiser_id']]);
  if(!$stmt->fetchColumn()){$db->rollBack();approval_publish_reply(409,['ok'=>false,'error'=>'organiser_not_found']);}
- $db->exec("CREATE TABLE IF NOT EXISTS bh_admin_approval_reviews (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,item_type VARCHAR(20) NOT NULL,item_id BIGINT UNSIGNED NOT NULL,decision VARCHAR(40) NOT NULL,note TEXT NOT NULL,admin_session_hash CHAR(64) NOT NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,INDEX item_history (item_type,item_id,created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
  $stmt=$db->prepare("UPDATE bh_activities SET status='published' WHERE id=? AND status='draft'");$stmt->execute([$id]);
  if($stmt->rowCount()!==1)throw new RuntimeException('Unexpected listing update count');
  $stmt=$db->prepare("INSERT INTO bh_admin_approval_reviews (item_type,item_id,decision,note,admin_session_hash) VALUES ('listings',?,'approved',?,?)");
