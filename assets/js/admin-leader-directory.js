@@ -34,6 +34,22 @@ rows.addEventListener('click',async event=>{
   if(response.status===401){location.href='/admin-login.html?next='+encodeURIComponent(location.pathname);return;}
   const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'Unable to load leader');
   const orgs=data.organisers||[];detailStatus.textContent=data.leader.email+' · '+orgs.length+' linked organiser(s)';
+  const controls=document.createElement('div');controls.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin:12px 0';
+  for(const [action,label] of [['edit','Edit status'],['deactivate','Delete / deactivate'],['restore','Reactivate'],['promote','Promote to Pro'],['revoke_promotion','Remove complimentary Pro']]){
+   const btn=document.createElement('button');btn.type='button';btn.className='button button-soft';btn.textContent=label;
+   btn.addEventListener('click',async()=>{
+    let requestedStatus;
+    if(action==='edit'){requestedStatus=prompt('Account status: active, inactive, or suspended',data.leader.status);if(requestedStatus===null)return;requestedStatus=requestedStatus.trim().toLowerCase();if(!['active','inactive','suspended'].includes(requestedStatus)){alert('Invalid account status');return;}}
+    if(!confirm('Confirm '+label+' for '+data.leader.email+'?'))return;
+    btn.disabled=true;
+    try{
+     const res=await fetch('/api/admin-leader-actions.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:data.leader.id,action,status:requestedStatus})});
+     const result=await res.json();if(!res.ok||!result.ok)throw Error(result.error||'Action failed');
+     detailStatus.textContent=label+' completed for '+data.leader.email;load();
+    }catch(err){alert('Action failed: '+err.message);}finally{btn.disabled=false;}
+   });controls.append(btn);
+  }
+  detailContent.append(controls);
   if(!orgs.length){detailContent.textContent='No linked organiser found. This account may need an organiser profile linked before it can use the leader portal.';return;}
   for(const org of orgs){
    const section=document.createElement('section'),heading=document.createElement('h3');heading.textContent=org.name||'Organiser #'+org.id;section.append(heading);
