@@ -27,7 +27,7 @@ try{
  $db->beginTransaction();
  $s=$db->prepare("SELECT id,email,status FROM bh_users WHERE id=? AND role='leader' FOR UPDATE");$s->execute([$id]);$leader=$s->fetch(PDO::FETCH_ASSOC);
  if(!$leader){$db->rollBack();out(404,['ok'=>false,'error'=>'leader_not_found']);}
- $details=['admin_session'=>hash('sha256',session_id())];
+ $details=[];
  if($action==='edit'){
   $status=(string)($body['status']??'');if(!in_array($status,['active','inactive','suspended'],true)){$db->rollBack();out(422,['ok'=>false,'error'=>'invalid_status']);}
   $db->prepare("UPDATE bh_users SET status=? WHERE id=? AND role='leader'")->execute([$status,$id]);$details=['old_status'=>$leader['status'],'new_status'=>$status];
@@ -39,6 +39,6 @@ try{
   $db->prepare("INSERT INTO bh_admin_leader_promotions (leader_user_id,active) VALUES (?,?) ON DUPLICATE KEY UPDATE active=VALUES(active)")->execute([$id,$active]);
   $details=['complimentary_pro'=>$active];
  }
- $db->prepare("INSERT INTO bh_admin_leader_actions (leader_user_id,action,details) VALUES (?,?,?)")->execute([$id,$action,json_encode($details)]);
+ $db->prepare("INSERT INTO bh_admin_leader_actions (leader_user_id,action,details) VALUES (?,?,?)")->execute([$id,$action,json_encode(['admin_session'=>hash('sha256',session_id()),'change'=>$details])]);
  $db->commit();out(200,['ok'=>true,'action'=>$action,'leader_id'=>$id,'details'=>$details]);
 }catch(Throwable $e){if(isset($db)&&$db->inTransaction())$db->rollBack();error_log('Admin leader action: '.$e->getMessage());out(500,['ok'=>false,'error'=>'leader_action_failed']);}
