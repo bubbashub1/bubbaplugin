@@ -13,7 +13,7 @@ async function load(){
   total=Number(data.total)||0;size=Number(data.page_size)||25;
   for(const user of data.users||[]){
    const tr=document.createElement('tr');
-   for(const value of [user.id,user.email,user.status,user.email_verified?'Verified':'Not verified',user.account_type||'Free']){
+   for(const value of [user.id,user.email,user.status||'Unknown (needs review)',user.email_verified?'Verified':'Not verified',user.account_type||'Free']){
     const td=document.createElement('td');td.textContent=String(value??'');td.style.padding='10px 8px';td.style.borderBottom='1px solid #d8e6db';tr.append(td);
    }
    const cell=document.createElement('td');cell.style.cssText='display:flex;gap:6px;flex-wrap:wrap;padding:8px';
@@ -24,6 +24,7 @@ async function load(){
    if(user.status==='inactive'){
     const del=document.createElement('button');del.type='button';del.className='button button-soft';del.textContent='Permanently Delete';del.dataset.action='permanent_delete';del.dataset.id=String(user.id);del.dataset.email=user.email;del.style.color='#a32121';cell.append(del);
    }
+   if(!user.status){const note=document.createElement('span');note.textContent='Status missing — use Edit to set inactive before deletion';note.style.cssText='font-size:12px;color:#805000';cell.append(note);}
    tr.append(cell);rows.append(tr);
   }
   status.textContent=total+' leader account(s) found · Page '+page+(data.users.length?'':' · No results');
@@ -50,7 +51,7 @@ async function runAction(button){
  try{
   const response=await fetch('/api/admin-leader-actions.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,action,status:requestedStatus,confirmation})});
   const raw=await response.text();let data;try{data=JSON.parse(raw);}catch(_){throw Error('Server returned HTTP '+response.status+' instead of JSON');}
-  if(!response.ok||!data.ok)throw Error((data.error||'Action failed')+' (HTTP '+response.status+')');
+  if(!response.ok||!data.ok)throw Error(({linked_records_prevent_delete:'Deletion blocked: linked records must be reviewed first',linked_organiser_prevents_delete:'Deletion blocked: linked organiser must be reassigned or reviewed',foreign_key_review_required:'Deletion blocked: database relationships require review',deactivate_first:'Deactivate this account before deleting it'})[data.error]||data.error||'Action failed');
   await load();report('✓ '+email+' updated. '+(data.details?.new_status?'Status: '+data.details.new_status:'Action: '+action));
  }catch(error){report('Unable to update '+email+': '+error.message);button.disabled=false;}
 }
