@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');header('X-Content-Type-Options: nosniff');
+ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');
+$secure=!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off';
+session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);
 session_name('BUBBAHUB_ADMINSESSID');session_start();
 function out(int $status,array $body):never{http_response_code($status);echo json_encode($body);exit;}
 if(empty($_SESSION['bh_admin_authenticated']))out(401,['ok'=>false,'error'=>'admin_login_required']);
@@ -9,9 +12,9 @@ $origin=(string)($_SERVER['HTTP_ORIGIN']??'');
 $host=(string)($_SERVER['HTTP_HOST']??'');
 $source=(string)($_SERVER['HTTP_SEC_FETCH_SITE']??'');
 if($source!==''&&!in_array($source,['same-origin','none'],true))out(403,['ok'=>false,'error'=>'cross_origin_forbidden']);
-if($origin===''){out(403,['ok'=>false,'error'=>'origin_required']);}
+if($origin==='')out(403,['ok'=>false,'error'=>'origin_required']);
 $parts=parse_url($origin);
-if(!is_array($parts)||strtolower((string)($parts['host']??''))!==strtolower(explode(':',$host)[0])||!in_array(strtolower((string)($parts['scheme']??'')),['https'],true))out(403,['ok'=>false,'error'=>'origin_forbidden']);
+if(!is_array($parts)||strtolower((string)($parts['host']??''))!==strtolower(explode(':',$host)[0])||!in_array(strtolower((string)($parts['scheme']??'')),['https'],true)||isset($parts['port']))out(403,['ok'=>false,'error'=>'origin_forbidden']);
 if(!str_starts_with(strtolower((string)($_SERVER['CONTENT_TYPE']??'')),'application/json'))out(415,['ok'=>false,'error'=>'json_required']);
 
 $body=json_decode(file_get_contents('php://input'),true);if(!is_array($body))out(422,['ok'=>false,'error'=>'invalid_body']);
@@ -24,7 +27,7 @@ try{
  $db->beginTransaction();
  $s=$db->prepare("SELECT id,email,status FROM bh_users WHERE id=? AND role='leader' FOR UPDATE");$s->execute([$id]);$leader=$s->fetch(PDO::FETCH_ASSOC);
  if(!$leader){$db->rollBack();out(404,['ok'=>false,'error'=>'leader_not_found']);}
- $details=[];
+ $details=['admin_session'=>hash('sha256',session_id())];
  if($action==='edit'){
   $status=(string)($body['status']??'');if(!in_array($status,['active','inactive','suspended'],true)){$db->rollBack();out(422,['ok'=>false,'error'=>'invalid_status']);}
   $db->prepare("UPDATE bh_users SET status=? WHERE id=? AND role='leader'")->execute([$status,$id]);$details=['old_status'=>$leader['status'],'new_status'=>$status];
