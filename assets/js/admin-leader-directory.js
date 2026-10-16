@@ -64,7 +64,7 @@ rows.addEventListener('click',async event=>{
   const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'Unable to load leader');
   const orgs=data.organisers||[];detailStatus.textContent=data.leader.email+' · '+orgs.length+' linked organiser(s)';
   const controls=document.createElement('div');controls.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin:12px 0';
-  for(const [action,label] of [['edit','Edit status'],['deactivate','Delete / deactivate'],['restore','Reactivate'],['promote','Promote to Pro'],['revoke_promotion','Remove complimentary Pro']]){
+  for(const [action,label] of [['edit','Edit status'],['deactivate','Deactivate'],['restore','Reactivate'],['promote','Promote to Pro'],['revoke_promotion','Remove complimentary Pro']]){
    const btn=document.createElement('button');btn.type='button';btn.className='button button-soft';btn.textContent=label;
    btn.addEventListener('click',async()=>{
     let requestedStatus;
