@@ -28,5 +28,13 @@ try{
  $queues[1]['count']=(int)$q->fetchColumn();
  $q=$db->query("SELECT id,title,status FROM bh_activities WHERE status='draft' ORDER BY updated_at DESC,id DESC LIMIT 50");
  foreach($q->fetchAll(PDO::FETCH_ASSOC) as $a){$queues[1]['items'][]=['id'=>(int)$a['id'],'title'=>$a['title'],'status'=>'draft','url'=>'/admin/admin-activities-listings.html'];}
- approval_reply(200,['ok'=>true,'read_only'=>false,'review_only'=>true,'csrf'=>$_SESSION['bh_approval_csrf'],'queues'=>$queues,'note'=>'Counts reflect database status, not a formal submission workflow.']);
+ $history=[];
+ $exists=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_admin_approval_reviews'");
+ if((int)$exists->fetchColumn()>0){
+  $stmt=$db->query("SELECT id,item_type,item_id,decision,note,created_at FROM bh_admin_approval_reviews ORDER BY created_at DESC,id DESC LIMIT 100");
+  foreach($stmt->fetchAll(PDO::FETCH_ASSOC) as $entry){
+   $history[]=['id'=>(int)$entry['id'],'type'=>$entry['item_type'],'item_id'=>(int)$entry['item_id'],'decision'=>$entry['decision'],'note'=>$entry['note'],'created_at'=>$entry['created_at']];
+  }
+ }
+ approval_reply(200,['ok'=>true,'read_only'=>false,'review_only'=>true,'csrf'=>$_SESSION['bh_approval_csrf'],'queues'=>$queues,'history'=>$history,'note'=>'Counts reflect database status, not a formal submission workflow.']);
 }catch(Throwable $e){error_log('Admin approval centre: '.$e->getMessage());approval_reply(500,['ok'=>false,'error'=>'approval_centre_unavailable']);}
