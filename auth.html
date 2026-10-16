@@ -17,7 +17,7 @@
 <div id="leaderVerifyWrap" hidden style="margin:12px 0"><button type="button" id="resendLeaderVerification" class="button button-soft">Resend leader verification email</button><p class="library-message" id="leaderVerifyMessage" role="status" aria-live="polite"></p></div>
 <label id="confirmWrap" hidden>Confirm password<input name="confirm_password" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the password again"></label>
 <label id="termsWrap" class="auth-check" hidden><input type="checkbox" id="terms" required><span>I agree to the Bubba Hub terms and privacy policy, including the organiser terms if registering as a class leader.</span></label>
-<button class="button button-primary auth-submit" type="submit" id="authSubmit">Sign in</button>
+<div id="turnstileWrap" hidden><div id="turnstileWidget"></div><p id="turnstileMessage" role="status" aria-live="polite"></p></div><button class="button button-primary auth-submit" type="submit" id="authSubmit">Sign in</button>
 <p class="library-message" id="authMessage" role="status" aria-live="polite"></p>
 </form>
 <div class="auth-note"><span>🔐</span><div><strong>Your family information stays private</strong><p>Children and bump profiles are linked to your account and are not public.</p></div></div>
