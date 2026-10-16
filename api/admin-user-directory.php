@@ -11,15 +11,16 @@ if(empty($_SESSION['bh_admin_authenticated']))admin_users_reply(401,['ok'=>false
 if(($_SERVER['REQUEST_METHOD']??'')!=='GET')admin_users_reply(405,['ok'=>false,'error'=>'method_not_allowed']);
 try{
  require_once __DIR__.'/db.php';$db=bh_mysql();
- $q=trim((string)($_GET['q']??''));$role=trim((string)($_GET['role']??''));$status=trim((string)($_GET['status']??''));
- if(mb_strlen($q)>100||!in_array($role,['','family','leader'],true)||!in_array($status,['','active','pending','suspended','inactive'],true))admin_users_reply(422,['ok'=>false,'error'=>'invalid_filters']);
+ $q=trim((string)($_GET['q']??''));$role=trim((string)($_GET['role']??''));$status=trim((string)($_GET['status']??''));$verification=trim((string)($_GET['verification']??''));
+ if(mb_strlen($q)>100||!in_array($role,['','family','leader'],true)||!in_array($status,['','active','pending','suspended','inactive'],true)||!in_array($verification,['','verified','unverified'],true))admin_users_reply(422,['ok'=>false,'error'=>'invalid_filters']);
  $page=min(1000,max(1,(int)($_GET['page']??1)));$size=25;$offset=($page-1)*$size;
  $where=[];$params=[];
  if($q!==''){$where[]='(email LIKE :q)';$params['q']='%'.str_replace(['%','_','\\'],['\\%','\\_','\\\\'],$q).'%';}
  if($role!==''){$where[]='role=:role';$params['role']=$role;}
  if($status!==''){$where[]='status=:status';$params['status']=$status;}
+ if($verification!==''){$where[]=$verification==='verified'?'email_verified_at IS NOT NULL':'email_verified_at IS NULL';}
  $condition=$where?' WHERE '.implode(' AND ',$where):'';
  $count=$db->prepare('SELECT COUNT(*) FROM bh_users'.$condition);$count->execute($params);$total=(int)$count->fetchColumn();
- $stmt=$db->prepare('SELECT id,email,role,status FROM bh_users'.$condition.' ORDER BY id DESC LIMIT '.$size.' OFFSET '.$offset);$stmt->execute($params);
+ $stmt=$db->prepare('SELECT id,email,role,status,CASE WHEN email_verified_at IS NOT NULL THEN 1 ELSE 0 END AS email_verified FROM bh_users'.$condition.' ORDER BY id DESC LIMIT '.$size.' OFFSET '.$offset);$stmt->execute($params);
  admin_users_reply(200,['ok'=>true,'users'=>$stmt->fetchAll(PDO::FETCH_ASSOC),'total'=>$total,'page'=>$page,'page_size'=>$size,'read_only'=>true]);
 }catch(Throwable $e){error_log('Admin user directory: '.$e->getMessage());admin_users_reply(500,['ok'=>false,'error'=>'user_directory_unavailable']);}
