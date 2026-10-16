@@ -19,7 +19,7 @@ if(!str_starts_with(strtolower((string)($_SERVER['CONTENT_TYPE']??'')),'applicat
 
 $body=json_decode(file_get_contents('php://input'),true);if(!is_array($body))out(422,['ok'=>false,'error'=>'invalid_body']);
 $id=(int)($body['id']??0);$action=(string)($body['action']??'');
-if($id<1||!in_array($action,['edit','deactivate','restore','promote','revoke_promotion'],true))out(422,['ok'=>false,'error'=>'invalid_action']);
+if($id<1||!in_array($action,['edit','deactivate','restore','promote','revoke_promotion','permanent_delete'],true))out(422,['ok'=>false,'error'=>'invalid_action']);
 try{
  require __DIR__.'/db.php';$db=bh_mysql();
  $db->exec("CREATE TABLE IF NOT EXISTS bh_admin_leader_actions (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, leader_user_id BIGINT UNSIGNED NOT NULL, action VARCHAR(40) NOT NULL, details TEXT NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, INDEX (leader_user_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
@@ -28,7 +28,26 @@ try{
  $s=$db->prepare("SELECT id,email,status FROM bh_users WHERE id=? AND role='leader' FOR UPDATE");$s->execute([$id]);$leader=$s->fetch(PDO::FETCH_ASSOC);
  if(!$leader){$db->rollBack();out(404,['ok'=>false,'error'=>'leader_not_found']);}
  $details=[];
- if($action==='edit'){
+ if($action==='permanent_delete'){
+  if(($leader['status']??'')!=='inactive'){$db->rollBack();out(409,['ok'=>false,'error'=>'deactivate_first']);}
+  if(($body['confirmation']??'')!==$leader['email']){$db->rollBack();out(422,['ok'=>false,'error'=>'email_confirmation_required']);}
+  // Fail closed: never delete a leader with linked data or unknown schema references.
+  $tables=$db->query("SELECT TABLE_NAME,COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND COLUMN_NAME IN ('user_id','leader_user_id','created_by_user_id','owner_user_id','organiser_user_id')")->fetchAll(PDO::FETCH_ASSOC);
+  foreach($tables as $ref){
+   $table=(string)$ref['TABLE_NAME'];$col=(string)$ref['COLUMN_NAME'];
+   if(!preg_match('/^[a-zA-Z0-9_]+$/',$table)||!preg_match('/^[a-zA-Z0-9_]+$/',$col))throw new RuntimeException('Unsafe reference metadata');
+   if(in_array($table,['bh_admin_leader_actions','bh_admin_leader_promotions','bh_users'],true))continue;
+   $check=$db->prepare("SELECT 1 FROM `$table` WHERE `$col`=? LIMIT 1");$check->execute([$id]);
+   if($check->fetchColumn()){$db->rollBack();out(409,['ok'=>false,'error'=>'linked_records_prevent_delete','table'=>$table]);}
+  }
+  $check=$db->prepare("SELECT 1 FROM bh_organisers WHERE LOWER(email)=LOWER(?) LIMIT 1");$check->execute([$leader['email']]);
+  if($check->fetchColumn()){$db->rollBack();out(409,['ok'=>false,'error'=>'linked_organiser_prevents_delete']);}
+  $fk=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_SCHEMA=DATABASE() AND REFERENCED_TABLE_NAME='bh_users' AND REFERENCED_COLUMN_NAME='id' AND TABLE_NAME NOT IN ('bh_admin_leader_actions','bh_admin_leader_promotions')");
+  $fk->execute();if((int)$fk->fetchColumn()>0){$db->rollBack();out(409,['ok'=>false,'error'=>'foreign_key_review_required']);}
+  $db->prepare("DELETE FROM bh_admin_leader_promotions WHERE leader_user_id=?")->execute([$id]);
+  $db->prepare("DELETE FROM bh_users WHERE id=? AND role='leader' AND status='inactive'")->execute([$id]);
+  $details=['deleted_email'=>$leader['email']];
+ }elseif($action==='edit'){
   $status=(string)($body['status']??'');if(!in_array($status,['active','inactive','suspended'],true)){$db->rollBack();out(422,['ok'=>false,'error'=>'invalid_status']);}
   $db->prepare("UPDATE bh_users SET status=? WHERE id=? AND role='leader'")->execute([$status,$id]);$details=['old_status'=>$leader['status'],'new_status'=>$status];
  }elseif($action==='deactivate'||$action==='restore'){
