@@ -21,6 +21,9 @@ async function load(){
    for(const [action,label] of [['edit','Edit'],[user.status==='active'?'deactivate':'restore',user.status==='active'?'Deactivate':'Reactivate'],[user.account_type==='Pro (complimentary)'?'revoke_promotion':'promote',user.account_type==='Pro (complimentary)'?'Remove Pro grant':'Promote to Pro']]){
     const button=document.createElement('button');button.type='button';button.className='button button-soft';button.textContent=label;button.dataset.action=action;button.dataset.id=String(user.id);button.dataset.email=user.email;button.dataset.status=user.status;cell.append(button);
    }
+   if(user.status==='inactive'){
+    const del=document.createElement('button');del.type='button';del.className='button button-soft';del.textContent='Permanently Delete';del.dataset.action='permanent_delete';del.dataset.id=String(user.id);del.dataset.email=user.email;del.style.color='#a32121';cell.append(del);
+   }
    tr.append(cell);rows.append(tr);
   }
   status.textContent=total+' leader account(s) found · Page '+page+(data.users.length?'':' · No results');
@@ -35,13 +38,17 @@ rows.closest('table')?.querySelector('thead tr')?.append(Object.assign(document.
 async function runAction(button){
  const report=message=>{const el=document.getElementById('leaderActionStatus');if(el){el.hidden=false;el.textContent=message;}else status.textContent=message;};
  const action=button.dataset.action,id=Number(button.dataset.id),email=button.dataset.email;
- let requestedStatus;
+ let requestedStatus,confirmation;
+ if(action==='permanent_delete'){
+  confirmation=prompt('PERMANENT DELETE: This cannot be undone. Type the leader email exactly to confirm. Accounts with linked records cannot be deleted.\n\n'+email);
+  if(confirmation!==email){report('Permanent deletion cancelled: email did not match.');return;}
+ }
  if(action==='edit'){requestedStatus=prompt('Account status: active, inactive, or suspended',button.dataset.status);if(requestedStatus===null)return;requestedStatus=requestedStatus.trim().toLowerCase();if(!['active','inactive','suspended'].includes(requestedStatus)){alert('Invalid status');return;}}
  if(!confirm('Confirm '+button.textContent+' for '+email+'?'))return;
  report('Updating '+email+'…');
  button.disabled=true;
  try{
-  const response=await fetch('/api/admin-leader-actions.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,action,status:requestedStatus})});
+  const response=await fetch('/api/admin-leader-actions.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,action,status:requestedStatus,confirmation})});
   const raw=await response.text();let data;try{data=JSON.parse(raw);}catch(_){throw Error('Server returned HTTP '+response.status+' instead of JSON');}
   if(!response.ok||!data.ok)throw Error((data.error||'Action failed')+' (HTTP '+response.status+')');
   await load();report('✓ '+email+' updated. '+(data.details?.new_status?'Status: '+data.details.new_status:'Action: '+action));
