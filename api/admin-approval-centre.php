@@ -15,6 +15,7 @@ if(($_SERVER['REQUEST_METHOD']??'')!=='GET')approval_reply(405,['ok'=>false,'err
 try{
  require_once __DIR__.'/db.php';
  $db=bh_mysql();
+ $_SESSION['bh_approval_csrf']??=bin2hex(random_bytes(32));
  $queues=[
   ['key'=>'leaders','label'=>'Leader registrations','description'=>'Pending class leader accounts awaiting review.','url'=>'/admin/admin-organisers-class-leaders.html','count'=>0,'items'=>[]],
   ['key'=>'listings','label'=>'Draft activity listings','description'=>'Draft activities that need an editorial review before publication.','url'=>'/admin/admin-activities-listings.html','count'=>0,'items'=>[]]
@@ -27,5 +28,5 @@ try{
  $queues[1]['count']=(int)$q->fetchColumn();
  $q=$db->query("SELECT id,title,status FROM bh_activities WHERE status='draft' ORDER BY updated_at DESC,id DESC LIMIT 50");
  foreach($q->fetchAll(PDO::FETCH_ASSOC) as $a){$queues[1]['items'][]=['id'=>(int)$a['id'],'title'=>$a['title'],'status'=>'draft','url'=>'/admin/admin-activities-listings.html'];}
- approval_reply(200,['ok'=>true,'read_only'=>true,'queues'=>$queues,'note'=>'Counts reflect database status, not a formal submission workflow.']);
+ approval_reply(200,['ok'=>true,'read_only'=>false,'review_only'=>true,'csrf'=>$_SESSION['bh_approval_csrf'],'queues'=>$queues,'note'=>'Counts reflect database status, not a formal submission workflow.']);
 }catch(Throwable $e){error_log('Admin approval centre: '.$e->getMessage());approval_reply(500,['ok'=>false,'error'=>'approval_centre_unavailable']);}
