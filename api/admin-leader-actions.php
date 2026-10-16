@@ -5,6 +5,15 @@ session_name('BUBBAHUB_ADMINSESSID');session_start();
 function out(int $status,array $body):never{http_response_code($status);echo json_encode($body);exit;}
 if(empty($_SESSION['bh_admin_authenticated']))out(401,['ok'=>false,'error'=>'admin_login_required']);
 if($_SERVER['REQUEST_METHOD']!=='POST')out(405,['ok'=>false,'error'=>'method_not_allowed']);
+$origin=(string)($_SERVER['HTTP_ORIGIN']??'');
+$host=(string)($_SERVER['HTTP_HOST']??'');
+$source=(string)($_SERVER['HTTP_SEC_FETCH_SITE']??'');
+if($source!==''&&!in_array($source,['same-origin','none'],true))out(403,['ok'=>false,'error'=>'cross_origin_forbidden']);
+if($origin===''){out(403,['ok'=>false,'error'=>'origin_required']);}
+$parts=parse_url($origin);
+if(!is_array($parts)||strtolower((string)($parts['host']??''))!==strtolower(explode(':',$host)[0])||!in_array(strtolower((string)($parts['scheme']??'')),['https'],true))out(403,['ok'=>false,'error'=>'origin_forbidden']);
+if(!str_starts_with(strtolower((string)($_SERVER['CONTENT_TYPE']??'')),'application/json'))out(415,['ok'=>false,'error'=>'json_required']);
+
 $body=json_decode(file_get_contents('php://input'),true);if(!is_array($body))out(422,['ok'=>false,'error'=>'invalid_body']);
 $id=(int)($body['id']??0);$action=(string)($body['action']??'');
 if($id<1||!in_array($action,['edit','deactivate','restore','promote','revoke_promotion'],true))out(422,['ok'=>false,'error'=>'invalid_action']);
