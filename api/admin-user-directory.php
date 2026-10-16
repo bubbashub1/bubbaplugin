@@ -22,5 +22,14 @@ try{
  $condition=$where?' WHERE '.implode(' AND ',$where):'';
  $count=$db->prepare('SELECT COUNT(*) FROM bh_users'.$condition);$count->execute($params);$total=(int)$count->fetchColumn();
  $stmt=$db->prepare('SELECT id,email,role,status,CASE WHEN email_verified_at IS NOT NULL THEN 1 ELSE 0 END AS email_verified FROM bh_users'.$condition.' ORDER BY id DESC LIMIT '.$size.' OFFSET '.$offset);$stmt->execute($params);
- admin_users_reply(200,['ok'=>true,'users'=>$stmt->fetchAll(PDO::FETCH_ASSOC),'total'=>$total,'page'=>$page,'page_size'=>$size,'read_only'=>true]);
+ $users=$stmt->fetchAll(PDO::FETCH_ASSOC);
+ $ids=array_map(static fn($u)=>(int)$u['id'],$users);
+ $promos=[];$subs=[];
+ if($ids){
+  $placeholders=implode(',',array_fill(0,count($ids),'?'));
+  try{$p=$db->prepare('SELECT leader_user_id FROM bh_admin_leader_promotions WHERE active=1 AND leader_user_id IN ('.$placeholders.')');$p->execute($ids);$promos=array_fill_keys(array_map('intval',$p->fetchAll(PDO::FETCH_COLUMN)),true);}catch(Throwable $ignored){}
+  try{$p=$db->prepare("SELECT DISTINCT user_id FROM bh_user_subscriptions WHERE plan='leader_pro' AND status IN ('active','trialing') AND (expires_at IS NULL OR expires_at>UTC_TIMESTAMP()) AND user_id IN (".$placeholders.")");$p->execute($ids);$subs=array_fill_keys(array_map('intval',$p->fetchAll(PDO::FETCH_COLUMN)),true);}catch(Throwable $ignored){}
+ }
+ foreach($users as &$u){$uid=(int)$u['id'];$u['account_type']=isset($promos[$uid])?'Pro (complimentary)':(isset($subs[$uid])?'Pro':'Free');}unset($u);
+ admin_users_reply(200,['ok'=>true,'users'=>$users,'total'=>$total,'page'=>$page,'page_size'=>$size,'read_only'=>true]);
 }catch(Throwable $e){error_log('Admin user directory: '.$e->getMessage());admin_users_reply(500,['ok'=>false,'error'=>'user_directory_unavailable']);}
