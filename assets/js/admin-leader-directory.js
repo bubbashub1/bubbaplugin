@@ -33,16 +33,21 @@ next.addEventListener('click',()=>{if(page*size<total){page++;load()}});
 const panel=document.getElementById('leaderDetailsPanel'),detailStatus=document.getElementById('leaderDetailsStatus'),detailContent=document.getElementById('leaderDetailsContent');
 rows.closest('table')?.querySelector('thead tr')?.append(Object.assign(document.createElement('th'),{textContent:'Actions'}));
 async function runAction(button){
+ const actionStatus=document.getElementById('leaderActionStatus');
+ const report=message=>{if(actionStatus){actionStatus.textContent=message;actionStatus.hidden=false;}else status.textContent=message;};
  const action=button.dataset.action,id=Number(button.dataset.id),email=button.dataset.email;
  let requestedStatus;
  if(action==='edit'){requestedStatus=prompt('Account status: active, inactive, or suspended',button.dataset.status);if(requestedStatus===null)return;requestedStatus=requestedStatus.trim().toLowerCase();if(!['active','inactive','suspended'].includes(requestedStatus)){alert('Invalid status');return;}}
  if(!confirm('Confirm '+button.textContent+' for '+email+'?'))return;
+ report('Updating '+email+'…');
  button.disabled=true;
  try{
   const response=await fetch('/api/admin-leader-actions.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,action,status:requestedStatus})});
-  const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'Action failed');
+  const raw=await response.text();let data;try{data=JSON.parse(raw);}catch(_){throw Error('Server returned HTTP '+response.status+' instead of JSON. Check deployment and PHP logs.');}
+  if(!response.ok||!data.ok)throw Error((data.error||'Action failed')+' (HTTP '+response.status+')');
   await load();
- }catch(error){alert('Unable to update leader: '+error.message);button.disabled=false;}
+  report('✓ '+email+' updated successfully. '+(data.details?.new_status?'New status: '+data.details.new_status:'Action: '+action)+'.');
+ }catch(error){report('Unable to update '+email+': '+error.message);button.disabled=false;}
 }
 rows.addEventListener('click',async event=>{
  const actionButton=event.target.closest('button[data-action]');if(actionButton){await runAction(actionButton);return;}
