@@ -7,6 +7,10 @@ header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 function bh_sync_reply(int $code,array $data): void {http_response_code($code);echo json_encode($data);exit;}
 if(($_SERVER['REQUEST_METHOD']??'')!=='POST') bh_sync_reply(405,['ok'=>false,'error'=>'method_not_allowed']);
+// Load private staging-only secret file, if present. This endpoint does not bootstrap WordPress,
+// so putenv() inside wp-config.php alone would NOT be executed here.
+$privateConfig=dirname(__DIR__).'/bh-sheets-sync-secret.php';
+if(is_file($privateConfig)) require $privateConfig;
 $expected=getenv('BH_SHEETS_SYNC_TOKEN');
 $auth=$_SERVER['HTTP_AUTHORIZATION']??$_SERVER['REDIRECT_HTTP_AUTHORIZATION']??'';
 if(!is_string($expected)||strlen($expected)<32||!preg_match('/^Bearer (.+)$/',$auth,$match)||!hash_equals($expected,$match[1]))bh_sync_reply(401,['ok'=>false,'error'=>'unauthorized']);
