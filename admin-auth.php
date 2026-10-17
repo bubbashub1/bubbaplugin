@@ -99,8 +99,17 @@ if ($a === 'logout') {
     }
     // Admin authentication is separate from the family account. Remove only
     // the admin flag so My Hub/family session remains signed in.
-    unset($_SESSION['bh_admin_authenticated']);
-    respond(200, ['ok'=>true]);
+    unset($_SESSION['bh_admin_authenticated'], $_SESSION['bh_admin_csrf']);
+    $_SESSION = [];
+    if (ini_get('session.use_cookies')) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', ['expires'=>time()-3600,'path'=>$params['path'],'domain'=>$params['domain'],'secure'=>$params['secure'],'httponly'=>$params['httponly'],'samesite'=>$params['samesite'] ?? 'Lax']);
+    }
+    session_destroy();
+    header('Clear-Site-Data: "cache"');
+    http_response_code(200);
+    echo json_encode(['ok'=>true]);
+    exit;
 }
 
 if (empty($_SESSION['bh_admin_authenticated'])) {
