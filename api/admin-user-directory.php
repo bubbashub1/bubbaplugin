@@ -1,12 +1,5 @@
 <?php
 declare(strict_types=1);
-// Temporary staging lockdown while unexpected unauthenticated admin access is investigated.
-header('Content-Type: application/json; charset=utf-8');
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-header('X-Content-Type-Options: nosniff');
-http_response_code(503);
-echo json_encode(['ok'=>false,'error'=>'admin_directory_temporarily_disabled']);
-exit;
 /** Admin-only, read-only account directory. No child profiles or password hashes exposed. */
 header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');header('X-Content-Type-Options: nosniff');
 require_once __DIR__.'/admin-session-guard.php';
