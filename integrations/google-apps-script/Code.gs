@@ -4,7 +4,7 @@
  * Initial mode: READ-ONLY PREVIEW. No automatic edits or deletions.
  * Set Script Properties: BH_SYNC_URL (staging HTTPS endpoint), BH_SYNC_TOKEN.
  */
-const BH = Object.freeze({ master: 'Activities', audit: 'Sync Log', conflicts: 'Conflicts',
+const BH = Object.freeze({ master: 'MASTER SHEET', audit: 'Sync Log', conflicts: 'Conflicts',
   columns: ['id','title','category','description','age_range','price_from','booking_url','status','organisation_name','venue_name','city','region','postcode','sessions'] });
 function bhSetupMaster() {
   const book = SpreadsheetApp.getActiveSpreadsheet();
