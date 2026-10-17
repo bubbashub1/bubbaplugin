@@ -60,9 +60,21 @@ function bhLog_(action,status,details){
   const sheet=SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BH.audit);
   if(sheet)sheet.appendRow([new Date(),action,status,String(details).slice(0,2000)]);
 }
+/**
+ * Install a six-hour preview trigger. Safe to rerun: removes only triggers
+ * for this script's bhPreviewSync function to prevent duplicate executions.
+ * Does not enable automatic database or spreadsheet writes.
+ */
+function bhInstallSixHourTrigger() {
+  ScriptApp.getProjectTriggers().filter(t=>t.getHandlerFunction()==='bhPreviewSync')
+    .forEach(t=>ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('bhPreviewSync').timeBased().everyHours(6).create();
+  bhLog_('trigger','ok','Read-only preview scheduled every 6 hours');
+}
 function onOpen(){
   SpreadsheetApp.getUi().createMenu('Bubba Hub')
     .addItem('Set up master tabs','bhSetupMaster')
     .addItem('Preview sync (no changes)','bhPreviewSync')
+    .addItem('Schedule preview every 6 hours','bhInstallSixHourTrigger')
     .addToUi();
 }
