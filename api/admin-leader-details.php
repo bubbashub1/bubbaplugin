@@ -10,12 +10,8 @@ exit;
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
-$secure=!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off';
-session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);
-ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');
-session_name('BUBBAHUB_ADMINSESSID');session_start();
+require_once __DIR__.'/admin-session-guard.php';
 function reply(int $code,array $data):never{http_response_code($code);echo json_encode($data,JSON_INVALID_UTF8_SUBSTITUTE);exit;}
-if(empty($_SESSION['bh_admin_authenticated']))reply(401,['ok'=>false,'error'=>'admin_login_required']);
 if(($_SERVER['REQUEST_METHOD']??'')!=='GET')reply(405,['ok'=>false,'error'=>'method_not_allowed']);
 $id=filter_input(INPUT_GET,'id',FILTER_VALIDATE_INT);
 if(!$id||$id<1)reply(422,['ok'=>false,'error'=>'invalid_leader_id']);

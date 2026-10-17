@@ -81,6 +81,7 @@ if ($a === 'login') {
 
     session_regenerate_id(true);
     $_SESSION['bh_admin_authenticated'] = true;
+    $_SESSION['bh_admin_last_activity'] = time();
     session_write_close();
     respond(200, ['ok'=>true]);
 }
@@ -115,6 +116,12 @@ if ($a === 'logout') {
 if (empty($_SESSION['bh_admin_authenticated'])) {
     respond(401, ['ok'=>false, 'error'=>'Admin login required.']);
 }
-
+$last = (int)($_SESSION['bh_admin_last_activity'] ?? 0);
+if ($last === 0 || time() - $last > 1800) {
+    $_SESSION = [];
+    session_regenerate_id(true);
+    respond(401, ['ok'=>false, 'error'=>'Admin session expired. Please sign in again.']);
+}
+$_SESSION['bh_admin_last_activity'] = time();
 respond(200, ['ok'=>true]);
 ?>
