@@ -476,7 +476,7 @@ async function login(){
 }
 
 document.querySelector("#saveAdvancedFilterSettings")?.addEventListener("click",saveAdvancedFilterSettings);
-document.querySelector("#adminLogout")?.addEventListener("click",logout);
+// Admin logout is handled by the independent script in admin.html.
 
 document.querySelector("#deployLatest")?.addEventListener("click",async()=>{
  const status=document.querySelector("#deployStatus");
