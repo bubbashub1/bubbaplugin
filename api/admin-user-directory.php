@@ -9,6 +9,7 @@ session_name('BUBBAHUB_ADMINSESSID');session_start();
 function admin_users_reply(int $status,array $payload):never{http_response_code($status);echo json_encode($payload,JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);exit;}
 if(empty($_SESSION['bh_admin_authenticated']))admin_users_reply(401,['ok'=>false,'error'=>'admin_login_required']);
 if(($_SERVER['REQUEST_METHOD']??'')!=='GET')admin_users_reply(405,['ok'=>false,'error'=>'method_not_allowed']);
+if(empty($_SESSION['bh_admin_csrf']))$_SESSION['bh_admin_csrf']=bin2hex(random_bytes(32));
 try{
  require_once __DIR__.'/db.php';$db=bh_mysql();
  $q=trim((string)($_GET['q']??''));$role=trim((string)($_GET['role']??''));$status=trim((string)($_GET['status']??''));$verification=trim((string)($_GET['verification']??''));
@@ -31,5 +32,5 @@ try{
   try{$p=$db->prepare("SELECT DISTINCT user_id FROM bh_user_subscriptions WHERE plan='leader_pro' AND status IN ('active','trialing') AND (expires_at IS NULL OR expires_at>UTC_TIMESTAMP()) AND user_id IN (".$placeholders.")");$p->execute($ids);$subs=array_fill_keys(array_map('intval',$p->fetchAll(PDO::FETCH_COLUMN)),true);}catch(Throwable $ignored){}
  }
  foreach($users as &$u){$uid=(int)$u['id'];$u['account_type']=isset($promos[$uid])?'Pro (complimentary)':(isset($subs[$uid])?'Pro':'Free');}unset($u);
- admin_users_reply(200,['ok'=>true,'users'=>$users,'total'=>$total,'page'=>$page,'page_size'=>$size,'read_only'=>true]);
+ admin_users_reply(200,['ok'=>true,'users'=>$users,'total'=>$total,'page'=>$page,'page_size'=>$size,'read_only'=>true,'csrf'=>$_SESSION['bh_admin_csrf']]);
 }catch(Throwable $e){error_log('Admin user directory: '.$e->getMessage());admin_users_reply(500,['ok'=>false,'error'=>'user_directory_unavailable']);}
