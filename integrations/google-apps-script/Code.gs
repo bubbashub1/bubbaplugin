@@ -5,7 +5,7 @@
  * Set Script Properties: BH_SYNC_URL (staging HTTPS endpoint), BH_SYNC_TOKEN.
  */
 const BH = Object.freeze({ master: 'MASTER SHEET', audit: 'Sync Log', conflicts: 'Conflicts',
-  columns: ['id','title','category','description','age_range','price_from','booking_url','status','organisation_name','venue_name','city','region','postcode','sessions'] });
+  columns: ['id','title','category','featured','description','age_range','age_min_months','age_max_months','county','price_from','price_per_family','price_per_session','price_free','booking_url','booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome','what_to_bring','good_to_know','image_path','image_1','image_2','image_3','status','organisation_name','facebook_url','instagram_url','email','phone','website','venue_name','address','venue_address_line_1','venue_address_line_2','city','region','postcode','latitude','longitude','venue_phone','venue_email','venue_website','venue_notes','accessibility','tags','sessions'] });
 function bhSetupMaster() {
   const book = SpreadsheetApp.getActiveSpreadsheet();
   [BH.master,BH.audit,BH.conflicts].forEach(name => {if (!book.getSheetByName(name)) book.insertSheet(name);});
@@ -25,6 +25,8 @@ function bhPreviewSync() {
   const values=sheet.getDataRange().getValues();
   const headers=(values.shift()||[]).map(v=>String(v).trim());
   if (!headers.includes('id')) throw new Error('Missing id column');
+  const duplicateHeaders=headers.filter((h,i)=>h && headers.indexOf(h)!==i);
+  if (duplicateHeaders.length) throw new Error('Duplicate column headings: '+[...new Set(duplicateHeaders)].join(', '));
   const ids=new Set(), duplicates=[], rows=[];
   values.forEach((cells,index)=>{
     if(cells.every(v=>v===''||v===null))return;
