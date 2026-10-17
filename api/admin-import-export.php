@@ -199,7 +199,7 @@ if($csvUrl!==''){
     if(!in_array($http,[301,302,303,307,308],true))break;
     if(!preg_match('/^Location:\s*(.+)$/mi',$headersRaw,$lm))break;$location=trim($lm[1]);if($location==='')break;
     if(str_starts_with($location,'/')){$base=parse_url($currentUrl);$location='https://'.($base['host']??'docs.google.com').$location;}elseif(!preg_match('~^https://~i',$location))break;
-    $next=parse_url($location);$nextScheme=strtolower((string)($next['scheme']??''));$nextHost=strtolower((string)($next['host']??''));if($nextScheme!=='https'||!in_array($nextHost,['docs.google.com','docs.googleusercontent.com','googleusercontent.com'],true))break;
+    $next=parse_url($location);$nextScheme=strtolower((string)($next['scheme']??''));$nextHost=strtolower((string)($next['host']??''));if($nextScheme!=='https'||!($nextHost==='docs.google.com'||$nextHost==='googleusercontent.com'||str_ends_with($nextHost,'.googleusercontent.com')))break;
     $currentUrl=$location;$redirects++;
   }
   if($body===false){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['ok'=>false,'error'=>'Could not fetch the published Google Sheets CSV link. Google returned HTTP '.$http.'. Please check that the sheet is still published as CSV.']);exit;}
