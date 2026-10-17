@@ -1,5 +1,12 @@
 <?php
 declare(strict_types=1);
+// Temporary staging lockdown while unexpected unauthenticated admin access is investigated.
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('X-Content-Type-Options: nosniff');
+http_response_code(503);
+echo json_encode(['ok'=>false,'error'=>'admin_directory_temporarily_disabled']);
+exit;
 header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');header('X-Content-Type-Options: nosniff');
 ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');
 $secure=!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off';
