@@ -17,7 +17,9 @@
 <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:end">
 <label>Show tasks <select id="developmentFilter"><option value="all">All tasks</option><option value="next">Needs attention</option><option value="testing">Ready to test</option><option value="done">Completed</option></select></label>
 <button class="button button-soft" id="developmentExport" type="button">Export my checklist</button></div>
-<div id="developmentTaskList" style="display:grid;gap:12px;margin-top:16px"></div>
+<div style="overflow-x:auto;margin-top:16px"><table style="width:100%;border-collapse:collapse;min-width:680px"><thead><tr><th scope="col">Feature / idea</th><th scope="col">Area</th><th scope="col">Progress</th><th scope="col">Next action</th><th scope="col">Open</th></tr></thead><tbody id="developmentTaskList"></tbody></table></div>
+<form id="developmentAddForm" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;align-items:end"><label>New idea <input id="developmentNewTitle" required maxlength="120" placeholder="e.g. School holiday alerts"></label><label>Next action <input id="developmentNewAction" maxlength="240" placeholder="What needs doing?"></label><button class="button button-primary" type="submit">+ Add idea</button></form>
+<p class="library-message">Ideas added here are saved on this device. To include them in the shared GitHub tracker, export the checklist and send it to me.</p>
 <p class="library-message" role="status" id="developmentTrackerStatus"></p>
 </section>
 <script src="/assets/js/admin-development-tracker.js" defer></script>
