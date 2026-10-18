@@ -1,0 +1,23 @@
+/* Events page — visual parity with directory without altering listing logic. */
+.bh-events-directory{font-family:Quicksand,Calibri,Arial,sans-serif;background:#fbfaf5;color:#164c38}
+.bh-events-directory .app-shell{max-width:1320px;margin:auto;padding:clamp(16px,3vw,38px)}
+.bh-events-directory .bh-events-hero{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;background:linear-gradient(120deg,#eaf5e6,#fdfbf3 65%,#fff0e0);padding:clamp(24px,4vw,52px);border-radius:30px;margin:12px 0 26px}
+.bh-events-directory .bh-events-hero h1{font-family:inherit;font-size:clamp(2.3rem,5vw,4.2rem);line-height:1.06;letter-spacing:-.035em;color:#174f39;margin:12px 0}
+.bh-events-directory .bh-events-hero p{max-width:650px;font-size:1.1rem;line-height:1.65}
+.bh-events-directory .bh-events-hero .eyebrow,.bh-events-directory .bh-events-featured .eyebrow{font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#218e8c}
+.bh-events-directory .bh-events-featured{background:linear-gradient(135deg,#e4f3df,#f5fbf0)!important;border:1px solid #d1e5d3!important;border-radius:26px!important;box-shadow:0 10px 28px rgba(16,69,43,.06);padding:clamp(20px,3vw,38px)!important;margin:0 0 26px!important}
+.bh-events-directory .bh-events-featured h2{font-size:clamp(1.6rem,3vw,2.7rem);line-height:1.2;color:#174f39;margin:12px 0}
+.bh-events-directory .bh-events-featured p{line-height:1.65}
+.bh-events-directory .bh-events-featured>div{max-width:620px!important;border-radius:20px!important;box-shadow:0 5px 18px rgba(16,69,43,.06)}
+.bh-events-directory .bh-events-featured .button{margin:5px 8px 5px 0}
+.bh-events-directory .bh-events-results{background:#fff;border:1px solid #e0e9dd;border-radius:26px;padding:clamp(16px,3vw,30px);box-shadow:0 10px 30px rgba(16,69,43,.04)}
+.bh-events-directory .events-toolbar{display:flex;gap:12px;flex-wrap:wrap;padding:16px;background:#f2f8f0;border-radius:20px;margin-bottom:24px}
+.bh-events-directory .events-toolbar label{flex:1 1 180px;font-weight:700;color:#194d3b}
+.bh-events-directory .events-toolbar select{display:block;width:100%;min-height:45px;border-radius:12px;border:1px solid #d2e4d5;background:#fff;padding:9px 12px;font:inherit}
+.bh-events-directory .events-heading h2{font-size:clamp(1.5rem,2.5vw,2.2rem);color:#174f39}
+.bh-events-directory .events-grid{gap:18px}
+.bh-events-directory .event-card{border:1px solid #dceadd;border-radius:22px;overflow:hidden;background:#fff;box-shadow:0 6px 20px rgba(16,69,43,.07)}
+.bh-events-directory .event-card-body{padding:18px}
+.bh-events-directory .event-card h3{font-family:inherit;color:#174f39}
+.bh-events-directory .event-card-image img{width:100%;object-fit:cover}
+@media(max-width:720px){.bh-events-directory .app-shell{padding:14px}.bh-events-directory .bh-events-hero{border-radius:22px;padding:22px}.bh-events-directory .bh-events-featured,.bh-events-directory .bh-events-results{border-radius:20px}.bh-events-directory .events-toolbar{display:grid;grid-template-columns:1fr}.bh-events-directory .bh-events-featured>div{max-width:100%!important}}
