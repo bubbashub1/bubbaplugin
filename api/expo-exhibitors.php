@@ -84,6 +84,7 @@ try {
  VALUES ('bubba-me-2027',?,?,?,?,?,?,?,?,?,?,?,?,?,'pending',0,NOW())");
  $participation=$body['participation']??[];
  if (!is_array($participation)) $participation=[];
+ $participation=array_values(array_filter($participation,'is_string'));
  $participation=array_values(array_intersect($participation,['exhibitor_stall','taster_session','talk_qa','sponsor']));
  $extra=[];
  foreach (['town','service_category','oversize','oversize_details','electricity','chair','goody_bag','payment_preference','invoice_requested','notes'] as $key) {
