@@ -1,0 +1,40 @@
+<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Expo exhibitor approvals · Bubba Hub</title><link rel="stylesheet" href="/assets/css/styles.css"><style>body{font-family:Quicksand,Arial,sans-serif;background:#f3faf5;color:#164a3b;margin:0}.shell{max-width:1100px;margin:30px auto;padding:20px}h1{font-size:clamp(26px,4vw,40px)}.item{background:white;border:1px solid #d5e6db;border-radius:18px;padding:18px;margin:14px 0;display:grid;gap:12px}.meta{color:#526c61}.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}select,button{font:inherit;border-radius:10px;padding:9px;border:1px solid #abcbb8}button{background:#17694f;color:white;cursor:pointer}button:disabled{opacity:.6}a{color:#17694f}img{width:110px;height:75px;object-fit:contain}.error{color:#9c3425}</style></head><body><main class="shell"><a href="/admin">← Admin dashboard</a><h1>Expo exhibitor approvals</h1><p>Review sign-ups for the 9 January 2027 Expo. Approval and public listing are separate decisions. Changes affect the connected database only after this feature is deployed and enabled.</p><p id="notice" role="status" aria-live="polite">Checking admin access…</p><div id="records"></div></main><script>
+(async function(){
+ const notice=document.getElementById('notice'),records=document.getElementById('records');let token='';
+ const endpoint='/api/expo-admin-exhibitors.php';
+ async function load(){
+  try{const r=await fetch(endpoint,{credentials:'same-origin',cache:'no-store'});const data=await r.json();if(!r.ok||!data.ok)throw new Error(r.status===401?'Admin login required.':'Could not load exhibitors.');
+   token=data.csrf_token;records.replaceChildren();notice.textContent=data.exhibitors.length+' exhibitor application(s).';
+   for(const e of data.exhibitors){
+    const card=document.createElement('section');card.className='item';
+    const title=document.createElement('h2');title.textContent=e.business_name;card.append(title);
+    const meta=document.createElement('div');meta.className='meta';meta.textContent='Application #'+e.id+' · '+(e.submitted_at||'')+' · Preferred table: '+(e.preferred_table||'not selected');card.append(meta);
+    const desc=document.createElement('p');desc.textContent=e.description||'';card.append(desc);const contact=document.createElement('p');contact.className='meta';
+    contact.textContent='Contact: '+(e.contact_name||'')+' · '+(e.contact_email||'')+' · '+(e.contact_phone||'');card.append(contact);
+    const privateInfo=document.createElement('details');const privateSummary=document.createElement('summary');privateSummary.textContent='Application details (admin only)';privateInfo.append(privateSummary);
+    const privateText=document.createElement('pre');privateText.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;font:inherit';
+    let participation={};try{participation=JSON.parse(e.participation_json||'{}')||{};}catch(_){}
+    privateText.textContent='Participation and additional requests: '+JSON.stringify(participation,null,2)+'\nDonation interest: '+(e.donation_interest||'no')+'\nInsurance policy: '+(e.insurance_policy||'')+'\nInsurance expiry: '+(e.insurance_expiry||'')+'\nRequirements: '+(e.requirements||'');
+    privateInfo.append(privateText);card.append(privateInfo);
+    if(e.logo_url&&/^https:\/\//i.test(e.logo_url)){const img=document.createElement('img');img.src=e.logo_url;img.alt='Business logo';img.loading='lazy';card.append(img);}
+    if(e.website_url&&/^https:\/\//i.test(e.website_url)){const a=document.createElement('a');a.href=e.website_url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Visit business website ↗';card.append(a);}
+    const edit=document.createElement('details');const summary=document.createElement('summary');summary.textContent='Edit public exhibitor details';edit.append(summary);
+    const fields={};for(const [key,labelText] of [['business_name','Business name'],['description','Public description'],['website_url','Website URL'],['logo_url','Logo URL']]){const label=document.createElement('label');label.style.display='block';label.style.margin='10px 0';label.textContent=labelText+' ';const input=key==='description'?document.createElement('textarea'):document.createElement('input');input.value=e[key]||'';input.style.width='100%';input.maxLength=key==='description'?2000:key==='business_name'?150:500;fields[key]=input;label.append(input);edit.append(label);}card.append(edit);
+    const tableLabel=document.createElement('label');tableLabel.textContent='Assigned table ';
+    const tableInput=document.createElement('input');tableInput.type='number';tableInput.min='1';tableInput.max='26';tableInput.placeholder='Unassigned';tableInput.value=e.assigned_table||'';tableInput.style.width='100px';tableLabel.append(tableInput);
+    const actions=document.createElement('div');actions.className='actions';
+    const status=document.createElement('select');status.setAttribute('aria-label','Approval status for '+e.business_name);
+    for(const value of ['pending','approved','rejected','cancelled']){const opt=document.createElement('option');opt.value=value;opt.textContent=value;status.append(opt);}status.value=e.application_status;
+    const label=document.createElement('label');const visible=document.createElement('input');visible.type='checkbox';visible.checked=Number(e.public_visible)===1;label.append(visible,document.createTextNode(' Show on public event page'));
+    const save=document.createElement('button');save.textContent='Save decision';const result=document.createElement('span');result.setAttribute('role','status');
+    save.onclick=async()=>{
+     if(visible.checked&&status.value!=='approved'){result.textContent='Approve before publishing.';return;}
+     save.disabled=true;result.textContent='Saving…';
+     try{const r=await fetch(endpoint,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':token},body:JSON.stringify({id:Number(e.id),application_status:status.value,public_visible:visible.checked?1:0,assigned_table:tableInput.value,...Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,v.value]))})});const data=await r.json();if(!r.ok||!data.ok)throw Error(data.error||'Save failed');result.textContent='Saved.';await load();}catch(err){result.textContent='Could not save: '+err.message;}finally{save.disabled=false;}
+    };
+    actions.append(status,label,tableLabel,save,result);card.append(actions);records.append(card);
+   }
+  }catch(error){notice.textContent=error.message;notice.className='error';}
+ }await load();
+})();
+</script></body></html>
