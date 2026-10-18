@@ -625,12 +625,14 @@ const bhInitDirectory=async()=>{
 
     const updateViewVisibility = () => {
       const showMap=currentView==="map";
+      const showEvents=currentView==="events";
       const results=$("results"),mapView=$("mapView"),calendarView=$("calendarView");
-      if(results)results.hidden=showMap||currentView==="calendar";
+      if(results)results.hidden=showMap||showEvents||currentView==="calendar";
       if(mapView)mapView.hidden=!showMap;
       if(calendarView)calendarView.hidden=currentView!=="calendar";
+      if($("directoryEventsView"))$("directoryEventsView").hidden=!showEvents;
       if($("directoryMapHint"))$("directoryMapHint").hidden=!showMap;
-      for(const [id,active] of [["directoryShowMap",showMap],["directoryShowList",currentView==="grid"]]){
+      for(const [id,active] of [["directoryShowMap",showMap],["directoryShowList",currentView==="grid"],["directoryShowEvents",showEvents]]){
         const button=$(id);if(button)button.setAttribute("aria-pressed",String(active));
       }
     };
@@ -1024,9 +1026,11 @@ const bhInitDirectory=async()=>{
     };
     $("directoryShowMap")?.addEventListener("click",()=>switchDirectoryView("map"));
     $("directoryShowList")?.addEventListener("click",()=>switchDirectoryView("grid"));
+    $("directoryShowEvents")?.addEventListener("click",()=>switchDirectoryView("events"));
     window.__bhDirectoryDesktop = window.innerWidth > 900;
     setupMapModal();
     document.querySelectorAll(".directory-view").forEach(button => button.classList.toggle("active", button.dataset.view === currentView));
+    if(params.get("view")==="events")currentView="events";
     updateViewVisibility();
     render();
   } catch (error) {
