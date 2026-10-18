@@ -30,7 +30,7 @@
     save.onclick=async()=>{
      if(visible.checked&&status.value!=='approved'){result.textContent='Approve before publishing.';return;}
      save.disabled=true;result.textContent='Saving…';
-     try{const r=await fetch(endpoint,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':token},body:JSON.stringify({id:Number(e.id),application_status:status.value,public_visible:visible.checked?1:0,assigned_table:tableInput.value,...Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,v.value]))})});const data=await r.json();if(!r.ok||!data.ok)throw Error(data.error||'Save failed');result.textContent='Saved.';}catch(err){result.textContent='Could not save: '+err.message;}finally{save.disabled=false;}
+     try{const r=await fetch(endpoint,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':token},body:JSON.stringify({id:Number(e.id),application_status:status.value,public_visible:visible.checked?1:0,assigned_table:tableInput.value,...Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,v.value]))})});const data=await r.json();if(!r.ok||!data.ok)throw Error(data.error||'Save failed');result.textContent='Saved.';await load();}catch(err){result.textContent='Could not save: '+err.message;}finally{save.disabled=false;}
     };
     actions.append(status,label,tableLabel,save,result);card.append(actions);records.append(card);
    }
