@@ -26,7 +26,7 @@ try {
     // Approval must be explicit; never treat an application as approved by default.
     $approval = isset($columns['application_status']) ? 'application_status' : (isset($columns['approval_status']) ? 'approval_status' : (isset($columns['status']) ? 'status' : null));
     $name = isset($columns['business_name']) ? 'business_name' : (isset($columns['name']) ? 'name' : null);
-    if ($approval === null || $name === null) {
+    if ($approval === null || $name === null || !isset($columns['public_visible']) || !isset($columns['event_key'])) {
         throw new RuntimeException('Approval schema not available');
     }
     $fields = ["`$name` AS name"];
@@ -37,13 +37,8 @@ try {
         }
     }
     $where = ["`$approval` = 'approved'"];
-    if (isset($columns['public_visible'])) $where[] = 'public_visible = 1';
-    if (isset($columns['event_key'])) $where[] = "event_key = 'bubba-me-2027'";
-    if (isset($columns['event_slug'])) $where[] = "event_slug = 'bubba-me-2027'";
-    elseif (isset($columns['event_id'])) {
-        // Unknown event identifiers must not be guessed.
-        throw new RuntimeException('Event mapping requires explicit configuration');
-    }
+    $where[] = 'public_visible = 1';
+    $where[] = "event_key = 'bubba-me-2027'";
     $sql = 'SELECT '.implode(', ', $fields).' FROM bh_expo_exhibitors WHERE '.implode(' AND ', $where).' ORDER BY `'.$name.'` ASC LIMIT 100';
     $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     $safe = [];
