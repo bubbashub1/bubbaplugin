@@ -834,7 +834,7 @@ void bhHydrateSaved();
   }
   return await (async()=>{
     try{
-      const response=await fetch(new URL("components/advanced-filters.html",document.baseURI),{cache:"no-store"});
+      const response=await fetch(new URL("/components/advanced-filters.html",location.origin),{cache:"no-store"});
       if(!response.ok)throw new Error("Could not load advanced filters");
       const html=await response.text();
       placeholders.forEach(placeholder=>{placeholder.outerHTML=html;});
@@ -890,7 +890,7 @@ void bhHydrateSaved();
   if(!placeholder)return;
   window.bhDirectoryHeroReady=(async()=>{
     try{
-      const response=await fetch(new URL("components/directory-hero.html",document.baseURI),{cache:"no-store"});
+      const response=await fetch(new URL("/components/directory-hero.html",location.origin),{cache:"no-store"});
       if(!response.ok)throw new Error("Could not load directory hero");
       const html=await response.text();
       const page=placeholder.dataset.heroPage||(document.body.classList.contains("bh-map-page")?"map":"directory");
