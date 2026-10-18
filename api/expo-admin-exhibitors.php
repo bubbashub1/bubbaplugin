@@ -60,7 +60,7 @@ try{
   $table=$db->prepare("SELECT id,status,exhibitor_id FROM bh_expo_tables WHERE event_key='bubba-me-2027' AND table_number=? FOR UPDATE");
   $table->execute([$assigned]);
   $tableRow=$table->fetch(PDO::FETCH_ASSOC);
-  if(!$tableRow || $tableRow['status']==='blocked'){
+  if(!$tableRow || ($tableRow['status']!=='available' && !($tableRow['status']==='assigned' && (int)$tableRow['exhibitor_id']===$id))){
    $db->rollBack();reply(409,['ok'=>false,'error'=>'table_unavailable']);
   }
   $check=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE event_key='bubba-me-2027' AND assigned_table=? AND application_status='approved' AND id<>? LIMIT 1 FOR UPDATE");
