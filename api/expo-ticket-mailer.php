@@ -32,7 +32,7 @@ function bh_expo_send_qr_mail(string $to,string $subject,string $html,string $pl
         $mail->setFrom(defined('BH_SMTP_FROM')?(string)BH_SMTP_FROM:'noreply@bubbahub.co.uk',defined('BH_SMTP_FROM_NAME')?(string)BH_SMTP_FROM_NAME:'Bubba Hub');
         $mail->addAddress($to);
         foreach($images as $image){
-            if(!is_array($image) || !preg_match('/^expo-adult-(?:[1-9]|1[0-2])$/D',(string)($image['cid']??'')))return false;
+            if(!is_array($image) || !preg_match('/^(?:expo-family|expo-adult-(?:[1-9]|1[0-2]))$/D',(string)($image['cid']??'')))return false;
             $bytes=$image['bytes']??'';
             if(!is_string($bytes) || strlen($bytes)>250000 || substr($bytes,0,8)!=="\x89PNG\r\n\x1a\n")return false;
             $mail->addStringEmbeddedImage($bytes,$image['cid'],$image['name']??'ticket.png','base64','image/png');
