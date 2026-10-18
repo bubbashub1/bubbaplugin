@@ -25,11 +25,7 @@ if ($secret === '' || !preg_match('/^Bearer (.+)$/i', $auth, $m) || !hash_equals
 $raw = file_get_contents('php://input', false, null, 0, 4097);
 if ($raw === false || strlen($raw) > 4096) bhTestReply(413, ['ok'=>false,'error'=>'payload_too_large']);
 $data = json_decode($raw, true);
-if (!is_array($data) || ($data['action'] ?? '') !== 'create_test_one') bhTestReply(400, ['ok'=>false,'error'=>'invalid_action']);
-$values = $data['values'] ?? null;
-if (!is_array($values) || (string)($values['id'] ?? '') !== '999999') bhTestReply(403, ['ok'=>false,'error'=>'test_id_only']);
-$title = trim((string)($values['title'] ?? ''));
-if ($title !== 'BUBBA HUB SYNC TEST - DO NOT PUBLISH') bhTestReply(422, ['ok'=>false,'error'=>'test_title_required']);
+if (!is_array($data) || !in_array(($data['action'] ?? ''), ['create_test_one','gate_diagnostics'], true)) bhTestReply(400, ['ok'=>false,'error'=>'invalid_action']);
 /**
  * Read a strictly allowlisted literal putenv assignment from staging wp-config
  * without executing WordPress. Environment values take precedence.
@@ -48,6 +44,31 @@ function bhStagingGate(string $key): string {
     return '';
 }
 
+// Authenticated, read-only gate diagnostics. Never return configuration values.
+if (($data['action'] ?? '') === 'gate_diagnostics') {
+    $path = dirname(__DIR__).'/wp-config.php';
+    $readable = is_readable($path);
+    $source = $readable ? file_get_contents($path) : false;
+    $check = static function (string $key) use ($source): bool {
+        if (!is_string($source)) return false;
+        return preg_match('/putenv\\s*\\(\\s*([\\x27\\x22])'.preg_quote($key, '/').'=([^\\x27\\x22\\r\\n]*)\\1\\s*\\)\\s*;/', $source) === 1;
+    };
+    bhTestReply(200, [
+        'ok'=>true,
+        'mode'=>'gate_diagnostics',
+        'wp_config_readable'=>$readable,
+        'write_gate_assignment_found'=>$check('BH_SHEETS_WRITE_ENABLED'),
+        'test_id_assignment_found'=>$check('BH_SHEETS_TEST_ACTIVITY_ID'),
+        'write_gate_effective'=>bhStagingGate('BH_SHEETS_WRITE_ENABLED') === '1',
+        'test_id_gate_effective'=>bhStagingGate('BH_SHEETS_TEST_ACTIVITY_ID') === '999999',
+        'writes_performed'=>false
+    ]);
+}
+
+$values = $data['values'] ?? null;
+if (!is_array($values) || (string)($values['id'] ?? '') !== '999999') bhTestReply(403, ['ok'=>false,'error'=>'test_id_only']);
+$title = trim((string)($values['title'] ?? ''));
+if ($title !== 'BUBBA HUB SYNC TEST - DO NOT PUBLISH') bhTestReply(422, ['ok'=>false,'error'=>'test_title_required']);
 $dryRun = $data['dry_run'] ?? true;
 if (!is_bool($dryRun)) bhTestReply(400, ['ok'=>false,'error'=>'invalid_dry_run']);
 if (!$dryRun && bhStagingGate('BH_SHEETS_WRITE_ENABLED') !== '1') bhTestReply(503, ['ok'=>false,'error'=>'writes_disabled']);
