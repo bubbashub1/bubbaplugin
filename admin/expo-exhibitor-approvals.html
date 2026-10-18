@@ -9,7 +9,13 @@
     const card=document.createElement('section');card.className='item';
     const title=document.createElement('h2');title.textContent=e.business_name;card.append(title);
     const meta=document.createElement('div');meta.className='meta';meta.textContent='Application #'+e.id+' · '+(e.submitted_at||'')+' · Preferred table: '+(e.preferred_table||'not selected');card.append(meta);
-    const desc=document.createElement('p');desc.textContent=e.description||'';card.append(desc);
+    const desc=document.createElement('p');desc.textContent=e.description||'';card.append(desc);const contact=document.createElement('p');contact.className='meta';
+    contact.textContent='Contact: '+(e.contact_name||'')+' · '+(e.contact_email||'')+' · '+(e.contact_phone||'');card.append(contact);
+    const privateInfo=document.createElement('details');const privateSummary=document.createElement('summary');privateSummary.textContent='Application details (admin only)';privateInfo.append(privateSummary);
+    const privateText=document.createElement('pre');privateText.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;font:inherit';
+    let participation={};try{participation=JSON.parse(e.participation_json||'{}')||{};}catch(_){}
+    privateText.textContent='Participation and additional requests: '+JSON.stringify(participation,null,2)+'\nDonation interest: '+(e.donation_interest||'no')+'\nInsurance policy: '+(e.insurance_policy||'')+'\nInsurance expiry: '+(e.insurance_expiry||'')+'\nRequirements: '+(e.requirements||'');
+    privateInfo.append(privateText);card.append(privateInfo);
     if(e.logo_url&&/^https:\/\//i.test(e.logo_url)){const img=document.createElement('img');img.src=e.logo_url;img.alt='Business logo';img.loading='lazy';card.append(img);}
     if(e.website_url&&/^https:\/\//i.test(e.website_url)){const a=document.createElement('a');a.href=e.website_url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Visit business website ↗';card.append(a);}
     const edit=document.createElement('details');const summary=document.createElement('summary');summary.textContent='Edit public exhibitor details';edit.append(summary);
