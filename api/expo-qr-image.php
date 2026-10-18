@@ -8,7 +8,12 @@ declare(strict_types=1);
 function bh_expo_adult_ticket_qr_png(string $payload): string {
     require_once __DIR__.'/expo-ticket-payload.php';
     if(bh_expo_parse_ticket_qr_payload($payload)===null){
-        throw new InvalidArgumentException('Invalid adult Expo ticket payload');
+        // Family QR tokens are booking-level credentials, not adult tickets.
+        // Validate their strict syntax without logging or exposing the token.
+        require_once __DIR__.'/expo-booking-qr-core.php';
+        if(!preg_match('/^BH-EXPO-2027:[a-f0-9]{64}$/D', $payload)){
+            throw new InvalidArgumentException('Invalid Expo QR payload');
+        }
     }
     $autoload=dirname(__DIR__).'/vendor/autoload.php';
     if(!is_file($autoload)){
