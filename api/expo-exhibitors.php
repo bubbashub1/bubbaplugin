@@ -16,6 +16,9 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if (!in_array($method, ['GET','POST'], true)) {
  header('Allow: GET, POST'); expoResponse(405,['ok'=>false,'error'=>'method_not_allowed']);
 }
+// Require configured Cloudflare Turnstile before accepting any public applications.
+$turnstileSecret = trim((string)(getenv('BH_TURNSTILE_SECRET_KEY') ?: getenv('TURNSTILE_SECRET_KEY') ?: ''));
+if ($open && $turnstileSecret === '') expoResponse(503,['ok'=>false,'applications_open'=>false,'error'=>'spam_protection_not_configured']);
 if (!$open) expoResponse(503,['ok'=>false,'applications_open'=>false,'error'=>'applications_not_yet_open']);
 $secure = !empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off';
 if (!$secure) expoResponse(403,['ok'=>false,'error'=>'https_required']);
@@ -43,6 +46,15 @@ if ((int)($_SERVER['CONTENT_LENGTH']??0)>16000) expoResponse(413,['ok'=>false,'e
 if (time()-(int)($_SESSION['expo_apply_last']??0)<120) expoResponse(429,['ok'=>false,'error'=>'please_wait_before_retrying']);
 $body=json_decode((string)file_get_contents('php://input'),true);
 if (!is_array($body)) expoResponse(400,['ok'=>false,'error'=>'invalid_json']);
+// A hidden field catches unsophisticated bot submissions.
+if (!empty($body['website_confirm'])) expoResponse(422,['ok'=>false,'error'=>'invalid_submission']);
+$captcha = is_string($body['turnstile_token']??null) ? trim($body['turnstile_token']) : '';
+if ($captcha==='' || strlen($captcha)>2048) expoResponse(422,['ok'=>false,'error'=>'verification_required']);
+$verifyBody=http_build_query(['secret'=>$turnstileSecret,'response'=>$captcha,'remoteip'=>$_SERVER['REMOTE_ADDR']??'']);
+$verifyContext=stream_context_create(['http'=>['method'=>'POST','header'=>"Content-Type: application/x-www-form-urlencoded\r\n",'content'=>$verifyBody,'timeout'=>6,'ignore_errors'=>true]]);
+$verifyResult=@file_get_contents('https://challenges.cloudflare.com/turnstile/v0/siteverify',false,$verifyContext);
+$verifyData=is_string($verifyResult)?json_decode($verifyResult,true):null;
+if (!is_array($verifyData)||($verifyData['success']??false)!==true) expoResponse(403,['ok'=>false,'error'=>'verification_failed']);
 $get=static fn(string $key,int $max=2000):string=>mb_substr(trim((string)(is_scalar($body[$key]??null)?$body[$key]:'')),0,$max);
 if ($get('contact_consent')!=='yes'||$get('conditions_accepted')!=='yes'||$get('insurance_confirm')!=='yes'||$get('visitor_numbers_acknowledged')!=='yes')
  expoResponse(422,['ok'=>false,'error'=>'consent_required']);
