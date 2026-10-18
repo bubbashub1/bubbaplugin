@@ -11,3 +11,15 @@ body.bh-expo-detail{background:#fbfcf8;color:#174e3b;font-family:Quicksand,Calib
 .bh-expo-detail #expo-faq details p{margin:12px 0 0;font-size:.92rem}
 .bh-expo-detail #overview,.bh-expo-detail #programme,.bh-expo-detail #tickets,.bh-expo-detail #exhibitors,.bh-expo-detail #plan-visit,.bh-expo-detail #expo-faq{scroll-margin-top:24px}
 @media(max-width:650px){.bh-expo-detail .expo-section-nav{gap:6px;padding:9px}.bh-expo-detail .expo-section-nav a{font-size:.78rem;padding:9px 11px}.bh-expo-detail .expo-visit-grid{grid-template-columns:1fr}}
+
+/* Expo running order */
+.bh-expo-detail #schedule{scroll-margin-top:24px}
+.bh-expo-detail .expo-schedule-list{position:relative;margin:25px 0}
+.bh-expo-detail .expo-schedule-item{display:grid;grid-template-columns:135px minmax(0,1fr);gap:20px;padding:20px 0;border-bottom:1px solid #e0ebe2}
+.bh-expo-detail .expo-schedule-item:first-child{border-top:1px solid #e0ebe2}
+.bh-expo-detail .expo-schedule-time{font-size:1.05rem;font-weight:800;color:#176b57}
+.bh-expo-detail .expo-schedule-detail h3{font-size:1.07rem;margin:8px 0 5px}
+.bh-expo-detail .expo-schedule-detail p{margin:0;font-size:.9rem}
+.bh-expo-detail .expo-schedule-tag{display:inline-block;border-radius:18px;background:#e3f1e8;padding:5px 10px;font-size:.73rem;font-weight:800;color:#18563f}
+.bh-expo-detail .expo-schedule-pending{background:#fff0d7;color:#815514}
+@media(max-width:650px){.bh-expo-detail .expo-schedule-item{grid-template-columns:1fr;gap:8px;padding:18px 0}.bh-expo-detail .expo-schedule-time{font-size:1rem}}
