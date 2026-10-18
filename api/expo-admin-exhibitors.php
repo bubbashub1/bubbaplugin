@@ -39,8 +39,11 @@ try{
  $visible=$input['public_visible']??null;
  if(!$id||!in_array($status,['pending','approved','rejected','cancelled'],true)||!in_array($visible,[0,1],true))reply(422,['ok'=>false,'error'=>'invalid_update']);
  if($status!=='approved' && $visible===1)reply(422,['ok'=>false,'error'=>'approval_required_for_publication']);
- $stmt=$db->prepare("UPDATE bh_expo_exhibitors SET application_status=?,public_visible=?,reviewed_at=NOW() WHERE id=? AND event_key='bubba-me-2027'");
- $stmt->execute([$status,$visible,$id]);
+ $name=trim((string)($input['business_name']??''));$description=trim((string)($input['description']??''));$website=trim((string)($input['website_url']??''));$logo=trim((string)($input['logo_url']??''));
+ if(mb_strlen($name)<1||mb_strlen($name)>150||mb_strlen($description)>2000)reply(422,['ok'=>false,'error'=>'invalid_exhibitor_details']);
+ foreach([$website,$logo] as $url){if($url!==''&&(!filter_var($url,FILTER_VALIDATE_URL)||!preg_match('~^https://~i',$url)))reply(422,['ok'=>false,'error'=>'invalid_url']);}
+ $stmt=$db->prepare("UPDATE bh_expo_exhibitors SET application_status=?,public_visible=?,business_name=?,description=?,website_url=?,logo_url=?,reviewed_at=NOW() WHERE id=? AND event_key='bubba-me-2027'");
+ $stmt->execute([$status,$visible,$name,$description,$website?:null,$logo?:null,$id]);
  if($stmt->rowCount()===0){
   $check=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027'");$check->execute([$id]);
   if(!$check->fetchColumn())reply(404,['ok'=>false,'error'=>'not_found']);
