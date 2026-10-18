@@ -38,6 +38,11 @@
   if(!list || !filter) return;
   let saved={};
   try {const value=JSON.parse(localStorage.getItem(key)||'{}');if(value&&typeof value==='object'&&!Array.isArray(value))saved=value;}catch(_){}
+  const prioritiesKey='bh-admin-development-priorities-v1';
+  let priorities={};
+  try {const p=JSON.parse(localStorage.getItem(prioritiesKey)||'{}');if(p&&typeof p==='object'&&!Array.isArray(p))priorities=p;}catch(_){}
+  const priorityFilter=document.getElementById('developmentPriorityFilter');
+  function priority(id){return ['high','medium','low'].includes(priorities[id])?priorities[id]:'medium';}
   function state(id){return allowed.includes(saved[id])?saved[id]:'not-started';}
   function persist(){try{localStorage.setItem(key,JSON.stringify(saved));status.textContent='Checklist saved on this device.';}catch(_){status.textContent='Browser storage is unavailable; changes will not persist.';}}
   const ideasKey='bh-admin-development-ideas-v1';
@@ -48,13 +53,16 @@
   function render(){
     list.replaceChildren();
     const selected=filter.value;
-    const visible=allTasks().filter(t=>selected==='all'||(selected==='next'&&state(t.id)!=='done'&&state(t.id)!=='testing')||state(t.id)===selected);
-    if(!visible.length){const tr=document.createElement('tr');const td=cell(tr,'No tasks in this view.');td.colSpan=5;list.append(tr);}
+    const visible=allTasks().filter(t=>(selected==='all'||(selected==='next'&&state(t.id)!=='done'&&state(t.id)!=='testing')||state(t.id)===selected)&&(!priorityFilter||priorityFilter.value==='all'||priority(t.id)===priorityFilter.value));
+    if(!visible.length){const tr=document.createElement('tr');const td=cell(tr,'No tasks in this view.');td.colSpan=6;list.append(tr);}
     visible.forEach(t=>{
       const tr=document.createElement('tr');
       const title=cell(tr,t.title);
       if(t.custom){const remove=document.createElement('button');remove.type='button';remove.textContent='Remove';remove.className='button button-soft';remove.style.marginLeft='8px';remove.addEventListener('click',()=>{if(!confirm('Remove this idea from your local checklist?'))return;ideas=ideas.filter(x=>x.id!==t.id);try{localStorage.setItem(ideasKey,JSON.stringify(ideas));}catch(_){}delete saved[t.id];persist();render();});title.append(remove);}
       cell(tr,t.area||'New idea');
+      const prCell=cell(tr,'');const prSelect=document.createElement('select');prSelect.setAttribute('aria-label','Priority for '+t.title);
+      ['high','medium','low'].forEach(v=>{const option=document.createElement('option');option.value=v;option.textContent=v[0].toUpperCase()+v.slice(1);prSelect.append(option);});
+      prSelect.value=priority(t.id);prSelect.addEventListener('change',()=>{priorities[t.id]=prSelect.value;try{localStorage.setItem(prioritiesKey,JSON.stringify(priorities));status.textContent='Priority saved on this device.';}catch(_){status.textContent='Priority could not be saved.';}render();});prCell.append(prSelect);
       const progress=cell(tr,'');const select=document.createElement('select');select.setAttribute('aria-label','Progress for '+t.title);
       allowed.forEach(v=>{const option=document.createElement('option');option.value=v;option.textContent=labels[v];select.append(option);});
       select.value=state(t.id);select.addEventListener('change',()=>{saved[t.id]=select.value;persist();render();});progress.append(select);
@@ -74,9 +82,10 @@
     event.target.reset();render();
   });
   filter.addEventListener('change',render);
+  priorityFilter?.addEventListener('change',render);
   document.getElementById('developmentExport')?.addEventListener('click',()=>{
     const rows=['Bubba Hub development checklist','Exported: '+new Date().toLocaleDateString('en-GB'),''];
-    allTasks().forEach(t=>rows.push(t.title+' | '+labels[state(t.id)]+' | '+t.next+' | '+t.url));
+    allTasks().forEach(t=>rows.push(t.title+' | '+priority(t.id)+' priority | '+labels[state(t.id)]+' | '+t.next+' | '+t.url));
     const blob=new Blob([rows.join('\n')],{type:'text/plain;charset=utf-8'});
     const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='bubba-hub-development-checklist.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   });
