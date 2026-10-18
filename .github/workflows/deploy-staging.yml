@@ -90,3 +90,19 @@ jobs:
             exit 1
           fi
           echo "Staging public page EXACTLY matches GitHub events.html."
+          echo "Verifying Expo HTML separately."
+          expo_expected=$(sha256sum expo.html | cut -d' ' -f1)
+          expo_remote=$("${SSH[@]}" "$REMOTE" 'sha256sum "$HOME/staging_html/expo.html"' | cut -d' ' -f1)
+          test "$expo_expected" = "$expo_remote" || { echo "::error::Staging expo.html differs from repository"; exit 1; }
+          curl -fsSL --max-time 30 -H 'Cache-Control: no-cache, no-store' \
+            "https://staging.bubbahub.co.uk/expo.html?deploy_check=$nonce" \
+            -o "$RUNNER_TEMP/staging-expo.html"
+          expo_served=$(sha256sum "$RUNNER_TEMP/staging-expo.html" | cut -d' ' -f1)
+          if [ "$expo_expected" != "$expo_served" ]; then
+            echo "::error::Public Expo page differs from uploaded staging expo.html. Check rewrite, document root, cache or competing deployment."
+            exit 1
+          fi
+          grep -q 'expoAdminTest' "$RUNNER_TEMP/staging-expo.html" || { echo "::error::Expo admin test form absent from public page"; exit 1; }
+          echo "Public staging Expo HTML matches GitHub and contains admin test form."
+
+
