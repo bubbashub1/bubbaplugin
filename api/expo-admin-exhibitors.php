@@ -74,6 +74,14 @@ try{
  if($status!=='approved')$assigned=null;
  $stmt=$db->prepare("UPDATE bh_expo_exhibitors SET application_status=?,public_visible=?,business_name=?,description=?,website_url=?,logo_url=?,assigned_table=?,reviewed_at=NOW() WHERE id=? AND event_key='bubba-me-2027'");
  $stmt->execute([$status,$visible,$name,$description,$website?:null,$logo?:null,$assigned,$id]);
+ if($priorTable!==null && (int)$priorTable!==$assigned){
+  $release=$db->prepare("UPDATE bh_expo_tables SET status='available',exhibitor_id=NULL WHERE event_key='bubba-me-2027' AND table_number=? AND exhibitor_id=?");
+  $release->execute([(int)$priorTable,$id]);
+ }
+ if($assigned!==null && $status==='approved'){
+  $occupy=$db->prepare("UPDATE bh_expo_tables SET status='assigned',exhibitor_id=? WHERE event_key='bubba-me-2027' AND table_number=?");
+  $occupy->execute([$id,$assigned]);
+ }
  $db->commit();
  if($stmt->rowCount()===0){
   $check=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027'");$check->execute([$id]);
