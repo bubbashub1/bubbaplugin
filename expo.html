@@ -41,4 +41,33 @@
 <script>
 (function(){const a=document.getElementById('expoAdultCount'),c=document.getElementById('expoChildCount'),out=document.getElementById('expoTicketSummary');if(!a||!c||!out)return;function update(){const x=Number(a.value),y=Number(c.value),n=x+y;out.textContent=a.value!==''&&c.value!==''&&Number.isInteger(x)&&Number.isInteger(y)&&x>=0&&y>=0&&x<=12&&y<=12&&n>=1&&n<=12?n+' free '+(n===1?'place':'places')+' selected':'Choose 1 to 12 places in total.';}a.addEventListener('input',update);c.addEventListener('input',update);update();})();
 </script>
+<script>
+/* Public exhibitor display: approval decisions are enforced by the server API. */
+(async function(){
+ const host=document.getElementById('expoApprovedExhibitors');
+ if(!host)return;
+ try {
+  const response=await fetch('/api/expo-public-exhibitors.php?event=bubba-me-2027',{credentials:'omit',cache:'no-store'});
+  if(!response.ok)throw new Error('unavailable');
+  const data=await response.json();
+  if(!data.ok||!Array.isArray(data.exhibitors))throw new Error('invalid');
+  if(!data.exhibitors.length)return;
+  host.replaceChildren();
+  data.exhibitors.slice(0,100).forEach(item=>{
+   if(!item||typeof item.name!=='string'||!item.name.trim())return;
+   const card=document.createElement('article');card.className='expo-approved-card';
+   if(typeof item.image_url==='string'&&/^https:\/\//i.test(item.image_url)){
+    const img=document.createElement('img');img.src=item.image_url;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';card.append(img);
+   }
+   const heading=document.createElement('h3');heading.textContent=item.name;card.append(heading);
+   if(typeof item.description==='string'&&item.description.trim()){const p=document.createElement('p');p.textContent=item.description.slice(0,500);card.append(p);}
+   if(typeof item.website_url==='string'&&/^https:\/\//i.test(item.website_url)){
+    const a=document.createElement('a');a.href=item.website_url;a.textContent='Visit website ↗';a.target='_blank';a.rel='noopener noreferrer nofollow';card.append(a);
+   }
+   host.append(card);
+  });
+  if(!host.children.length)host.textContent='Our confirmed exhibitors will appear here once approved.';
+ } catch(error){host.textContent='Our confirmed exhibitors will appear here once approved.';}
+})();
+</script>
 </body></html>
