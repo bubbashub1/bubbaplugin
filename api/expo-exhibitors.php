@@ -6,6 +6,8 @@ header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 function expo_reply(int $code,array $data): never { http_response_code($code);echo json_encode($data,JSON_UNESCAPED_SLASHES);exit; }
 if (($_SERVER['REQUEST_METHOD']??'')!=='POST') expo_reply(405,['ok'=>false,'error'=>'method_not_allowed']);
+// Keep public applications closed until an explicit server-side release.
+if (!defined('BH_EXPO_APPLICATIONS_OPEN') || BH_EXPO_APPLICATIONS_OPEN !== true) expo_reply(503,['ok'=>false,'error'=>'applications_closed']);
 if ((int)($_SERVER['CONTENT_LENGTH']??0)>20000) expo_reply(413,['ok'=>false,'error'=>'request_too_large']);
 $body=json_decode((string)file_get_contents('php://input'),true);
 if(!is_array($body))expo_reply(400,['ok'=>false,'error'=>'invalid_json']);
