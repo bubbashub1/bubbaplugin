@@ -11,12 +11,20 @@
 - Staging only until explicit promotion.
 
 ## Prerequisites before enabling
-1. Supply the master spreadsheet ID and exact worksheet/tab, plus header mapping. Published CSV is read-only and cannot support bidirectional writes.
+1. Master tab confirmed: `MASTER SHEET`. The `Final` tab is a separate consolidation source and must never be modified by the sync. Confirm header mapping and the permanent activity ID column. The spreadsheet URL identifies the file, but a published CSV remains read-only and cannot support bidirectional writes.
 2. Configure a Google service account with Sheets read/write access. Store credentials in staging environment/secrets, never in the repository or browser.
 3. Review and apply `db/migrations/20261018_sheet_sync.sql` to the **staging database only**.
 4. Confirm listing field ownership and conflict policy for leader-managed fields (schedules, venues, bookings, and organiser details).
 5. Implement and test the Google Sheets API read/write adapter, database change detection, row-level transactions, idempotent retries, and a dry-run.
 6. Only then wire an authenticated server-side daily scheduler and an admin-only Sync Now button.
+
+## Existing Apps Script review (18 October 2026)
+- Existing `bhPreviewSync` sends 25-row JSON batches and checks duplicate `id` values; it is read-only.
+- **Critical bug:** staging URL check currently accepts `https://bubbahub.co.uk/api/` (live) while its error says staging. Require `https://staging.bubbahub.co.uk/api/` before any tests.
+- Existing `bhInstallSixHourTrigger` runs previews every six hours; replace only after tested with a daily trigger, and remove old triggers to avoid duplicate jobs.
+- Existing `Sync Log` and `Conflicts` tabs can be reused. Never overwrite them during setup.
+- The current preview endpoint is not necessarily deployed; verify API status and token handling before enabling any writes.
+- The current script has no website-to-sheet fetch/write or field-level change detection; do not label it two-way yet.
 
 ## Current status
 **Foundation only — sync is deliberately not enabled.** This branch provides durable ID mappings, run logs, and conflict review schema. No automatic changes or Sheets writes occur until credentials, sheet mapping and dry-run testing are completed.
