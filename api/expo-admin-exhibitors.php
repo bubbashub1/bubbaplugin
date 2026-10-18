@@ -54,12 +54,20 @@ try{
  $name=trim((string)($input['business_name']??''));$description=trim((string)($input['description']??''));$website=trim((string)($input['website_url']??''));$logo=trim((string)($input['logo_url']??''));
  if(mb_strlen($name)<1||mb_strlen($name)>150||mb_strlen($description)>2000)reply(422,['ok'=>false,'error'=>'invalid_exhibitor_details']);
  foreach([$website,$logo] as $url){if($url!==''&&(!filter_var($url,FILTER_VALIDATE_URL)||!preg_match('~^https://~i',$url)))reply(422,['ok'=>false,'error'=>'invalid_url']);}
+ // Lock the canonical table row to serialize competing approvals for the same table.
  $db->beginTransaction();
- if($assigned!==null){
+ if($assigned!==null && $status==='approved'){
+  $table=$db->prepare("SELECT id,status FROM bh_expo_tables WHERE event_key='bubba-me-2027' AND table_number=? FOR UPDATE");
+  $table->execute([$assigned]);
+  $tableRow=$table->fetch(PDO::FETCH_ASSOC);
+  if(!$tableRow || $tableRow['status']==='blocked'){
+   $db->rollBack();reply(409,['ok'=>false,'error'=>'table_unavailable']);
+  }
   $check=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE event_key='bubba-me-2027' AND assigned_table=? AND application_status='approved' AND id<>? LIMIT 1 FOR UPDATE");
   $check->execute([$assigned,$id]);
   if($check->fetchColumn()){ $db->rollBack();reply(409,['ok'=>false,'error'=>'table_already_assigned']); }
  }
+ if($status!=='approved')$assigned=null;
  $stmt=$db->prepare("UPDATE bh_expo_exhibitors SET application_status=?,public_visible=?,business_name=?,description=?,website_url=?,logo_url=?,assigned_table=?,reviewed_at=NOW() WHERE id=? AND event_key='bubba-me-2027'");
  $stmt->execute([$status,$visible,$name,$description,$website?:null,$logo?:null,$assigned,$id]);
  $db->commit();
