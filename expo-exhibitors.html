@@ -60,11 +60,11 @@
  const form=document.getElementById('exhibitorForm'),button=document.getElementById('expoSubmit'),status=document.getElementById('expoSubmitStatus');
  if(!form||!button||!status)return;
  let csrfToken=""; let turnstileToken="";
- (async()=>{try{const r=await fetch("/api/expo-exhibitors.php",{credentials:"same-origin",cache:"no-store"});const data=await r.json();if(!r.ok||!data.applications_open||!data.csrf_token)return;csrfToken=data.csrf_token;
-   if(!data.turnstile_site_key)return;
+ (async()=>{try{const r=await fetch("/api/expo-exhibitors.php",{credentials:"same-origin",cache:"no-store"});const data=await r.json();if(!r.ok||!data.applications_open||!data.csrf_token){status.textContent="Applications are not open yet. Please check back shortly.";return;}csrfToken=data.csrf_token;
+   if(!data.turnstile_site_key){status.textContent="Verification is not configured yet. Please try again later.";return;}
    const s=document.createElement('script');s.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';s.async=true;
    s.onload=()=>{if(!window.turnstile)return;window.turnstile.render('#expoTurnstile',{sitekey:data.turnstile_site_key,callback:token=>{turnstileToken=token;button.disabled=false;},'expired-callback':()=>{turnstileToken='';button.disabled=true;},'error-callback':()=>{turnstileToken='';button.disabled=true;}});};
-   document.head.appendChild(s);button.textContent="Submit exhibitor application";status.textContent="Exhibitor applications are open.";}catch(error){}})();
+   document.head.appendChild(s);button.textContent="Submit exhibitor application";status.textContent="Exhibitor applications are open.";}catch(error){status.textContent="Application service is temporarily unavailable. Please try again later.";}})();
  form.onsubmit=async function(event){
   event.preventDefault();
   if(!csrfToken||!turnstileToken)return;
