@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><base href="/"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Exhibitor application · Bubba &amp; Me Expo</title><link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/subpages-v2.css"><link rel="stylesheet" href="/assets/css/header-repair.css"></head>
+<body class="bh-subpage-v2"><header class="site-header"><a class="brand" href="/" aria-label="Bubba Hub home"><span class="bh-brand-text">Bubba <span>Hub</span></span></a><nav class="main-nav" aria-label="Main menu"><a href="directory.html">Find activities</a><a href="events.html">Events</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">My Account</a></nav></header>
+<main class="app-shell"><section class="page-heading"><div><span class="eyebrow">Bubba &amp; Me Expo</span><h1>Exhibitor application</h1><p>Saturday 9 January 2027 · 10:30am–2:30pm · Acorn Centre, Torquay · Exhibitor set-up from 9:45am</p><p>Apply for a free exhibitor space at our baby and pregnancy event. An optional £20 donation towards venue hire is appreciated but never required.</p></div></section>
+<section class="section" style="max-width:780px;margin:22px auto;padding:clamp(18px,3vw,32px);background:#fff;border:1px solid #d1e4d4;border-radius:22px">
+<p><strong>Bubba Hub exhibitor application.</strong> This is the new in-house form. Applications will open after database installation and booking tests; no payments are required for a free stall.</p>
+<form id="exhibitorForm">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px">
+<label>Business / organisation name *<input name="business_name" required maxlength="150" autocomplete="organization"></label>
+<label>Contact name *<input name="contact_name" required maxlength="120" autocomplete="name"></label>
+<label>Email address *<input type="email" name="email" required autocomplete="email"></label>
+<label>Telephone *<input type="tel" name="phone" required maxlength="30" autocomplete="tel"></label>
+<label>Website or social media <input type="url" name="website" placeholder="https://"></label>
+<label>Business location / town <input name="town" maxlength="100"></label><label>Service category *<select name="service_category" required><option value="">Choose a category</option><option>Pregnancy &amp; birth</option><option>Baby &amp; toddler classes</option><option>Family health &amp; wellbeing</option><option>Photography &amp; keepsakes</option><option>Retail &amp; gifts</option><option>Community &amp; support</option><option>Other</option></select></label>
+</div>
+<label style="display:block;margin-top:16px">What will you promote or offer on the day? Tell us what visitors can expect at your table, for exhibitor spotlights. *<textarea name="description" required maxlength="2000" rows="4"></textarea></label>
+<fieldset style="margin-top:18px;border:1px solid #d1e4d4;border-radius:14px;padding:16px"><legend>What would you like to offer at the Expo?</legend>
+<label style="display:block"><input type="checkbox" name="participation" value="exhibitor_stall"> Exhibitor stall</label>
+<label style="display:block"><input type="checkbox" name="participation" value="taster_session"> Taster session</label>
+<label style="display:block"><input type="checkbox" name="participation" value="talk_qa"> Talk or live Q&amp;A</label>
+<label style="display:block"><input type="checkbox" name="participation" value="sponsor"> Sponsorship opportunity</label></fieldset>
+<fieldset style="margin-top:18px;border:1px solid #d1e4d4;border-radius:14px;padding:16px"><legend>Choose a preferred exhibitor table</legend>
+<p>Select a table on the provisional 26-table layout. This is a visual preview only; no table is reserved until the live booking system confirms it. The venue floor plan and usable capacity will be verified before launch.</p>
+<div id="expoTableGrid" role="group" aria-label="Preferred exhibitor table" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:10px"></div>
+<p id="expoTableSelection" role="status" aria-live="polite">No preferred table selected.</p>
+<input type="hidden" name="preferred_table" id="expoPreferredTable">
+<p style="font-size:.9rem">Green = available in preview · Orange = selected. Reserved and blocked tables will be shown once booking opens.</p>
+</fieldset>
+<fieldset style="margin-top:18px;border:1px solid #d1e4d4;border-radius:14px;padding:16px"><legend>Stall and facilities</legend>
+<label style="display:block">Will you bring anything that will not fit within a standard 6ft space? Tables are provided. *<select name="oversize" required><option value="">Please select</option><option value="no">No</option><option value="yes">Yes</option></select></label>
+<label style="display:block;margin-top:12px">If yes, please describe your additional space requirements<textarea name="oversize_details" maxlength="1000" rows="2"></textarea></label>
+<label style="display:block;margin-top:12px">Do you require an electrical outlet? *<select name="electricity" required><option value="">Please select</option><option value="no">No</option><option value="yes">Yes</option></select></label>
+<label style="display:block;margin-top:12px">Do you require a chair? *<select name="chair" required><option value="">Please select</option><option value="no">No</option><option value="yes">Yes</option></select></label>
+<label style="display:block;margin-top:12px">Would you like to contribute small gifts or promotional material to visitor goody bags? <select name="goody_bag"><option value="unsure">Not sure yet</option><option value="yes">Yes</option><option value="no">No</option></select></label>
+</fieldset>
+<fieldset style="margin-top:18px;border:1px solid #d1e4d4;border-radius:14px;padding:16px"><legend>Optional £20 donation</legend>
+<p>Your exhibitor space is free whether or not you donate. If you express interest in donating, Bubba Hub will contact you directly. No payment is collected here.</p>
+<label>Would you like to make a £20 contribution? *<select name="donation_interest" required><option value="">Please select</option><option value="no">No thank you</option><option value="yes">Yes, please contact me</option><option value="maybe">Maybe, I'd like more information</option></select></label>
+<label style="display:block;margin-top:12px">Preferred payment method (only if donating)<select name="payment_preference"><option value="">No preference</option><option value="bank_transfer">Bank transfer</option><option value="cash">Cash</option><option value="paypal">PayPal</option></select></label>
+<label style="display:block;margin-top:12px"><input type="checkbox" name="invoice_requested"> Please email me an invoice if I decide to donate</label>
+</fieldset>
+<fieldset style="margin-top:18px;border:1px solid #d1e4d4;border-radius:14px;padding:16px"><legend>Public liability insurance</legend>
+<label style="display:block">Insurance policy number *<input name="insurance_policy" required maxlength="120"></label>
+<label style="display:block;margin-top:12px">Insurance expiry date *<input name="insurance_expiry" type="date" required></label>
+<label style="display:block;margin-top:12px"><input name="insurance_confirm" type="checkbox" required> I confirm that I can supply a copy of my public liability insurance if requested. *</label>
+</fieldset>
+<label style="display:block;margin-top:16px">Business logo / profile image URL (optional)<input name="logo_url" type="url" placeholder="https://"></label>
+<label style="display:block;margin-top:16px">Equipment, accessibility or space requirements<textarea name="requirements" maxlength="1500" rows="3"></textarea></label>
+<label style="display:block;margin-top:16px">Additional information<textarea name="notes" maxlength="1500" rows="3"></textarea></label>
+<label style="display:block;margin-top:16px"><input type="checkbox" name="contact_consent" required> I agree to be contacted about this exhibitor application. *</label>
+<p><strong>Event conditions:</strong> Bubba Hub may cancel the event if exhibitor interest is insufficient. If cancelled, confirmed exhibitors will receive a full refund of any payments made. Visitor numbers cannot be guaranteed. The Expo also provides opportunities to network and collaborate with local businesses and family services.</p>
+<label style="display:block;margin-top:12px"><input type="checkbox" name="conditions_accepted" required> I have read and accept the event conditions above. *</label>
+<label style="display:block;margin-top:12px"><input type="checkbox" name="visitor_numbers_acknowledged" required> I understand that attendance numbers may vary and that Bubba Hub cannot guarantee a specific number of visitors to the Expo. *</label>
+<p>All applications are reviewed by Bubba Hub. Submitting an application does not reserve a table or confirm participation. No donation is required.</p>
+<button class="button button-primary" type="submit" id="expoSubmit" disabled>Applications opening soon</button><p id="expoSubmitStatus" role="status" aria-live="polite"></p>
+
+</form></section></main><script>(function(){const grid=document.getElementById('expoTableGrid'),selected=document.getElementById('expoPreferredTable'),status=document.getElementById('expoTableSelection');if(!grid||!selected||!status)return;for(let i=1;i<=26;i++){const b=document.createElement('button');b.type='button';b.textContent='Table '+i;b.setAttribute('aria-pressed','false');b.style.cssText='border:2px solid #86bca2;border-radius:12px;padding:12px 3px;background:#e1f4e7;color:#194e38;cursor:pointer;font:inherit;font-size:.9rem';b.addEventListener('click',()=>{selected.value=String(i);status.textContent='Preferred table: '+i+' (not reserved)';for(const item of grid.children){const active=item===b;item.setAttribute('aria-pressed',active?'true':'false');item.style.background=active?'#ffbb79':'#e1f4e7';item.style.borderColor=active?'#cb772c':'#86bca2';}});grid.appendChild(b);}})();</script><script>
+/* Disabled by default until the staging integration is explicitly enabled. */
+(function(){
+ const form=document.getElementById('exhibitorForm'),button=document.getElementById('expoSubmit'),status=document.getElementById('expoSubmitStatus');
+ if(!form||!button||!status)return;
+ let csrfToken="";
+ (async()=>{try{const r=await fetch("/api/expo-exhibitors.php",{credentials:"same-origin",cache:"no-store"});const data=await r.json();if(!r.ok||!data.test_mode||!data.csrf_token)return;csrfToken=data.csrf_token;button.disabled=false;button.textContent="Submit staging test application";status.textContent="Admin-only staging test mode. Public submissions remain closed.";}catch(error){}})();
+ button.textContent='Submit exhibitor application';
+ form.onsubmit=async function(event){
+  event.preventDefault();
+  if(!csrfToken)return;
+  if(!form.reportValidity())return;
+  const data=new FormData(form),body={};
+  for(const [key,value] of data.entries()){
+   if(key==='participation'){(body.participation??=[]).push(value);continue;}
+   body[key]=value;
+  }
+  for(const key of ['contact_consent','conditions_accepted','insurance_confirm','visitor_numbers_acknowledged'])body[key]=data.has(key)?'yes':'no';
+  button.disabled=true;status.textContent='Submitting your application…';
+  try{
+   const response=await fetch('/api/expo-exhibitors.php',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':csrfToken},body:JSON.stringify(body),credentials:'same-origin'});
+   const raw=await response.text();
+   let result;try{result=JSON.parse(raw);}catch(_){throw new Error('HTTP '+response.status+' — server returned a non-JSON response');}
+   if(!response.ok||!result.ok)throw new Error((result.error||'submission_failed')+' (HTTP '+response.status+')');
+   status.textContent='Application received. Reference #'+result.application_id+'. Your application is pending review.';
+   status.scrollIntoView({behavior:'smooth',block:'center'});
+   form.reset();
+  }catch(error){status.textContent='Application not confirmed: '+(error.message||'network_error')+'. Please check with Bubba Hub before trying again.';status.scrollIntoView({behavior:'smooth',block:'center'});}
+  finally{button.disabled=!csrfToken;}
+ };
+})();
+</script></body></html>
