@@ -37,21 +37,5 @@
 </div>
 <aside class="expo-sidebar" aria-label="Event information"><section class="expo-info-card"><h2>At a glance</h2><dl><div><dt>📅 Date</dt><dd>Saturday 9 January 2027</dd></div><div><dt>🕥 Time</dt><dd>10:30am – 2:30pm</dd></div><div><dt>📍 Location</dt><dd>Acorn Centre, Torquay</dd></div><div><dt>🎟 Admission</dt><dd>Free entry</dd></div></dl><a class="expo-button expo-button-outline" href="https://www.google.com/maps/search/?api=1&amp;query=Acorn+Centre+Torquay" target="_blank" rel="noopener noreferrer">Find the venue ↗</a></section>
 <section class="expo-info-card expo-contact"><span class="expo-kicker">ORGANISED BY BUBBA HUB</span><h2>Questions?</h2><p>Want to know more about attending or getting involved?</p><a href="mailto:contact@bubbahub.co.uk?subject=Bubba%20%26%20Me%20Expo%20enquiry">contact@bubbahub.co.uk</a></section></aside></div>
-<section id="expoAdminTest" class="expo-panel" hidden aria-labelledby="expoAdminTestHeading" style="border:2px dashed #227957;margin-top:16px">
-<h2 id="expoAdminTestHeading">Admin only · Create a staging test reservation</h2>
-<p>This creates one pending free reservation in staging. It does not send email or issue a QR. Public bookings remain closed.</p>
-<button type="button" id="expoCreateTest" class="expo-button expo-button-primary">Create pending test reservation</button>
-<p id="expoAdminTestResult" role="status" aria-live="polite"></p>
-</section>
-<script>
-(()=>{'use strict';const panel=document.getElementById('expoAdminTest'),btn=document.getElementById('expoCreateTest'),out=document.getElementById('expoAdminTestResult');let csrf='';
-fetch('/api/expo-admin-checkin-session.php',{credentials:'same-origin',cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.ok&&j.csrf){csrf=j.csrf;panel.hidden=false;}}).catch(()=>{});
-btn.addEventListener('click',async()=>{if(!csrf)return;const name=document.getElementById('expoContactName').value.trim(),email=document.getElementById('expoContactEmail').value.trim(),adults=Number(document.getElementById('expoAdultCount').value),children=Number(document.getElementById('expoChildCount').value),consent=document.getElementById('expoConsent').checked;
-if(name.length<2||!email||!Number.isInteger(adults)||adults<1||adults>12||!Number.isInteger(children)||children<0||children>11||!consent){out.textContent='Complete the name, valid email, attendee counts and consent above.';return;}
-if(!confirm('Create ONE pending test booking in staging for '+email+'? No email will be sent yet.'))return;
-btn.disabled=true;out.textContent='Creating staging reservation…';
-try{const r=await fetch('/api/expo-admin-test-reservation.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-BH-Admin-CSRF':csrf},body:JSON.stringify({name,email,adults,children,consent})}),j=await r.json();if(!r.ok||!j.ok)throw Error(j.error||'request_failed');out.textContent='Created pending reservation #'+j.reservation_id+'. No email sent. ';const a=document.createElement('a');a.href='/admin/expo-confirm-booking.html';a.textContent='Open admin confirmation →';out.appendChild(a);btn.disabled=true;}catch(e){out.textContent='Could not create reservation: '+e.message+'. Check staging database before trying again.';btn.disabled=false;}
-});
-})();
-</script></main>
+</main>
 <script>(function(){const a=document.getElementById('expoAdultCount'),c=document.getElementById('expoChildCount'),out=document.getElementById('expoTicketSummary');if(!a||!c||!out)return;function update(){const x=Number(a.value),y=Number(c.value),n=x+y;const valid=a.value!==''&&c.value!==''&&Number.isInteger(x)&&Number.isInteger(y)&&x>=1&&y>=0&&n<=12;out.textContent=valid?x+' adult '+(x===1?'ticket':'tickets')+' · '+y+' '+(y===1?'child':'children')+' attending':'Choose at least 1 adult and up to 12 people in total.';}a.addEventListener('input',update);c.addEventListener('input',update);update();})();</script></body></html>
