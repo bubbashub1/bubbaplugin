@@ -30,6 +30,7 @@ try {
         throw new RuntimeException('Approval schema not available');
     }
     $fields = ["`$name` AS name"];
+    if (isset($columns['details_json'])) $fields[] = 'details_json';
     foreach (['website_url'=>['website_url','website'], 'image_url'=>['image_url','logo_url'], 'description'=>['public_description','description']] as $alias=>$options) {
         foreach ($options as $candidate) {
             if (isset($columns[$candidate])) { $fields[] = "`$candidate` AS `$alias`"; break; }
@@ -45,11 +46,16 @@ try {
     $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     $safe = [];
     foreach ($rows as $row) {
+        $details = json_decode((string)($row['details_json'] ?? '{}'), true);
+        if (!is_array($details)) $details = [];
+        $website = $row['website_url'] ?? $details['website'] ?? '';
+        $logo = $row['image_url'] ?? $details['logo_url'] ?? '';
+        $description = $row['description'] ?? '';
         $safe[] = [
             'name'=>mb_substr((string)($row['name']??''),0,150),
-            'website_url'=>filter_var($row['website_url']??'', FILTER_VALIDATE_URL) && str_starts_with((string)$row['website_url'], 'https://') ? $row['website_url'] : null,
-            'image_url'=>filter_var($row['image_url']??'', FILTER_VALIDATE_URL) && str_starts_with((string)$row['image_url'], 'https://') ? $row['image_url'] : null,
-            'description'=>mb_substr((string)($row['description']??''),0,500)
+            'website_url'=>filter_var($website, FILTER_VALIDATE_URL) && str_starts_with((string)$website, 'https://') ? $website : null,
+            'image_url'=>filter_var($logo, FILTER_VALIDATE_URL) && str_starts_with((string)$logo, 'https://') ? $logo : null,
+            'description'=>mb_substr((string)$description,0,500)
         ];
     }
     echo json_encode(['ok'=>true,'exhibitors'=>$safe], JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
