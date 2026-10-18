@@ -47,21 +47,21 @@ $errorClass=null;
 try {
     if ($checks['composer_autoload_present']) {
         require_once $autoload;
-        $checks['qr_class_available']=class_exists(\\Endroid\\QrCode\\QrCode::class);
-        $checks['png_writer_available']=class_exists(\\Endroid\\QrCode\\Writer\\PngWriter::class);
+        $checks['qr_class_available']=class_exists(\Endroid\QrCode\QrCode::class);
+        $checks['png_writer_available']=class_exists(\Endroid\QrCode\Writer\PngWriter::class);
     }
     if ($checks['gd_enabled'] && $checks['qr_class_available'] && $checks['png_writer_available']) {
         $stage='render';
         // Non-ticket fixed test content; no real booking or bearer credential.
-        $qr=new \\Endroid\\QrCode\\QrCode(
+        $qr=new \Endroid\QrCode\QrCode(
             data:'BUBBA-HUB-QR-RENDER-PREFLIGHT',
-            errorCorrectionLevel:\\Endroid\\QrCode\\ErrorCorrectionLevel::High,
+            errorCorrectionLevel:\Endroid\QrCode\ErrorCorrectionLevel::High,
             size:320,
             margin:16
         );
-        $writer=new \\Endroid\\QrCode\\Writer\\PngWriter();
+        $writer=new \Endroid\QrCode\Writer\PngWriter();
         $png=$writer->write($qr)->getString();
-        $checks['qr_png_render_test']=substr($png,0,8)==="\\x89PNG\\r\\n\\x1a\\n";
+        $checks['qr_png_render_test']=substr($png,0,8)==="\x89PNG\r\n\x1a\n";
     }
 } catch (Throwable $e) {
     $errorClass=get_class($e);
