@@ -26,7 +26,7 @@ function bhSchemaAwareImportPreview() {
   const sheetById=new Map(),duplicateIds=[],invalidRows=[];
   rows.forEach((row,index)=>{
     const id=String(row[idColumns[0]]||'').trim();
-    if(!/^[1-9]\\d*$/.test(id)){invalidRows.push({row:index+2,id:id});return;}
+    if(!/^[1-9]\d*$/.test(id)){invalidRows.push({row:index+2,id:id});return;}
     if(sheetById.has(id)) duplicateIds.push({id:id,firstRow:sheetById.get(id).row,duplicateRow:index+2});
     else sheetById.set(id,{row:index+2,values:row});
   });
@@ -39,7 +39,7 @@ function bhSchemaAwareImportPreview() {
     const data=JSON.parse(response.getContentText());
     if(data.ok!==true||data.mode!=='read_only_export'||!Array.isArray(data.records)||typeof data.has_more!=='boolean'||!Number.isSafeInteger(data.next_after_id)) throw new Error('Invalid export response; no writes performed');
     availableFields=data.fields||availableFields;
-    data.records.forEach(record=>{const id=String(record.id||'');if(!/^[1-9]\\d*$/.test(id)||websiteById.has(id))throw new Error('Invalid or duplicate staging ID '+id);websiteById.set(id,record);});
+    data.records.forEach(record=>{const id=String(record.id||'');if(!/^[1-9]\d*$/.test(id)||websiteById.has(id))throw new Error('Invalid or duplicate staging ID '+id);websiteById.set(id,record);});
     pages++; if(data.has_more&&data.next_after_id<=after)throw new Error('Pagination did not advance'); after=data.next_after_id; complete=!data.has_more;
   }
   if(!complete)throw new Error('Safety stop: pagination incomplete; no writes performed');
