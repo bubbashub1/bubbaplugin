@@ -12,8 +12,15 @@ if(session_status()!==PHP_SESSION_ACTIVE){
  session_start();
 }
 function reply(int $status,array $body): never {http_response_code($status);echo json_encode($body,JSON_UNESCAPED_SLASHES);exit;}
-if(empty($_SESSION['bh_admin_authenticated']) || empty($_SESSION['bh_admin_last_activity']) || time()-(int)$_SESSION['bh_admin_last_activity']>1800)reply(401,['ok'=>false,'error'=>'admin_required']);
-$_SESSION['bh_admin_last_activity']=time();
+// Live admin-auth.php sets bh_admin_authenticated but not bh_admin_last_activity.
+// Initialise Expo's own idle timer on first authorised request, then enforce 30 minutes.
+if(empty($_SESSION['bh_admin_authenticated']))reply(401,['ok'=>false,'error'=>'admin_required']);
+if(isset($_SESSION['bh_expo_admin_last_activity']) && time()-(int)$_SESSION['bh_expo_admin_last_activity']>1800){
+ unset($_SESSION['bh_admin_authenticated'],$_SESSION['bh_expo_admin_last_activity'],$_SESSION['bh_expo_csrf']);
+ reply(401,['ok'=>false,'error'=>'admin_session_expired']);
+}
+$_SESSION['bh_expo_admin_last_activity']=time();
+
 $method=$_SERVER['REQUEST_METHOD']??'GET';
 if(!in_array($method,['GET','POST'],true)){header('Allow: GET, POST');reply(405,['ok'=>false,'error'=>'method_not_allowed']);}
 if($method==='POST'){
