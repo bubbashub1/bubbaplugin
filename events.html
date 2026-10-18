@@ -1,59 +1,51 @@
-<!doctype html>
-<html lang="en-GB">
-<head><base href="/">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Events · Bubba Hub</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/directory-v2.css"><link rel="stylesheet" href="/assets/css/events-directory.css?v=147"><link rel="stylesheet" href="/assets/css/header-repair.css"><meta name="bh-staging-version" content="events-directory-shell-147">
-</head>
-<body class="bh-directory bh-events-directory">
-<header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><span class="bh-brand-text" aria-label="Bubba Hub">Bubba <span>Hub</span></span></a><button type="button" class="mobile-nav-toggle" aria-expanded="false" aria-label="Open menu"><span></span><span></span><span></span></button><nav class="main-nav" aria-label="Main menu">
+<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Events · Bubba Hub</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/directory-v2.css"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""><style>.bh-directory-view-actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.bh-directory-view-actions button{border:1px solid #144400;border-radius:999px;padding:12px 20px;background:white;color:#144400;font-weight:700;cursor:pointer}.bh-directory-view-actions button[aria-pressed="true"]{background:#144400;color:white}.bh-directory-map-hint{margin:8px 0 12px;color:#416651;font-weight:600}.bh-directory #mapView{height:min(70vh,680px);min-height:380px;width:100%;position:relative}.bh-directory #results[hidden],.bh-directory #mapView[hidden],.bh-directory #directoryMapHint[hidden]{display:none!important}@media(max-width:900px){.bh-directory-view-actions{position:sticky;top:0;z-index:600;background:#fff;padding:10px 0}.bh-directory-view-actions button{flex:1;padding:12px 8px}.bh-directory #mapView{height:65dvh;min-height:350px}}</style><link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"><link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"><link rel="stylesheet" href="/assets/css/header-repair.css"><meta name="bh-staging-version" content="events-directory-original-148"><style>
+/* Only event-specific content: all page layout, typography, buttons and cards use directory-v2.css */
+.bh-events-listing .directory-layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;align-items:start}
+.bh-events-listing .directory-layout>.directory-hero-search{min-width:0;padding:22px 18px}
+.bh-events-listing .directory-results-column{min-width:0}
+.bh-events-listing .bh-expo-listing{display:grid;grid-template-columns:165px minmax(0,1fr);margin:22px 0;background:white;border:1px solid #e1ebe2;border-radius:22px;overflow:hidden}
+.bh-events-listing .bh-expo-date{display:grid;place-items:center;text-align:center;background:#d9efe4;color:#174e3b;font-size:2rem;font-weight:800;line-height:1.15;padding:15px}
+.bh-events-listing .bh-expo-description{padding:22px}
+.bh-events-listing .bh-expo-description h2{font-size:1.3rem;margin:8px 0}
+.bh-events-listing .bh-expo-description p{margin:6px 0}
+.bh-events-listing .bh-expo-description .button{display:inline-flex;margin:12px 8px 0 0}
+.bh-events-listing .directory-events-results{margin-top:28px}
+.bh-events-listing #eventsList{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:18px}
+.bh-events-listing #eventsList .empty-state{grid-column:1/-1;background:white;border:1px solid #e1ebe2;border-radius:20px;padding:22px}
+.bh-events-listing .event-card{background:white;border:1px solid #e1ebe2;border-radius:20px;overflow:hidden}
+.bh-events-listing .event-card-image{display:block;height:185px;overflow:hidden}
+.bh-events-listing .event-card-image img{width:100%;height:100%;object-fit:cover}
+.bh-events-listing .event-card-body{padding:16px}
+@media(max-width:800px){.bh-events-listing .directory-layout{grid-template-columns:minmax(0,1fr)}.bh-events-listing .bh-expo-listing{grid-template-columns:minmax(0,1fr)}.bh-events-listing .bh-expo-date{min-height:100px}}
+</style></head><body class="bh-directory bh-events-listing"><header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><span class="bh-brand-text" aria-label="Bubba Hub">Bubba <span>Hub</span></span></a><button type="button" class="mobile-nav-toggle" aria-expanded="false" aria-label="Open menu"><span></span><span></span><span></span></button><nav class="main-nav" aria-label="Main menu">
     <a href="directory.html">Find activities</a>
     <a href="events.html" aria-current="page">Events</a>
     <a href="my-hub.html">My Hub</a>
     <a href="help-support.html">Support &amp; Guidance</a>
     <a href="leader.html">Class Leaders</a>
     <a href="account.html">My Account</a>
-  </nav></header>
-<main class="app-shell">
-  <div class="directory-layout bh-events-directory-layout"><aside class="bh-events-filter-sidebar"><h2>Find family events</h2><p>Choose filters to discover events near you.</p><div id="eventFilterHost"></div></aside><div class="directory-results-column bh-events-main"><section class="directory-results-heading bh-events-hero">
-    <div>
-      <span class="bh-directory-eyebrow">Explore together · Events</span>
-      <h1>Discover family events</h1>
-      <p>Find something wonderful for your family across Devon &amp; Cornwall — from local activities to special Bubba Hub events.</p>
+  </nav></header><main class="app-shell">
+<div class="directory-layout">
+  <aside class="directory-hero-search" aria-label="Find family events">
+    <h2>Find family events</h2>
+    <div class="directory-hero-search-fields" style="display:flex;flex-direction:column">
+      <label><span>◷</span><select id="eventDay" aria-label="Day"><option value="">Any day</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="7">Sunday</option></select></label>
+      <label><span>⌖</span><select id="eventTown" aria-label="Town"><option value="">All towns</option></select></label>
+      <label><span>♟</span><select id="eventCategory" aria-label="Category"><option value="">All categories</option></select></label>
     </div>
-    <a class="button button-primary" href="directory.html">Find activities</a>
-  </section>
-
-<section class="bh-events-expo-card" aria-label="Bubba and Me Expo"><div class="bh-events-expo-art"><span>9 JAN<br>2027</span></div><div class="bh-events-expo-info"><span class="eyebrow">Bubba Hub event</span><h2>Bubba &amp; Me — Baby &amp; Pregnancy Expo</h2><p>Saturday 9 January 2027 · 10:30am–2:30pm</p><p>Acorn Centre, Torquay · Free entry</p><a class="button button-primary" href="/expo.html">View event and ticket information →</a><a class="button button-soft" href="/expo-exhibitors.html">Apply as an exhibitor</a></div></section>
-<section class="section events-page-section bh-events-results">
-    <div class="events-toolbar" id="eventFilterControls">
-      <label>Day
-        <select id="eventDay">
-          <option value="">Any day</option>
-          <option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option>
-          <option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="7">Sunday</option>
-        </select>
-      </label>
-      <label>Town
-        <select id="eventTown"><option value="">All towns</option></select>
-      </label>
-      <label>Category
-        <select id="eventCategory"><option value="">All categories</option></select>
-      </label>
-    </div>
-    <div class="events-heading">
-      <div><span class="eyebrow">Next 90 days</span><h2 id="eventsTitle">Upcoming</h2></div>
-      <span class="status" id="eventsCount"></span>
-    </div>
-    <div id="eventsList" class="events-grid" aria-live="polite"><div class="listing-loading"><p>Loading events…</p></div></div>
-  </section>
-</div></div></main>
-<footer class="site-footer"><div class="site-footer-grid"><div class="site-footer-brand"><a href="index.html" class="site-footer-logo" aria-label="Bubba Hub home"><img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><div class="site-footer-brand-copy"><a href="index.html" class="site-footer-title">Bubba Hub</a><p>Find, plan &amp; book family activities across Devon &amp; Cornwall.</p></div></div><div class="site-footer-column"><h2>Main menu</h2><nav class="site-footer-links" aria-label="Footer main menu"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">Account</a></nav></div><div class="site-footer-column"><h2>Explore &amp; tools</h2><nav class="site-footer-links" aria-label="Footer explore and tools"><a href="events.html">Events</a><a href="venues.html">Venues</a><a href="planner.html">Planner</a><a href="/calendar.html">Calendar</a></nav></div><div class="site-footer-column"><h2>Legal &amp; contact</h2><nav class="site-footer-links" aria-label="Footer legal and contact"><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Conditions</a><a href="mailto:contact@bubbahub.co.uk">Contact Bubba Hub</a></nav></div></div><div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div></footer>
-<script src="assets/js/app.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded",async()=>{const host=document.getElementById("eventFilterHost"),controls=document.getElementById("eventFilterControls");if(host&&controls)host.appendChild(controls);
+  </aside>
+  <div class="directory-results-column">
+    <div class="directory-results-heading"><div class="bh-directory-intro"><span class="bh-directory-eyebrow">Explore together · Events</span><h1>Discover family events</h1><p>Find family-friendly events across Devon &amp; Cornwall.</p></div></div>
+    <div class="bh-directory-view-actions"><a class="bh-directory-action-link" href="directory.html">Find activities →</a></div>
+    <section class="activity-card bh-expo-listing">
+      <div class="bh-expo-date">9 JAN<br>2027</div>
+      <div class="bh-expo-description"><span class="bh-directory-eyebrow">Bubba Hub event</span><h2>Bubba &amp; Me — Baby &amp; Pregnancy Expo</h2><p>Saturday 9 January 2027 · 10:30am–2:30pm</p><p>Acorn Centre, Torquay · Free entry</p><a class="button button-primary" href="/expo.html">View event and ticket information →</a> <a class="button button-soft" href="/expo-exhibitors.html">Apply as an exhibitor</a></div>
+    </section>
+    <section class="directory-events-results" aria-label="Upcoming events"><div class="directory-results-heading"><div class="bh-directory-intro"><span class="bh-directory-eyebrow">Next 90 days</span><h2 id="eventsTitle">Upcoming</h2></div><span id="eventsCount" class="status"></span></div><div id="eventsList" class="activity-grid" aria-live="polite"><p>Loading events…</p></div></section>
+  </div>
+</div>
+</main><footer class="site-footer"><div class="site-footer-grid"><div class="site-footer-brand"><a href="index.html" class="site-footer-logo" aria-label="Bubba Hub home"><img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><div class="site-footer-brand-copy"><a href="index.html" class="site-footer-title">Bubba Hub</a><p>Find, plan &amp; book family activities across Devon &amp; Cornwall.</p></div></div><div class="site-footer-column"><h2>Main menu</h2><nav class="site-footer-links" aria-label="Footer main menu"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">Account</a></nav></div><div class="site-footer-column"><h2>Explore &amp; tools</h2><nav class="site-footer-links" aria-label="Footer explore and tools"><a href="events.html">Events</a><a href="venues.html">Venues</a><a href="planner.html">Planner</a><a href="calendar.html">Calendar</a></nav></div><div class="site-footer-column"><h2>Legal &amp; contact</h2><nav class="site-footer-links" aria-label="Footer legal and contact"><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Conditions</a><a href="mailto:contact@bubbahub.co.uk">Contact Bubba Hub</a></nav></div></div><div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div></footer><script src="/assets/js/app.js"></script><script>
+document.addEventListener("DOMContentLoaded",async()=>{
   const list=document.getElementById("eventsList"),count=document.getElementById("eventsCount");
   const day=document.getElementById("eventDay"),town=document.getElementById("eventTown"),category=document.getElementById("eventCategory");
   const esc=v=>bhEscape(v??"");
@@ -127,5 +119,4 @@ document.addEventListener("DOMContentLoaded",async()=>{const host=document.getEl
   const logout=document.getElementById("siteLogout");
   if(logout)logout.addEventListener("click",async()=>{try{await fetch("api/auth.php?action=logout",{credentials:"same-origin"});}finally{location.href="index.html"}});
 });
-</script>
-<script>(function(){const a=document.getElementById('expoAdultCount'),c=document.getElementById('expoChildCount'),out=document.getElementById('expoTicketSummary');if(!a||!c||!out)return;function update(){const x=Number(a.value),y=Number(c.value),n=x+y;out.textContent=Number.isInteger(x)&&Number.isInteger(y)&&x>=0&&y>=0&&x<=12&&y<=12&&n>=1&&n<=12?n+' free '+(n===1?'place':'places')+' selected':'Choose between 1 and 12 places in total.';}a.addEventListener('input',update);c.addEventListener('input',update);update();})();</script></body></html>
+</script></body></html>
