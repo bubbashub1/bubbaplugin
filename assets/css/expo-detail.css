@@ -23,3 +23,12 @@ body.bh-expo-detail{background:#fbfcf8;color:#174e3b;font-family:Quicksand,Calib
 .bh-expo-detail .expo-schedule-tag{display:inline-block;border-radius:18px;background:#e3f1e8;padding:5px 10px;font-size:.73rem;font-weight:800;color:#18563f}
 .bh-expo-detail .expo-schedule-pending{background:#fff0d7;color:#815514}
 @media(max-width:650px){.bh-expo-detail .expo-schedule-item{grid-template-columns:1fr;gap:8px;padding:18px 0}.bh-expo-detail .expo-schedule-time{font-size:1rem}}
+
+/* Family booking preview: no data is submitted until bookings are explicitly enabled. */
+.bh-expo-detail .expo-visitor-preview{margin:18px 0;padding:18px;border:1px solid #dcebdc;background:#f8fcf9;border-radius:16px}
+.bh-expo-detail .expo-visitor-preview h3{margin:0 0 7px;font-size:1.05rem}
+.bh-expo-detail .expo-visitor-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:15px}
+.bh-expo-detail .expo-visitor-fields label{display:grid;gap:7px;font-weight:700;font-size:.9rem}
+.bh-expo-detail .expo-visitor-fields input{min-width:0;width:100%;box-sizing:border-box;border:1px solid #c6d9cd;border-radius:11px;padding:12px;background:white;font:inherit}
+.bh-expo-detail .expo-visitor-consent{display:flex;align-items:flex-start;gap:9px;margin-top:15px;font-size:.9rem}
+@media(max-width:600px){.bh-expo-detail .expo-visitor-fields{grid-template-columns:1fr}}
