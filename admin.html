@@ -12,6 +12,18 @@
 <main class="app-shell">
 <div class="page-heading"><div><span class="eyebrow">Bubba Hub control centre</span><h1>Admin dashboard</h1><p>Manage the directory without leaving your family account signed in.</p></div><div class="hero-actions"><a class="button button-soft" href="/my-hub.html">My Bubba Hub</a><button class="button button-primary" id="newActivity">+ Add activity</button><button class="button button-soft" id="adminLogout" type="button">Sign out of admin</button></div></div>
 <div id="adminContent" hidden>
+<section class="admin-panel" id="developmentTracker" aria-labelledby="developmentTrackerHeading">
+<div class="admin-panel-head"><div><span class="eyebrow">One place for your work</span><h2 id="developmentTrackerHeading">Development tracker</h2><p>Pick one task at a time. Statuses are your own notes on this device, not automatic GitHub or deployment results.</p></div></div>
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:end">
+<label>Show tasks <select id="developmentFilter"><option value="all">All tasks</option><option value="next">Needs attention</option><option value="testing">Ready to test</option><option value="done">Completed</option></select></label>
+<button class="button button-soft" id="developmentExport" type="button">Export my checklist</button></div>
+<div style="overflow-x:auto;margin-top:16px"><table style="width:100%;border-collapse:collapse;min-width:680px"><thead><tr><th scope="col">Feature / idea</th><th scope="col">Area</th><th scope="col">Progress</th><th scope="col">Next action</th><th scope="col">Open</th></tr></thead><tbody id="developmentTaskList"></tbody></table></div>
+<form id="developmentAddForm" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;align-items:end"><label>New idea <input id="developmentNewTitle" required maxlength="120" placeholder="e.g. School holiday alerts"></label><label>Next action <input id="developmentNewAction" maxlength="240" placeholder="What needs doing?"></label><button class="button button-primary" type="submit">+ Add idea</button></form>
+<p class="library-message">Ideas added here are saved on this device. To include them in the shared GitHub tracker, export the checklist and send it to me.</p>
+<p class="library-message" role="status" id="developmentTrackerStatus"></p>
+</section>
+<script src="/assets/js/admin-development-tracker.js" defer></script>
+
 <section class="admin-panel deployment-panel"><div class="admin-panel-head"><div><span class="eyebrow">Deployment</span><h2>Publish latest version</h2><p>Deploy the current GitHub <strong>main</strong> branch to the standalone site.</p></div><button class="button button-primary" id="deployLatest">Deploy latest version</button></div><p class="deployment-note" id="deployStatus">Secure server-side deployment. Your GitHub credentials are never sent to the browser.</p></section>
 <section class="admin-panel" id="testUsersPanel">
 <div class="admin-panel-head"><div><span class="eyebrow">Testing</span><h2>Test accounts</h2><p>Create safe dummy family and class leader accounts so you can test the full login and portal flows. Test accounts use dedicated <strong>test+…@bubbahub.co.uk</strong> addresses.</p></div><div class="test-user-buttons"><button class="button button-primary" id="createTestFamily" type="button">+ Create test family</button><button class="button button-soft" id="createTestLeader" type="button">+ Create test leader</button></div></div>
