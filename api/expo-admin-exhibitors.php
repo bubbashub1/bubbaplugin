@@ -56,6 +56,10 @@ try{
  foreach([$website,$logo] as $url){if($url!==''&&(!filter_var($url,FILTER_VALIDATE_URL)||!preg_match('~^https://~i',$url)))reply(422,['ok'=>false,'error'=>'invalid_url']);}
  // Lock the canonical table row to serialize competing approvals for the same table.
  $db->beginTransaction();
+ $prior=$db->prepare("SELECT assigned_table FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027' FOR UPDATE");
+ $prior->execute([$id]);
+ $priorTable=$prior->fetchColumn();
+ if($priorTable===false){$db->rollBack();reply(404,['ok'=>false,'error'=>'not_found']);}
  if($assigned!==null && $status==='approved'){
   $table=$db->prepare("SELECT id,status,exhibitor_id FROM bh_expo_tables WHERE event_key='bubba-me-2027' AND table_number=? FOR UPDATE");
   $table->execute([$assigned]);
