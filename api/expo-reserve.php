@@ -33,6 +33,18 @@ if(strlen($name)<2||strlen($name)>150||!filter_var($email,FILTER_VALIDATE_EMAIL)
  || !is_int($adult)||!is_int($child)||$adult<1||$child<0||($adult+$child)<1||($adult+$child)>12||$consent!==true){
  expoBookingReply(422,['ok'=>false,'error'=>'invalid_booking_details']);
 }
+// Expo security requires Turnstile even if account registration has it disabled.
+require_once __DIR__.'/turnstile-settings.php';
+$site=trim(bh_turnstile_setting('BUBBAHUB_TURNSTILE_SITE_KEY'));
+$secret=trim(bh_turnstile_setting('BUBBAHUB_TURNSTILE_SECRET_KEY'));
+if($site==='' || $secret==='')expoBookingReply(503,['ok'=>false,'error'=>'security_not_configured']);
+$token=(string)($data['turnstile_token']??'');
+if($token==='' || strlen($token)>2048)expoBookingReply(422,['ok'=>false,'error'=>'security_check_required']);
+$payload=http_build_query(['secret'=>$secret,'response'=>$token,'remoteip'=>$_SERVER['REMOTE_ADDR']??'']);
+$context=stream_context_create(['http'=>['method'=>'POST','header'=>"Content-Type: application/x-www-form-urlencoded\r\n",'content'=>$payload,'timeout'=>8,'ignore_errors'=>true]]);
+$response=@file_get_contents('https://challenges.cloudflare.com/turnstile/v0/siteverify',false,$context);
+$verified=$response===false?null:json_decode($response,true);
+if(!is_array($verified)||empty($verified['success'])||strtolower((string)($verified['hostname']??''))!=='staging.bubbahub.co.uk')expoBookingReply(403,['ok'=>false,'error'=>'security_check_failed']);
 try {
  require __DIR__.'/db.php';
  $db=bh_mysql();
