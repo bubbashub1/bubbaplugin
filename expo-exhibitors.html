@@ -50,6 +50,7 @@
 <label style="display:block;margin-top:16px"><input type="checkbox" name="contact_consent" required> I agree to be contacted about this exhibitor application. *</label>
 <p><strong>Event conditions:</strong> Bubba Hub may cancel the event if exhibitor interest is insufficient. If cancelled, confirmed exhibitors will receive a full refund of any payments made. Visitor numbers cannot be guaranteed. The Expo also provides opportunities to network and collaborate with local businesses and family services.</p>
 <label style="display:block;margin-top:12px"><input type="checkbox" name="conditions_accepted" required> I have read and accept the event conditions above. *</label>
+<label style="display:block;margin-top:12px"><input type="checkbox" name="visitor_numbers_acknowledged" required> I understand that visitor numbers and footfall at the Expo cannot be guaranteed. *</label>
 <p>All applications are reviewed by Bubba Hub. Submitting an application does not reserve a table or confirm participation. No donation is required.</p>
 <button class="button button-primary" type="submit" id="expoSubmit" disabled>Applications opening soon</button><p id="expoSubmitStatus" role="status" aria-live="polite"></p>
 
@@ -63,21 +64,23 @@
  button.textContent='Submit exhibitor application';
  form.onsubmit=async function(event){
   event.preventDefault();
-  if(!csrfToken||!form.reportValidity())return;
+  if(!csrfToken)return;
+  if(!form.reportValidity())return;
   const data=new FormData(form),body={};
   for(const [key,value] of data.entries()){
    if(key==='participation'){(body.participation??=[]).push(value);continue;}
    body[key]=value;
   }
-  for(const key of ['contact_consent','conditions_accepted','insurance_confirm'])body[key]=data.has(key)?'yes':'no';
+  for(const key of ['contact_consent','conditions_accepted','insurance_confirm','visitor_numbers_acknowledged'])body[key]=data.has(key)?'yes':'no';
   button.disabled=true;status.textContent='Submitting your application…';
   try{
    const response=await fetch('/api/expo-exhibitors.php',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':csrfToken},body:JSON.stringify(body),credentials:'same-origin'});
    const result=await response.json();
    if(!response.ok||!result.ok)throw new Error(result.error||'submission_failed');
    status.textContent='Application received. Reference #'+result.application_id+'. Your application is pending review.';
+   status.scrollIntoView({behavior:'smooth',block:'center'});
    form.reset();
-  }catch(error){status.textContent='Your application could not be submitted. Please try again later.';}
+  }catch(error){status.textContent='Your application could not be submitted. Please try again later.';status.scrollIntoView({behavior:'smooth',block:'center'});}
   finally{button.disabled=!csrfToken;}
  };
 })();
