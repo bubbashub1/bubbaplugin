@@ -31,7 +31,7 @@ if ((int)($_SERVER['CONTENT_LENGTH']??0)>20000) expo_reply(413,['ok'=>false,'err
 $body=json_decode((string)file_get_contents('php://input'),true);
 if(!is_array($body))expo_reply(400,['ok'=>false,'error'=>'invalid_json']);
 $val=static fn(string $key,int $max=2000):string=>mb_substr(trim((string)($body[$key]??'')),0,$max);
-if($val('contact_consent')!=='yes'||$val('conditions_accepted')!=='yes'||$val('insurance_confirm')!=='yes')expo_reply(422,['ok'=>false,'error'=>'consent_required']);
+if($val('contact_consent')!=='yes'||$val('conditions_accepted')!=='yes'||$val('insurance_confirm')!=='yes'||$val('visitor_numbers_acknowledged')!=='yes')expo_reply(422,['ok'=>false,'error'=>'consent_required']);
 $name=$val('business_name',150);$contact=$val('contact_name',120);$email=strtolower($val('email',190));$phone=$val('phone',30);$description=$val('description',2000);
 if(!$name||!$contact||!filter_var($email,FILTER_VALIDATE_EMAIL)||!$phone)expo_reply(422,['ok'=>false,'error'=>'required_fields']);
 $table=filter_var($body['preferred_table']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1,'max_range'=>26]]);
