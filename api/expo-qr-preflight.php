@@ -61,7 +61,7 @@ try {
         );
         $writer=new \\Endroid\\QrCode\\Writer\\PngWriter();
         $png=$writer->write($qr)->getString();
-        $checks['qr_png_render_test']=substr($png,0,8)==="\\x89PNG\\r\\n\\x1a\\n";
+        $checks['qr_png_render_test']=substr($png,0,8)==="\x89PNG\r\n\x1a\n";
     }
 } catch (Throwable $e) {
     $errorClass=get_class($e);
