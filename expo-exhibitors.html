@@ -50,7 +50,35 @@
 <label style="display:block;margin-top:16px"><input type="checkbox" name="contact_consent" required> I agree to be contacted about this exhibitor application. *</label>
 <p><strong>Event conditions:</strong> Bubba Hub may cancel the event if exhibitor interest is insufficient. If cancelled, confirmed exhibitors will receive a full refund of any payments made. Visitor numbers cannot be guaranteed. The Expo also provides opportunities to network and collaborate with local businesses and family services.</p>
 <label style="display:block;margin-top:12px"><input type="checkbox" name="conditions_accepted" required> I have read and accept the event conditions above. *</label>
-<p>Applications with a complete, relevant description may be automatically approved once booking opens. Other applications will be reviewed by Bubba Hub. Approval depends on available space. No donation is required.</p>
-<button class="button button-primary" type="button" disabled>Applications opening soon</button>
+<p>All applications are reviewed by Bubba Hub. Submitting an application does not reserve a table or confirm participation. No donation is required.</p>
+<button class="button button-primary" type="submit" id="expoSubmit" disabled>Applications opening soon</button><p id="expoSubmitStatus" role="status" aria-live="polite"></p>
 
-</form></section></main><script>(function(){const grid=document.getElementById('expoTableGrid'),selected=document.getElementById('expoPreferredTable'),status=document.getElementById('expoTableSelection');if(!grid||!selected||!status)return;for(let i=1;i<=26;i++){const b=document.createElement('button');b.type='button';b.textContent='Table '+i;b.setAttribute('aria-pressed','false');b.style.cssText='border:2px solid #86bca2;border-radius:12px;padding:12px 3px;background:#e1f4e7;color:#194e38;cursor:pointer;font:inherit;font-size:.9rem';b.addEventListener('click',()=>{selected.value=String(i);status.textContent='Preferred table: '+i+' (not reserved)';for(const item of grid.children){const active=item===b;item.setAttribute('aria-pressed',active?'true':'false');item.style.background=active?'#ffbb79':'#e1f4e7';item.style.borderColor=active?'#cb772c':'#86bca2';}});grid.appendChild(b);}})();</script></body></html>
+</form></section></main><script>(function(){const grid=document.getElementById('expoTableGrid'),selected=document.getElementById('expoPreferredTable'),status=document.getElementById('expoTableSelection');if(!grid||!selected||!status)return;for(let i=1;i<=26;i++){const b=document.createElement('button');b.type='button';b.textContent='Table '+i;b.setAttribute('aria-pressed','false');b.style.cssText='border:2px solid #86bca2;border-radius:12px;padding:12px 3px;background:#e1f4e7;color:#194e38;cursor:pointer;font:inherit;font-size:.9rem';b.addEventListener('click',()=>{selected.value=String(i);status.textContent='Preferred table: '+i+' (not reserved)';for(const item of grid.children){const active=item===b;item.setAttribute('aria-pressed',active?'true':'false');item.style.background=active?'#ffbb79':'#e1f4e7';item.style.borderColor=active?'#cb772c':'#86bca2';}});grid.appendChild(b);}})();</script><script>
+/* Disabled by default until the staging integration is explicitly enabled. */
+(function(){
+ const form=document.getElementById('exhibitorForm'),button=document.getElementById('expoSubmit'),status=document.getElementById('expoSubmitStatus');
+ if(!form||!button||!status)return;
+ const enabled=false;
+ if(!enabled)return;
+ button.disabled=false;button.textContent='Submit exhibitor application';
+ form.onsubmit=async function(event){
+  event.preventDefault();
+  if(!form.reportValidity())return;
+  const data=new FormData(form),body={};
+  for(const [key,value] of data.entries()){
+   if(key==='participation'){(body.participation??=[]).push(value);continue;}
+   body[key]=value;
+  }
+  for(const key of ['contact_consent','conditions_accepted','insurance_confirm'])body[key]=data.has(key)?'yes':'no';
+  button.disabled=true;status.textContent='Submitting your application…';
+  try{
+   const response=await fetch('/api/expo-exhibitors.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),credentials:'same-origin'});
+   const result=await response.json();
+   if(!response.ok||!result.ok)throw new Error(result.error||'submission_failed');
+   status.textContent='Application received. Reference #'+result.application_id+'. Your application is pending review.';
+   form.reset();
+  }catch(error){status.textContent='Your application could not be submitted. Please try again later.';}
+  finally{button.disabled=false;}
+ };
+})();
+</script></body></html>
