@@ -19,7 +19,10 @@ if(!in_array($method,['GET','POST'],true)){header('Allow: GET, POST');reply(405,
 if($method==='POST'){
  $origin=(string)($_SERVER['HTTP_ORIGIN']??'');
  $host=explode(':',(string)($_SERVER['HTTP_HOST']??''))[0];
- if($origin!=='' && strcasecmp((string)parse_url($origin,PHP_URL_HOST),$host)!==0)reply(403,['ok'=>false,'error'=>'invalid_origin']);
+ $referer=(string)($_SERVER['HTTP_REFERER']??'');
+ $sameOrigin=$origin!=='' && parse_url($origin,PHP_URL_SCHEME)==='https' && strcasecmp((string)parse_url($origin,PHP_URL_HOST),$host)===0;
+ $sameReferer=$origin==='' && $referer!=='' && parse_url($referer,PHP_URL_SCHEME)==='https' && strcasecmp((string)parse_url($referer,PHP_URL_HOST),$host)===0;
+ if(!$sameOrigin && !$sameReferer)reply(403,['ok'=>false,'error'=>'invalid_origin']);
  $token=(string)($_SERVER['HTTP_X_CSRF_TOKEN']??'');
  if(empty($_SESSION['bh_expo_csrf'])||!hash_equals($_SESSION['bh_expo_csrf'],$token))reply(403,['ok'=>false,'error'=>'invalid_csrf']);
 }
@@ -49,4 +52,4 @@ try{
   if(!$check->fetchColumn())reply(404,['ok'=>false,'error'=>'not_found']);
  }
  reply(200,['ok'=>true,'id'=>$id,'application_status'=>$status,'public_visible'=>$visible]);
-}catch(Throwable $e){error_log('Expo admin exhibitor API: '.$e->getMessage());reply(503,['ok'=>false,'error'=>'temporarily_unavailable']);}
+}catch(Throwable $e){error_log('Expo admin exhibitor API failure: '.get_class($e));reply(503,['ok'=>false,'error'=>'temporarily_unavailable']);}
