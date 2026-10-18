@@ -49,11 +49,20 @@ try{
  $visible=$input['public_visible']??null;
  if(!$id||!in_array($status,['pending','approved','rejected','cancelled'],true)||!in_array($visible,[0,1],true))reply(422,['ok'=>false,'error'=>'invalid_update']);
  if($status!=='approved' && $visible===1)reply(422,['ok'=>false,'error'=>'approval_required_for_publication']);
+ $assigned=isset($input['assigned_table'])&&$input['assigned_table']!==''?filter_var($input['assigned_table'],FILTER_VALIDATE_INT,['options'=>['min_range'=>1,'max_range'=>26]]):null;
+ if(isset($input['assigned_table'])&&$input['assigned_table']!==''&&!$assigned)reply(422,['ok'=>false,'error'=>'invalid_assigned_table']);
  $name=trim((string)($input['business_name']??''));$description=trim((string)($input['description']??''));$website=trim((string)($input['website_url']??''));$logo=trim((string)($input['logo_url']??''));
  if(mb_strlen($name)<1||mb_strlen($name)>150||mb_strlen($description)>2000)reply(422,['ok'=>false,'error'=>'invalid_exhibitor_details']);
  foreach([$website,$logo] as $url){if($url!==''&&(!filter_var($url,FILTER_VALIDATE_URL)||!preg_match('~^https://~i',$url)))reply(422,['ok'=>false,'error'=>'invalid_url']);}
- $stmt=$db->prepare("UPDATE bh_expo_exhibitors SET application_status=?,public_visible=?,business_name=?,description=?,website_url=?,logo_url=?,reviewed_at=NOW() WHERE id=? AND event_key='bubba-me-2027'");
- $stmt->execute([$status,$visible,$name,$description,$website?:null,$logo?:null,$id]);
+ $db->beginTransaction();
+ if($assigned!==null){
+  $check=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE event_key='bubba-me-2027' AND assigned_table=? AND application_status='approved' AND id<>? LIMIT 1 FOR UPDATE");
+  $check->execute([$assigned,$id]);
+  if($check->fetchColumn()){ $db->rollBack();reply(409,['ok'=>false,'error'=>'table_already_assigned']); }
+ }
+ $stmt=$db->prepare("UPDATE bh_expo_exhibitors SET application_status=?,public_visible=?,business_name=?,description=?,website_url=?,logo_url=?,assigned_table=?,reviewed_at=NOW() WHERE id=? AND event_key='bubba-me-2027'");
+ $stmt->execute([$status,$visible,$name,$description,$website?:null,$logo?:null,$assigned,$id]);
+ $db->commit();
  if($stmt->rowCount()===0){
   $check=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027'");$check->execute([$id]);
   if(!$check->fetchColumn())reply(404,['ok'=>false,'error'=>'not_found']);
