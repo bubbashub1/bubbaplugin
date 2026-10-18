@@ -66,7 +66,7 @@ $preferred=filter_var($body['preferred_table']??null,FILTER_VALIDATE_INT,['optio
 if (!$preferred) expoResponse(422,['ok'=>false,'error'=>'table_required']);
 $policy=$get('insurance_policy',120);$expiry=$get('insurance_expiry',20);
 $date=DateTimeImmutable::createFromFormat('!Y-m-d',$expiry);
-if (!$policy||!$date||$date->format('Y-m-d')!==$expiry)
+if (!$policy||!$date||$date->format('Y-m-d')!==$expiry||$date < new DateTimeImmutable('today'))
  expoResponse(422,['ok'=>false,'error'=>'insurance_required']);
 $website=$get('website',500);$logo=$get('logo_url',500);
 foreach ([$website,$logo] as $url) {
@@ -85,7 +85,12 @@ try {
  $participation=$body['participation']??[];
  if (!is_array($participation)) $participation=[];
  $participation=array_values(array_intersect($participation,['exhibitor_stall','taster_session','talk_qa','sponsor']));
- $stmt->execute([$name,$contact,$email,$phone,$website?:null,$logo?:null,$description,json_encode($participation),$preferred,$donation,$policy,$expiry,$get('requirements',1500)]);
+ $extra=[];
+ foreach (['town','service_category','oversize','oversize_details','electricity','chair','goody_bag','payment_preference','invoice_requested','notes'] as $key) {
+  $extra[$key]=$get($key,500);
+ }
+ $details=json_encode(['participation'=>$participation,'additional_application_details'=>$extra],JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);
+ $stmt->execute([$name,$contact,$email,$phone,$website?:null,$logo?:null,$description,$details,$preferred,$donation,$policy,$expiry,$get('requirements',1500)]);
  $id=(int)$db->lastInsertId();
  $_SESSION['expo_apply_last']=time();
  unset($_SESSION['expo_apply_csrf']);
