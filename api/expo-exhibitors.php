@@ -56,6 +56,9 @@ $verifyContext=stream_context_create(['http'=>['method'=>'POST','header'=>"Conte
 $verifyResult=@file_get_contents('https://challenges.cloudflare.com/turnstile/v0/siteverify',false,$verifyContext);
 $verifyData=is_string($verifyResult)?json_decode($verifyResult,true):null;
 if (!is_array($verifyData)||($verifyData['success']??false)!==true) expoResponse(403,['ok'=>false,'error'=>'verification_failed']);
+$verifiedHostname = strtolower((string)($verifyData['hostname']??''));
+if ($verifiedHostname==='' || !hash_equals($host,$verifiedHostname))
+ expoResponse(403,['ok'=>false,'error'=>'verification_hostname_mismatch']);
 $get=static fn(string $key,int $max=2000):string=>mb_substr(trim((string)(is_scalar($body[$key]??null)?$body[$key]:'')),0,$max);
 if ($get('contact_consent')!=='yes'||$get('conditions_accepted')!=='yes'||$get('insurance_confirm')!=='yes'||$get('visitor_numbers_acknowledged')!=='yes')
  expoResponse(422,['ok'=>false,'error'=>'consent_required']);
