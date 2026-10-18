@@ -52,3 +52,28 @@
 .bh-events-directory .bh-events-expo-info p{margin:6px 0;font-size:.93rem}
 .bh-events-directory .bh-events-expo-info .button{margin:10px 7px 0 0}
 @media(max-width:800px){.bh-events-directory .bh-events-directory-layout{grid-template-columns:1fr}.bh-events-directory .bh-events-filter-sidebar{position:static}.bh-events-directory .bh-events-expo-card{grid-template-columns:1fr}.bh-events-directory .bh-events-expo-art{min-height:110px}.bh-events-directory .bh-events-expo-info{padding:16px}}
+
+/* Strong layout containment: directory-v2 and subpage styles can otherwise
+   make page-heading and section span the viewport or shrink to content. */
+body.bh-events-directory{overflow-x:hidden}
+body.bh-events-directory main.app-shell{display:block;width:100%;max-width:1320px;min-width:0;margin:0 auto;padding:16px 20px;box-sizing:border-box}
+body.bh-events-directory main.app-shell>.bh-events-directory-layout{display:grid;grid-template-columns:minmax(220px,260px) minmax(0,1fr);column-gap:20px;width:100%;max-width:100%;align-items:start}
+body.bh-events-directory .bh-events-directory-layout>.bh-events-main{display:block;width:100%;min-width:0;max-width:100%;grid-column:2;overflow-wrap:anywhere}
+body.bh-events-directory .bh-events-directory-layout>.bh-events-filter-sidebar{grid-column:1;width:auto;min-width:0;max-width:100%;box-sizing:border-box}
+body.bh-events-directory .bh-events-main>.bh-events-hero{display:block;position:static;width:100%;max-width:100%;min-width:0;box-sizing:border-box;padding:18px 0 24px;margin:0 0 18px;background:transparent;transform:none;overflow:visible}
+body.bh-events-directory .bh-events-main>.bh-events-hero>div{width:100%;max-width:100%;min-width:0}
+body.bh-events-directory .bh-events-main>.bh-events-hero h1{max-width:100%;margin:8px 0 10px;line-height:1.15;overflow-wrap:normal}
+body.bh-events-directory .bh-events-main>.bh-events-hero p{max-width:760px}
+body.bh-events-directory .bh-events-main>.bh-events-hero>.button{display:inline-flex;position:static;margin:12px 0 0;max-width:100%;white-space:normal}
+body.bh-events-directory .bh-events-main>.bh-events-expo-card{width:100%;max-width:100%;box-sizing:border-box}
+body.bh-events-directory .bh-events-main>.bh-events-results{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+body.bh-events-directory .bh-events-main .events-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%}
+body.bh-events-directory .bh-events-main .events-grid{width:100%;min-width:0}
+body.bh-events-directory .bh-events-main .empty-state{max-width:100%;box-sizing:border-box}
+@media(max-width:800px){
+ body.bh-events-directory main.app-shell{padding:14px}
+ body.bh-events-directory main.app-shell>.bh-events-directory-layout{grid-template-columns:minmax(0,1fr);gap:18px}
+ body.bh-events-directory .bh-events-directory-layout>.bh-events-filter-sidebar,
+ body.bh-events-directory .bh-events-directory-layout>.bh-events-main{grid-column:1}
+ body.bh-events-directory .bh-events-main>.bh-events-hero{padding:10px 0 18px}
+}
