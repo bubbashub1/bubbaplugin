@@ -52,9 +52,9 @@ try {
         $pdo->rollBack();
         bhTestReply(200, ['ok'=>true,'mode'=>'dry_run','ready'=>true,'id'=>999999,'slug'=>$slug,'writes_performed'=>false]);
     }
-    // Minimal test record; default status is used to avoid accidental publication.
-    $insert = $pdo->prepare('INSERT INTO bh_activities (id,title,slug,description,created_at,updated_at) VALUES (?,?,?,?,NOW(),NOW())');
-    $insert->execute([999999,$title,$slug,'Staging-only Google Sheets sync test. Not a real activity.']);
+    // Explicitly draft regardless of the database default; never publish test data.
+    $insert = $pdo->prepare('INSERT INTO bh_activities (id,title,slug,description,status,created_at,updated_at) VALUES (?,?,?,?,?,NOW(),NOW())');
+    $insert->execute([999999,$title,$slug,'Staging-only Google Sheets sync test. Not a real activity.','draft']);
     // Atomic trace record; test row ID is never mapped to a real MASTER SHEET row.
     $trace = $pdo->prepare('INSERT INTO bh_sheet_sync_records (activity_id,sheet_row_id,last_synced_at) VALUES (?,?,NOW())');
     $trace->execute([999999,'staging-test-999999']);
