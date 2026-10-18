@@ -60,25 +60,33 @@ jobs:
           tar -xzf "$archive" -C "$target"
           REMOTE_SCRIPT
 
-      - name: Verify deployed staging files and version
+      - name: Verify staging document root and exact deployed content
+        env:
+          SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
+          SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
         run: |
           set -euo pipefail
-          base="https://staging.bubbahub.co.uk"
-          nonce="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          code=$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time 30 "$base/")
-          echo "Staging homepage HTTP $code"
-          test "$code" = 200
-          # A successful upload is not enough: the actual web document root
-          # must serve the current release. Cache-bust to avoid stale responses.
-          curl -fsSL --max-time 30 -H 'Cache-Control: no-cache' "$base/events.html?deploy_check=$nonce" -o "$RUNNER_TEMP/staging-events.html"
-          if ! grep -Fq 'bh-events-directory-layout' "$RUNNER_TEMP/staging-events.html"; then
-            echo "::error::Staging events.html is outdated: deployment target may not be the staging web document root, or a cache is serving stale HTML."
+          REMOTE="$SSH_USERNAME@$SSH_HOST"
+          SSH=(ssh -p "$SSH_PORT" -i "$RUNNER_TEMP/eweball_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new)
+          expected=$(sha256sum events.html | cut -d' ' -f1)
+          remote=$("${SSH[@]}" "$REMOTE" 'sha256sum "$HOME/staging_html/events.html"' | cut -d' ' -f1)
+          echo "Expected GitHub events.html SHA256: $expected"
+          echo "Uploaded staging_html events.html SHA256: $remote"
+          if [ "$expected" != "$remote" ]; then
+            echo "::error::Staging upload does not match checked-out GitHub events.html"
             exit 1
           fi
-          if ! grep -Fq 'bh-brand-text' "$RUNNER_TEMP/staging-events.html"; then
-            echo "::error::Staging header is outdated: expected repaired text branding."
+          nonce="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_SHA}"
+          curl -fsSL --max-time 30 -H 'Cache-Control: no-cache, no-store' \
+            "https://staging.bubbahub.co.uk/events.html?deploy_check=$nonce" \
+            -o "$RUNNER_TEMP/staging-events.html"
+          served=$(sha256sum "$RUNNER_TEMP/staging-events.html" | cut -d' ' -f1)
+          echo "Public HTTPS events.html SHA256: $served"
+          if [ "$expected" != "$served" ]; then
+            echo "::error::Public staging site is NOT serving the uploaded events.html. Check staging domain document root, rewrite rules, CDN/server caching or a competing deploy."
+            echo "Public page title:"
+            grep -oi '<title>[^<]*' "$RUNNER_TEMP/staging-events.html" | head -1 || true
             exit 1
           fi
-          curl -fsSL --max-time 30 -H 'Cache-Control: no-cache' "$base/assets/css/header-repair.css?deploy_check=$nonce" -o "$RUNNER_TEMP/staging-header.css"
-          grep -Fq '.bh-brand-text' "$RUNNER_TEMP/staging-header.css" || { echo "::error::Staging header stylesheet missing or outdated"; exit 1; }
-          echo "Verified current Events layout, header and stylesheet are served by staging."
+          echo "Staging public page EXACTLY matches GitHub events.html."
