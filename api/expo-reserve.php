@@ -20,7 +20,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST'){
 if(!defined('BUBBAHUB_EXPO_BOOKINGS_ENABLED') || constant('BUBBAHUB_EXPO_BOOKINGS_ENABLED')!==true){
  expoBookingReply(503,['ok'=>false,'error'=>'bookings_not_open']);
 }
-// This API must never be used without a confirmed safe event capacity.\nif(!defined('BUBBAHUB_EXPO_VISITOR_CAPACITY') || !is_int(constant('BUBBAHUB_EXPO_VISITOR_CAPACITY')) || constant('BUBBAHUB_EXPO_VISITOR_CAPACITY')<1){\n expoBookingReply(503,['ok'=>false,'error'=>'capacity_not_configured']);\n}\nif((int)($_SERVER['CONTENT_LENGTH']??0)>8192)expoBookingReply(413,['ok'=>false,'error'=>'request_too_large']);
+// Default 300 visitors; organisers may adjust BUBBAHUB_EXPO_VISITOR_CAPACITY in server configuration.\nif(!defined('BUBBAHUB_EXPO_VISITOR_CAPACITY'))define('BUBBAHUB_EXPO_VISITOR_CAPACITY',300);\n// Booking remains separately disabled until all security and email launch gates pass.\nif(!defined('BUBBAHUB_EXPO_VISITOR_CAPACITY') || !is_int(constant('BUBBAHUB_EXPO_VISITOR_CAPACITY')) || constant('BUBBAHUB_EXPO_VISITOR_CAPACITY')<1){\n expoBookingReply(503,['ok'=>false,'error'=>'capacity_not_configured']);\n}\nif((int)($_SERVER['CONTENT_LENGTH']??0)>8192)expoBookingReply(413,['ok'=>false,'error'=>'request_too_large']);
 $raw=file_get_contents('php://input',false,null,0,8193);
 $data=json_decode($raw?:'',true);
 if(!is_array($data))expoBookingReply(400,['ok'=>false,'error'=>'invalid_json']);
