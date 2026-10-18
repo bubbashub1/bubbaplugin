@@ -19,6 +19,13 @@
 <label style="display:block"><input type="checkbox" name="participation" value="taster_session"> Taster session</label>
 <label style="display:block"><input type="checkbox" name="participation" value="talk_qa"> Talk or live Q&amp;A</label>
 <label style="display:block"><input type="checkbox" name="participation" value="sponsor"> Sponsorship opportunity</label></fieldset>
+<fieldset style="margin-top:18px;border:1px solid #d1e4d4;border-radius:14px;padding:16px"><legend>Choose a preferred exhibitor table</legend>
+<p>Select a table on the provisional 26-table layout. This is a visual preview only; no table is reserved until the live booking system confirms it. The venue floor plan and usable capacity will be verified before launch.</p>
+<div id="expoTableGrid" role="group" aria-label="Preferred exhibitor table" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:10px"></div>
+<p id="expoTableSelection" role="status" aria-live="polite">No preferred table selected.</p>
+<input type="hidden" name="preferred_table" id="expoPreferredTable">
+<p style="font-size:.9rem">Green = available in preview · Orange = selected. Reserved and blocked tables will be shown once booking opens.</p>
+</fieldset>
 <fieldset style="margin-top:18px;border:1px solid #d1e4d4;border-radius:14px;padding:16px"><legend>Stall and facilities</legend>
 <label style="display:block">Will you bring anything that will not fit within a standard 6ft space? Tables are provided. *<select name="oversize" required><option value="">Please select</option><option value="no">No</option><option value="yes">Yes</option></select></label>
 <label style="display:block;margin-top:12px">If yes, please describe your additional space requirements<textarea name="oversize_details" maxlength="1000" rows="2"></textarea></label>
@@ -46,4 +53,4 @@
 <p>Applications with a complete, relevant description may be automatically approved once booking opens. Other applications will be reviewed by Bubba Hub. Approval depends on available space. No donation is required.</p>
 <button class="button button-primary" type="button" disabled>Applications opening soon</button>
 <a class="button button-soft" href="https://forms.gle/va6QyYxjYGBSyabt6" target="_blank" rel="noopener noreferrer">Use existing exhibitor form</a>
-</form></section></main></body></html>
+</form></section></main><script>(function(){const grid=document.getElementById('expoTableGrid'),selected=document.getElementById('expoPreferredTable'),status=document.getElementById('expoTableSelection');if(!grid||!selected||!status)return;for(let i=1;i<=26;i++){const b=document.createElement('button');b.type='button';b.textContent='Table '+i;b.setAttribute('aria-pressed','false');b.style.cssText='border:2px solid #86bca2;border-radius:12px;padding:12px 3px;background:#e1f4e7;color:#194e38;cursor:pointer;font:inherit;font-size:.9rem';b.addEventListener('click',()=>{selected.value=String(i);status.textContent='Preferred table: '+i+' (not reserved)';for(const item of grid.children){const active=item===b;item.setAttribute('aria-pressed',active?'true':'false');item.style.background=active?'#ffbb79':'#e1f4e7';item.style.borderColor=active?'#cb772c':'#86bca2';}});grid.appendChild(b);}})();</script></body></html>
