@@ -3,19 +3,6 @@
   const $=id=>document.getElementById(id);
   let active=false,loaded=false;
   const view=()=>$('directoryEventsView');
-  function showEvents(){
-    active=true;
-    for(const id of ['results','mapView','calendarView','directoryMapHint']){const el=$(id);if(el)el.hidden=true;}
-    if(view())view().hidden=false;
-    $('directoryShowEvents')?.setAttribute('aria-pressed','true');
-    for(const id of ['directoryShowMap','directoryShowList'])$(id)?.setAttribute('aria-pressed','false');
-    if(!loaded)void loadEvents();
-  }
-  function leaveEvents(){
-    active=false;
-    if(view())view().hidden=true;
-    $('directoryShowEvents')?.setAttribute('aria-pressed','false');
-  }
   function card(title,description,href,date,image){
     const card=document.createElement('article');card.className='directory-event-card';
     if(image){const img=document.createElement('img');img.className='event-image';img.loading='lazy';img.alt='';img.src=image;card.append(img);}
@@ -56,14 +43,8 @@
   }
   function init(){
     const button=$('directoryShowEvents');if(!button)return;
-    button.addEventListener('click',showEvents);
-    for(const id of ['directoryShowList','directoryShowMap']){
-      $(id)?.addEventListener('click',leaveEvents);
-    }
-    // Directory's existing render can run after filters change; preserve the selected Events view.
-    const observer=new MutationObserver(()=>{if(!active)return;for(const id of ['results','mapView','calendarView','directoryMapHint']){const el=$(id);if(el&&!el.hidden)el.hidden=true;}});
-    const target=$('results');if(target)observer.observe(target,{attributes:true,attributeFilter:['hidden']});
-    if(new URLSearchParams(location.search).get('view')==='events')showEvents();
+    button.addEventListener('click',()=>{if(!loaded)void loadEvents();});
+    if(new URLSearchParams(location.search).get('view')==='events')void loadEvents();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
