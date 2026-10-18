@@ -57,7 +57,7 @@ try{
  // Lock the canonical table row to serialize competing approvals for the same table.
  $db->beginTransaction();
  if($assigned!==null && $status==='approved'){
-  $table=$db->prepare("SELECT id,status FROM bh_expo_tables WHERE event_key='bubba-me-2027' AND table_number=? FOR UPDATE");
+  $table=$db->prepare("SELECT id,status,exhibitor_id FROM bh_expo_tables WHERE event_key='bubba-me-2027' AND table_number=? FOR UPDATE");
   $table->execute([$assigned]);
   $tableRow=$table->fetch(PDO::FETCH_ASSOC);
   if(!$tableRow || $tableRow['status']==='blocked'){
