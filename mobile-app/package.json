@@ -1,0 +1,16 @@
+{
+  "name": "bubba-hub-mobile",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "sync:android": "npx cap sync android",
+    "open:android": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/android": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0"
+  }
+}
