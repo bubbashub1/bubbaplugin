@@ -18,7 +18,22 @@ function bh_expo_check_in_adult_ticket(PDO $db,string $token): array {
             FOR UPDATE");
         $q->execute([$token]);
         $ticket=$q->fetch(PDO::FETCH_ASSOC);
-        if(!$ticket || $ticket['event_key']!=='bubba-me-2027' || $ticket['booking_status']!=='confirmed'){
+        if(!$ticket){
+            // Booking-level family QR: token is stored only as a SHA-256 hash.
+            $q=$db->prepare("SELECT r.id FROM bh_expo_booking_qrs q
+                INNER JOIN bh_expo_reservations r ON r.id=q.reservation_id
+                WHERE q.token_hash=? AND r.event_key='bubba-me-2027'
+                AND r.booking_status='confirmed' LIMIT 1 FOR UPDATE");
+            $q->execute([hash('sha256',$token)]);
+            $booking=$q->fetch(PDO::FETCH_ASSOC);
+            if(!$booking){$db->rollBack();return ['ok'=>false,'error'=>'ticket_not_valid'];}
+            $q=$db->prepare('INSERT IGNORE INTO bh_expo_family_qr_checkins (reservation_id,checked_in_at) VALUES (?,UTC_TIMESTAMP())');
+            $q->execute([(int)$booking['id']]);
+            if($q->rowCount()!==1){$db->rollBack();return ['ok'=>false,'error'=>'already_checked_in'];}
+            $db->commit();
+            return ['ok'=>true,'status'=>'family_checked_in'];
+        }
+        if($ticket['event_key']!=='bubba-me-2027' || $ticket['booking_status']!=='confirmed'){
             $db->rollBack();
             return ['ok'=>false,'error'=>'ticket_not_valid'];
         }
