@@ -63,7 +63,7 @@ try {
  (event_key,business_name,contact_name,contact_email,contact_phone,website_url,logo_url,description,
  participation_json,preferred_table,donation_interest,application_status,public_visible,
  insurance_policy,insurance_expiry,requirements,submitted_at)
- VALUES ('bubba-me-2027',?,?,?,?,?,?,?,?,?,? ,?,'pending',0,?,?,?,NOW())");
+ VALUES ('bubba-me-2027',?,?,?,?,?,?,?,?,?,?,'pending',0,?,?,?,NOW())");
  $stmt->execute([$name,$contact,$email,$phone,$website?:null,$logo?:null,$description,
   $participationJson,$table,$donation,$policy,$expiry,$requirements?:null]);
  $id=(int)$db->lastInsertId();$db->commit();
