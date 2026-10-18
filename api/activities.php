@@ -62,7 +62,22 @@ try {
     foreach (['booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome','what_to_bring','good_to_know'] as $infoColumn) {
         $infoSelect .= ($infoColumns[$infoColumn] ?? false) ? ", a.$infoColumn" : ", NULL AS $infoColumn";
     }
+    // Optional event-only mode. Fail closed if the post_type column is absent:
+    // never show ordinary activity listings on the Events page.
+    $requestedPostType = strtolower(trim((string)($_GET['post_type'] ?? '')));
+    $postTypeColumn = (bool)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='post_type'")->fetchColumn();
+    $postTypeSelect = $postTypeColumn ? 'a.post_type' : 'NULL AS post_type';
+    if ($requestedPostType !== '' && $requestedPostType !== 'events') {
+        http_response_code(422);
+        echo json_encode(['ok'=>false,'error'=>'unsupported_post_type']);
+        exit;
+    }
+    if ($requestedPostType === 'events' && !$postTypeColumn) {
+        echo json_encode(['ok'=>true,'data'=>[],'pagination'=>['page'=>1,'per_page'=>$perPage,'total'=>0,'total_pages'=>0]],JSON_UNESCAPED_SLASHES);
+        exit;
+    }
     $where = ["LOWER(TRIM(COALESCE(a.status, ''))) IN ('published', 'publish')"];
+    if ($requestedPostType === 'events') $where[] = "LOWER(TRIM(COALESCE(a.post_type, ''))) = 'events'";
     $params = [];
 
     if ($slug !== '') {
@@ -139,6 +154,7 @@ try {
             a.slug,
             a.description,
             a.category,
+            $postTypeSelect,
             a.age_range,
             $accessibilitySelect,
             $countySelect,

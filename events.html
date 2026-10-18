@@ -55,7 +55,7 @@
       <div><span class="eyebrow">Next 90 days</span><h2 id="eventsTitle">Upcoming</h2></div>
       <span class="status" id="eventsCount"></span>
     </div>
-    <div id="eventsList" class="events-grid" aria-live="polite"><div class="listing-loading"><p>Loading sessions…</p></div></div>
+    <div id="eventsList" class="events-grid" aria-live="polite"><div class="listing-loading"><p>Loading events…</p></div></div>
   </section>
 </main>
 <footer class="site-footer"><div class="site-footer-grid"><div class="site-footer-brand"><a href="index.html" class="site-footer-logo" aria-label="Bubba Hub home"><img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><div class="site-footer-brand-copy"><a href="index.html" class="site-footer-title">Bubba Hub</a><p>Find, plan &amp; book family activities across Devon &amp; Cornwall.</p></div></div><div class="site-footer-column"><h2>Main menu</h2><nav class="site-footer-links" aria-label="Footer main menu"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">Account</a></nav></div><div class="site-footer-column"><h2>Explore &amp; tools</h2><nav class="site-footer-links" aria-label="Footer explore and tools"><a href="events.html">Events</a><a href="venues.html">Venues</a><a href="planner.html">Planner</a><a href="/calendar.html">Calendar</a></nav></div><div class="site-footer-column"><h2>Legal &amp; contact</h2><nav class="site-footer-links" aria-label="Footer legal and contact"><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Conditions</a><a href="mailto:contact@bubbahub.co.uk">Contact Bubba Hub</a></nav></div></div><div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div></footer>
@@ -81,7 +81,17 @@ document.addEventListener("DOMContentLoaded",async()=>{
     return d;
   };
   try{
-    const activities=await bhActivities();
+    const activities=[];
+    // Fetch only event-type records, independently of the directory's cached activities.
+    for(let page=1;page<=30;page++){
+      const response=await fetch('/api/activities.php?post_type=events&per_page=200&page='+page,{cache:'no-store',headers:{Accept:'application/json'}});
+      if(!response.ok)throw new Error('Could not load events');
+      const payload=await response.json();
+      if(!payload.ok)throw new Error(payload.error||'Could not load events');
+      const batch=Array.isArray(payload.data)?payload.data:[];
+      activities.push(...batch.filter(a=>String(a.post_type||'').trim().toLowerCase()==='events'));
+      if(batch.length<200)break;
+    }
     const sessions=[];
     const towns=new Set(),cats=new Set();
     activities.forEach(a=>{
@@ -103,8 +113,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
         (!town.value||x.venue?.town===town.value) &&
         (!category.value||x.activity.category===category.value)
       ).sort((a,b)=>a.date-b.date||String(a.session.start_time||"").localeCompare(String(b.session.start_time||""))).slice(0,100);
-      count.textContent=rows.length+" "+(rows.length===1?"session":"sessions");
-      if(!rows.length){list.innerHTML='<div class="empty-state"><h3>No sessions match those filters</h3><p>Try another day, town or category, or browse all activities.</p><a class="button button-primary" href="directory.html">Browse activities</a></div>';return}
+      count.textContent=rows.length+" "+(rows.length===1?"event":"events");
+      if(!rows.length){list.innerHTML='<div class="empty-state"><h3>No events match those filters</h3><p>Try another day, town or category, or check back for new events.</p><a class="button button-primary" href="directory.html">Browse activities</a></div>';return}
       list.innerHTML=rows.map(x=>{
         const a=x.activity,v=x.venue||{},s=x.session;
         const img=a.image_path?'<img src="'+esc(a.image_path)+'" alt="">':'<div class="event-card-placeholder">Bubba Hub</div>';
@@ -116,12 +126,12 @@ document.addEventListener("DOMContentLoaded",async()=>{
           '<p class="event-time">'+esc(fmtTime(s.start_time))+(s.end_time?" – "+esc(fmtTime(s.end_time)):"")+'</p>'+
           '<p class="event-location">'+esc(loc||"Local venue")+'</p>'+
           '<div class="listing-tags">'+(a.category?'<span>'+esc(a.category)+'</span>':"")+(a.age_range?'<span>'+esc(a.age_range)+'</span>':"")+(s.price!==null&&s.price!==undefined?'<span>'+money(s.price)+'</span>':"")+'</div>'+
-          '<a class="button button-soft button-full" href="activity.html?slug='+encodeURIComponent(a.slug||"")+'">View activity</a></div></article>';
+          '<a class="button button-soft button-full" href="activity.html?slug='+encodeURIComponent(a.slug||"")+'">View event</a></div></article>';
       }).join("");
     };
     [day,town,category].forEach(el=>el.addEventListener("change",render));
     render();
-  }catch(e){list.innerHTML='<div class="empty-state"><h3>Events unavailable</h3><p>'+esc(e.message||"Could not load sessions.")+'</p><a class="button button-primary" href="directory.html">Find activities</a></div>'}
+  }catch(e){list.innerHTML='<div class="empty-state"><h3>Events unavailable</h3><p>'+esc(e.message||"Could not load events.")+'</p><a class="button button-primary" href="directory.html">Find activities</a></div>'}
   const logout=document.getElementById("siteLogout");
   if(logout)logout.addEventListener("click",async()=>{try{await fetch("api/auth.php?action=logout",{credentials:"same-origin"});}finally{location.href="index.html"}});
 });
