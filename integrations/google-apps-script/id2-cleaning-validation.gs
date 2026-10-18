@@ -8,12 +8,12 @@ function bhValidateId2Cleaning(){
  if(get('id')!=='2'||get('title')!=='Cornwall Libraries')throw Error('Unexpected source row: stop');
  const issues=[],warnings=[],proposed={};
  const html=get('description');
- const suspicious=/<(?:script|iframe|object|embed|form|style)\\b|\\bon\\w+\\s*=/i.test(html);
+ const suspicious=/<(?:script|iframe|object|embed|form|style)\b|\bon\w+\s*=/i.test(html);
  if(suspicious)issues.push('description_contains_disallowed_html');
- const attrCount=(html.match(/\\bdata-path-to-node\\s*=|\\bdata-index-in-node\\s*=|\\bclass\\s*=|\\bid\\s*=/gi)||[]).length;
- proposed.description={present:!!html,characterCount:html.length,containsHtml:/<[^>]+>/.test(html),extraneousAttributeCount:attrCount,containsTable:/<table\\b/i.test(html),containsTimetableText:/timetable|rhymetime|storytime/i.test(html),requiresServerSideHtmlSanitisation:true};
+ const attrCount=(html.match(/\bdata-path-to-node\s*=|\bdata-index-in-node\s*=|\bclass\s*=|\bid\s*=/gi)||[]).length;
+ proposed.description={present:!!html,characterCount:html.length,containsHtml:/<[^>]+>/.test(html),extraneousAttributeCount:attrCount,containsTable:/<table\b/i.test(html),containsTimetableText:/timetable|rhymetime|storytime/i.test(html),requiresServerSideHtmlSanitisation:true};
  if(attrCount)warnings.push('description_contains_generated_markup_attributes');
- const unwrap=s=>{const m=s.match(/^\\[([^\\]]+)\\]\\((https?:\\/\\/[^\\s)]+)\\)$/i);return m?m[2]:s;};
+ const unwrap=s=>{const m=s.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/i);return m?m[2]:s;};
  const imageFields=['image_path','image_1','image_2','image_3'];
  proposed.images=imageFields.filter(k=>get(k)).map(k=>{const raw=get(k),url=unwrap(raw);let parsed=null;try{parsed=new URL(url);}catch(e){}const valid=!!parsed&&['https:','http:'].includes(parsed.protocol)&&!!parsed.hostname; if(!valid)issues.push(k+'_invalid_url');return {field:k,markdownWrapped:raw!==url,validUrl:valid,url:valid?url:null,remoteAvailabilityNotChecked:true};});
  const booleans=['featured','price_per_family','price_per_session','price_free','booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome'];
