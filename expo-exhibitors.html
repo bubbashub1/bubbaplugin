@@ -75,12 +75,13 @@
   button.disabled=true;status.textContent='Submitting your application…';
   try{
    const response=await fetch('/api/expo-exhibitors.php',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':csrfToken},body:JSON.stringify(body),credentials:'same-origin'});
-   const result=await response.json();
-   if(!response.ok||!result.ok)throw new Error(result.error||'submission_failed');
+   const raw=await response.text();
+   let result;try{result=JSON.parse(raw);}catch(_){throw new Error('HTTP '+response.status+' — server returned a non-JSON response');}
+   if(!response.ok||!result.ok)throw new Error((result.error||'submission_failed')+' (HTTP '+response.status+')');
    status.textContent='Application received. Reference #'+result.application_id+'. Your application is pending review.';
    status.scrollIntoView({behavior:'smooth',block:'center'});
    form.reset();
-  }catch(error){status.textContent='Your application could not be submitted. Please try again later.';status.scrollIntoView({behavior:'smooth',block:'center'});}
+  }catch(error){status.textContent='Application not confirmed: '+(error.message||'network_error')+'. Please check with Bubba Hub before trying again.';status.scrollIntoView({behavior:'smooth',block:'center'});}
   finally{button.disabled=!csrfToken;}
  };
 })();
