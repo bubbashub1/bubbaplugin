@@ -14,23 +14,19 @@ function auditReply(int $code,array $data): void {
 }
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') auditReply(405,['ok'=>false,'error'=>'post_required']);
 if (strtolower((string)($_SERVER['HTTP_HOST'] ?? '')) !== 'staging.bubbahub.co.uk') auditReply(403,['ok'=>false,'error'=>'staging_only']);
-// Load the staging WordPress configuration only if no server token is already set.
-// This makes a BH_SYNC_TOKEN putenv() in staging_html/wp-config.php available
-// without copying secrets into source control or changing the live endpoint.
-if ((string)getenv('BH_SYNC_TOKEN') === '') {
+// Read only the literal putenv('BH_SYNC_TOKEN=...') entry from staging wp-config.php.
+// Do not execute wp-config.php: bootstrapping WordPress here can fail and is unnecessary.
+$config = is_file(__DIR__.'/config.php') ? require __DIR__.'/config.php' : [];
+$secret = (string)(getenv('BH_SYNC_TOKEN') ?: (is_array($config) ? ($config['sheets_sync_token'] ?? '') : ''));
+if ($secret === '') {
     $wpConfig = dirname(__DIR__) . '/wp-config.php';
-    if (is_file($wpConfig)) {
-        try {
-            if (!defined('WP_USE_THEMES')) define('WP_USE_THEMES', false);
-            require_once $wpConfig;
-        } catch (Throwable $e) {
-            error_log('Sheet schema audit: staging WordPress config could not load');
-            auditReply(500, ['ok'=>false,'error'=>'staging_config_unavailable']);
+    if (is_readable($wpConfig)) {
+        $wpText = file_get_contents($wpConfig);
+        if (is_string($wpText) && preg_match('/putenv\\s*\\(\\s*([\\x27\\x22])BH_SYNC_TOKEN=([^\\x27\\x22\\r\\n]*)\\1\\s*\\)\\s*;/', $wpText, $match)) {
+            $secret = $match[2];
         }
     }
 }
-$config = is_file(__DIR__.'/config.php') ? require __DIR__.'/config.php' : [];
-$secret = (string)(getenv('BH_SYNC_TOKEN') ?: (is_array($config) ? ($config['sheets_sync_token'] ?? '') : ''));
 $auth = (string)($_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '');
 if ($secret === '' || !preg_match('/^Bearer (.+)$/i',$auth,$matches) || !hash_equals($secret,trim($matches[1]))) auditReply(401,['ok'=>false,'error'=>'unauthorized']);
 try {
