@@ -9,7 +9,7 @@
 <body class="bh-subpage-v2 bh-events-directory">
 <header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><button type="button" class="mobile-nav-toggle" aria-expanded="false" aria-label="Open menu"><span></span><span></span><span></span></button><nav class="main-nav" aria-label="Main menu"><a href="directory.html">Find activities</a><a href="events.html" aria-current="page">Events</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">My Account</a></nav></header>
 <main class="app-shell">
-  <section class="page-heading bh-events-hero">
+  <div class="bh-events-directory-layout"><aside class="bh-events-filter-sidebar"><h2>Find family events</h2><p>Choose filters to discover events near you.</p><div id="eventFilterHost"></div></aside><div class="bh-events-main"><section class="page-heading bh-events-hero">
     <div>
       <span class="eyebrow">Explore together · Events</span>
       <h1>Discover family events</h1>
@@ -18,25 +18,9 @@
     <a class="button button-primary" href="directory.html">Find activities</a>
   </section>
 
-  <section class="section bh-events-featured" aria-labelledby="expo-heading" style="margin-block:24px;padding:clamp(20px,3vw,34px);background:#e5f1df;border:1px solid #d1e4d4;border-radius:24px">
-  <span class="eyebrow">Featured Bubba Hub event</span>
-  <h2 id="expo-heading">Bubba &amp; Me — Baby &amp; Pregnancy Expo</h2>
-  <p><strong>Saturday 9 January 2027 · 10:30am–2:30pm</strong></p>
-  <p>Acorn Centre, Torquay · Meet local family support services, explore taster sessions and enjoy live Q&amp;As.</p>
-  <p><strong>Free entry planned, with optional paid tickets.</strong> Online ticket reservations are not open yet. Please don't treat this page as a confirmed booking.</p>
-  <div style="margin:16px 0;padding:16px;border:1px solid #cbdcca;border-radius:16px;background:#fff;max-width:570px">
-<h3>Family ticket booking preview</h3>
-<p>Choose free places for adults and children in one booking. This preview does not accept reservations yet.</p>
-<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
-<label>Adults <input id="expoAdultCount" type="number" min="0" max="12" value="1" style="display:block;width:100%"></label>
-<label>Children <input id="expoChildCount" type="number" min="0" max="12" value="1" style="display:block;width:100%"></label>
-</div><p id="expoTicketSummary" role="status">2 free places selected</p>
-<button type="button" class="button button-primary" disabled>Reservations opening soon</button></div>
-<a class="button button-primary" href="mailto:contact@bubbahub.co.uk?subject=Bubba%20%26%20Me%20Expo%20ticket%20updates">Ask about tickets</a>
-  <a class="button button-soft" href="/expo-exhibitors.html">Exhibitor application preview</a>
-</section>
+<section class="bh-events-expo-card" aria-label="Bubba and Me Expo"><div class="bh-events-expo-art"><span>9 JAN<br>2027</span></div><div class="bh-events-expo-info"><span class="eyebrow">Bubba Hub event</span><h2>Bubba &amp; Me — Baby &amp; Pregnancy Expo</h2><p>Saturday 9 January 2027 · 10:30am–2:30pm</p><p>Acorn Centre, Torquay · Free entry</p><a class="button button-primary" href="/expo.html">View event and ticket information →</a><a class="button button-soft" href="/expo-exhibitors.html">Apply as an exhibitor</a></div></section>
 <section class="section events-page-section bh-events-results">
-    <div class="events-toolbar">
+    <div class="events-toolbar" id="eventFilterControls">
       <label>Day
         <select id="eventDay">
           <option value="">Any day</option>
@@ -57,11 +41,11 @@
     </div>
     <div id="eventsList" class="events-grid" aria-live="polite"><div class="listing-loading"><p>Loading events…</p></div></div>
   </section>
-</main>
+</div></div></main>
 <footer class="site-footer"><div class="site-footer-grid"><div class="site-footer-brand"><a href="index.html" class="site-footer-logo" aria-label="Bubba Hub home"><img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><div class="site-footer-brand-copy"><a href="index.html" class="site-footer-title">Bubba Hub</a><p>Find, plan &amp; book family activities across Devon &amp; Cornwall.</p></div></div><div class="site-footer-column"><h2>Main menu</h2><nav class="site-footer-links" aria-label="Footer main menu"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">Account</a></nav></div><div class="site-footer-column"><h2>Explore &amp; tools</h2><nav class="site-footer-links" aria-label="Footer explore and tools"><a href="events.html">Events</a><a href="venues.html">Venues</a><a href="planner.html">Planner</a><a href="/calendar.html">Calendar</a></nav></div><div class="site-footer-column"><h2>Legal &amp; contact</h2><nav class="site-footer-links" aria-label="Footer legal and contact"><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Conditions</a><a href="mailto:contact@bubbahub.co.uk">Contact Bubba Hub</a></nav></div></div><div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div></footer>
 <script src="assets/js/app.js"></script>
 <script>
-document.addEventListener("DOMContentLoaded",async()=>{
+document.addEventListener("DOMContentLoaded",async()=>{const host=document.getElementById("eventFilterHost"),controls=document.getElementById("eventFilterControls");if(host&&controls)host.appendChild(controls);
   const list=document.getElementById("eventsList"),count=document.getElementById("eventsCount");
   const day=document.getElementById("eventDay"),town=document.getElementById("eventTown"),category=document.getElementById("eventCategory");
   const esc=v=>bhEscape(v??"");

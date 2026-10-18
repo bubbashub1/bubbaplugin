@@ -1,0 +1,18 @@
+<!doctype html><html lang="en-GB"><head><base href="/"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bubba &amp; Me Expo · Bubba Hub</title><link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/directory-v2.css"><link rel="stylesheet" href="/assets/css/events-directory.css"></head><body class="bh-events-directory"><header class="site-header"><a href="/events.html">← Back to events</a><a href="/">Bubba Hub</a></header><main class="app-shell"><section class="bh-events-hero"><div><span class="eyebrow">Bubba Hub event</span><h1>Bubba &amp; Me Expo</h1><p>Saturday 9 January 2027 · Acorn Centre, Torquay</p></div></section>  <section class="section bh-events-featured" aria-labelledby="expo-heading" style="margin-block:24px;padding:clamp(20px,3vw,34px);background:#e5f1df;border:1px solid #d1e4d4;border-radius:24px">
+  <span class="eyebrow">Featured Bubba Hub event</span>
+  <h2 id="expo-heading">Bubba &amp; Me — Baby &amp; Pregnancy Expo</h2>
+  <p><strong>Saturday 9 January 2027 · 10:30am–2:30pm</strong></p>
+  <p>Acorn Centre, Torquay · Meet local family support services, explore taster sessions and enjoy live Q&amp;As.</p>
+  <p><strong>Free entry planned, with optional paid tickets.</strong> Online ticket reservations are not open yet. Please don't treat this page as a confirmed booking.</p>
+  <div style="margin:16px 0;padding:16px;border:1px solid #cbdcca;border-radius:16px;background:#fff;max-width:570px">
+<h3>Family ticket booking preview</h3>
+<p>Choose free places for adults and children in one booking. This preview does not accept reservations yet.</p>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+<label>Adults <input id="expoAdultCount" type="number" min="0" max="12" value="1" style="display:block;width:100%"></label>
+<label>Children <input id="expoChildCount" type="number" min="0" max="12" value="1" style="display:block;width:100%"></label>
+</div><p id="expoTicketSummary" role="status">2 free places selected</p>
+<button type="button" class="button button-primary" disabled>Reservations opening soon</button></div>
+<a class="button button-primary" href="mailto:contact@bubbahub.co.uk?subject=Bubba%20%26%20Me%20Expo%20ticket%20updates">Ask about tickets</a>
+  <a class="button button-soft" href="/expo-exhibitors.html">Exhibitor application preview</a>
+</section>
+</main><script>(function(){const a=document.getElementById('expoAdultCount'),c=document.getElementById('expoChildCount'),out=document.getElementById('expoTicketSummary');if(!a||!c||!out)return;function update(){const x=Number(a.value),y=Number(c.value),n=x+y;out.textContent=Number.isInteger(x)&&Number.isInteger(y)&&x>=0&&y>=0&&x<=12&&y<=12&&n>=1&&n<=12?n+' free '+(n===1?'place':'places')+' selected':'Choose between 1 and 12 places in total.';}a.addEventListener('input',update);c.addEventListener('input',update);update();})();</script></body></html>
