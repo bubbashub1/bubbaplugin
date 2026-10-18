@@ -1,79 +1,32 @@
-/* Events page — visual parity with directory without altering listing logic. */
-.bh-events-directory{font-family:Quicksand,Calibri,Arial,sans-serif;background:#fbfaf5;color:#164c38}
-.bh-events-directory .app-shell{max-width:1320px;margin:auto;padding:clamp(16px,3vw,38px)}
-.bh-events-directory .bh-events-hero{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;background:linear-gradient(120deg,#eaf5e6,#fdfbf3 65%,#fff0e0);padding:clamp(24px,4vw,52px);border-radius:30px;margin:12px 0 26px}
-.bh-events-directory .bh-events-hero h1{font-family:inherit;font-size:clamp(2.3rem,5vw,4.2rem);line-height:1.06;letter-spacing:-.035em;color:#174f39;margin:12px 0}
-.bh-events-directory .bh-events-hero p{max-width:650px;font-size:1.1rem;line-height:1.65}
-.bh-events-directory .bh-events-hero .eyebrow,.bh-events-directory .bh-events-featured .eyebrow{font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#218e8c}
-.bh-events-directory .bh-events-featured{background:linear-gradient(135deg,#e4f3df,#f5fbf0)!important;border:1px solid #d1e5d3!important;border-radius:26px!important;box-shadow:0 10px 28px rgba(16,69,43,.06);padding:clamp(20px,3vw,38px)!important;margin:0 0 26px!important}
-.bh-events-directory .bh-events-featured h2{font-size:clamp(1.6rem,3vw,2.7rem);line-height:1.2;color:#174f39;margin:12px 0}
-.bh-events-directory .bh-events-featured p{line-height:1.65}
-.bh-events-directory .bh-events-featured>div{max-width:620px!important;border-radius:20px!important;box-shadow:0 5px 18px rgba(16,69,43,.06)}
-.bh-events-directory .bh-events-featured .button{margin:5px 8px 5px 0}
-.bh-events-directory .bh-events-results{background:#fff;border:1px solid #e0e9dd;border-radius:26px;padding:clamp(16px,3vw,30px);box-shadow:0 10px 30px rgba(16,69,43,.04)}
-.bh-events-directory .events-toolbar{display:flex;gap:12px;flex-wrap:wrap;padding:16px;background:#f2f8f0;border-radius:20px;margin-bottom:24px}
-.bh-events-directory .events-toolbar label{flex:1 1 180px;font-weight:700;color:#194d3b}
-.bh-events-directory .events-toolbar select{display:block;width:100%;min-height:45px;border-radius:12px;border:1px solid #d2e4d5;background:#fff;padding:9px 12px;font:inherit}
-.bh-events-directory .events-heading h2{font-size:clamp(1.5rem,2.5vw,2.2rem);color:#174f39}
-.bh-events-directory .events-grid{gap:18px}
-.bh-events-directory .event-card{border:1px solid #dceadd;border-radius:22px;overflow:hidden;background:#fff;box-shadow:0 6px 20px rgba(16,69,43,.07)}
-.bh-events-directory .event-card-body{padding:18px}
-.bh-events-directory .event-card h3{font-family:inherit;color:#174f39}
-.bh-events-directory .event-card-image img{width:100%;object-fit:cover}
-@media(max-width:720px){.bh-events-directory .app-shell{padding:14px}.bh-events-directory .bh-events-hero{border-radius:22px;padding:22px}.bh-events-directory .bh-events-featured,.bh-events-directory .bh-events-results{border-radius:20px}.bh-events-directory .events-toolbar{display:grid;grid-template-columns:1fr}.bh-events-directory .bh-events-featured>div{max-width:100%!important}}
-
-/* Keep event listings in compact directory-style cards even with large uploaded posters. */
-.bh-events-directory .events-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr));align-items:stretch;gap:20px}
-.bh-events-directory .event-card{display:flex;flex-direction:column;min-width:0;max-width:100%}
-.bh-events-directory .event-card-image{display:block;width:100%;height:190px;max-height:190px;overflow:hidden;background:#eaf5e8}
-.bh-events-directory .event-card-image img{display:block;width:100%;height:100%;max-height:190px;object-fit:cover;object-position:center}
-.bh-events-directory .event-card-placeholder{height:190px;display:grid;place-items:center}
-.bh-events-directory .event-card-body{flex:1;display:flex;flex-direction:column;gap:7px;min-width:0}
-.bh-events-directory .event-card-body h3{font-size:1.15rem;line-height:1.3;margin:0}
-.bh-events-directory .event-card-body p{margin:0}
-.bh-events-directory .event-card-body .button-full{margin-top:auto;text-align:center}
-@media(max-width:600px){.bh-events-directory .events-grid{grid-template-columns:1fr}.bh-events-directory .event-card-image,.bh-events-directory .event-card-image img{height:185px;max-height:185px}}
-
-/* Directory-style events: sidebar filters and compact event content. */
-.bh-events-directory .bh-events-directory-layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:18px;align-items:start}
-.bh-events-directory .bh-events-filter-sidebar{position:sticky;top:18px;border:1px solid #dce8dd;background:#fff;border-radius:24px;padding:24px 18px;box-shadow:0 8px 26px rgba(20,70,40,.05)}
-.bh-events-directory .bh-events-filter-sidebar h2{font-size:1.4rem;line-height:1.2;margin:0 0 12px;color:#174f39}
-.bh-events-directory .bh-events-filter-sidebar p{font-size:.9rem;line-height:1.5}
-.bh-events-directory .bh-events-main{min-width:0}
-.bh-events-directory .bh-events-main .bh-events-hero{padding:22px 4px;background:transparent;border-radius:0}
-.bh-events-directory .bh-events-main .bh-events-hero h1{font-size:clamp(2rem,3vw,3rem)}
-.bh-events-directory .bh-events-main .bh-events-results{border:0;box-shadow:none;background:transparent;padding:0}
-.bh-events-directory .bh-events-filter-sidebar .events-toolbar{display:flex;flex-direction:column;background:transparent;padding:0;gap:13px}
-.bh-events-directory .bh-events-filter-sidebar .events-toolbar label{flex:0 0 auto;width:100%}
-.bh-events-directory .bh-events-expo-card{display:grid;grid-template-columns:190px minmax(0,1fr);gap:20px;background:#fff;border:1px solid #dceadd;border-radius:20px;overflow:hidden;margin-bottom:24px;box-shadow:0 6px 20px rgba(16,69,43,.06)}
-.bh-events-directory .bh-events-expo-art{display:grid;place-items:center;min-height:180px;background:linear-gradient(145deg,#d6edda,#c6e6e6);color:#174f39;text-align:center;font-size:2rem;font-weight:800;line-height:1.15}
-.bh-events-directory .bh-events-expo-info{padding:18px 16px 18px 0}
-.bh-events-directory .bh-events-expo-info h2{font-size:1.35rem;margin:7px 0;color:#174f39}
-.bh-events-directory .bh-events-expo-info p{margin:6px 0;font-size:.93rem}
-.bh-events-directory .bh-events-expo-info .button{margin:10px 7px 0 0}
-@media(max-width:800px){.bh-events-directory .bh-events-directory-layout{grid-template-columns:1fr}.bh-events-directory .bh-events-filter-sidebar{position:static}.bh-events-directory .bh-events-expo-card{grid-template-columns:1fr}.bh-events-directory .bh-events-expo-art{min-height:110px}.bh-events-directory .bh-events-expo-info{padding:16px}}
-
-/* Strong layout containment: directory-v2 and subpage styles can otherwise
-   make page-heading and section span the viewport or shrink to content. */
-body.bh-events-directory{overflow-x:hidden}
-body.bh-events-directory main.app-shell{display:block;width:100%;max-width:1320px;min-width:0;margin:0 auto;padding:16px 20px;box-sizing:border-box}
-body.bh-events-directory main.app-shell>.bh-events-directory-layout{display:grid;grid-template-columns:minmax(220px,260px) minmax(0,1fr);column-gap:20px;width:100%;max-width:100%;align-items:start}
-body.bh-events-directory .bh-events-directory-layout>.bh-events-main{display:block;width:100%;min-width:0;max-width:100%;grid-column:2;overflow-wrap:anywhere}
-body.bh-events-directory .bh-events-directory-layout>.bh-events-filter-sidebar{grid-column:1;width:auto;min-width:0;max-width:100%;box-sizing:border-box}
-body.bh-events-directory .bh-events-main>.bh-events-hero{display:block;position:static;width:100%;max-width:100%;min-width:0;box-sizing:border-box;padding:18px 0 24px;margin:0 0 18px;background:transparent;transform:none;overflow:visible}
-body.bh-events-directory .bh-events-main>.bh-events-hero>div{width:100%;max-width:100%;min-width:0}
-body.bh-events-directory .bh-events-main>.bh-events-hero h1{max-width:100%;margin:8px 0 10px;line-height:1.15;overflow-wrap:normal}
-body.bh-events-directory .bh-events-main>.bh-events-hero p{max-width:760px}
-body.bh-events-directory .bh-events-main>.bh-events-hero>.button{display:inline-flex;position:static;margin:12px 0 0;max-width:100%;white-space:normal}
-body.bh-events-directory .bh-events-main>.bh-events-expo-card{width:100%;max-width:100%;box-sizing:border-box}
-body.bh-events-directory .bh-events-main>.bh-events-results{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box}
-body.bh-events-directory .bh-events-main .events-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%}
-body.bh-events-directory .bh-events-main .events-grid{width:100%;min-width:0}
-body.bh-events-directory .bh-events-main .empty-state{max-width:100%;box-sizing:border-box}
-@media(max-width:800px){
- body.bh-events-directory main.app-shell{padding:14px}
- body.bh-events-directory main.app-shell>.bh-events-directory-layout{grid-template-columns:minmax(0,1fr);gap:18px}
- body.bh-events-directory .bh-events-directory-layout>.bh-events-filter-sidebar,
- body.bh-events-directory .bh-events-directory-layout>.bh-events-main{grid-column:1}
- body.bh-events-directory .bh-events-main>.bh-events-hero{padding:10px 0 18px}
-}
+/* Events shares the actual Directory page structure and styles. */
+body.bh-directory.bh-events-directory{font-family:Quicksand,Calibri,Arial,sans-serif;background:#fffdf7;color:#174e3b}
+body.bh-events-directory .app-shell{max-width:1320px;margin:0 auto;padding:24px 20px}
+body.bh-events-directory .directory-layout.bh-events-directory-layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;align-items:start}
+body.bh-events-directory .bh-events-filter-sidebar{grid-column:1;background:#fff;border:1px solid #dce8df;border-radius:25px;padding:25px 20px;box-shadow:0 12px 30px rgba(20,70,40,.05);min-width:0}
+body.bh-events-directory .bh-events-filter-sidebar h2{font-size:1.4rem;margin:0 0 12px;line-height:1.2}
+body.bh-events-directory .bh-events-filter-sidebar p{font-size:.9rem;line-height:1.5}
+body.bh-events-directory .bh-events-filter-sidebar .events-toolbar{display:flex;flex-direction:column;gap:14px}
+body.bh-events-directory .events-toolbar label{display:block;font-weight:700;font-size:.9rem}
+body.bh-events-directory .events-toolbar select{display:block;width:100%;margin-top:5px;min-height:44px;padding:8px 12px;background:#fff;border:1px solid #dce8df;border-radius:13px;font:inherit;color:#174e3b}
+body.bh-events-directory .directory-results-column.bh-events-main{grid-column:2;min-width:0;width:100%;max-width:100%;display:block}
+body.bh-events-directory .directory-results-heading.bh-events-hero{display:block;position:static;width:100%;max-width:100%;min-width:0;box-sizing:border-box;margin:0 0 24px;padding:16px 0 20px;background:transparent;border:0;box-shadow:none}
+body.bh-events-directory .bh-events-hero h1{font-size:clamp(2.1rem,3.5vw,3.4rem);line-height:1.12;margin:10px 0;font-weight:800}
+body.bh-events-directory .bh-events-hero p{font-size:1.04rem;line-height:1.6;max-width:750px}
+body.bh-events-directory .bh-events-hero .button{display:inline-flex;margin-top:14px}
+body.bh-events-directory .bh-events-expo-card{display:grid;grid-template-columns:170px minmax(0,1fr);background:#fff;border:1px solid #dce8df;border-radius:20px;overflow:hidden;box-shadow:0 7px 20px rgba(20,70,40,.06);margin:0 0 25px}
+body.bh-events-directory .bh-events-expo-art{background:linear-gradient(140deg,#d9f0df,#c6e6e5);display:grid;place-items:center;text-align:center;font-size:2rem;font-weight:800;line-height:1.1;min-height:175px}
+body.bh-events-directory .bh-events-expo-info{padding:18px 20px}
+body.bh-events-directory .bh-events-expo-info h2{font-size:1.3rem;margin:8px 0}
+body.bh-events-directory .bh-events-expo-info p{margin:6px 0;font-size:.9rem}
+body.bh-events-directory .bh-events-expo-info .button{display:inline-flex;margin:10px 8px 0 0}
+body.bh-events-directory .bh-events-results{width:100%;min-width:0;display:block;background:transparent;border:0;padding:0;box-shadow:none}
+body.bh-events-directory .events-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:14px}
+body.bh-events-directory .events-heading h2{font-size:1.8rem;margin:4px 0}
+body.bh-events-directory .eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:#258e97}
+body.bh-events-directory .events-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px;width:100%}
+body.bh-events-directory .event-card{border:1px solid #dce8df;border-radius:18px;overflow:hidden;background:#fff}
+body.bh-events-directory .event-card-image{display:block;height:180px;overflow:hidden}
+body.bh-events-directory .event-card-image img{width:100%;height:100%;object-fit:cover}
+body.bh-events-directory .event-card-body{padding:16px}
+body.bh-events-directory .empty-state{background:#fff;border:1px dashed #dce8df;border-radius:18px;padding:24px;max-width:100%}
+@media(max-width:800px){body.bh-events-directory .directory-layout.bh-events-directory-layout{grid-template-columns:minmax(0,1fr)}body.bh-events-directory .bh-events-filter-sidebar,body.bh-events-directory .directory-results-column.bh-events-main{grid-column:1}body.bh-events-directory .bh-events-expo-card{grid-template-columns:1fr}body.bh-events-directory .bh-events-expo-art{min-height:100px}}
