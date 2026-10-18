@@ -21,3 +21,15 @@
 .bh-events-directory .event-card h3{font-family:inherit;color:#174f39}
 .bh-events-directory .event-card-image img{width:100%;object-fit:cover}
 @media(max-width:720px){.bh-events-directory .app-shell{padding:14px}.bh-events-directory .bh-events-hero{border-radius:22px;padding:22px}.bh-events-directory .bh-events-featured,.bh-events-directory .bh-events-results{border-radius:20px}.bh-events-directory .events-toolbar{display:grid;grid-template-columns:1fr}.bh-events-directory .bh-events-featured>div{max-width:100%!important}}
+
+/* Keep event listings in compact directory-style cards even with large uploaded posters. */
+.bh-events-directory .events-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr));align-items:stretch;gap:20px}
+.bh-events-directory .event-card{display:flex;flex-direction:column;min-width:0;max-width:100%}
+.bh-events-directory .event-card-image{display:block;width:100%;height:190px;max-height:190px;overflow:hidden;background:#eaf5e8}
+.bh-events-directory .event-card-image img{display:block;width:100%;height:100%;max-height:190px;object-fit:cover;object-position:center}
+.bh-events-directory .event-card-placeholder{height:190px;display:grid;place-items:center}
+.bh-events-directory .event-card-body{flex:1;display:flex;flex-direction:column;gap:7px;min-width:0}
+.bh-events-directory .event-card-body h3{font-size:1.15rem;line-height:1.3;margin:0}
+.bh-events-directory .event-card-body p{margin:0}
+.bh-events-directory .event-card-body .button-full{margin-top:auto;text-align:center}
+@media(max-width:600px){.bh-events-directory .events-grid{grid-template-columns:1fr}.bh-events-directory .event-card-image,.bh-events-directory .event-card-image img{height:185px;max-height:185px}}
