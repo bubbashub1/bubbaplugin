@@ -8,6 +8,26 @@
     {id:'wizard',title:'Listing wizard staging and live parity',area:'Class leaders',url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr+listing+wizard',next:'Compare staging and live wizard forms and confirm saved sessions.'},
     {id:'events',title:'Events and expo ticketing',area:'Events',url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr+events',next:'Test free reservations, QR confirmation and exhibitor registration on staging.'},
     {id:'release',title:'Safe staging and live releases',area:'Deployment',url:'https://github.com/bubbashub1/bubbaplugin/actions',next:'Verify live .htaccess and GitHub deployment results before another release.'}
+,
+    {id:"turnstile",title:"Cloudflare Turnstile registration protection",area:"Security",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Review staging verification and test family and leader registration."},
+    {id:"user-actions",title:"Admin edit, deactivate and delete actions",area:"Administration",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Test protected actions and account-type display."},
+    {id:"approval",title:"Admin approval centre",area:"Administration",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Review approval queues and permission checks."},
+    {id:"claim",title:"Claim a listing",area:"Class leaders",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Test organiser claim requests and admin approval."},
+    {id:"duplicates",title:"Duplicate listing detection",area:"Directory",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Test warnings without deleting legitimate listings."},
+    {id:"listing-health",title:"Listing health and bulk timetable updates",area:"Directory",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Review missing data and termly timetable update flows."},
+    {id:"franchise",title:"Franchise and organiser linking",area:"Class leaders",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Review leader requests and admin approvals."},
+    {id:"venue-hub",title:"Venue management hub",area:"Directory",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Review shared venues, facilities and multi-venue sessions."},
+    {id:"planner",title:"My Hub and Planner Pro",area:"Families",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Check database-backed calendars, sharing and saved plans."},
+    {id:"newsletter",title:"Personalised newsletter builder",area:"Communications",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Plan SMTP-based newsletter builder and family preferences."},
+    {id:"business",title:"Business directory",area:"Future features",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Review the business directory foundation."},
+    {id:"app",title:"Hybrid mobile app",area:"Future features",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Review Android app roadmap after core website stability."},
+    {id:"guides",title:"Family guides and accessibility",area:"Future features",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Review local guides, accessibility and family trails."},
+    {id:"holidays",title:"School holidays and weekend finder",area:"Future features",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Review school holiday hub, rainy day and low-cost finders."},
+    {id:"community",title:"Reviews, rewards and community features",area:"Future features",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Review parent reviews, noticeboard and local offers."},
+    {id:"expo",title:"Bubba & Me exhibitor registrations",area:"Events",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Test exhibitor form and early leader notifications."},
+    {id:"analytics",title:"Website analytics and SEO",area:"Operations",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Check Google Analytics without duplicate tracking."},
+    {id:"importer",title:"CSV import and master data tidy-up",area:"Data & imports",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Test import previews, errors and data mapping."},
+    {id:"leader-portal",title:"Leader portal actions and messages",area:"Class leaders",url:'https://github.com/bubbashub1/bubbaplugin/pulls?q=is%3Apr',next:"Check profile, classes, messages, bookings and specialisms."},
   ];
   const key='bh-admin-development-tracker-v1';
   const allowed=['not-started','in-progress','testing','done'];
