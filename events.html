@@ -5,27 +5,21 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Events · Bubba Hub</title>
 
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/directory-v2.css"><link rel="stylesheet" href="/assets/css/subpages-v2.css"><link rel="stylesheet" href="/assets/css/events-directory.css"><link rel="stylesheet" href="/assets/css/header-repair.css"><meta name="bh-staging-version" content="events-layout-146">
-<style id="bh-events-critical-layout">
-/* Inline critical layout avoids stale external stylesheets and legacy .page-heading rules. */
-body.bh-events-directory main.app-shell{display:block!important;max-width:1320px!important;width:100%!important;margin:0 auto!important;padding:18px 22px!important;box-sizing:border-box!important}
-body.bh-events-directory main.app-shell>.bh-events-directory-layout{display:grid!important;grid-template-columns:260px minmax(0,1fr)!important;gap:20px!important;align-items:start!important;width:100%!important;max-width:100%!important}
-body.bh-events-directory main.app-shell>.bh-events-directory-layout>.bh-events-filter-sidebar{grid-column:1!important;grid-row:1!important;position:relative!important;top:auto!important;width:auto!important;min-width:0!important;margin:0!important;box-sizing:border-box!important;z-index:1}
-body.bh-events-directory main.app-shell>.bh-events-directory-layout>.bh-events-main{grid-column:2!important;grid-row:1!important;display:block!important;position:relative!important;min-width:0!important;width:100%!important;max-width:100%!important;margin:0!important;box-sizing:border-box!important}
-body.bh-events-directory main.app-shell .bh-events-main>.bh-events-hero{display:block!important;position:relative!important;inset:auto!important;float:none!important;transform:none!important;width:100%!important;max-width:100%!important;min-width:0!important;margin:0 0 22px!important;padding:16px 4px 20px!important;background:transparent!important;box-sizing:border-box!important;overflow:visible!important}
-body.bh-events-directory main.app-shell .bh-events-main>.bh-events-hero h1{font-size:clamp(2rem,3.3vw,3rem)!important;line-height:1.15!important;margin:10px 0!important}
-body.bh-events-directory main.app-shell .bh-events-main>.bh-events-hero .button{display:inline-flex!important;position:static!important;float:none!important;margin:10px 0 0!important}
-body.bh-events-directory main.app-shell .bh-events-main>.bh-events-expo-card,body.bh-events-directory main.app-shell .bh-events-main>.bh-events-results{display:block;position:relative!important;float:none!important;clear:none!important;min-width:0!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;margin-left:0!important;margin-right:0!important}
-body.bh-events-directory main.app-shell .bh-events-main>.bh-events-expo-card{display:grid!important;grid-template-columns:190px minmax(0,1fr)!important}
-body.bh-events-directory main.app-shell .bh-events-main .events-grid{width:100%!important;min-width:0!important}
-@media(max-width:800px){body.bh-events-directory main.app-shell>.bh-events-directory-layout{grid-template-columns:minmax(0,1fr)!important}body.bh-events-directory main.app-shell>.bh-events-directory-layout>.bh-events-filter-sidebar{grid-column:1!important;grid-row:1!important}body.bh-events-directory main.app-shell>.bh-events-directory-layout>.bh-events-main{grid-column:1!important;grid-row:2!important}body.bh-events-directory main.app-shell .bh-events-main>.bh-events-expo-card{grid-template-columns:minmax(0,1fr)!important}}
-</style></head>
-<body class="bh-subpage-v2 bh-events-directory">
-<header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><span class="bh-brand-text" aria-label="Bubba Hub">Bubba <span>Hub</span></span></a><button type="button" class="mobile-nav-toggle" aria-expanded="false" aria-label="Open menu"><span></span><span></span><span></span></button><nav class="main-nav" aria-label="Main menu"><a href="directory.html">Find activities</a><a href="events.html" aria-current="page">Events</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">My Account</a></nav></header>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/directory-v2.css"><link rel="stylesheet" href="/assets/css/events-directory.css?v=147"><link rel="stylesheet" href="/assets/css/header-repair.css"><meta name="bh-staging-version" content="events-directory-shell-147">
+</head>
+<body class="bh-directory bh-events-directory">
+<header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><span class="bh-brand-text" aria-label="Bubba Hub">Bubba <span>Hub</span></span></a><button type="button" class="mobile-nav-toggle" aria-expanded="false" aria-label="Open menu"><span></span><span></span><span></span></button><nav class="main-nav" aria-label="Main menu">
+    <a href="directory.html">Find activities</a>
+    <a href="events.html" aria-current="page">Events</a>
+    <a href="my-hub.html">My Hub</a>
+    <a href="help-support.html">Support &amp; Guidance</a>
+    <a href="leader.html">Class Leaders</a>
+    <a href="account.html">My Account</a>
+  </nav></header>
 <main class="app-shell">
-  <div class="bh-events-directory-layout"><aside class="bh-events-filter-sidebar"><h2>Find family events</h2><p>Choose filters to discover events near you.</p><div id="eventFilterHost"></div></aside><div class="bh-events-main"><section class="page-heading bh-events-hero">
+  <div class="directory-layout bh-events-directory-layout"><aside class="bh-events-filter-sidebar"><h2>Find family events</h2><p>Choose filters to discover events near you.</p><div id="eventFilterHost"></div></aside><div class="directory-results-column bh-events-main"><section class="directory-results-heading bh-events-hero">
     <div>
-      <span class="eyebrow">Explore together · Events</span>
+      <span class="bh-directory-eyebrow">Explore together · Events</span>
       <h1>Discover family events</h1>
       <p>Find something wonderful for your family across Devon &amp; Cornwall — from local activities to special Bubba Hub events.</p>
     </div>
