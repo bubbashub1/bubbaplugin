@@ -24,19 +24,21 @@ try {
     $columns = $pdo->query('SHOW COLUMNS FROM bh_expo_exhibitors')->fetchAll(PDO::FETCH_COLUMN);
     $columns = array_flip($columns);
     // Approval must be explicit; never treat an application as approved by default.
-    $approval = isset($columns['approval_status']) ? 'approval_status' : (isset($columns['status']) ? 'status' : null);
+    $approval = isset($columns['application_status']) ? 'application_status' : (isset($columns['approval_status']) ? 'approval_status' : (isset($columns['status']) ? 'status' : null));
     $name = isset($columns['business_name']) ? 'business_name' : (isset($columns['name']) ? 'name' : null);
     if ($approval === null || $name === null) {
         throw new RuntimeException('Approval schema not available');
     }
     $fields = ["`$name` AS name"];
     if (isset($columns['details_json'])) $fields[] = 'details_json';
-    foreach (['website_url'=>['website_url','website'], 'image_url'=>['image_url','logo_url'], 'description'=>['public_description','description']] as $alias=>$options) {
+    foreach (['website_url'=>['website_url','website'], 'image_url'=>['logo_url','image_url'], 'description'=>['public_description','description']] as $alias=>$options) {
         foreach ($options as $candidate) {
             if (isset($columns[$candidate])) { $fields[] = "`$candidate` AS `$alias`"; break; }
         }
     }
     $where = ["`$approval` = 'approved'"];
+    if (isset($columns['public_visible'])) $where[] = 'public_visible = 1';
+    if (isset($columns['event_key'])) $where[] = "event_key = 'bubba-me-2027'";
     if (isset($columns['event_slug'])) $where[] = "event_slug = 'bubba-me-2027'";
     elseif (isset($columns['event_id'])) {
         // Unknown event identifiers must not be guessed.
