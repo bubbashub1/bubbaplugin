@@ -32,7 +32,7 @@ if ($secret === '' || !preg_match('/^Bearer (.+)$/i',$auth,$matches) || !hash_eq
 try {
     require_once __DIR__.'/db.php';
     $db=bh_mysql();
-    $tables=['bh_activities','bh_organisers','bh_venues','bh_sessions','bh_activity_venues','bh_activity_schedules','bh_sheet_sync_records','bh_sheet_sync_runs','bh_sheet_sync_conflicts'];
+    $tables=['bh_activities','bh_organisers','bh_venues','bh_sessions','bh_activity_venues','bh_activity_schedules','bh_activity_images','bh_tags','bh_activity_tags','bh_activity_categories','bh_categories','bh_activity_age_ranges','bh_sheet_sync_records','bh_sheet_sync_runs','bh_sheet_sync_conflicts'];
     $report=[];
     foreach ($tables as $table) {
         $stmt=$db->prepare('SELECT COLUMN_NAME,DATA_TYPE,IS_NULLABLE,COLUMN_DEFAULT,EXTRA,COLUMN_KEY FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=? ORDER BY ORDINAL_POSITION');
@@ -44,10 +44,14 @@ try {
         }
         $report[$table]=['exists'=>count($cols)>0,'columns'=>array_map(static fn($c)=>['name'=>$c['COLUMN_NAME'],'type'=>$c['DATA_TYPE'],'nullable'=>$c['IS_NULLABLE']==='YES','auto_increment'=>stripos((string)$c['EXTRA'],'auto_increment')!==false,'key'=>$c['COLUMN_KEY']],$cols),'required_without_default'=>$required];
     }
+    // Foreign-key relationships: read only, no schema or data mutations.
+    $fkStmt=$db->prepare('SELECT TABLE_NAME,COLUMN_NAME,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA=DATABASE() AND REFERENCED_TABLE_NAME IS NOT NULL AND TABLE_NAME IN ('.implode(',',array_fill(0,count($tables),'?')).') ORDER BY TABLE_NAME,COLUMN_NAME');
+    $fkStmt->execute($tables);
+    $foreignKeys=$fkStmt->fetchAll(PDO::FETCH_ASSOC);
     $activities=array_column($report['bh_activities']['columns'],'name');
     $needed=['id','title','slug','description','category','status','organiser_id','price_from','booking_url'];
     $missing=array_values(array_diff($needed,$activities));
-    auditReply(200,['ok'=>true,'mode'=>'schema_audit_read_only','ready_for_automatic_writes'=>false,'missing_expected_activity_columns'=>$missing,'tables'=>$report]);
+    auditReply(200,['ok'=>true,'mode'=>'schema_audit_read_only','ready_for_automatic_writes'=>false,'missing_expected_activity_columns'=>$missing,'tables'=>$report,'foreign_keys'=>$foreignKeys,'related_tables_verified'=>false,'recommended_next_step'=>'Review relation keys and required columns before a bounded five-listing dry run; no writes permitted']);
 } catch (Throwable $e) {
     error_log('Sheet schema audit: '.$e->getMessage());
     auditReply(500,['ok'=>false,'error'=>'schema_audit_failed']);
