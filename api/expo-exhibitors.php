@@ -18,7 +18,8 @@ if (!in_array($method, ['GET','POST'], true)) {
 }
 // Require configured Cloudflare Turnstile before accepting any public applications.
 $turnstileSecret = trim((string)(getenv('BH_TURNSTILE_SECRET_KEY') ?: getenv('TURNSTILE_SECRET_KEY') ?: ''));
-if ($open && $turnstileSecret === '') expoResponse(503,['ok'=>false,'applications_open'=>false,'error'=>'spam_protection_not_configured']);
+$turnstileSiteKey = trim((string)(getenv('BH_TURNSTILE_SITE_KEY') ?: getenv('TURNSTILE_SITE_KEY') ?: ''));
+if ($open && ($turnstileSecret === '' || $turnstileSiteKey === '')) expoResponse(503,['ok'=>false,'applications_open'=>false,'error'=>'spam_protection_not_configured']);
 if (!$open) expoResponse(503,['ok'=>false,'applications_open'=>false,'error'=>'applications_not_yet_open']);
 $secure = !empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off';
 if (!$secure) expoResponse(403,['ok'=>false,'error'=>'https_required']);
@@ -31,7 +32,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 if ($method === 'GET') {
  $_SESSION['expo_apply_csrf'] = bin2hex(random_bytes(32));
- expoResponse(200,['ok'=>true,'applications_open'=>true,'csrf_token'=>$_SESSION['expo_apply_csrf']]);
+ expoResponse(200,['ok'=>true,'applications_open'=>true,'csrf_token'=>$_SESSION['expo_apply_csrf'],'turnstile_site_key'=>$turnstileSiteKey]);
 }
 $host = strtolower(explode(':',(string)($_SERVER['HTTP_HOST']??''))[0]);
 $origin = (string)($_SERVER['HTTP_ORIGIN']??'');
