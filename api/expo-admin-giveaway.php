@@ -40,6 +40,14 @@ try {
  $q=$db->prepare("SELECT r.id,r.contact_email,r.event_key,r.booking_status FROM bh_expo_tickets t JOIN bh_expo_reservations r ON r.id=t.reservation_id WHERE t.ticket_token=? FOR UPDATE");
  $q->execute([$token]);
  $booking=$q->fetch(PDO::FETCH_ASSOC);
+ if(!$booking){
+  $q=$db->prepare("SELECT r.id,r.contact_email,r.event_key,r.booking_status
+   FROM bh_expo_booking_qrs q JOIN bh_expo_reservations r ON r.id=q.reservation_id
+   WHERE q.token_hash=? AND r.event_key='bubba-me-2027' AND r.booking_status='confirmed'
+   LIMIT 1 FOR UPDATE");
+  $q->execute([hash('sha256',$token)]);
+  $booking=$q->fetch(PDO::FETCH_ASSOC);
+ }
  if(!$booking || $booking['event_key']!=='bubba-me-2027' || $booking['booking_status']!=='confirmed'){
   $db->rollBack();expoBagReply(409,['ok'=>false,'error'=>'booking_not_confirmed']);
  }
