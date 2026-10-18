@@ -33,3 +33,22 @@
 .bh-events-directory .event-card-body p{margin:0}
 .bh-events-directory .event-card-body .button-full{margin-top:auto;text-align:center}
 @media(max-width:600px){.bh-events-directory .events-grid{grid-template-columns:1fr}.bh-events-directory .event-card-image,.bh-events-directory .event-card-image img{height:185px;max-height:185px}}
+
+/* Directory-style events: sidebar filters and compact event content. */
+.bh-events-directory .bh-events-directory-layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:18px;align-items:start}
+.bh-events-directory .bh-events-filter-sidebar{position:sticky;top:18px;border:1px solid #dce8dd;background:#fff;border-radius:24px;padding:24px 18px;box-shadow:0 8px 26px rgba(20,70,40,.05)}
+.bh-events-directory .bh-events-filter-sidebar h2{font-size:1.4rem;line-height:1.2;margin:0 0 12px;color:#174f39}
+.bh-events-directory .bh-events-filter-sidebar p{font-size:.9rem;line-height:1.5}
+.bh-events-directory .bh-events-main{min-width:0}
+.bh-events-directory .bh-events-main .bh-events-hero{padding:22px 4px;background:transparent;border-radius:0}
+.bh-events-directory .bh-events-main .bh-events-hero h1{font-size:clamp(2rem,3vw,3rem)}
+.bh-events-directory .bh-events-main .bh-events-results{border:0;box-shadow:none;background:transparent;padding:0}
+.bh-events-directory .bh-events-filter-sidebar .events-toolbar{display:flex;flex-direction:column;background:transparent;padding:0;gap:13px}
+.bh-events-directory .bh-events-filter-sidebar .events-toolbar label{flex:0 0 auto;width:100%}
+.bh-events-directory .bh-events-expo-card{display:grid;grid-template-columns:190px minmax(0,1fr);gap:20px;background:#fff;border:1px solid #dceadd;border-radius:20px;overflow:hidden;margin-bottom:24px;box-shadow:0 6px 20px rgba(16,69,43,.06)}
+.bh-events-directory .bh-events-expo-art{display:grid;place-items:center;min-height:180px;background:linear-gradient(145deg,#d6edda,#c6e6e6);color:#174f39;text-align:center;font-size:2rem;font-weight:800;line-height:1.15}
+.bh-events-directory .bh-events-expo-info{padding:18px 16px 18px 0}
+.bh-events-directory .bh-events-expo-info h2{font-size:1.35rem;margin:7px 0;color:#174f39}
+.bh-events-directory .bh-events-expo-info p{margin:6px 0;font-size:.93rem}
+.bh-events-directory .bh-events-expo-info .button{margin:10px 7px 0 0}
+@media(max-width:800px){.bh-events-directory .bh-events-directory-layout{grid-template-columns:1fr}.bh-events-directory .bh-events-filter-sidebar{position:static}.bh-events-directory .bh-events-expo-card{grid-template-columns:1fr}.bh-events-directory .bh-events-expo-art{min-height:110px}.bh-events-directory .bh-events-expo-info{padding:16px}}
