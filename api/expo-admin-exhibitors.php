@@ -37,7 +37,7 @@ try{
  require_once __DIR__.'/db.php';$db=bh_mysql();
  if($method==='GET'){
   if(empty($_SESSION['bh_expo_csrf']))$_SESSION['bh_expo_csrf']=bin2hex(random_bytes(32));
-  $stmt=$db->prepare("SELECT id,business_name,contact_name,contact_email,website_url,logo_url,description,preferred_table,assigned_table,application_status,public_visible,submitted_at FROM bh_expo_exhibitors WHERE event_key=? ORDER BY submitted_at DESC LIMIT 250");
+  $stmt=$db->prepare("SELECT id,business_name,contact_name,contact_email,contact_phone,participation_json,donation_interest,insurance_policy,insurance_expiry,requirements,website_url,logo_url,description,preferred_table,assigned_table,application_status,public_visible,submitted_at FROM bh_expo_exhibitors WHERE event_key=? ORDER BY submitted_at DESC LIMIT 250");
   $stmt->execute(['bubba-me-2027']);
   reply(200,['ok'=>true,'csrf_token'=>$_SESSION['bh_expo_csrf'],'exhibitors'=>$stmt->fetchAll(PDO::FETCH_ASSOC)]);
  }
