@@ -30,10 +30,28 @@ $values = $data['values'] ?? null;
 if (!is_array($values) || (string)($values['id'] ?? '') !== '999999') bhTestReply(403, ['ok'=>false,'error'=>'test_id_only']);
 $title = trim((string)($values['title'] ?? ''));
 if ($title !== 'BUBBA HUB SYNC TEST - DO NOT PUBLISH') bhTestReply(422, ['ok'=>false,'error'=>'test_title_required']);
+/**
+ * Read a strictly allowlisted literal putenv assignment from staging wp-config
+ * without executing WordPress. Environment values take precedence.
+ */
+function bhStagingGate(string $key): string {
+    $environment = getenv($key);
+    if ($environment !== false && $environment !== '') return (string)$environment;
+    $path = dirname(__DIR__).'/wp-config.php';
+    if (!is_readable($path)) return '';
+    $source = file_get_contents($path);
+    if (!is_string($source)) return '';
+    $quoted = preg_quote($key, '/');
+    if (preg_match('/putenv\\s*\\(\\s*([\\x27\\x22])'.$quoted.'=([^\\x27\\x22\\r\\n]*)\\1\\s*\\)\\s*;/', $source, $matches)) {
+        return $matches[2];
+    }
+    return '';
+}
+
 $dryRun = $data['dry_run'] ?? true;
 if (!is_bool($dryRun)) bhTestReply(400, ['ok'=>false,'error'=>'invalid_dry_run']);
-if (!$dryRun && getenv('BH_SHEETS_WRITE_ENABLED') !== '1') bhTestReply(503, ['ok'=>false,'error'=>'writes_disabled']);
-if (!$dryRun && getenv('BH_SHEETS_TEST_ACTIVITY_ID') !== '999999') bhTestReply(503, ['ok'=>false,'error'=>'test_id_gate_disabled']);
+if (!$dryRun && bhStagingGate('BH_SHEETS_WRITE_ENABLED') !== '1') bhTestReply(503, ['ok'=>false,'error'=>'writes_disabled']);
+if (!$dryRun && bhStagingGate('BH_SHEETS_TEST_ACTIVITY_ID') !== '999999') bhTestReply(503, ['ok'=>false,'error'=>'test_id_gate_disabled']);
 try {
     require_once __DIR__.'/db.php';
     $pdo = bh_mysql();
