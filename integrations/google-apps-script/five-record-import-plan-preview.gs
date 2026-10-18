@@ -47,7 +47,7 @@ function bhFiveRecordImportPlan() {
     if(seenIds.has(id))issues.push('duplicate_sample_id');seenIds.add(id);
     if(!title)issues.push('missing_title');
     if(websiteById.has(id))issues.push('staging_id_collision');
-    const slug=title.toLowerCase().normalize('NFKD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+    const slug=title.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
     if(!slug)issues.push('empty_generated_slug');
     if(usedSlugs.has(slug))issues.push('staging_slug_collision');
     if(candidateSlugs.has(slug))issues.push('sample_slug_collision_with_row_'+candidateSlugs.get(slug));
