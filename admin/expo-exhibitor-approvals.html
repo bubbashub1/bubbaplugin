@@ -12,6 +12,8 @@
     const desc=document.createElement('p');desc.textContent=e.description||'';card.append(desc);
     if(e.logo_url&&/^https:\/\//i.test(e.logo_url)){const img=document.createElement('img');img.src=e.logo_url;img.alt='Business logo';img.loading='lazy';card.append(img);}
     if(e.website_url&&/^https:\/\//i.test(e.website_url)){const a=document.createElement('a');a.href=e.website_url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Visit business website ↗';card.append(a);}
+    const edit=document.createElement('details');const summary=document.createElement('summary');summary.textContent='Edit public exhibitor details';edit.append(summary);
+    const fields={};for(const [key,labelText] of [['business_name','Business name'],['description','Public description'],['website_url','Website URL'],['logo_url','Logo URL']]){const label=document.createElement('label');label.style.display='block';label.style.margin='10px 0';label.textContent=labelText+' ';const input=key==='description'?document.createElement('textarea'):document.createElement('input');input.value=e[key]||'';input.style.width='100%';input.maxLength=key==='description'?2000:key==='business_name'?150:500;fields[key]=input;label.append(input);edit.append(label);}card.append(edit);
     const actions=document.createElement('div');actions.className='actions';
     const status=document.createElement('select');status.setAttribute('aria-label','Approval status for '+e.business_name);
     for(const value of ['pending','approved','rejected','cancelled']){const opt=document.createElement('option');opt.value=value;opt.textContent=value;status.append(opt);}status.value=e.application_status;
@@ -20,7 +22,7 @@
     save.onclick=async()=>{
      if(visible.checked&&status.value!=='approved'){result.textContent='Approve before publishing.';return;}
      save.disabled=true;result.textContent='Saving…';
-     try{const r=await fetch(endpoint,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':token},body:JSON.stringify({id:Number(e.id),application_status:status.value,public_visible:visible.checked?1:0})});const data=await r.json();if(!r.ok||!data.ok)throw Error(data.error||'Save failed');result.textContent='Saved.';}catch(err){result.textContent='Could not save: '+err.message;}finally{save.disabled=false;}
+     try{const r=await fetch(endpoint,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':token},body:JSON.stringify({id:Number(e.id),application_status:status.value,public_visible:visible.checked?1:0,...Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,v.value]))})});const data=await r.json();if(!r.ok||!data.ok)throw Error(data.error||'Save failed');result.textContent='Saved.';}catch(err){result.textContent='Could not save: '+err.message;}finally{save.disabled=false;}
     };
     actions.append(status,label,save,result);card.append(actions);records.append(card);
    }
