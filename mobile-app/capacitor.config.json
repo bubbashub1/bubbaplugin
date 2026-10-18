@@ -1,0 +1,8 @@
+{
+  "appId": "uk.co.bubbahub.app",
+  "appName": "Bubba Hub",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
