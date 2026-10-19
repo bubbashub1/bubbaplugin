@@ -11,14 +11,32 @@ header('X-Content-Type-Options: nosniff');
 function expoResponse(int $code, array $body): never {
  http_response_code($code); echo json_encode($body, JSON_UNESCAPED_SLASHES); exit;
 }
-$open = filter_var(getenv('BH_EXPO_APPLICATIONS_OPEN') ?: 'false', FILTER_VALIDATE_BOOLEAN);
+// WordPress config lives in the deployment's document root. Load only that
+// exact local config, never a URL or a path supplied by the visitor.
+// wp-config.php can define constants without requiring WordPress bootstrap.
+$root = realpath(dirname(__DIR__));
+$config = $root ? $root . '/wp-config.php' : '';
+if ($config !== '' && is_file($config) && is_readable($config)) {
+ require_once $config;
+}
+// CLOSED by default. A constant takes precedence over environment settings.
+$openFlag = defined('BH_EXPO_APPLICATIONS_OPEN') ? constant('BH_EXPO_APPLICATIONS_OPEN') : (getenv('BH_EXPO_APPLICATIONS_OPEN') ?: 'false');
+$open = filter_var($openFlag, FILTER_VALIDATE_BOOLEAN);
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if (!in_array($method, ['GET','POST'], true)) {
  header('Allow: GET, POST'); expoResponse(405,['ok'=>false,'error'=>'method_not_allowed']);
 }
 // Require configured Cloudflare Turnstile before accepting any public applications.
-$turnstileSecret = trim((string)(getenv('BH_TURNSTILE_SECRET_KEY') ?: getenv('TURNSTILE_SECRET_KEY') ?: ''));
-$turnstileSiteKey = trim((string)(getenv('BH_TURNSTILE_SITE_KEY') ?: getenv('TURNSTILE_SITE_KEY') ?: ''));
+$turnstileSecret = trim((string)(
+ (defined('BH_TURNSTILE_SECRET_KEY') ? constant('BH_TURNSTILE_SECRET_KEY') : null)
+ ?: (defined('TURNSTILE_SECRET_KEY') ? constant('TURNSTILE_SECRET_KEY') : null)
+ ?: getenv('BH_TURNSTILE_SECRET_KEY') ?: getenv('TURNSTILE_SECRET_KEY') ?: ''
+));
+$turnstileSiteKey = trim((string)(
+ (defined('BH_TURNSTILE_SITE_KEY') ? constant('BH_TURNSTILE_SITE_KEY') : null)
+ ?: (defined('TURNSTILE_SITE_KEY') ? constant('TURNSTILE_SITE_KEY') : null)
+ ?: getenv('BH_TURNSTILE_SITE_KEY') ?: getenv('TURNSTILE_SITE_KEY') ?: ''
+));
 if ($open && ($turnstileSecret === '' || $turnstileSiteKey === '')) expoResponse(503,['ok'=>false,'applications_open'=>false,'error'=>'spam_protection_not_configured']);
 if (!$open) expoResponse(503,['ok'=>false,'applications_open'=>false,'error'=>'applications_not_yet_open']);
 $secure = !empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off';
