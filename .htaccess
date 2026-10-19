@@ -73,6 +73,7 @@ RewriteRule ^help-support/?$ help-support.html [L,QSA]
 RewriteRule ^account/?$ account.html [L,QSA]
 RewriteRule ^schools/?$ schools.html [L,QSA]
 RewriteRule ^support/?$ support.html [L,QSA]
+RewriteRule ^sponsor/?$ sponsor.html [L,QSA]
 
 # Clean personalised finder URL: /choose
 RewriteRule ^choose/?$ choose.html [L,QSA]
