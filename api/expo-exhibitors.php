@@ -87,7 +87,7 @@ if ($get('contact_consent')!=='yes'||$get('conditions_accepted')!=='yes'||$get('
 $name=$get('business_name',150);$contact=$get('contact_name',120);$email=strtolower($get('email',190));$phone=$get('phone',30);$description=$get('description',2000);
 if (!$name||!$contact||!filter_var($email,FILTER_VALIDATE_EMAIL)||!$phone||mb_strlen($description)<20)
  expoResponse(422,['ok'=>false,'error'=>'required_fields']);
-$preferred=filter_var($body['preferred_table']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1,'max_range'=>26]]);
+$preferred=filter_var($body['preferred_table']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1,'max_range'=>150]]);
 if (!$preferred) expoResponse(422,['ok'=>false,'error'=>'table_required']);
 $policy=$get('insurance_policy',120);$expiry=$get('insurance_expiry',20);
 $date=DateTimeImmutable::createFromFormat('!Y-m-d',$expiry);
@@ -104,6 +104,21 @@ if (!in_array($donation,['yes','no','maybe'],true)) expoResponse(422,['ok'=>fals
 try {
  require_once __DIR__.'/db.php';
  $db=bh_mysql();
+
+ // Serialize selection against the floor-plan row so two simultaneous applications
+ // cannot reserve the same table. The layout must be saved by the admin first.
+ $db->beginTransaction();
+ $lock=$db->prepare('SELECT layout_json FROM bh_expo_floor_plans WHERE event_key=? FOR UPDATE');
+ $lock->execute(['bubba-me-2027']);$layoutRow=$lock->fetch(PDO::FETCH_ASSOC);
+ if(!$layoutRow){$db->rollBack();expoResponse(409,['ok'=>false,'error'=>'floor_plan_not_ready']);}
+ $layout=json_decode((string)$layoutRow['layout_json'],true);$valid=false;
+ foreach(is_array($layout)?$layout:[] as $item){
+  if(($item['type']??'')==='table' && (int)($item['id']??0)===$preferred && empty($item['exhibitor'])){$valid=true;break;}
+ }
+ if(!$valid){$db->rollBack();expoResponse(409,['ok'=>false,'error'=>'table_unavailable']);}
+ $occupied=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE event_key=? AND preferred_table=? AND application_status IN ('pending','approved','confirmed') LIMIT 1");
+ $occupied->execute(['bubba-me-2027',$preferred]);
+ if($occupied->fetchColumn()){$db->rollBack();expoResponse(409,['ok'=>false,'error'=>'table_already_selected']);}
  // Canonical foundation schema, shared with admin approvals. Never auto-approve.
  $stmt=$db->prepare("INSERT INTO bh_expo_exhibitors
  (event_key,business_name,contact_name,contact_email,contact_phone,website_url,logo_url,description,participation_json,preferred_table,donation_interest,insurance_policy,insurance_expiry,requirements,application_status,public_visible,submitted_at)
@@ -119,9 +134,10 @@ try {
  $details=json_encode(['participation'=>$participation,'additional_application_details'=>$extra,'social_links'=>$social],JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);
  $stmt->execute([$name,$contact,$email,$phone,$website?:null,$logo?:null,$description,$details,$preferred,$donation,$policy,$expiry,$get('requirements',1500)]);
  $id=(int)$db->lastInsertId();
+ $db->commit();
  $_SESSION['expo_apply_last']=time();
  unset($_SESSION['expo_apply_csrf']);
- expoResponse(201,['ok'=>true,'application_id'=>$id,'status'=>'pending','table_reserved'=>false]);
+ expoResponse(201,['ok'=>true,'application_id'=>$id,'status'=>'pending','table_reserved'=>true]);
 } catch(Throwable $e) {
  error_log('Expo application submission failed: '.get_class($e));
  expoResponse(503,['ok'=>false,'error'=>'booking_temporarily_unavailable']);
