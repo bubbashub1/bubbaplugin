@@ -91,7 +91,7 @@ $preferred=filter_var($body['preferred_table']??null,FILTER_VALIDATE_INT,['optio
 if (!$preferred) expoResponse(422,['ok'=>false,'error'=>'table_required']);
 $policy=$get('insurance_policy',120);$expiry=$get('insurance_expiry',20);
 $date=DateTimeImmutable::createFromFormat('!Y-m-d',$expiry);
-if (!$policy||!$date||$date->format('Y-m-d')!==$expiry||$date < new DateTimeImmutable('today'))
+if (!$policy||!$date||$date->format('Y-m-d')!==$expiry||$date <= new DateTimeImmutable('today'))
  expoResponse(422,['ok'=>false,'error'=>'insurance_required']);
 $website=$get('website',500);$logo=$get('logo_url',500);
 foreach ([$website,$logo] as $url) {
