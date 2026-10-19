@@ -11,13 +11,15 @@ header('X-Content-Type-Options: nosniff');
 function expoResponse(int $code, array $body): never {
  http_response_code($code); echo json_encode($body, JSON_UNESCAPED_SLASHES); exit;
 }
-// WordPress config lives in the deployment's document root. Load only that
-// exact local config, never a URL or a path supplied by the visitor.
-// wp-config.php can define constants without requiring WordPress bootstrap.
-$root = realpath(dirname(__DIR__));
-$config = $root ? $root . '/wp-config.php' : '';
-if ($config !== '' && is_file($config) && is_readable($config)) {
- require_once $config;
+// WordPress configuration contains the existing BUBBAHUB Turnstile constants.
+// Load it through WordPress's supported bootstrap rather than directly
+// requiring wp-config.php (which itself loads wp-settings.php).
+// Buffer incidental output to keep this JSON endpoint well formed.
+$wpLoader = dirname(__DIR__) . '/wp-load.php';
+if (is_file($wpLoader) && is_readable($wpLoader)) {
+ ob_start();
+ try { require_once $wpLoader; }
+ finally { ob_end_clean(); }
 }
 // CLOSED by default. A constant takes precedence over environment settings.
 $openFlag = defined('BH_EXPO_APPLICATIONS_OPEN') ? constant('BH_EXPO_APPLICATIONS_OPEN') : (getenv('BH_EXPO_APPLICATIONS_OPEN') ?: 'false');
