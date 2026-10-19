@@ -34,9 +34,9 @@ try{
  require_once __DIR__.'/db.php';$db=bh_mysql();
  if($method==='GET'){
   if(empty($_SESSION['bh_expo_csrf']))$_SESSION['bh_expo_csrf']=bin2hex(random_bytes(32));
-  $stmt=$db->prepare("SELECT id,business_name,contact_name,contact_email,website_url,logo_url,description,preferred_table,assigned_table,application_status,public_visible,submitted_at FROM bh_expo_exhibitors WHERE event_key=? ORDER BY submitted_at DESC LIMIT 250");
+  $stmt=$db->prepare("SELECT id,business_name,contact_name,contact_email,website_url,logo_url,description,participation_json,preferred_table,assigned_table,application_status,public_visible,submitted_at FROM bh_expo_exhibitors WHERE event_key=? ORDER BY submitted_at DESC LIMIT 250");
   $stmt->execute(['bubba-me-2027']);
-  reply(200,['ok'=>true,'csrf_token'=>$_SESSION['bh_expo_csrf'],'exhibitors'=>$stmt->fetchAll(PDO::FETCH_ASSOC)]);
+  $rows=$stmt->fetchAll(PDO::FETCH_ASSOC);foreach($rows as &$row){$details=json_decode((string)($row['participation_json']??''),true);$social=is_array($details)?($details['social_links']??[]):[];foreach(['facebook','instagram','tiktok'] as $network)$row[$network.'_url']=is_array($social)?(string)($social[$network]??''):'';unset($row['participation_json']);}unset($row);reply(200,['ok'=>true,'csrf_token'=>$_SESSION['bh_expo_csrf'],'exhibitors'=>$rows]);
  }
  if((int)($_SERVER['CONTENT_LENGTH']??0)>4096)reply(413,['ok'=>false,'error'=>'request_too_large']);
  $input=json_decode((string)file_get_contents('php://input'),true);
@@ -49,8 +49,10 @@ try{
  $name=trim((string)($input['business_name']??''));$description=trim((string)($input['description']??''));$website=trim((string)($input['website_url']??''));$logo=trim((string)($input['logo_url']??''));
  if(mb_strlen($name)<1||mb_strlen($name)>150||mb_strlen($description)>2000)reply(422,['ok'=>false,'error'=>'invalid_exhibitor_details']);
  foreach([$website,$logo] as $url){if($url!==''&&(!filter_var($url,FILTER_VALIDATE_URL)||!preg_match('~^https://~i',$url)))reply(422,['ok'=>false,'error'=>'invalid_url']);}
- $stmt=$db->prepare("UPDATE bh_expo_exhibitors SET application_status=?,public_visible=?,business_name=?,description=?,website_url=?,logo_url=?,reviewed_at=NOW() WHERE id=? AND event_key='bubba-me-2027'");
- $stmt->execute([$status,$visible,$name,$description,$website?:null,$logo?:null,$id]);
+ $social=[];foreach(['facebook','instagram','tiktok'] as $network){$url=trim((string)($input[$network.'_url']??''));if(strlen($url)>500||($url!==''&&(!filter_var($url,FILTER_VALIDATE_URL)||strtolower((string)parse_url($url,PHP_URL_SCHEME))!=='https')))reply(422,['ok'=>false,'error'=>'invalid_social_url','field'=>$network]);$social[$network]=$url;}
+ $existing=$db->prepare("SELECT participation_json FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027'");$existing->execute([$id]);$existingJson=$existing->fetchColumn();if($existingJson===false)reply(404,['ok'=>false,'error'=>'not_found']);$details=json_decode((string)$existingJson,true);if(!is_array($details))$details=[];$details['social_links']=$social;$updatedJson=json_encode($details,JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);
+ $stmt=$db->prepare("UPDATE bh_expo_exhibitors SET application_status=?,public_visible=?,business_name=?,description=?,website_url=?,logo_url=?,participation_json=?,reviewed_at=NOW() WHERE id=? AND event_key='bubba-me-2027'");
+ $stmt->execute([$status,$visible,$name,$description,$website?:null,$logo?:null,$updatedJson,$id]);
  if($stmt->rowCount()===0){
   $check=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027'");$check->execute([$id]);
   if(!$check->fetchColumn())reply(404,['ok'=>false,'error'=>'not_found']);

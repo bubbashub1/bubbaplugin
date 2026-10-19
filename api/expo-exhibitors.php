@@ -94,7 +94,8 @@ $date=DateTimeImmutable::createFromFormat('!Y-m-d',$expiry);
 if (!$policy||!$date||$date->format('Y-m-d')!==$expiry||$date <= new DateTimeImmutable('today'))
  expoResponse(422,['ok'=>false,'error'=>'insurance_required']);
 $website=$get('website',500);$logo=$get('logo_url',500);
-foreach (['website'=>$website,'logo_url'=>$logo] as $field=>$url) {
+$social=[];foreach(['facebook','instagram','tiktok'] as $network){$social[$network]=$get($network.'_url',500);}
+foreach (array_merge(['website'=>$website,'logo_url'=>$logo],$social) as $field=>$url) {
  if ($url!==''&&(!filter_var($url,FILTER_VALIDATE_URL)||strtolower((string)parse_url($url,PHP_URL_SCHEME))!=='https'))
   expoResponse(422,['ok'=>false,'error'=>'invalid_url','field'=>$field]);
 }
@@ -115,7 +116,7 @@ try {
  foreach (['town','service_category','oversize','oversize_details','electricity','chair','goody_bag','payment_preference','invoice_requested','notes'] as $key) {
   $extra[$key]=$get($key,500);
  }
- $details=json_encode(['participation'=>$participation,'additional_application_details'=>$extra],JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);
+ $details=json_encode(['participation'=>$participation,'additional_application_details'=>$extra,'social_links'=>$social],JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);
  $stmt->execute([$name,$contact,$email,$phone,$website?:null,$logo?:null,$description,$details,$preferred,$donation,$policy,$expiry,$get('requirements',1500)]);
  $id=(int)$db->lastInsertId();
  $_SESSION['expo_apply_last']=time();
