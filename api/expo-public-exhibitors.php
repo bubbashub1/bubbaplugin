@@ -31,6 +31,7 @@ try {
     }
     $fields = ["`$name` AS name"];
     if (isset($columns['details_json'])) $fields[] = 'details_json';
+    if (isset($columns['participation_json'])) $fields[] = 'participation_json';
     foreach (['website_url'=>['website_url','website'], 'image_url'=>['logo_url','image_url'], 'description'=>['public_description','description']] as $alias=>$options) {
         foreach ($options as $candidate) {
             if (isset($columns[$candidate])) { $fields[] = "`$candidate` AS `$alias`"; break; }
@@ -47,12 +48,14 @@ try {
         if (!is_array($details)) $details = [];
         $website = $row['website_url'] ?? $details['website'] ?? '';
         $logo = $row['image_url'] ?? $details['logo_url'] ?? '';
-        $description = $row['description'] ?? '';
+        $stored = json_decode((string)($row['participation_json']??''),true);
+        $social = is_array($stored) && is_array($stored['social_links']??null) ? $stored['social_links'] : [];
+        $links=[];foreach(['facebook','instagram','tiktok'] as $network){$url=(string)($social[$network]??'');$links[$network]=filter_var($url,FILTER_VALIDATE_URL)&&strtolower((string)parse_url($url,PHP_URL_SCHEME))==='https'?$url:null;}
         $safe[] = [
             'name'=>mb_substr((string)($row['name']??''),0,150),
             'website_url'=>filter_var($website, FILTER_VALIDATE_URL) && str_starts_with((string)$website, 'https://') ? $website : null,
             'image_url'=>filter_var($logo, FILTER_VALIDATE_URL) && str_starts_with((string)$logo, 'https://') ? $logo : null,
-            'description'=>mb_substr((string)$description,0,500)
+            'social_links'=>$links
         ];
     }
     echo json_encode(['ok'=>true,'exhibitors'=>$safe], JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
