@@ -76,7 +76,7 @@ try{
   }
  }
  $json=json_encode($data['items'],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
- if($json===false)answer(422,['ok'=>false,'error'=>'invalid_items']);
+ if($json===false){$db->rollBack();answer(422,['ok'=>false,'error'=>'invalid_items']);}
  if($revision===0){
   try{$stmt=$db->prepare('INSERT INTO bh_expo_floor_plans(event_key,layout_json,revision) VALUES(?,?,1)');$stmt->execute(['bubba-me-2027',$json]);$db->commit();answer(200,['ok'=>true,'revision'=>1]);}
   catch(PDOException $e){if($db->inTransaction())$db->rollBack();if((string)$e->getCode()==='23000')answer(409,['ok'=>false,'error'=>'layout_changed_reload']);throw $e;}
