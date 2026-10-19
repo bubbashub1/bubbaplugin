@@ -139,6 +139,7 @@ try {
  unset($_SESSION['expo_apply_csrf']);
  expoResponse(201,['ok'=>true,'application_id'=>$id,'status'=>'pending','table_reserved'=>true]);
 } catch(Throwable $e) {
+ if(isset($db)&&$db instanceof PDO&&$db->inTransaction())$db->rollBack();
  error_log('Expo application submission failed: '.get_class($e));
  expoResponse(503,['ok'=>false,'error'=>'booking_temporarily_unavailable']);
 }
