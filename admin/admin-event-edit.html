@@ -2,11 +2,41 @@
 <html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Edit event preview · Bubba Hub</title><link rel="stylesheet" href="/assets/css/styles.css">
 <style>body{background:#f3faf5;color:#174d3c;font-family:Quicksand,Arial,sans-serif}main{max-width:850px;margin:25px auto;padding:20px}section{background:white;border-radius:18px;padding:22px;margin:18px 0}label{display:block;margin:12px 0;font-weight:bold}input,textarea,select{display:block;width:100%;box-sizing:border-box;padding:12px;border:1px solid #abc8b5;border-radius:10px;font:inherit}textarea{min-height:110px}.notice{background:#fff1d9;padding:15px;border-radius:12px}</style></head>
-<body><main id="editor" hidden><p><a href="/admin/admin-events.html">← Events management</a></p><h1>Edit event</h1><p class="notice">Preview only. Saving and publishing are not yet connected. Changes entered here will not be stored.</p>
-<section><h2>Event details</h2><label>Title<input value="Bubba &amp; Me Baby &amp; Pregnancy Expo" maxlength="180"></label><label>Description<textarea>Discover local pregnancy, baby and family businesses and support services.</textarea></label></section>
-<section><h2>Date and venue</h2><label>Start<input type="datetime-local" value="2027-01-09T10:30"></label><label>End<input type="datetime-local" value="2027-01-09T14:30"></label><label>Venue<input value="Acorn Centre, Torquay"></label></section>
-<section><h2>Imagery</h2><label>Image URL<input type="url" placeholder="https://"></label><label>Image description<input maxlength="200"></label></section>
+<body><main id="editor" hidden><p><a href="/admin/admin-events.html">← Events management</a></p><h1>Edit event</h1><p class="notice">Event details can be saved on staging after the migration. Application settings and publishing remain preview-only.</p>
+<section><h2>Event details</h2><label>Title<input id="title" value="Bubba &amp; Me Baby &amp; Pregnancy Expo" maxlength="180"></label><label>Description<textarea id="description">Discover local pregnancy, baby and family businesses and support services.</textarea></label></section>
+<section><h2>Date and venue</h2><label>Start<input id="starts_at" type="datetime-local" value="2027-01-09T10:30"></label><label>End<input id="ends_at" type="datetime-local" value="2027-01-09T14:30"></label><label>Venue<input id="venue" value="Acorn Centre, Torquay"></label></section>
+<section><h2>Imagery</h2><label>Image URL<input id="image_url" type="url" placeholder="https://"></label><label>Image description<input id="image_alt" maxlength="200"></label></section>
 <section><h2>Applications</h2><label>Visitor capacity<input type="number" min="1" value="300"></label><label>Visitor registration<select><option>Open</option><option>Closed</option></select></label><label>Exhibitor applications<select><option>Open</option><option>Closed</option></select></label><label>Sponsorship visibility<select><option>Visible</option><option>Hidden</option></select></label></section>
-<section><h2>Publishing</h2><label>Status<select><option>Published</option><option>Draft</option></select></label><button disabled type="button">Save changes (not connected)</button></section>
+<section><h2>Publishing</h2><label>Status<select><option>Published</option><option>Draft</option></select></label><button id="save" disabled type="button">Save event details</button><p id="saveMessage" role="status">Loading…</p></section>
 </main><p id="checking">Checking admin access…</p>
-<script>(async()=>{try{const r=await fetch('/admin-auth.php?action=check',{credentials:'same-origin',cache:'no-store'});const j=await r.json();if(!r.ok||j.ok!==true){location.replace('/admin-login.html');return}document.getElementById('checking').remove();document.getElementById('editor').hidden=false}catch(e){document.getElementById('checking').textContent='Admin authentication unavailable.'}})()</script></body></html>
+<script>(async()=>{try{const r=await fetch('/admin-auth.php?action=check',{credentials:'same-origin',cache:'no-store'});const j=await r.json();if(!r.ok||j.ok!==true){location.replace('/admin-login.html');return}document.getElementById('checking').remove();document.getElementById('editor').hidden=false}catch(e){document.getElementById('checking').textContent='Admin authentication unavailable.'}})()</script><script>
+(async function(){
+const fields=['title','description','starts_at','ends_at','venue','image_url','image_alt'];
+const save=document.getElementById('save'),message=document.getElementById('saveMessage');
+let token='',revision=0;
+try {
+const response=await fetch('/api/admin-event-details.php',{credentials:'same-origin',cache:'no-store'});
+const result=await response.json();
+if(!response.ok||!result.ok)throw Error(result.error||'Load failed');
+token=result.csrf_token;revision=Number(result.event.revision);
+for(const key of fields){
+const el=document.getElementById(key);
+if(!el)throw Error('Missing field '+key);
+el.value=key.endsWith('_at')?result.event[key].replace(' ','T').slice(0,16):(result.event[key]||'');
+}
+save.disabled=false;message.textContent='Loaded. Only event details will be saved.';
+}catch(e){message.textContent='Unable to load: '+e.message;return;}
+save.addEventListener('click',async function(){
+save.disabled=true;message.textContent='Saving…';
+try {
+const data={revision};
+for(const key of fields)data[key]=document.getElementById(key).value;
+const response=await fetch('/api/admin-event-details.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':token},body:JSON.stringify(data)});
+const result=await response.json();
+if(!response.ok||!result.ok)throw Error(result.error||'Save failed');
+revision=Number(result.revision);message.textContent='Saved successfully. Public event pages are not yet connected.';
+}catch(e){message.textContent='Not saved: '+e.message;}
+finally{save.disabled=false;}
+});
+})();
+</script></body></html>
