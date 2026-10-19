@@ -37,7 +37,7 @@ input{max-width:100%;padding:8px;border:1px solid #adcbbf;border-radius:7px}inpu
 <label>X position<br><input id="x" type="number" step="1" min="20" max="1180"></label>
 <label>Y position<br><input id="y" type="number" step="1" min="20" max="760"></label>
 <label>Exhibitor name (draft)<br><input id="exhibitor" maxlength="100"></label>
-<button id="turn">Rotate 90°</button></div>
+<button id="turn">Rotate 90°</button><div id="assignmentControls" hidden><label>Approved exhibitor<br><select id="assignExhibitor"><option value="">Unassigned</option></select></label><button id="assignTable" type="button">Save exhibitor assignment</button><p id="assignmentStatus" class="small" role="status"></p></div></div>
 <p class="small">Pink = 6ft exhibitor table (schematic scale). Blue = desk. Red = fire-exit reference / no-stall zone. Move items with mouse, touch, or keyboard arrows (Shift + arrow for larger steps).</p>
 <p class="small"><strong>Safety:</strong> exit locations, room dimensions, stall capacity, chair space and accessible aisles must be confirmed on site. This editor does not certify compliance.</p></aside></div>
 <p id="status" class="status" role="status"></p></main>
@@ -56,7 +56,7 @@ for(let x of [75,285,705,915])a.push({id:id++,type:"table",x,y:645,angle:0,label
 for(let y of [305,425])for(let x of [390,610])a.push({id:id++,type:"table",x,y,angle:0,label:String(id-1),exhibitor:""});
 return a;
 };
-let items=initial(),selected=null,history=[],future=[],drag=null,serverRevision=null,csrfToken="";
+let items=initial(),selected=null,history=[],future=[],drag=null,serverRevision=null,csrfToken="",exhibitors=[];
 const dims=o=>o.type==="desk"?[170,75]:o.angle%180===0?[185,75]:[75,185];
 const intersects=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
 const valid=(o,other=items)=>{
@@ -84,11 +84,13 @@ updateProperties();
 function renderPositions(){layer.querySelectorAll("g[data-id]").forEach(g=>{let o=items.find(v=>v.id===Number(g.dataset.id));if(!o)return;let [w,h]=dims(o);let r=g.querySelector("rect"),t=g.querySelector("text");r.setAttribute("x",o.x);r.setAttribute("y",o.y);t.setAttribute("x",o.x+w/2);t.setAttribute("y",o.y+h/2+5)});}
 function point(ev){const p=svg.createSVGPoint();p.x=ev.clientX;p.y=ev.clientY;return p.matrixTransform(svg.getScreenCTM().inverse())}
 function select(id){selected=id;render()}
-function updateProperties(){let o=items.find(t=>t.id===selected);$("none").hidden=!!o;$("properties").hidden=!o;if(o){$("label").value=o.label;$("x").value=o.x;$("y").value=o.y;$("exhibitor").value=o.exhibitor||""}}
+function updateProperties(){let o=items.find(t=>t.id===selected);const controls=$("assignmentControls");controls.hidden=!(o&&o.type==="table"&&serverRevision!==null);if(!controls.hidden){const sel=$("assignExhibitor");const assigned=exhibitors.find(e=>String(e.assigned_table||"")===String(o.id)&&e.application_status==="approved");sel.replaceChildren(new Option("Unassigned",""));for(const e of exhibitors.filter(e=>e.application_status==="approved"&&(!e.assigned_table||String(e.assigned_table)===String(o.id))))sel.add(new Option(e.business_name+" (#"+e.id+")",String(e.id)));sel.value=assigned?String(assigned.id):"";}$("assignmentStatus").textContent="";$("none").hidden=!!o;$("properties").hidden=!o;if(o){$("label").value=o.label;$("x").value=o.x;$("y").value=o.y;$("exhibitor").value=o.exhibitor||""}}
 function edit(fn){const o=items.find(t=>t.id===selected);if(!o)return;const old=clone(o);snapshot();fn(o);if(!valid(o)){Object.assign(o,old);message("That position overlaps another item or a protected exit area.")}render()}
 function message(s){$("status").textContent=s}
 function nextId(){return Math.max(0,...items.map(o=>o.id))+1}
 function add(type){let id=nextId(),o={id,type,x:450,y:230,angle:0,label:type==="desk"?"Welcome":String(id),exhibitor:""};for(let y=160;y<600;y+=20){for(let x=110;x<980;x+=20){o.x=x;o.y=y;if(valid(o)){snapshot();items.push(o);selected=id;render();return}}}message("No free space for another item.")}
+async function loadExhibitors(){try{const r=await fetch("/api/expo-admin-exhibitors.php",{credentials:"same-origin",cache:"no-store"});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||"Unavailable");exhibitors=d.exhibitors||[];render();}catch(e){message("Exhibitor assignments unavailable: "+e.message)}}
+$("assignTable").onclick=async()=>{const o=items.find(t=>t.id===selected);if(!o||o.type!=="table")return;const choice=$("assignExhibitor").value;const existing=exhibitors.find(e=>String(e.assigned_table||"")===String(o.id)&&e.application_status==="approved");if(!choice&&!existing)return;const id=choice?Number(choice):Number(existing.id);try{const r=await fetch("/api/expo-table-assign-admin.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","X-CSRF-Token":csrfToken},body:JSON.stringify({exhibitor_id:id,table_id:choice?o.id:null})});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||"Save failed");$("assignmentStatus").textContent="Assignment saved.";await loadExhibitors();}catch(e){$("assignmentStatus").textContent="Assignment not saved: "+e.message}};
 $("add").onclick=()=>add("table");$("desk").onclick=()=>add("desk");
 $("rotate").onclick=$("turn").onclick=()=>edit(o=>{if(o.type==="table")o.angle=(o.angle+90)%180});
 $("remove").onclick=()=>{if(selected===null)return;snapshot();items=items.filter(o=>o.id!==selected);selected=null;render()};
@@ -121,7 +123,7 @@ csrfToken=result.csrf_token;serverRevision=result.revision;
 if(Array.isArray(result.items)){
  if(confirm("A server-saved floor plan is available. Load it? Your current browser draft will be replaced.")){items=result.items;selected=null;render();}
 }
-message("Server floor-plan storage connected.");
+message("Server floor-plan storage connected.");await loadExhibitors();
 }catch(e){message("Server storage unavailable: "+e.message+". You can still save locally and export JSON.");}
 })();
 })();
