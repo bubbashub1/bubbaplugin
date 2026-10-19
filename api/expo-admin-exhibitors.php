@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-/** Staging Expo exhibitor review API. Uses existing dedicated admin session. */
+/** Expo exhibitor review API. Uses existing dedicated admin session. */
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
@@ -12,7 +12,11 @@ if(session_status()!==PHP_SESSION_ACTIVE){
  session_start();
 }
 function reply(int $status,array $body): never {http_response_code($status);echo json_encode($body,JSON_UNESCAPED_SLASHES);exit;}
-if(empty($_SESSION['bh_admin_authenticated']) || empty($_SESSION['bh_admin_last_activity']) || time()-(int)$_SESSION['bh_admin_last_activity']>1800)reply(401,['ok'=>false,'error'=>'admin_required']);
+if(empty($_SESSION['bh_admin_authenticated']))reply(401,['ok'=>false,'error'=>'admin_required']);
+if(!empty($_SESSION['bh_admin_last_activity']) && time()-(int)$_SESSION['bh_admin_last_activity']>1800){
+ unset($_SESSION['bh_admin_authenticated'],$_SESSION['bh_admin_last_activity']);
+ reply(401,['ok'=>false,'error'=>'admin_session_expired']);
+}
 $_SESSION['bh_admin_last_activity']=time();
 $method=$_SERVER['REQUEST_METHOD']??'GET';
 if(!in_array($method,['GET','POST'],true)){header('Allow: GET, POST');reply(405,['ok'=>false,'error'=>'method_not_allowed']);}
