@@ -36,12 +36,12 @@
 <fieldset style="margin-top:18px;border:1px solid #d1e4d4;border-radius:14px;padding:16px"><legend>Optional £20 donation</legend>
 <p>Your exhibitor space is free whether or not you donate. If you express interest in donating, Bubba Hub will contact you directly. No payment is collected here.</p>
 <label>Would you like to make a £20 contribution? *<select name="donation_interest" required><option value="">Please select</option><option value="no">No thank you</option><option value="yes">Yes, please contact me</option><option value="maybe">Maybe, I'd like more information</option></select></label>
-<label style="display:block;margin-top:12px">Preferred payment method (only if donating)<select name="payment_preference"><option value="">No preference</option><option value="bank_transfer">Bank transfer</option><option value="cash">Cash</option><option value="paypal">PayPal</option></select></label>
-<label style="display:block;margin-top:12px"><input type="checkbox" name="invoice_requested"> Please email me an invoice if I decide to donate</label>
+<label style="display:block;margin-top:12px">How would you prefer to make your contribution? (only if donating)<select name="payment_preference"><option value="">Please select</option><option value="cash">Cash</option><option value="pay_now">Pay now</option><option value="invoice">Invoice me</option></select></label>
+<p style="font-size:.9rem">Choosing Pay now records your preference; payment will be arranged separately after your application is reviewed. No payment is collected on this form.</p>
 </fieldset>
 <fieldset style="margin-top:18px;border:1px solid #d1e4d4;border-radius:14px;padding:16px"><legend>Public liability insurance</legend>
 <label style="display:block">Insurance policy number *<input name="insurance_policy" required maxlength="120"></label>
-<label style="display:block;margin-top:12px">Insurance expiry date * (must be after today)<input name="insurance_expiry" type="date" required></label>
+<label style="display:block;margin-top:12px">Insurance expiry date * (DD/MM/YYYY, must be after today)<input name="insurance_expiry_uk" type="text" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/[0-9]{4}" maxlength="10" required><input name="insurance_expiry" type="hidden"></label>
 <label style="display:block;margin-top:12px"><input name="insurance_confirm" type="checkbox" required> I confirm that I can supply a copy of my public liability insurance if requested. *</label>
 </fieldset>
 <label style="display:block;margin-top:16px">Business logo / profile image URL (optional)<input name="logo_url" type="url" placeholder="https://"></label>
@@ -61,14 +61,17 @@
  if(!form||!button||!status)return;
  let csrfToken=""; let turnstileToken="";
  for(const fieldName of ["website","logo_url","facebook_url","instagram_url","tiktok_url"]){const field=form.elements.namedItem(fieldName);field.addEventListener("blur",()=>{const value=field.value.trim();if(value && !/^[a-z][a-z0-9+.-]*:\/\//i.test(value) && /^(?:www\.)?[^\s@/]+\.[^\s@/]+/i.test(value))field.value="https://"+value;});}
- const insuranceExpiry=form.elements.namedItem('insurance_expiry');
+ const insuranceExpiry=form.elements.namedItem('insurance_expiry');const insuranceExpiryUK=form.elements.namedItem('insurance_expiry_uk');
  function updateInsuranceMinimum(){
-  const now=new Date();const tomorrow=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1);
-  const min=[tomorrow.getFullYear(),String(tomorrow.getMonth()+1).padStart(2,'0'),String(tomorrow.getDate()).padStart(2,'0')].join('-');
-  insuranceExpiry.min=min;
-  insuranceExpiry.setCustomValidity(insuranceExpiry.value && insuranceExpiry.value<min?'Insurance expiry date must be after today.':'');
+  const v=insuranceExpiryUK.value.trim();const m=/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/.exec(v);
+  if(!m){insuranceExpiry.value='';insuranceExpiryUK.setCustomValidity(v?'Enter a valid date in DD/MM/YYYY format.':'');return;}
+  const iso=m[3]+'-'+m[2]+'-'+m[1],d=new Date(iso+'T12:00:00');
+  const valid=!Number.isNaN(d.getTime())&&d.getFullYear()===Number(m[3])&&d.getMonth()+1===Number(m[2])&&d.getDate()===Number(m[1]);
+  const today=new Date();today.setHours(0,0,0,0);
+  insuranceExpiry.value=valid?iso:'';
+  insuranceExpiryUK.setCustomValidity(!valid?'Enter a real calendar date.':d<=today?'Insurance expiry must be after today.':'');
  }
- insuranceExpiry.addEventListener('input',updateInsuranceMinimum);
+ insuranceExpiryUK.addEventListener('input',updateInsuranceMinimum);
  updateInsuranceMinimum();
  (async()=>{try{const r=await fetch("/api/expo-exhibitors.php",{credentials:"same-origin",cache:"no-store"});const data=await r.json();if(!r.ok||!data.applications_open||!data.csrf_token){status.textContent="Applications are not open yet. Please check back shortly.";return;}csrfToken=data.csrf_token;
    if(!data.turnstile_site_key){status.textContent="Verification is not configured yet. Please try again later.";return;}
