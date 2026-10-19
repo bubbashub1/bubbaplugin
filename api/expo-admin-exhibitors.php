@@ -67,7 +67,7 @@ try{
  $stmt->execute([$status,$status,$visible,$name,$description,$website?:null,$logo?:null,$updatedJson,$id]);
  if($stmt->rowCount()===0){
   $check=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027'");$check->execute([$id]);
-  if(!$check->fetchColumn())reply(404,['ok'=>false,'error'=>'not_found']);
+  if(!$check->fetchColumn()){$db->rollBack();reply(404,['ok'=>false,'error'=>'not_found']);}
  }
  $db->commit();
  reply(200,['ok'=>true,'id'=>$id,'application_status'=>$status,'public_visible'=>$visible]);
