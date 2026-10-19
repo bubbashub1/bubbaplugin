@@ -11,7 +11,7 @@ button:focus-visible,.item:focus-visible{outline:3px solid #e88c3e;outline-offse
 .stage{overflow:auto;border:2px solid #b6d7cc;border-radius:18px;background:#fff;padding:15px;touch-action:pan-x pan-y}
 #plan{display:block;width:100%;min-width:520px;height:auto;aspect-ratio:1200/780;user-select:none;touch-action:none;background:#fffdf6;border-radius:10px}
 .item{cursor:grab;stroke:#a73c66;stroke-width:3;fill:#f5d7e4}.item.selected{stroke:#0e8d7a;stroke-width:5}
-.item.fixture{fill:#d5e8f7;stroke:#3c79a0}.item.exit{fill:#f7b7a8;stroke:#ae483e;cursor:default}
+.item.assigned{fill:#b9bdc1;stroke:#777f84}.item.fixture{fill:#d5e8f7;stroke:#3c79a0}.item.exit{fill:#f7b7a8;stroke:#ae483e;cursor:default}
 aside{background:white;border:1px solid #d1e6dd;border-radius:15px;padding:16px}label{display:block;margin:12px 0;font-size:.9rem}
 input{max-width:100%;padding:8px;border:1px solid #adcbbf;border-radius:7px}input[type=number]{width:90px}
 .small{font-size:.86rem;color:#4e6d65}.status{min-height:25px;font-weight:650}
@@ -71,9 +71,9 @@ function render(){
 layer.innerHTML="";
 exits.forEach((e,i)=>{const g=document.createElementNS("http://www.w3.org/2000/svg","g");
 g.innerHTML='<rect x="'+e.x+'" y="'+e.y+'" width="'+e.w+'" height="'+e.h+'" rx="5" fill="#ffdcd3" stroke="#c55448" stroke-dasharray="8 5"/><text x="'+(e.x+90)+'" y="'+(e.y+43)+'" text-anchor="middle" fill="#9c332b" font-size="17" font-weight="bold">FIRE EXIT '+(i+1)+'</text>';layer.append(g)});
-items.forEach(o=>{const [w,h]=dims(o),g=document.createElementNS("http://www.w3.org/2000/svg","g");
+items.forEach(o=>{const [w,h]=dims(o),reserved=exhibitors.some(e=>e.application_status==="approved"&&String(e.assigned_table||"")===String(o.id)),g=document.createElementNS("http://www.w3.org/2000/svg","g");
 g.setAttribute("data-id",o.id);g.setAttribute("tabindex","0");g.setAttribute("role","button");g.setAttribute("aria-label",(o.type==="desk"?"Desk ":"Table ")+o.label);
-g.innerHTML='<rect class="item '+(o.type==="desk"?"fixture ":"")+(selected===o.id?"selected":"")+'" x="'+o.x+'" y="'+o.y+'" width="'+w+'" height="'+h+'" rx="8"/><text x="'+(o.x+w/2)+'" y="'+(o.y+h/2+5)+'" font-size="18" text-anchor="middle" fill="#65304a" pointer-events="none">'+escape(o.label)+'</text>';
+g.innerHTML='<rect class="item '+(o.type==="desk"?"fixture ":"")+(reserved?"assigned ":"")+(selected===o.id?"selected":"")+'" x="'+o.x+'" y="'+o.y+'" width="'+w+'" height="'+h+'" rx="8"/><text x="'+(o.x+w/2)+'" y="'+(o.y+h/2+5)+'" font-size="18" text-anchor="middle" fill="#65304a" pointer-events="none">'+escape(o.label)+'</text>';
 g.addEventListener("pointerdown",ev=>{ev.preventDefault();select(o.id);snapshot();drag={id:o.id,start:point(ev),x:o.x,y:o.y};g.setPointerCapture(ev.pointerId)});
 g.addEventListener("pointermove",ev=>{if(!drag||drag.id!==o.id)return;let p=point(ev),old={x:o.x,y:o.y};o.x=Math.round(drag.x+p.x-drag.start.x);o.y=Math.round(drag.y+p.y-drag.start.y);if(!valid(o)){o.x=old.x;o.y=old.y}renderPositions();});
 g.addEventListener("pointerup",()=>{drag=null;render()});g.addEventListener("pointercancel",()=>{drag=null;render()});
