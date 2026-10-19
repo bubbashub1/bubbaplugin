@@ -27,19 +27,20 @@ try{
  require_once __DIR__.'/db.php';$db=bh_mysql();$db->beginTransaction();
  $plan=$db->prepare('SELECT layout_json FROM bh_expo_floor_plans WHERE event_key=? FOR UPDATE');
  $plan->execute(['bubba-me-2027']);$raw=$plan->fetchColumn();
- if($raw===false)out(409,['ok'=>false,'error'=>'save_floor_plan_first']);
+ if($raw===false){$db->rollBack();out(409,['ok'=>false,'error'=>'save_floor_plan_first']);}
  $items=json_decode((string)$raw,true);$found=false;
  foreach($items as $item){if($table!==null&&(int)$item['id']===$table&&($item['type']??'')==='table')$found=true;}
- if($table!==null&&!$found)out(422,['ok'=>false,'error'=>'table_not_found']);
+ if($table!==null&&!$found){$db->rollBack();out(422,['ok'=>false,'error'=>'table_not_found']);}
  $stmt=$db->prepare("SELECT id,application_status FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027' FOR UPDATE");
  $stmt->execute([$id]);$ex=$stmt->fetch(PDO::FETCH_ASSOC);
- if(!$ex)out(404,['ok'=>false,'error'=>'exhibitor_not_found']);
- if($table!==null&&$ex['application_status']!=='approved')out(422,['ok'=>false,'error'=>'approve_exhibitor_first']);
+ if(!$ex){$db->rollBack();out(404,['ok'=>false,'error'=>'exhibitor_not_found']);}
+ if($table!==null&&$ex['application_status']!=='approved'){$db->rollBack();out(422,['ok'=>false,'error'=>'approve_exhibitor_first']);}
  if($table!==null){
   $used=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE event_key='bubba-me-2027' AND application_status='approved' AND assigned_table=? AND id<>? LIMIT 1 FOR UPDATE");
   $used->execute([(string)$table,$id]);
-  if($used->fetchColumn())out(409,['ok'=>false,'error'=>'table_already_assigned']);
+  if($used->fetchColumn()){$db->rollBack();out(409,['ok'=>false,'error'=>'table_already_assigned']);}
  }
+ if($table!==null){$held=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE event_key='bubba-me-2027' AND preferred_table=? AND application_status IN ('pending','approved','confirmed') AND id<>? LIMIT 1");$held->execute([(string)$table,$id]);if($held->fetchColumn()){$db->rollBack();out(409,['ok'=>false,'error'=>'table_reserved_by_applicant']);}}
  $update=$db->prepare("UPDATE bh_expo_exhibitors SET assigned_table=? WHERE id=? AND event_key='bubba-me-2027'");
  $update->execute([$table===null?null:(string)$table,$id]);$db->commit();
  out(200,['ok'=>true,'exhibitor_id'=>$id,'assigned_table'=>$table]);
