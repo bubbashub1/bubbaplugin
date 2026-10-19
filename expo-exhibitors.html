@@ -45,7 +45,7 @@
 <label style="display:block;margin-top:12px"><input name="insurance_confirm" type="checkbox" required> I confirm that I can supply a copy of my public liability insurance if requested. *</label>
 </fieldset>
 <label style="display:block;margin-top:16px">Business logo / profile image URL (optional)<input name="logo_url" type="url" placeholder="https://"></label>
-<label style="display:block;margin-top:16px">Equipment, accessibility or space requirements<textarea name="requirements" maxlength="1500" rows="3"></textarea></label>
+<div data-expo-logo-upload><label>Upload logo (PNG, JPEG or WebP, maximum 2 MB)<input type="file" accept="image/png,image/jpeg,image/webp" data-expo-logo-file></label><button type="button" data-expo-upload-button class="button">Upload logo</button><p data-expo-upload-status role="status"></p><img data-expo-logo-preview alt="Logo preview" hidden style="max-width:180px;max-height:120px;object-fit:contain"></div><label style="display:block;margin-top:16px">Equipment, accessibility or space requirements<textarea name="requirements" maxlength="1500" rows="3"></textarea></label>
 <label style="display:block;margin-top:16px">Additional information<textarea name="notes" maxlength="1500" rows="3"></textarea></label>
 <label style="display:block;margin-top:16px"><input type="checkbox" name="contact_consent" required> I agree to be contacted about this exhibitor application. *</label>
 <p><strong>Event conditions:</strong> Bubba Hub may cancel the event if exhibitor interest is insufficient. If cancelled, confirmed exhibitors will receive a full refund of any payments made. Visitor numbers cannot be guaranteed. The Expo also provides opportunities to network and collaborate with local businesses and family services.</p>
@@ -100,4 +100,4 @@
   finally{turnstileToken="";if(window.turnstile)window.turnstile.reset();button.disabled=true;}
  };
 })();
-</script><script src="/assets/js/expo-website-discovery.js" defer></script></body></html>
+</script><script src="/assets/js/expo-website-discovery.js" defer></script><script src="/assets/js/expo-logo-upload.js" defer></script></body></html>
