@@ -46,14 +46,34 @@ try{
  }
  $revision=filter_var($data['revision']??null,FILTER_VALIDATE_INT);
  if($revision===false||$revision<0)answer(422,['ok'=>false,'error'=>'invalid_revision']);
+
+ // Keep assigned table identities stable. Applications store the immutable item ID,
+ // so a removed table must never be silently reassigned to another exhibitor.
+ $db->beginTransaction();
+ $existing=$db->prepare('SELECT layout_json,revision FROM bh_expo_floor_plans WHERE event_key=? FOR UPDATE');
+ $existing->execute(['bubba-me-2027']);$existingRow=$existing->fetch(PDO::FETCH_ASSOC);
+ $actualRevision=$existingRow?(int)$existingRow['revision']:0;
+ if($revision!==$actualRevision){$db->rollBack();answer(409,['ok'=>false,'error'=>'layout_changed_reload']);}
+ $assigned=$db->prepare("SELECT DISTINCT preferred_table FROM bh_expo_exhibitors WHERE event_key=? AND preferred_table IS NOT NULL AND application_status IN ('pending','approved','confirmed')");
+ $assigned->execute(['bubba-me-2027']);$assignedIds=array_map('intval',$assigned->fetchAll(PDO::FETCH_COLUMN));
+ if($assignedIds){
+  $old=[];foreach(json_decode((string)($existingRow['layout_json']??'[]'),true)?:[] as $item){if(($item['type']??'')==='table')$old[(int)$item['id']]=$item;}
+  $new=[];foreach($data['items'] as $item){if($item['type']==='table')$new[(int)$item['id']]=$item;}
+  foreach($assignedIds as $id){
+   if(!isset($old[$id],$new[$id])||(string)$old[$id]['label']!==(string)$new[$id]['label']){
+    $db->rollBack();answer(409,['ok'=>false,'error'=>'reserved_table_identity_locked','table_id'=>$id]);
+   }
+  }
+ }
  $json=json_encode($data['items'],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
  if($json===false)answer(422,['ok'=>false,'error'=>'invalid_items']);
  if($revision===0){
-  try{$stmt=$db->prepare('INSERT INTO bh_expo_floor_plans(event_key,layout_json,revision) VALUES(?,?,1)');$stmt->execute(['bubba-me-2027',$json]);answer(200,['ok'=>true,'revision'=>1]);}
+  try{$stmt=$db->prepare('INSERT INTO bh_expo_floor_plans(event_key,layout_json,revision) VALUES(?,?,1)');$stmt->execute(['bubba-me-2027',$json]);$db->commit();answer(200,['ok'=>true,'revision'=>1]);}
   catch(PDOException $e){if((string)$e->getCode()==='23000')answer(409,['ok'=>false,'error'=>'layout_changed_reload']);throw $e;}
  }
  $stmt=$db->prepare('UPDATE bh_expo_floor_plans SET layout_json=?,revision=revision+1 WHERE event_key=? AND revision=?');
  $stmt->execute([$json,'bubba-me-2027',$revision]);
- if($stmt->rowCount()!==1)answer(409,['ok'=>false,'error'=>'layout_changed_reload']);
+ if($stmt->rowCount()!==1){$db->rollBack();answer(409,['ok'=>false,'error'=>'layout_changed_reload']);}
+ $db->commit();
  answer(200,['ok'=>true,'revision'=>$revision+1]);
 }catch(Throwable $e){error_log('expo_floor_plan: '.$e->getMessage());answer(503,['ok'=>false,'error'=>'floor_plan_storage_unavailable']);}
