@@ -18,7 +18,7 @@ input{max-width:100%;padding:8px;border:1px solid #adcbbf;border-radius:7px}inpu
 @media(max-width:850px){.editor{grid-template-columns:1fr}aside{order:-1}}
 @media print{header,.toolbar,aside,.small,.status{display:none!important}main{padding:0}.stage{border:0;overflow:visible}#plan{min-width:0}}
 </style></head>
-<body><p style="padding:12px;background:#fff1d9;color:#174c44;text-align:center">Floor-plan draft: saves to this browser only. Export JSON for backup. Table assignments are not synced with exhibitor approvals.</p><header><h1>🌈 Bubba Hub · Expo floor-plan editor</h1><a href="/events.html">← Events</a></header>
+<body><div id="authChecking" style="padding:24px" role="status">Checking admin access…</div><div id="protectedEditor" hidden><p style="padding:12px;background:#fff1d9;color:#174c44;text-align:center">Floor-plan draft: saves to this browser only. Export JSON for backup. Table assignments are not synced with exhibitor approvals.</p><header><h1>🌈 Bubba Hub · Expo floor-plan editor</h1><a href="/admin/admin-events.html">← Events management</a></header>
 <main><p>Move, rotate and number tables for the Bubba &amp; Me Expo. <strong>Draft editor:</strong> saves in this browser only; export JSON for backup. Do not publish as an approved evacuation plan.</p>
 <div class="toolbar">
 <button id="add">+ Add 6ft table</button><button id="desk">+ Welcome desk</button><button id="rotate">Rotate selected</button>
@@ -103,5 +103,15 @@ $("reset").onclick=()=>{if(!confirm("Restore starter layout? Save or export your
 ["label","exhibitor","x","y"].forEach(k=>$(k).addEventListener("change",()=>edit(o=>{o[k]=["x","y"].includes(k)?Number($(k).value):$(k).value})));
 try{let stored=JSON.parse(localStorage.getItem(KEY));if(Array.isArray(stored))items=stored}catch{}
 render();
+})();
+</script></div><script>
+(async()=>{
+try{
+const response=await fetch('/admin-auth.php?action=check',{credentials:'same-origin',cache:'no-store'});
+const result=await response.json();
+if(!response.ok||result.ok!==true){location.replace('/admin-login.html');return;}
+document.getElementById('authChecking').remove();
+document.getElementById('protectedEditor').hidden=false;
+}catch(e){document.getElementById('authChecking').textContent='Admin authentication unavailable. Please sign in again.';}
 })();
 </script></body></html>
