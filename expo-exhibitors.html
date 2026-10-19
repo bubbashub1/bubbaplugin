@@ -60,6 +60,7 @@
  const form=document.getElementById('exhibitorForm'),button=document.getElementById('expoSubmit'),status=document.getElementById('expoSubmitStatus');
  if(!form||!button||!status)return;
  let csrfToken=""; let turnstileToken="";
+ for(const fieldName of ["website","logo_url"]){const field=form.elements.namedItem(fieldName);field.addEventListener("blur",()=>{const value=field.value.trim();if(value && !/^[a-z][a-z0-9+.-]*:\/\//i.test(value) && /^(?:www\.)?[^\s@/]+\.[^\s@/]+/i.test(value))field.value="https://"+value;});}
  const insuranceExpiry=form.elements.namedItem('insurance_expiry');
  function updateInsuranceMinimum(){
   const now=new Date();const tomorrow=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1);
@@ -91,11 +92,11 @@
    const response=await fetch('/api/expo-exhibitors.php',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':csrfToken},body:JSON.stringify(body),credentials:'same-origin'});
    const raw=await response.text();
    let result;try{result=JSON.parse(raw);}catch(_){throw new Error('HTTP '+response.status+' — server returned a non-JSON response');}
-   if(!response.ok||!result.ok)throw new Error((result.error||'submission_failed')+' (HTTP '+response.status+')');
+   if(!response.ok||!result.ok)throw new Error((result.error||'submission_failed')+(result.field?' in '+result.field:'')+' (HTTP '+response.status+')');
    status.textContent='Application received. Reference #'+result.application_id+'. Your application is pending review.';
    status.scrollIntoView({behavior:'smooth',block:'center'});
    form.reset();
-  }catch(error){status.textContent='Application not confirmed: '+(error.message||'network_error')+'. Please check with Bubba Hub before trying again.';status.scrollIntoView({behavior:'smooth',block:'center'});}
+  }catch(error){if(String(error.message||'').includes('invalid_csrf')){try{const refreshed=await fetch('/api/expo-exhibitors.php',{credentials:'same-origin',cache:'no-store'});const fresh=await refreshed.json();if(refreshed.ok&&fresh.csrf_token)csrfToken=fresh.csrf_token;}catch(_){}}status.textContent='Application not confirmed: '+(error.message||'network_error')+(String(error.message||'').includes('invalid_csrf')?'. Security token refreshed; please complete verification and submit again.':'. Please check with Bubba Hub before trying again.');status.scrollIntoView({behavior:'smooth',block:'center'});}
   finally{turnstileToken="";if(window.turnstile)window.turnstile.reset();button.disabled=true;}
  };
 })();
