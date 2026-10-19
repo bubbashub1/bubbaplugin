@@ -94,7 +94,7 @@
    const raw=await response.text();
    let result;try{result=JSON.parse(raw);}catch(_){throw new Error('HTTP '+response.status+' — server returned a non-JSON response');}
    if(!response.ok||!result.ok)throw new Error((result.error||'submission_failed')+(result.field?' in '+result.field:'')+' (HTTP '+response.status+')');
-   status.textContent='Application received. Reference #'+result.application_id+'. Your application is pending review.';
+   status.textContent='Application received. Reference #'+result.application_id+'. Your application is pending review.';if(body.sponsor_25_choice==='pay_now'||body.sponsor_25_choice==='invoice'){const a=document.createElement('a');a.href='/sponsor.html?event=bubba-me-2027&tier=25&payment_method='+encodeURIComponent(body.sponsor_25_choice==='invoice'?'invoice':'pay_now');a.textContent=body.sponsor_25_choice==='invoice'?'Continue to request your £25 sponsorship invoice →':'Continue to pay £25 sponsorship through Stripe →';a.style.cssText='display:block;margin-top:12px;font-weight:bold';status.appendChild(a);}
    status.scrollIntoView({behavior:'smooth',block:'center'});
    form.reset();
   }catch(error){if(String(error.message||'').includes('invalid_csrf')){try{const refreshed=await fetch('/api/expo-exhibitors.php',{credentials:'same-origin',cache:'no-store'});const fresh=await refreshed.json();if(refreshed.ok&&fresh.csrf_token)csrfToken=fresh.csrf_token;}catch(_){}}status.textContent='Application not confirmed: '+(error.message||'network_error')+(String(error.message||'').includes('invalid_csrf')?'. Security token refreshed; please complete verification and submit again.':'. Please check with Bubba Hub before trying again.');status.scrollIntoView({behavior:'smooth',block:'center'});}
