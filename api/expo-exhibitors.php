@@ -53,7 +53,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
  session_start();
 }
 if ($method === 'GET') {
- $_SESSION['expo_apply_csrf'] = bin2hex(random_bytes(32));
+ if (empty($_SESSION['expo_apply_csrf'])) $_SESSION['expo_apply_csrf'] = bin2hex(random_bytes(32));
  expoResponse(200,['ok'=>true,'applications_open'=>true,'csrf_token'=>$_SESSION['expo_apply_csrf'],'turnstile_site_key'=>$turnstileSiteKey]);
 }
 $host = strtolower(explode(':',(string)($_SERVER['HTTP_HOST']??''))[0]);
@@ -94,9 +94,9 @@ $date=DateTimeImmutable::createFromFormat('!Y-m-d',$expiry);
 if (!$policy||!$date||$date->format('Y-m-d')!==$expiry||$date <= new DateTimeImmutable('today'))
  expoResponse(422,['ok'=>false,'error'=>'insurance_required']);
 $website=$get('website',500);$logo=$get('logo_url',500);
-foreach ([$website,$logo] as $url) {
+foreach (['website'=>$website,'logo_url'=>$logo] as $field=>$url) {
  if ($url!==''&&(!filter_var($url,FILTER_VALIDATE_URL)||strtolower((string)parse_url($url,PHP_URL_SCHEME))!=='https'))
-  expoResponse(422,['ok'=>false,'error'=>'invalid_url']);
+  expoResponse(422,['ok'=>false,'error'=>'invalid_url','field'=>$field]);
 }
 $donation=$get('donation_interest',10);
 if (!in_array($donation,['yes','no','maybe'],true)) expoResponse(422,['ok'=>false,'error'=>'invalid_donation_choice']);
