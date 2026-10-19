@@ -29,7 +29,7 @@ try{
  $plan->execute(['bubba-me-2027']);$raw=$plan->fetchColumn();
  if($raw===false){$db->rollBack();out(409,['ok'=>false,'error'=>'save_floor_plan_first']);}
  $items=json_decode((string)$raw,true);$found=false;
- foreach($items as $item){if($table!==null&&(int)$item['id']===$table&&($item['type']??'')==='table')$found=true;}
+ foreach(is_array($items)?$items:[] as $item){if($table!==null&&(int)($item['id']??0)===$table&&($item['type']??'')==='table'){if(!empty($item['exhibitor'])){$db->rollBack();out(409,['ok'=>false,'error'=>'table_has_manual_reservation']);}$found=true;}}
  if($table!==null&&!$found){$db->rollBack();out(422,['ok'=>false,'error'=>'table_not_found']);}
  $stmt=$db->prepare("SELECT id,application_status FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027' FOR UPDATE");
  $stmt->execute([$id]);$ex=$stmt->fetch(PDO::FETCH_ASSOC);
