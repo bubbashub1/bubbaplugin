@@ -1,0 +1,18 @@
+/* Mockup-inspired homepage header — staging only; preserve existing mobile menu JS. */
+.bh-home .site-header.home-header{background:#f2faf5;box-shadow:0 2px 18px #143e3012;border-bottom:1px solid #dcebe3;min-height:94px;padding:12px clamp(16px,3vw,48px);display:flex;align-items:center;gap:clamp(12px,2vw,32px)}
+.bh-home .home-brand{display:inline-flex;align-items:center;gap:10px;flex-shrink:0}
+.bh-home .bh-brand-mark{display:grid;place-items:center;width:48px;height:48px;border:5px solid #248f91;border-right-color:#94b946;border-bottom-color:#e98b38;border-radius:50% 50% 45% 45%;font-size:25px;color:#e98b38;line-height:1;transform:rotate(-7deg)}
+.bh-home .bh-brand-stack{display:flex;flex-direction:column;align-items:flex-start}
+.bh-home .home-brand .bh-brand-text{font-size:clamp(1.5rem,2.5vw,2.35rem);font-weight:800;letter-spacing:-.065em;line-height:1}
+.bh-home .bh-brand-stack small{font-size:clamp(.55rem,.8vw,.77rem);font-weight:800;letter-spacing:.21em;color:#155a4b;margin-top:5px;white-space:nowrap}
+.bh-home .home-header .main-nav{margin-inline:auto;gap:clamp(9px,1.7vw,25px)}
+.bh-home .home-header .main-nav a{font-weight:800;color:#174f39;white-space:nowrap}
+.bh-home .bh-header-actions{display:flex;align-items:center;gap:12px;margin-left:auto}
+.bh-home .bh-header-actions .home-header-search{display:grid;place-items:center;border-radius:50%;width:44px;height:44px;background:white;text-decoration:none}
+.bh-home .bh-header-signin{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:#086446;color:white;text-decoration:none;padding:13px 22px;font-weight:800;white-space:nowrap}
+.bh-home .bh-header-signin:hover{background:#ee822c;color:#173e30}
+@media(max-width:1150px){.bh-home .home-header .main-nav{gap:10px}.bh-home .home-header .main-nav a{font-size:.82rem}.bh-home .bh-brand-mark{width:38px;height:38px;font-size:19px}.bh-home .home-brand .bh-brand-text{font-size:1.5rem}}
+@media(max-width:920px){.bh-home .site-header.home-header{min-height:76px;flex-wrap:wrap}.bh-home .bh-header-actions{margin-left:auto}.bh-home .bh-header-signin{padding:10px 14px}.bh-home .home-header .main-nav{margin:0}.bh-home .bh-brand-stack small{font-size:.55rem}}
+@media(max-width:540px){.bh-home .bh-brand-mark{width:30px;height:30px;border-width:3px}.bh-home .home-brand .bh-brand-text{font-size:1.3rem}.bh-home .bh-header-actions .home-header-search{width:34px;height:34px}.bh-home .bh-header-signin{padding:9px 11px;font-size:.78rem}}
+
+.bh-home .home-brand .bh-brand-text{display:inline-block;color:#174f39;font-family:Quicksand,Calibri,Arial,sans-serif}.bh-home .home-brand .bh-brand-text>span{color:#27959c}
