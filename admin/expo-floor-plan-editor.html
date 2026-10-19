@@ -23,7 +23,7 @@ input{max-width:100%;padding:8px;border:1px solid #adcbbf;border-radius:7px}inpu
 <div class="toolbar">
 <button id="add">+ Add 6ft table</button><button id="desk">+ Welcome desk</button><button id="rotate">Rotate selected</button>
 <button id="duplicate">Duplicate</button><button id="remove">Delete selected</button><button id="undo">Undo</button><button id="redo">Redo</button>
-<button id="save" class="primary">Save draft</button><button id="export">Export JSON</button>
+<button id="save" class="primary">Save draft</button><button id="publication" type="button" disabled>Loading publication status…</button><span id="publicationStatus" role="status" aria-live="polite">Public plan: hidden</span><button id="export">Export JSON</button>
 <label class="upload">Import JSON <input id="import" type="file" accept="application/json,.json" hidden></label>
 <button id="print">Print plan</button><button id="reset">Restore starter layout</button>
 </div>
@@ -118,6 +118,22 @@ const response=await fetch("/api/expo-floor-plan-admin.php",{credentials:"same-o
 const result=await response.json();
 if(!response.ok||!result.ok)throw Error(result.error||"Unavailable");
 csrfToken=result.csrf_token;serverRevision=result.revision;
+const publication=$("publication"),publicationStatus=$("publicationStatus");
+let published=!!result.published;
+function refreshPublication(){publication.disabled=false;publication.textContent=published?"Unpublish floor plan":"Publish floor plan";publicationStatus.textContent=published?"Public plan: published":"Public plan: hidden";}
+refreshPublication();
+publication.onclick=async()=>{
+ const next=!published;
+ if(!confirm(next?"Publish the floor plan for public viewing? Save your latest layout first.":"Hide the public floor plan immediately?"))return;
+ publication.disabled=true;
+ try{
+  const response=await fetch("/api/expo-floor-plan-admin.php?publication=1",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","X-CSRF-Token":csrfToken},body:JSON.stringify({published:next})});
+  const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||"Update failed");
+  published=!!data.published;message(published?"Floor plan published.":"Floor plan hidden from visitors.");
+ }catch(e){message("Publication change failed: "+e.message);}
+ refreshPublication();
+};
+
 if(Array.isArray(result.items)){
  if(confirm("A server-saved floor plan is available. Load it? Your current browser draft will be replaced.")){items=result.items;selected=null;render();}
 }
