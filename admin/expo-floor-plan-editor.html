@@ -124,10 +124,10 @@ function refreshPublication(){publication.disabled=false;publication.textContent
 refreshPublication();
 publication.onclick=async()=>{
  const next=!published;
- if(!confirm(next?"Publish the floor plan for public viewing? Save your latest layout first.":"Hide the public floor plan immediately?"))return;
+ if(next){const typed=prompt("To release the floor plan publicly, type PUBLISH. Save your latest layout first.");if(typed!=="PUBLISH")return;}else if(!confirm("Hide the public floor plan immediately?"))return;
  publication.disabled=true;
  try{
-  const response=await fetch("/api/expo-floor-plan-admin.php?publication=1",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","X-CSRF-Token":csrfToken},body:JSON.stringify({published:next})});
+  const response=await fetch("/api/expo-floor-plan-admin.php?publication=1",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","X-CSRF-Token":csrfToken},body:JSON.stringify({published:next,revision:serverRevision,confirmation:next?"PUBLISH":null})});
   const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||"Update failed");
   published=!!data.published;message(published?"Floor plan published.":"Floor plan hidden from visitors.");
  }catch(e){message("Publication change failed: "+e.message);}
