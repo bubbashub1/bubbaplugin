@@ -18,8 +18,8 @@ input{max-width:100%;padding:8px;border:1px solid #adcbbf;border-radius:7px}inpu
 @media(max-width:850px){.editor{grid-template-columns:1fr}aside{order:-1}}
 @media print{header,.toolbar,aside,.small,.status{display:none!important}main{padding:0}.stage{border:0;overflow:visible}#plan{min-width:0}}
 </style></head>
-<body><div id="authChecking" style="padding:24px" role="status">Checking admin access…</div><div id="protectedEditor" hidden><p style="padding:12px;background:#fff1d9;color:#174c44;text-align:center">Floor-plan draft: saves to this browser only. Export JSON for backup. Table assignments are not synced with exhibitor approvals.</p><header><h1>🌈 Bubba Hub · Expo floor-plan editor</h1><a href="/admin/admin-events.html">← Events management</a></header>
-<main><p>Move, rotate and number tables for the Bubba &amp; Me Expo. <strong>Draft editor:</strong> saves in this browser only; export JSON for backup. Do not publish as an approved evacuation plan.</p>
+<body><div id="authChecking" style="padding:24px" role="status">Checking admin access…</div><div id="protectedEditor" hidden><p style="padding:12px;background:#fff1d9;color:#174c44;text-align:center">Floor plan: save to the admin database when connected. Export JSON as a backup. Exhibitor assignments are not synced automatically.</p><header><h1>🌈 Bubba Hub · Expo floor-plan editor</h1><a href="/admin/admin-events.html">← Events management</a></header>
+<main><p>Move, rotate and number tables for the Bubba &amp; Me Expo. <strong>Draft editor:</strong> can save to the database after migration; export JSON for backup. Do not publish as an approved evacuation plan.</p>
 <div class="toolbar">
 <button id="add">+ Add 6ft table</button><button id="desk">+ Welcome desk</button><button id="rotate">Rotate selected</button>
 <button id="duplicate">Duplicate</button><button id="remove">Delete selected</button><button id="undo">Undo</button><button id="redo">Redo</button>
@@ -56,7 +56,7 @@ for(let x of [75,285,705,915])a.push({id:id++,type:"table",x,y:645,angle:0,label
 for(let y of [305,425])for(let x of [390,610])a.push({id:id++,type:"table",x,y,angle:0,label:String(id-1),exhibitor:""});
 return a;
 };
-let items=initial(),selected=null,history=[],future=[],drag=null;
+let items=initial(),selected=null,history=[],future=[],drag=null,serverRevision=null,csrfToken="";
 const dims=o=>o.type==="desk"?[170,75]:o.angle%180===0?[185,75]:[75,185];
 const intersects=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
 const valid=(o,other=items)=>{
@@ -95,7 +95,16 @@ $("remove").onclick=()=>{if(selected===null)return;snapshot();items=items.filter
 $("duplicate").onclick=()=>{let o=items.find(t=>t.id===selected);if(!o)return;let copy={...o,id:nextId(),label:String(nextId()),x:o.x+24,y:o.y+90};if(!valid(copy)){message("No clear space next to selected item.");return}snapshot();items.push(copy);selected=copy.id;render()};
 $("undo").onclick=()=>{if(!history.length)return;future.push(clone(items));items=history.pop();selected=null;render()};
 $("redo").onclick=()=>{if(!future.length)return;history.push(clone(items));items=future.pop();selected=null;render()};
-$("save").onclick=()=>{try{localStorage.setItem(KEY,JSON.stringify(items));message("Draft saved in this browser. Export JSON to back it up.")}catch{message("Browser storage unavailable. Use Export JSON.")}};
+$("save").onclick=async()=>{
+try{
+localStorage.setItem(KEY,JSON.stringify(items));
+if(serverRevision===null){message("Saved to this browser only. Server unavailable; export JSON for backup.");return;}
+const response=await fetch("/api/expo-floor-plan-admin.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","X-CSRF-Token":csrfToken},body:JSON.stringify({items,revision:serverRevision})});
+const result=await response.json();
+if(!response.ok||!result.ok)throw Error(result.error||"Save failed");
+serverRevision=result.revision;message("Floor plan saved to the server and this browser.");
+}catch(e){message("Server save failed: "+e.message+". Browser draft retained; export JSON for backup.");}
+};
 $("export").onclick=()=>{const data=JSON.stringify({version:1,event:"bubba-and-me-2027",items},null,2);const url=URL.createObjectURL(new Blob([data],{type:"application/json"}));let a=document.createElement("a");a.href=url;a.download="bubba-me-floor-plan.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
 $("import").onchange=async ev=>{let f=ev.target.files[0];if(!f)return;try{let d=JSON.parse(await f.text());if(!Array.isArray(d.items)||d.items.length>150)throw Error("Invalid format");let parsed=d.items.map(o=>({id:Number(o.id),type:o.type,x:Number(o.x),y:Number(o.y),angle:Number(o.angle),label:String(o.label).slice(0,35),exhibitor:String(o.exhibitor||"").slice(0,100)}));if(parsed.some(o=>!Number.isFinite(o.id)||!Number.isFinite(o.x)||!Number.isFinite(o.y)||!["table","desk"].includes(o.type)||![0,90].includes(o.angle))||new Set(parsed.map(o=>o.id)).size!==parsed.length||parsed.some((o,i)=>!valid(o,parsed.filter((_,j)=>j!==i))))throw Error("Invalid or overlapping objects");snapshot();items=parsed;selected=null;render();message("Imported draft.")}catch(e){message("Import rejected: "+e.message)}ev.target.value=""};
 $("print").onclick=()=>window.print();
@@ -103,6 +112,18 @@ $("reset").onclick=()=>{if(!confirm("Restore starter layout? Save or export your
 ["label","exhibitor","x","y"].forEach(k=>$(k).addEventListener("change",()=>edit(o=>{o[k]=["x","y"].includes(k)?Number($(k).value):$(k).value})));
 try{let stored=JSON.parse(localStorage.getItem(KEY));if(Array.isArray(stored))items=stored}catch{}
 render();
+(async()=>{
+try{
+const response=await fetch("/api/expo-floor-plan-admin.php",{credentials:"same-origin",cache:"no-store"});
+const result=await response.json();
+if(!response.ok||!result.ok)throw Error(result.error||"Unavailable");
+csrfToken=result.csrf_token;serverRevision=result.revision;
+if(Array.isArray(result.items)){
+ if(confirm("A server-saved floor plan is available. Load it? Your current browser draft will be replaced.")){items=result.items;selected=null;render();}
+}
+message("Server floor-plan storage connected.");
+}catch(e){message("Server storage unavailable: "+e.message+". You can still save locally and export JSON.");}
+})();
 })();
 </script></div><script>
 (async()=>{
