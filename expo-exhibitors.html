@@ -20,11 +20,11 @@
 <label style="display:block"><input type="checkbox" name="participation" value="talk_qa"> Talk or live Q&amp;A</label>
 <label style="display:block"><input type="checkbox" name="participation" value="sponsor"> Sponsorship opportunity</label></fieldset>
 <fieldset style="margin-top:18px;border:1px solid #d1e4d4;border-radius:14px;padding:16px"><legend>Choose a preferred exhibitor table</legend>
-<p>Select a table on the provisional 26-table layout. This is a visual preview only; no table is reserved until the live booking system confirms it. The venue floor plan and usable capacity will be verified before launch.</p>
+<p>Choose an available table from the saved Bubba &amp; Me Expo layout. Grey tables have already been selected. Your table is reserved when the application is successfully submitted.</p>
 <div id="expoTableGrid" role="group" aria-label="Preferred exhibitor table" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:10px"></div>
 <p id="expoTableSelection" role="status" aria-live="polite">No preferred table selected.</p>
 <input type="hidden" name="preferred_table" id="expoPreferredTable">
-<p style="font-size:.9rem">Green = available in preview · Orange = selected. Reserved and blocked tables will be shown once booking opens.</p>
+<p style="font-size:.9rem">Green = available · Orange = selected · Grey = unavailable.</p>
 </fieldset>
 <fieldset style="margin-top:18px;border:1px solid #d1e4d4;border-radius:14px;padding:16px"><legend>Stall and facilities</legend>
 <label style="display:block">Will you bring anything that will not fit within a standard 6ft space? Tables are provided. *<select name="oversize" required><option value="">Please select</option><option value="no">No</option><option value="yes">Yes</option></select></label>
@@ -51,10 +51,34 @@
 <p><strong>Event conditions:</strong> Bubba Hub may cancel the event if exhibitor interest is insufficient. If cancelled, confirmed exhibitors will receive a full refund of any payments made. Visitor numbers cannot be guaranteed. The Expo also provides opportunities to network and collaborate with local businesses and family services.</p>
 <label style="display:block;margin-top:12px"><input type="checkbox" name="conditions_accepted" required> I have read and accept the event conditions above. *</label>
 <label style="display:block;margin-top:12px"><input type="checkbox" name="visitor_numbers_acknowledged" required> I understand that attendance numbers may vary and that Bubba Hub cannot guarantee a specific number of visitors to the Expo. *</label>
-<p>All applications are reviewed by Bubba Hub. Submitting an application does not reserve a table or confirm participation. No donation is required.</p>
+<p>All applications are reviewed by Bubba Hub. Submitting an application reserves your selected table while it is reviewed, but does not confirm participation. No donation is required.</p>
 <button class="button button-primary" type="submit" id="expoSubmit" disabled>Applications opening soon</button><p id="expoSubmitStatus" role="status" aria-live="polite"></p>
 
-</form></section></main><script>(function(){const grid=document.getElementById('expoTableGrid'),selected=document.getElementById('expoPreferredTable'),status=document.getElementById('expoTableSelection');if(!grid||!selected||!status)return;for(let i=1;i<=26;i++){const b=document.createElement('button');b.type='button';b.textContent='Table '+i;b.setAttribute('aria-pressed','false');b.style.cssText='border:2px solid #86bca2;border-radius:12px;padding:12px 3px;background:#e1f4e7;color:#194e38;cursor:pointer;font:inherit;font-size:.9rem';b.addEventListener('click',()=>{selected.value=String(i);status.textContent='Preferred table: '+i+' (not reserved)';for(const item of grid.children){const active=item===b;item.setAttribute('aria-pressed',active?'true':'false');item.style.background=active?'#ffbb79':'#e1f4e7';item.style.borderColor=active?'#cb772c':'#86bca2';}});grid.appendChild(b);}})();</script><script>
+</form></section></main><script>(async function(){
+ const grid=document.getElementById('expoTableGrid'),selected=document.getElementById('expoPreferredTable'),status=document.getElementById('expoTableSelection');
+ if(!grid||!selected||!status)return;
+ grid.style.cssText='display:block;overflow-x:auto;max-width:100%';
+ status.textContent='Loading the available tables…';
+ const svgNS='http://www.w3.org/2000/svg';
+ try{
+  const res=await fetch('/api/expo-floor-plan-selection.php',{cache:'no-store'});
+  const data=await res.json();
+  if(!res.ok||!data.ok||!Array.isArray(data.tables))throw Error('Floor plan not ready');
+  const svg=document.createElementNS(svgNS,'svg');svg.setAttribute('viewBox','0 0 1200 780');svg.setAttribute('role','group');svg.setAttribute('aria-label','Choose an available table from the Bubba and Me floor plan');svg.style.cssText='display:block;width:100%;min-width:520px;background:#fffdf6;border:2px solid #b6d7cc;border-radius:14px';
+  const title=document.createElementNS(svgNS,'text');title.setAttribute('x','600');title.setAttribute('y','40');title.setAttribute('text-anchor','middle');title.setAttribute('font-size','26');title.setAttribute('fill','#174c44');title.textContent='Bubba & Me Expo — select your table';svg.append(title);
+  const buttons=[];
+  for(const table of data.tables){
+   const g=document.createElementNS(svgNS,'g');g.setAttribute('transform','translate('+table.x+' '+table.y+') rotate('+table.angle+')');g.setAttribute('role','button');g.setAttribute('tabindex',table.available?'0':'-1');g.setAttribute('aria-disabled',String(!table.available));g.setAttribute('aria-label','Table '+table.label+(table.available?', available':', reserved'));
+   const rect=document.createElementNS(svgNS,'rect');rect.setAttribute('width','155');rect.setAttribute('height','65');rect.setAttribute('rx','12');rect.setAttribute('stroke','#608b7b');rect.setAttribute('stroke-width','3');
+   const label=document.createElementNS(svgNS,'text');label.setAttribute('x','77');label.setAttribute('y','39');label.setAttribute('text-anchor','middle');label.setAttribute('font-size','21');label.setAttribute('font-weight','bold');label.textContent=table.label;
+   g.append(rect,label);svg.append(g);buttons.push({table,g,rect});
+   function choose(){if(!table.available)return;selected.value=String(table.id);status.textContent='Selected table '+table.label+' — reserved when your application is accepted by the server.';for(const item of buttons){item.rect.setAttribute('fill',!item.table.available?'#b9bdc1':item.table.id===table.id?'#ffbb79':'#d7f0df');item.g.setAttribute('aria-pressed',String(item.table.id===table.id));}}
+   if(table.available){g.style.cursor='pointer';g.addEventListener('click',choose);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose();}});}
+   rect.setAttribute('fill',table.available?'#d7f0df':'#b9bdc1');
+  }
+  grid.replaceChildren(svg);status.textContent='Green = available · Grey = already selected · Orange = your selection.';
+ }catch(e){grid.replaceChildren();selected.value='';status.textContent='Table selection is temporarily unavailable. Please try again later.';}
+})();</script><script>
 /* Disabled by default until the staging integration is explicitly enabled. */
 (function(){
  const form=document.getElementById('exhibitorForm'),button=document.getElementById('expoSubmit'),status=document.getElementById('expoSubmitStatus');
