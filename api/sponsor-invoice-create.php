@@ -26,7 +26,7 @@ try{
  require_once __DIR__.'/db.php';
  $config=is_file(__DIR__.'/config.php')?require __DIR__.'/config.php':[];
  $secret=trim((string)($config['stripe']['secret_key']??getenv('STRIPE_SECRET_KEY')?:''));
- if($secret==='')foreach([dirname(__DIR__).'/wp-config.php',dirname(__DIR__,2).'/wp-config.php'] as $file){if(!is_file($file))continue;$contents=@file_get_contents($file);if($contents===false)continue;if(preg_match('/define\\s*\\(\\s*[\\x27\\x22]BUBBAHUB_STRIPE_SECRET_KEY[\\x27\\x22]\\s*,\\s*[\\x27\\x22]([^\\x27\\x22]*)[\\x27\\x22]\\s*\\)\\s*;/',$contents,$m)){$secret=$m[1];break;}}if($secret===''||!str_starts_with($secret,'sk_test_')||!function_exists('curl_init'))respond(503,['ok'=>false,'error'=>'stripe_unavailable']);
+ if($secret==='')foreach([dirname(__DIR__).'/wp-config.php',dirname(__DIR__,2).'/wp-config.php'] as $file){if(!is_file($file))continue;$contents=@file_get_contents($file);if($contents===false)continue;if(preg_match('/define\\s*\\(\\s*[\\x27\\x22]BUBBAHUB_STRIPE_SECRET_KEY[\\x27\\x22]\\s*,\\s*[\\x27\\x22]([^\\x27\\x22]*)[\\x27\\x22]\\s*\\)\\s*;/',$contents,$m)){$secret=$m[1];break;}}if($secret===''||!preg_match('/^sk_(test|live)_/',$secret)||!function_exists('curl_init'))respond(503,['ok'=>false,'error'=>'stripe_unavailable']);
  $db=bh_mysql();$db->beginTransaction();
  $q=$db->prepare("SELECT * FROM bh_sponsor_invoice_requests WHERE id=? FOR UPDATE");$q->execute([$id]);$request=$q->fetch();
  if(!$request){$db->rollBack();respond(404,['ok'=>false,'error'=>'not_found']);}
