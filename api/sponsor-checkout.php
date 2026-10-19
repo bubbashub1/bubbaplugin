@@ -24,14 +24,20 @@ if(!isset($events[$event])||!in_array($tier,['25','50','100'],true)||!$name||!$c
 $website=$get('website',500);$logo=$get('logo_url',500);
 foreach([$website,$logo] as $url){if($url!==''&&(!filter_var($url,FILTER_VALIDATE_URL)||strtolower((string)parse_url($url,PHP_URL_SCHEME))!=='https'))sponsorReply(422,['ok'=>false,'error'=>'invalid_url']);}
 if(!function_exists('curl_init'))sponsorReply(503,['ok'=>false,'error'=>'payments_unavailable']);
+// Resolve the same private Stripe key used by the working subscription checkout.
+// Never bootstrap WordPress from a standalone JSON payment API.
 $config=is_file(__DIR__.'/config.php')?require __DIR__.'/config.php':[];
-$secret=defined('BUBBAHUB_STRIPE_SECRET_KEY')?(string)constant('BUBBAHUB_STRIPE_SECRET_KEY'):(string)(getenv('STRIPE_SECRET_KEY')?:($config['stripe']['secret_key']??''));
+$secret=defined('BUBBAHUB_STRIPE_SECRET_KEY')?trim((string)constant('BUBBAHUB_STRIPE_SECRET_KEY')):'';
 if($secret===''){
- // Use the same private wp-config bootstrap as the working exhibitor API.
- $wp=dirname(__DIR__).'/wp-load.php';
- if(is_file($wp)){ob_start();try{require_once $wp;}finally{ob_end_clean();}}
- $secret=defined('BUBBAHUB_STRIPE_SECRET_KEY')?(string)constant('BUBBAHUB_STRIPE_SECRET_KEY'):(string)(getenv('STRIPE_SECRET_KEY')?:'');
+ foreach(['/public_html/wp-config.php',dirname(__DIR__).'/wp-config.php',dirname(__DIR__,2).'/wp-config.php'] as $file){
+  if(!is_file($file))continue;
+  $contents=@file_get_contents($file);
+  if($contents===false)continue;
+  $pattern='/define\\s*\\(\\s*[\\x27\\x22 ]BUBBAHUB_STRIPE_SECRET_KEY[\\x27\\x22 ]\\s*,\\s*[\\x27\\x22 ](.*?)[\\x27\\x22 ]\\s*\\)\\s*;/s';
+  if(preg_match($pattern,$contents,$matches)){$secret=stripcslashes($matches[1]);break;}
+ }
 }
+if($secret==='')$secret=trim((string)($config['stripe']['secret_key']??getenv('STRIPE_SECRET_KEY')?:''));
 if($secret==='')sponsorReply(503,['ok'=>false,'error'=>'stripe_not_configured']);
 $labels=['25'=>'Community Supporter','50'=>'Event Supporter','100'=>'Event Partner'];
 $params=['mode'=>'payment','payment_method_types[0]'=>'card','customer_email'=>$email,
@@ -47,5 +53,5 @@ $ch=curl_init('https://api.stripe.com/v1/checkout/sessions');
 curl_setopt_array($ch,[CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>http_build_query($params),CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>20,CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$secret]]);
 $raw=curl_exec($ch);$code=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);
 $result=is_string($raw)?json_decode($raw,true):null;
-if($code<200||$code>=300||!is_array($result)||empty($result['url'])){error_log('Sponsor checkout session creation failed, HTTP '.$code);sponsorReply(503,['ok'=>false,'error'=>'stripe_checkout_unavailable']);}
+if($code<200||$code>=300||!is_array($result)||empty($result['url'])){error_log('Sponsor checkout session creation failed, HTTP '.$code.'; Stripe type '.(string)($result['error']['type']??'unknown'));sponsorReply(503,['ok'=>false,'error'=>'stripe_checkout_unavailable','message'=>'Stripe could not start checkout. Please contact Bubba Hub.']);}
 sponsorReply(200,['ok'=>true,'url'=>$result['url']]);
