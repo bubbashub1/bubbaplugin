@@ -84,7 +84,7 @@
   updateInsuranceMinimum();
   if(!form.reportValidity())return;
   const data=new FormData(form),body={};
-  for(const [key,value] of data.entries()){
+  for(const [key,value] of data.entries()){if(key==='insurance_expiry_uk')continue;
    if(key==='participation'){(body.participation??=[]).push(value);continue;}
    body[key]=value;
   }
@@ -98,7 +98,7 @@
    if(!response.ok||!result.ok)throw new Error((result.error||'submission_failed')+(result.field?' in '+result.field:'')+' (HTTP '+response.status+')');
    status.textContent='Application received. Reference #'+result.application_id+'. Your application is pending review.';
    status.scrollIntoView({behavior:'smooth',block:'center'});
-   form.reset();
+   form.reset();insuranceExpiry.value='';insuranceExpiryUK.value='';
   }catch(error){if(String(error.message||'').includes('invalid_csrf')){try{const refreshed=await fetch('/api/expo-exhibitors.php',{credentials:'same-origin',cache:'no-store'});const fresh=await refreshed.json();if(refreshed.ok&&fresh.csrf_token)csrfToken=fresh.csrf_token;}catch(_){}}status.textContent='Application not confirmed: '+(error.message||'network_error')+(String(error.message||'').includes('invalid_csrf')?'. Security token refreshed; please complete verification and submit again.':'. Please check with Bubba Hub before trying again.');status.scrollIntoView({behavior:'smooth',block:'center'});}
   finally{turnstileToken="";if(window.turnstile)window.turnstile.reset();button.disabled=true;}
  };
