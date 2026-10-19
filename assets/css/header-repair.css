@@ -1,0 +1,7 @@
+/* Staging shared header fallback while the uploaded logo path is unavailable. */
+.site-header .brand .bh-brand-text,.site-header .home-brand .bh-brand-text{display:inline-block;font-family:Quicksand,Calibri,Arial,sans-serif;font-size:clamp(1.25rem,2vw,1.7rem);font-weight:800;letter-spacing:-.05em;line-height:1.15;color:#174f39;white-space:nowrap}
+.site-header .bh-brand-text>span{color:#27959c}
+.site-header .brand{display:inline-flex;align-items:center;text-decoration:none;min-width:max-content}
+.site-header .main-nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:clamp(10px,1.5vw,24px)}
+.site-header .main-nav a[aria-current="page"]{color:#167b79;text-decoration:underline;text-underline-offset:5px}
+@media(max-width:920px){.site-header .main-nav{gap:10px}.site-header .main-nav a{font-size:.85rem}}
