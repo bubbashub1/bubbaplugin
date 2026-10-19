@@ -6,8 +6,9 @@ if(($_SERVER['REQUEST_METHOD']??'GET')!=='GET'){header('Allow: GET');sponsorAdmi
 $secure=!empty($_SERVER['HTTPS'])&&strtolower((string)$_SERVER['HTTPS'])!=='off';
 if(session_status()!==PHP_SESSION_ACTIVE){ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');session_name('BUBBAHUB_ADMINSESSID');session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);session_start();}
 if(empty($_SESSION['bh_admin_authenticated']))sponsorAdminReply(401,['ok'=>false,'error'=>'admin_required']);
-if(!empty($_SESSION['bh_admin_last_activity'])&&time()-(int)$_SESSION['bh_admin_last_activity']>1800){unset($_SESSION['bh_admin_authenticated'],$_SESSION['bh_admin_last_activity']);sponsorAdminReply(401,['ok'=>false,'error'=>'admin_session_expired']);}
-$_SESSION['bh_admin_last_activity']=time();
+// Admin authentication is established by admin-auth.php using the dedicated session.
+// Do not apply a second, unsynchronised last-activity timeout here: admin-auth.php
+// does not refresh bh_admin_last_activity and valid sessions were rejected.
 if(!$secure)sponsorAdminReply(403,['ok'=>false,'error'=>'https_required']);
 if(!function_exists('curl_init'))sponsorAdminReply(503,['ok'=>false,'error'=>'stripe_unavailable']);
 $secret=(string)(defined('BUBBAHUB_STRIPE_SECRET_KEY')?constant('BUBBAHUB_STRIPE_SECRET_KEY'):'');
