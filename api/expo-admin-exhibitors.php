@@ -47,7 +47,14 @@ try{
   $lookup=$db->prepare("SELECT business_name FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027'");$lookup->execute([$id]);$current=$lookup->fetchColumn();
   if(!$id||$current===false)reply(404,['ok'=>false,'error'=>'not_found']);
   if(!hash_equals((string)$current,$confirmation))reply(422,['ok'=>false,'error'=>'confirmation_mismatch']);
-  $delete=$db->prepare("DELETE FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027'");$delete->execute([$id]);
+  // Coordinate deletion with public reservations and layout changes.
+  $db->beginTransaction();
+  $planLock=$db->prepare('SELECT event_key FROM bh_expo_floor_plans WHERE event_key=? FOR UPDATE');
+  $planLock->execute(['bubba-me-2027']);
+  $planLock->fetchColumn();
+  $delete=$db->prepare("DELETE FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027'");
+  $delete->execute([$id]);
+  $db->commit();
   reply(200,['ok'=>true,'deleted_id'=>$id]);
  }
  $status=(string)($input['application_status']??'');
