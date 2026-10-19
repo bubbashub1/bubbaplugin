@@ -42,6 +42,14 @@ try{
  $input=json_decode((string)file_get_contents('php://input'),true);
  if(!is_array($input))reply(400,['ok'=>false,'error'=>'invalid_json']);
  $id=filter_var($input['id']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
+ if(($input['action']??'')==='delete'){
+  $confirmation=(string)($input['confirm_business_name']??'');
+  $lookup=$db->prepare("SELECT business_name FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027'");$lookup->execute([$id]);$current=$lookup->fetchColumn();
+  if(!$id||$current===false)reply(404,['ok'=>false,'error'=>'not_found']);
+  if(!hash_equals((string)$current,$confirmation))reply(422,['ok'=>false,'error'=>'confirmation_mismatch']);
+  $delete=$db->prepare("DELETE FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027'");$delete->execute([$id]);
+  reply(200,['ok'=>true,'deleted_id'=>$id]);
+ }
  $status=(string)($input['application_status']??'');
  $visible=$input['public_visible']??null;
  if(!$id||!in_array($status,['pending','approved','rejected','cancelled'],true)||!in_array($visible,[0,1],true))reply(422,['ok'=>false,'error'=>'invalid_update']);
