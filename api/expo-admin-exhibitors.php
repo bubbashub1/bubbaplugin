@@ -59,11 +59,16 @@ try{
  foreach([$website,$logo] as $url){if($url!==''&&(!filter_var($url,FILTER_VALIDATE_URL)||!preg_match('~^https://~i',$url)))reply(422,['ok'=>false,'error'=>'invalid_url']);}
  $social=[];foreach(['facebook','instagram','tiktok'] as $network){$url=trim((string)($input[$network.'_url']??''));if(strlen($url)>500||($url!==''&&(!filter_var($url,FILTER_VALIDATE_URL)||strtolower((string)parse_url($url,PHP_URL_SCHEME))!=='https')))reply(422,['ok'=>false,'error'=>'invalid_social_url','field'=>$network]);$social[$network]=$url;}
  $existing=$db->prepare("SELECT participation_json FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027'");$existing->execute([$id]);$existingJson=$existing->fetchColumn();if($existingJson===false)reply(404,['ok'=>false,'error'=>'not_found']);$details=json_decode((string)$existingJson,true);if(!is_array($details))$details=[];$details['social_links']=$social;$updatedJson=json_encode($details,JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);
+ $db->beginTransaction();
+ $planLock=$db->prepare('SELECT event_key FROM bh_expo_floor_plans WHERE event_key=? FOR UPDATE');
+ $planLock->execute(['bubba-me-2027']);
+ $planLock->fetchColumn();
  $stmt=$db->prepare("UPDATE bh_expo_exhibitors SET assigned_table=CASE WHEN ?='approved' THEN assigned_table ELSE NULL END,application_status=?,public_visible=?,business_name=?,description=?,website_url=?,logo_url=?,participation_json=?,reviewed_at=NOW() WHERE id=? AND event_key='bubba-me-2027'");
  $stmt->execute([$status,$status,$visible,$name,$description,$website?:null,$logo?:null,$updatedJson,$id]);
  if($stmt->rowCount()===0){
   $check=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027'");$check->execute([$id]);
   if(!$check->fetchColumn())reply(404,['ok'=>false,'error'=>'not_found']);
  }
+ $db->commit();
  reply(200,['ok'=>true,'id'=>$id,'application_status'=>$status,'public_visible'=>$visible]);
-}catch(Throwable $e){error_log('Expo admin exhibitor API failure: '.get_class($e));reply(503,['ok'=>false,'error'=>'temporarily_unavailable']);}
+}catch(Throwable $e){if(isset($db)&&$db->inTransaction())$db->rollBack();error_log('Expo admin exhibitor API failure: '.get_class($e));reply(503,['ok'=>false,'error'=>'temporarily_unavailable']);}
