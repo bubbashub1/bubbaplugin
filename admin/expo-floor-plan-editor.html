@@ -18,7 +18,7 @@ input{max-width:100%;padding:8px;border:1px solid #adcbbf;border-radius:7px}inpu
 @media(max-width:850px){.editor{grid-template-columns:1fr}aside{order:-1}}
 @media print{header,.toolbar,aside,.small,.status{display:none!important}main{padding:0}.stage{border:0;overflow:visible}#plan{min-width:0}}
 </style></head>
-<body><div id="authChecking" style="padding:24px" role="status">Checking admin access…</div><div id="protectedEditor" hidden><p style="padding:12px;background:#fff1d9;color:#174c44;text-align:center">Floor plan: save to the admin database when connected. Export JSON as a backup. Exhibitor assignments are not synced automatically.</p><header><h1>🌈 Bubba Hub · Expo floor-plan editor</h1><a href="/admin/admin-events.html">← Events management</a></header>
+<body><div id="authChecking" style="padding:24px" role="status">Checking admin access…</div><div id="protectedEditor" hidden><p style="padding:12px;background:#fff1d9;color:#174c44;text-align:center">Floor plan is an admin-only draft. Save to the server and export JSON for backup. Approved exhibitor assignments are managed below.</p><header><h1>🌈 Bubba Hub · Expo floor-plan editor</h1><a href="/admin/admin-events.html">← Events management</a></header>
 <main><p>Move, rotate and number tables for the Bubba &amp; Me Expo. <strong>Draft editor:</strong> can save to the database after migration; export JSON for backup. Do not publish as an approved evacuation plan.</p>
 <div class="toolbar">
 <button id="add">+ Add 6ft table</button><button id="desk">+ Welcome desk</button><button id="rotate">Rotate selected</button>
@@ -93,7 +93,7 @@ async function loadExhibitors(){try{const r=await fetch("/api/expo-admin-exhibit
 $("assignTable").onclick=async()=>{const o=items.find(t=>t.id===selected);if(!o||o.type!=="table")return;const choice=$("assignExhibitor").value;const existing=exhibitors.find(e=>String(e.assigned_table||"")===String(o.id)&&e.application_status==="approved");if(!choice&&!existing)return;if(choice&&existing&&String(existing.id)!==choice){$("assignmentStatus").textContent="Release the current exhibitor before assigning another.";return;}const id=choice?Number(choice):Number(existing.id);try{const r=await fetch("/api/expo-table-assign-admin.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","X-CSRF-Token":csrfToken},body:JSON.stringify({exhibitor_id:id,table_id:choice?o.id:null})});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||"Save failed");$("assignmentStatus").textContent="Assignment saved.";await loadExhibitors();}catch(e){$("assignmentStatus").textContent="Assignment not saved: "+e.message}};
 $("add").onclick=()=>add("table");$("desk").onclick=()=>add("desk");
 $("rotate").onclick=$("turn").onclick=()=>edit(o=>{if(o.type==="table")o.angle=(o.angle+90)%180});
-$("remove").onclick=()=>{if(selected===null)return;snapshot();items=items.filter(o=>o.id!==selected);selected=null;render()};
+$("remove").onclick=()=>{if(selected===null)return;const occupied=exhibitors.some(e=>["pending","approved","confirmed"].includes(e.application_status)&&(String(e.preferred_table||"")===String(selected)||String(e.assigned_table||"")===String(selected)));if(occupied){message("Cannot delete a reserved or assigned table. Release or reassign its exhibitor first.");return;}snapshot();items=items.filter(o=>o.id!==selected);selected=null;render()};
 $("duplicate").onclick=()=>{let o=items.find(t=>t.id===selected);if(!o)return;let copy={...o,id:nextId(),label:String(nextId()),x:o.x+24,y:o.y+90};if(!valid(copy)){message("No clear space next to selected item.");return}snapshot();items.push(copy);selected=copy.id;render()};
 $("undo").onclick=()=>{if(!history.length)return;future.push(clone(items));items=history.pop();selected=null;render()};
 $("redo").onclick=()=>{if(!future.length)return;history.push(clone(items));items=future.pop();selected=null;render()};
@@ -103,7 +103,7 @@ localStorage.setItem(KEY,JSON.stringify(items));
 if(serverRevision===null){message("Saved to this browser only. Server unavailable; export JSON for backup.");return;}
 const response=await fetch("/api/expo-floor-plan-admin.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","X-CSRF-Token":csrfToken},body:JSON.stringify({items,revision:serverRevision})});
 const result=await response.json();
-if(!response.ok||!result.ok)throw Error(result.error||"Save failed");
+if(!response.ok||!result.ok)throw Error(result.error==="table_has_exhibitor_reservation"?"A reserved or assigned table cannot be deleted. Restore it and reload the latest plan.":result.error||"Save failed");
 serverRevision=result.revision;message("Floor plan saved to the server and this browser.");
 }catch(e){message("Server save failed: "+e.message+". Browser draft retained; export JSON for backup.");}
 };
