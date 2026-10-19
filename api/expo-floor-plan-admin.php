@@ -69,11 +69,11 @@ try{
  if($json===false)answer(422,['ok'=>false,'error'=>'invalid_items']);
  if($revision===0){
   try{$stmt=$db->prepare('INSERT INTO bh_expo_floor_plans(event_key,layout_json,revision) VALUES(?,?,1)');$stmt->execute(['bubba-me-2027',$json]);$db->commit();answer(200,['ok'=>true,'revision'=>1]);}
-  catch(PDOException $e){if((string)$e->getCode()==='23000')answer(409,['ok'=>false,'error'=>'layout_changed_reload']);throw $e;}
+  catch(PDOException $e){if($db->inTransaction())$db->rollBack();if((string)$e->getCode()==='23000')answer(409,['ok'=>false,'error'=>'layout_changed_reload']);throw $e;}
  }
  $stmt=$db->prepare('UPDATE bh_expo_floor_plans SET layout_json=?,revision=revision+1 WHERE event_key=? AND revision=?');
  $stmt->execute([$json,'bubba-me-2027',$revision]);
  if($stmt->rowCount()!==1){$db->rollBack();answer(409,['ok'=>false,'error'=>'layout_changed_reload']);}
  $db->commit();
  answer(200,['ok'=>true,'revision'=>$revision+1]);
-}catch(Throwable $e){error_log('expo_floor_plan: '.$e->getMessage());answer(503,['ok'=>false,'error'=>'floor_plan_storage_unavailable']);}
+}catch(Throwable $e){if(isset($db)&&$db instanceof PDO&&$db->inTransaction())$db->rollBack();error_log('expo_floor_plan: '.$e->getMessage());answer(503,['ok'=>false,'error'=>'floor_plan_storage_unavailable']);}
