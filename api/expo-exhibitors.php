@@ -28,12 +28,14 @@ if (!in_array($method, ['GET','POST'], true)) {
 }
 // Require configured Cloudflare Turnstile before accepting any public applications.
 $turnstileSecret = trim((string)(
- (defined('BH_TURNSTILE_SECRET_KEY') ? constant('BH_TURNSTILE_SECRET_KEY') : null)
+ (defined('BUBBAHUB_TURNSTILE_SECRET_KEY') ? constant('BUBBAHUB_TURNSTILE_SECRET_KEY') : null)
+ ?: (defined('BH_TURNSTILE_SECRET_KEY') ? constant('BH_TURNSTILE_SECRET_KEY') : null)
  ?: (defined('TURNSTILE_SECRET_KEY') ? constant('TURNSTILE_SECRET_KEY') : null)
  ?: getenv('BH_TURNSTILE_SECRET_KEY') ?: getenv('TURNSTILE_SECRET_KEY') ?: ''
 ));
 $turnstileSiteKey = trim((string)(
- (defined('BH_TURNSTILE_SITE_KEY') ? constant('BH_TURNSTILE_SITE_KEY') : null)
+ (defined('BUBBAHUB_TURNSTILE_SITE_KEY') ? constant('BUBBAHUB_TURNSTILE_SITE_KEY') : null)
+ ?: (defined('BH_TURNSTILE_SITE_KEY') ? constant('BH_TURNSTILE_SITE_KEY') : null)
  ?: (defined('TURNSTILE_SITE_KEY') ? constant('TURNSTILE_SITE_KEY') : null)
  ?: getenv('BH_TURNSTILE_SITE_KEY') ?: getenv('TURNSTILE_SITE_KEY') ?: ''
 ));
