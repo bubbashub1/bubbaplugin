@@ -12,7 +12,16 @@ if(empty($_SESSION['bh_admin_authenticated']))sponsorAdminReply(401,['ok'=>false
 if(!$secure)sponsorAdminReply(403,['ok'=>false,'error'=>'https_required']);
 if(!function_exists('curl_init'))sponsorAdminReply(503,['ok'=>false,'error'=>'stripe_unavailable']);
 $secret=(string)(defined('BUBBAHUB_STRIPE_SECRET_KEY')?constant('BUBBAHUB_STRIPE_SECRET_KEY'):'');
-if($secret===''){ $wp=dirname(__DIR__).'/wp-load.php';if(is_file($wp)){ob_start();try{require_once $wp;}finally{ob_end_clean();}}$secret=(string)(defined('BUBBAHUB_STRIPE_SECRET_KEY')?constant('BUBBAHUB_STRIPE_SECRET_KEY'):''); }
+if($secret===''){
+ // Read the private Stripe constant from wp-config.php without executing WordPress.
+ // Loading wp-load.php inside a JSON API can emit HTML or terminate the request.
+ foreach(['/public_html/wp-config.php',dirname(__DIR__).'/wp-config.php',dirname(__DIR__,2).'/wp-config.php'] as $path){
+  if(!is_file($path))continue;
+  $contents=@file_get_contents($path);
+  if($contents===false)continue;
+  if(preg_match('/define\\s*\\(\\s*[\\'"]BUBBAHUB_STRIPE_SECRET_KEY[\\'"]\\s*,\\s*[\\'"](.*?)[\\'"]\\s*\\)\\s*;/s',$contents,$match)){$secret=stripcslashes($match[1]);break;}
+ }
+}
 if($secret===''){ $config=is_file(__DIR__.'/config.php')?require __DIR__.'/config.php':[];$secret=(string)(getenv('STRIPE_SECRET_KEY')?:($config['stripe']['secret_key']??''));}
 if($secret==='')sponsorAdminReply(503,['ok'=>false,'error'=>'stripe_not_configured']);
 $ch=curl_init('https://api.stripe.com/v1/checkout/sessions?limit=100');
