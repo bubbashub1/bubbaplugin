@@ -27,17 +27,21 @@ try{
  $config=is_file(__DIR__.'/config.php')?require __DIR__.'/config.php':[];
  $secret=trim((string)($config['stripe']['secret_key']??getenv('STRIPE_SECRET_KEY')?:''));
  if($secret==='')foreach([dirname(__DIR__).'/wp-config.php',dirname(__DIR__,2).'/wp-config.php'] as $file){if(!is_file($file))continue;$contents=@file_get_contents($file);if($contents===false)continue;if(preg_match('/define\\s*\\(\\s*[\\x27\\x22]BUBBAHUB_STRIPE_SECRET_KEY[\\x27\\x22]\\s*,\\s*[\\x27\\x22]([^\\x27\\x22]*)[\\x27\\x22]\\s*\\)\\s*;/',$contents,$m)){$secret=$m[1];break;}}if($secret===''||!preg_match('/^sk_(test|live)_/',$secret)||!function_exists('curl_init'))respond(503,['ok'=>false,'error'=>'stripe_unavailable']);
- $db=bh_mysql();$db->beginTransaction();
- $q=$db->prepare("SELECT * FROM bh_sponsor_invoice_requests WHERE id=? FOR UPDATE");$q->execute([$id]);$request=$q->fetch();
+ $db=bh_mysql();
+ // Reserve the request before calling Stripe. A timeout leaves a reviewable
+ // 'creating' record, rather than permitting another invoice on retry.
+ $db->beginTransaction();
+ $q=$db->prepare("SELECT * FROM bh_sponsor_invoice_requests WHERE id=? FOR UPDATE");$q->execute([$id]);$request=$q->fetch(PDO::FETCH_ASSOC);
  if(!$request){$db->rollBack();respond(404,['ok'=>false,'error'=>'not_found']);}
- if(($request['status']??'')!=='requested'){$db->rollBack();respond(409,['ok'=>false,'error'=>'already_processed']);}
+ if(($request['status']??'')!=='requested'){$db->rollBack();respond(409,['ok'=>false,'error'=>'already_processed','status'=>$request['status']]);}
  if(($request['event_key']??'')!=='bubba-me-2027'||!in_array((int)$request['tier'],[25,50,100],true)){$db->rollBack();respond(422,['ok'=>false,'error'=>'invalid_invoice_request']);}
- // Create a Stripe draft invoice first; no customer email is sent until admin
- // confirms delivery separately in Stripe Dashboard.
- $customer=stripePost('customers',['email'=>$request['email'],'name'=>$request['business_name'],'metadata[sponsor_request_id]'=>(string)$id],$secret,'bh-sponsor-'.$id.'-customer');
- $invoice=stripePost('invoices',['customer'=>$customer['id'],'collection_method'=>'send_invoice','days_until_due'=>'14','auto_advance'=>'false','metadata[type]'=>'event_sponsorship','metadata[event_key]'=>'bubba-me-2027','metadata[tier]'=>(string)$request['tier'],'metadata[sponsor_request_id]'=>(string)$id],$secret,'bh-sponsor-'.$id.'-invoice');
- stripePost('invoiceitems',['customer'=>$customer['id'],'invoice'=>$invoice['id'],'currency'=>'gbp','amount'=>(string)((int)$request['tier']*100),'description'=>'Bubba & Me Expo 2027 — £'.$request['tier'].' sponsorship'],$secret,'bh-sponsor-'.$id.'-item');
- $db->prepare("UPDATE bh_sponsor_invoice_requests SET status='draft_created' WHERE id=?")->execute([$id]);
+ $db->prepare("UPDATE bh_sponsor_invoice_requests SET status='creating' WHERE id=? AND status='requested'")->execute([$id]);
  $db->commit();
+ // Idempotency keys make Stripe retries safe. If an external call times out,
+ // leave status='creating' and reconcile in Stripe before any manual reset.
+ $customer=stripePost('customers',['email'=>$request['email'],'name'=>$request['business_name'],'metadata[sponsor_request_id]'=>(string)$id],$secret,'bh-sponsor-'.$id.'-customer');
+ $invoice=stripePost('invoices',['customer'=>$customer['id'],'collection_method'=>'send_invoice','days_until_due'=>'14','auto_advance'=>'false','metadata[type]'=>'event_sponsorship','metadata[event_key]'=>'bubba-me-2027', 'metadata[tier]'=>(string)$request['tier'],'metadata[sponsor_request_id]'=>(string)$id],$secret,'bh-sponsor-'.$id.'-invoice');
+ stripePost('invoiceitems',['customer'=>$customer['id'],'invoice'=>$invoice['id'],'currency'=>'gbp','amount'=>(string)((int)$request['tier']*100),'description'=>'Bubba & Me Expo 2027 — GBP '.$request['tier'].' sponsorship'],$secret,'bh-sponsor-'.$id.'-item');
+ $db->prepare("UPDATE bh_sponsor_invoice_requests SET status='draft_created' WHERE id=? AND status='creating'")->execute([$id]);
  respond(200,['ok'=>true,'status'=>'draft_created','stripe_invoice_id'=>$invoice['id'],'message'=>'Draft created in Stripe. Review and send it from Stripe Dashboard.']);
-}catch(Throwable $e){if(isset($db)&&$db->inTransaction())$db->rollBack();error_log('Sponsor invoice draft creation failed: '.get_class($e));respond(503,['ok'=>false,'error'=>'invoice_creation_failed','message'=>'Could not create invoice draft. Check Stripe before retrying.']);}
+}catch(Throwable $e){if(isset($db)&&$db->inTransaction())$db->rollBack();error_log('Sponsor invoice draft creation failed: '.get_class($e));respond(503,['ok'=>false,'error'=>'invoice_creation_failed','message'=>'Creation may have reached Stripe. Check Stripe invoices and reconcile this request before any retry.']);}
