@@ -39,8 +39,12 @@ try{
   $body=json_decode((string)file_get_contents('php://input'),true);
   if(!is_array($body)||!is_bool($body['published']??null))answer(422,['ok'=>false,'error'=>'invalid_publication']);
   if($body['published']){
+   if(($body['confirmation']??null)!=='PUBLISH')answer(422,['ok'=>false,'error'=>'publication_confirmation_required']);
+   $requestedRevision=filter_var($body['revision']??null,FILTER_VALIDATE_INT);
    $check=$db->prepare('SELECT revision FROM bh_expo_floor_plans WHERE event_key=?');$check->execute(['bubba-me-2027']);
-   if(!$check->fetchColumn())answer(409,['ok'=>false,'error'=>'save_layout_first']);
+   $currentRevision=$check->fetchColumn();
+   if($currentRevision===false)answer(409,['ok'=>false,'error'=>'save_layout_first']);
+   if($requestedRevision===false||$requestedRevision!==(int)$currentRevision)answer(409,['ok'=>false,'error'=>'layout_changed_reload']);
   }
   $up=$db->prepare('INSERT INTO bh_expo_floor_plan_publication(event_key,published) VALUES (?,?) ON DUPLICATE KEY UPDATE published=VALUES(published)');
   $up->execute(['bubba-me-2027',(int)$body['published']]);
