@@ -12,7 +12,7 @@ try{
  $q=$db->prepare("SELECT stripe_session_id,business_name,tier,website,logo_url FROM bh_event_sponsor_approvals WHERE event_key=? AND approval_status='approved' ORDER BY tier DESC, reviewed_at ASC LIMIT 100");
  $q->execute([$event]);$sponsors=[];
  foreach($q->fetchAll() as $row){
-  // Re-check Stripe before publication, including if a payment is later refunded.
+  // Re-check Stripe Checkout payment status before publication. Refund tracking needs a separate Stripe refund/payment-intent check.
   $session=bh_sponsor_session((string)$row['stripe_session_id']);
   if(!$session||!bh_sponsor_verified($session))continue;
   $sponsors[]=['name'=>$row['business_name'],'tier'=>(int)$row['tier'],'website'=>$row['website'],'logo_url'=>$row['logo_url']];
