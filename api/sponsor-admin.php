@@ -19,7 +19,8 @@ if($secret===''){
   if(!is_file($path))continue;
   $contents=@file_get_contents($path);
   if($contents===false)continue;
-  if(preg_match('/define\\s*\\(\\s*[\\'"]BUBBAHUB_STRIPE_SECRET_KEY[\\'"]\\s*,\\s*[\\'"](.*?)[\\'"]\\s*\\)\\s*;/s',$contents,$match)){$secret=stripcslashes($match[1]);break;}
+  $pattern = '~define\\s*\\(\\s*[\\x27\\x22]BUBBAHUB_STRIPE_SECRET_KEY[\\x27\\x22]\\s*,\\s*[\\x27\\x22]([^\\x27\\x22]*)[\\x27\\x22]\\s*\\)\\s*;~';
+  if(preg_match($pattern,$contents,$match)){$secret=stripcslashes($match[1]);break;}
  }
 }
 if($secret===''){ $config=is_file(__DIR__.'/config.php')?require __DIR__.'/config.php':[];$secret=(string)(getenv('STRIPE_SECRET_KEY')?:($config['stripe']['secret_key']??''));}
