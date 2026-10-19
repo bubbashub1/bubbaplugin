@@ -119,6 +119,11 @@ try {
  $occupied=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE event_key=? AND preferred_table=? AND application_status IN ('pending','approved','confirmed') LIMIT 1");
  $occupied->execute(['bubba-me-2027',$preferred]);
  if($occupied->fetchColumn()){$db->rollBack();expoResponse(409,['ok'=>false,'error'=>'table_already_selected']);}
+ // An admin may assign a different table to an approved exhibitor.
+ // Treat that assignment as occupied even when their original preference differs.
+ $assigned=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE event_key=? AND assigned_table=? AND application_status IN ('pending','approved','confirmed') LIMIT 1");
+ $assigned->execute(['bubba-me-2027',$preferred]);
+ if($assigned->fetchColumn()){$db->rollBack();expoResponse(409,['ok'=>false,'error'=>'table_already_assigned']);}
  // Canonical foundation schema, shared with admin approvals. Never auto-approve.
  $stmt=$db->prepare("INSERT INTO bh_expo_exhibitors
  (event_key,business_name,contact_name,contact_email,contact_phone,website_url,logo_url,description,participation_json,preferred_table,donation_interest,insurance_policy,insurance_expiry,requirements,application_status,public_visible,submitted_at)
@@ -139,6 +144,7 @@ try {
  unset($_SESSION['expo_apply_csrf']);
  expoResponse(201,['ok'=>true,'application_id'=>$id,'status'=>'pending','table_reserved'=>true]);
 } catch(Throwable $e) {
+ if(isset($db)&&$db->inTransaction())$db->rollBack();
  error_log('Expo application submission failed: '.get_class($e));
  expoResponse(503,['ok'=>false,'error'=>'booking_temporarily_unavailable']);
 }
