@@ -33,4 +33,6 @@ if($code!==200||!is_array($data)||!is_array($data['data']??null))sponsorAdminRep
 $items=[];
 foreach($data['data'] as $s){$m=$s['metadata']??[];if(($m['type']??'')!=='event_sponsorship')continue;
  $items[]=['session_id'=>(string)($s['id']??''),'event_key'=>(string)($m['event_key']??''),'tier'=>(string)($m['tier']??''),'business_name'=>(string)($m['business_name']??''),'contact_name'=>(string)($m['contact_name']??''),'email'=>(string)($m['email']??''),'website'=>(string)($m['website']??''),'logo_url'=>(string)($m['logo_url']??''),'payment_status'=>(string)($s['payment_status']??''),'amount_total'=>(int)($s['amount_total']??0),'created'=>(int)($s['created']??0)];}
-sponsorAdminReply(200,['ok'=>true,'sponsors'=>$items,'has_more'=>(bool)($data['has_more']??false),'note'=>'Stripe Checkout sessions, latest 100 only. Paid status is verified directly from Stripe; not an approval or publication record.']);
+$invoices=[];
+try{require_once __DIR__.'/db.php';$db=bh_mysql();$q=$db->query("SELECT id,event_key,tier,business_name,contact_name,email,status,created_at FROM bh_sponsor_invoice_requests ORDER BY created_at DESC LIMIT 100");$invoices=$q->fetchAll(PDO::FETCH_ASSOC);}catch(Throwable $e){/* Invoice table may not exist before first request. */}
+sponsorAdminReply(200,['ok'=>true,'invoice_requests'=>$invoices,'sponsors'=>$items,'has_more'=>(bool)($data['has_more']??false),'note'=>'Stripe Checkout sessions, latest 100 only. Paid status is verified directly from Stripe; not an approval or publication record.']);

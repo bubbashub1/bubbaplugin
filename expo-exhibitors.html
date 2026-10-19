@@ -39,6 +39,7 @@
 <label style="display:block;margin-top:12px">Preferred payment method (only if donating)<select name="payment_preference"><option value="">No preference</option><option value="bank_transfer">Bank transfer</option><option value="cash">Cash</option><option value="paypal">PayPal</option></select></label>
 <label style="display:block;margin-top:12px"><input type="checkbox" name="invoice_requested"> Please email me an invoice if I decide to donate</label>
 </fieldset>
+<fieldset style="margin-top:18px;border:1px solid #d1e4d4;border-radius:14px;padding:16px"><legend>Optional £25 Event Sponsorship</legend><p>Exhibitor spaces remain free. If you'd also like to sponsor the Expo for £25, choose how you would prefer to pay. Sponsorship is separate from the optional venue-hire contribution above.</p><label>£25 sponsorship choice<select name="sponsor_25_choice"><option value="no">No thank you</option><option value="pay_now">Yes — pay £25 now via Stripe</option><option value="invoice">Yes — please invoice me £25</option></select></label><p>We will process your exhibitor application first. Sponsorship does not guarantee an exhibitor space and is subject to approval.</p></fieldset>
 <fieldset style="margin-top:18px;border:1px solid #d1e4d4;border-radius:14px;padding:16px"><legend>Public liability insurance</legend>
 <label style="display:block">Insurance policy number *<input name="insurance_policy" required maxlength="120"></label>
 <label style="display:block;margin-top:12px">Insurance expiry date * (must be after today)<input name="insurance_expiry" type="date" required></label>
@@ -93,7 +94,7 @@
    const raw=await response.text();
    let result;try{result=JSON.parse(raw);}catch(_){throw new Error('HTTP '+response.status+' — server returned a non-JSON response');}
    if(!response.ok||!result.ok)throw new Error((result.error||'submission_failed')+(result.field?' in '+result.field:'')+' (HTTP '+response.status+')');
-   status.textContent='Application received. Reference #'+result.application_id+'. Your application is pending review.';
+   status.textContent='Application received. Reference #'+result.application_id+'. Your application is pending review.';if(body.sponsor_25_choice==='pay_now'||body.sponsor_25_choice==='invoice'){const a=document.createElement('a');a.href='/sponsor.html?event=bubba-me-2027&tier=25&payment_method='+encodeURIComponent(body.sponsor_25_choice==='invoice'?'invoice':'pay_now');a.textContent=body.sponsor_25_choice==='invoice'?'Continue to request your £25 sponsorship invoice →':'Continue to pay £25 sponsorship through Stripe →';a.style.cssText='display:block;margin-top:12px;font-weight:bold';status.appendChild(a);}
    status.scrollIntoView({behavior:'smooth',block:'center'});
    form.reset();
   }catch(error){if(String(error.message||'').includes('invalid_csrf')){try{const refreshed=await fetch('/api/expo-exhibitors.php',{credentials:'same-origin',cache:'no-store'});const fresh=await refreshed.json();if(refreshed.ok&&fresh.csrf_token)csrfToken=fresh.csrf_token;}catch(_){}}status.textContent='Application not confirmed: '+(error.message||'network_error')+(String(error.message||'').includes('invalid_csrf')?'. Security token refreshed; please complete verification and submit again.':'. Please check with Bubba Hub before trying again.');status.scrollIntoView({behavior:'smooth',block:'center'});}

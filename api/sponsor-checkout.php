@@ -40,10 +40,10 @@ if($secret===''){
 if($secret==='')$secret=trim((string)($config['stripe']['secret_key']??getenv('STRIPE_SECRET_KEY')?:''));
 if($secret==='')sponsorReply(503,['ok'=>false,'error'=>'stripe_not_configured']);
 $labels=['25'=>'Community Supporter','50'=>'Event Supporter','100'=>'Event Partner'];
+$products=['25'=>'prod_VTEzdu4UdHjRAD','50'=>'prod_VTF0fs7L5Pdsfj','100'=>'prod_VTF2dAb8MKBGbP'];
 $params=['mode'=>'payment','payment_method_types[0]'=>'card','customer_email'=>$email,
 'line_items[0][price_data][currency]'=>'gbp','line_items[0][price_data][unit_amount]'=>(string)((int)$tier*100),
-'line_items[0][price_data][product_data][name]'=>'Bubba Hub '.$labels[$tier].' sponsorship',
-'line_items[0][price_data][product_data][description]'=>$events[$event],
+'line_items[0][price_data][product]'=>$products[$tier],
 'line_items[0][quantity]'=>'1','metadata[type]'=>'event_sponsorship','metadata[event_key]'=>$event,'metadata[tier]'=>$tier,
 'metadata[business_name]'=>$name,'metadata[contact_name]'=>$contact,'metadata[email]'=>$email,
 'metadata[website]'=>$website,'metadata[logo_url]'=>$logo,
