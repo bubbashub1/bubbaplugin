@@ -41,6 +41,15 @@ try{
   if($used->fetchColumn()){$db->rollBack();out(409,['ok'=>false,'error'=>'table_already_assigned']);}
  }
  if($table!==null){$held=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE event_key='bubba-me-2027' AND preferred_table=? AND application_status IN ('pending','approved','confirmed') AND id<>? LIMIT 1");$held->execute([(string)$table,$id]);if($held->fetchColumn()){$db->rollBack();out(409,['ok'=>false,'error'=>'table_reserved_by_applicant']);}}
+ // An exhibitor may not hold two tables: their original preferred table remains
+ // reserved unless the admin deliberately releases that preference.
+ if($table!==null){
+  $pref=$db->prepare("SELECT preferred_table FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027'");
+  $pref->execute([$id]);$preferred=$pref->fetchColumn();
+  if($preferred!==false&&$preferred!==null&&(string)$preferred!==(string)$table){
+   $db->rollBack();out(409,['ok'=>false,'error'=>'release_preferred_table_before_reassignment']);
+  }
+ }
  $update=$db->prepare("UPDATE bh_expo_exhibitors SET assigned_table=? WHERE id=? AND event_key='bubba-me-2027'");
  $update->execute([$table===null?null:(string)$table,$id]);$db->commit();
  out(200,['ok'=>true,'exhibitor_id'=>$id,'assigned_table'=>$table]);
