@@ -1,0 +1,23 @@
+/* Expo-inspired banners for primary Bubba Hub pages. Images are hosted on the live site. */
+.bh-my-hub .my-hub-page .my-hub-hero,
+.bh-support .app-shell .support-hero{
+ position:relative;isolation:isolate;overflow:hidden;
+ min-height:clamp(300px,33vw,460px);border-radius:28px;
+ background-color:#e2f3e6;background-position:center;background-size:cover;
+ border:1px solid #d5e8d9;box-shadow:0 14px 36px #174e3b14;
+ display:flex;align-items:center;padding:clamp(24px,5vw,58px);
+}
+.bh-my-hub .my-hub-page .my-hub-hero{background-image:linear-gradient(90deg,rgba(241,250,240,.97) 0%,rgba(241,250,240,.89) 38%,rgba(241,250,240,.06) 75%),url('/images/logos/34009-20261020-161813-7ef461.png')}
+.bh-support .app-shell .support-hero{background-image:linear-gradient(90deg,rgba(241,250,240,.97) 0%,rgba(241,250,240,.89) 38%,rgba(241,250,240,.06) 75%),url('/images/logos/34010-20261020-161837-601b1e.png')}
+.bh-my-hub .my-hub-hero-copy,.bh-support .support-hero>div:first-child{position:relative;z-index:1;max-width:620px}
+.bh-my-hub .my-hub-page .my-hub-hero h1,.bh-support .app-shell .support-hero h1{font-size:clamp(2.4rem,4.7vw,4.2rem);line-height:1.08;letter-spacing:-.035em;color:#174e3b}
+.bh-my-hub .my-hub-page .my-hub-hero p,.bh-support .app-shell .support-hero p{color:#174e3b}
+.bh-directory [data-bh-directory-hero-placeholder]{position:relative;overflow:hidden;min-height:clamp(260px,28vw,400px);border-radius:28px;background-color:#e2f3e6;background-image:linear-gradient(90deg,rgba(241,250,240,.96),rgba(241,250,240,.84) 42%,rgba(241,250,240,.05) 80%),url('/images/logos/34011-20261020-161900-68d306.png');background-size:cover;background-position:center}
+.bh-directory [data-bh-directory-hero-placeholder] :is(h1,h2,p){color:#174e3b}
+@media(max-width:700px){
+ .bh-my-hub .my-hub-page .my-hub-hero,.bh-support .app-shell .support-hero{min-height:0;display:flex;flex-direction:column;align-items:stretch;padding:24px 19px 190px;border-radius:24px;background-position:center,bottom center;background-size:cover,auto 100%}
+ .bh-my-hub .my-hub-page .my-hub-hero{background-image:linear-gradient(180deg,#eff9ef 0%,rgba(239,249,239,.96) 48%,rgba(239,249,239,.06) 100%),url('/images/logos/34009-20261020-161813-7ef461.png')}
+ .bh-support .app-shell .support-hero{background-image:linear-gradient(180deg,#eff9ef 0%,rgba(239,249,239,.96) 48%,rgba(239,249,239,.06) 100%),url('/images/logos/34010-20261020-161837-601b1e.png')}
+ .bh-directory [data-bh-directory-hero-placeholder]{min-height:300px;background-image:linear-gradient(180deg,#eff9ef 0%,rgba(239,249,239,.88) 48%,rgba(239,249,239,.05) 100%),url('/images/logos/34011-20261020-161900-68d306.png');background-position:center,bottom center}
+ .bh-my-hub .my-hub-page .my-hub-hero h1,.bh-support .app-shell .support-hero h1{font-size:clamp(2.25rem,9vw,3.5rem)}
+}
