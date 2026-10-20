@@ -589,3 +589,29 @@ body.bh-directory .custom-sleek-dark-marker:hover .bubba-dark-pin{
    min-height:360px!important;max-height:none!important;
  }
 }
+
+/* Full-width photo header above the existing desktop filter/results grid.
+   The directory shell uses a two-column grid, so explicitly span the banner. */
+@media(min-width:901px){
+ body.bh-directory:not(.bh-calendar-page) .app-shell>.bh-directory-banner{
+   grid-column:1 / -1!important;grid-row:1!important;min-width:0!important;
+   width:100%!important;box-sizing:border-box!important;margin:18px 0 8px!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .app-shell>[data-bh-directory-hero-placeholder],
+ body.bh-directory:not(.bh-calendar-page) .app-shell>[data-bh-directory-hero]{
+   grid-column:1!important;grid-row:2!important;min-width:0!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .app-shell>.directory-layout{
+   grid-column:2!important;grid-row:2!important;min-width:0!important;
+   display:block!important;width:100%!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .app-shell>.directory-layout>.directory-results-column{
+   min-width:0!important;width:100%!important;
+ }
+}
+@media(max-width:900px){
+ body.bh-directory:not(.bh-calendar-page) .app-shell>.bh-directory-banner{
+   display:flex!important;width:100%!important;box-sizing:border-box!important;
+   margin:12px 0 18px!important;
+ }
+}
