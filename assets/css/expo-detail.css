@@ -67,3 +67,29 @@ body.bh-expo-detail main.expo-container{width:100%;max-width:none;margin:auto;pa
 .bh-expo-detail .expo-hero::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(245,247,237,.42) 0%,rgba(245,247,237,.18) 48%,transparent 78%);pointer-events:none}
 .bh-expo-detail .expo-hero-content,.bh-expo-detail .expo-date-tile{position:relative;z-index:1}
 @media(max-width:650px){.bh-expo-detail .expo-hero{background-position:62% center}.bh-expo-detail .expo-hero::before{background:linear-gradient(90deg,rgba(245,247,237,.9),rgba(245,247,237,.75))}}
+
+/* Mobile Expo: show the photo as its own visible panel, not washed out behind text. */
+@media(max-width:650px){
+ body.bh-expo-detail main.expo-container{width:100%;max-width:100%;overflow-x:clip;padding:12px 12px 56px}
+ .bh-expo-detail .expo-hero{display:flex;flex-direction:column;align-items:stretch;gap:16px;padding:20px 17px;border-radius:15px;background:#f5f7ed;min-width:0}
+ .bh-expo-detail .expo-hero::before{display:none}
+ .bh-expo-detail .expo-hero-content{order:0;width:100%;max-width:none;min-width:0}
+ .bh-expo-detail .expo-hero h1,.bh-expo-detail .expo-hero h1 span{font-size:clamp(2rem,9vw,3.1rem);line-height:1.09;overflow-wrap:break-word}
+ .bh-expo-detail .expo-lead{font-size:1rem;line-height:1.55}
+ .bh-expo-detail .expo-hero-tags{gap:8px;margin:17px 0}
+ .bh-expo-detail .expo-hero-tags span{font-size:.8rem;padding:8px 10px}
+ .bh-expo-detail .expo-button-primary{width:100%;min-width:0;min-height:48px;text-align:center}
+ .bh-expo-detail .expo-hero::after{content:"";display:block;order:1;align-self:stretch;aspect-ratio:16/10;min-height:175px;max-height:310px;border-radius:12px;background:url('https://www.bubbahub.co.uk/images/logos/33995-20261020-160530-2bff00.png') 70% center/cover no-repeat}
+ .bh-expo-detail .expo-date-tile{order:2;width:100%;max-width:none;box-sizing:border-box;padding:16px 12px;gap:6px}
+ .bh-expo-detail .expo-date-tile strong{font-size:4.2rem}
+ .bh-expo-detail .expo-section-nav{display:flex;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;justify-content:flex-start;gap:6px;padding:9px;max-width:100%;box-sizing:border-box}
+ .bh-expo-detail .expo-section-nav a{white-space:nowrap;flex:0 0 auto;min-height:42px;display:inline-flex;align-items:center}
+ .bh-expo-detail .expo-panel,.bh-expo-detail .expo-info-card{padding:19px 16px;border-radius:13px;min-width:0}
+ .bh-expo-detail .expo-ticket-inputs,.bh-expo-detail .expo-visitor-fields{grid-template-columns:1fr}
+ .bh-expo-detail .expo-ticket-inputs input,.bh-expo-detail .expo-visitor-fields input{font-size:16px}
+ .bh-expo-detail .expo-layout,.bh-expo-detail .expo-main-column,.bh-expo-detail .expo-sidebar{min-width:0}
+}
+@media(min-width:651px) and (max-width:900px){
+ .bh-expo-detail .expo-hero{grid-template-columns:minmax(0,1fr) 200px}
+ .bh-expo-detail .expo-hero h1,.bh-expo-detail .expo-hero h1 span{font-size:clamp(2rem,4.6vw,3.4rem)}
+}
