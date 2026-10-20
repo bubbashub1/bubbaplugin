@@ -641,16 +641,6 @@ const bhInitDirectory=async()=>{
                   return;
                 }
                 frame.hidden=false;
-                frame.src=frame.dataset.src;
-              })
-              .catch(()=>{
-                frame.hidden=true;
-                const message=plannerView.querySelector(".bh-planner-signin-notice");
-                if(message){message.hidden=false;message.querySelector("p").textContent="We could not verify your sign-in. Please open the full Planner to continue.";}
-              })
-              .finally(()=>{delete frame.dataset.authChecking;});
-          }
-          if(false){
             frame.addEventListener("load",()=>{
               try{
                 const doc=frame.contentDocument;
@@ -666,8 +656,16 @@ const bhInitDirectory=async()=>{
                 }
               }catch(error){console.warn("Planner embed height could not be adjusted",error);}
             },{once:true});
-            frame.src=frame.dataset.src;
+                frame.src=frame.dataset.src;
+              })
+              .catch(()=>{
+                frame.hidden=true;
+                const message=plannerView.querySelector(".bh-planner-signin-notice");
+                if(message){message.hidden=false;message.querySelector("p").textContent="We could not verify your sign-in. Please open the full Planner to continue.";}
+              })
+              .finally(()=>{delete frame.dataset.authChecking;});
           }
+
         }
       }
       if($("directoryEventsView"))$("directoryEventsView").hidden=!showEvents;
