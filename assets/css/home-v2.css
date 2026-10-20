@@ -129,3 +129,26 @@
  .bh-home .home-plan-pro-band .home-plan-copy h2{font-size:clamp(1.8rem,7vw,2.6rem)}
  .bh-home .home-plan-pro-band .home-plan-card{padding:20px}
 }
+
+/* October homepage refresh: reuse the uploaded text-free family adventures banner.
+   Desktop keeps real, accessible headline and functioning search above the image. */
+@media(min-width:761px){
+ .bh-home .home-hero{
+  position:relative;isolation:isolate;
+  background:#f7f8ef url('/images/logos/family-adventures-in-soft-pastels-20261020-183149-151d80.png') center top / cover no-repeat;
+  min-height:clamp(540px,47vw,730px);align-content:center;
+ }
+ .bh-home .home-hero::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(90deg,rgba(250,251,243,.2) 0%,rgba(250,251,243,0) 56%)}
+ .bh-home .home-hero-image{background:none!important;visibility:hidden;min-height:450px}
+ .bh-home .home-hero-copy{max-width:570px}
+ .bh-home .home-search{align-self:end}
+}
+@media(max-width:760px){
+ .bh-home .home-hero{background:#f7f8ef}
+ .bh-home .home-hero-image{
+  visibility:visible;min-height:245px;
+  background-image:url('/images/logos/family-adventures-in-soft-pastels-20261020-183149-151d80.png')!important;
+  background-position:72% center!important;background-size:auto 100%!important;
+  background-repeat:no-repeat!important;border-radius:22px;
+ }
+}
