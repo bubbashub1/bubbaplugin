@@ -32,3 +32,32 @@ body.bh-expo-detail{background:#fbfcf8;color:#174e3b;font-family:Quicksand,Calib
 .bh-expo-detail .expo-visitor-fields input{min-width:0;width:100%;box-sizing:border-box;border:1px solid #c6d9cd;border-radius:11px;padding:12px;background:white;font:inherit}
 .bh-expo-detail .expo-visitor-consent{display:flex;align-items:flex-start;gap:9px;margin-top:15px;font-size:.9rem}
 @media(max-width:600px){.bh-expo-detail .expo-visitor-fields{grid-template-columns:1fr}}
+
+/* Approved Expo design preview — bold, cream, baby blue and full width. */
+body.bh-expo-detail{background:#f5f7ed;color:#123e2b}
+body.bh-expo-detail main.expo-container{width:100%;max-width:none;margin:auto;padding:16px clamp(14px,3vw,54px) 70px;box-sizing:border-box}
+.bh-expo-detail .expo-hero{grid-template-columns:minmax(0,1fr) minmax(215px,265px);min-height:360px;gap:28px;padding:clamp(24px,4vw,55px);border:0;border-radius:16px;background:radial-gradient(ellipse at 75% 40%,#c9e8e7 0 18%,transparent 48%),linear-gradient(115deg,#f5f7ed,#e8f4ec);box-shadow:0 7px 25px #123e2b12}
+.bh-expo-detail .expo-hero h1,.bh-expo-detail .expo-hero h1 span{font-size:clamp(2.45rem,4.8vw,4.8rem);font-weight:800;line-height:1.05;letter-spacing:-.045em;color:#103d2b}
+.bh-expo-detail .expo-lead{font-size:clamp(1rem,1.5vw,1.24rem);line-height:1.5}
+.bh-expo-detail .expo-kicker{color:#087f94}
+.bh-expo-detail .expo-hero-tags span{border:1px solid #add7e3;color:#174b42}
+.bh-expo-detail .expo-date-tile{border:2px solid white;background:linear-gradient(#8bbfd6 0 32%,white 32%);border-radius:16px;color:#154657}
+.bh-expo-detail .expo-date-tile strong{color:#154657}
+.bh-expo-detail .expo-date-tile>div{background:#eef7fb;color:#154657}
+.bh-expo-detail .expo-button{border-radius:10px;font-weight:800}
+.bh-expo-detail .expo-button-primary{background:#174b33;color:white;min-width:240px}
+.bh-expo-detail .expo-button-primary:hover{background:#0c3624}
+.bh-expo-detail .expo-section-nav{justify-content:space-around;margin:12px 0 16px;border-radius:12px;box-shadow:0 4px 15px #174b3310}
+.bh-expo-detail .expo-section-nav a,.bh-expo-detail .expo-section-nav .expo-nav-ticket{background:transparent;border-radius:8px;color:#174b33;font-weight:800}
+.bh-expo-detail .expo-layout{grid-template-columns:minmax(0,1fr) minmax(265px,315px);gap:20px;margin-top:0}
+.bh-expo-detail .expo-main-column,.bh-expo-detail .expo-sidebar{min-width:0}
+.bh-expo-detail .expo-panel,.bh-expo-detail .expo-info-card{border-radius:14px;border:1px solid #d9e3dc;box-shadow:0 5px 20px #174b330a}
+.bh-expo-detail .expo-panel h2,.bh-expo-detail .expo-info-card h2{font-size:clamp(1.6rem,2.5vw,2.35rem);font-weight:800;letter-spacing:-.03em;color:#103d2b}
+.bh-expo-detail .expo-features{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.bh-expo-detail .expo-features>div{min-width:0;background:white;border:1px solid #d9e3dc;border-radius:12px;padding:18px 14px}
+.bh-expo-detail .expo-feature-icon{display:flex;align-items:center;justify-content:center;width:66px;height:66px;border-radius:50%;background:#dbeef8;font-size:1.9rem;margin:0 auto 12px}
+.bh-expo-detail .expo-features>div:nth-child(even) .expo-feature-icon{background:#d8eadf}
+.bh-expo-detail .expo-features h3{font-weight:800;color:#103d2b}
+@media(max-width:1100px){.bh-expo-detail .expo-features{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:900px){.bh-expo-detail .expo-layout{grid-template-columns:1fr}.bh-expo-detail .expo-sidebar{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){body.bh-expo-detail main.expo-container{padding-inline:13px}.bh-expo-detail .expo-hero{grid-template-columns:1fr;min-height:0;padding:23px}.bh-expo-detail .expo-date-tile{max-width:290px}.bh-expo-detail .expo-sidebar,.bh-expo-detail .expo-features{grid-template-columns:1fr}.bh-expo-detail .expo-section-nav{justify-content:flex-start}}
