@@ -1194,3 +1194,23 @@ body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-guest
 body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-guest-warning strong{display:block!important;margin-bottom:4px!important}
 body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-guest-warning p{margin:0!important}
 body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-guest-warning a{color:#075b42!important;font-weight:800!important;text-decoration:underline!important}
+
+/* Native inline Planner (no iframe, no duplicated website header). */
+body.bh-directory .bh-inline-planner{width:100%;min-width:0;margin-top:14px}
+body.bh-directory .bh-inline-planner-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:20px;background:#e7f1e7;border-radius:18px;margin-bottom:12px}
+body.bh-directory .bh-inline-planner-toolbar h3{margin:5px 0;color:#174e3b;font-size:1.6rem}
+body.bh-directory .bh-inline-planner-toolbar p{margin:0;color:#416651}
+body.bh-directory .bh-inline-planner-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-weight:700}
+body.bh-directory #bhInlinePlannerRefresh{border:0;background:#174e3b;color:#fff;border-radius:999px;padding:11px 16px;font-weight:800;cursor:pointer}
+body.bh-directory .bh-inline-planner-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+body.bh-directory .bh-inline-planner-day{background:#f3f8f2;border:1px solid #d7e5d9;border-radius:14px;min-width:0;min-height:170px;overflow:hidden}
+body.bh-directory .bh-inline-planner-day h4{background:#416651;color:#fff;margin:0;padding:11px 8px;text-align:center;font-size:.82rem}
+body.bh-directory .bh-inline-planner-events{display:flex;flex-direction:column;gap:7px;padding:8px}
+body.bh-directory .bh-inline-planner-event{display:flex;flex-direction:column;gap:3px;background:#fff;border-radius:9px;padding:9px;color:#174e3b;text-decoration:none;font-size:.77rem;overflow-wrap:anywhere}
+body.bh-directory .bh-inline-planner-event small{font-size:.7rem}
+body.bh-directory .bh-inline-planner-empty-day{font-size:.73rem;color:#678172}
+body.bh-directory .bh-inline-planner-empty{grid-column:1/-1;background:#f3f8f2;border-radius:18px;padding:28px;text-align:center}
+body.bh-directory .bh-inline-planner-empty h4{font-size:1.25rem;margin:0 0 8px}
+body.bh-directory .bh-inline-planner-note{grid-column:1/-1;font-size:.83rem;color:#416651}
+@media(max-width:900px){body.bh-directory .bh-inline-planner-week{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){body.bh-directory .bh-inline-planner-week{grid-template-columns:1fr}body.bh-directory .bh-inline-planner-day{min-height:0}body.bh-directory .bh-inline-planner-toolbar{padding:16px}}
