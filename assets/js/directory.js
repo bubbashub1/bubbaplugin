@@ -647,7 +647,24 @@ const bhInitDirectory=async()=>{
         plannerView.hidden=currentView!=="planner";
         if(currentView==="planner"){
           const frame=plannerView.querySelector("iframe[data-src]");
-          if(frame && !frame.src)frame.src=frame.dataset.src;
+          if(frame && !frame.src){
+            frame.addEventListener("load",()=>{
+              try{
+                const doc=frame.contentDocument;
+                if(!doc)return;
+                const resize=()=>{
+                  const main=doc.querySelector("main.planner-page");
+                  if(main)frame.style.height=Math.max(520,Math.ceil(main.getBoundingClientRect().height)+20)+"px";
+                };
+                resize();
+                if(typeof ResizeObserver!=="undefined"){
+                  const observer=new ResizeObserver(resize);
+                  observer.observe(doc.querySelector("main.planner-page")||doc.body);
+                }
+              }catch(error){console.warn("Planner embed height could not be adjusted",error);}
+            },{once:true});
+            frame.src=frame.dataset.src;
+          }
         }
       }
       if($("directoryEventsView"))$("directoryEventsView").hidden=!showEvents;
