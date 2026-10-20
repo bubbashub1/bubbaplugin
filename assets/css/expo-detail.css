@@ -63,7 +63,7 @@ body.bh-expo-detail main.expo-container{width:100%;max-width:none;margin:auto;pa
 @media(max-width:650px){body.bh-expo-detail main.expo-container{padding-inline:13px}.bh-expo-detail .expo-hero{grid-template-columns:1fr;min-height:0;padding:23px}.bh-expo-detail .expo-date-tile{max-width:290px}.bh-expo-detail .expo-sidebar,.bh-expo-detail .expo-features{grid-template-columns:1fr}.bh-expo-detail .expo-section-nav{justify-content:flex-start}}
 
 /* Expo hero artwork uploaded to live WordPress media library. */
-.bh-expo-detail .expo-hero{position:relative;isolation:isolate;overflow:hidden;background:#f5f7ed url('/images/logos/33995-20261020-160530-2bff00.png') center center/cover no-repeat}
+.bh-expo-detail .expo-hero{position:relative;isolation:isolate;overflow:hidden;background:#f5f7ed url('https://www.bubbahub.co.uk/images/logos/33995-20261020-160530-2bff00.png') center center/cover no-repeat}
 .bh-expo-detail .expo-hero::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(245,247,237,.42) 0%,rgba(245,247,237,.18) 48%,transparent 78%);pointer-events:none}
 .bh-expo-detail .expo-hero-content,.bh-expo-detail .expo-date-tile{position:relative;z-index:1}
 @media(max-width:650px){.bh-expo-detail .expo-hero{background-position:62% center}.bh-expo-detail .expo-hero::before{background:linear-gradient(90deg,rgba(245,247,237,.9),rgba(245,247,237,.75))}}
