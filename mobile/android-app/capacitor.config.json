@@ -1,0 +1,12 @@
+{
+  "appId": "uk.co.bubbahub.app",
+  "appName": "Bubba Hub",
+  "webDir": "www",
+  "server": {
+    "url": "https://bubbahub.co.uk",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
