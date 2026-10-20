@@ -781,3 +781,85 @@ body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions button:focus
  body.bh-directory:not(.bh-calendar-page) .bh-directory-content-grid.is-map-only{display:block!important}
  body.bh-directory:not(.bh-calendar-page) .bh-directory-content-grid.is-map-only .bh-directory-map-pane{display:block!important}
 }
+
+/* Directory polish after PR 297: reduce search height, balance tabs and cards. */
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-view-actions{
+ width:100%!important;max-width:none!important;box-sizing:border-box!important;
+ grid-template-columns:repeat(5,minmax(0,1fr))!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-view-actions > *{
+ width:100%!important;box-sizing:border-box!important;white-space:nowrap!important;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]){
+ padding:16px!important;background:#f1f7ee!important;border:1px solid #dbe8dc!important;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) .directory-filter-fields,
+body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) .bh-advanced-filter-fields{
+ display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ gap:12px 16px!important;align-items:end!important;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) .directory-filter-fields > *,
+body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) .bh-advanced-filter-fields > *{
+ min-width:0!important;width:100%!important;max-width:100%!important;margin:0!important;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) :is(input,select,button){
+ max-width:100%;box-sizing:border-box;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) :is(input:not([type="checkbox"]):not([type="radio"]),select){
+ min-height:43px!important;
+}
+body.bh-directory:not(.bh-calendar-page) #advancedToggle{
+ min-height:42px!important;padding:9px 18px!important;font-size:.91rem!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-content-grid{
+ grid-template-columns:minmax(0,1fr) minmax(340px,32%)!important;gap:20px!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-list-pane .activity-card .activity-image{
+ overflow:hidden!important;aspect-ratio:16/9!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-list-pane .activity-card .activity-image img{
+ width:100%!important;height:100%!important;object-fit:cover!important;display:block!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-list-pane .activity-card .activity-body{
+ display:flex!important;flex-direction:column!important;gap:7px!important;padding:13px!important;min-width:0!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-list-pane .activity-card .activity-meta{
+ font-size:.7rem!important;line-height:1.4!important;letter-spacing:.02em!important;overflow-wrap:anywhere!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-list-pane .activity-card h3{
+ font-size:clamp(1rem,1.25vw,1.2rem)!important;line-height:1.25!important;margin:0!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-list-pane .activity-card p{
+ font-size:.82rem!important;line-height:1.45!important;margin:0!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-list-pane .activity-card .activity-footer{
+ margin-top:auto!important;display:flex!important;align-items:center!important;justify-content:space-between!important;
+ gap:8px!important;flex-wrap:wrap!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-list-pane .activity-card .bh-save{
+ min-height:36px!important;padding:7px 11px!important;font-size:.78rem!important;
+}
+@media(max-width:1250px) and (min-width:901px){
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-content-grid{grid-template-columns:minmax(0,1fr) minmax(300px,34%)!important}
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) .directory-filter-fields,
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) .bh-advanced-filter-fields{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+}
+@media(max-width:900px){
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-content-grid{display:flex!important;flex-direction:column!important;gap:12px!important}
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) .directory-filter-fields,
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) .bh-advanced-filter-fields{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+}
+@media(max-width:540px){
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) .directory-filter-fields,
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) .bh-advanced-filter-fields{
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-view-actions{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-list-pane .activity-card h3{font-size:1.12rem!important}
+}
