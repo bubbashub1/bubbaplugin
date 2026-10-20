@@ -536,7 +536,7 @@ const bhInitDirectory=async()=>{
 
       calendar.innerHTML = `
         <div class="directory-calendar-head">
-          <div><strong>${escapeHtml(weekLabel)}</strong><span>${scheduledCount} scheduled activit${scheduledCount === 1 ? "y" : "ies"}${hasMore ? " · first " + calendarLimit + " shown; refine filters for more" : ""}</span></div>
+          <div><strong>${escapeHtml(weekLabel)}</strong><span>${scheduledCount} scheduled activit${scheduledCount === 1 ? "y" : "ies"}${hasMore ? " · first " + calendarLimit + " scheduled listings shown; refine filters for more" : ""}</span></div>
           <div class="directory-calendar-actions">
             <button type="button" class="button button-soft" data-calendar-prev aria-label="Previous week">‹</button>
             <button type="button" class="button button-soft" data-calendar-today>Today</button>
@@ -645,6 +645,16 @@ const bhInitDirectory=async()=>{
               try{
                 const doc=frame.contentDocument;
                 if(!doc)return;
+                const locationPath=frame.contentWindow?.location?.pathname || "";
+                const isAuthPage=/\/(auth|login|account)(?:\.html)?\/?$/i.test(locationPath);
+                const notice=plannerView.querySelector(".bh-planner-auth-notice");
+                if(isAuthPage){
+                  frame.hidden=true;
+                  if(notice)notice.hidden=false;
+                  return;
+                }
+                frame.hidden=false;
+                if(notice)notice.hidden=true;
                 const resize=()=>{
                   const main=doc.querySelector("main.planner-page");
                   if(main)frame.style.height=Math.max(520,Math.ceil(main.getBoundingClientRect().height)+20)+"px";
