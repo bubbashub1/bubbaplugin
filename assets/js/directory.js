@@ -629,32 +629,11 @@ const bhInitDirectory=async()=>{
         plannerView.hidden=currentView!=="planner";
         if(currentView==="planner"){
           const frame=plannerView.querySelector("iframe[data-src]");
-          if(frame && !frame.src && !frame.dataset.authChecking){
-            frame.dataset.authChecking="true";
-            fetch("/api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}})
-              .then(response=>response.json())
-              .then(auth=>{
-                if(!auth?.authenticated){
-                  frame.hidden=true;
-                  const message=plannerView.querySelector(".bh-planner-signin-notice");
-                  if(message)message.hidden=false;
-                  return;
-                }
-                frame.hidden=false;
+          if(frame && !frame.src){
             frame.addEventListener("load",()=>{
               try{
                 const doc=frame.contentDocument;
                 if(!doc)return;
-                const locationPath=frame.contentWindow?.location?.pathname || "";
-                const isAuthPage=/\/(auth|login|account)(?:\.html)?\/?$/i.test(locationPath);
-                const notice=plannerView.querySelector(".bh-planner-auth-notice");
-                if(isAuthPage){
-                  frame.hidden=true;
-                  if(notice)notice.hidden=false;
-                  return;
-                }
-                frame.hidden=false;
-                if(notice)notice.hidden=true;
                 const resize=()=>{
                   const main=doc.querySelector("main.planner-page");
                   if(main)frame.style.height=Math.max(520,Math.ceil(main.getBoundingClientRect().height)+20)+"px";
@@ -666,16 +645,15 @@ const bhInitDirectory=async()=>{
                 }
               }catch(error){console.warn("Planner embed height could not be adjusted",error);}
             },{once:true});
-                frame.src=frame.dataset.src;
+            frame.src=frame.dataset.src;
+            fetch("/api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}})
+              .then(response=>response.json())
+              .then(auth=>{
+                const notice=plannerView.querySelector(".bh-planner-guest-warning");
+                if(notice)notice.hidden=!!auth?.authenticated;
               })
-              .catch(()=>{
-                frame.hidden=true;
-                const message=plannerView.querySelector(".bh-planner-signin-notice");
-                if(message){message.hidden=false;message.querySelector("p").textContent="We could not verify your sign-in. Please open the full Planner to continue.";}
-              })
-              .finally(()=>{delete frame.dataset.authChecking;});
+              .catch(()=>{/* Keep the warning visible if sign-in status cannot be checked. */});
           }
-
         }
       }
       if($("directoryEventsView"))$("directoryEventsView").hidden=!showEvents;

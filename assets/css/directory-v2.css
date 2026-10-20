@@ -1183,3 +1183,14 @@ body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-auth-
 body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-auth-notice p{
  margin:0 0 18px!important;
 }
+
+/* Guest Planner remains usable; warn that local-only plans are not backed up. */
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-guest-warning{
+ display:block!important;background:#fff8e9!important;border:1px solid #f0d6a5!important;
+ border-radius:16px!important;padding:15px 18px!important;margin:10px 0 16px!important;
+ color:#174e3b!important;line-height:1.5!important;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-guest-warning[hidden]{display:none!important}
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-guest-warning strong{display:block!important;margin-bottom:4px!important}
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-guest-warning p{margin:0!important}
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-guest-warning a{color:#075b42!important;font-weight:800!important;text-decoration:underline!important}
