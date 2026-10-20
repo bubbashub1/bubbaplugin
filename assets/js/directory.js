@@ -251,7 +251,7 @@ const bhInitDirectory=async()=>{
     // One consistent stacked listing view; the old Listings | Map toggle is removed.
     let currentView = "grid";
 
-    let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    let calendarMonth = new Date();
     let cardCount = Number(localStorage.getItem("bh_directory_cards") || 3);
     let visibleActivityCount = 6;
     let infiniteScrollObserver = null;
@@ -500,31 +500,10 @@ const bhInitDirectory=async()=>{
       const calendar = $("calendarView");
       if (!calendar) return;
 
-      // The calendar is intentionally opt-in: with 1,000+ listings we only
-      // show sessions after the visitor has narrowed the directory results.
-      const hasCalendarFilter = () => {
-        const search = $("search")?.value.trim() || "";
-        const category = $("heroCategory")?.value || $("category")?.value || "";
-        const region = $("heroRegion")?.value || $("area")?.value || "";
-        const town = $("heroTown")?.value || $("town")?.value || "";
-        const minAge = Number($("ageMin")?.value ?? 0);
-        const maxAge = Number($("ageMax")?.value ?? 9);
-        const day = $("heroDay")?.value || $("day")?.value || "";
-        const maxPrice = $("maxPrice")?.value || "";
-        const freeOnly = $("free")?.checked || false;
-        return !!(search || category || region || town || day || maxPrice || freeOnly || minAge > 0 || maxAge < 9);
-      };
-
-      if (!hasCalendarFilter()) {
-        calendar.innerHTML = `
-          <div class="directory-calendar-empty-state">
-            <div class="directory-calendar-empty-icon" aria-hidden="true">🔎</div>
-            <h2>Find your perfect listings</h2>
-            <p>Please use the filters above to narrow down activities by location, age, category, day or price. Your matching listings will then appear in the weekly calendar.</p>
-          </div>
-        `;
-        return;
-      }
+      // Calendar is browsable without filters; cap initial rendering for performance.
+      const calendarLimit = 120;
+      const displayedList = list.slice(0, calendarLimit);
+      const hasMore = list.length > calendarLimit;
 
       if (!list.length) {
         calendar.innerHTML = `
@@ -537,7 +516,7 @@ const bhInitDirectory=async()=>{
         return;
       }
 
-      const baseDate = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
+      const baseDate = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), calendarMonth.getDate());
       const weekStart = new Date(baseDate);
       const dayOffset = (weekStart.getDay() + 6) % 7;
       weekStart.setDate(weekStart.getDate() - dayOffset);
@@ -547,7 +526,7 @@ const bhInitDirectory=async()=>{
         date.setDate(weekStart.getDate() + index);
         return date;
       });
-      const events = buildCalendarEvents(list, days[0], days[6]);
+      const events = buildCalendarEvents(displayedList, days[0], days[6]);
 
       const weekLabel = days[0].toLocaleDateString("en-GB", {day:"numeric", month:"short"}) +
         " – " + days[6].toLocaleDateString("en-GB", {day:"numeric", month:"short", year:"numeric"});
@@ -555,7 +534,7 @@ const bhInitDirectory=async()=>{
 
       calendar.innerHTML = `
         <div class="directory-calendar-head">
-          <div><strong>${escapeHtml(weekLabel)}</strong><span>${list.length} matching activit${list.length === 1 ? "y" : "ies"}</span></div>
+          <div><strong>${escapeHtml(weekLabel)}</strong><span>${list.length} matching activit${list.length === 1 ? "y" : "ies"}${hasMore ? " · first " + calendarLimit + " shown; refine filters for more" : ""}</span></div>
           <div class="directory-calendar-actions">
             <button type="button" class="button button-soft" data-calendar-prev aria-label="Previous week">‹</button>
             <button type="button" class="button button-soft" data-calendar-today>Today</button>
@@ -570,7 +549,7 @@ const bhInitDirectory=async()=>{
             return `<div class="directory-calendar-day${key === todayKey ? " is-today" : ""}">
               <div class="directory-calendar-date">${date.toLocaleDateString("en-GB",{weekday:"long"})}</div>
               <div class="directory-calendar-events">
-                ${dayEvents.length ? dayEvents.map(event => `
+                ${dayEvents.length ? dayEvents.slice(0,8).map(event => `
                   <a class="directory-calendar-event" href="${bhActivityUrl(event.activity)}">
                     <span>${escapeHtml(event.time || "")}</span>
                     <strong>${escapeHtml(event.activity.title)}</strong>
@@ -647,7 +626,24 @@ const bhInitDirectory=async()=>{
         plannerView.hidden=currentView!=="planner";
         if(currentView==="planner"){
           const frame=plannerView.querySelector("iframe[data-src]");
-          if(frame && !frame.src)frame.src=frame.dataset.src;
+          if(frame && !frame.src){
+            frame.addEventListener("load",()=>{
+              try{
+                const doc=frame.contentDocument;
+                if(!doc)return;
+                const resize=()=>{
+                  const main=doc.querySelector("main.planner-page");
+                  if(main)frame.style.height=Math.max(520,Math.ceil(main.getBoundingClientRect().height)+20)+"px";
+                };
+                resize();
+                if(typeof ResizeObserver!=="undefined"){
+                  const observer=new ResizeObserver(resize);
+                  observer.observe(doc.querySelector("main.planner-page")||doc.body);
+                }
+              }catch(error){console.warn("Planner embed height could not be adjusted",error);}
+            },{once:true});
+            frame.src=frame.dataset.src;
+          }
         }
       }
       if($("directoryEventsView"))$("directoryEventsView").hidden=!showEvents;
