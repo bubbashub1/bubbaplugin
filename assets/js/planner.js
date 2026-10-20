@@ -1,6 +1,7 @@
 window.bhInitPlanner = async function(root=document){
   if(root.dataset?.bhPlannerInitialized)return;
   if(root.dataset)root.dataset.bhPlannerInitialized="true";
+  try {
   const $=id=>root.querySelector(`[id="${id}"]`);
   const results=$("results"),count=$("count"),intro=$("plannerIntro"),controls=$("dayControls"),statusNote=$("plannerSyncNote"),exportBtn=$("exportCalendar"),printBtn=$("printCalendar");
   const days=[
@@ -308,11 +309,11 @@ window.bhInitPlanner = async function(root=document){
     if(root===document)history.replaceState(null,"","planner.html"+(activePlannerId!=="default"?"?proPlanner="+encodeURIComponent(activePlannerId):""));
   });
   renderAdminProPreview();render();buildPrintCalendar();
-}.catch(error=>{
+}catch(error){
   const target=root.querySelector("#results");
   if(!target)return;
   target.innerHTML="<div class='admin-panel'><h3>Planner unavailable</h3><p>"+(window.bhEscape?bhEscape(error.message||"Unable to load planner."):String(error.message||"Unable to load planner."))+"</p></div>";
-});
+}
 };
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{if(document.body.classList.contains("bh-planner-v2"))window.bhInitPlanner(document);});
 else if(document.body.classList.contains("bh-planner-v2"))window.bhInitPlanner(document);
