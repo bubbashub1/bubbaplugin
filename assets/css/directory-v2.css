@@ -898,3 +898,38 @@ body.bh-directory:not(.bh-calendar-page) .bh-directory-list-pane .activity-card 
   display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important;
  }
 }
+
+/* Fix the real nested filter section, not just its parent. */
+@media(min-width:901px){
+ body.bh-directory:not(.bh-calendar-page) #advancedFields:not([hidden]) #directoryFilters .directory-advanced-section,
+ body.bh-directory:not(.bh-calendar-page) #advancedFields:not([hidden]) .directory-advanced-section{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:14px 18px!important;align-items:end!important;width:100%!important;
+  grid-column:1/-1!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) #advancedFields:not([hidden]) .directory-advanced-section > *{
+  width:100%!important;min-width:0!important;max-width:none!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) #advancedFields:not([hidden]) .directory-filter-fields{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:14px 18px!important;
+ }
+}
+@media(min-width:601px) and (max-width:900px){
+ body.bh-directory:not(.bh-calendar-page) #advancedFields:not([hidden]) .directory-advanced-section{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;grid-column:1/-1!important;
+ }
+}
+@media(max-width:600px){
+ body.bh-directory:not(.bh-calendar-page) #advancedFields:not([hidden]) .directory-advanced-section{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important;
+ }
+}
+body.bh-directory:not(.bh-calendar-page) .directory-planner-embed{min-width:0;background:#fff;border:1px solid #dce8df;border-radius:20px;padding:14px;overflow:hidden}
+body.bh-directory:not(.bh-calendar-page) .directory-planner-embed[hidden]{display:none!important}
+body.bh-directory:not(.bh-calendar-page) .directory-planner-embed .bh-directory-embedded-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+body.bh-directory:not(.bh-calendar-page) .directory-planner-embed .bh-directory-embedded-heading h2{margin:0 0 12px;color:#174e3b}
+body.bh-directory:not(.bh-calendar-page) .directory-planner-embed iframe{width:100%;height:75vh;min-height:520px;border:0;border-radius:12px}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase:has(#calendarView:not([hidden])) .bh-directory-content-grid,
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase:has(#directoryPlannerView:not([hidden])) .bh-directory-content-grid,
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase:has(#directoryEventsView:not([hidden])) .bh-directory-content-grid{display:none!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-view-actions button[aria-pressed="true"]{background:#075b42!important;color:#fff!important}
