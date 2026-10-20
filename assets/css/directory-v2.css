@@ -1170,3 +1170,16 @@ body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-empty
   padding:10px 5px!important;box-sizing:border-box!important;font-size:.79rem!important;
  }
 }
+
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-auth-notice[hidden],
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView iframe[hidden]{display:none!important}
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-auth-notice:not([hidden]){
+ display:block!important;background:#edf6ef!important;border:1px solid #d5e5d8!important;
+ border-radius:20px!important;padding:28px!important;margin:16px 0!important;text-align:center!important;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-auth-notice h3{
+ margin:0 0 8px!important;color:#174e3b!important;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-auth-notice p{
+ margin:0 0 18px!important;
+}
