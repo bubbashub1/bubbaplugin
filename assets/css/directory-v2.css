@@ -768,3 +768,16 @@ body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase:has(#results[hid
  body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-view-actions{grid-template-columns:repeat(3,minmax(0,1fr))!important}
  body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-view-actions>*{font-size:.82rem!important}
 }
+
+/* Map-only mode and hidden panes must not leave an empty column. */
+body.bh-directory:not(.bh-calendar-page) .bh-directory-map-pane[hidden]{display:none!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-content-grid.is-map-only{grid-template-columns:minmax(0,1fr)!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-content-grid.is-map-only .bh-directory-list-pane{display:none!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-content-grid.is-map-only .bh-directory-map-pane{position:static!important;top:auto!important;width:100%!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-content-grid.is-map-only #mapView{height:min(72vh,740px)!important;min-height:380px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions a:focus-visible,
+body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions button:focus-visible{outline:3px solid #f5822c!important;outline-offset:2px}
+@media(max-width:900px){
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-content-grid.is-map-only{display:block!important}
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-content-grid.is-map-only .bh-directory-map-pane{display:block!important}
+}
