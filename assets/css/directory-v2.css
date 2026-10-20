@@ -615,3 +615,29 @@ body.bh-directory .custom-sleek-dark-marker:hover .bubba-dark-pin{
    margin:12px 0 18px!important;
  }
 }
+
+/* Directory visual refinement: preserve existing search, map and listing behaviours. */
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner{box-shadow:0 16px 38px rgba(23,78,59,.10);border-radius:26px}
+body.bh-directory:not(.bh-calendar-page) .directory-results-column{min-width:0}
+body.bh-directory:not(.bh-calendar-page) .directory-results-heading{margin-bottom:16px}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-intro h2{font-size:clamp(1.65rem,2.6vw,2.5rem);line-height:1.15;color:#174e3b}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-intro p{max-width:680px;line-height:1.55}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions{display:flex;gap:9px;flex-wrap:wrap;margin:16px 0 18px}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions>button,
+body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions>a{
+ display:inline-flex;align-items:center;justify-content:center;text-align:center;
+ min-height:44px;box-sizing:border-box;padding:10px 17px;border-radius:999px;
+ font-size:.9rem;font-weight:750;text-decoration:none;transition:background-color .18s,transform .18s,box-shadow .18s;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions>button:hover,
+body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions>a:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(23,78,59,.12)}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-sort{padding:12px 0}
+body.bh-directory:not(.bh-calendar-page) .activity-grid{gap:18px}
+body.bh-directory:not(.bh-calendar-page) .activity-card{border-radius:20px;overflow:hidden;box-shadow:0 6px 20px rgba(23,78,59,.07);transition:transform .18s,box-shadow .18s}
+body.bh-directory:not(.bh-calendar-page) .activity-card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(23,78,59,.12)}
+@media(max-width:900px){
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-banner{border-radius:20px}
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions{gap:7px;padding:8px 0}
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions>button,
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions>a{min-height:42px;padding:9px 12px;font-size:.84rem}
+}
