@@ -7520,3 +7520,17 @@ body:not(.bh-admin):not(.bh-leader) {background-color:#f5f7ed}
 
 /* Baby-blue replaces terracotta as the secondary accent. */
 :root{--bh-orange:#8bbfd6;--bh-orange-hover:#609ab6;--bh-blue:#8bbfd6}
+
+/* Bold and bright finishing pass: controlled corners, clear hierarchy and crisp interactions. */
+:root{--bh-radius:10px;--bh-radius-lg:16px;--bh-border:#c4d9cc;--bh-shadow:0 7px 20px rgba(18,62,43,.12)}
+body{color:#243b30}
+body :is(h1,h2,h3){letter-spacing:-.025em}
+.site-header .main-nav a{font-weight:800}
+.site-header .main-nav a:focus-visible{outline:3px solid var(--bh-teal-dark);outline-offset:2px}
+/* Strong but restrained button geometry; keep pills where explicitly requested. */
+body :is(.button,.btn,.bh-button):not(.pill):not(.rounded-full){font-weight:800;border-radius:10px}
+body :is(.button,.btn,.bh-button):not(:disabled){transition:background-color .18s ease,box-shadow .18s ease,transform .18s ease}
+@media(hover:hover){body :is(.button,.btn,.bh-button):not(:disabled):hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(18,62,43,.16)}}
+/* Preserve accessible dark text on the light baby-blue accent. */
+.bh-expo-detail .expo-section-nav a{border-radius:10px}
+.bh-expo-detail .expo-panel{border-radius:16px}
