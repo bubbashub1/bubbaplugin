@@ -82,14 +82,8 @@ try {
         bh955Reply(409, ['ok'=>false, 'error'=>'conflict', 'current'=>$before, 'writes_performed'=>false]);
     }
     // An audit table is mandatory: if logging fails, the update rolls back.
-    $pdo->exec("CREATE TABLE IF NOT EXISTS bh_sheets_sync_audit (
-        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-        listing_id BIGINT UNSIGNED NOT NULL,
-        operation VARCHAR(64) NOT NULL,
-        before_json LONGTEXT NOT NULL,
-        after_json LONGTEXT NOT NULL,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    // Audit table must be provisioned by a separate migration before writes are enabled.
+    // Never run DDL inside this transaction (MySQL DDL implicitly commits).
     $upd = $pdo->prepare("UPDATE bh_activities
         SET price_from = '2.00', age_range = '0 - 5 years'
         WHERE id = 955 AND (price_from IS NULL OR price_from = '')
