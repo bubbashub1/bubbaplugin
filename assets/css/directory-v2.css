@@ -993,3 +993,14 @@ body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-vi
   width:auto!important;min-width:160px!important;max-width:230px!important;margin:0!important;
  }
 }
+
+/* Seamless Directory Planner: remove frame card and let JS match content height. */
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #directoryPlannerView:not([hidden]){
+ border:0!important;background:transparent!important;box-shadow:none!important;
+ padding:0!important;margin:0!important;overflow:visible!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #directoryPlannerView:not([hidden]) iframe{
+ display:block!important;border:0!important;border-radius:0!important;background:transparent!important;
+ width:100%!important;max-width:100%!important;min-height:520px!important;
+ height:var(--bh-planner-frame-height,760px);
+}
