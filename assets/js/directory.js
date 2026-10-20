@@ -632,7 +632,7 @@ const bhInitDirectory=async()=>{
       const showMap=currentView==="map";
       const showEvents=currentView==="events";
       const results=$("results"),mapView=$("mapView"),calendarView=$("calendarView");
-      if(results)results.hidden=showMap||showEvents||currentView==="calendar";
+      if(results)results.hidden=currentView!=="grid";
       if(mapView){
         mapView.hidden=!(showMap || (currentView==="grid" && window.innerWidth>900));
         mapView.setAttribute("aria-hidden",String(mapView.hidden));
@@ -642,9 +642,17 @@ const bhInitDirectory=async()=>{
       const contentGrid=document.querySelector(".bh-directory-content-grid");
       if(contentGrid)contentGrid.classList.toggle("is-map-only",showMap);
       if(calendarView)calendarView.hidden=currentView!=="calendar";
+      const plannerView=$("directoryPlannerView");
+      if(plannerView){
+        plannerView.hidden=currentView!=="planner";
+        if(currentView==="planner"){
+          const frame=plannerView.querySelector("iframe[data-src]");
+          if(frame && !frame.src)frame.src=frame.dataset.src;
+        }
+      }
       if($("directoryEventsView"))$("directoryEventsView").hidden=!showEvents;
       if($("directoryMapHint"))$("directoryMapHint").hidden=!showMap;
-      for(const [id,active] of [["directoryShowMap",showMap],["directoryShowList",currentView==="grid"],["directoryShowEvents",showEvents]]){
+      for(const [id,active] of [["directoryShowMap",showMap],["directoryShowList",currentView==="grid"],["directoryShowCalendar",currentView==="calendar"],["directoryShowPlanner",currentView==="planner"],["directoryShowEvents",showEvents]]){
         const button=$(id);if(button)button.setAttribute("aria-pressed",String(active));
       }
     };
@@ -1049,6 +1057,8 @@ const bhInitDirectory=async()=>{
       if(view==="map" || (view==="grid" && window.innerWidth>900))setTimeout(()=>map?.invalidateSize(),100);
     };
     $("directoryShowMap")?.addEventListener("click",()=>switchDirectoryView("map"));
+    $("directoryShowCalendar")?.addEventListener("click",()=>switchDirectoryView("calendar"));
+    $("directoryShowPlanner")?.addEventListener("click",()=>switchDirectoryView("planner"));
     $("directoryShowList")?.addEventListener("click",()=>switchDirectoryView("grid"));
     $("directoryShowEvents")?.addEventListener("click",()=>switchDirectoryView("events"));
     window.__bhDirectoryDesktop = window.innerWidth > 900;
