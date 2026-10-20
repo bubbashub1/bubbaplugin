@@ -93,3 +93,18 @@ body.bh-expo-detail main.expo-container{width:100%;max-width:none;margin:auto;pa
  .bh-expo-detail .expo-hero{grid-template-columns:minmax(0,1fr) 200px}
  .bh-expo-detail .expo-hero h1,.bh-expo-detail .expo-hero h1 span{font-size:clamp(2rem,4.6vw,3.4rem)}
 }
+
+/* Cookie preference entry point stays in document flow rather than obscuring content. */
+.bh-expo-detail .expo-cookie-settings{display:flex;justify-content:flex-end;padding:12px clamp(13px,3vw,54px) 22px;background:#f5f7ed}
+.bh-expo-detail .expo-cookie-settings button{border:1px solid #174b33;background:white;color:#174b33;border-radius:10px;padding:9px 13px;min-height:44px;font:700 .9rem Quicksand,Calibri,Arial,sans-serif;cursor:pointer}
+@media(max-width:650px){
+ .bh-expo-detail .expo-hero{gap:11px;padding:16px 16px 14px}
+ .bh-expo-detail .expo-hero h1,.bh-expo-detail .expo-hero h1 span{font-size:clamp(1.9rem,8vw,2.8rem);line-height:1.08}
+ .bh-expo-detail .expo-lead{font-size:.96rem;line-height:1.43}
+ .bh-expo-detail .expo-hero-tags{margin:10px 0;gap:7px}
+ .bh-expo-detail .expo-hero-tags span{padding:7px 10px}
+ .bh-expo-detail .expo-hero::after{aspect-ratio:16/8;min-height:145px;max-height:220px;background-position:68% center}
+ .bh-expo-detail .expo-date-tile{padding:12px 12px}
+ .bh-expo-detail .expo-date-tile strong{font-size:3.5rem}
+ .bh-expo-detail .expo-cookie-settings{justify-content:center;padding:12px 12px 22px}
+}
