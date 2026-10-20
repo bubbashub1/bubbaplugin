@@ -1194,3 +1194,28 @@ body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-guest
 body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-guest-warning strong{display:block!important;margin-bottom:4px!important}
 body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-guest-warning p{margin:0!important}
 body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-guest-warning a{color:#075b42!important;font-weight:800!important;text-decoration:underline!important}
+
+/* Native Planner: no iframe, no second website, no duplicate navigation. */
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-directory-native-planner{
+ display:block!important;width:100%!important;max-width:none!important;
+ min-width:0!important;background:transparent!important;padding:0!important;margin:0!important;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-directory-native-planner .planner-hero-actions{
+ display:flex!important;flex-wrap:wrap!important;gap:9px!important;
+ justify-content:flex-end!important;margin:0 0 16px!important;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-directory-native-planner .planner-shell{
+ width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;
+ box-sizing:border-box!important;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-directory-native-planner .planner-print-sheet{
+ display:none!important;
+}
+@media(max-width:700px){
+ body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-directory-native-planner .planner-hero-actions{
+  justify-content:stretch!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-directory-native-planner .planner-hero-actions>*{
+  flex:1 1 140px!important;
+ }
+}
