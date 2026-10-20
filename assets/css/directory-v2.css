@@ -980,3 +980,16 @@ body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-vi
   height:85vh!important;min-height:560px!important;
  }
 }
+
+/* Keep the Advanced Search action buttons on a single row on desktop. */
+@media(min-width:701px){
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #directoryFilters .directory-filter-fields > .directory-filter-actions,
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) .directory-filter-actions{
+  display:flex!important;flex-direction:row!important;grid-column:1/-1!important;
+  justify-content:flex-end!important;align-items:center!important;gap:12px!important;
+  width:100%!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) .directory-filter-actions > button{
+  width:auto!important;min-width:160px!important;max-width:230px!important;margin:0!important;
+ }
+}
