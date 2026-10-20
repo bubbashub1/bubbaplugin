@@ -863,3 +863,38 @@ body.bh-directory:not(.bh-calendar-page) .bh-directory-list-pane .activity-card 
  }
  body.bh-directory:not(.bh-calendar-page) .bh-directory-list-pane .activity-card h3{font-size:1.12rem!important}
 }
+
+/* PR 299 follow-up: the actual shared filter markup uses #directoryFilters.
+   Override the old high-specificity sidebar flex-column rule. */
+@media(min-width:901px){
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #directoryFilters .directory-filter-fields{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:14px 18px!important;align-items:end!important;width:100%!important;max-width:none!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #directoryFilters .directory-advanced-section{
+  display:contents!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #directoryFilters .directory-advanced-filter-field,
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #directoryFilters .directory-nearby-control{
+  width:100%!important;max-width:none!important;min-width:0!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #directoryFilters .directory-filter-actions{
+  grid-column:1/-1!important;display:flex!important;flex-wrap:wrap!important;
+  justify-content:flex-end!important;gap:10px!important;margin-top:4px!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #directoryFilters .directory-filter-actions button{
+  width:auto!important;min-width:145px!important;
+ }
+}
+@media(min-width:601px) and (max-width:900px){
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #directoryFilters .directory-filter-fields{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #directoryFilters .directory-advanced-section{display:contents!important}
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #directoryFilters .directory-filter-actions{grid-column:1/-1!important}
+}
+@media(max-width:600px){
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #directoryFilters .directory-filter-fields{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important;
+ }
+}
