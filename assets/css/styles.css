@@ -34,12 +34,12 @@
    ========================================================================= */
 :root {
   /* Brand */
-  --bh-green:        #416651;
-  --bh-green-dark:   #144400;
-  --bh-green-soft:   #d8e6db;
-  --bh-green-pale:   #f4f7f4;
-  --bh-teal:         #3c8e96;
-  --bh-teal-dark:    #2e7780;   /* use for teal buttons: white text passes AA */
+  --bh-green:        #174b33;
+  --bh-green-dark:   #123e2b;
+  --bh-green-soft:   #c7ebd4;
+  --bh-green-pale:   #eff9f1;
+  --bh-teal:         #0f8589;
+  --bh-teal-dark:    #086c70;   /* use for teal buttons: white text passes AA */
   --bh-yellow:       #f6c84a;
   --bh-yellow-dark:  #eab83b;
   --bh-pink:         #ee6684;
@@ -48,19 +48,19 @@
   --bh-danger:       #a8445a;
 
   /* Neutrals / surfaces */
-  --bh-ink:          #123f31;   /* dark text on pale/teal surfaces */
+  --bh-ink:          #123e2b;   /* dark text on pale/teal surfaces */
   --bh-deep:         #0d3b32;   /* footer background */
   --bh-text:         #243027;
   --bh-muted:        #617261;
   --bh-white:        #fff;
-  --bh-bg:           #edf5ef;
-  --bh-sage:         #d7e7dc;
+  --bh-bg:           #e9f6ed;
+  --bh-sage:         #c7ebd4;
   --bh-mist:         #e4f1e8;
   --bh-soft:         #9fb7a5;
   --bh-accent:       #9cb8a4;
 
   /* Lines, shadows, radii, sizes */
-  --bh-border:       #d5ddd6;
+  --bh-border:       #b9d7c3;
   --bh-line:         rgba(18, 63, 49, .09);
   --bh-shadow:       0 8px 24px rgba(20, 68, 0, .08);
   --bh-shadow-lg:    0 18px 40px rgba(18, 63, 49, .12);
@@ -7493,3 +7493,19 @@ body.bh-article-page{background:#fff;color:#174e3b;font-family:'Quicksand',Calib
 button.bh-header-signout{font:inherit;cursor:pointer;white-space:nowrap}
 button.bh-header-signout:disabled{opacity:.65;cursor:wait}
 @media(max-width:700px){.bh-header-greeting{max-width:105px;padding-left:8px;padding-right:8px}.bh-header-signout{padding-left:8px;padding-right:8px}}
+
+/* 2026 stronger brand treatment — shared public components only. */
+:root{--bh-orange:#f28b38;--bh-shadow:0 8px 24px rgba(18,62,43,.12);--bh-shadow-lg:0 18px 40px rgba(18,62,43,.17)}
+body :is(h1,h2,h3){font-weight:800}
+.site-header{border-bottom:3px solid var(--bh-green);box-shadow:0 8px 22px rgba(18,62,43,.13)}
+.site-header .main-nav a:hover,.site-header .main-nav a.active{background:var(--bh-green-soft);color:var(--bh-green-dark)}
+/* Give public-facing cards definition without touching forms or admin dashboards. */
+.bh-directory :is(.activity-card,.event-card),
+.bh-expo-detail :is(.expo-panel,.expo-info-card),
+.bh-activity .activity-card{border-color:var(--bh-border);box-shadow:var(--bh-shadow)}
+.bh-expo-detail .expo-hero{background:linear-gradient(125deg,#c7ebd4,#fff9ee 60%,#c6e9e9);border:2px solid var(--bh-green)}
+.bh-expo-detail .expo-kicker{color:var(--bh-teal-dark)}
+.bh-expo-detail .expo-button-primary{background:var(--bh-green);color:#fff}
+.bh-expo-detail .expo-button-primary:hover{background:#0c3624}
+.bh-expo-detail .expo-section-nav a{background:var(--bh-green-soft);color:var(--bh-green-dark)}
+.bh-expo-detail .expo-section-nav a:hover{background:var(--bh-green);color:#fff}
