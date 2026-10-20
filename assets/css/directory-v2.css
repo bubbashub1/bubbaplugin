@@ -946,3 +946,37 @@ body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-vi
   display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;
  }
 }
+
+/* PR 301 follow-up: tab contents must occupy the whole Directory results column.
+   Previous 29%-wide map pane remained narrow in map-only view. */
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-content-grid.is-map-only{
+ display:block!important;width:100%!important;max-width:none!important;
+ grid-template-columns:none!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-content-grid.is-map-only .bh-directory-map-pane{
+ display:block!important;width:100%!important;max-width:none!important;min-width:0!important;
+ position:static!important;top:auto!important;float:none!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-content-grid.is-map-only .bh-directory-map-pane #mapView:not([hidden]){
+ width:100%!important;height:min(72vh,760px)!important;min-height:430px!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #directoryPlannerView:not([hidden]),
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #calendarView:not([hidden]),
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #directoryEventsView:not([hidden]){
+ display:block!important;box-sizing:border-box!important;width:100%!important;max-width:none!important;
+ min-width:0!important;grid-column:1/-1!important;float:none!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #directoryPlannerView:not([hidden]) iframe{
+ display:block!important;width:100%!important;max-width:none!important;height:max(760px,90vh)!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-view-actions{
+ width:100%!important;max-width:none!important;
+}
+@media(max-width:900px){
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-content-grid.is-map-only .bh-directory-map-pane #mapView:not([hidden]){
+  height:65vh!important;min-height:360px!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #directoryPlannerView:not([hidden]) iframe{
+  height:85vh!important;min-height:560px!important;
+ }
+}
