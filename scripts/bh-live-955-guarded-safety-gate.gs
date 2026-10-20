@@ -1,7 +1,6 @@
 /**
  * Bubba Hub guarded sync release gate (Google Apps Script).
- * Read-only: the second request asks for a write but the server MUST reject it.
- * Never run this test after enabling BH_SHEETS_955_WRITE_ENABLED.
+ * Read-only: tests authentication and dry-run only; never submits a write request.
  */
 function bhLive955GuardedSafetyGate() {
   var props = PropertiesService.getScriptProperties();
@@ -49,21 +48,13 @@ function bhLive955GuardedSafetyGate() {
     throw new Error('FAIL: authenticated dry run did not pass');
   }
 
-  // This is only safe while the server-side write flag remains DISABLED.
-  // Do not set BH_SHEETS_955_WRITE_ENABLED=1 before or during this test.
-  var denied = Object.assign({}, request, { dry_run: false });
-  var blocked = call(denied, true);
-  if (blocked.status !== 403 || blocked.body.error !== 'writes_disabled') {
-    throw new Error('STOP: write-disable gate not confirmed. Inspect server before retrying.');
-  }
-
   Logger.log(JSON.stringify({
     mode: 'LIVE_GUARDED_RELEASE_GATE',
     id: 955,
     unauthorizedRejected: true,
     authenticatedDryRunPassed: true,
     liveRecordStillBlank: preview.body.safe_to_proceed === true,
-    writeAttemptBlocked: true,
+    writeGateNotTested: true,
     writesPerformed: false
   }, null, 2));
 }
