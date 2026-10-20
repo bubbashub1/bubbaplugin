@@ -628,31 +628,15 @@ const bhInitDirectory=async()=>{
       if(plannerView){
         plannerView.hidden=currentView!=="planner";
         if(currentView==="planner"){
-          const frame=plannerView.querySelector("iframe[data-src]");
-          if(frame && !frame.src){
-            frame.addEventListener("load",()=>{
-              try{
-                const doc=frame.contentDocument;
-                if(!doc)return;
-                const resize=()=>{
-                  const main=doc.querySelector("main.planner-page");
-                  if(main)frame.style.height=Math.max(520,Math.ceil(main.getBoundingClientRect().height)+20)+"px";
-                };
-                resize();
-                if(typeof ResizeObserver!=="undefined"){
-                  const observer=new ResizeObserver(resize);
-                  observer.observe(doc.querySelector("main.planner-page")||doc.body);
-                }
-              }catch(error){console.warn("Planner embed height could not be adjusted",error);}
-            },{once:true});
-            frame.src=frame.dataset.src;
+          document.dispatchEvent(new CustomEvent("bh:directory-planner-open"));
+          if(!plannerView.dataset.authChecked){
+            plannerView.dataset.authChecked="1";
             fetch("/api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}})
               .then(response=>response.json())
               .then(auth=>{
                 const notice=plannerView.querySelector(".bh-planner-guest-warning");
                 if(notice)notice.hidden=!!auth?.authenticated;
-              })
-              .catch(()=>{/* Keep the warning visible if sign-in status cannot be checked. */});
+              }).catch(()=>{});
           }
         }
       }
