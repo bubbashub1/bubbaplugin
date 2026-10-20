@@ -629,7 +629,28 @@ const bhInitDirectory=async()=>{
         plannerView.hidden=currentView!=="planner";
         if(currentView==="planner"){
           const frame=plannerView.querySelector("iframe[data-src]");
-          if(frame && !frame.src){
+          if(frame && !frame.src && !frame.dataset.authChecking){
+            frame.dataset.authChecking="true";
+            fetch("/api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}})
+              .then(response=>response.json())
+              .then(auth=>{
+                if(!auth?.authenticated){
+                  frame.hidden=true;
+                  const message=plannerView.querySelector(".bh-planner-signin-notice");
+                  if(message)message.hidden=false;
+                  return;
+                }
+                frame.hidden=false;
+                frame.src=frame.dataset.src;
+              })
+              .catch(()=>{
+                frame.hidden=true;
+                const message=plannerView.querySelector(".bh-planner-signin-notice");
+                if(message){message.hidden=false;message.querySelector("p").textContent="We could not verify your sign-in. Please open the full Planner to continue.";}
+              })
+              .finally(()=>{delete frame.dataset.authChecking;});
+          }
+          if(false){
             frame.addEventListener("load",()=>{
               try{
                 const doc=frame.contentDocument;
