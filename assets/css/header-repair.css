@@ -5,3 +5,10 @@
 .site-header .main-nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:clamp(10px,1.5vw,24px)}
 .site-header .main-nav a[aria-current="page"]{color:#167b79;text-decoration:underline;text-underline-offset:5px}
 @media(max-width:920px){.site-header .main-nav{gap:10px}.site-header .main-nav a{font-size:.85rem}}
+
+/* Keep the mobile dropdown compact and prevent header fallback rules from stretching it. */
+@media (max-width:760px) {
+ .site-header .main-nav { position:absolute;top:calc(100% + 6px);left:8px;right:8px;width:auto;height:auto;max-height:72dvh;overflow-y:auto;display:none;flex-direction:column;flex-wrap:nowrap;align-items:stretch;justify-content:flex-start;gap:2px;margin:0;padding:8px;background:#fff;border:1px solid #dce8de;border-radius:18px;box-shadow:0 16px 36px rgba(18,63,49,.17); }
+ .site-header.mobile-menu-open .main-nav {display:flex;}
+ .site-header .main-nav a {flex:0 0 auto;display:flex;width:100%;min-height:42px;height:auto;margin:0;padding:9px 12px;font-size:15px;line-height:1.35;text-align:left;justify-content:flex-start;align-items:center;}
+}
