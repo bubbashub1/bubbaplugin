@@ -259,6 +259,12 @@ const bhInitDirectory=async()=>{
     let infiniteScrollObserver = null;
     let homeLocation = null;
     let homeLocationLoading = false;
+    let gpsLocation = null;
+    const gpsStatus = message => { const el = $("gpsLocationStatus"); if(el) el.textContent = message; };
+    const gpsRadius = $("gpsRadius");
+    const gpsButton = $("useGpsLocation");
+    const gpsClear = $("clearGpsLocation");
+
     let lastFilteredList = [];
 
     const distanceMiles = (lat1, lon1, lat2, lon2) => {
@@ -269,6 +275,35 @@ const bhInitDirectory=async()=>{
         Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
       return 3958.7613 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     };
+
+    const gpsDistance = activity => {
+      if (!gpsLocation) return null;
+      const venues = bhVenues(activity).filter(v => {
+        const lat = Number(v.lat), lon = Number(v.long ?? v.lng ?? v.longitude);
+        return Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat)<=90 && Math.abs(lon)<=180 && !(lat===0 && lon===0);
+      });
+      if (!venues.length) return null;
+      return Math.min(...venues.map(v => distanceMiles(gpsLocation.lat,gpsLocation.long,Number(v.lat),Number(v.long ?? v.lng ?? v.longitude))));
+    };
+    if(gpsButton) gpsButton.addEventListener("click",()=>{
+      if(!navigator.geolocation){gpsStatus("Your browser does not support location. You can still use town and region filters.");return;}
+      gpsButton.disabled=true;gpsStatus("Requesting your location…");
+      navigator.geolocation.getCurrentPosition(
+        position=>{
+          gpsLocation={lat:position.coords.latitude,long:position.coords.longitude};
+          gpsButton.disabled=false;if(gpsClear)gpsClear.hidden=false;
+          gpsStatus("Showing nearby groups, closest first. Your location stays in this browser tab.");
+          render();
+        },
+        error=>{
+          gpsButton.disabled=false;
+          gpsStatus(error.code===1?"Location permission was declined. Use town or region filters instead.":"Could not find your location. Try again or search by town.");
+        },
+        {enableHighAccuracy:false,timeout:12000,maximumAge:300000}
+      );
+    });
+    if(gpsRadius)gpsRadius.addEventListener("change",()=>{if(gpsLocation)render()});
+    if(gpsClear)gpsClear.addEventListener("click",()=>{gpsLocation=null;gpsClear.hidden=true;gpsStatus("Location cleared. Showing all areas.");render()});
 
     const nearestVenue = activity => {
       if (!homeLocation) return null;
@@ -758,10 +793,19 @@ const bhInitDirectory=async()=>{
           .map(item => item.activity);
       }
 
+      if(gpsLocation){
+        const radius=Number(gpsRadius?.value || 0);
+        list=list.map(activity=>({activity,miles:gpsDistance(activity)}))
+          .filter(item=>item.miles!==null && (!radius || item.miles<=radius))
+          .sort((a,b)=>a.miles-b.miles)
+          .map(item=>item.activity);
+      }
+
       const sortMode = sortControl?.value || "updated";
       const titleCompare = (a, b) => String(a.title || "").localeCompare(String(b.title || ""), "en-GB", {sensitivity:"base"});
       const updatedValue = item => { const timestamp = Date.parse(String(item.updated_at || "").replace(" ", "T")); return Number.isFinite(timestamp) ? timestamp : 0; };
-      if (sortMode === "az") list.sort((a,b) => titleCompare(a,b));
+      if (gpsLocation) { /* Nearby search always prioritises shortest distance. */ }
+      else if (sortMode === "az") list.sort((a,b) => titleCompare(a,b));
       else if (sortMode === "za") list.sort((a,b) => titleCompare(b,a));
       else if (sortMode === "oldest") list.sort((a,b) => updatedValue(a)-updatedValue(b) || titleCompare(a,b));
       else list.sort((a,b) => updatedValue(b)-updatedValue(a) || Number(b.id || 0)-Number(a.id || 0));
