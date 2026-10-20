@@ -1,5 +1,11 @@
 name: Bubba Hub Android APK
 on:
+  push:
+    branches:
+      - feature/android-hybrid-app
+    paths:
+      - 'mobile/android-app/**'
+      - '.github/workflows/bubba-hub-android-apk.yml'
   workflow_dispatch:
 permissions:
   contents: read
