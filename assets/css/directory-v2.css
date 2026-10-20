@@ -1082,3 +1082,17 @@ body.bh-directory:not(.bh-calendar-page) #calendarView:not([hidden]){
 body.bh-directory:not(.bh-calendar-page) .directory-calendar-week-grid .directory-calendar-day{
  min-width:0!important;
 }
+
+/* Let dense weekly calendar scroll inside the workspace, never the whole page. */
+body.bh-directory:not(.bh-calendar-page) #calendarView:not([hidden]){overflow-x:auto!important;scrollbar-width:thin}
+body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-week-grid{min-width:700px}
+body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-event{
+ overflow-wrap:anywhere!important;
+}
+@media(min-width:1001px){
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #directoryPlannerView:not([hidden]),
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #calendarView:not([hidden]),
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #directoryEventsView:not([hidden]){
+  width:100%!important;max-width:none!important;min-width:0!important;
+ }
+}
