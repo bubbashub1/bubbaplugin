@@ -32,3 +32,17 @@ body.bh-expo-detail{background:#fbfcf8;color:#174e3b;font-family:Quicksand,Calib
 .bh-expo-detail .expo-visitor-fields input{min-width:0;width:100%;box-sizing:border-box;border:1px solid #c6d9cd;border-radius:11px;padding:12px;background:white;font:inherit}
 .bh-expo-detail .expo-visitor-consent{display:flex;align-items:flex-start;gap:9px;margin-top:15px;font-size:.9rem}
 @media(max-width:600px){.bh-expo-detail .expo-visitor-fields{grid-template-columns:1fr}}
+
+/* Full-width expo layout: scoped to the Expo page, not account/admin forms. */
+body.bh-expo-detail{width:100%;min-width:0;overflow-x:clip}
+body.bh-expo-detail main.expo-container{
+  width:100%;max-width:none;min-width:0;box-sizing:border-box;
+  margin-inline:auto;padding-inline:clamp(14px,2.5vw,48px);
+}
+body.bh-expo-detail .expo-layout,
+body.bh-expo-detail .expo-main-column,
+body.bh-expo-detail .expo-sidebar,
+body.bh-expo-detail .expo-panel{min-width:0;max-width:none}
+body.bh-expo-detail .expo-layout{grid-template-columns:minmax(0,1fr) minmax(260px,305px)}
+@media(max-width:900px){body.bh-expo-detail .expo-layout{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:650px){body.bh-expo-detail main.expo-container{padding-inline:14px}}
