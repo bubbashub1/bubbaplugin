@@ -1,5 +1,8 @@
-document.addEventListener("DOMContentLoaded",async()=>{
-  const $=id=>document.getElementById(id);
+window.bhInitPlanner = async function(root=document){
+  if(root.dataset?.bhPlannerInitialized)return;
+  if(root.dataset)root.dataset.bhPlannerInitialized="true";
+  try {
+  const $=id=>root.querySelector(`[id="${id}"]`);
   const results=$("results"),count=$("count"),intro=$("plannerIntro"),controls=$("dayControls"),statusNote=$("plannerSyncNote"),exportBtn=$("exportCalendar"),printBtn=$("printCalendar");
   const days=[
     {name:"Monday",short:"Mon",num:1},{name:"Tuesday",short:"Tue",num:2},{name:"Wednesday",short:"Wed",num:3},
@@ -82,8 +85,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
 
   function renderAdminProPreview(){
     if(!adminOnly)return;
-    const shell=document.querySelector(".planner-shell");
-    if(!shell||document.getElementById("plannerProPreview"))return;
+    const shell=root.querySelector(".planner-shell");
+    if(!shell||root.querySelector("#plannerProPreview"))return;
     const panel=document.createElement("section");
     panel.id="plannerProPreview";
     panel.className="planner-pro-preview";
@@ -163,7 +166,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       const time=e.session?(formatTime(e.session.start_time)+(e.session.end_time?" – "+formatTime(e.session.end_time):"")):"Time TBC";
       return "<div class='planner-print-entry'><strong>"+esc(e.activity.title)+"</strong><span>"+esc(time)+(townOf(e)?" · "+esc(townOf(e)):"")+"</span></div>";
     };
-    document.querySelector(".planner-shell")?.classList.toggle("is-list-view",currentView==="list");
+    root.querySelector(".planner-shell")?.classList.toggle("is-list-view",currentView==="list");
 
     if(currentView==="list"){
       const grouped=[];
@@ -224,7 +227,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       return;
     }
 
-    document.querySelector(".planner-shell")?.classList.remove("is-list-view");
+    root.querySelector(".planner-shell")?.classList.remove("is-list-view");
 
     const sections=days.map(day=>{
       const dayEntries=shownEntries.map((entry,index)=>({...entry,_index:index})).filter(entry=>entry.day===day.num).sort((a,b)=>String(a.session?.start_time||"").localeCompare(String(b.session?.start_time||""))||String(a.activity.title).localeCompare(String(b.activity.title)));
@@ -303,10 +306,14 @@ document.addEventListener("DOMContentLoaded",async()=>{
     activePlannerFilters=profile?.filters||null;
     if(profile){plannerProfileNote.hidden=false;plannerProfileNote.innerHTML="<strong>"+esc(profile.name||"Custom planner")+"</strong>"+(profile.description?" · "+esc(profile.description):"");}else{plannerProfileNote.hidden=true;plannerProfileNote.textContent="";}
     render();buildPrintCalendar();
-    history.replaceState(null,"","planner.html"+(activePlannerId!=="default"?"?proPlanner="+encodeURIComponent(activePlannerId):""));
+    if(root===document)history.replaceState(null,"","planner.html"+(activePlannerId!=="default"?"?proPlanner="+encodeURIComponent(activePlannerId):""));
   });
   renderAdminProPreview();render();buildPrintCalendar();
-}).catch(error=>{
-  const target=document.getElementById("results");
+}catch(error){
+  const target=root.querySelector("#results");
+  if(!target)return;
   target.innerHTML="<div class='admin-panel'><h3>Planner unavailable</h3><p>"+(window.bhEscape?bhEscape(error.message||"Unable to load planner."):String(error.message||"Unable to load planner."))+"</p></div>";
-});
+}
+};
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{if(document.body.classList.contains("bh-planner-v2"))window.bhInitPlanner(document);});
+else if(document.body.classList.contains("bh-planner-v2"))window.bhInitPlanner(document);
