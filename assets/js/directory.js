@@ -166,9 +166,7 @@ const bhInitDirectory=async()=>{
           const open = advancedFields.hidden;
           advancedFields.hidden = !open;
           advancedToggle.setAttribute("aria-expanded", String(open));
-          advancedToggle.innerHTML = open
-            ? "More filters <span aria-hidden=\"true\">−</span>"
-            : "More filters <span aria-hidden=\"true\">＋</span>";
+          advancedToggle.textContent = open ? "Hide Advanced Search −" : "Advanced Search +";
         };
       }
 
