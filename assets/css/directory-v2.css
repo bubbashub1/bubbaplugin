@@ -665,3 +665,14 @@ body.bh-directory:not(.bh-calendar-page) .activity-card{min-width:0;border-radiu
  body.bh-directory:not(.bh-calendar-page) .app-shell{padding-left:10px!important;padding-right:10px!important}
  body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions>*{font-size:.82rem!important}
 }
+
+/* Explicitly opt-in, client-side location search. */
+body.bh-directory .bh-gps-nearby{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:14px 16px;margin:12px 0;background:#eef7ef;border:1px solid #d6e8dc;border-radius:18px;color:#174e3b}
+body.bh-directory .bh-gps-nearby button{border:1px solid #174e3b;border-radius:999px;padding:11px 18px;background:#174e3b;color:#fff;font:700 .92rem 'Quicksand',sans-serif;cursor:pointer;min-height:44px}
+body.bh-directory .bh-gps-nearby button:disabled{opacity:.65;cursor:wait}
+body.bh-directory .bh-gps-nearby .bh-gps-clear{background:#fff;color:#174e3b}
+body.bh-directory .bh-gps-nearby [hidden]{display:none!important}
+body.bh-directory .bh-gps-nearby label{display:flex;align-items:center;gap:8px;font-weight:750}
+body.bh-directory .bh-gps-nearby select{max-width:140px;padding:10px;border:1px solid #b9d8c6;border-radius:12px;background:#fff;font:inherit;color:#174e3b}
+body.bh-directory #gpsLocationStatus{font-size:.86rem;line-height:1.4}
+@media(max-width:600px){body.bh-directory .bh-gps-nearby{align-items:stretch;gap:10px;padding:12px}body.bh-directory .bh-gps-nearby button{flex:1}body.bh-directory #gpsLocationStatus{flex-basis:100%}}
