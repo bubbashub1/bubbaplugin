@@ -379,7 +379,7 @@ const bhInitDirectory=async()=>{
     const initMap = () => {
       if (map || !window.bhMapEngine) return;
       const mapEl = $("mapView");
-      if (!mapEl || currentView !== "map") return;
+      if (!mapEl || (currentView !== "map" && !(currentView === "grid" && window.innerWidth > 900))) return;
       mapEl.hidden = false;
       mapEl.setAttribute("aria-hidden", "false");
       map = bhMapEngine.init("mapView");
@@ -634,7 +634,7 @@ const bhInitDirectory=async()=>{
       const showEvents=currentView==="events";
       const results=$("results"),mapView=$("mapView"),calendarView=$("calendarView");
       if(results)results.hidden=showMap||showEvents||currentView==="calendar";
-      if(mapView)mapView.hidden=!showMap;
+      if(mapView)mapView.hidden=!(showMap || (currentView==="grid" && window.innerWidth>900));
       if(calendarView)calendarView.hidden=currentView!=="calendar";
       if($("directoryEventsView"))$("directoryEventsView").hidden=!showEvents;
       if($("directoryMapHint"))$("directoryMapHint").hidden=!showMap;
@@ -866,7 +866,7 @@ const bhInitDirectory=async()=>{
       // Keep listings and map markers linked in both directions.
       // Render the current filtered list first so marker references exist
       // immediately when a listing is clicked.
-      if (currentView === "map") {
+      if (currentView === "map" || (currentView === "grid" && window.innerWidth > 900)) {
         renderMap(list);
         if (map) setTimeout(() => map.invalidateSize(), 0);
       }
@@ -1039,7 +1039,7 @@ const bhInitDirectory=async()=>{
       currentView=view;
       updateViewVisibility();
       render();
-      if(view==="map")setTimeout(()=>map?.invalidateSize(),100);
+      if(view==="map" || (view==="grid" && window.innerWidth>900))setTimeout(()=>map?.invalidateSize(),100);
     };
     $("directoryShowMap")?.addEventListener("click",()=>switchDirectoryView("map"));
     $("directoryShowList")?.addEventListener("click",()=>switchDirectoryView("grid"));
