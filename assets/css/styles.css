@@ -37,7 +37,7 @@
   --bh-green:        #174b33;
   --bh-green-dark:   #123e2b;
   --bh-green-soft:   #c7ebd4;
-  --bh-green-pale:   #eff9f1;
+  --bh-green-pale:   #fff9ee;
   --bh-teal:         #0f8589;
   --bh-teal-dark:    #086c70;   /* use for teal buttons: white text passes AA */
   --bh-yellow:       #f6c84a;
@@ -53,7 +53,7 @@
   --bh-text:         #243027;
   --bh-muted:        #617261;
   --bh-white:        #fff;
-  --bh-bg:           #e9f6ed;
+  --bh-bg:           #fff9ee;
   --bh-sage:         #c7ebd4;
   --bh-mist:         #e4f1e8;
   --bh-soft:         #9fb7a5;
@@ -7509,3 +7509,8 @@ body :is(h1,h2,h3){font-weight:800}
 .bh-expo-detail .expo-button-primary:hover{background:#0c3624}
 .bh-expo-detail .expo-section-nav a{background:var(--bh-green-soft);color:var(--bh-green-dark)}
 .bh-expo-detail .expo-section-nav a:hover{background:var(--bh-green);color:#fff}
+
+/* Cream-first public surfaces, keeping green for brand accents and CTAs. */
+body:not(.bh-admin):not(.bh-leader) {background-color:#fff9ee}
+.bh-expo-detail .expo-hero{background:linear-gradient(125deg,#fff9ee,#fff4e1 65%,#fffaf2)}
+.bh-expo-detail .expo-section-nav{background:#fffdf8}
