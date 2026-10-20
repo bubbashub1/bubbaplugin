@@ -1096,3 +1096,90 @@ body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-event
   width:100%!important;max-width:none!important;min-width:0!important;
  }
 }
+
+/* Directory weekly calendar: explicit grid styles (were missing on this page). */
+body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-head{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ gap:12px!important;flex-wrap:wrap!important;margin:4px 0 16px!important;
+}
+body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-head>div:first-child{
+ display:flex!important;flex-direction:column!important;gap:5px!important;
+}
+body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-head strong{
+ font-size:1.2rem!important;color:#174e3b!important;
+}
+body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-head span{
+ font-size:.78rem!important;color:#416651!important;
+}
+body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-actions{
+ display:flex!important;gap:7px!important;align-items:center!important;
+}
+body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-actions button{
+ min-height:38px!important;padding:7px 12px!important;border-radius:999px!important;
+ background:#e3eee5!important;color:#174e3b!important;border:0!important;
+ font-weight:800!important;cursor:pointer!important;
+}
+body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-week-grid{
+ display:grid!important;grid-template-columns:repeat(7,minmax(100px,1fr))!important;
+ gap:5px!important;min-width:735px!important;width:100%!important;
+}
+body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-weekday{
+ display:flex!important;justify-content:center!important;align-items:center!important;gap:6px!important;
+ background:#174e3b!important;color:white!important;padding:11px 5px!important;
+ border-radius:10px 10px 3px 3px!important;font-size:.85rem!important;font-weight:800!important;
+}
+body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-day{
+ background:#f3f8f2!important;border:1px solid #dce9df!important;
+ border-radius:4px 4px 12px 12px!important;padding:8px!important;
+ min-height:195px!important;min-width:0!important;overflow-wrap:anywhere!important;
+}
+body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-day.is-today{
+ background:#fff8e9!important;border-color:#f3b873!important;
+}
+body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-date{
+ font-size:.7rem!important;color:#416651!important;margin-bottom:8px!important;
+}
+body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-events{
+ display:flex!important;flex-direction:column!important;gap:6px!important;
+}
+body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-event{
+ display:flex!important;flex-direction:column!important;gap:3px!important;
+ background:white!important;border:1px solid #d9e8dc!important;border-left:3px solid #278c83!important;
+ border-radius:9px!important;padding:8px!important;text-decoration:none!important;
+ font-size:.73rem!important;color:#174e3b!important;
+}
+body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-event strong{
+ font-size:.76rem!important;line-height:1.3!important;
+}
+body.bh-directory:not(.bh-calendar-page) #calendarView .directory-calendar-empty{
+ color:#6d8477!important;font-size:.74rem!important;
+}
+@media(min-width:1001px){
+ body.bh-directory:not(.bh-calendar-page) main.app-shell>[data-bh-directory-hero-placeholder]{
+  overflow-x:hidden!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #directoryFilters .directory-filter-actions,
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) .directory-filter-actions{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;width:100%!important;min-width:0!important;
+  justify-content:stretch!important;box-sizing:border-box!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #directoryFilters .directory-filter-actions>*,
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) .directory-filter-actions>button{
+  display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;
+  padding:10px 5px!important;box-sizing:border-box!important;font-size:.79rem!important;
+ }
+}
+
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-auth-notice[hidden],
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView iframe[hidden]{display:none!important}
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-auth-notice:not([hidden]){
+ display:block!important;background:#edf6ef!important;border:1px solid #d5e5d8!important;
+ border-radius:20px!important;padding:28px!important;margin:16px 0!important;text-align:center!important;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-auth-notice h3{
+ margin:0 0 8px!important;color:#174e3b!important;
+}
+body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-planner-auth-notice p{
+ margin:0 0 18px!important;
+}

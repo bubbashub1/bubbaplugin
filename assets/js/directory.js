@@ -502,8 +502,9 @@ const bhInitDirectory=async()=>{
 
       // Calendar is browsable without filters; cap initial rendering for performance.
       const calendarLimit = 120;
-      const displayedList = list.slice(0, calendarLimit);
-      const hasMore = list.length > calendarLimit;
+      const displayedList = list.filter(activity => bhSessions(activity).length > 0).slice(0, calendarLimit);
+      const scheduledCount = list.filter(activity => bhSessions(activity).length > 0).length;
+      const hasMore = scheduledCount > calendarLimit;
 
       if (!list.length) {
         calendar.innerHTML = `
@@ -527,6 +528,7 @@ const bhInitDirectory=async()=>{
         return date;
       });
       const events = buildCalendarEvents(displayedList, days[0], days[6]);
+      const totalSessions = Object.values(events).reduce((sum,dayEvents)=>sum+dayEvents.length,0);
 
       const weekLabel = days[0].toLocaleDateString("en-GB", {day:"numeric", month:"short"}) +
         " – " + days[6].toLocaleDateString("en-GB", {day:"numeric", month:"short", year:"numeric"});
@@ -534,13 +536,14 @@ const bhInitDirectory=async()=>{
 
       calendar.innerHTML = `
         <div class="directory-calendar-head">
-          <div><strong>${escapeHtml(weekLabel)}</strong><span>${list.length} matching activit${list.length === 1 ? "y" : "ies"}${hasMore ? " · first " + calendarLimit + " shown; refine filters for more" : ""}</span></div>
+          <div><strong>${escapeHtml(weekLabel)}</strong><span>${scheduledCount} scheduled activit${scheduledCount === 1 ? "y" : "ies"}${hasMore ? " · first " + calendarLimit + " scheduled listings shown; refine filters for more" : ""}</span></div>
           <div class="directory-calendar-actions">
             <button type="button" class="button button-soft" data-calendar-prev aria-label="Previous week">‹</button>
             <button type="button" class="button button-soft" data-calendar-today>Today</button>
             <button type="button" class="button button-soft" data-calendar-next aria-label="Next week">›</button>
           </div>
         </div>
+        ${!totalSessions ? '<p class="directory-calendar-notice">No scheduled sessions found for this week. Try another week or narrow your search to a town or activity.</p>' : ""}
         <div class="directory-calendar-grid directory-calendar-week-grid">
           ${days.map(date => `<div class="directory-calendar-weekday">${date.toLocaleDateString("en-GB",{weekday:"short"})}<span>${date.getDate()}</span></div>`).join("")}
           ${days.map(date => {
@@ -626,11 +629,32 @@ const bhInitDirectory=async()=>{
         plannerView.hidden=currentView!=="planner";
         if(currentView==="planner"){
           const frame=plannerView.querySelector("iframe[data-src]");
-          if(frame && !frame.src){
+          if(frame && !frame.src && !frame.dataset.authChecking){
+            frame.dataset.authChecking="true";
+            fetch("/api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}})
+              .then(response=>response.json())
+              .then(auth=>{
+                if(!auth?.authenticated){
+                  frame.hidden=true;
+                  const message=plannerView.querySelector(".bh-planner-signin-notice");
+                  if(message)message.hidden=false;
+                  return;
+                }
+                frame.hidden=false;
             frame.addEventListener("load",()=>{
               try{
                 const doc=frame.contentDocument;
                 if(!doc)return;
+                const locationPath=frame.contentWindow?.location?.pathname || "";
+                const isAuthPage=/\/(auth|login|account)(?:\.html)?\/?$/i.test(locationPath);
+                const notice=plannerView.querySelector(".bh-planner-auth-notice");
+                if(isAuthPage){
+                  frame.hidden=true;
+                  if(notice)notice.hidden=false;
+                  return;
+                }
+                frame.hidden=false;
+                if(notice)notice.hidden=true;
                 const resize=()=>{
                   const main=doc.querySelector("main.planner-page");
                   if(main)frame.style.height=Math.max(520,Math.ceil(main.getBoundingClientRect().height)+20)+"px";
@@ -642,8 +666,16 @@ const bhInitDirectory=async()=>{
                 }
               }catch(error){console.warn("Planner embed height could not be adjusted",error);}
             },{once:true});
-            frame.src=frame.dataset.src;
+                frame.src=frame.dataset.src;
+              })
+              .catch(()=>{
+                frame.hidden=true;
+                const message=plannerView.querySelector(".bh-planner-signin-notice");
+                if(message){message.hidden=false;message.querySelector("p").textContent="We could not verify your sign-in. Please open the full Planner to continue.";}
+              })
+              .finally(()=>{delete frame.dataset.authChecking;});
           }
+
         }
       }
       if($("directoryEventsView"))$("directoryEventsView").hidden=!showEvents;
