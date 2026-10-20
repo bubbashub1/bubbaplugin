@@ -967,7 +967,7 @@ body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #directoryEvents
  min-width:0!important;grid-column:1/-1!important;float:none!important;
 }
 body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #directoryPlannerView:not([hidden]) iframe{
- display:block!important;width:100%!important;max-width:none!important;height:max(760px,90vh)!important;
+ display:block!important;width:100%!important;max-width:none!important;height:760px;
 }
 body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-view-actions{
  width:100%!important;max-width:none!important;
@@ -977,7 +977,7 @@ body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-vi
   height:65vh!important;min-height:360px!important;
  }
  body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #directoryPlannerView:not([hidden]) iframe{
-  height:85vh!important;min-height:560px!important;
+  height:760px;min-height:560px!important;
  }
 }
 
@@ -992,4 +992,15 @@ body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-vi
  body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) .directory-filter-actions > button{
   width:auto!important;min-width:160px!important;max-width:230px!important;margin:0!important;
  }
+}
+
+/* Seamless Directory Planner: remove frame card and let JS match content height. */
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #directoryPlannerView:not([hidden]){
+ border:0!important;background:transparent!important;box-shadow:none!important;
+ padding:0!important;margin:0!important;overflow:visible!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #directoryPlannerView:not([hidden]) iframe{
+ display:block!important;border:0!important;border-radius:0!important;background:transparent!important;
+ width:100%!important;max-width:100%!important;min-height:520px!important;
+ height:var(--bh-planner-frame-height,760px);
 }
