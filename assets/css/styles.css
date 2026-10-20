@@ -7495,7 +7495,7 @@ button.bh-header-signout:disabled{opacity:.65;cursor:wait}
 @media(max-width:700px){.bh-header-greeting{max-width:105px;padding-left:8px;padding-right:8px}.bh-header-signout{padding-left:8px;padding-right:8px}}
 
 /* 2026 stronger brand treatment — shared public components only. */
-:root{--bh-orange:#f28b38;--bh-shadow:0 8px 24px rgba(18,62,43,.12);--bh-shadow-lg:0 18px 40px rgba(18,62,43,.17)}
+:root{--bh-orange:#c97845;--bh-shadow:0 8px 24px rgba(18,62,43,.12);--bh-shadow-lg:0 18px 40px rgba(18,62,43,.17)}
 body :is(h1,h2,h3){font-weight:800}
 .site-header{border-bottom:3px solid var(--bh-green);box-shadow:0 8px 22px rgba(18,62,43,.13)}
 .site-header .main-nav a:hover,.site-header .main-nav a.active{background:var(--bh-green-soft);color:var(--bh-green-dark)}
@@ -7514,3 +7514,6 @@ body :is(h1,h2,h3){font-weight:800}
 body:not(.bh-admin):not(.bh-leader) {background-color:#fff9ee}
 .bh-expo-detail .expo-hero{background:linear-gradient(125deg,#fff9ee,#fff4e1 65%,#fffaf2)}
 .bh-expo-detail .expo-section-nav{background:#fffdf8}
+
+/* Softer terracotta accents complement warm cream surfaces. */
+:root{--bh-orange:#c97845;--bh-orange-hover:#af6235}
