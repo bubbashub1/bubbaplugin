@@ -56,3 +56,34 @@
  }
  .bh-account-v2 .app-shell>.page-heading h1{font-size:clamp(2.25rem,9vw,3.5rem)}
 }
+
+/* My Hub: reserve a readable left column and keep actions/Pro from overlapping the photograph. */
+@media(min-width:901px){
+ .bh-my-hub .my-hub-page .my-hub-hero{
+  display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);
+  grid-template-rows:auto auto auto;align-content:center;align-items:start;
+  justify-items:start;gap:14px 24px;min-height:410px;
+  padding:36px clamp(28px,4vw,56px);background-position:center;
+ }
+ .bh-my-hub .my-hub-hero-copy,.bh-my-hub .my-hub-hero-actions,.bh-my-hub .hub-pro-pitch:not([hidden]){grid-column:1;min-width:0;max-width:440px}
+ .bh-my-hub .my-hub-hero-copy{grid-row:1}
+ .bh-my-hub .my-hub-hero-actions{grid-row:2;display:flex;gap:8px;flex-wrap:wrap}
+ .bh-my-hub .my-hub-hero-actions .button{font-size:.9rem;padding:9px 14px}
+ .bh-my-hub .hub-pro-pitch:not([hidden]){grid-row:3;display:flex;flex-wrap:wrap;gap:8px 12px;padding:12px 0 0;border-top:1px solid #174e3b26;font-size:.88rem}
+ .bh-my-hub .hub-pro-pitch:not([hidden]) span{flex-basis:100%}
+ .bh-my-hub .hub-pro-pitch .button{justify-self:start}
+ .bh-my-hub .my-hub-page .my-hub-hero h1{font-size:clamp(2.4rem,3.6vw,3.8rem)}
+ .bh-my-hub .my-hub-page .my-hub-hero p{max-width:350px}
+}
+@media(min-width:701px) and (max-width:900px){
+ .bh-my-hub .my-hub-page .my-hub-hero{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:12px;min-height:390px;padding:30px;background-position:center}
+ .bh-my-hub .my-hub-hero-copy,.bh-my-hub .my-hub-hero-actions,.bh-my-hub .hub-pro-pitch:not([hidden]){max-width:52%}
+ .bh-my-hub .hub-pro-pitch:not([hidden]){display:flex;flex-wrap:wrap;gap:8px;padding-top:10px}
+}
+@media(max-width:700px){
+ .bh-my-hub .my-hub-page .my-hub-hero{display:flex;flex-direction:column;align-items:stretch;gap:16px;padding:24px 20px 180px;background-size:cover,auto 100%;background-position:center,bottom center}
+ .bh-my-hub .my-hub-hero-actions{display:flex;flex-direction:column;gap:9px}
+ .bh-my-hub .my-hub-hero-actions .button{width:100%}
+ .bh-my-hub .hub-pro-pitch:not([hidden]){display:flex;flex-direction:column;gap:10px;padding-top:14px}
+ .bh-my-hub .hub-pro-pitch .button{width:100%}
+}
