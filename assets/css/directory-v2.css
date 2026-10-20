@@ -615,3 +615,53 @@ body.bh-directory .custom-sleek-dark-marker:hover .bubba-dark-pin{
    margin:12px 0 18px!important;
  }
 }
+
+/* Full-width Directory refresh (34014 artwork). Keep search and map JS unchanged. */
+body.bh-directory:not(.bh-calendar-page) .app-shell{
+ box-sizing:border-box!important;width:100%!important;max-width:none!important;
+ padding-left:clamp(14px,2.4vw,44px)!important;padding-right:clamp(14px,2.4vw,44px)!important;
+}
+body.bh-directory:not(.bh-calendar-page) .app-shell>.bh-directory-banner{
+ background-image:linear-gradient(90deg,rgba(239,249,239,.98) 0%,rgba(239,249,239,.87) 37%,rgba(239,249,239,.03) 76%),url('/images/logos/34014-20261020-162343-86fd9f.png')!important;
+ background-position:center!important;background-size:cover!important;
+ width:100%!important;max-width:none!important;box-sizing:border-box!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions{
+ gap:10px!important;margin:14px 0 20px!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions>*{
+ min-height:46px;display:inline-flex;align-items:center;justify-content:center;
+ border-radius:999px!important;padding:10px 16px!important;
+ font-size:clamp(.83rem,1vw,.96rem)!important;line-height:1.3;text-align:center;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions button[aria-pressed="true"]{
+ background:#174e3b!important;color:#fff!important;
+}
+body.bh-directory:not(.bh-calendar-page) .directory-results-heading{margin-bottom:12px}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-intro h2{font-size:clamp(1.65rem,2.5vw,2.45rem);line-height:1.2;color:#174e3b}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-search,
+body.bh-directory:not(.bh-calendar-page) #directoryFilters{border-radius:22px;box-shadow:0 10px 30px rgba(23,78,59,.07)}
+body.bh-directory:not(.bh-calendar-page) #advancedToggle{min-height:44px;border-radius:14px;font-weight:800}
+body.bh-directory:not(.bh-calendar-page) #advancedFields:not([hidden]){border-radius:18px}
+body.bh-directory:not(.bh-calendar-page) .activity-grid{gap:clamp(12px,1.5vw,22px)}
+body.bh-directory:not(.bh-calendar-page) .activity-card{min-width:0;border-radius:20px;overflow:hidden;box-shadow:0 7px 24px rgba(23,78,59,.08)}
+@media(min-width:901px){
+ body.bh-directory:not(.bh-calendar-page) .app-shell>.bh-directory-banner{grid-column:1/-1!important;grid-row:1!important}
+ body.bh-directory:not(.bh-calendar-page) .app-shell>.directory-layout{min-width:0!important;width:100%!important}
+}
+@media(max-width:900px){
+ body.bh-directory:not(.bh-calendar-page) .app-shell{padding-left:14px!important;padding-right:14px!important}
+ body.bh-directory:not(.bh-calendar-page) .app-shell>.bh-directory-banner{
+  min-height:340px!important;padding:22px 18px 160px!important;
+  background-image:linear-gradient(180deg,rgba(239,249,239,.99) 0%,rgba(239,249,239,.94) 44%,rgba(239,249,239,.02) 100%),url('/images/logos/34014-20261020-162343-86fd9f.png')!important;
+  background-size:cover,auto 100%!important;background-position:center,bottom center!important;
+ }
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy{max-width:100%!important}
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;position:relative!important;top:auto!important;z-index:1!important}
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions>*{min-width:0!important;width:100%!important;min-height:46px!important;padding:10px 8px!important;white-space:normal!important}
+ body.bh-directory:not(.bh-calendar-page) #mapView:not([hidden]){width:100%!important;min-height:350px!important}
+}
+@media(max-width:420px){
+ body.bh-directory:not(.bh-calendar-page) .app-shell{padding-left:10px!important;padding-right:10px!important}
+ body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions>*{font-size:.82rem!important}
+}
