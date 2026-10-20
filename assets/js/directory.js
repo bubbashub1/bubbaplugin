@@ -502,8 +502,9 @@ const bhInitDirectory=async()=>{
 
       // Calendar is browsable without filters; cap initial rendering for performance.
       const calendarLimit = 120;
-      const displayedList = list.slice(0, calendarLimit);
-      const hasMore = list.length > calendarLimit;
+      const displayedList = list.filter(activity => bhSessions(activity).length > 0).slice(0, calendarLimit);
+      const scheduledCount = list.filter(activity => bhSessions(activity).length > 0).length;
+      const hasMore = scheduledCount > calendarLimit;
 
       if (!list.length) {
         calendar.innerHTML = `
@@ -527,6 +528,7 @@ const bhInitDirectory=async()=>{
         return date;
       });
       const events = buildCalendarEvents(displayedList, days[0], days[6]);
+      const totalSessions = Object.values(events).reduce((sum,dayEvents)=>sum+dayEvents.length,0);
 
       const weekLabel = days[0].toLocaleDateString("en-GB", {day:"numeric", month:"short"}) +
         " – " + days[6].toLocaleDateString("en-GB", {day:"numeric", month:"short", year:"numeric"});
@@ -534,13 +536,14 @@ const bhInitDirectory=async()=>{
 
       calendar.innerHTML = `
         <div class="directory-calendar-head">
-          <div><strong>${escapeHtml(weekLabel)}</strong><span>${list.length} matching activit${list.length === 1 ? "y" : "ies"}${hasMore ? " · first " + calendarLimit + " shown; refine filters for more" : ""}</span></div>
+          <div><strong>${escapeHtml(weekLabel)}</strong><span>${scheduledCount} scheduled activit${scheduledCount === 1 ? "y" : "ies"}${hasMore ? " · first " + calendarLimit + " shown; refine filters for more" : ""}</span></div>
           <div class="directory-calendar-actions">
             <button type="button" class="button button-soft" data-calendar-prev aria-label="Previous week">‹</button>
             <button type="button" class="button button-soft" data-calendar-today>Today</button>
             <button type="button" class="button button-soft" data-calendar-next aria-label="Next week">›</button>
           </div>
         </div>
+        ${!totalSessions ? '<p class="directory-calendar-notice">No scheduled sessions found for this week. Try another week or narrow your search to a town or activity.</p>' : ""}
         <div class="directory-calendar-grid directory-calendar-week-grid">
           ${days.map(date => `<div class="directory-calendar-weekday">${date.toLocaleDateString("en-GB",{weekday:"short"})}<span>${date.getDate()}</span></div>`).join("")}
           ${days.map(date => {
