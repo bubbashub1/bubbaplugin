@@ -967,7 +967,7 @@ body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #directoryEvents
  min-width:0!important;grid-column:1/-1!important;float:none!important;
 }
 body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #directoryPlannerView:not([hidden]) iframe{
- display:block!important;width:100%!important;max-width:none!important;height:max(760px,90vh)!important;
+ display:block!important;width:100%!important;max-width:none!important;height:760px;
 }
 body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-view-actions{
  width:100%!important;max-width:none!important;
@@ -977,7 +977,7 @@ body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-vi
   height:65vh!important;min-height:360px!important;
  }
  body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase #directoryPlannerView:not([hidden]) iframe{
-  height:85vh!important;min-height:560px!important;
+  height:760px;min-height:560px!important;
  }
 }
 
