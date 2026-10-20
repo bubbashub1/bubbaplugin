@@ -81,6 +81,15 @@ try {
         $pdo->rollBack();
         bh955Reply(409, ['ok'=>false, 'error'=>'conflict', 'current'=>$before, 'writes_performed'=>false]);
     }
+    // Enforce single-use even if an operator later resets the activity fields.
+    // The audit table must exist before writes are enabled.
+    $prior = $pdo->prepare("SELECT id FROM bh_sheets_sync_audit
+        WHERE listing_id = 955 AND operation = 'manual_guarded_repair_955' LIMIT 1");
+    $prior->execute();
+    if ($prior->fetch(PDO::FETCH_ASSOC)) {
+        $pdo->rollBack();
+        bh955Reply(409, ['ok'=>false, 'error'=>'already_applied', 'writes_performed'=>false]);
+    }
     // An audit table is mandatory: if logging fails, the update rolls back.
     // Audit table must be provisioned by a separate migration before writes are enabled.
     // Never run DDL inside this transaction (MySQL DDL implicitly commits).
