@@ -933,3 +933,16 @@ body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase:has(#calendarVie
 body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase:has(#directoryPlannerView:not([hidden])) .bh-directory-content-grid,
 body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase:has(#directoryEventsView:not([hidden])) .bh-directory-content-grid{display:none!important}
 body.bh-directory:not(.bh-calendar-page) .bh-directory-showcase .bh-directory-view-actions button[aria-pressed="true"]{background:#075b42!important;color:#fff!important}
+
+/* Higher specificity than PR 300's display:contents override. */
+@media(min-width:901px){
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #directoryFilters #advancedFields:not([hidden]) .directory-advanced-section,
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]) #directoryFilters .directory-advanced-section{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:14px 18px!important;grid-column:1/-1!important;
+ }
+}
+@media(min-width:601px) and (max-width:900px){
+ body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #directoryFilters #advancedFields:not([hidden]) .directory-advanced-section{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;
+ }
+}
