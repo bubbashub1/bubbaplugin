@@ -37,7 +37,7 @@
   --bh-green:        #174b33;
   --bh-green-dark:   #123e2b;
   --bh-green-soft:   #c7ebd4;
-  --bh-green-pale:   #fff9ee;
+  --bh-green-pale:   #f5f7ed;
   --bh-teal:         #0f8589;
   --bh-teal-dark:    #086c70;   /* use for teal buttons: white text passes AA */
   --bh-yellow:       #f6c84a;
@@ -53,7 +53,7 @@
   --bh-text:         #243027;
   --bh-muted:        #617261;
   --bh-white:        #fff;
-  --bh-bg:           #fff9ee;
+  --bh-bg:           #f5f7ed;
   --bh-sage:         #c7ebd4;
   --bh-mist:         #e4f1e8;
   --bh-soft:         #9fb7a5;
@@ -5660,7 +5660,7 @@ body:not(.bh-home) .button-soft:focus-visible{
    ========================================================================= */
 
 :root{
-  --bh-cream:#fffaf2;
+  --bh-cream:#f8f9f1;
   --bh-coral:#f39a3f;
   --bh-coral-dark:#df7e27;
   --bh-sky:#e6f4f3;
@@ -7503,7 +7503,7 @@ body :is(h1,h2,h3){font-weight:800}
 .bh-directory :is(.activity-card,.event-card),
 .bh-expo-detail :is(.expo-panel,.expo-info-card),
 .bh-activity .activity-card{border-color:var(--bh-border);box-shadow:var(--bh-shadow)}
-.bh-expo-detail .expo-hero{background:linear-gradient(125deg,#c7ebd4,#fff9ee 60%,#c6e9e9);border:2px solid var(--bh-green)}
+.bh-expo-detail .expo-hero{background:linear-gradient(125deg,#c7ebd4,#f5f7ed 60%,#c6e9e9);border:2px solid var(--bh-green)}
 .bh-expo-detail .expo-kicker{color:var(--bh-teal-dark)}
 .bh-expo-detail .expo-button-primary{background:var(--bh-green);color:#fff}
 .bh-expo-detail .expo-button-primary:hover{background:#0c3624}
@@ -7511,9 +7511,9 @@ body :is(h1,h2,h3){font-weight:800}
 .bh-expo-detail .expo-section-nav a:hover{background:var(--bh-green);color:#fff}
 
 /* Cream-first public surfaces, keeping green for brand accents and CTAs. */
-body:not(.bh-admin):not(.bh-leader) {background-color:#fff9ee}
-.bh-expo-detail .expo-hero{background:linear-gradient(125deg,#fff9ee,#fff4e1 65%,#fffaf2)}
-.bh-expo-detail .expo-section-nav{background:#fffdf8}
+body:not(.bh-admin):not(.bh-leader) {background-color:#f5f7ed}
+.bh-expo-detail .expo-hero{background:linear-gradient(125deg,#f5f7ed,#eef3e6 65%,#f8f9f1)}
+.bh-expo-detail .expo-section-nav{background:#fafbf5}
 
 /* Softer terracotta accents complement warm cream surfaces. */
 :root{--bh-orange:#c97845;--bh-orange-hover:#af6235}
