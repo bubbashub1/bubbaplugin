@@ -87,3 +87,60 @@
  .bh-my-hub .hub-pro-pitch:not([hidden]){display:flex;flex-direction:column;gap:10px;padding-top:14px}
  .bh-my-hub .hub-pro-pitch .button{width:100%}
 }
+
+
+/* Site-wide responsive banner and control repair — 20 October 2026.
+   Scope deliberately limited to primary page banners to avoid altering forms/admin. */
+:where(.bh-my-hub,.bh-directory-v2,.bh-help-v2,.bh-leader-v2,.bh-account-v2) :is(.my-hub-hero,.directory-hero,.help-hero,.bh-leader-hero,.page-heading) {
+  box-sizing:border-box;max-width:100%;min-width:0;
+}
+.bh-my-hub .my-hub-page .my-hub-hero :is(.button,.hub-pro-pitch .button){
+  box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;
+  min-height:48px;height:auto;max-width:100%;padding:11px 18px;
+  font-size:clamp(.9rem,2.8vw,1rem);line-height:1.3;text-align:center;
+  border-radius:999px;white-space:normal;overflow-wrap:anywhere;
+}
+.bh-my-hub .my-hub-page .my-hub-hero .my-hub-hero-actions .button-soft{
+  background:#174e3b;color:#fff;border:1px solid #174e3b;
+}
+.bh-my-hub .my-hub-page .my-hub-hero .my-hub-hero-actions .button-soft:hover{
+  background:#226b50;color:#fff;
+}
+.bh-my-hub .my-hub-page .my-hub-hero .hub-pro-pitch:not([hidden]){
+  box-sizing:border-box;color:#174e3b;
+}
+.bh-my-hub .my-hub-page .my-hub-hero .hub-pro-pitch :is(strong,span){
+  color:#174e3b;line-height:1.45;overflow-wrap:anywhere;
+}
+@media(max-width:700px){
+  .bh-my-hub .my-hub-page .my-hub-hero{
+    box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;
+    justify-content:flex-start;gap:14px;min-height:0;
+    padding:22px 18px 155px;border-radius:24px;
+    background-size:cover;background-position:center bottom;
+  }
+  .bh-my-hub .my-hub-page .my-hub-hero :is(.my-hub-hero-copy,.my-hub-hero-actions,.hub-pro-pitch:not([hidden])){
+    width:100%;max-width:100%;min-width:0;
+  }
+  .bh-my-hub .my-hub-page .my-hub-hero .my-hub-hero-actions{
+    display:flex;flex-direction:column;align-items:stretch;gap:10px;
+  }
+  .bh-my-hub .my-hub-page .my-hub-hero .my-hub-hero-actions .button{
+    width:100%;min-height:48px;padding:11px 16px;
+  }
+  .bh-my-hub .my-hub-page .my-hub-hero .hub-pro-pitch:not([hidden]){
+    display:flex;flex-direction:column;align-items:stretch;gap:10px;
+    padding:14px;border:1px solid #d7e6da;border-radius:18px;
+    background:rgba(246,251,245,.96);box-shadow:0 5px 16px rgba(23,78,59,.07);
+    font-size:clamp(.9rem,3.6vw,1rem);
+  }
+  .bh-my-hub .my-hub-page .my-hub-hero .hub-pro-pitch .button{
+    width:100%;justify-self:stretch;min-height:48px;
+  }
+  :where(.bh-directory-v2,.bh-help-v2,.bh-leader-v2,.bh-account-v2) :is(.directory-hero,.help-hero,.bh-leader-hero,.page-heading){
+    max-width:100%;overflow-wrap:anywhere;
+  }
+}
+@media(max-width:380px){
+  .bh-my-hub .my-hub-page .my-hub-hero{padding:18px 14px 130px}
+}
