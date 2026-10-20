@@ -33,6 +33,8 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Generate Android project
         run: npx cap add android
+      - name: Apply Android back navigation handler
+        run: cp native/MainActivity.java android/app/src/main/java/uk/co/bubbahub/app/MainActivity.java
       - name: Build debug APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon
       - name: Upload test APK
