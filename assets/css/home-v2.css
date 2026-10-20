@@ -152,3 +152,24 @@
   background-repeat:no-repeat!important;border-radius:22px;
  }
 }
+
+/* Small-screen homepage: compact family photo at the top right, not a large block. */
+@media(max-width:760px){
+ .bh-home .home-hero{position:relative!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:12px!important;padding:18px 14px 24px!important}
+ .bh-home .home-hero-image{
+  position:absolute!important;top:18px!important;right:14px!important;left:auto!important;bottom:auto!important;
+  order:initial!important;width:clamp(105px,31vw,150px)!important;height:clamp(105px,31vw,150px)!important;
+  min-height:0!important;aspect-ratio:1!important;z-index:1!important;
+  border-radius:22px!important;background-position:74% center!important;
+  background-size:auto 100%!important;box-shadow:0 8px 20px rgba(23,78,59,.1);
+ }
+ .bh-home .home-hero-copy{order:0!important;min-height:0!important;padding:0!important;margin:0!important;max-width:none!important}
+ .bh-home .home-hero-copy h1.home-brush{
+  width:calc(100% - clamp(115px,34vw,165px))!important;
+  font-size:clamp(2.3rem,10vw,3.9rem)!important;line-height:1.03!important;
+  margin:0 0 16px!important;
+ }
+ .bh-home .home-hero-copy .bh-hero-subtitle,
+ .bh-home .home-hero-copy .bh-hero-detail{max-width:100%!important}
+ .bh-home .home-search{order:2!important;margin-top:4px!important;width:100%!important}
+}
