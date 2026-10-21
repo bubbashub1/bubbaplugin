@@ -61,6 +61,7 @@ foreach ($data['rows'] as $row) {
     }
 }
 require_once __DIR__ . '/sheets-sync-preflight.php';
+require_once __DIR__ . '/sheets-sync-field-preview.php';
 $preflight = bh_sync_preflight($data['rows']);
 // Read-only database ID lookup, deliberately conservative:
 // URL-only rows and missing explicit IDs remain manual-review candidates.
@@ -87,7 +88,7 @@ if ($ids) {
         $idList = array_keys($ids);
         $found = [];
         foreach (array_chunk($idList, 50) as $chunk) {
-            $sql = 'SELECT id, title FROM bh_activities WHERE id IN (' .
+            $sql = 'SELECT id, title, description, age_range, price_from, booking_url FROM bh_activities WHERE id IN (' .
                 implode(',', array_fill(0, count($chunk), '?')) . ')';
             $stmt = $db->prepare($sql);
             $stmt->execute($chunk);
@@ -103,20 +104,19 @@ if ($ids) {
             } elseif (isset($found[$id])) {
                 $preflight['rows'][$index]['status'] = 'matched_id';
                 $preflight['rows'][$index]['matched_id'] = $id;
-                // Title-only comparison: the website remains authoritative until
-                // a trusted sync baseline and explicit review are available.
-                if (array_key_exists('title', $row)) {
-                    $sheetTitle = $row['title'];
-                    if (!is_string($sheetTitle) || trim($sheetTitle) === '' || strlen($sheetTitle) > 500) {
-                        $preflight['rows'][$index]['title_comparison'] = ['status'=>'invalid_sheet_title'];
-                    } else {
-                        $currentTitle = (string)$found[$id]['title'];
-                        $preflight['rows'][$index]['title_comparison'] = [
-                            'status' => trim($sheetTitle) === trim($currentTitle) ? 'same' : 'different_review',
-                            'website_title' => $currentTitle,
-                            'sheet_title' => $sheetTitle,
-                            'requires_review' => trim($sheetTitle) !== trim($currentTitle)
-                        ];
+                $preflight['rows'][$index]['field_comparisons'] =
+                    bh_sync_field_preview($row, $found[$id]);
+                // Retain legacy title_comparison for existing Apps Script tests.
+                if (isset($preflight['rows'][$index]['field_comparisons']['title'])) {
+                    $titlePreview = $preflight['rows'][$index]['field_comparisons']['title'];
+                    $preflight['rows'][$index]['title_comparison'] = [
+                        'status'=>$titlePreview['status'] === 'invalid_sheet_value'
+                            ? 'invalid_sheet_title' : $titlePreview['status']
+                    ];
+                    if (isset($titlePreview['website_value'])) {
+                        $preflight['rows'][$index]['title_comparison']['website_title'] = $titlePreview['website_value'];
+                        $preflight['rows'][$index]['title_comparison']['sheet_title'] = $titlePreview['sheet_value'];
+                        $preflight['rows'][$index]['title_comparison']['requires_review'] = $titlePreview['requires_review'];
                     }
                 }
             } else {
@@ -142,5 +142,5 @@ bh_preview_reply(200, [
     'writes_performed'=>0,
     'rows_received'=>count($data['rows']),
     'preflight'=>$preflight,
-    'message'=>'Read-only ID matching and optional title comparison. Differences require review; no database writes performed.'
+    'message'=>'Read-only allowlisted field comparisons; differences require review. No sync baseline, confirmed conflicts or database writes.'
 ]);
