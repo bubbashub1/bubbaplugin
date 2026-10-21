@@ -71,6 +71,13 @@ foreach ($data['rows'] as $index => $row) {
     $id = bh_sync_normalize_id($row['activity_id'] ?? $row['id'] ?? null);
     if ($id !== null) $ids[$id] = true;
 }
+// URL-only records cannot safely be linked until booking URL storage is mapped.
+foreach ($data['rows'] as $index => $row) {
+    if (($preflight['rows'][$index]['status'] ?? '') !== 'pending_database_match') continue;
+    if (bh_sync_normalize_id($row['activity_id'] ?? $row['id'] ?? null) === null) {
+        $preflight['rows'][$index]['status'] = 'review_url_only';
+    }
+}
 if ($ids) {
     try {
         require_once __DIR__ . '/db.php';
