@@ -10,6 +10,8 @@ $events=['bubba-me-2027'=>'Bubba & Me Baby & Pregnancy Expo — 9 January 2027']
 $method=$_SERVER['REQUEST_METHOD']??'GET';
 if($method==='GET'){sponsorReply(200,['ok'=>true,'events'=>array_map(static fn($key,$name)=>['key'=>$key,'name'=>$name],array_keys($events),array_values($events))]);}
 if($method!=='POST'){header('Allow: GET, POST');sponsorReply(405,['ok'=>false,'error'=>'method_not_allowed']);}
+// Expo sponsorship checkout is temporarily disabled on live until launch checks pass.
+sponsorReply(503,['ok'=>false,'error'=>'coming_soon','message'=>'Expo sponsorship payments are Coming Soon.']);
 if(empty($_SERVER['HTTPS'])||$_SERVER['HTTPS']==='off')sponsorReply(403,['ok'=>false,'error'=>'https_required']);
 $origin=(string)($_SERVER['HTTP_ORIGIN']??$_SERVER['HTTP_REFERER']??'');
 $host=strtolower(explode(':',(string)($_SERVER['HTTP_HOST']??''))[0]);
