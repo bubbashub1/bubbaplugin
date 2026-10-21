@@ -15,7 +15,7 @@
 <div class="actions"><a class="button" href="/admin/">Return to admin</a><button class="button" type="button" disabled title="Available after the approved baseline database and admin workflow are connected">Approve changes — coming soon</button></div></section>
 <section class="grid" aria-label="Sync overview">
 <div class="card"><h2>Pending reviews</h2><div class="value">Not connected</div><p class="muted">No live review queue is connected yet.</p></div>
-<div class="card"><h2>Trusted baselines</h2><div class="value">Not connected</div><p class="muted">Database migration and admin approval still required.</p></div>
+<div class="card"><h2>Trusted baselines</h2><div class="value" id="baseline-count">Checking…</div><p class="muted" id="baseline-caption">Checking staging database.</p></div>
 <div class="card"><h2>Automatic updates</h2><div class="value">OFF</div><p class="muted">Google Sheets preview remains read-only.</p></div>
 </section>
 <section class="card section"><h2>Review queue</h2><p class="muted">Once connected, you'll see each activity, spreadsheet changes, website values and any conflicts here.</p>
@@ -29,6 +29,20 @@
     if (response.status === 401) { window.location.replace('/admin-login.html'); return; }
     if (!response.ok) throw new Error('admin_status_unavailable');
     document.getElementById('sync-content').hidden = false;
+    const baselineCount = document.getElementById('baseline-count');
+    const baselineCaption = document.getElementById('baseline-caption');
+    try {
+      const result = await fetch('/api/sheets-sync-admin-summary.php', {credentials:'same-origin',cache:'no-store'});
+      if (!result.ok) throw new Error('unavailable');
+      const summary = await result.json();
+      if (!summary.ok || summary.environment !== 'staging' || summary.writes_enabled !== false ||
+          !Number.isSafeInteger(summary.trusted_baseline_count) || summary.trusted_baseline_count < 0) throw new Error('invalid');
+      baselineCount.textContent = String(summary.trusted_baseline_count);
+      baselineCaption.textContent = 'Approved staging snapshots. Approval actions remain disabled.';
+    } catch (error) {
+      baselineCount.textContent = 'Unavailable';
+      baselineCaption.textContent = 'Unable to verify staging database; no changes made.';
+    }
   } catch (error) {
     document.body.textContent = 'Unable to verify administrator access. Please return to the admin dashboard and try again.';
   }
