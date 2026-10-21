@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bubba Hub · Expo floor-plan editor</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#174c44;background:#f6fbf8}*{box-sizing:border-box}
+body{margin:0}header{background:#e2f5e9;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}h1{font-size:1.5rem;margin:0}p{margin:8px 0}
+main{max-width:1400px;margin:auto;padding:18px}.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+button,.upload{border:1px solid #aacfc4;background:white;color:#174c44;padding:10px 13px;border-radius:11px;cursor:pointer;font-weight:650}button:hover{background:#e0f4ec}button.primary{background:#145b4e;color:white}
+button:focus-visible,.item:focus-visible{outline:3px solid #e88c3e;outline-offset:2px}
+.editor{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:16px}
+.stage{overflow:auto;border:2px solid #b6d7cc;border-radius:18px;background:#fff;padding:15px;touch-action:pan-x pan-y}
+#plan{display:block;width:100%;min-width:520px;height:auto;aspect-ratio:1200/780;user-select:none;touch-action:none;background:#fffdf6;border-radius:10px}
+.item{cursor:grab;stroke:#a73c66;stroke-width:3;fill:#f5d7e4}.item.selected{stroke:#0e8d7a;stroke-width:5}
+.item.fixture{fill:#d5e8f7;stroke:#3c79a0}.item.exit{fill:#f7b7a8;stroke:#ae483e;cursor:default}
+aside{background:white;border:1px solid #d1e6dd;border-radius:15px;padding:16px}label{display:block;margin:12px 0;font-size:.9rem}
+input{max-width:100%;padding:8px;border:1px solid #adcbbf;border-radius:7px}input[type=number]{width:90px}
+.small{font-size:.86rem;color:#4e6d65}.status{min-height:25px;font-weight:650}
+@media(max-width:850px){.editor{grid-template-columns:1fr}aside{order:-1}}
+@media print{header,.toolbar,aside,.small,.status{display:none!important}main{padding:0}.stage{border:0;overflow:visible}#plan{min-width:0}}
+</style></head>
+<body><div id="authChecking" style="padding:24px" role="status">Checking admin access…</div><div id="protectedEditor" hidden><p style="padding:12px;background:#fff1d9;color:#174c44;text-align:center">Floor plan: save to the admin database when connected. Export JSON as a backup. Exhibitor assignments are not synced automatically.</p><header><h1>🌈 Bubba Hub · Expo floor-plan editor</h1><a href="/admin.html#events-management">← Events management</a></header>
+<main><p>Move, rotate and number tables for the Bubba &amp; Me Expo. <strong>Draft editor:</strong> can save to the database after migration; export JSON for backup. Do not publish as an approved evacuation plan.</p>
+<div class="toolbar">
+<button id="add">+ Add 6ft table</button><button id="desk">+ Welcome desk</button><button id="rotate">Rotate selected</button>
+<button id="duplicate">Duplicate</button><button id="remove">Delete selected</button><button id="undo">Undo</button><button id="redo">Redo</button>
+<button id="save" class="primary">Save draft</button><button id="export">Export JSON</button>
+<label class="upload">Import JSON <input id="import" type="file" accept="application/json,.json" hidden></label>
+<button id="print">Print plan</button><button id="reset">Restore starter layout</button>
+</div>
+<div class="editor"><div class="stage"><svg id="plan" viewBox="0 0 1200 780" role="img" aria-label="Editable expo floor plan, schematic not to scale">
+<rect x="20" y="20" width="1160" height="740" rx="10" fill="#fffdf6" stroke="#245e54" stroke-width="9"/>
+<text x="600" y="49" font-size="19" fill="#245e54" text-anchor="middle">MURAL WALL · FIRE EXITS (positions illustrative)</text>
+<text x="600" y="742" font-size="20" fill="#245e54" text-anchor="middle">ENTRANCE SIDE · LOCATION TO VERIFY</text>
+<g id="items"></g></svg></div>
+<aside><h2 style="margin-top:0">Selected item</h2><p id="none">Select a table to edit it.</p>
+<div id="properties" hidden><label>Label / table number<br><input id="label" maxlength="35"></label>
+<label>X position<br><input id="x" type="number" step="1" min="20" max="1180"></label>
+<label>Y position<br><input id="y" type="number" step="1" min="20" max="760"></label>
+<label>Exhibitor name (draft)<br><input id="exhibitor" maxlength="100"></label>
+<button id="turn">Rotate 90°</button></div>
+<p class="small">Pink = 6ft exhibitor table (schematic scale). Blue = desk. Red = fire-exit reference / no-stall zone. Move items with mouse, touch, or keyboard arrows (Shift + arrow for larger steps).</p>
+<p class="small"><strong>Safety:</strong> exit locations, room dimensions, stall capacity, chair space and accessible aisles must be confirmed on site. This editor does not certify compliance.</p></aside></div>
+<p id="status" class="status" role="status"></p></main>
+<script>
+(()=>{
+"use strict";
+const KEY="bh_expo_floor_plan_draft_v1",svg=document.getElementById("plan"),layer=document.getElementById("items");
+const $=id=>document.getElementById(id);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const exits=[{x:175,y:23,w:180,h:82},{x:845,y:23,w:180,h:82}];
+const initial=()=>{
+let a=[],id=1;
+for(let x of [65,275,485,695,905])a.push({id:id++,type:"table",x,y:125,angle:0,label:String(id-1),exhibitor:""});
+for(let y of [270,475]){a.push({id:id++,type:"table",x:45,y,angle:90,label:String(id-1),exhibitor:""});a.push({id:id++,type:"table",x:1010,y,angle:90,label:String(id-1),exhibitor:""});}
+for(let x of [75,285,705,915])a.push({id:id++,type:"table",x,y:645,angle:0,label:String(id-1),exhibitor:""});
+for(let y of [305,425])for(let x of [390,610])a.push({id:id++,type:"table",x,y,angle:0,label:String(id-1),exhibitor:""});
+return a;
+};
+let items=initial(),selected=null,history=[],future=[],drag=null,serverRevision=null,csrfToken="";
+const dims=o=>o.type==="desk"?[170,75]:o.angle%180===0?[185,75]:[75,185];
+const intersects=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
+const valid=(o,other=items)=>{
+const [w,h]=dims(o),r={x:o.x,y:o.y,w,h};
+if(o.x<28||o.y<95||o.x+w>1172||o.y+h>728)return false;
+if(exits.some(e=>intersects(r,e)))return false;
+return !other.some(t=>t.id!==o.id&&intersects(r,{x:t.x,y:t.y,w:dims(t)[0],h:dims(t)[1]}));
+};
+const escape=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const snapshot=()=>{history.push(clone(items));if(history.length>70)history.shift();future=[]};
+function render(){
+layer.innerHTML="";
+exits.forEach((e,i)=>{const g=document.createElementNS("http://www.w3.org/2000/svg","g");
+g.innerHTML='<rect x="'+e.x+'" y="'+e.y+'" width="'+e.w+'" height="'+e.h+'" rx="5" fill="#ffdcd3" stroke="#c55448" stroke-dasharray="8 5"/><text x="'+(e.x+90)+'" y="'+(e.y+43)+'" text-anchor="middle" fill="#9c332b" font-size="17" font-weight="bold">FIRE EXIT '+(i+1)+'</text>';layer.append(g)});
+items.forEach(o=>{const [w,h]=dims(o),g=document.createElementNS("http://www.w3.org/2000/svg","g");
+g.setAttribute("data-id",o.id);g.setAttribute("tabindex","0");g.setAttribute("role","button");g.setAttribute("aria-label",(o.type==="desk"?"Desk ":"Table ")+o.label);
+g.innerHTML='<rect class="item '+(o.type==="desk"?"fixture ":"")+(selected===o.id?"selected":"")+'" x="'+o.x+'" y="'+o.y+'" width="'+w+'" height="'+h+'" rx="8"/><text x="'+(o.x+w/2)+'" y="'+(o.y+h/2+5)+'" font-size="18" text-anchor="middle" fill="#65304a" pointer-events="none">'+escape(o.label)+'</text>';
+g.addEventListener("pointerdown",ev=>{ev.preventDefault();select(o.id);snapshot();drag={id:o.id,start:point(ev),x:o.x,y:o.y};g.setPointerCapture(ev.pointerId)});
+g.addEventListener("pointermove",ev=>{if(!drag||drag.id!==o.id)return;let p=point(ev),old={x:o.x,y:o.y};o.x=Math.round(drag.x+p.x-drag.start.x);o.y=Math.round(drag.y+p.y-drag.start.y);if(!valid(o)){o.x=old.x;o.y=old.y}renderPositions();});
+g.addEventListener("pointerup",()=>{drag=null;render()});g.addEventListener("pointercancel",()=>{drag=null;render()});
+g.addEventListener("click",()=>select(o.id));g.addEventListener("keydown",ev=>{if(!["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(ev.key))return;ev.preventDefault();snapshot();const step=ev.shiftKey?20:5,old={x:o.x,y:o.y};o.x+=(ev.key==="ArrowLeft"?-step:ev.key==="ArrowRight"?step:0);o.y+=(ev.key==="ArrowUp"?-step:ev.key==="ArrowDown"?step:0);if(!valid(o))Object.assign(o,old);render();});
+layer.append(g)});
+updateProperties();
+}
+function renderPositions(){layer.querySelectorAll("g[data-id]").forEach(g=>{let o=items.find(v=>v.id===Number(g.dataset.id));if(!o)return;let [w,h]=dims(o);let r=g.querySelector("rect"),t=g.querySelector("text");r.setAttribute("x",o.x);r.setAttribute("y",o.y);t.setAttribute("x",o.x+w/2);t.setAttribute("y",o.y+h/2+5)});}
+function point(ev){const p=svg.createSVGPoint();p.x=ev.clientX;p.y=ev.clientY;return p.matrixTransform(svg.getScreenCTM().inverse())}
+function select(id){selected=id;render()}
+function updateProperties(){let o=items.find(t=>t.id===selected);$("none").hidden=!!o;$("properties").hidden=!o;if(o){$("label").value=o.label;$("x").value=o.x;$("y").value=o.y;$("exhibitor").value=o.exhibitor||""}}
+function edit(fn){const o=items.find(t=>t.id===selected);if(!o)return;const old=clone(o);snapshot();fn(o);if(!valid(o)){Object.assign(o,old);message("That position overlaps another item or a protected exit area.")}render()}
+function message(s){$("status").textContent=s}
+function nextId(){return Math.max(0,...items.map(o=>o.id))+1}
+function add(type){let id=nextId(),o={id,type,x:450,y:230,angle:0,label:type==="desk"?"Welcome":String(id),exhibitor:""};for(let y=160;y<600;y+=20){for(let x=110;x<980;x+=20){o.x=x;o.y=y;if(valid(o)){snapshot();items.push(o);selected=id;render();return}}}message("No free space for another item.")}
+$("add").onclick=()=>add("table");$("desk").onclick=()=>add("desk");
+$("rotate").onclick=$("turn").onclick=()=>edit(o=>{if(o.type==="table")o.angle=(o.angle+90)%180});
+$("remove").onclick=()=>{if(selected===null)return;snapshot();items=items.filter(o=>o.id!==selected);selected=null;render()};
+$("duplicate").onclick=()=>{let o=items.find(t=>t.id===selected);if(!o)return;let copy={...o,id:nextId(),label:String(nextId()),x:o.x+24,y:o.y+90};if(!valid(copy)){message("No clear space next to selected item.");return}snapshot();items.push(copy);selected=copy.id;render()};
+$("undo").onclick=()=>{if(!history.length)return;future.push(clone(items));items=history.pop();selected=null;render()};
+$("redo").onclick=()=>{if(!future.length)return;history.push(clone(items));items=future.pop();selected=null;render()};
+$("save").onclick=async()=>{
+try{
+localStorage.setItem(KEY,JSON.stringify(items));
+if(serverRevision===null){message("Saved to this browser only. Server unavailable; export JSON for backup.");return;}
+const response=await fetch("/api/expo-floor-plan-admin.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","X-CSRF-Token":csrfToken},body:JSON.stringify({items,revision:serverRevision})});
+const result=await response.json();
+if(!response.ok||!result.ok)throw Error(result.error||"Save failed");
+serverRevision=result.revision;message("Floor plan saved to the server and this browser.");
+}catch(e){message("Server save failed: "+e.message+". Browser draft retained; export JSON for backup.");}
+};
+$("export").onclick=()=>{const data=JSON.stringify({version:1,event:"bubba-and-me-2027",items},null,2);const url=URL.createObjectURL(new Blob([data],{type:"application/json"}));let a=document.createElement("a");a.href=url;a.download="bubba-me-floor-plan.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+$("import").onchange=async ev=>{let f=ev.target.files[0];if(!f)return;try{let d=JSON.parse(await f.text());if(!Array.isArray(d.items)||d.items.length>150)throw Error("Invalid format");let parsed=d.items.map(o=>({id:Number(o.id),type:o.type,x:Number(o.x),y:Number(o.y),angle:Number(o.angle),label:String(o.label).slice(0,35),exhibitor:String(o.exhibitor||"").slice(0,100)}));if(parsed.some(o=>!Number.isFinite(o.id)||!Number.isFinite(o.x)||!Number.isFinite(o.y)||!["table","desk"].includes(o.type)||![0,90].includes(o.angle))||new Set(parsed.map(o=>o.id)).size!==parsed.length||parsed.some((o,i)=>!valid(o,parsed.filter((_,j)=>j!==i))))throw Error("Invalid or overlapping objects");snapshot();items=parsed;selected=null;render();message("Imported draft.")}catch(e){message("Import rejected: "+e.message)}ev.target.value=""};
+$("print").onclick=()=>window.print();
+$("reset").onclick=()=>{if(!confirm("Restore starter layout? Save or export your current draft first."))return;snapshot();items=initial();selected=null;render()};
+["label","exhibitor","x","y"].forEach(k=>$(k).addEventListener("change",()=>edit(o=>{o[k]=["x","y"].includes(k)?Number($(k).value):$(k).value})));
+try{let stored=JSON.parse(localStorage.getItem(KEY));if(Array.isArray(stored))items=stored}catch{}
+render();
+(async()=>{
+try{
+const response=await fetch("/api/expo-floor-plan-admin.php",{credentials:"same-origin",cache:"no-store"});
+const result=await response.json();
+if(!response.ok||!result.ok)throw Error(result.error||"Unavailable");
+csrfToken=result.csrf_token;serverRevision=result.revision;
+if(Array.isArray(result.items)){
+ if(confirm("A server-saved floor plan is available. Load it? Your current browser draft will be replaced.")){items=result.items;selected=null;render();}
+}
+message("Server floor-plan storage connected.");
+}catch(e){message("Server storage unavailable: "+e.message+". You can still save locally and export JSON.");}
+})();
+})();
+</script></div><script>
+(async()=>{
+try{
+const response=await fetch('/admin-auth.php?action=check',{credentials:'same-origin',cache:'no-store'});
+const result=await response.json();
+if(!response.ok||result.ok!==true){location.replace('/admin-login.html');return;}
+document.getElementById('authChecking').remove();
+document.getElementById('protectedEditor').hidden=false;
+}catch(e){document.getElementById('authChecking').textContent='Admin authentication unavailable. Please sign in again.';}
+})();
+</script></body></html>
