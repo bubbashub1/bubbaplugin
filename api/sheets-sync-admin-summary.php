@@ -13,7 +13,8 @@ try {
   $pending=(int)$db->query("SELECT COUNT(*) FROM bh_sheets_sync_review_queue WHERE environment='staging' AND status='pending'")->fetchColumn();
   $stmt=$db->query("SELECT id,activity_id,field_name,website_value,sheet_value,status,created_at_utc FROM bh_sheets_sync_review_queue WHERE environment='staging' AND status='pending' ORDER BY created_at_utc ASC,id ASC LIMIT 100");
   $reviews=$stmt->fetchAll(PDO::FETCH_ASSOC);
-  reply(200,['ok'=>true,'environment'=>'staging','trusted_baseline_count'=>$count,'pending_review_count'=>$pending,'reviews'=>$reviews,'review_queue_connected'=>true,'writes_enabled'=>false]);
+  if(empty($_SESSION['bh_sheets_review_csrf'])) $_SESSION['bh_sheets_review_csrf']=bin2hex(random_bytes(32));
+  reply(200,['csrf_token'=>$_SESSION['bh_sheets_review_csrf'],'ok'=>true,'environment'=>'staging','trusted_baseline_count'=>$count,'pending_review_count'=>$pending,'reviews'=>$reviews,'review_queue_connected'=>true,'writes_enabled'=>false]);
 } catch (Throwable $e) {
   reply(503,['ok'=>false,'error'=>'baseline_storage_unavailable','writes_enabled'=>false]);
 }
