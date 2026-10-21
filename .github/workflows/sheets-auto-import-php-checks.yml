@@ -22,7 +22,7 @@ jobs:
       - name: PHP syntax checks
         run: |
           set -e
-          for file in api/sheets-sync-preview.php api/sheets-sync-preflight.php api/sheets-sync-matching.php api/sheets-sync-diff.php api/sheets-sync-field-preview.php api/sheets-sync-baseline-guard.php tests/sheets-sync-preflight-test.php tests/sheets-sync-field-preview-test.php tests/sheets-sync-baseline-guard-test.php; do
+          for file in api/sheets-sync-preview.php api/sheets-sync-preflight.php api/sheets-sync-matching.php api/sheets-sync-diff.php api/sheets-sync-field-preview.php api/sheets-sync-baseline-guard.php api/sheets-sync-snapshot-schema.php tests/sheets-sync-preflight-test.php tests/sheets-sync-field-preview-test.php tests/sheets-sync-baseline-guard-test.php tests/sheets-sync-snapshot-schema-test.php; do
             php -l "$file"
           done
       - name: Read-only regression checks
@@ -30,3 +30,4 @@ jobs:
           php tests/sheets-sync-preflight-test.php
           php tests/sheets-sync-field-preview-test.php
           php tests/sheets-sync-baseline-guard-test.php
+          php tests/sheets-sync-snapshot-schema-test.php
