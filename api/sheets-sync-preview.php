@@ -17,7 +17,17 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     header('Allow: POST');
     bh_preview_reply(405, ['ok'=>false,'error'=>'method_not_allowed']);
 }
+// On staging, load the existing private token configuration from the account
+// home directory (sibling of staging_html), never from the public web root.
+// A preconfigured environment variable takes precedence.
 $expected = getenv('BUBBAHUB_SHEETS_SYNC_TOKEN');
+if (!is_string($expected) || $expected === '') {
+    $privateConfig = dirname(__DIR__, 2) . '/bh-sheets-sync-secret.php';
+    if (is_file($privateConfig) && is_readable($privateConfig)) {
+        require_once $privateConfig;
+    }
+    $expected = getenv('BUBBAHUB_SHEETS_SYNC_TOKEN');
+}
 $authorization = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
 if (!is_string($expected) || strlen($expected) < 32 ||
     !preg_match('/^Bearer ([A-Za-z0-9._~+\/-]+)$/D', $authorization, $matches) ||
