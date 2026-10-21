@@ -150,4 +150,36 @@
     document.body.textContent = 'Unable to verify administrator access. Please return to the admin dashboard and try again.';
   }
 })();
-</script></body></html>
+</script><section style="padding:20px;margin:20px 0;border:2px solid #b6d7c5;border-radius:16px">
+<h2>Urgent data restoration — Admin Override</h2>
+<p>Preview changes from your Google Sheets master export using Bubba Hub activity IDs. No approvals needed for preview. This cannot update listings yet.</p>
+<label for="override-json">Paste a JSON object containing a rows array (maximum 100 rows per batch)</label>
+<textarea id="override-json" rows="7" style="width:100%;box-sizing:border-box" placeholder='{"rows":[{"activity_id":999999,"title":"Example"}]}'></textarea>
+<p><button type="button" id="override-preview">Preview bulk changes</button> <button type="button" disabled title="Available after audited apply and rollback testing">Sync Now — coming next</button></p>
+<p id="override-result" role="status" aria-live="polite"></p>
+<div style="overflow:auto"><table style="width:100%"><thead><tr><th>Activity ID</th><th>Field</th><th>Current</th><th>Proposed</th></tr></thead><tbody id="override-changes"></tbody></table></div>
+</section>
+<script>
+document.getElementById('override-preview').addEventListener('click',async()=>{
+ const status=document.getElementById('override-result'),tbody=document.getElementById('override-changes');
+ tbody.replaceChildren();status.textContent='Checking…';
+ try{
+  const data=JSON.parse(document.getElementById('override-json').value);
+  if(!data||!Array.isArray(data.rows)||data.rows.length>100)throw Error('Enter a JSON object with up to 100 rows.');
+  const session=await fetch('/api/sheets-sync-admin-summary.php',{credentials:'same-origin',cache:'no-store'});
+  if(!session.ok)throw Error('Admin session unavailable. Please sign in again.');
+  const summary=await session.json();
+  const response=await fetch('/api/sheets-sync-admin-override-preview.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({rows:data.rows,csrf_token:summary.csrf_token})});
+  const result=await response.json();
+  if(!response.ok||!result.ok)throw Error(result.error||'Preview failed');
+  if(result.apply_enabled!==false||result.activity_writes_performed!==0)throw Error('Unexpected preview response');
+  for(const change of result.changes){
+   const tr=document.createElement('tr');
+   for(const value of [change.activity_id,change.field,change.before,change.after]){const td=document.createElement('td');td.textContent=String(value??'');tr.appendChild(td);}
+   tbody.appendChild(tr);
+  }
+  status.textContent=result.matched_activities+' matched activities; '+result.changes_count+' proposed field changes; '+result.skipped.length+' skipped entries. No listings changed.';
+ }catch(e){status.textContent='Preview unavailable: '+e.message;}
+});
+</script>
+</body></html>
