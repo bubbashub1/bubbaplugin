@@ -1,0 +1,29 @@
+name: Sheets Auto Import PHP Checks
+on:
+  push:
+    branches:
+      - feature/sheets-auto-import-consolidation-20261021
+  pull_request:
+    paths:
+      - 'api/sheets-sync-*.php'
+      - 'tests/sheets-sync-*.php'
+      - '.github/workflows/sheets-auto-import-php-checks.yml'
+jobs:
+  php-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: none
+          coverage: none
+      - name: PHP syntax checks
+        run: |
+          set -e
+          for file in api/sheets-sync-preview.php api/sheets-sync-preflight.php api/sheets-sync-matching.php api/sheets-sync-diff.php tests/sheets-sync-preflight-test.php; do
+            php -l "$file"
+          done
+      - name: Read-only regression checks
+        run: php tests/sheets-sync-preflight-test.php
