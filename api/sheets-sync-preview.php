@@ -36,7 +36,7 @@ if (!is_string($expected) || $expected === '') {
 }
 $authorization = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
 if (!is_string($expected) || strlen($expected) < 32 ||
-    !preg_match('/^Bearer ([A-Za-z0-9._~+\/-]+)$/D', $authorization, $matches) ||
+    !preg_match('/^Bearer ([^\x00-\x20\x7F]+)$/D', $authorization, $matches) ||
     !hash_equals($expected, $matches[1])) {
     bh_preview_reply(401, ['ok'=>false,'error'=>'unauthorized']);
 }
