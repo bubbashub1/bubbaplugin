@@ -28,12 +28,12 @@ try{
  // Mail is best-effort: never tell the donor submission failed after a successful write.
  try {
   require_once __DIR__.'/mailer.php';
-  $adminEmail=getenv('BH_EXPO_PRIZE_NOTIFY_EMAIL') ?: 'contact@bubbahub.co.uk';
+  $adminEmail=(defined('BH_EXPO_PRIZE_NOTIFY_EMAIL') ? BH_EXPO_PRIZE_NOTIFY_EMAIL : (getenv('BH_EXPO_PRIZE_NOTIFY_EMAIL') ?: 'contact@bubbahub.co.uk'));
   if(filter_var($adminEmail,FILTER_VALIDATE_EMAIL)){
    $safeName=htmlspecialchars($name,ENT_QUOTES,'UTF-8');
    $safeTitle=htmlspecialchars($title,ENT_QUOTES,'UTF-8');
    $html='<p>New Expo prize donation awaiting review.</p><p><strong>Donor:</strong> '.$safeName.'</p><p><strong>Prize:</strong> '.$safeTitle.'</p><p><a href="https://bubbahub.co.uk/admin/expo-prize-donations.html">Open admin approvals</a></p>';
-   $plain="New Expo prize donation awaiting review.\\nDonor: $name\\nPrize: $title\\nOpen: https://bubbahub.co.uk/admin/expo-prize-donations.html";
+   $plain="New Expo prize donation awaiting review.\nDonor: $name\nPrize: $title\nOpen: https://bubbahub.co.uk/admin/expo-prize-donations.html";
    if(!bh_send_smtp_mail($adminEmail,'Expo prize donation awaiting approval',$html,$plain,''))error_log('[Expo donation] Admin notification send returned false');
   }
  }catch(Throwable $mailError){error_log('[Expo donation] Notification failed: '.$mailError->getMessage());}
