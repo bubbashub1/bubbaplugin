@@ -25,5 +25,17 @@ try{
  if((int)$recent->fetchColumn()>=3)reply(429,['ok'=>false,'error'=>'too_many_submissions']);
  $q=$db->prepare("INSERT INTO bh_expo_public_prize_donations(event_key,donor_name,email,title,description,prize_value,donor_url,collection_details,public_credit) VALUES(?,?,?,?,?,?,?,?,?)");
  $q->execute(['bubba-me-2027',$name,$email,$title,$description,$value,$url,$contact,!empty($data['public_credit'])?1:0]);
+ // Mail is best-effort: never tell the donor submission failed after a successful write.
+ try {
+  require_once __DIR__.'/mailer.php';
+  $adminEmail=getenv('BH_EXPO_PRIZE_NOTIFY_EMAIL') ?: 'contact@bubbahub.co.uk';
+  if(filter_var($adminEmail,FILTER_VALIDATE_EMAIL)){
+   $safeName=htmlspecialchars($name,ENT_QUOTES,'UTF-8');
+   $safeTitle=htmlspecialchars($title,ENT_QUOTES,'UTF-8');
+   $html='<p>New Expo prize donation awaiting review.</p><p><strong>Donor:</strong> '.$safeName.'</p><p><strong>Prize:</strong> '.$safeTitle.'</p><p><a href="https://bubbahub.co.uk/admin/expo-prize-donations.html">Open admin approvals</a></p>';
+   $plain="New Expo prize donation awaiting review.\\nDonor: $name\\nPrize: $title\\nOpen: https://bubbahub.co.uk/admin/expo-prize-donations.html";
+   if(!bh_send_smtp_mail($adminEmail,'Expo prize donation awaiting approval',$html,$plain,''))error_log('[Expo donation] Admin notification send returned false');
+  }
+ }catch(Throwable $mailError){error_log('[Expo donation] Notification failed: '.$mailError->getMessage());}
  reply(200,['ok'=>true,'message'=>'submitted_for_review']);
 }catch(Throwable $e){reply(503,['ok'=>false,'error'=>'submission_unavailable']);}
