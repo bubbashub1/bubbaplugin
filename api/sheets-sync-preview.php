@@ -44,10 +44,13 @@ foreach ($data['rows'] as $row) {
         bh_preview_reply(422, ['ok'=>false,'error'=>'invalid_row']);
     }
 }
+require_once __DIR__ . '/sheets-sync-preflight.php';
+$preflight = bh_sync_preflight($data['rows']);
 bh_preview_reply(200, [
     'ok'=>true,
     'mode'=>'preview_only',
     'writes_performed'=>0,
     'rows_received'=>count($data['rows']),
-    'message'=>'Payload validated. Database matching and conflict preview are not enabled.'
+    'preflight'=>$preflight,
+    'message'=>'Payload and identifiers checked. Database matching and conflict preview are not enabled.'
 ]);
