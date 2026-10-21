@@ -20,6 +20,11 @@ if($method==='POST'){
 }
 try{
  require_once __DIR__.'/db.php';$db=bh_mysql();
+ if($method==='GET' && ($_GET['view']??'')==='submissions'){
+  if(empty($_SESSION['bh_raffle_csrf']))$_SESSION['bh_raffle_csrf']=bin2hex(random_bytes(32));
+  $q=$db->prepare("SELECT s.id,s.user_id,s.organiser_id,s.title,s.description,s.image_url,s.prize_value,s.redemption_terms,s.fulfilment_contact,s.status,s.review_note,s.created_at,o.name AS organiser_name FROM bh_expo_raffle_submissions s LEFT JOIN bh_organisers o ON o.id=s.organiser_id WHERE s.event_key=? ORDER BY FIELD(s.status,'pending','changes_requested','approved','rejected','withdrawn'),s.created_at DESC LIMIT 200");
+  $q->execute(['bubba-me-2027']);answer(200,['ok'=>true,'csrf'=>$_SESSION['bh_raffle_csrf'],'submissions'=>$q->fetchAll(PDO::FETCH_ASSOC)]);
+ }
  if($method==='GET'){
   if(empty($_SESSION['bh_raffle_csrf']))$_SESSION['bh_raffle_csrf']=bin2hex(random_bytes(32));
   $q=$db->prepare('SELECT id,title,description,image_url,donor_name,donor_url,prize_value,entry_type,status,sort_order FROM bh_expo_raffle_prizes WHERE event_key=? ORDER BY sort_order,id LIMIT 250');
@@ -27,6 +32,23 @@ try{
  }
  $v=json_decode(file_get_contents('php://input'),true);
  if(!is_array($v))answer(400,['ok'=>false,'error'=>'invalid_json']);
+ if(($v['action']??'')==='review_submission'){
+  $sid=(int)($v['submission_id']??0);$decision=(string)($v['decision']??'');$note=trim((string)($v['review_note']??''));
+  if($sid<=0||!in_array($decision,['approved','rejected','changes_requested'],true)||mb_strlen($note)>2000)answer(422,['ok'=>false,'error'=>'invalid_review']);
+  $db->beginTransaction();
+  try{
+   $q=$db->prepare("SELECT s.*,o.name AS organiser_name FROM bh_expo_raffle_submissions s LEFT JOIN bh_organisers o ON o.id=s.organiser_id WHERE s.id=? AND s.event_key=? FOR UPDATE");
+   $q->execute([$sid,'bubba-me-2027']);$submission=$q->fetch(PDO::FETCH_ASSOC);
+   if(!$submission){$db->rollBack();answer(404,['ok'=>false,'error'=>'submission_not_found']);}
+   if(!in_array($submission['status'],['pending','changes_requested'],true)){$db->rollBack();answer(409,['ok'=>false,'error'=>'already_reviewed']);}
+   if($decision==='approved'){
+    $p=$db->prepare("INSERT INTO bh_expo_raffle_prizes (event_key,title,description,image_url,donor_name,donor_url,prize_value,entry_type,status,sort_order) VALUES (?,?,?,?,?,?,?,'raffle','draft',0)");
+    $p->execute(['bubba-me-2027',$submission['title'],$submission['description'],$submission['image_url'],$submission['organiser_name']??'',null,$submission['prize_value']]);
+   }
+   $q=$db->prepare("UPDATE bh_expo_raffle_submissions SET status=?,review_note=?,reviewed_at=NOW() WHERE id=? AND status IN ('pending','changes_requested')");
+   $q->execute([$decision,$note,$sid]);$db->commit();answer(200,['ok'=>true,'status'=>$decision]);
+  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+ }
  $title=trim((string)($v['title']??''));if($title===''||mb_strlen($title)>160)answer(422,['ok'=>false,'error'=>'invalid_title']);
  $description=trim((string)($v['description']??''));
  if(mb_strlen($description)>3000)answer(422,['ok'=>false,'error'=>'description_too_long']);
