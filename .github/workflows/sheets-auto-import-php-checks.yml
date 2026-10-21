@@ -22,10 +22,11 @@ jobs:
       - name: PHP syntax checks
         run: |
           set -e
-          for file in api/sheets-sync-preview.php api/sheets-sync-preflight.php api/sheets-sync-matching.php api/sheets-sync-diff.php api/sheets-sync-field-preview.php tests/sheets-sync-preflight-test.php tests/sheets-sync-field-preview-test.php; do
+          for file in api/sheets-sync-preview.php api/sheets-sync-preflight.php api/sheets-sync-matching.php api/sheets-sync-diff.php api/sheets-sync-field-preview.php api/sheets-sync-baseline-guard.php tests/sheets-sync-preflight-test.php tests/sheets-sync-field-preview-test.php tests/sheets-sync-baseline-guard-test.php; do
             php -l "$file"
           done
       - name: Read-only regression checks
         run: |
           php tests/sheets-sync-preflight-test.php
           php tests/sheets-sync-field-preview-test.php
+          php tests/sheets-sync-baseline-guard-test.php
