@@ -1,0 +1,27 @@
+<?php
+declare(strict_types=1);
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store');
+header('X-Content-Type-Options: nosniff');
+function reply(int $code,array $data):never{http_response_code($code);echo json_encode($data);exit;}
+if(($_SERVER['REQUEST_METHOD']??'')!=='POST')reply(405,['ok'=>false,'error'=>'method_not_allowed']);
+if((int)($_SERVER['CONTENT_LENGTH']??0)>12000)reply(413,['ok'=>false,'error'=>'too_large']);
+$origin=(string)($_SERVER['HTTP_ORIGIN']??'');
+$host=strtolower(explode(':',(string)($_SERVER['HTTP_HOST']??''))[0]);
+if(!$origin||parse_url($origin,PHP_URL_SCHEME)!=='https'||strtolower((string)parse_url($origin,PHP_URL_HOST))!==$host)reply(403,['ok'=>false,'error'=>'invalid_origin']);
+$data=json_decode((string)file_get_contents('php://input'),true);
+if(!is_array($data))reply(400,['ok'=>false,'error'=>'invalid_json']);
+if(!empty($data['website']))reply(200,['ok'=>true]);
+function field(array $d,string $key,int $max):string{return mb_substr(trim((string)($d[$key]??'')),0,$max);}
+$name=field($data,'donor_name',160);$email=field($data,'email',190);$title=field($data,'title',160);
+$description=field($data,'description',2000);$value=field($data,'prize_value',60);
+$contact=field($data,'collection_details',500);$url=field($data,'donor_url',500);
+if(!$name||!filter_var($email,FILTER_VALIDATE_EMAIL)||!$title||!$description||empty($data['consent']))reply(422,['ok'=>false,'error'=>'missing_fields']);
+if($url&&(!filter_var($url,FILTER_VALIDATE_URL)||!in_array(strtolower((string)parse_url($url,PHP_URL_SCHEME)),['https','http'],true)))reply(422,['ok'=>false,'error'=>'invalid_url']);
+try{
+ require_once __DIR__.'/db.php';$db=bh_mysql();
+ $db->exec("CREATE TABLE IF NOT EXISTS bh_expo_public_prize_donations (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,event_key VARCHAR(80) NOT NULL,donor_name VARCHAR(160) NOT NULL,email VARCHAR(190) NOT NULL,title VARCHAR(160) NOT NULL,description TEXT NOT NULL,prize_value VARCHAR(60) NULL,donor_url VARCHAR(500) NULL,collection_details VARCHAR(500) NULL,public_credit TINYINT(1) NOT NULL DEFAULT 0,status VARCHAR(20) NOT NULL DEFAULT 'pending',created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,INDEX(event_key,status)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+ $q=$db->prepare("INSERT INTO bh_expo_public_prize_donations(event_key,donor_name,email,title,description,prize_value,donor_url,collection_details,public_credit) VALUES(?,?,?,?,?,?,?,?,?)");
+ $q->execute(['bubba-me-2027',$name,$email,$title,$description,$value,$url,$contact,!empty($data['public_credit'])?1:0]);
+ reply(200,['ok'=>true,'message'=>'submitted_for_review']);
+}catch(Throwable $e){reply(503,['ok'=>false,'error'=>'submission_unavailable']);}
