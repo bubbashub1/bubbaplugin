@@ -5,10 +5,10 @@
 <title>Google Sheets Sync · Bubba Hub Admin</title>
 <link rel="stylesheet" href="/assets/css/styles.css">
 <style>
-:root{font-family:Quicksand,Calibri,Arial,sans-serif;color:#17493e}body{margin:0;background:#f5faf6}.shell{max-width:1120px;margin:auto;padding:24px 18px 72px}.back{color:#185c50;font-weight:700}.hero{background:#ddf4e8;border-radius:26px;padding:28px;margin:18px 0}.hero h1{margin:8px 0;font-size:clamp(1.8rem,4vw,2.8rem)}.hero p{max-width:720px;line-height:1.6}.pill{display:inline-block;background:#fff5dc;color:#6e4b0e;border-radius:999px;padding:8px 14px;font-weight:800}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.card{background:white;border:1px solid #d9e9e0;border-radius:20px;padding:20px;box-shadow:0 4px 16px #184b3a0a}.card h2{font-size:1.08rem;margin:0 0 10px}.card p{line-height:1.55}.value{font-size:1.65rem;font-weight:800}.section{margin-top:24px}.muted{color:#4b6b62}.notice{border-left:5px solid #e6ac42;padding:14px 18px;background:#fff8e9;border-radius:12px}.table-wrap{overflow-x:auto}.table{width:100%;border-collapse:collapse;min-width:630px}.table th,.table td{text-align:left;border-bottom:1px solid #e2ece7;padding:12px}.table th{color:#355e54}.button{display:inline-block;background:#155d4c;color:white;border-radius:999px;padding:11px 18px;text-decoration:none;font-weight:800}.button[disabled]{opacity:.55;cursor:not-allowed}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}@media(max-width:750px){.grid{grid-template-columns:1fr}.shell{padding:14px}.hero{padding:22px}}
+:root{font-family:Quicksand,Calibri,Arial,sans-serif;color:#17493e}body{margin:0;background:#f5faf6}.shell{max-width:1120px;margin:auto;padding:24px 18px 72px}.back{color:#185c50;font-weight:700}.hero{background:#ddf4e8;border-radius:26px;padding:24px 28px;margin:18px 0;min-height:0;height:auto;display:block;align-items:initial;justify-content:initial}.hero h1{margin:8px 0;font-size:clamp(1.8rem,4vw,2.8rem)}.hero p{max-width:720px;line-height:1.6}.shell .hero{min-height:0!important;height:auto!important;aspect-ratio:auto!important}.shell .hero::before,.shell .hero::after{display:none!important}.pill{display:inline-block;background:#fff5dc;color:#6e4b0e;border-radius:999px;padding:8px 14px;font-weight:800}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.card{background:white;border:1px solid #d9e9e0;border-radius:20px;padding:20px;box-shadow:0 4px 16px #184b3a0a}.card h2{font-size:1.08rem;margin:0 0 10px}.card p{line-height:1.55}.value{font-size:1.65rem;font-weight:800}.section{margin-top:24px}.muted{color:#4b6b62}.notice{border-left:5px solid #e6ac42;padding:14px 18px;background:#fff8e9;border-radius:12px}.table-wrap{overflow-x:auto}.table{width:100%;border-collapse:collapse;min-width:630px}.table th,.table td{text-align:left;border-bottom:1px solid #e2ece7;padding:12px}.table th{color:#355e54}.button{display:inline-block;background:#155d4c;color:white;border-radius:999px;padding:11px 18px;text-decoration:none;font-weight:800}.button[disabled]{opacity:.55;cursor:not-allowed}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}@media(max-width:750px){.grid{grid-template-columns:1fr}.shell{padding:14px}.hero{padding:22px}}
 </style>
 </head>
-<body><main class="shell">
+<body><main class="shell" id="sync-content" hidden>
 <a class="back" href="/admin/">← Admin dashboard</a>
 <section class="hero"><span class="pill">Staging · Review only</span><h1>Google Sheets Sync</h1>
 <p>Review proposed updates from your master activity spreadsheet before anything changes on Bubba Hub. The website and class leader changes stay protected.</p>
@@ -22,4 +22,15 @@
 <div class="table-wrap"><table class="table"><thead><tr><th>Activity</th><th>Field</th><th>Website</th><th>Spreadsheet</th><th>Review status</th></tr></thead>
 <tbody><tr><td colspan="5">No review data loaded. This is a safe interface preview, not an empty queue confirmation.</td></tr></tbody></table></div></section>
 <section class="section notice"><strong>Safety first:</strong> This page does not send Google Sheets tokens to the browser, accept approvals, write snapshots or update listings. The database migration must be reviewed and run on staging before approval features can be enabled.</section>
-</main></body></html>
+</main><script>
+(async function () {
+  try {
+    const response = await fetch('/api/sheets-sync-admin-status.php', {credentials:'same-origin',cache:'no-store'});
+    if (response.status === 401) { window.location.replace('/admin-login.html'); return; }
+    if (!response.ok) throw new Error('admin_status_unavailable');
+    document.getElementById('sync-content').hidden = false;
+  } catch (error) {
+    document.body.textContent = 'Unable to verify administrator access. Please return to the admin dashboard and try again.';
+  }
+})();
+</script></body></html>
