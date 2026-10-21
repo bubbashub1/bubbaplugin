@@ -20,7 +20,9 @@ if(!$name||!filter_var($email,FILTER_VALIDATE_EMAIL)||!$title||!$description||em
 if($url&&(!filter_var($url,FILTER_VALIDATE_URL)||!in_array(strtolower((string)parse_url($url,PHP_URL_SCHEME)),['https','http'],true)))reply(422,['ok'=>false,'error'=>'invalid_url']);
 try{
  require_once __DIR__.'/db.php';$db=bh_mysql();
- $db->exec("CREATE TABLE IF NOT EXISTS bh_expo_public_prize_donations (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,event_key VARCHAR(80) NOT NULL,donor_name VARCHAR(160) NOT NULL,email VARCHAR(190) NOT NULL,title VARCHAR(160) NOT NULL,description TEXT NOT NULL,prize_value VARCHAR(60) NULL,donor_url VARCHAR(500) NULL,collection_details VARCHAR(500) NULL,public_credit TINYINT(1) NOT NULL DEFAULT 0,status VARCHAR(20) NOT NULL DEFAULT 'pending',created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,INDEX(event_key,status)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+ $recent=$db->prepare("SELECT COUNT(*) FROM bh_expo_public_prize_donations WHERE email=? AND created_at > (NOW() - INTERVAL 1 HOUR)");
+ $recent->execute([$email]);
+ if((int)$recent->fetchColumn()>=3)reply(429,['ok'=>false,'error'=>'too_many_submissions']);
  $q=$db->prepare("INSERT INTO bh_expo_public_prize_donations(event_key,donor_name,email,title,description,prize_value,donor_url,collection_details,public_credit) VALUES(?,?,?,?,?,?,?,?,?)");
  $q->execute(['bubba-me-2027',$name,$email,$title,$description,$value,$url,$contact,!empty($data['public_credit'])?1:0]);
  reply(200,['ok'=>true,'message'=>'submitted_for_review']);
