@@ -25,10 +25,10 @@
 <div class="actions"><button class="button" type="button" id="load-preview">Display changes</button><button class="button" type="button" id="clear-preview">Clear preview</button></div>
 <p id="preview-feedback" role="status" aria-live="polite" class="muted">No preview loaded.</p></section>
 <section class="card section"><h2>Temporary comparison preview</h2><p class="muted">Paste JSON above to preview differences without saving.</p><div class="table-wrap"><table class="table"><thead><tr><th>Activity</th><th>Field</th><th>Website</th><th>Spreadsheet</th><th>Review status</th></tr></thead><tbody id="preview-rows"><tr><td colspan="5">No preview loaded.</td></tr></tbody></table></div></section>
-<section class="card section"><h2>Saved review queue</h2><p class="muted">Saved proposed changes appear here automatically after a Sheets submission is connected. This table is read-only.</p>
-<div class="table-wrap"><table class="table"><thead><tr><th>Activity</th><th>Field</th><th>Website</th><th>Spreadsheet</th><th>Review status</th></tr></thead>
+<section class="card section"><h2>Saved review queue</h2><p class="muted">Saved proposed changes appear automatically. Approve or reject records your decision only; no listing updates.</p>
+<div class="table-wrap"><table class="table"><thead><tr><th>Activity</th><th>Field</th><th>Website</th><th>Spreadsheet</th><th>Review status</th><th>Decision</th></tr></thead>
 <tbody id="review-rows"><tr><td colspan="5">No review data loaded. Paste a comparison response above to view changes.</td></tr></tbody></table></div></section>
-<section class="section notice"><strong>Safety first:</strong> This page does not send Google Sheets tokens to the browser, accept approvals, write snapshots or update listings. The database migration must be reviewed and run on staging before approval features can be enabled.</section>
+<section class="section notice"><strong>Safety first:</strong> This page never sends Google Sheets tokens to the browser or updates activity listings. Decisions are recorded in staging only, with an audit trail. The database migration must be reviewed and run on staging before approval features can be enabled.</section>
 </main><script>
 (function(){
   const tbody=document.getElementById('preview-rows');
@@ -111,11 +111,27 @@
           for (const value of [item.activity_id,item.field_name,item.website_value??'',item.sheet_value??'',item.status]) {
             const td=document.createElement('td');td.textContent=String(value??'');tr.appendChild(td);
           }
+          const decisionCell=document.createElement('td');
+          for(const [label,decision] of [['Approve','approved'],['Reject','rejected']]){
+            const button=document.createElement('button');button.type='button';button.textContent=label;
+            button.className='button';button.style.margin='3px';
+            button.addEventListener('click',async()=>{
+              if(!confirm(label+' this proposed change for activity #'+item.activity_id+'? This records a decision only.'))return;
+              button.disabled=true;
+              try{
+                const result=await fetch('/api/sheets-sync-admin-decision.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({review_id:Number(item.id),decision,csrf_token:summary.csrf_token})});
+                const response=await result.json();
+                if(!result.ok||!response.ok)throw new Error(response.error||response.status||'decision_failed');
+                window.location.reload();
+              }catch(error){alert('Decision not saved: '+error.message+' — refresh and review again.');button.disabled=false;}
+            });decisionCell.appendChild(button);
+          }
+          tr.appendChild(decisionCell);
           tbody.appendChild(tr);
         }
         if (!summary.reviews.length) {
           const tr=document.createElement('tr');const td=document.createElement('td');
-          td.colSpan=5;td.textContent='No saved pending reviews yet. The Sheets submission connection is the next step.';
+          td.colSpan=6;td.textContent='No saved pending reviews yet. The Sheets submission connection is the next step.';
           tr.appendChild(td);tbody.appendChild(tr);
         }
       } else {
