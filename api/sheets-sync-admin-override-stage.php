@@ -4,7 +4,7 @@ header('Content-Type: application/json; charset=utf-8');header('Cache-Control: n
 function stage_reply(int $status,array $body):never{http_response_code($status);echo json_encode($body,JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);exit;}
 if(strtolower((string)($_SERVER['HTTP_HOST']??''))!=='staging.bubbahub.co.uk')stage_reply(403,['ok'=>false,'error'=>'staging_only']);
 if(($_SERVER['REQUEST_METHOD']??'')!=='POST')stage_reply(405,['ok'=>false,'error'=>'method_not_allowed']);
-$expected=(string)(getenv('BH_SHEETS_SYNC_TOKEN')?:getenv('BUBBAHUB_SHEETS_SYNC_TOKEN'));
+$expected=(string)(getenv('BH_SYNC_TOKEN')?:getenv('BH_SHEETS_SYNC_TOKEN')?:getenv('BUBBAHUB_SHEETS_SYNC_TOKEN'));
 if($expected==='' ){ $private=dirname(__DIR__,2).'/bh-sheets-sync-secret.php';if(is_file($private)&&is_readable($private))require_once $private;$expected=(string)(getenv('BH_SHEETS_SYNC_TOKEN')?:getenv('BUBBAHUB_SHEETS_SYNC_TOKEN')); }
 $auth=(string)($_SERVER['HTTP_AUTHORIZATION']??$_SERVER['REDIRECT_HTTP_AUTHORIZATION']??'');
 if(strlen($expected)<32||!preg_match('/^Bearer ([^\x00-\x20\x7F]+)$/D',$auth,$m)||!hash_equals($expected,$m[1]))stage_reply(401,['ok'=>false,'error'=>'unauthorized']);
