@@ -155,7 +155,7 @@
 <p>Preview changes from your Google Sheets master export using Bubba Hub activity IDs. No approvals needed for preview. This cannot update listings yet.</p>
 <label for="override-json">Paste a JSON object containing a rows array (maximum 100 rows per batch)</label>
 <textarea id="override-json" rows="7" style="width:100%;box-sizing:border-box" placeholder='{"rows":[{"activity_id":999999,"title":"Example"}]}'></textarea>
-<p><button type="button" id="override-preview">Preview bulk changes</button> <button type="button" id="override-fixture-apply">Apply TEST #999999 only</button> <button type="button" disabled title="Available after rollback testing">Sync Now — coming next</button></p>
+<p><button type="button" id="override-preview">Preview bulk changes</button> <button type="button" id="override-fixture-apply">Apply TEST #999999 only</button> <button type="button" id="override-rollback-fixture">Rollback TEST run #1</button> <button type="button" disabled title="Available after rollback testing">Sync Now — coming next</button></p>
 <p id="override-result" role="status" aria-live="polite"></p>
 <div style="overflow:auto"><table style="width:100%"><thead><tr><th>Activity ID</th><th>Field</th><th>Current</th><th>Proposed</th></tr></thead><tbody id="override-changes"></tbody></table></div>
 </section>
@@ -201,6 +201,22 @@ document.getElementById('override-fixture-apply').addEventListener('click',async
   const result=await r.json();if(!r.ok||!result.ok)throw Error(result.error||'apply_failed');
   status.textContent='TEST result: '+result.mode+'; run ID '+(result.run_id??'none')+'; saved '+(result.changes_saved_for_rollback??0)+' previous values. Check staging database before proceeding.';
  }catch(e){status.textContent='Test update failed: '+e.message;}finally{button.disabled=false;}
+});
+</script>
+<script>
+document.getElementById('override-rollback-fixture').addEventListener('click',async()=>{
+ if(!confirm('Restore staging TEST run #1 original title and price? This will write to staging only.'))return;
+ const button=document.getElementById('override-rollback-fixture'),status=document.getElementById('override-result');
+ button.disabled=true;status.textContent='Restoring TEST run #1…';
+ try{
+  const session=await fetch('/api/sheets-sync-admin-summary.php',{credentials:'same-origin',cache:'no-store'});
+  if(!session.ok)throw Error('admin_session_unavailable');
+  const summary=await session.json();
+  const response=await fetch('/api/sheets-sync-admin-override-rollback.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({run_id:1,confirm:'ROLLBACK_STAGING_RUN',csrf_token:summary.csrf_token})});
+  const result=await response.json();
+  if(!response.ok||!result.ok)throw Error(result.error||'rollback_failed');
+  status.textContent='Rollback completed for run #'+result.run_id+'; restored '+result.reverted_changes+' fields. Verify staging database.';
+ }catch(e){status.textContent='Rollback failed: '+e.message;}finally{button.disabled=false;}
 });
 </script>
 </body></html>
