@@ -10,7 +10,10 @@ try {
   require_once __DIR__.'/db.php';
   $db=bh_mysql();
   $count=(int)$db->query("SELECT COUNT(*) FROM bh_sheets_sync_baselines WHERE environment='staging'")->fetchColumn();
-  reply(200,['ok'=>true,'environment'=>'staging','trusted_baseline_count'=>$count,'review_queue_connected'=>false,'writes_enabled'=>false]);
+  $pending=(int)$db->query("SELECT COUNT(*) FROM bh_sheets_sync_review_queue WHERE environment='staging' AND status='pending'")->fetchColumn();
+  $stmt=$db->query("SELECT id,activity_id,field_name,website_value,sheet_value,status,created_at_utc FROM bh_sheets_sync_review_queue WHERE environment='staging' AND status='pending' ORDER BY created_at_utc ASC,id ASC LIMIT 100");
+  $reviews=$stmt->fetchAll(PDO::FETCH_ASSOC);
+  reply(200,['ok'=>true,'environment'=>'staging','trusted_baseline_count'=>$count,'pending_review_count'=>$pending,'reviews'=>$reviews,'review_queue_connected'=>true,'writes_enabled'=>false]);
 } catch (Throwable $e) {
   reply(503,['ok'=>false,'error'=>'baseline_storage_unavailable','writes_enabled'=>false]);
 }
