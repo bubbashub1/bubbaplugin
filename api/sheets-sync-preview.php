@@ -87,12 +87,12 @@ if ($ids) {
         $idList = array_keys($ids);
         $found = [];
         foreach (array_chunk($idList, 50) as $chunk) {
-            $sql = 'SELECT id FROM bh_activities WHERE id IN (' .
+            $sql = 'SELECT id, title FROM bh_activities WHERE id IN (' .
                 implode(',', array_fill(0, count($chunk), '?')) . ')';
             $stmt = $db->prepare($sql);
             $stmt->execute($chunk);
-            foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $existingId) {
-                $found[(string)$existingId] = true;
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $existingActivity) {
+                $found[(string)$existingActivity['id']] = $existingActivity;
             }
         }
         foreach ($data['rows'] as $index => $row) {
@@ -103,6 +103,22 @@ if ($ids) {
             } elseif (isset($found[$id])) {
                 $preflight['rows'][$index]['status'] = 'matched_id';
                 $preflight['rows'][$index]['matched_id'] = $id;
+                // Title-only comparison: the website remains authoritative until
+                // a trusted sync baseline and explicit review are available.
+                if (array_key_exists('title', $row)) {
+                    $sheetTitle = $row['title'];
+                    if (!is_string($sheetTitle) || trim($sheetTitle) === '' || strlen($sheetTitle) > 500) {
+                        $preflight['rows'][$index]['title_comparison'] = ['status'=>'invalid_sheet_title'];
+                    } else {
+                        $currentTitle = (string)$found[$id]['title'];
+                        $preflight['rows'][$index]['title_comparison'] = [
+                            'status' => trim($sheetTitle) === trim($currentTitle) ? 'same' : 'different_review',
+                            'website_title' => $currentTitle,
+                            'sheet_title' => $sheetTitle,
+                            'requires_review' => trim($sheetTitle) !== trim($currentTitle)
+                        ];
+                    }
+                }
             } else {
                 $preflight['rows'][$index]['status'] = 'review_unknown_id';
             }
@@ -126,5 +142,5 @@ bh_preview_reply(200, [
     'writes_performed'=>0,
     'rows_received'=>count($data['rows']),
     'preflight'=>$preflight,
-    'message'=>'Read-only ID matching where available. URL-only rows, unknown IDs and field conflicts require later review; no writes performed.'
+    'message'=>'Read-only ID matching and optional title comparison. Differences require review; no database writes performed.'
 ]);
