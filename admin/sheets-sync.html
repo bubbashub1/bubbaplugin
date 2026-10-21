@@ -18,11 +18,70 @@
 <div class="card"><h2>Trusted baselines</h2><div class="value" id="baseline-count">Checking…</div><p class="muted" id="baseline-caption">Checking staging database.</p></div>
 <div class="card"><h2>Automatic updates</h2><div class="value">OFF</div><p class="muted">Google Sheets preview remains read-only.</p></div>
 </section>
+<section class="card section" aria-label="Import comparison preview"><h2>Load a comparison preview</h2>
+<p class="muted">Paste the JSON response from your authenticated Google Apps Script test. This displays actual comparison results in this browser only; nothing is saved or approved.</p>
+<label for="preview-json"><strong>Comparison response JSON</strong></label>
+<textarea id="preview-json" rows="5" maxlength="262144" style="display:block;box-sizing:border-box;width:100%;margin:10px 0;padding:12px;border:1px solid #bed8cb;border-radius:12px;font:inherit" placeholder='{"ok":true,"mode":"preview_only",...}'></textarea>
+<div class="actions"><button class="button" type="button" id="load-preview">Display changes</button><button class="button" type="button" id="clear-preview">Clear preview</button></div>
+<p id="preview-feedback" role="status" aria-live="polite" class="muted">No preview loaded.</p></section>
 <section class="card section"><h2>Review queue</h2><p class="muted">Once connected, you'll see each activity, spreadsheet changes, website values and any conflicts here.</p>
 <div class="table-wrap"><table class="table"><thead><tr><th>Activity</th><th>Field</th><th>Website</th><th>Spreadsheet</th><th>Review status</th></tr></thead>
-<tbody><tr><td colspan="5">No review data loaded. This is a safe interface preview, not an empty queue confirmation.</td></tr></tbody></table></div></section>
+<tbody id="review-rows"><tr><td colspan="5">No review data loaded. Paste a comparison response above to view changes.</td></tr></tbody></table></div></section>
 <section class="section notice"><strong>Safety first:</strong> This page does not send Google Sheets tokens to the browser, accept approvals, write snapshots or update listings. The database migration must be reviewed and run on staging before approval features can be enabled.</section>
 </main><script>
+(function(){
+  const tbody=document.getElementById('review-rows');
+  const feedback=document.getElementById('preview-feedback');
+  const input=document.getElementById('preview-json');
+  function cell(row,value){
+    const td=document.createElement('td');
+    td.textContent=String(value);
+    row.appendChild(td);
+  }
+  function clear(){
+    tbody.replaceChildren();
+    const tr=document.createElement('tr');
+    const td=document.createElement('td');
+    td.colSpan=5;td.textContent='No preview loaded.';
+    tr.appendChild(td);tbody.appendChild(tr);
+    feedback.textContent='No preview loaded.';
+    input.value='';
+  }
+  document.getElementById('clear-preview').addEventListener('click',clear);
+  document.getElementById('load-preview').addEventListener('click',function(){
+    try{
+      const data=JSON.parse(input.value);
+      if (!data || data.ok!==true || data.mode!=='preview_only' || data.writes_performed!==0 ||
+          !data.preflight || !Array.isArray(data.preflight.rows) || data.preflight.rows.length>100)
+        throw new Error('Paste a valid read-only Sheets comparison response.');
+      const rows=[];
+      for(const item of data.preflight.rows){
+        if (!item || item.status!=='matched_id' || !item.field_comparisons) continue;
+        const id=String(item.matched_id??'');
+        if (!/^\d{1,20}$/.test(id)) continue;
+        for(const [field,comparison] of Object.entries(item.field_comparisons)){
+          if (!['title','description','age_range','price_from','booking_url'].includes(field)) continue;
+          if (!comparison || typeof comparison.status!=='string') continue;
+          if (comparison.status==='same') continue;
+          rows.push({id,field,website:String(comparison.website_value??''),sheet:String(comparison.sheet_value??''),status:comparison.status});
+        }
+      }
+      tbody.replaceChildren();
+      for(const entry of rows.slice(0,500)){
+        const tr=document.createElement('tr');
+        cell(tr,entry.id);cell(tr,entry.field);cell(tr,entry.website);cell(tr,entry.sheet);cell(tr,entry.status);
+        tbody.appendChild(tr);
+      }
+      if (!rows.length){
+        const tr=document.createElement('tr');const td=document.createElement('td');
+        td.colSpan=5;td.textContent='No differing matched fields in this preview.';
+        tr.appendChild(td);tbody.appendChild(tr);
+      }
+      feedback.textContent=rows.length+' proposed field difference(s) displayed. Review only — nothing saved.';
+    }catch(error){feedback.textContent='Could not load preview: '+error.message;}
+  });
+})();
+</script><script>
 (async function () {
   try {
     const response = await fetch('/api/sheets-sync-admin-status.php', {credentials:'same-origin',cache:'no-store'});
