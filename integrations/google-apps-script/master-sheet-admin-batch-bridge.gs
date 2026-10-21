@@ -9,8 +9,7 @@ const BH_MASTER_BATCH = {
   batchSize: 100,
   allowed: ['title','description','age_range','price_from','booking_url']
 };
-function bhPrepareMasterSheetBatchesForAdmin() {
-  const ss=SpreadsheetApp.getActiveSpreadsheet();
+function bhPrepareMasterSheetBatchesForAdmin() { return bhPrepareMasterSheetBatchRun_(5); }\n\nfunction bhPrepareAllMasterSheetBatchesForAdmin() { return bhPrepareMasterSheetBatchRun_(null); }\n\nfunction bhPrepareMasterSheetBatchRun_(maxRows) {\n  const ss=SpreadsheetApp.getActiveSpreadsheet();
   if(!ss) throw new Error('Open this function from the Bubba Hub Listings spreadsheet.');
   const sheet=ss.getSheetByName(BH_MASTER_BATCH.tab);
   if(!sheet) throw new Error('MASTER SHEET tab not found.');
@@ -37,14 +36,12 @@ function bhPrepareMasterSheetBatchesForAdmin() {
   if(!rows.length)throw new Error('No rows with activity IDs were found.');
   const token=PropertiesService.getScriptProperties().getProperty('BH_SYNC_TOKEN')||PropertiesService.getScriptProperties().getProperty('BH_SHEETS_SYNC_TOKEN');
   if(!token||token.length<32)throw new Error('Set BH_SYNC_TOKEN in Script Properties.');
-  const results=[];
-  for(let start=0;start<rows.length;start+=BH_MASTER_BATCH.batchSize){
-    const batch=rows.slice(start,start+BH_MASTER_BATCH.batchSize);
+  const rowsToSend=maxRows===null?rows:rows.slice(0,maxRows);\n  if(!rowsToSend.length)throw new Error('No eligible rows to stage.');\n  const results=[];\n  for(let start=0;start<rowsToSend.length;start+=BH_MASTER_BATCH.batchSize){\n    const batch=rowsToSend.slice(start,start+BH_MASTER_BATCH.batchSize);
     const response=UrlFetchApp.fetch(BH_MASTER_BATCH.endpoint,{method:'post',contentType:'application/json',headers:{Authorization:'Bearer '+token},payload:JSON.stringify({spreadsheet:ss.getName(),tab:sheet.getName(),rows:batch}),muteHttpExceptions:true,followRedirects:false});
     const body=response.getContentText();let parsed;try{parsed=JSON.parse(body);}catch(e){throw new Error('Invalid response for batch '+(results.length+1)+'; no activity writes performed.');}
     if(response.getResponseCode()!==200||parsed.ok!==true||parsed.mode!=='prepared_for_admin_review'){throw new Error('Batch '+(results.length+1)+' failed (HTTP '+response.getResponseCode()+'): '+(parsed.error||'unexpected response')+'. Previous batches, if any, are staged for admin review only; no activities were updated.');}
     results.push({batch_id:parsed.batch_id,rows_received:parsed.rows_received});
   }
-  const summary={ok:true,mode:'prepared_for_admin_review',spreadsheet:ss.getName(),tab:sheet.getName(),total_rows:rows.length,batches:results,activity_writes_performed:0};
+  const summary={ok:true,mode:'prepared_for_admin_review',spreadsheet:ss.getName(),tab:sheet.getName(),total_rows:rowsToSend.length,batches:results,activity_writes_performed:0};
   Logger.log(JSON.stringify(summary,null,2));return summary;
 }
