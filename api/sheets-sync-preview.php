@@ -62,11 +62,62 @@ foreach ($data['rows'] as $row) {
 }
 require_once __DIR__ . '/sheets-sync-preflight.php';
 $preflight = bh_sync_preflight($data['rows']);
+// Read-only database ID lookup, deliberately conservative:
+// URL-only rows and missing explicit IDs remain manual-review candidates.
+// No inserts, updates, deletes, schema migrations or database-side logging.
+$ids = [];
+foreach ($data['rows'] as $index => $row) {
+    if (($preflight['rows'][$index]['status'] ?? '') !== 'pending_database_match') continue;
+    $id = bh_sync_normalize_id($row['activity_id'] ?? $row['id'] ?? null);
+    if ($id !== null) $ids[$id] = true;
+}
+if ($ids) {
+    try {
+        require_once __DIR__ . '/db.php';
+        $db = bh_mysql();
+        // Cast to integers only after validated decimal ID; never interpolate user input.
+        // Prepared placeholders preserve the existing database connection and permissions.
+        $idList = array_keys($ids);
+        $found = [];
+        foreach (array_chunk($idList, 50) as $chunk) {
+            $sql = 'SELECT id FROM bh_activities WHERE id IN (' .
+                implode(',', array_fill(0, count($chunk), '?')) . ')';
+            $stmt = $db->prepare($sql);
+            $stmt->execute($chunk);
+            foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $existingId) {
+                $found[(string)$existingId] = true;
+            }
+        }
+        foreach ($data['rows'] as $index => $row) {
+            if (($preflight['rows'][$index]['status'] ?? '') !== 'pending_database_match') continue;
+            $id = bh_sync_normalize_id($row['activity_id'] ?? $row['id'] ?? null);
+            if ($id === null) {
+                $preflight['rows'][$index]['status'] = 'review_url_only';
+            } elseif (isset($found[$id])) {
+                $preflight['rows'][$index]['status'] = 'matched_id';
+                $preflight['rows'][$index]['matched_id'] = $id;
+            } else {
+                $preflight['rows'][$index]['status'] = 'review_unknown_id';
+            }
+        }
+        $preflight['database_matching_enabled'] = true;
+        $preflight['matching_scope'] = 'explicit_id_only';
+    } catch (Throwable $e) {
+        // Fail closed without disclosing database credentials or query details.
+        bh_preview_reply(503, ['ok'=>false,'error'=>'database_preview_unavailable',
+            'writes_performed'=>0]);
+    }
+}
+$preflight['counts'] = [];
+foreach ($preflight['rows'] as $result) {
+    $status = $result['status'];
+    $preflight['counts'][$status] = ($preflight['counts'][$status] ?? 0) + 1;
+}
 bh_preview_reply(200, [
     'ok'=>true,
     'mode'=>'preview_only',
     'writes_performed'=>0,
     'rows_received'=>count($data['rows']),
     'preflight'=>$preflight,
-    'message'=>'Payload and identifiers checked. Database matching and conflict preview are not enabled.'
+    'message'=>'Read-only ID matching where available. URL-only rows, unknown IDs and field conflicts require later review; no writes performed.'
 ]);
