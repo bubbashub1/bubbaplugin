@@ -81,6 +81,8 @@ if ($a === 'login') {
 
     session_regenerate_id(true);
     $_SESSION['bh_admin_authenticated'] = true;
+    // Identify the authenticated admin for staging review audit decisions.
+    $_SESSION['bh_admin_username'] = $u;
     $_SESSION['bh_admin_last_activity'] = time();
     session_write_close();
     respond(200, ['ok'=>true]);
