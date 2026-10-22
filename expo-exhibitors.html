@@ -61,7 +61,10 @@
  status.textContent='Loading the available tables…';
  const svgNS='http://www.w3.org/2000/svg';
  try{
-  const res=await fetch('/api/expo-floor-plan-selection.php',{cache:'no-store'});
+  const access=await fetch('/api/expo-exhibitors.php',{credentials:'same-origin',cache:'no-store'});
+  const application=await access.json();
+  if(!access.ok||!application.applications_open||!application.csrf_token)throw Error('Applications are not open yet');
+  const res=await fetch('/api/expo-floor-plan-selection.php',{credentials:'same-origin',cache:'no-store',headers:{'X-Expo-Apply-CSRF':application.csrf_token}});
   const data=await res.json();
   if(!res.ok||!data.ok||!Array.isArray(data.tables))throw Error('Floor plan not ready');
   const svg=document.createElementNS(svgNS,'svg');svg.setAttribute('viewBox','0 0 1200 780');svg.setAttribute('role','group');svg.setAttribute('aria-label','Choose an available table from the Bubba and Me floor plan');svg.style.cssText='display:block;width:100%;min-width:520px;background:#fffdf6;border:2px solid #b6d7cc;border-radius:14px';

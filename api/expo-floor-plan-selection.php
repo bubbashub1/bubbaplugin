@@ -4,6 +4,19 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 if(($_SERVER['REQUEST_METHOD']??'GET')!=='GET'){http_response_code(405);echo json_encode(['ok'=>false,'error'=>'method_not_allowed']);exit;}
+// The selection layout is for active exhibitor applications only.
+$secure=!empty($_SERVER['HTTPS'])&&strtolower((string)$_SERVER['HTTPS'])!=='off';
+if(!$secure){http_response_code(403);echo json_encode(['ok'=>false,'error'=>'https_required']);exit;}
+if(session_status()!==PHP_SESSION_ACTIVE){
+ ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');
+ session_name('BH_EXPO_APPLY');
+ session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
+ session_start();
+}
+$token=(string)($_SERVER['HTTP_X_EXPO_APPLY_CSRF']??'');
+if(empty($_SESSION['expo_apply_csrf'])||!hash_equals((string)$_SESSION['expo_apply_csrf'],$token)){
+ http_response_code(403);echo json_encode(['ok'=>false,'error'=>'application_session_required']);exit;
+}
 try{
  require_once __DIR__.'/db.php';$db=bh_mysql();
  $q=$db->prepare('SELECT layout_json,revision FROM bh_expo_floor_plans WHERE event_key=?');
