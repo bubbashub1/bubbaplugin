@@ -52,8 +52,27 @@ try{
   try{$stmt=$db->prepare('INSERT INTO bh_expo_floor_plans(event_key,layout_json,revision) VALUES(?,?,1)');$stmt->execute(['bubba-me-2027',$json]);answer(200,['ok'=>true,'revision'=>1]);}
   catch(PDOException $e){if((string)$e->getCode()==='23000')answer(409,['ok'=>false,'error'=>'layout_changed_reload']);throw $e;}
  }
+ // Lock the floor plan before checking table references. Applications and assignments
+ // use this same row lock, so they cannot race a layout deletion.
+ $db->beginTransaction();
+ $current=$db->prepare('SELECT layout_json,revision FROM bh_expo_floor_plans WHERE event_key=? FOR UPDATE');
+ $current->execute(['bubba-me-2027']);$existing=$current->fetch(PDO::FETCH_ASSOC);
+ if(!$existing||(int)$existing['revision']!==$revision){$db->rollBack();answer(409,['ok'=>false,'error'=>'layout_changed_reload']);}
+ $oldItems=json_decode((string)$existing['layout_json'],true);
+ if(!is_array($oldItems))throw new RuntimeException('invalid_stored_layout');
+ $oldTables=[];$newTables=[];
+ foreach($oldItems as $item){if(($item['type']??'')==='table')$oldTables[(int)$item['id']]=true;}
+ foreach($data['items'] as $item){if(($item['type']??'')==='table')$newTables[(int)$item['id']]=true;}
+ $removed=array_diff_key($oldTables,$newTables);
+ if($removed){
+  $ids=array_keys($removed);$placeholders=implode(',',array_fill(0,count($ids),'?'));
+  $q=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE event_key=? AND application_status IN ('pending','approved','confirmed') AND (preferred_table IN ($placeholders) OR assigned_table IN ($placeholders)) LIMIT 1");
+  $q->execute(array_merge(['bubba-me-2027'],$ids,$ids));
+  if($q->fetchColumn()){$db->rollBack();answer(409,['ok'=>false,'error'=>'table_has_exhibitor_reservation']);}
+ }
  $stmt=$db->prepare('UPDATE bh_expo_floor_plans SET layout_json=?,revision=revision+1 WHERE event_key=? AND revision=?');
  $stmt->execute([$json,'bubba-me-2027',$revision]);
- if($stmt->rowCount()!==1)answer(409,['ok'=>false,'error'=>'layout_changed_reload']);
+ if($stmt->rowCount()!==1){$db->rollBack();answer(409,['ok'=>false,'error'=>'layout_changed_reload']);}
+ $db->commit();
  answer(200,['ok'=>true,'revision'=>$revision+1]);
-}catch(Throwable $e){error_log('expo_floor_plan: '.$e->getMessage());answer(503,['ok'=>false,'error'=>'floor_plan_storage_unavailable']);}
+}catch(Throwable $e){if(isset($db)&&$db->inTransaction())$db->rollBack();error_log('expo_floor_plan: '.$e->getMessage());answer(503,['ok'=>false,'error'=>'floor_plan_storage_unavailable']);}
