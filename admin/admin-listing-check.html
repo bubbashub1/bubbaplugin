@@ -11,12 +11,13 @@
 <header class="site-header"><a class="brand" href="/index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="/directory.html">Find activities</a><a href="/my-hub.html">My Hub</a><a href="/help-support.html">Support &amp; Guidance</a><a href="/leader.html">Class Leaders</a><a href="/account.html">My Account</a></nav><a class="button button-soft" href="/account.html">My account</a></header>
 <main class="admin-subpage-shell listing-check-page">
 <div class="admin-back"><a href="/admin/">← Admin dashboard</a></div>
-<div class="admin-subpage-head"><div><span class="eyebrow">Directory quality</span><h1>Listing Check</h1><p>Check Bubba Hub listings against Google results, official websites and public social profiles. Title + website is the identity key.</p></div><div class="admin-setting-actions"><button class="button button-soft" type="button" data-admin-logout>Sign out of admin</button></div></div>
+<div class="admin-subpage-head"><div><span class="eyebrow">Directory quality</span><h1>Listing Check</h1><p>Review known organiser websites and supplied public pages for possible changes and new candidates. Social posts can only be checked when publicly accessible.</p></div><div class="admin-setting-actions"><button class="button button-soft" type="button" data-admin-logout>Sign out of admin</button></div></div>
 <section class="admin-setting-panel listing-check-controls">
 <div class="listing-check-actions"><button class="button button-primary" id="checkExisting" type="button">Check existing listings</button><button class="button button-soft" id="findNew" type="button">Find new listings</button><button class="button button-soft" id="refreshResults" type="button">Refresh results</button></div>
 <div class="listing-check-filters">
 <label>Region<select id="checkRegion"><option value="">All Devon &amp; Cornwall</option><option>East Cornwall</option><option>East Devon</option><option>Exeter</option><option>Mid Cornwall</option><option>Mid Devon</option><option>North Cornwall</option><option>North Devon</option><option>Plymouth</option><option>South Cornwall</option><option>South Devon</option><option>South Hams</option><option>Teignbridge</option><option>Torbay</option><option>West Cornwall</option><option>West Devon</option></select></label>
 <label>Category or search phrase<input id="checkQuery" maxlength="180" placeholder="e.g. baby classes, messy play"></label>
+<label>Public source URLs (one per line, up to 10)<textarea id="checkSources" rows="4" placeholder="https://example.org/events&#10;https://example.org/classes"></textarea></label>
 </div>
 <p id="listingCheckStatus" class="admin-status" role="status"></p>
 </section>
