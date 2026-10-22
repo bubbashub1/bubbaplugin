@@ -564,6 +564,8 @@ try {
                 if($db->inTransaction()) $db->rollBack();
                 throw $e;
             }
+            require_once __DIR__.'/welcome-email-once.php';
+            bh_leader_welcome_after_verification($db, (int)$v['user_id']);
             $verificationResponse(200, true, 'Your email has been verified. You can now sign in.');
         } catch (Throwable $e) {
             error_log('Bubba Hub email verification failed: '.$e->getMessage());
@@ -765,6 +767,8 @@ try {
             $db->prepare("UPDATE bh_email_verifications SET used_at=NOW() WHERE id=?")->execute([(int)$v['id']]);
             $db->commit();
         } catch(Throwable $e) { if($db->inTransaction())$db->rollBack(); throw $e; }
+        require_once __DIR__.'/welcome-email-once.php';
+        bh_leader_welcome_after_verification($db, (int)$v['user_id']);
         bh_auth_response(200,['ok'=>true,'verified'=>true,'message'=>'Your email has been verified. You can now sign in.']);
     }
 
