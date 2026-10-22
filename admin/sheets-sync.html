@@ -18,6 +18,43 @@
 <div class="card"><h2>Trusted baselines</h2><div class="value" id="baseline-count">Checking…</div><p class="muted" id="baseline-caption">Checking staging database.</p></div>
 <div class="card"><h2>Automatic updates</h2><div class="value">OFF</div><p class="muted">Google Sheets preview remains read-only.</p></div>
 </section>
+<section class="card section" id="prepared-batches" aria-label="Prepared master-sheet batches">
+<h2>Prepared master-sheet batches</h2><p class="muted">Read-only staging intake from Google Apps Script. Displays the latest 20 prepared batches (up to 100 rows each). Nothing here approves or changes a listing.</p>
+<div class="actions"><button type="button" class="button" id="refresh-prepared">Refresh prepared batches</button></div>
+<p id="prepared-status" role="status" aria-live="polite">Sign in to load batches.</p><div id="prepared-list"></div>
+</section>
+<script>
+(function(){
+ const list=document.getElementById('prepared-list'),status=document.getElementById('prepared-status');
+ function el(tag,text){const node=document.createElement(tag);if(text!==undefined)node.textContent=String(text);return node;}
+ async function load(){
+  status.textContent='Loading prepared batches…';list.replaceChildren();
+  try{
+   const response=await fetch('/api/sheets-sync-admin-prepared-batches.php',{credentials:'same-origin',cache:'no-store'});
+   if(response.status===401){status.textContent='Admin sign-in required.';return;}
+   const data=await response.json();
+   if(!response.ok||data.ok!==true||data.environment!=='staging'||data.mode!=='prepared_batches_read_only'||data.activity_writes_performed!==0||!Array.isArray(data.batches))throw Error(data.error||'Invalid response');
+   status.textContent=data.total_prepared_batches+' prepared batch(es); latest '+data.batches.length+' displayed. Read-only.';
+   if(!data.batches.length){list.appendChild(el('p','No prepared batches yet. Run the five-row master-sheet staging bridge first.'));return;}
+   for(const batch of data.batches){
+    const details=el('details');details.style.margin='12px 0';details.style.border='1px solid #d9e9e0';details.style.borderRadius='12px';details.style.padding='12px';
+    const summary=el('summary','Batch #'+batch.batch_id+' · '+batch.row_count+' rows · '+batch.spreadsheet+' / '+batch.tab+' · '+batch.created_at_utc+' UTC');details.appendChild(summary);
+    if(batch.invalid_payload){details.appendChild(el('p','Batch payload unavailable; do not approve.'));list.appendChild(details);continue;}
+    const wrap=el('div');wrap.className='table-wrap';const table=el('table');table.className='table';
+    const thead=el('thead'),tr=el('tr');for(const heading of ['Activity ID','Proposed fields','Status'])tr.appendChild(el('th',heading));thead.appendChild(tr);table.appendChild(thead);
+    const tbody=el('tbody');for(const row of (Array.isArray(batch.rows)?batch.rows:[])){
+      const tr=el('tr');tr.appendChild(el('td',row.activity_id));
+      const fields=el('td');for(const [key,value] of Object.entries(row.fields||{})){const line=el('div',key+': '+value);line.style.overflowWrap='anywhere';fields.appendChild(line);}
+      tr.appendChild(fields);tr.appendChild(el('td','Prepared — not reviewed'));tbody.appendChild(tr);
+    }table.appendChild(tbody);wrap.appendChild(table);details.appendChild(wrap);list.appendChild(details);
+   }
+  }catch(error){status.textContent='Unable to load prepared batches: '+error.message+'. No changes made.';}
+ }
+ document.getElementById('refresh-prepared').addEventListener('click',load);
+ const authCheck=setInterval(()=>{const content=document.getElementById('sync-content');if(content&&!content.hidden){clearInterval(authCheck);load();}},250);
+ setTimeout(()=>clearInterval(authCheck),10000);
+})();
+</script>
 <section class="card section" aria-label="Import comparison preview"><h2>Load a comparison preview</h2>
 <p class="muted">Paste the JSON response from your authenticated Google Apps Script test. This displays actual comparison results in this browser only; nothing is saved or approved.</p>
 <label for="preview-json"><strong>Comparison response JSON</strong></label>
