@@ -102,6 +102,10 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^organiser/([^/]+)/?$ organiser.html?slug=$1 [B,L,QSA]
 
+# Explicit WordPress test page: bypass Bubba Hub's generic activity-slug fallback.
+# This lets WordPress resolve the /bridge/ page and render its shortcode.
+RewriteRule ^bridge/?$ index.php [L,QSA]
+
 # WordPress REST API: the editor and publishing requests require JSON.
 # Route these before the generic activity-slug fallback.
 RewriteRule ^wp-json/?$ index.php?rest_route=/ [L,QSA]
