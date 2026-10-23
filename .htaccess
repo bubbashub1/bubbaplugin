@@ -35,19 +35,19 @@ RewriteRule ^index/?$ index.html [L,QSA]
 # Resolve canonical activity URLs before the generic slug fallback.
 RewriteRule ^activity/([^/]+)/?$ activity.html?slug=$1 [B,L,QSA]
 
-# Dedicated authentication pages must be handled before the generic clean activity URL rule.
+# Dedicated authentication pages must be handled before the generic activity-slug rule.
 RewriteRule ^admin-login/?$ admin-login.html [L,QSA]
-RewriteRule ^leader-login(?:\\.html)?/?$ /auth.html?context=leader [R=302,L,NE]
+RewriteRule ^leader-login(?:\.html)?/?$ /auth.html?context=leader [R=302,L,NE]
 
 # Admin dashboard
 # /admin/ is the canonical dashboard URL.
 # Keep legacy /admin/admin.html working by redirecting it to /admin/.
-RewriteRule ^admin/admin\\.html$ /admin/ [R=301,L]
+RewriteRule ^admin/admin\.html$ /admin/ [R=301,L]
 RewriteRule ^admin/?$ admin.html [L,QSA]
 
 # IMPORTANT: keep the internal admin dashboard rewrite from being processed
 # again by the generic clean activity URL rule on the next Apache pass.
-RewriteRule ^admin\\.html$ - [L]
+RewriteRule ^admin\.html$ - [L]
 
 # Never pass /admin/* pages into the generic clean activity URL rule.
 # All physical admin HTML/PHP/API assets must be served from the admin directory.
@@ -60,10 +60,10 @@ RewriteCond %{DOCUMENT_ROOT}/leader/$1.html -f
 RewriteRule ^leader/([a-z0-9-]+)/?$ leader/$1.html [L,QSA]
 
 # Redirect the old nested calendar URL to the canonical root calendar.
-RewriteRule ^planner/calendar(?:\\.html)?/?$ /calendar.html [R=301,L]
+RewriteRule ^planner/calendar(?:\.html)?/?$ /calendar.html [R=301,L]
 
 # Redirect old family URL to the real family account page.
-RewriteRule ^family(?:\\.html)?/?$ /account/family.html [R=302,L,NE]
+RewriteRule ^family(?:\.html)?/?$ /account/family.html [R=302,L,NE]
 
 # Clean section URLs
 RewriteRule ^my-hub/?$ my-hub.html [L,QSA]
@@ -83,7 +83,7 @@ RewriteRule ^sponsor/?$ sponsor.html [L,QSA]
 RewriteRule ^choose/?$ choose.html [L,QSA]
 
 # Keep the old personalised URL working and move it to /choose
-RewriteRule ^personalise(?:\\.html)?/?$ /choose [R=301,L]
+RewriteRule ^personalise(?:\.html)?/?$ /choose [R=301,L]
 
 # Clean account sub-pages: /account/profile, /account/preferences, etc.
 # Keep the physical account/*.html files as the source of truth.
@@ -93,12 +93,13 @@ RewriteRule ^account/([a-z0-9-]+)/?$ account/$1.html [L,QSA]
 # Organiser custom Terms URLs: /{organiser-slug}terms.html
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^([a-z0-9-]+)terms\\.html$ organiser-terms.html?slug=$1 [B,L,QSA]
+RewriteRule ^([a-z0-9-]+)terms\.html$ organiser-terms.html?slug=$1 [B,L,QSA]
 
-RewriteRule ^organiser/([^/]+)/terms\\.html$ organiser-terms.html?slug=$1 [B,L,QSA]
+RewriteRule ^organiser/([^/]+)/terms\.html$ organiser-terms.html?slug=$1 [B,L,QSA]
 
 # Organiser storefront URLs: /organiser/{company-name}/
-RewriteCond %{DOCUMENT_ROOT}/organiser/$1.html -f
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^organiser/([^/]+)/?$ organiser.html?slug=$1 [B,L,QSA]
 
 # Explicit WordPress test page: bypass Bubba Hub's generic activity-slug fallback.
