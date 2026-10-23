@@ -51,7 +51,7 @@ $context=stream_context_create(['http'=>['method'=>'POST','header'=>"Content-Typ
 ",'content'=>$payload,'timeout'=>8,'ignore_errors'=>true]]);
 $response=@file_get_contents('https://challenges.cloudflare.com/turnstile/v0/siteverify',false,$context);
 $verified=$response===false?null:json_decode($response,true);
-if(!is_array($verified)||empty($verified['success'])||strtolower((string)($verified['hostname']??''))!=='staging.bubbahub.co.uk')expoBookingReply(403,['ok'=>false,'error'=>'security_check_failed']);
+if(!is_array($verified)||empty($verified['success'])||strtolower((string)($verified['hostname']??''))!==strtolower((string)($_SERVER['HTTP_HOST']??'')) || !in_array(strtolower((string)($_SERVER['HTTP_HOST']??'')),['bubbahub.co.uk','staging.bubbahub.co.uk'],true))expoBookingReply(403,['ok'=>false,'error'=>'security_check_failed']);
 try {
  require __DIR__.'/db.php';
  $db=bh_mysql();
