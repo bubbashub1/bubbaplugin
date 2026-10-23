@@ -279,6 +279,49 @@ try {
         }
     }
 
+    // Legacy listing wizard saves timetable rows in bh_sessions (venue-owned).
+    // Only fall back when a venue explicitly belongs to one activity; never
+    // expose all sessions at a shared venue or override activity schedules.
+    if ($directVenueLink && $activities) {
+        $scheduledVenueKeys = [];
+        foreach ($activities as $scheduledActivityId => $scheduledActivity) {
+            foreach ($scheduledActivity['sessions'] as $scheduledSession) {
+                $scheduledVenueKeys[$scheduledActivityId . ':' . (int)$scheduledSession['venue_id']] = true;
+            }
+        }
+        $legacySql = "SELECT s.id, v.activity_id, s.venue_id, s.class_name,
+                            s.day_of_week, s.start_time, s.end_time,
+                            s.duration_minutes, s.price, s.term_time_only,
+                            s.frequency, s.start_date, s.end_date
+                     FROM bh_sessions s
+                     INNER JOIN bh_venues v ON v.id = s.venue_id
+                     WHERE v.activity_id IN ($placeholders)
+                     ORDER BY s.id ASC";
+        $legacyStmt = $db->prepare($legacySql);
+        $legacyStmt->execute($ids);
+        foreach ($legacyStmt->fetchAll() as $session) {
+            $aid = (int)$session['activity_id'];
+            if (!isset($activities[$aid])) continue;
+            $venueId = (int)$session['venue_id'];
+            if (!isset($activities[$aid]['venues'][$venueId])) continue;
+            if (isset($scheduledVenueKeys[$aid . ':' . $venueId])) continue;
+            $activities[$aid]['sessions'][] = [
+                'id' => (int)$session['id'],
+                'venue_id' => $venueId,
+                'class_name' => $session['class_name'] ?: '',
+                'day_of_week' => $session['day_of_week'],
+                'start_time' => $session['start_time'],
+                'end_time' => $session['end_time'],
+                'duration_minutes' => $session['duration_minutes'] !== null ? (int)$session['duration_minutes'] : null,
+                'price' => $session['price'] !== null ? (float)$session['price'] : null,
+                'term_time_only' => (bool)$session['term_time_only'],
+                'frequency' => $session['frequency'],
+                'start_date' => $session['start_date'],
+                'end_date' => $session['end_date'],
+            ];
+        }
+    }
+
     foreach ($activities as &$activity) {
         $activity['venues'] = array_values($activity['venues']);
     }
