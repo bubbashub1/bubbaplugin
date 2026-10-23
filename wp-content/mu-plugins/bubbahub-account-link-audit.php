@@ -40,9 +40,13 @@ function bh_wp_render_link_audit() {
         "SELECT user_id,meta_value FROM {$wpdb->usermeta} WHERE meta_key=%s", 'bh_legacy_user_id'
     ), ARRAY_A);
     $links = [];
+    $wp_to_legacy = [];
     foreach ($meta as $m) {
         $id = (int)$m['meta_value'];
-        if ($id > 0) $links[$id][] = (int)$m['user_id'];
+        if ($id > 0) {
+            $links[$id][] = (int)$m['user_id'];
+            $wp_to_legacy[(int)$m['user_id']][] = $id;
+        }
     }
     echo '<table class="widefat striped"><thead><tr><th>Legacy ID</th><th>Role</th><th>Pro status</th><th>Link status</th><th>Action required</th></tr></thead><tbody>';
     foreach ($users as $u) {
@@ -61,6 +65,9 @@ function bh_wp_render_link_audit() {
         $linked=$links[$id]??[];
         if (count($linked)>1) $issues[]='Duplicate legacy links';
         foreach ($linked as $wpid) {
+            if (count(array_unique($wp_to_legacy[$wpid] ?? [])) > 1) $issues[]='WordPress account linked to multiple legacy IDs';
+        }
+        foreach ($linked as $wpid) {
             $wp=get_userdata($wpid);
             if (!$wp) $issues[]='Linked WordPress account missing';
             elseif (strcasecmp(trim((string)$u['email']),trim((string)$wp->user_email))!==0) $issues[]='Linked account email differs: verify ownership';
@@ -70,5 +77,7 @@ function bh_wp_render_link_audit() {
         if (!$linked && !$matching && $role!=='admin') $issues[]='Needs verified account creation and secure password setup';
         echo '<tr><td>'.esc_html((string)$id).'</td><td>'.esc_html($role).'</td><td>'.esc_html($pro).'</td><td>'.esc_html($linked?'Linked to WP ID(s) '.implode(', ', $linked):'Not linked').'</td><td>'.esc_html(implode('; ', $issues) ?: 'No issues detected').'</td></tr>';
     }
-    echo '</tbody></table><p><strong>Next stage:</strong> Back up databases; validate ownership and unique mappings; implement a staging-only, administrator-confirmed migration with password setup and rollback. Legacy PHP sessions and Stripe remain unchanged.</p></div>';
+    echo '</tbody></table>';
+    if (count(array_intersect(['user_id','plan','status'], $subcols)) !== 3) echo '<p><strong>Subscription warning:</strong> Pro records unavailable or schema incomplete. Do not assume these users are Free.</p>';
+    echo '<p><strong>Next stage:</strong> Back up databases; validate ownership and unique mappings; implement a staging-only, administrator-confirmed migration with password setup and rollback. Legacy PHP sessions and Stripe remain unchanged.</p></div>';
 }
