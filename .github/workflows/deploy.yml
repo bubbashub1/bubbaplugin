@@ -20,6 +20,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up PHP for QR dependency build
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: gd, mbstring, openssl, curl
+          tools: composer:v2
+          coverage: none
+
+      - name: Install PHP dependencies into deployment archive
+        run: |
+          set -euo pipefail
+          composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress
+          test -f vendor/autoload.php
+          php -r 'require "vendor/autoload.php"; if (!class_exists("Endroid\\QrCode\\QrCode") || !class_exists("Endroid\\QrCode\\Writer\\PngWriter")) { exit(1); }'
+          echo "QR dependency classes verified in deploy package."
+
       - name: Prepare SSH key
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EWEBALL_SSH_PRIVATE_KEY }}
