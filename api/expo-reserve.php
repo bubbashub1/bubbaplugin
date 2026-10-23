@@ -70,12 +70,12 @@ try {
  $q=$db->prepare("INSERT INTO bh_expo_reservations (public_reference,event_key,contact_name,contact_email,adults,children,ticket_type,amount_pence,payment_status,booking_status,email_status,consent_at) VALUES (?,'bubba-me-2027',?,?,?,?,'free',0,'not_required','pending','not_sent',UTC_TIMESTAMP())");
  $q->execute([$ref,$name,$email,$adult,$child]);
  $reservationId=(int)$db->lastInsertId();
- $ticket=$db->prepare('INSERT INTO bh_expo_tickets (reservation_id,ticket_token,attendee_type) VALUES (?,?,?)');
- for($i=0;$i<$adult;$i++)$ticket->execute([$reservationId,bin2hex(random_bytes(32)),'adult']);
  $db->commit();
  $db->query("SELECT RELEASE_LOCK('expo-capacity-bubba-me-2027')");
- // Never claim confirmation before email delivery is implemented.
- expoBookingReply(202,['ok'=>true,'reference'=>$ref,'status'=>'pending','message'=>'Reservation recorded but not confirmed.']);
+ require_once __DIR__.'/expo-trusted-free-confirmation.php';
+ $delivery=bh_expo_confirm_and_deliver_free_reservation($db,$reservationId);
+ if(($delivery['email_status']??'')==='sent')expoBookingReply(201,['ok'=>true,'reference'=>$ref,'status'=>'confirmed','email_status'=>'sent','message'=>'Your family QR ticket has been emailed.']);
+ expoBookingReply(202,['ok'=>true,'reference'=>$ref,'status'=>'received','email_status'=>'review_required','message'=>'Booking received. Ticket delivery requires assistance; contact contact@bubbahub.co.uk quoting your reference.']);
 } catch(Throwable $error){
  if(isset($db)&&$db instanceof PDO&&$db->inTransaction())$db->rollBack();
  if(isset($db)&&$db instanceof PDO){try{$db->query("SELECT RELEASE_LOCK('expo-capacity-bubba-me-2027')");}catch(Throwable $ignored){}}
