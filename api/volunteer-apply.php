@@ -4,8 +4,10 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 function reply(int $status,array $data): never {http_response_code($status);echo json_encode($data);exit;}
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') reply(405,['ok'=>false,'error'=>'method_not_allowed']);
-if (strlen(file_get_contents('php://input')) > 12000) reply(413,['ok'=>false,'error'=>'too_large']);
-$input=json_decode(file_get_contents('php://input'),true);
+$raw=file_get_contents('php://input');
+if ($raw===false) reply(400,['ok'=>false,'error'=>'invalid_body']);
+if (strlen($raw) > 12000) reply(413,['ok'=>false,'error'=>'too_large']);
+$input=json_decode($raw,true);
 if (!is_array($input)) reply(400,['ok'=>false,'error'=>'invalid_json']);
 if (!empty($input['website'])) reply(200,['ok'=>true]); // Honeypot
 $name=trim((string)($input['name']??''));$email=trim((string)($input['email']??''));
@@ -16,6 +18,10 @@ $allowed=['Area coordinator','Listings and database','Events','Marketing and soc
 if(mb_strlen($name)<2||mb_strlen($name)>160||!filter_var($email,FILTER_VALIDATE_EMAIL)||strlen($email)>190||mb_strlen($town)>120||mb_strlen($region)>120||!in_array($role,$allowed,true)||mb_strlen($availability)>500||mb_strlen($motivation)>2000||empty($input['consent'])) reply(422,['ok'=>false,'error'=>'invalid_fields']);
 try {
 require __DIR__.'/db.php';$db=bh_mysql();
+// Bound duplicate submissions for the same email address.
+$recent=$db->prepare("SELECT COUNT(*) FROM bh_volunteer_applications WHERE email=? AND created_at > UTC_TIMESTAMP() - INTERVAL 1 DAY");
+$recent->execute([strtolower($email)]);
+if ((int)$recent->fetchColumn() >= 3) reply(429,['ok'=>false,'error'=>'too_many_applications']);
 $db->exec("CREATE TABLE IF NOT EXISTS bh_volunteer_applications (
 id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name VARCHAR(160) NOT NULL,email VARCHAR(190) NOT NULL,town VARCHAR(120) NOT NULL,
