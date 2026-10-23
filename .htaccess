@@ -65,6 +65,11 @@ RewriteRule ^planner/calendar(?:\.html)?/?$ /calendar.html [R=301,L]
 # Redirect old family URL to the real family account page.
 RewriteRule ^family(?:\.html)?/?$ /account/family.html [R=302,L,NE]
 
+# Canonical Expo page
+RewriteCond %{THE_REQUEST} \s/+expo\.html(?:[\s?]|$) [NC]
+RewriteRule ^expo\.html$ /expo [R=301,L,NE]
+RewriteRule ^expo/?$ expo.html [L,QSA]
+
 # Clean section URLs
 RewriteRule ^my-hub/?$ my-hub.html [L,QSA]
 RewriteRule ^planner/?$ planner.html [L,QSA]
