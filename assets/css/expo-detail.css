@@ -119,3 +119,28 @@ body.bh-expo-detail main.expo-container{width:100%;max-width:none;margin:auto;pa
 .bh-expo-detail .expo-ticket-dialog .expo-panel{margin:0;border:0;box-shadow:none}
 .bh-expo-detail .expo-ticket-close{position:sticky;top:10px;float:right;z-index:3;border:0;border-radius:50%;width:42px;height:42px;background:#e5f2e8;color:#174b33;font-size:27px;cursor:pointer}
 @media(max-width:650px){.bh-expo-detail .expo-ticket-dialog-inner{padding:8px}}
+
+
+/* Centre all Expo Forminator popups in the viewport, including desktop. */
+.bh-expo-detail dialog.expo-ticket-dialog[open] {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(650px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  max-height: min(90dvh, 900px);
+  overflow: auto;
+  box-sizing: border-box;
+}
+.bh-expo-detail dialog.expo-ticket-dialog[open] iframe {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+@media (max-width: 650px) {
+  .bh-expo-detail dialog.expo-ticket-dialog[open] {
+    width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px);
+    max-height: 92dvh;
+  }
+}
