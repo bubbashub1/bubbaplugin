@@ -7493,3 +7493,11 @@ body.bh-article-page{background:#fff;color:#174e3b;font-family:'Quicksand',Calib
 button.bh-header-signout{font:inherit;cursor:pointer;white-space:nowrap}
 button.bh-header-signout:disabled{opacity:.65;cursor:wait}
 @media(max-width:700px){.bh-header-greeting{max-width:105px;padding-left:8px;padding-right:8px}.bh-header-signout{padding-left:8px;padding-right:8px}}
+
+/* Fluid site layout: fill the viewport while preserving readable forms. */
+:root{--bh-max:100%}
+.container{width:calc(100% - 48px);max-width:none}
+.main-content{width:calc(100% - 48px);max-width:none}
+.app-shell,.bh-directory .app-shell,.bh-activity .app-shell,.bh-map-page .app-shell{width:calc(100% - 48px);max-width:none;margin-inline:auto}
+.bh-home .site-header{max-width:none}
+@media(max-width:760px){.container,.main-content,.app-shell,.bh-directory .app-shell,.bh-activity .app-shell,.bh-map-page .app-shell{width:calc(100% - 24px)}.bh-directory .app-shell,.bh-activity .app-shell,.bh-map-page .app-shell{padding-inline:0}}
