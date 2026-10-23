@@ -11,6 +11,6 @@ try{require __DIR__.'/db.php';$db=bh_mysql();$u=$db->prepare("SELECT id,email FR
 $regions=$db->prepare("SELECT region FROM bh_volunteer_assignments WHERE user_id=? AND is_active=1 ORDER BY region");$regions->execute([$userId]);$areas=$regions->fetchAll(PDO::FETCH_COLUMN);
 if(!$areas)result(403,['ok'=>false,'error'=>'volunteer_assignment_required']);
 $placeholders=implode(',',array_fill(0,count($areas),'?'));
-$stmt=$db->prepare("SELECT a.id,a.title,a.status,v.town,v.region FROM bh_activities a JOIN bh_venues v ON v.activity_id=a.id WHERE v.region IN ($placeholders) ORDER BY a.title LIMIT 200");
+$stmt=$db->prepare("SELECT DISTINCT a.id,a.title,a.status,v.town,v.region FROM bh_activities a JOIN bh_venues v ON v.activity_id=a.id WHERE v.region IN ($placeholders) ORDER BY a.title LIMIT 200");
 $stmt->execute($areas);result(200,['ok'=>true,'regions'=>$areas,'listings'=>$stmt->fetchAll(PDO::FETCH_ASSOC),'editing_enabled'=>false]);
 }catch(Throwable $e){error_log('Volunteer dashboard failed: '.$e->getMessage());result(500,['ok'=>false,'error'=>'temporarily_unavailable']);}
