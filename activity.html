@@ -366,7 +366,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const button=document.createElement("button");
     button.type="button";
     button.className="activity-organiser-edit-button";
-    button.textContent="✎ Edit organiser";
+    button.textContent="✎ Edit organiser"; if(!data.permission.is_admin){const editLink=document.createElement("a");editLink.href="/leader/classes.html?edit="+encodeURIComponent(activityId);editLink.className="button button-primary";editLink.textContent="✎ Edit listing";editLink.style.marginRight="10px";mount.appendChild(editLink);}
     button.setAttribute("aria-label","Edit assigned organiser");
     mount.className="activity-organiser-edit-wrap";
     mount.appendChild(button);
