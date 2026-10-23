@@ -10,7 +10,7 @@ function bh_expo_confirmation_content(array $reservation): array {
     $reference=trim((string)($reservation['public_reference']??''));
     $adults=(int)($reservation['adults']??0);
     $children=(int)($reservation['children']??0);
-    if($name==='' || !preg_match('/^[A-F0-9]{24}$/',$reference) || $adults<1 || $adults>12 || $children<0 || $adults+$children>12){
+    if($name==='' || !preg_match('/^(?:[A-F0-9]{24}|BH-[A-F0-9]{8})$/',$reference) || $adults<1 || $adults>12 || $children<0 || $adults+$children>12){
         throw new InvalidArgumentException('Invalid Expo reservation for confirmation.');
     }
     $slots=['10:30'=>'10:30–11:30am','11:30'=>'11:30am–12:30pm','12:30'=>'12:30–1:30pm','13:30'=>'1:30–2:30pm'];
