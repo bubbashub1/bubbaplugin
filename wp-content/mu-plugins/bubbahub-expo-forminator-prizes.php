@@ -11,6 +11,12 @@ add_action('forminator_custom_form_after_save_entry', function($form_id, $respon
     $entry_id = 0;
     if (is_array($response)) $entry_id = (int)($response['entry_id'] ?? $response['id'] ?? 0);
     elseif (is_object($response)) $entry_id = (int)($response->entry_id ?? $response->id ?? 0);
+    // Forminator normally supplies only form ID and response. Its documented
+    // model accessor provides the saved entry for both AJAX and reload modes.
+    if (!$entry_id && class_exists('Forminator_Form_Entry_Model')) {
+        $latest = Forminator_Form_Entry_Model::get_latest_entry_by_form_id($form_id);
+        if (is_object($latest)) $entry_id = (int)($latest->entry_id ?? 0);
+    }
     if (!$entry_id) { error_log('Bubba Hub prize bridge: missing Forminator entry ID'); return; }
     global $wpdb;
     $entries = $wpdb->prefix.'frmt_form_entry_meta';
@@ -32,6 +38,7 @@ add_action('forminator_custom_form_after_save_entry', function($form_id, $respon
     $url = esc_url_raw($str('url-1'));
     if ($url && !in_array(wp_parse_url($url, PHP_URL_SCHEME), ['http','https'], true)) $url='';
     $credit = !empty($values['checkbox-1']) ? 1 : 0;
+    if (empty($values['checkbox-2'])) return;
     // Existing live schema stores event key and review status; no automatic publication.
     $table = 'bh_expo_public_prize_donations';
     // Unique submission marker is stored in collection details, preventing replays.
@@ -52,4 +59,9 @@ add_action('forminator_custom_form_after_save_entry', function($form_id, $respon
         'status'=>'pending',
     ], ['%s','%s','%s','%s','%s','%s','%s','%s','%d','%s']);
     if (!$ok) error_log('Bubba Hub prize bridge: insert failed: '.$wpdb->last_error);
+}, 10, 2);
+// Forminator uses different post-submission hooks for AJAX and page reload.
+// Both call the same handler; the entry marker prevents duplicate imports.
+add_action('forminator_custom_form_after_handle_submit', function($form_id, $response) {
+    do_action('forminator_custom_form_after_save_entry', $form_id, $response);
 }, 10, 2);
