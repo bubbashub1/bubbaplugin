@@ -24,7 +24,7 @@ RewriteBase /
 
 # Allow WordPress to resolve the three Expo Forminator pages without
 # changing the custom Bubba Hub homepage or activity URL routing.
-RewriteRule ^events/(expo-banner-booking|raffle-entry|sponsor-bubba-hub)/?$ index.php [L,QSA]
+RewriteRule ^events/(expo-banner-booking|raffle-entry|sponsor-bubba-hub|donate-raffle-prize)/?$ index.php [L,QSA]
 
 # Serve the custom homepage before WordPress can redirect the root request.
 RewriteRule ^$ index.html [L]
