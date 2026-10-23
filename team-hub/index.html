@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Volunteer Hub | Bubba Hub</title>
-<link rel="stylesheet" href="/assets/css/styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/styles.css">
 <style>
 :root{--forest:#074c3b;--ink:#103d36;--muted:#46665e;--mint:#e7f5ed;--peach:#fff4e4}
 *{box-sizing:border-box}
@@ -15,21 +15,21 @@ body{margin:0;background:#fffdf9;color:var(--ink);font-family:Quicksand,Arial,sa
 .volunteer-nav a{color:var(--forest);font-weight:800;text-decoration:none}
 .volunteer-nav a:hover{text-decoration:underline}
 .volunteer-nav .nav-account{background:var(--forest);color:white;padding:12px 25px;border-radius:999px}
-main.volunteer-main{max-width:1460px;margin:0 auto;padding:22px clamp(16px,3vw,42px) 60px}
-.volunteer-hero{min-height:350px;border-radius:27px;overflow:hidden;background:#e1f4ec url('/images/logos/cheerful-community-volunteer-team-banner-20261023-165300-eb13b0.png') center/cover no-repeat;position:relative;display:flex;align-items:flex-end;padding:24px}
+main.volunteer-main{width:min(var(--bh-max),calc(100% - 32px));max-width:var(--bh-max);margin:0 auto;padding:24px 0 60px}
+.volunteer-hero{min-height:260px;border-radius:24px;overflow:hidden;background:#e1f4ec url('/images/logos/cheerful-community-volunteer-team-banner-20261023-165300-eb13b0.png') center/cover no-repeat;position:relative;display:flex;align-items:flex-end;padding:24px}
 .hero-tag{display:inline-block;border-radius:999px;padding:10px 17px;background:#ffffffec;color:var(--forest);font-weight:900;box-shadow:0 3px 15px #173d2a18}
-.volunteer-intro{margin:22px 0 28px;display:grid;grid-template-columns:1fr minmax(260px,390px);gap:24px;align-items:stretch}
-.intro-copy{background:linear-gradient(125deg,#e8f6ee,#fef2e1);border-radius:24px;padding:28px}
-.intro-copy h1{font-size:clamp(30px,4vw,48px);line-height:1.12;color:var(--forest);margin:0 0 12px;font-weight:900}
-.intro-copy p{margin:0;color:var(--ink);font-size:18px;line-height:1.6}
-.signin-panel{background:white;border:1px solid #e0e9df;border-radius:24px;padding:26px;text-align:center;box-shadow:0 10px 25px #0c4e3520;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px}
+.volunteer-intro{margin:20px 0 26px;display:grid;grid-template-columns:1fr minmax(260px,390px);gap:24px;align-items:stretch}
+.intro-copy{background:linear-gradient(125deg,#e8f6ee,#fef2e1);border-radius:24px;padding:24px}
+.intro-copy h1{font-size:clamp(28px,3.2vw,40px);line-height:1.12;color:var(--forest);margin:0 0 12px;font-weight:900}
+.intro-copy p{margin:0;color:var(--ink);font-size:16px;line-height:1.55}
+.signin-panel{background:white;border:1px solid #e0e9df;border-radius:24px;padding:22px;text-align:center;box-shadow:0 10px 25px #0c4e3520;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px}
 .signin-icon{width:62px;height:62px;border-radius:50%;background:#e1f2e6;display:grid;place-items:center;font-size:29px}
-.signin-panel h2{margin:0;font-size:25px;color:var(--forest)}
+.signin-panel h2{margin:0;font-size:22px;color:var(--forest)}
 .signin-panel p{margin:0;color:var(--muted);line-height:1.5}
 .signin-button,.volunteer-main button[type=submit],.volunteer-main .card button{background:var(--forest);border:0;border-radius:999px;padding:13px 20px;color:#fff;font:800 15px Quicksand,Arial,sans-serif;cursor:pointer;text-decoration:none}
 .signin-button{display:block;width:100%;margin-top:7px}
 .volunteer-main button:hover,.signin-button:hover{background:#11765c}
-.benefits{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin:0 0 30px}
+.benefits{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin:0 0 24px}
 .benefit{display:flex;gap:13px;align-items:flex-start;padding:10px 3px}
 .benefit-icon{flex:0 0 48px;height:48px;border-radius:50%;background:#dff4e9;display:grid;place-items:center;font-size:23px}
 .benefit:nth-child(2) .benefit-icon{background:#fff0c9}
@@ -43,7 +43,7 @@ main.volunteer-main{max-width:1460px;margin:0 auto;padding:22px clamp(16px,3vw,4
 .hub-heading{display:flex;align-items:center;gap:14px;margin-bottom:15px}
 .hub-heading-icon{height:58px;width:58px;border-radius:50%;background:#d8f0dd;display:grid;place-items:center;font-size:28px}
 .hub-section:nth-child(2) .hub-heading-icon{background:#ffedc7}
-.hub-section h2{font-size:27px;margin:0;color:var(--forest)}
+.hub-section h2{font-size:24px;margin:0;color:var(--forest)}
 .hub-section .description{margin:4px 0 0;color:var(--muted)}
 .cards{display:grid;gap:12px}
 .card{border:1px solid #e0e8e2;border-radius:16px;padding:18px;background:white;overflow-wrap:anywhere}
@@ -59,17 +59,19 @@ main.volunteer-main{max-width:1460px;margin:0 auto;padding:22px clamp(16px,3vw,4
 #edit-form button{margin-right:10px}
 #edit-cancel{border:1px solid #b6d0c2;background:white;color:var(--forest);border-radius:999px;padding:12px 18px;cursor:pointer}
 .hub-note{color:var(--muted);margin:22px 0 0}
-@media(max-width:950px){.volunteer-nav{gap:12px}.benefits{grid-template-columns:repeat(2,1fr)}.volunteer-intro{grid-template-columns:1fr 330px}.volunteer-hero{min-height:290px}}
-@media(max-width:700px){.volunteer-header{align-items:flex-start;flex-direction:column}.volunteer-header img{height:46px}.volunteer-nav{font-size:13px}.volunteer-intro,.hub-grid{grid-template-columns:1fr}.volunteer-hero{min-height:200px;background-position:center}.intro-copy{padding:22px}.benefits{grid-template-columns:1fr 1fr;gap:8px}.benefit{flex-direction:column}.hub-section{padding:19px}.hub-section h2{font-size:23px}}
-@media(max-width:420px){.benefits{grid-template-columns:1fr}.volunteer-hero{min-height:155px}.volunteer-nav .nav-account{padding:8px 14px}}
+@media(max-width:950px){.volunteer-nav{gap:12px}.benefits{grid-template-columns:repeat(2,1fr)}.volunteer-intro{grid-template-columns:1fr 330px}.volunteer-hero{min-height:220px}}
+@media(max-width:700px){.volunteer-header{align-items:flex-start;flex-direction:column}.volunteer-header img{height:46px}.volunteer-nav{font-size:13px}.volunteer-intro,.hub-grid{grid-template-columns:1fr}.volunteer-hero{min-height:170px;background-position:center}.intro-copy{padding:22px}.benefits{grid-template-columns:1fr 1fr;gap:8px}.benefit{flex-direction:column}.hub-section{padding:19px}.hub-section h2{font-size:23px}}
+@media(max-width:420px){.benefits{grid-template-columns:1fr}.volunteer-hero{min-height:140px}.volunteer-nav .nav-account{padding:8px 14px}}
+@media(max-width:600px){main.volunteer-main{width:calc(100% - 24px);padding-top:16px}.volunteer-hero{background-position:center}.hero-tag{padding:7px 12px;font-size:13px}.volunteer-intro{gap:14px}.intro-copy{padding:20px}.signin-panel{padding:20px}}
 </style>
 </head>
 <body>
-<header class="volunteer-header">
-<a href="/" aria-label="Bubba Hub home"><img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a>
-<nav class="volunteer-nav" aria-label="Main navigation">
-<a href="/directory">Find activities</a><a href="/my-hub">My Hub</a><a href="/help-support">Support &amp; Guidance</a><a href="/leader">Class Leaders</a><a class="nav-account" href="/auth.html">My Account</a>
-</nav>
+<header class="site-header">
+<a class="brand" href="/" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a>
+<button class="mobile-nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="volunteer-nav"><span></span><span></span><span></span></button>
+<nav class="main-nav" id="volunteer-nav" aria-label="Main navigation">
+<a href="/directory">Find activities</a><a href="/my-hub">My Hub</a><a href="/help-support">Support &amp; Guidance</a><a href="/leader">Class Leaders</a><a href="/account">My Account</a>
+</nav><a class="button button-soft" href="/account">My account</a>
 </header>
 <main class="volunteer-main">
 <section class="volunteer-hero" aria-label="Volunteer Hub community banner"><span class="hero-tag">💚 Volunteer Hub</span></section>
@@ -91,7 +93,10 @@ main.volunteer-main{max-width:1460px;margin:0 auto;padding:22px clamp(16px,3vw,4
 <p class="hub-note">Volunteer edits are limited to published listings wholly within assigned regions. Changes are recorded.</p>
 <section id="edit-panel" class="card" hidden><h2>Edit listing</h2><form id="edit-form"><label>Title <input name="title" maxlength="200" required></label><p><label>Description <textarea name="description" rows="8" maxlength="8000"></textarea></label></p><button type="submit">Save changes</button> <button type="button" id="edit-cancel">Cancel</button></form><p id="edit-status" role="status"></p></section>
 </main>
-<script>(async()=>{const status=document.getElementById('status'),areas=document.getElementById('areas'),listings=document.getElementById('listings');const node=(tag,text)=>{const e=document.createElement(tag);e.textContent=String(text??'');return e};try{const r=await fetch('/api/volunteer-dashboard.php',{credentials:'same-origin',cache:'no-store'}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error==='login_required'?'Please sign in to access your Volunteer Hub.':d.error==='volunteer_assignment_required'?'Your volunteer account has not been assigned an area yet.':d.error||'Unable to load dashboard');status.textContent=d.listings.length+' listings found across '+d.regions.length+' assigned area(s).';for(const region of d.regions){const c=node('article',region);c.className='card';areas.append(c)}for(const item of d.listings){const c=node('article','');c.className='card';const a=node('a',item.title);a.href='/activity.html?id='+encodeURIComponent(item.id);c.append(a,node('p',[item.town,item.region].filter(Boolean).join(' · ')));const edit=node('button','Edit title & description');edit.type='button';edit.addEventListener('click',async()=>{const panel=document.getElementById('edit-panel'),form=document.getElementById('edit-form'),msg=document.getElementById('edit-status');msg.textContent='Loading…';form.removeAttribute('data-activity-id');panel.hidden=false;panel.scrollIntoView({behavior:'smooth'});try{const res=await fetch('/api/volunteer-listing-edit.php?id='+encodeURIComponent(item.id),{credentials:'same-origin',cache:'no-store'}),j=await res.json();if(!res.ok||!j.ok)throw Error(j.error||'Not authorised to edit this listing');form.elements.title.value=j.activity.title||'';form.elements.description.value=j.activity.description||'';form.dataset.activityId=item.id;form.dataset.csrf=j.csrf;msg.textContent='You can edit the title and description only.'}catch(err){form.removeAttribute('data-activity-id');msg.textContent=err.message}});c.append(edit);listings.append(c)}}catch(e){status.textContent=e.message}})();const form=document.getElementById('edit-form'),panel=document.getElementById('edit-panel'),msg=document.getElementById('edit-status');document.getElementById('edit-cancel').onclick=()=>{panel.hidden=true;form.removeAttribute('data-activity-id')};form.addEventListener('submit',async e=>{e.preventDefault();if(!form.dataset.activityId)return;msg.textContent='Saving…';const btn=form.querySelector('button[type=submit]');btn.disabled=true;try{const res=await fetch('/api/volunteer-listing-edit.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:Number(form.dataset.activityId),csrf:form.dataset.csrf,title:form.elements.title.value,description:form.elements.description.value})}),j=await res.json();if(!res.ok||!j.ok)throw Error(j.error||'Unable to save');msg.textContent='Changes saved. Refresh to see the updated listing.'}catch(err){msg.textContent=err.message}finally{btn.disabled=false}});</script></body></html>
+<script>(async()=>{const status=document.getElementById('status'),areas=document.getElementById('areas'),listings=document.getElementById('listings');const node=(tag,text)=>{const e=document.createElement(tag);e.textContent=String(text??'');return e};try{const r=await fetch('/api/volunteer-dashboard.php',{credentials:'same-origin',cache:'no-store'}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error==='login_required'?'Please sign in to access your Volunteer Hub.':d.error==='volunteer_assignment_required'?'Your volunteer account has not been assigned an area yet.':d.error||'Unable to load dashboard');status.textContent=d.listings.length+' listings found across '+d.regions.length+' assigned area(s).';for(const region of d.regions){const c=node('article',region);c.className='card';areas.append(c)}for(const item of d.listings){const c=node('article','');c.className='card';const a=node('a',item.title);a.href='/activity.html?id='+encodeURIComponent(item.id);c.append(a,node('p',[item.town,item.region].filter(Boolean).join(' · ')));const edit=node('button','Edit title & description');edit.type='button';edit.addEventListener('click',async()=>{const panel=document.getElementById('edit-panel'),form=document.getElementById('edit-form'),msg=document.getElementById('edit-status');msg.textContent='Loading…';form.removeAttribute('data-activity-id');panel.hidden=false;panel.scrollIntoView({behavior:'smooth'});try{const res=await fetch('/api/volunteer-listing-edit.php?id='+encodeURIComponent(item.id),{credentials:'same-origin',cache:'no-store'}),j=await res.json();if(!res.ok||!j.ok)throw Error(j.error||'Not authorised to edit this listing');form.elements.title.value=j.activity.title||'';form.elements.description.value=j.activity.description||'';form.dataset.activityId=item.id;form.dataset.csrf=j.csrf;msg.textContent='You can edit the title and description only.'}catch(err){form.removeAttribute('data-activity-id');msg.textContent=err.message}});c.append(edit);listings.append(c)}}catch(e){status.textContent=e.message}})();const form=document.getElementById('edit-form'),panel=document.getElementById('edit-panel'),msg=document.getElementById('edit-status');document.getElementById('edit-cancel').onclick=()=>{panel.hidden=true;form.removeAttribute('data-activity-id')};form.addEventListener('submit',async e=>{e.preventDefault();if(!form.dataset.activityId)return;msg.textContent='Saving…';const btn=form.querySelector('button[type=submit]');btn.disabled=true;try{const res=await fetch('/api/volunteer-listing-edit.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:Number(form.dataset.activityId),csrf:form.dataset.csrf,title:form.elements.title.value,description:form.elements.description.value})}),j=await res.json();if(!res.ok||!j.ok)throw Error(j.error||'Unable to save');msg.textContent='Changes saved. Refresh to see the updated listing.'}catch(err){msg.textContent=err.message}finally{btn.disabled=false}});</script><script>
+(function(){const header=document.querySelector('.site-header'),toggle=document.querySelector('.mobile-nav-toggle');if(!header||!toggle)return;toggle.addEventListener('click',()=>{const open=header.classList.toggle('mobile-menu-open');toggle.setAttribute('aria-expanded',String(open))});})();
+</script>
+</body></html>
 <script>
 (function(){
 const status=document.getElementById('status'),panel=document.getElementById('signin-panel');
