@@ -12,7 +12,24 @@
   <link rel="stylesheet" href="/assets/css/styles.css">
   <link rel="stylesheet" href="/assets/css/home-v2.css">
 <link rel="stylesheet" href="/assets/css/header-mockup.css">
-</head>
+<style>
+.home-bh-events{width:min(1200px,calc(100% - 32px));margin:38px auto 48px;font-family:Quicksand,Arial,sans-serif}
+.home-bh-events-head{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.home-bh-events-head h2{margin:6px 0;color:#124b3b;font-size:clamp(25px,3vw,36px)}
+.home-bh-events-head p{margin:0;color:#527062}
+.home-bh-events-card{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,1fr);gap:26px;align-items:center;padding:clamp(22px,4vw,42px);background:linear-gradient(115deg,#e3f4e9,#fff1db);border:1px solid #d5e8dc;border-radius:26px;box-shadow:0 10px 30px #174b3310}
+.home-bh-events-card h3{color:#104a39;font-size:clamp(23px,3vw,33px);line-height:1.2;margin:8px 0 12px}
+.home-bh-events-card p{color:#385f50;line-height:1.65}
+.home-bh-events-date{font-weight:800;color:#165c46!important}
+.home-bh-events-tag{display:inline-block;background:#fff;border-radius:99px;padding:8px 13px;font-weight:800;color:#166247;font-size:13px}
+.home-bh-events-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.home-bh-events-links a{border-radius:99px;padding:12px 19px;text-decoration:none;font-weight:800;background:#14634c;color:#fff}
+.home-bh-events-links a:last-child{background:#fff;color:#145c47;border:1px solid #b9d9c8}
+.home-bh-events-side{border-radius:20px;background:#ffffffb8;padding:25px;text-align:center}
+.home-bh-events-side strong{display:block;color:#145b45;font-size:22px;margin:10px 0}
+.home-bh-events-side span{font-size:48px}
+@media(max-width:700px){.home-bh-events-card{grid-template-columns:1fr;gap:14px}.home-bh-events-side{padding:18px}}
+</style></head>
 <body class="bh-home">
 <header class="site-header home-header">
   <a class="brand home-brand" href="index.html" aria-label="Bubba Hub home">
@@ -60,6 +77,11 @@
     <a href="planner.html"><span class="home-category-icon purple">⌗</span><strong>Plan Your<br>Family Life</strong><span class="bh-category-description">Save favourites and plan your week without missing an activity.</span><span class="bh-category-action">Create your planner →</span></a>
     <a href="leader.html"><span class="home-category-icon yellow">♙</span><strong>Connect<br>with Leaders</strong><span class="bh-category-description">Meet local organisers and discover what they offer.</span><span class="bh-category-action">Explore leaders →</span></a>
   </section>
+
+<section class="home-bh-events" aria-labelledby="home-bh-events-title">
+<div class="home-bh-events-head"><div><span class="eyebrow">Made for our community</span><h2 id="home-bh-events-title">Upcoming Bubba Hub Events</h2><p>Special days out, local connections and family-friendly experiences.</p></div><a class="home-view-all" href="/events">Explore events →</a></div>
+<article class="home-bh-events-card"><div><span class="home-bh-events-tag">💚 Free entry · Booking recommended</span><h3>Bubba &amp; Me — Baby &amp; Pregnancy Expo</h3><p class="home-bh-events-date">Saturday 9 January 2027 · 10:30am–2:30pm</p><p>Acorn Centre, Torquay</p><p>Meet local baby, pregnancy and family businesses, explore helpful services and discover what our community has to offer.</p><div class="home-bh-events-links"><a href="/expo">Explore the Expo →</a><a href="/expo#tickets">Book free entry →</a></div></div><div class="home-bh-events-side" aria-label="Event highlights"><span aria-hidden="true">🎉</span><strong>A day for growing families</strong><p>Local exhibitors · Family support · Raffles &amp; prizes</p></div></article>
+</section>
 
   <section class="home-section">
     <div class="home-section-heading">
