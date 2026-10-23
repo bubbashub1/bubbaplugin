@@ -13,10 +13,31 @@ function expoBookingReply(int $code,array $body): never {
  echo json_encode($body,JSON_UNESCAPED_SLASHES);
  exit;
 }
+$wpLoader=dirname(__DIR__).'/wp-load.php';
+if(is_file($wpLoader)&&is_readable($wpLoader)){ob_start();try{require_once $wpLoader;}finally{ob_end_clean();}}
+$method=$_SERVER['REQUEST_METHOD']??'GET';
+ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');
+if(session_status()!==PHP_SESSION_ACTIVE){session_name('BH_EXPO_BOOKING');session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);session_start();}
+if(empty($_SESSION['expo_booking_csrf']))$_SESSION['expo_booking_csrf']=bin2hex(random_bytes(32));
+if($method==='GET'){
+ require_once __DIR__.'/turnstile-settings.php';
+ $site=trim(bh_turnstile_setting('BUBBAHUB_TURNSTILE_SITE_KEY'));
+ $enabled=defined('BUBBAHUB_EXPO_BOOKINGS_ENABLED')&&constant('BUBBAHUB_EXPO_BOOKINGS_ENABLED')===true;
+ expoBookingReply(200,['ok'=>true,'bookings_open'=>$enabled,'turnstile_site_key'=>$site,'csrf_token'=>$_SESSION['expo_booking_csrf']]);
+}
 if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST'){
  header('Allow: POST');
  expoBookingReply(405,['ok'=>false,'error'=>'method_not_allowed']);
 }
+$host=strtolower(explode(':',(string)($_SERVER['HTTP_HOST']??''))[0]);
+if(!in_array($host,['bubbahub.co.uk','staging.bubbahub.co.uk'],true))expoBookingReply(404,['ok'=>false,'error'=>'not_found']);
+$origin=(string)($_SERVER['HTTP_ORIGIN']??'');
+$referer=(string)($_SERVER['HTTP_REFERER']??'');
+$source=$origin!==''?$origin:$referer;
+if($source===''||parse_url($source,PHP_URL_SCHEME)!=='https'||strtolower((string)parse_url($source,PHP_URL_HOST))!==$host)expoBookingReply(403,['ok'=>false,'error'=>'invalid_origin']);
+$csrf=(string)($_SERVER['HTTP_X_CSRF_TOKEN']??'');
+if($csrf===''||!hash_equals((string)$_SESSION['expo_booking_csrf'],$csrf))expoBookingReply(403,['ok'=>false,'error'=>'invalid_csrf']);
+if(time()-(int)($_SESSION['expo_booking_last']??0)<45)expoBookingReply(429,['ok'=>false,'error'=>'please_wait_before_retrying']);
 if(!defined('BUBBAHUB_EXPO_BOOKINGS_ENABLED') || constant('BUBBAHUB_EXPO_BOOKINGS_ENABLED')!==true){
  expoBookingReply(503,['ok'=>false,'error'=>'bookings_not_open']);
 }
@@ -30,6 +51,7 @@ if((int)($_SERVER['CONTENT_LENGTH']??0)>8192)expoBookingReply(413,['ok'=>false,'
 $raw=file_get_contents('php://input',false,null,0,8193);
 $data=json_decode($raw?:'',true);
 if(!is_array($data))expoBookingReply(400,['ok'=>false,'error'=>'invalid_json']);
+if(!empty($data['website_confirm']))expoBookingReply(422,['ok'=>false,'error'=>'invalid_submission']);
 $name=trim((string)($data['contact_name']??''));
 $email=trim((string)($data['contact_email']??''));
 $adult=$data['adults']??null;
@@ -70,12 +92,14 @@ try {
  $q=$db->prepare("INSERT INTO bh_expo_reservations (public_reference,event_key,contact_name,contact_email,adults,children,ticket_type,amount_pence,payment_status,booking_status,email_status,consent_at) VALUES (?,'bubba-me-2027',?,?,?,?,'free',0,'not_required','pending','not_sent',UTC_TIMESTAMP())");
  $q->execute([$ref,$name,$email,$adult,$child]);
  $reservationId=(int)$db->lastInsertId();
- $ticket=$db->prepare('INSERT INTO bh_expo_tickets (reservation_id,ticket_token,attendee_type) VALUES (?,?,?)');
- for($i=0;$i<$adult;$i++)$ticket->execute([$reservationId,bin2hex(random_bytes(32)),'adult']);
  $db->commit();
+ $_SESSION['expo_booking_last']=time();
+ session_write_close();
  $db->query("SELECT RELEASE_LOCK('expo-capacity-bubba-me-2027')");
- // Never claim confirmation before email delivery is implemented.
- expoBookingReply(202,['ok'=>true,'reference'=>$ref,'status'=>'pending','message'=>'Reservation recorded but not confirmed.']);
+ require_once __DIR__.'/expo-trusted-free-confirmation.php';
+ $delivery=bh_expo_confirm_and_deliver_free_reservation($db,$reservationId);
+ if(($delivery['email_status']??'')==='sent')expoBookingReply(201,['ok'=>true,'reference'=>$ref,'status'=>'confirmed','email_status'=>'sent','message'=>'Your family QR ticket has been emailed.']);
+ expoBookingReply(202,['ok'=>true,'reference'=>$ref,'status'=>'received','email_status'=>'review_required','message'=>'Booking received. Ticket delivery requires assistance; contact contact@bubbahub.co.uk quoting your reference.']);
 } catch(Throwable $error){
  if(isset($db)&&$db instanceof PDO&&$db->inTransaction())$db->rollBack();
  if(isset($db)&&$db instanceof PDO){try{$db->query("SELECT RELEASE_LOCK('expo-capacity-bubba-me-2027')");}catch(Throwable $ignored){}}

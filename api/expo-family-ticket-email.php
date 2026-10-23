@@ -20,7 +20,7 @@ function bh_expo_send_family_qr_email(PDO $db,array $reservation,string $qrPaylo
  $message=bh_expo_confirmation_content($reservation);
  $html=$message['html'];
  $html=str_replace('Your adult QR tickets will be provided separately once ticket delivery is enabled.',
-  'Show this single family QR at the entrance. Staff will record adults and children arriving, including separate arrivals.',$html);
+  'Show this single family QR at the entrance. All booked adults and children should arrive together.',$html);
  $html=str_replace('</div></body></html>',
   '<div style="margin-top:20px"><h2>Your family entry QR</h2><p><img src="cid:expo-family" alt="Family booking QR" width="320" height="320"></p><p>One QR per booking. Keep this email private.</p></div></div></body></html>',$html);
  $plain=str_replace('Adult QR tickets will be provided separately once delivery is enabled.',
