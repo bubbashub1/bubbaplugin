@@ -9,6 +9,10 @@ function bh_expo_family_checkin(PDO $db,string $qrPayload,int $addAdults,int $ad
  try {
    $booking=bh_expo_resolve_booking_qr($db,$qrPayload);
    if(!$booking){$db->rollBack();return ['ok'=>false,'error'=>'booking_not_confirmed'];}
+   // All-or-nothing admission: the entire booked party must arrive together.
+   if($addAdults!==(int)$booking['adults']||$addChildren!==(int)$booking['children']){
+      $db->rollBack();return ['ok'=>false,'error'=>'full_party_required'];
+   }
    $id=(int)$booking['id'];
    $lock=$db->prepare('SELECT id FROM bh_expo_reservations WHERE id=? FOR UPDATE');
    $lock->execute([$id]);
@@ -17,6 +21,9 @@ function bh_expo_family_checkin(PDO $db,string $qrPayload,int $addAdults,int $ad
    $q=$db->prepare('SELECT adults_checked_in,children_checked_in FROM bh_expo_family_checkins WHERE reservation_id=? FOR UPDATE');
    $q->execute([$id]);$count=$q->fetch(PDO::FETCH_ASSOC);
    $a=(int)$count['adults_checked_in'];$c=(int)$count['children_checked_in'];
+   if($a!==0||$c!==0){
+      $db->rollBack();return ['ok'=>false,'error'=>'already_checked_in'];
+   }
    if($a+$addAdults>(int)$booking['adults']||$c+$addChildren>(int)$booking['children']){
       $db->rollBack();return ['ok'=>false,'error'=>'exceeds_booking','adults_remaining'=>(int)$booking['adults']-$a,'children_remaining'=>(int)$booking['children']-$c];
    }
