@@ -100,3 +100,49 @@ function bh_user_migration_audit_render(){
  }
  echo '<div class="bh-admin-banner">Migration gate: back up both databases, validate email collisions and linked records, add a stable WordPress-to-Bubba user mapping, then test sign-in and password reset on staging. Do not delete bh_users or copy password hashes directly.</div></div>';
 }
+
+/* Account migration phase 2: role registration and read-only preview. */
+add_action('init',function(){
+ foreach(['bh_family'=>'Bubba Hub Family','bh_leader'=>'Bubba Hub Class Leader','bh_volunteer'=>'Bubba Hub Volunteer','bh_region_coordinator'=>'Bubba Hub Regional Coordinator'] as $key=>$label){
+  if(!get_role($key))add_role($key,$label,['read'=>true]);
+ }
+});
+add_action('admin_menu',function(){
+ add_submenu_page('bubba-hub','Account Migration Preview','Account Migration Preview','manage_options','bubba-hub-user-preview','bh_wp_user_preview_render');
+},31);
+function bh_wp_user_preview_render(){
+ if(!current_user_can('manage_options'))wp_die('Access denied');
+ global $wpdb;
+ echo '<div class="wrap bh-admin"><h1>Account Migration Preview</h1><p class="bh-sub">Read-only account, role and Pro membership review. No WordPress users are created.</p>';
+ $table=$wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s','bh_users'));
+ if($table!=='bh_users'){echo '<div class="bh-admin-banner">Legacy users table is not accessible.</div></div>';return;}
+ $columns=$wpdb->get_col('SHOW COLUMNS FROM `bh_users`',0);
+ if(!in_array('id',$columns,true)||!in_array('email',$columns,true)||!in_array('role',$columns,true)){echo '<div class="bh-admin-banner">Unexpected legacy schema. Preview unavailable.</div></div>';return;}
+ $users=$wpdb->get_results('SELECT id,email,role FROM `bh_users` ORDER BY id LIMIT 500',ARRAY_A);
+ $subs_exists=$wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s','bh_user_subscriptions'))==='bh_user_subscriptions';
+ $subcols=$subs_exists?$wpdb->get_col('SHOW COLUMNS FROM `bh_user_subscriptions`',0):[];
+ $subscriptions=[];
+ if($subs_exists && count(array_intersect(['user_id','plan','status'], $subcols))===3){
+  $rows=$wpdb->get_results('SELECT user_id,plan,status FROM `bh_user_subscriptions`',ARRAY_A);
+  foreach($rows as $row)$subscriptions[(int)$row['user_id']]=$row;
+ }
+ $counts=['new'=>0,'match'=>0,'family'=>0,'leader'=>0,'admin'=>0,'active_pro'=>0,'other_subscription'=>0];
+ echo '<table class="widefat striped"><thead><tr><th>Legacy ID</th><th>Role</th><th>WordPress role proposed</th><th>WP account</th><th>Subscription plan</th><th>Subscription status</th></tr></thead><tbody>';
+ foreach($users as $u){
+  $role=strtolower((string)$u['role']);$counts[$role]=($counts[$role]??0)+1;
+  $target=$role==='family'?'bh_family':($role==='leader'?'bh_leader':'Manual review required');
+  $wp=get_user_by('email',trim((string)$u['email']));
+  $counts[$wp?'match':'new']++;
+  $sub=$subscriptions[(int)$u['id']]??null;
+  $plan=$sub?(string)$sub['plan']:'No subscription record';
+  $status=$sub?(string)$sub['status']:'—';
+  if($sub && in_array($status,['active','trialing'],true) && in_array($plan,['family_pro','leader_pro'],true))$counts['active_pro']++;
+  if($sub && !in_array($status,['active','trialing'],true))$counts['other_subscription']++;
+  echo '<tr><td>'.esc_html((string)$u['id']).'</td><td>'.esc_html($role).'</td><td>'.esc_html($target).'</td><td>'.esc_html($wp?'Existing match — verify':'Would create').'</td><td>'.esc_html($plan).'</td><td>'.esc_html($status).'</td></tr>';
+ }
+ echo '</tbody></table><div class="bh-admin-grid">';
+ foreach([['Legacy accounts',count($users)],['New WP accounts proposed',$counts['new']],['Existing WP email matches',$counts['match']],['Active or trialing Pro subscriptions',$counts['active_pro']]] as $stat)echo '<div class="bh-admin-stat"><span>'.esc_html($stat[0]).'</span><strong>'.esc_html((string)$stat[1]).'</strong></div>';
+ echo '</div>';
+ if(!$subs_exists)echo '<div class="bh-admin-banner">bh_user_subscriptions not found: Pro status cannot yet be verified. Do not migrate membership entitlements until the subscription source is confirmed.</div>';
+ echo '<div class="bh-admin-banner">Pro is an entitlement, not a WordPress role. The existing Stripe webhook and bh_user_subscriptions remain authoritative. Legacy admins require manual approval; no automatic WordPress administrator promotion. Back up databases and test on staging before any migration write.</div></div>';
+}
