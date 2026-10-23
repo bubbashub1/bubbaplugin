@@ -72,19 +72,21 @@ try {
         volunteerReply(403, ['ok' => false, 'error' => 'volunteer_role_required']);
     }
 
-    // Every venue linked through the canonical junction must be in an active assigned region.
+    // Require every venue from either link model to belong to an assigned region.
     $permissionSql = "
         SELECT COUNT(*) AS total,
-               COALESCE(SUM(CASE WHEN EXISTS (
-                   SELECT 1
-                   FROM bh_volunteer_assignments va
-                   WHERE va.user_id = ?
-                     AND va.is_active = 1
+               COALESCE(SUM(CASE WHEN v.id IS NOT NULL AND EXISTS (
+                   SELECT 1 FROM bh_volunteer_assignments va
+                   WHERE va.user_id = ? AND va.is_active = 1
                      AND LOWER(TRIM(va.region)) = LOWER(TRIM(v.region))
                ) THEN 1 ELSE 0 END), 0) AS allowed
-        FROM bh_activity_venues av
-        INNER JOIN bh_venues v ON v.id = av.venue_id
-        WHERE av.activity_id = ?
+        FROM (
+            SELECT activity_id, venue_id FROM bh_activity_venues
+            UNION
+            SELECT activity_id, id AS venue_id FROM bh_venues WHERE activity_id IS NOT NULL
+        ) links
+        LEFT JOIN bh_venues v ON v.id = links.venue_id
+        WHERE links.activity_id = ?
     ";
     $permission = $db->prepare($permissionSql);
     $permission->execute([$userId, $id]);
@@ -97,7 +99,7 @@ try {
     }
 
     if ($method === 'GET') {
-        $query = $db->prepare("SELECT id, title, description FROM bh_activities WHERE id = ? LIMIT 1");
+        $query = $db->prepare("SELECT id, title, description FROM bh_activities WHERE id = ? AND status = 'published' LIMIT 1");
         $query->execute([$id]);
         $activity = $query->fetch(PDO::FETCH_ASSOC);
         if (!$activity) {
@@ -117,7 +119,7 @@ try {
     }
 
     $db->beginTransaction();
-    $query = $db->prepare("SELECT id, title, description FROM bh_activities WHERE id = ? FOR UPDATE");
+    $query = $db->prepare("SELECT id, title, description FROM bh_activities WHERE id = ? AND status = 'published' FOR UPDATE");
     $query->execute([$id]);
     $before = $query->fetch(PDO::FETCH_ASSOC);
     if (!$before) {
