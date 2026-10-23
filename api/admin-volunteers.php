@@ -20,6 +20,13 @@ $id=(int)($input['id']??0);$status=(string)($input['status']??'');
 if($id<1||!in_array($status,['pending','approved','declined'],true))out(422,['ok'=>false,'error'=>'invalid_fields']);
 $stmt=$db->prepare("UPDATE bh_volunteer_applications SET status=? WHERE id=?");
 $stmt->execute([$status,$id]);
-if(!$stmt->rowCount())out(404,['ok'=>false,'error'=>'application_not_found_or_unchanged']);
+if(!$stmt->rowCount()){
+$exists=$db->prepare("SELECT status FROM bh_volunteer_applications WHERE id=? LIMIT 1");
+$exists->execute([$id]);
+$current=$exists->fetchColumn();
+if($current===false)out(404,['ok'=>false,'error'=>'application_not_found']);
+if($current===$status)out(200,['ok'=>true,'message'=>'Application already has this status.']);
+out(409,['ok'=>false,'error'=>'status_not_updated']);
+}
 out(200,['ok'=>true,'message'=>'Application status updated. Account access is not granted automatically.']);
 }catch(Throwable $e){error_log('Volunteer admin failed: '.$e->getMessage());out(500,['ok'=>false,'error'=>'temporarily_unavailable']);}
