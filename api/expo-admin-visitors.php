@@ -8,7 +8,9 @@ ini_set('session.use_strict_mode','1');
 session_name('BUBBAHUB_ADMINSESSID');
 session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
 session_start();
-if(empty($_SESSION['bh_admin_authenticated'])||time()-(int)($_SESSION['bh_admin_last_activity']??0)>1800)send(401,['ok'=>false,'error'=>'admin_login_required']);
+if(empty($_SESSION['bh_admin_authenticated']))send(401,['ok'=>false,'error'=>'admin_login_required']);
+$last=(int)($_SESSION['bh_admin_last_activity']??0);
+if($last>0 && time()-$last>1800){unset($_SESSION['bh_admin_authenticated'],$_SESSION['bh_admin_last_activity'],$_SESSION['bh_admin_csrf']);send(401,['ok'=>false,'error'=>'admin_session_expired']);}
 $_SESSION['bh_admin_last_activity']=time();
 try {
  require_once __DIR__.'/db.php';

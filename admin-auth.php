@@ -81,6 +81,7 @@ if ($a === 'login') {
 
     session_regenerate_id(true);
     $_SESSION['bh_admin_authenticated'] = true;
+    $_SESSION['bh_admin_last_activity'] = time();
     session_write_close();
     respond(200, ['ok'=>true]);
 }
@@ -99,7 +100,7 @@ if ($a === 'logout') {
     }
     // Admin authentication is separate from the family account. Remove only
     // the admin flag so My Hub/family session remains signed in.
-    unset($_SESSION['bh_admin_authenticated']);
+    unset($_SESSION['bh_admin_authenticated'], $_SESSION['bh_admin_last_activity'], $_SESSION['bh_admin_csrf']);
     respond(200, ['ok'=>true]);
 }
 
