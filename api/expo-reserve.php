@@ -26,6 +26,15 @@ if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST'){
  header('Allow: POST');
  expoBookingReply(405,['ok'=>false,'error'=>'method_not_allowed']);
 }
+$host=strtolower(explode(':',(string)($_SERVER['HTTP_HOST']??''))[0]);
+if(!in_array($host,['bubbahub.co.uk','staging.bubbahub.co.uk'],true))expoBookingReply(404,['ok'=>false,'error'=>'not_found']);
+$origin=(string)($_SERVER['HTTP_ORIGIN']??'');
+$referer=(string)($_SERVER['HTTP_REFERER']??'');
+$source=$origin!==''?$origin:$referer;
+if($source===''||parse_url($source,PHP_URL_SCHEME)!=='https'||strtolower((string)parse_url($source,PHP_URL_HOST))!==$host)expoBookingReply(403,['ok'=>false,'error'=>'invalid_origin']);
+ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');
+session_name('BH_EXPO_BOOKING');session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);session_start();
+if(time()-(int)($_SESSION['expo_booking_last']??0)<45)expoBookingReply(429,['ok'=>false,'error'=>'please_wait_before_retrying']);
 if(!defined('BUBBAHUB_EXPO_BOOKINGS_ENABLED') || constant('BUBBAHUB_EXPO_BOOKINGS_ENABLED')!==true){
  expoBookingReply(503,['ok'=>false,'error'=>'bookings_not_open']);
 }
@@ -81,6 +90,7 @@ try {
  $q->execute([$ref,$name,$email,$adult,$child]);
  $reservationId=(int)$db->lastInsertId();
  $db->commit();
+ $_SESSION['expo_booking_last']=time();
  $db->query("SELECT RELEASE_LOCK('expo-capacity-bubba-me-2027')");
  require_once __DIR__.'/expo-trusted-free-confirmation.php';
  $delivery=bh_expo_confirm_and_deliver_free_reservation($db,$reservationId);
