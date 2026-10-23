@@ -9,17 +9,17 @@ function bh_admin_sections() {
  return [
  'overview'=>['Overview','dashicons-dashboard',[]],
  'directory'=>['Directory','dashicons-location-alt',[
-  ['Find activities','/directory'],['Admin listings','/admin'],['Data imports','/admin']]],
+  ['Find activities','/directory'],['Manage activity listings','/admin/admin-activities-listings.html'],['Import & export data','/admin/admin-import-export.html']]],
  'leaders'=>['Class Leaders','dashicons-groups',[
-  ['Leader portal','/leader'],['Organiser listings','/directory'],['Admin management','/admin']]],
+  ['Leader portal','/leader'],['Manage organiser listings','/admin/admin-organisers-organiser-listings.html'],['Class leader administration','/admin/admin-organisers-class-leaders.html']]],
  'families'=>['Families','dashicons-admin-users',[
   ['User migration audit',admin_url('admin.php?page=bubba-hub-user-audit')],['WordPress users',admin_url('users.php')],['Family accounts','/account'],['Family hub','/my-hub']]],
  'events'=>['Events & Expo','dashicons-calendar-alt',[
-  ['Expo overview','/expo.html'],['Exhibitor applications','/expo-exhibitors.html'],['Exhibitor approvals','/admin/expo-exhibitor-approvals.html'],['Raffle prizes','/admin/expo-raffle-prizes.html'],['Ticketing','/events/raffle-entry/']]],
+  ['Expo overview','/expo.html'],['Review exhibitor applications','/admin/expo-exhibitor-approvals.html'],['Raffle prizes','/admin/expo-raffle-prizes.html'],['Ticketing status & event management','/admin/admin-events.html']]],
  'payments'=>['Payments','dashicons-money-alt',[
   ['Stripe dashboard','https://dashboard.stripe.com/'],['Forminator payments',admin_url('admin.php?page=forminator')],['Sponsorship form','/events/sponsor-bubba-hub/']]],
  'marketing'=>['Marketing','dashicons-megaphone',[
-  ['Forminator submissions',admin_url('admin.php?page=forminator')],['WordPress posts',admin_url('edit.php')],['Sponsor form','/events/sponsor-bubba-hub/']]],
+  ['Forminator forms & submissions',admin_url('admin.php?page=forminator')],['WordPress posts',admin_url('edit.php')],['Sponsor management','/admin/admin-sponsors.html']]],
  'volunteers'=>['Volunteers','dashicons-heart',[
   ['WordPress users',admin_url('users.php')],['Regional activity directory','/directory']]],
  'website'=>['Website','dashicons-admin-site-alt3',[
