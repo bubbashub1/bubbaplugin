@@ -17,7 +17,7 @@ session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>true,'httponly'=>
 session_start();
 if(empty($_SESSION['bh_admin_authenticated']))bhExpoConfirmReply(401,['ok'=>false,'error'=>'admin_login_required']);
 $last=(int)($_SESSION['bh_admin_last_activity']??0);
-if($last<1||time()-$last>1800){unset($_SESSION['bh_admin_authenticated'],$_SESSION['bh_admin_csrf']);bhExpoConfirmReply(401,['ok'=>false,'error'=>'admin_session_expired']);}
+if($last>0&&time()-$last>1800){unset($_SESSION['bh_admin_authenticated'],$_SESSION['bh_admin_csrf']);bhExpoConfirmReply(401,['ok'=>false,'error'=>'admin_session_expired']);}
 $_SESSION['bh_admin_last_activity']=time();
 $csrf=(string)($_SERVER['HTTP_X_BH_ADMIN_CSRF']??'');
 $expected=(string)($_SESSION['bh_admin_csrf']??'');
