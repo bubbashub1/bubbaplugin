@@ -317,6 +317,62 @@ document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',(
  const button=document.getElementById('adminBookwhenPastePreview');
  let feedback=document.getElementById('adminPastePreviewMessage');
  if(!feedback){feedback=document.createElement('p');feedback.id='adminPastePreviewMessage';feedback.setAttribute('role','status');button.after(feedback);}
+
+ // Natural-language schedules: title, date/weekday + time, optional Location.
+ const blocks=field.value.split(/\\n\\s*\\n/).map(s=>s.split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean)).filter(b=>b.length>=2);
+ const dayNames={monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6,sunday:7};
+ const monthNames=['january','february','march','april','may','june','july','august','september','october','november','december'];
+ const natural=[],warnings=[];
+ const parseTime=(raw,defaultMeridiem)=>{
+  const m=raw.trim().match(/^(\\d{1,2})(?:[:.](\\d{1,2}))?\\s*(am|pm)?$/i);
+  if(!m)return '';
+  let h=Number(m[1]),minute=Number(m[2]||0),amp=(m[3]||defaultMeridiem||'').toLowerCase();
+  if(h>23||minute>59)return '';
+  if(amp){if(h<1||h>12)return '';h=h%12+(amp==='pm'?12:0);}
+  return String(h).padStart(2,'0')+':'+String(minute).padStart(2,'0');
+ };
+ const dateFor=(d,mon,yr)=>{
+  const monthIndex=monthNames.indexOf(mon.toLowerCase());if(monthIndex<0)return '';
+  const date=new Date(Date.UTC(Number(yr),monthIndex,Number(d)));
+  return date.getUTCDate()===Number(d)&&date.getUTCMonth()===monthIndex?date.toISOString().slice(0,10):'';
+ };
+ for(const block of blocks){
+  const title=block[0],venue=(block.find(s=>/^location\\s*:/i.test(s))||'').replace(/^location\\s*:\\s*/i,'');
+  const schedule=block.slice(1).filter(s=>!/^location\\s*:/i.test(s)).join(' ');
+  const times=schedule.match(/(\\d{1,2}(?:[:.]\\d{1,2})?\\s*(?:am|pm)?)\\s*(?:-|–|—|to|till)\\s*(\\d{1,2}(?:[:.]\\d{1,2})?\\s*(?:am|pm)?)/i);
+  if(!times){warnings.push(title+': time not recognised');continue;}
+  const endingMeridiem=(times[2].match(/(am|pm)/i)||[])[1]||'';
+  let start=parseTime(times[1],endingMeridiem),end=parseTime(times[2],(times[1].match(/(am|pm)/i)||[])[1]||'');
+  // Handle 12:15-1:30 (afternoon) and 7-8pm; never silently accept negative durations.
+  if(start&&end&&start>=end&&!/(am|pm)/i.test(times[1])){
+   const alternative=parseTime(times[1],endingMeridiem==='pm'?'am':'pm');
+   if(alternative&&alternative<end)start=alternative;
+  }
+  if(!start||!end||start>=end){warnings.push(title+': confirm start/end times');continue;}
+  const dayMatch=schedule.match(/\\b(Mondays?|Tuesdays?|Wednesdays?|Thursdays?|Fridays?|Saturdays?|Sundays?)\\b/i);
+  const dayIndex=dayMatch?dayNames[dayMatch[1].toLowerCase().replace(/s$/,'')]:0;
+  const dateRegex=/(\\d{1,2})(?:st|nd|rd|th)?\\s*(?:of\\s+)?(January|February|March|April|May|June|July|August|September|October|November|December)|\\b(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(\\d{1,2})(?:st|nd|rd|th)?/gi;
+  const found=[...schedule.matchAll(dateRegex)];
+  if(found.length){
+   for(const match of found){
+    const d=match[1]||match[4],mon=match[2]||match[3];
+    const explicit=schedule.slice(match.index+match[0].length).match(/^\\s*(20\\d{2})\\b/);
+    const yr=explicit?Number(explicit[1]):new Date().getFullYear();
+    const iso=dateFor(d,mon,yr);if(!iso){warnings.push(title+': invalid date');continue;}
+    const actual=((new Date(iso+'T12:00:00Z').getUTCDay()+6)%7)+1;
+    if(dayIndex&&dayIndex!==actual){warnings.push(title+': weekday/date mismatch on '+iso);continue;}
+    natural.push({title,class_name:title,day_of_week:actual,start_time:start,end_time:end,start_date:iso,end_date:iso,frequency:'once',venue_hint:venue,venue_name:venue});
+    if(iso<new Date().toISOString().slice(0,10))warnings.push(title+': past date '+iso+' — review before adding');
+   }
+  }else if(dayIndex){
+   natural.push({title,class_name:title,day_of_week:dayIndex,start_time:start,end_time:end,start_date:'',end_date:'',frequency:'weekly',venue_hint:venue,venue_name:venue});
+  }else warnings.push(title+': no weekday or date recognised');
+ }
+ if(natural.length){
+  feedback.textContent=natural.length+' session(s) recognised. Review dates, venues and times before adding. '+warnings.join(' | ');
+  previewImportedSessions(natural,'Natural-language timetable detected. '+warnings.join(' | '));
+  return;
+ }
  const months=['january','february','march','april','may','june','july','august','september','october','november','december'];
  let month=-1,year=new Date().getFullYear(),day=null,assumedMonth=false;const events=[],seen=new Set();
  const clock=(h,m,ampm)=>String(Number(h)%12+(ampm.toLowerCase()==='pm'?12:0)).padStart(2,'0')+':'+String(Number(m||0)).padStart(2,'0');
