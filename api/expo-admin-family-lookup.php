@@ -28,7 +28,7 @@ try{
  $db=bh_mysql();
  $booking=bh_expo_resolve_booking_qr($db,$qr);
  if(!$booking)reply(404,['ok'=>false,'error'=>'booking_not_found']);
- $q=$db->prepare('SELECT adults_checked_in,children_checked_in FROM bh_expo_reservations WHERE id=?');
+ $q=$db->prepare('SELECT adults_checked_in,children_checked_in FROM bh_expo_family_checkins WHERE reservation_id=?');
  $q->execute([(int)$booking['id']]);
  $checked=$q->fetch(PDO::FETCH_ASSOC);
  reply(200,['ok'=>true,'reference'=>$booking['public_reference'],'adults'=>(int)$booking['adults'],'children'=>(int)$booking['children'],'already_checked_in'=>$checked&&((int)$checked['adults_checked_in']>0||(int)$checked['children_checked_in']>0)]);
