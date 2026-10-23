@@ -30,7 +30,7 @@ function bh_expo_confirmation_content(array $reservation): array {
         .'<p>Your adult QR tickets will be provided separately once ticket delivery is enabled.</p>'
         .'<p>Questions? Email contact@bubbahub.co.uk.</p>'
         .'</div></body></html>';
-    $plain="Hello ".$name.",\nYour free Bubba & Me Expo booking is confirmed.\nSaturday 9 January 2027, 10:30am–2:30pm, Acorn Centre, Torquay.\nArrival window: ".$arrival." (you may stay until 2:30pm).\\nBooking reference: ".$reference."\nAdult tickets: ".$adults."\nChildren attending: ".$children."\nChildren do not need individual QR tickets.\nAdult QR tickets will be provided separately once delivery is enabled.\nQuestions: contact@bubbahub.co.uk";
+    $plain="Hello ".$name.",\nYour free Bubba & Me Expo booking is confirmed.\nSaturday 9 January 2027, 10:30am–2:30pm, Acorn Centre, Torquay.\nArrival window: ".$arrival." (you may stay until 2:30pm).\nBooking reference: ".$reference."\nAdult tickets: ".$adults."\nChildren attending: ".$children."\nChildren do not need individual QR tickets.\nAdult QR tickets will be provided separately once delivery is enabled.\nQuestions: contact@bubbahub.co.uk";
     return ['subject'=>'Bubba & Me Expo — booking confirmation '.$reference,'html'=>$html,'plain'=>$plain];
 }
 /**
