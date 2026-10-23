@@ -23,7 +23,24 @@ if($method==='GET'){
  require_once __DIR__.'/turnstile-settings.php';
  $site=trim(bh_turnstile_setting('BUBBAHUB_TURNSTILE_SITE_KEY'));
  $enabled=defined('BUBBAHUB_EXPO_BOOKINGS_ENABLED')&&constant('BUBBAHUB_EXPO_BOOKINGS_ENABLED')===true;
- expoBookingReply(200,['ok'=>true,'bookings_open'=>$enabled,'turnstile_site_key'=>$site,'csrf_token'=>$_SESSION['expo_booking_csrf']]);
+ $availability=null;
+ if($enabled){
+  try{
+   require_once __DIR__.'/db.php';
+   $db=bh_mysql();
+   $rows=$db->query("SELECT arrival_slot, COALESCE(SUM(adults+children),0) AS people FROM bh_expo_reservations WHERE event_key='bubba-me-2027' AND booking_status IN ('pending','confirmed') GROUP BY arrival_slot")->fetchAll(PDO::FETCH_ASSOC);
+   $counts=['10:30'=>0,'11:30'=>0,'12:30'=>0,'13:30'=>0];
+   $unassigned=0;$total=0;
+   foreach($rows as $row){
+    $people=(int)$row['people'];$total+=$people;
+    if(array_key_exists((string)$row['arrival_slot'],$counts))$counts[(string)$row['arrival_slot']]=$people;
+    else $unassigned+=$people;
+   }
+   $limit=defined('BUBBAHUB_EXPO_VISITOR_CAPACITY')?(int)constant('BUBBAHUB_EXPO_VISITOR_CAPACITY'):300;
+   $availability=['ready'=>$unassigned===0,'total_remaining'=>max(0,$limit-$total),'slots'=>array_map(static fn($n)=>max(0,75-$n),$counts)];
+  }catch(Throwable $e){error_log('Expo slot availability unavailable: '.get_class($e));}
+ }
+ expoBookingReply(200,['ok'=>true,'bookings_open'=>$enabled,'turnstile_site_key'=>$site,'csrf_token'=>$_SESSION['expo_booking_csrf'],'arrival_availability'=>$availability]);
 }
 if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST'){
  header('Allow: POST');
