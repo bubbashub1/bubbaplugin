@@ -60,6 +60,7 @@ async function loadDashboard(){
   if(table)table.innerHTML='<tr><td colspan="7"><strong>Activities could not be loaded.</strong><br><small>'+escapeHtml(error.message)+'</small><br><button type="button" class="button button-soft" id="retryActivities">Try again</button></td></tr>';
   document.querySelector("#statActivities").textContent="—";
   document.querySelector("#statSaved").textContent="—";
+  document.querySelector(".admin-stats article:last-child strong").textContent="Unavailable";
   document.querySelector("#retryActivities")?.addEventListener("click",loadDashboard);
   console.error("Bubba Hub admin activities:",error);
  }
