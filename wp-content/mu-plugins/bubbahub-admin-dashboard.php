@@ -13,7 +13,7 @@ function bh_admin_sections() {
  'leaders'=>['Class Leaders','dashicons-groups',[
   ['Leader portal','/leader'],['Organiser listings','/directory'],['Admin management','/admin']]],
  'families'=>['Families','dashicons-admin-users',[
-  ['WordPress users',admin_url('users.php')],['Family accounts','/account'],['Family hub','/my-hub']]],
+  ['User migration audit',admin_url('admin.php?page=bubba-hub-user-audit')],['WordPress users',admin_url('users.php')],['Family accounts','/account'],['Family hub','/my-hub']]],
  'events'=>['Events & Expo','dashicons-calendar-alt',[
   ['Expo overview','/expo.html'],['Exhibitor applications','/expo-exhibitors.html'],['Exhibitor approvals','/admin/expo-exhibitor-approvals.html'],['Raffle prizes','/admin/expo-raffle-prizes.html'],['Ticketing','/events/raffle-entry/']]],
  'payments'=>['Payments','dashicons-money-alt',[
@@ -67,4 +67,36 @@ function bh_admin_dashboard_render($selected='overview'){
    echo '</div>';
  }
  echo '<div class="bh-admin-banner"><strong>Hybrid integration in progress:</strong> WordPress counts above are live WordPress data. Custom Bubba Hub PHP tools may still require their separate admin login. Directory, ticket, payment and exhibitor totals will be connected through secured read-only integrations before being displayed here.</div></div>';
+}
+
+/**
+ * Read-only user migration preflight. No user data, password hashes, or
+ * email addresses are output. WordPress DB may differ from custom bh DB.
+ */
+add_action('admin_menu',function(){
+ add_submenu_page('bubba-hub','User Migration Audit','User Migration Audit','manage_options','bubba-hub-user-audit','bh_user_migration_audit_render');
+},30);
+function bh_user_migration_audit_render(){
+ if(!current_user_can('manage_options'))wp_die('Access denied');
+ global $wpdb;
+ echo '<div class="wrap bh-admin"><h1>WordPress User Migration Audit</h1><p class="bh-sub">Read-only checks. No accounts will be created, changed, merged or deleted.</p>';
+ $table='bh_users';
+ $exists=$wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s',$table));
+ if($exists!==$table){
+  echo '<div class="bh-admin-banner">The custom bh_users table is not accessible through the WordPress database connection. It may live in a separate database. A secure, read-only connection will be required before migration.</div>';
+ } else {
+  $columns=$wpdb->get_col("SHOW COLUMNS FROM `bh_users`",0);
+  if(in_array('id',$columns,true)&&in_array('email',$columns,true)){
+   $total=(int)$wpdb->get_var('SELECT COUNT(*) FROM `bh_users`');
+   $matching=(int)$wpdb->get_var("SELECT COUNT(*) FROM `bh_users` b INNER JOIN {$wpdb->users} w ON LOWER(TRIM(b.email))=LOWER(TRIM(w.user_email))");
+   echo '<div class="bh-admin-grid"><div class="bh-admin-stat"><span>Legacy Bubba Hub accounts</span><strong>'.esc_html((string)$total).'</strong></div><div class="bh-admin-stat"><span>WordPress email matches</span><strong>'.esc_html((string)$matching).'</strong></div></div>';
+   if(in_array('role',$columns,true)){
+    $roles=$wpdb->get_results('SELECT role,COUNT(*) AS total FROM `bh_users` GROUP BY role ORDER BY role',ARRAY_A);
+    echo '<h2>Legacy roles</h2><table class="widefat striped"><thead><tr><th>Role</th><th>Accounts</th></tr></thead><tbody>';
+    foreach($roles as $r)echo '<tr><td>'.esc_html((string)$r['role']).'</td><td>'.esc_html((string)$r['total']).'</td></tr>';
+    echo '</tbody></table>';
+   }
+  }else echo '<div class="bh-admin-banner">Legacy table exists but required id/email columns were not found. No migration attempted.</div>';
+ }
+ echo '<div class="bh-admin-banner">Migration gate: back up both databases, validate email collisions and linked records, add a stable WordPress-to-Bubba user mapping, then test sign-in and password reset on staging. Do not delete bh_users or copy password hashes directly.</div></div>';
 }
