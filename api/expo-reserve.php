@@ -94,6 +94,7 @@ try {
  $reservationId=(int)$db->lastInsertId();
  $db->commit();
  $_SESSION['expo_booking_last']=time();
+ session_write_close();
  $db->query("SELECT RELEASE_LOCK('expo-capacity-bubba-me-2027')");
  require_once __DIR__.'/expo-trusted-free-confirmation.php';
  $delivery=bh_expo_confirm_and_deliver_free_reservation($db,$reservationId);
