@@ -17,7 +17,7 @@ $wpLoader=dirname(__DIR__).'/wp-load.php';
 if(is_file($wpLoader)&&is_readable($wpLoader)){ob_start();try{require_once $wpLoader;}finally{ob_end_clean();}}
 $method=$_SERVER['REQUEST_METHOD']??'GET';
 ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');
-session_name('BH_EXPO_BOOKING');session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);session_start();
+if(session_status()!==PHP_SESSION_ACTIVE){session_name('BH_EXPO_BOOKING');session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);session_start();}
 if(empty($_SESSION['expo_booking_csrf']))$_SESSION['expo_booking_csrf']=bin2hex(random_bytes(32));
 if($method==='GET'){
  require_once __DIR__.'/turnstile-settings.php';
