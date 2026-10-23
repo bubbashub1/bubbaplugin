@@ -62,47 +62,44 @@ try {
         ]);
     }
 
-    $regionChecks = [];
-    $params = [];
-    foreach ($regions as $index => $region) {
-        $key = ':region' . $index;
-        $regionChecks[] = "LOWER(TRIM(v.region)) = LOWER(TRIM($key))";
-        $params[$key] = $region;
-    }
-
-    // Use the canonical activity_venues junction so multi-venue listings are checked correctly.
+    // Include both junction links and older direct venue.activity_id links.
     $sql = "
-        SELECT
-            a.id,
-            a.title,
-            a.status,
-            GROUP_CONCAT(DISTINCT NULLIF(TRIM(v.town), '') ORDER BY v.town SEPARATOR ', ') AS town,
-            GROUP_CONCAT(DISTINCT NULLIF(TRIM(v.region), '') ORDER BY v.region SEPARATOR ', ') AS region
+        SELECT a.id, a.title, a.status,
+               GROUP_CONCAT(DISTINCT NULLIF(TRIM(v.town), '') ORDER BY v.town SEPARATOR ', ') AS town,
+               GROUP_CONCAT(DISTINCT NULLIF(TRIM(v.region), '') ORDER BY v.region SEPARATOR ', ') AS region
         FROM bh_activities a
-        INNER JOIN bh_activity_venues av ON av.activity_id = a.id
-        INNER JOIN bh_venues v ON v.id = av.venue_id
-        WHERE (" . implode(' OR ', $regionChecks) . ")
+        JOIN (
+            SELECT activity_id, venue_id FROM bh_activity_venues
+            UNION
+            SELECT activity_id, id AS venue_id FROM bh_venues WHERE activity_id IS NOT NULL
+        ) links ON links.activity_id = a.id
+        JOIN bh_venues v ON v.id = links.venue_id
+        WHERE a.status = 'published'
+          AND EXISTS (
+              SELECT 1 FROM bh_volunteer_assignments va
+              WHERE va.user_id = :assigned_user AND va.is_active = 1
+                AND LOWER(TRIM(va.region)) = LOWER(TRIM(v.region))
+          )
           AND NOT EXISTS (
-              SELECT 1
-              FROM bh_activity_venues av_other
-              INNER JOIN bh_venues v_other ON v_other.id = av_other.venue_id
-              WHERE av_other.activity_id = a.id
-                AND NOT EXISTS (
-                    SELECT 1
-                    FROM bh_volunteer_assignments allowed_region
-                    WHERE allowed_region.user_id = :assigned_user
-                      AND allowed_region.is_active = 1
-                      AND LOWER(TRIM(allowed_region.region)) = LOWER(TRIM(v_other.region))
-                )
+              SELECT 1 FROM (
+                  SELECT activity_id, venue_id FROM bh_activity_venues
+                  UNION
+                  SELECT activity_id, id AS venue_id FROM bh_venues WHERE activity_id IS NOT NULL
+              ) other_links
+              LEFT JOIN bh_venues other_venue ON other_venue.id = other_links.venue_id
+              WHERE other_links.activity_id = a.id
+                AND (other_venue.id IS NULL OR NOT EXISTS (
+                    SELECT 1 FROM bh_volunteer_assignments va_other
+                    WHERE va_other.user_id = :other_user AND va_other.is_active = 1
+                      AND LOWER(TRIM(va_other.region)) = LOWER(TRIM(other_venue.region))
+                ))
           )
         GROUP BY a.id, a.title, a.status
         ORDER BY a.title
         LIMIT 200
     ";
-
-    $params[':assigned_user'] = $userId;
     $stmt = $db->prepare($sql);
-    $stmt->execute($params);
+    $stmt->execute([':assigned_user' => $userId, ':other_user' => $userId]);
     volunteerDashboardReply(200, [
         'ok' => true,
         'regions' => $regions,
