@@ -13,7 +13,7 @@ session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>true,'httponly'=>
 session_start();
 if(empty($_SESSION['bh_admin_authenticated']))expoSchemaReply(401,['ok'=>false,'error'=>'admin_login_required']);
 $last=(int)($_SESSION['bh_admin_last_activity']??0);
-if($last<1||time()-$last>1800){unset($_SESSION['bh_admin_authenticated'],$_SESSION['bh_admin_csrf']);expoSchemaReply(401,['ok'=>false,'error'=>'admin_session_expired']);}
+if($last>0&&time()-$last>1800){unset($_SESSION['bh_admin_authenticated'],$_SESSION['bh_admin_csrf']);expoSchemaReply(401,['ok'=>false,'error'=>'admin_session_expired']);}
 $_SESSION['bh_admin_last_activity']=time();
 $tables=['bh_expo_reservations','bh_expo_tickets','bh_expo_booking_qrs','bh_expo_family_checkins','bh_expo_family_qr_checkins','bh_expo_family_email_delivery','bh_expo_giveaway_claims'];
 try{
