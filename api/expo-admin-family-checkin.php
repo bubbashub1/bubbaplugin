@@ -1,16 +1,17 @@
 <?php
 declare(strict_types=1);
-/** Staging-only authenticated partial family check-in via booking-level QR. */
+/** Authenticated, single-use full-family check-in via booking-level QR. */
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 function bhFamilyReply(int $status,array $body): never {http_response_code($status);echo json_encode($body,JSON_UNESCAPED_SLASHES);exit;}
 if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST'){header('Allow: POST');bhFamilyReply(405,['ok'=>false,'error'=>'method_not_allowed']);}
-if(strtolower((string)($_SERVER['HTTP_HOST']??''))!=='staging.bubbahub.co.uk')bhFamilyReply(404,['ok'=>false,'error'=>'not_found']);
+$host=strtolower((string)($_SERVER['HTTP_HOST']??''));
+if(!in_array($host,['bubbahub.co.uk','staging.bubbahub.co.uk'],true))bhFamilyReply(404,['ok'=>false,'error'=>'not_found']);
 $origin=(string)($_SERVER['HTTP_ORIGIN']??'');
-if($origin!==''&&$origin!=='https://staging.bubbahub.co.uk')bhFamilyReply(403,['ok'=>false,'error'=>'invalid_origin']);
+if($origin!==''&&$origin!=='https://'.$host)bhFamilyReply(403,['ok'=>false,'error'=>'invalid_origin']);
 $referer=(string)($_SERVER['HTTP_REFERER']??'');
-if($origin===''&&($referer===''||parse_url($referer,PHP_URL_SCHEME)!=='https'||parse_url($referer,PHP_URL_HOST)!=='staging.bubbahub.co.uk'))bhFamilyReply(403,['ok'=>false,'error'=>'origin_required']);
+if($origin===''&&($referer===''||parse_url($referer,PHP_URL_SCHEME)!=='https'||parse_url($referer,PHP_URL_HOST)!==$host))bhFamilyReply(403,['ok'=>false,'error'=>'origin_required']);
 ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');
 session_name('BUBBAHUB_ADMINSESSID');
 session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
