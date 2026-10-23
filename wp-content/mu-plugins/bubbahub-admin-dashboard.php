@@ -143,6 +143,6 @@ function bh_wp_user_preview_render(){
  echo '</tbody></table><div class="bh-admin-grid">';
  foreach([['Legacy accounts',count($users)],['New WP accounts proposed',$counts['new']],['Existing WP email matches',$counts['match']],['Active or trialing Pro subscriptions',$counts['active_pro']]] as $stat)echo '<div class="bh-admin-stat"><span>'.esc_html($stat[0]).'</span><strong>'.esc_html((string)$stat[1]).'</strong></div>';
  echo '</div>';
- if(!$subs_exists)echo '<div class="bh-admin-banner">bh_user_subscriptions not found: Pro status cannot yet be verified. Do not migrate membership entitlements until the subscription source is confirmed.</div>';
+ if(!$subs_exists || count(array_intersect(['user_id','plan','status'], $subcols))!==3)echo '<div class="bh-admin-banner">bh_user_subscriptions is missing or its schema is incomplete: Pro status cannot yet be verified. Do not migrate membership entitlements until the subscription source is confirmed.</div>';
  echo '<div class="bh-admin-banner">Pro is an entitlement, not a WordPress role. The existing Stripe webhook and bh_user_subscriptions remain authoritative. Legacy admins require manual approval; no automatic WordPress administrator promotion. Back up databases and test on staging before any migration write.</div></div>';
 }
