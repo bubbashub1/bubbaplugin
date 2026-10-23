@@ -88,7 +88,7 @@ try {
   $db->query("SELECT RELEASE_LOCK('expo-capacity-bubba-me-2027')");
   expoBookingReply(409,['ok'=>false,'error'=>'capacity_reached']);
  }
- $ref=strtoupper(bin2hex(random_bytes(12)));
+ $ref='BH-'.strtoupper(bin2hex(random_bytes(4)));
  $q=$db->prepare("INSERT INTO bh_expo_reservations (public_reference,event_key,contact_name,contact_email,adults,children,ticket_type,amount_pence,payment_status,booking_status,email_status,consent_at) VALUES (?,'bubba-me-2027',?,?,?,?,'free',0,'not_required','pending','not_sent',UTC_TIMESTAMP())");
  $q->execute([$ref,$name,$email,$adult,$child]);
  $reservationId=(int)$db->lastInsertId();
