@@ -16,7 +16,7 @@ function bh_expo_issue_and_send_family_qr(PDO $db,int $reservationId): array {
  if(!bh_expo_claim_family_email_send($db,$reservationId))
    return ['ok'=>false,'status'=>'not_pending_or_not_confirmed'];
  try{
-  $q=$db->prepare("SELECT id,public_reference,event_key,booking_status,contact_name,contact_email,adults,children FROM bh_expo_reservations WHERE id=?");
+  $q=$db->prepare("SELECT id,public_reference,event_key,booking_status,contact_name,contact_email,adults,children,arrival_slot FROM bh_expo_reservations WHERE id=?");
   $q->execute([$reservationId]);$reservation=$q->fetch(PDO::FETCH_ASSOC);
   if(!$reservation||$reservation['event_key']!=='bubba-me-2027'||$reservation['booking_status']!=='confirmed')
    throw new RuntimeException('Booking not confirmed');
