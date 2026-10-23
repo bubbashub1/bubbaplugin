@@ -1,0 +1,41 @@
+name: Expo public booking checks
+on:
+  pull_request:
+    paths:
+      - 'api/expo-reserve.php'
+      - 'api/turnstile-settings.php'
+      - 'api/expo-family-ticket-email.php'
+      - 'expo.html'
+      - '.github/workflows/expo-booking-checks.yml'
+  workflow_dispatch:
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate PHP syntax
+        run: |
+          php -l api/expo-reserve.php
+          php -l api/turnstile-settings.php
+          php -l api/expo-family-ticket-email.php
+      - name: Validate Expo inline JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          class Scripts(HTMLParser):
+              def __init__(self):
+                  super().__init__(); self.active=False; self.scripts=[]
+              def handle_starttag(self, tag, attrs):
+                  if tag=='script' and not dict(attrs).get('src'):
+                      self.active=True; self.scripts.append('')
+              def handle_endtag(self, tag):
+                  if tag=='script': self.active=False
+              def handle_data(self, data):
+                  if self.active: self.scripts[-1]+=data
+          parser=Scripts(); parser.feed(Path('expo.html').read_text())
+          for i,script in enumerate(parser.scripts):
+              Path(f'/tmp/expo-inline-{i}.js').write_text(script)
+          print(f'Extracted {len(parser.scripts)} scripts')
+          PY
+          for script in /tmp/expo-inline-*.js; do node --check "$script"; done
