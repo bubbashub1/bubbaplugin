@@ -283,6 +283,12 @@ try {
     // Only fall back when a venue explicitly belongs to one activity; never
     // expose all sessions at a shared venue or override activity schedules.
     if ($directVenueLink && $activities) {
+        $scheduledVenueKeys = [];
+        foreach ($activities as $scheduledActivityId => $scheduledActivity) {
+            foreach ($scheduledActivity['sessions'] as $scheduledSession) {
+                $scheduledVenueKeys[$scheduledActivityId . ':' . (int)$scheduledSession['venue_id']] = true;
+            }
+        }
         $legacySql = "SELECT s.id, v.activity_id, s.venue_id, s.class_name,
                             s.day_of_week, s.start_time, s.end_time,
                             s.duration_minutes, s.price, s.term_time_only,
@@ -298,11 +304,7 @@ try {
             if (!isset($activities[$aid])) continue;
             $venueId = (int)$session['venue_id'];
             if (!isset($activities[$aid]['venues'][$venueId])) continue;
-            $alreadyLinked = false;
-            foreach ($activities[$aid]['sessions'] as $existing) {
-                if ((int)$existing['venue_id'] === $venueId) { $alreadyLinked = true; break; }
-            }
-            if ($alreadyLinked) continue;
+            if (isset($scheduledVenueKeys[$aid . ':' . $venueId])) continue;
             $activities[$aid]['sessions'][] = [
                 'id' => (int)$session['id'],
                 'venue_id' => $venueId,
