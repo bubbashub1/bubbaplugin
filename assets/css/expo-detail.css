@@ -119,3 +119,37 @@ body.bh-expo-detail main.expo-container{width:100%;max-width:none;margin:auto;pa
 .bh-expo-detail .expo-ticket-dialog .expo-panel{margin:0;border:0;box-shadow:none}
 .bh-expo-detail .expo-ticket-close{position:sticky;top:10px;float:right;z-index:3;border:0;border-radius:50%;width:42px;height:42px;background:#e5f2e8;color:#174b33;font-size:27px;cursor:pointer}
 @media(max-width:650px){.bh-expo-detail .expo-ticket-dialog-inner{padding:8px}}
+
+
+/* Unified Bubba Hub styling for all embedded Expo Forminator forms. */
+.bh-expo-detail .expo-ticket-dialog .forminator-ui,
+.bh-expo-detail .expo-ticket-dialog .forminator-custom-form {
+  font-family: Quicksand, Calibri, Arial, sans-serif !important;
+  color: #174e3b;
+}
+.bh-expo-detail .expo-ticket-dialog .forminator-label,
+.bh-expo-detail .expo-ticket-dialog .forminator-description {
+  font-family: inherit !important;
+  color: #174e3b !important;
+}
+.bh-expo-detail .expo-ticket-dialog .forminator-label { font-weight: 700 !important; }
+.bh-expo-detail .expo-ticket-dialog .forminator-input,
+.bh-expo-detail .expo-ticket-dialog .forminator-textarea,
+.bh-expo-detail .expo-ticket-dialog .forminator-select,
+.bh-expo-detail .expo-ticket-dialog select {
+  border: 1px solid #cfe4d6 !important;
+  border-radius: 13px !important;
+  background: #fbfefb !important;
+  min-height: 46px;
+  font-family: inherit !important;
+}
+.bh-expo-detail .expo-ticket-dialog .forminator-button-submit {
+  border-radius: 999px !important;
+  background: #176b4d !important;
+  color: white !important;
+  padding: 13px 24px !important;
+  font-family: inherit !important;
+  font-weight: 800 !important;
+}
+.bh-expo-detail .expo-ticket-dialog .forminator-button-submit:hover {background:#d97733 !important;}
+.bh-expo-detail .expo-ticket-dialog .forminator-row {margin-bottom: 15px !important;}
