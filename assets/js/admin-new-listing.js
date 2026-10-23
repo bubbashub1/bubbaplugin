@@ -320,12 +320,12 @@ document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',(
  if(!feedback){feedback=document.createElement('p');feedback.id='adminPastePreviewMessage';feedback.setAttribute('role','status');button.after(feedback);}
 
  // Natural-language schedules: title, date/weekday + time, optional Location.
- const blocks=field.value.split(/\\n\\s*\\n/).map(s=>s.split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean)).filter(b=>b.length>=2);
+ const blocks=field.value.split(/\n\s*\n/).map(s=>s.split(/\r?\n/).map(x=>x.trim()).filter(Boolean)).filter(b=>b.length>=2);
  const dayNames={monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6,sunday:7};
  const monthNames=['january','february','march','april','may','june','july','august','september','october','november','december'];
  const natural=[],warnings=[];
  const parseTime=(raw,defaultMeridiem)=>{
-  const m=raw.trim().match(/^(\\d{1,2})(?:[:.](\\d{1,2}))?\\s*(am|pm)?$/i);
+  const m=raw.trim().match(/^(\d{1,2})(?:[:.](\d{1,2}))?\s*(am|pm)?$/i);
   if(!m)return '';
   let h=Number(m[1]),minute=Number(m[2]||0),amp=(m[3]||defaultMeridiem||'').toLowerCase();
   if(h>23||minute>59)return '';
@@ -338,9 +338,9 @@ document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',(
   return date.getUTCDate()===Number(d)&&date.getUTCMonth()===monthIndex?date.toISOString().slice(0,10):'';
  };
  for(const block of blocks){
-  const title=block[0],venue=(block.find(s=>/^location\\s*:/i.test(s))||'').replace(/^location\\s*:\\s*/i,'');
-  const schedule=block.slice(1).filter(s=>!/^location\\s*:/i.test(s)).join(' ');
-  const times=schedule.match(/(\\d{1,2}(?:[:.]\\d{1,2})?\\s*(?:am|pm)?)\\s*(?:-|–|—|to|till)\\s*(\\d{1,2}(?:[:.]\\d{1,2})?\\s*(?:am|pm)?)/i);
+  const title=block[0],venue=(block.find(s=>/^location\s*:/i.test(s))||'').replace(/^location\s*:\s*/i,'');
+  const schedule=block.slice(1).filter(s=>!/^location\s*:/i.test(s)).join(' ');
+  const times=schedule.match(/(\d{1,2}(?:[:.]\d{1,2})?\s*(?:am|pm)?)\s*(?:-|–|—|to|till)\s*(\d{1,2}(?:[:.]\d{1,2})?\s*(?:am|pm)?)/i);
   if(!times){warnings.push(title+': time not recognised');continue;}
   const endingMeridiem=(times[2].match(/(am|pm)/i)||[])[1]||'';
   let start=parseTime(times[1],endingMeridiem),end=parseTime(times[2],(times[1].match(/(am|pm)/i)||[])[1]||'');
@@ -350,14 +350,14 @@ document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',(
    if(alternative&&alternative<end)start=alternative;
   }
   if(!start||!end||start>=end){warnings.push(title+': confirm start/end times');continue;}
-  const dayMatch=schedule.match(/\\b(Mondays?|Tuesdays?|Wednesdays?|Thursdays?|Fridays?|Saturdays?|Sundays?)\\b/i);
+  const dayMatch=schedule.match(/\b(Mondays?|Tuesdays?|Wednesdays?|Thursdays?|Fridays?|Saturdays?|Sundays?)\b/i);
   const dayIndex=dayMatch?dayNames[dayMatch[1].toLowerCase().replace(/s$/,'')]:0;
-  const dateRegex=/(\\d{1,2})(?:st|nd|rd|th)?\\s*(?:of\\s+)?(January|February|March|April|May|June|July|August|September|October|November|December)|\\b(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(\\d{1,2})(?:st|nd|rd|th)?/gi;
+  const dateRegex=/(\d{1,2})(?:st|nd|rd|th)?\s*(?:of\s+)?(January|February|March|April|May|June|July|August|September|October|November|December)|\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:st|nd|rd|th)?/gi;
   const found=[...schedule.matchAll(dateRegex)];
   if(found.length){
    for(const match of found){
     const d=match[1]||match[4],mon=match[2]||match[3];
-    const explicit=schedule.slice(match.index+match[0].length).match(/^\\s*(20\\d{2})\\b/);
+    const explicit=schedule.slice(match.index+match[0].length).match(/^\s*(20\d{2})\b/);
     const yr=explicit?Number(explicit[1]):new Date().getFullYear();
     const iso=dateFor(d,mon,yr);if(!iso){warnings.push(title+': invalid date');continue;}
     const actual=((new Date(iso+'T12:00:00Z').getUTCDay()+6)%7)+1;
