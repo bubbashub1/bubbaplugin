@@ -48,6 +48,13 @@ try{
  $description=trim((string)($body['description']??''));
  if(mb_strlen($title)<3||mb_strlen($title)>200||mb_strlen($description)>8000)
    volunteerReply(422,['ok'=>false,'error'=>'invalid_fields']);
+ $db->exec("CREATE TABLE IF NOT EXISTS bh_volunteer_edit_audit (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ user_id BIGINT UNSIGNED NOT NULL,activity_id BIGINT UNSIGNED NOT NULL,
+ before_json LONGTEXT NOT NULL,after_json LONGTEXT NOT NULL,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ KEY idx_activity_created(activity_id,created_at)
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
  $db->beginTransaction();
  $q=$db->prepare("SELECT id,title,description FROM bh_activities WHERE id=? FOR UPDATE");
  $q->execute([$id]);$before=$q->fetch(PDO::FETCH_ASSOC);
@@ -57,13 +64,6 @@ try{
  if((int)$counts['total']===0||(int)$counts['allowed']!==(int)$counts['total']){
   $db->rollBack();volunteerReply(403,['ok'=>false,'error'=>'region_not_authorised']);
  }
- $db->exec("CREATE TABLE IF NOT EXISTS bh_volunteer_edit_audit (
- id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
- user_id BIGINT UNSIGNED NOT NULL,activity_id BIGINT UNSIGNED NOT NULL,
- before_json LONGTEXT NOT NULL,after_json LONGTEXT NOT NULL,
- created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
- KEY idx_activity_created(activity_id,created_at)
- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
  $after=['id'=>$id,'title'=>$title,'description'=>$description];
  $audit=$db->prepare("INSERT INTO bh_volunteer_edit_audit(user_id,activity_id,before_json,after_json) VALUES(?,?,?,?)");
  $audit->execute([$userId,$id,json_encode($before,JSON_THROW_ON_ERROR),json_encode($after,JSON_THROW_ON_ERROR)]);
