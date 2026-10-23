@@ -7501,3 +7501,9 @@ button.bh-header-signout:disabled{opacity:.65;cursor:wait}
 .app-shell,.bh-directory .app-shell,.bh-activity .app-shell,.bh-map-page .app-shell{width:calc(100% - 48px);max-width:none;margin-inline:auto}
 .bh-home .site-header{max-width:none}
 @media(max-width:760px){.container,.main-content,.app-shell,.bh-directory .app-shell,.bh-activity .app-shell,.bh-map-page .app-shell{width:calc(100% - 24px)}.bh-directory .app-shell,.bh-activity .app-shell,.bh-map-page .app-shell{padding-inline:0}}
+
+/* Fluid desktop inner layouts: remove legacy 1120/1400px caps. */
+@media(min-width:901px){
+  .auth-page .auth-layout{width:100%;max-width:none;margin-inline:auto}
+  .bh-header-inner,.bh-header-search-bar{max-width:none;width:100%}
+}
