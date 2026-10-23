@@ -33,3 +33,36 @@ jobs:
         run: |
           php -l api/volunteer-dashboard.php
           php -l api/volunteer-listing-edit.php
+
+  migration-test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test-root-password
+          MYSQL_DATABASE: volunteer_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -ptest-root-password"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up PHP with MySQL PDO
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_mysql
+          coverage: none
+      - name: Apply and verify audit migration in disposable MySQL
+        env:
+          MYSQL_PWD: test-root-password
+        run: |
+          mysql -h 127.0.0.1 -uroot volunteer_test < sql/volunteer-edit-audit.sql
+          mysql -h 127.0.0.1 -uroot volunteer_test -e "SHOW CREATE TABLE bh_volunteer_edit_audit"
+          test "$(mysql -h 127.0.0.1 -uroot volunteer_test -N -e "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema='volunteer_test' AND table_name='bh_volunteer_edit_audit' AND column_name IN ('id','user_id','activity_id','before_json','after_json','created_at')")" = "6"
+          test "$(mysql -h 127.0.0.1 -uroot volunteer_test -N -e "SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema='volunteer_test' AND table_name='bh_volunteer_edit_audit' AND index_name IN ('PRIMARY','idx_activity_created','idx_user_created')")" = "3"
