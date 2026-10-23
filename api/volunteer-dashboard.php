@@ -78,11 +78,24 @@ try {
         FROM bh_activities a
         INNER JOIN bh_venues v ON v.activity_id = a.id
         WHERE (" . implode(' OR ', $regionChecks) . ")
+          AND NOT EXISTS (
+              SELECT 1
+              FROM bh_venues other_venue
+              WHERE other_venue.activity_id = a.id
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM bh_volunteer_assignments allowed_region
+                    WHERE allowed_region.user_id = :assigned_user
+                      AND allowed_region.is_active = 1
+                      AND LOWER(TRIM(allowed_region.region)) = LOWER(TRIM(other_venue.region))
+                )
+          )
         GROUP BY a.id, a.title, a.status
         ORDER BY a.title
         LIMIT 200
     ";
 
+    $params[':assigned_user'] = $userId;
     $stmt = $db->prepare($sql);
     $stmt->execute($params);
     volunteerDashboardReply(200, [
