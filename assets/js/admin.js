@@ -508,6 +508,10 @@ loadVenueSuggestions();
 verifyAdmin().then(()=>{document.documentElement.classList.remove("bh-admin-auth-pending");document.body.classList.remove("bh-admin-auth-pending");document.querySelector("#adminContent").hidden=false;loadDashboard();loadTestUsers()}).catch(error=>{if(error.authRequired){document.documentElement.classList.remove("bh-admin-auth-pending");document.body.classList.remove("bh-admin-auth-pending");const panel=document.createElement("div");panel.className="admin-panel";panel.setAttribute("role","alert");panel.style.cssText="max-width:620px;margin:3rem auto;padding:2rem;text-align:center";const h=document.createElement("h2");h.textContent="Admin sign-in required";const p=document.createElement("p");p.textContent="Your admin session is not active. Sign in to continue.";const a=document.createElement("a");a.className="button button-primary";a.href="/admin-login.html?next="+encodeURIComponent(location.pathname+location.search+location.hash);a.textContent="Sign in to admin";panel.append(h,p,a);document.querySelector("#adminContent")?.before(panel);return;}document.documentElement.classList.remove("bh-admin-auth-pending");document.body.classList.remove("bh-admin-auth-pending");const panel=document.createElement("div");panel.className="admin-panel";panel.setAttribute("role","alert");panel.style.cssText="max-width:620px;margin:3rem auto;padding:2rem;text-align:center";const heading=document.createElement("h2");heading.textContent="Admin connection unavailable";const detail=document.createElement("p");detail.textContent=error.message||"Could not verify your session. Please retry.";const retry=document.createElement("button");retry.className="button button-primary";retry.textContent="Retry connection";retry.addEventListener("click",()=>location.reload());panel.append(heading,detail,retry);document.querySelector("#adminContent")?.before(panel);});
 
 
+function confirmLegacyCsvImport(){
+ return window.confirm("This legacy CSV import writes directly to the live Bubba Hub activities database and can update existing listings. The automatic Sheets sync is preferred. Continue with this manual import?");
+}
+
 async function importActivityCsv(){
  const url=document.querySelector("#activityCsvUrl")?.value.trim(),status=document.querySelector("#activityImportStatus"),button=document.querySelector("#importActivityCsv");
  if(!url){status.textContent="Paste the published Google Sheets CSV link first.";status.classList.add("is-error");return;}
@@ -518,6 +522,7 @@ async function importActivityCsv(){
   const outputOk=(publishedUrl.searchParams.get("output")||"").toLowerCase()==="csv";
   if(publishedUrl.protocol!=="https:"||publishedUrl.hostname!=="docs.google.com"||!pathOk||!outputOk)throw new Error("invalid");
  }catch(_){status.textContent="Please use the published Google Sheets CSV link from File → Share → Publish to web → CSV.";status.classList.add("is-error");return;}
+ if(!confirmLegacyCsvImport())return;
  button.disabled=true;status.classList.remove("is-error");status.textContent="Fetching published Google Sheet…";
  try{const fd=new FormData();fd.append("csv_url",url);fd.append("mode",document.querySelector("#activityCsvMode")?.value||"update");const r=await fetch("api/admin-import-export.php",{method:"POST",credentials:"same-origin",body:fd});const raw=await r.text();let d;try{d=JSON.parse(raw);}catch{throw new Error("CSV server returned "+(raw.trim()?"invalid data":"an empty response")+" (HTTP "+r.status+"). Check PHP logs.");}if(!r.ok||!d.ok)throw new Error(d.error||"Google Sheets import failed.");status.textContent="✓ Import complete. "+d.created+" created, "+d.updated+" updated, "+d.skipped+" skipped, "+d.failed+" failed.";if(d.errors?.length)status.textContent+=" "+d.errors.join(" ");await loadDashboard();}catch(e){status.textContent=e.message||"Google Sheets import failed.";status.classList.add("is-error");}finally{button.disabled=false;}
 }
@@ -527,6 +532,7 @@ async function uploadActivityCsv(){
  if(!file){status.textContent="Choose a CSV file first.";status.classList.add("is-error");return;}
  if(!/\.csv$/i.test(file.name)){status.textContent="Please choose a .csv file.";status.classList.add("is-error");return;}
  if(file.size>10*1024*1024){status.textContent="CSV files must be 10 MB or smaller.";status.classList.add("is-error");return;}
+ if(!confirmLegacyCsvImport())return;
  button.disabled=true;status.classList.remove("is-error");status.textContent="Uploading CSV…";
  try{
   const fd=new FormData();fd.append("csv",file);fd.append("mode",document.querySelector("#activityCsvMode")?.value||"update");

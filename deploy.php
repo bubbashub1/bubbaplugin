@@ -24,6 +24,20 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// Reject deployment requests sent by a different website.
+$origin = (string)($_SERVER['HTTP_ORIGIN'] ?? '');
+if ($origin !== '') {
+    $originHost = parse_url($origin, PHP_URL_HOST);
+    $requestHost = explode(':', (string)($_SERVER['HTTP_HOST'] ?? ''))[0];
+    $originScheme = parse_url($origin, PHP_URL_SCHEME);
+    $expectedScheme = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') ? 'https' : 'http';
+    if (!$originHost || strcasecmp($originHost, $requestHost) !== 0 || $originScheme !== $expectedScheme) {
+        http_response_code(403);
+        echo json_encode(['ok' => false, 'error' => 'Invalid deployment request origin']);
+        exit;
+    }
+}
+
 if (empty($_SESSION['bh_admin_authenticated'])) {
     http_response_code(401);
     echo json_encode(['ok' => false, 'error' => 'Admin login required']);
