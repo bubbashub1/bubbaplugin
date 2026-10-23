@@ -90,6 +90,13 @@ try {
   $db->query("SELECT RELEASE_LOCK('expo-capacity-bubba-me-2027')");
   expoBookingReply(409,['ok'=>false,'error'=>'capacity_reached']);
  }
+ // Existing reservations must be allocated before hourly capacity can be trusted.
+ $unassigned=$db->query("SELECT COUNT(*) FROM bh_expo_reservations WHERE event_key='bubba-me-2027' AND booking_status IN ('pending','confirmed') AND arrival_slot IS NULL");
+ if((int)$unassigned->fetchColumn()>0){
+  $db->rollBack();
+  $db->query("SELECT RELEASE_LOCK('expo-capacity-bubba-me-2027')");
+  expoBookingReply(503,['ok'=>false,'error'=>'arrival_slots_not_ready']);
+ }
  $slotCount=$db->prepare("SELECT COALESCE(SUM(adults+children),0) FROM bh_expo_reservations WHERE event_key='bubba-me-2027' AND arrival_slot=? AND booking_status IN ('pending','confirmed')");
  $slotCount->execute([$slot]);
  if((int)$slotCount->fetchColumn()+$adult+$child>75){$db->rollBack();$db->query("SELECT RELEASE_LOCK('expo-capacity-bubba-me-2027')");expoBookingReply(409,['ok'=>false,'error'=>'slot_full']);}
