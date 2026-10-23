@@ -16,8 +16,8 @@ body{margin:0;background:#fffdf9;color:var(--ink);font-family:Quicksand,Arial,sa
 .volunteer-nav a:hover{text-decoration:underline}
 .volunteer-nav .nav-account{background:var(--forest);color:white;padding:12px 25px;border-radius:999px}
 main.volunteer-main{width:min(var(--bh-max),calc(100% - 32px));max-width:var(--bh-max);margin:0 auto;padding:24px 0 60px}
-.volunteer-hero{min-height:260px;border-radius:24px;overflow:hidden;background:#e1f4ec url('/images/logos/cheerful-community-volunteer-team-banner-20261023-165300-eb13b0.png') center/cover no-repeat;position:relative;display:flex;align-items:flex-end;padding:24px}
-.hero-tag{display:inline-block;border-radius:999px;padding:10px 17px;background:#ffffffec;color:var(--forest);font-weight:900;box-shadow:0 3px 15px #173d2a18}
+.volunteer-hero{min-height:310px;border-radius:24px;overflow:hidden;background:#e1f4ec url('/images/logos/cheerful-community-volunteer-team-banner-20261023-165300-eb13b0.png') center/cover no-repeat;position:relative;display:flex;align-items:center;padding:clamp(22px,4vw,48px)}
+.hero-copy{max-width:51%;position:relative;z-index:1}.hero-copy h1{font-size:clamp(30px,3.7vw,52px);line-height:1.1;font-weight:800;color:var(--forest);margin:16px 0 12px}.hero-copy p{font-size:clamp(15px,1.5vw,19px);font-weight:650;line-height:1.5;color:var(--ink);margin:0}.hero-tag{display:inline-block;border-radius:999px;padding:10px 17px;background:#ffffffec;color:var(--forest);font-weight:900;box-shadow:0 3px 15px #173d2a18}
 .volunteer-intro{margin:20px 0 26px;display:grid;grid-template-columns:1fr minmax(260px,390px);gap:24px;align-items:stretch}
 .intro-copy{background:linear-gradient(125deg,#e8f6ee,#fef2e1);border-radius:24px;padding:24px}
 .intro-copy h1{font-size:clamp(28px,3.2vw,40px);line-height:1.12;color:var(--forest);margin:0 0 12px;font-weight:900}
@@ -59,9 +59,9 @@ main.volunteer-main{width:min(var(--bh-max),calc(100% - 32px));max-width:var(--b
 #edit-form button{margin-right:10px}
 #edit-cancel{border:1px solid #b6d0c2;background:white;color:var(--forest);border-radius:999px;padding:12px 18px;cursor:pointer}
 .hub-note{color:var(--muted);margin:22px 0 0}
-@media(max-width:950px){.volunteer-nav{gap:12px}.benefits{grid-template-columns:repeat(2,1fr)}.volunteer-intro{grid-template-columns:1fr 330px}.volunteer-hero{min-height:220px}}
-@media(max-width:700px){.volunteer-header{align-items:flex-start;flex-direction:column}.volunteer-header img{height:46px}.volunteer-nav{font-size:13px}.volunteer-intro,.hub-grid{grid-template-columns:1fr}.volunteer-hero{min-height:170px;background-position:center}.intro-copy{padding:22px}.benefits{grid-template-columns:1fr 1fr;gap:8px}.benefit{flex-direction:column}.hub-section{padding:19px}.hub-section h2{font-size:23px}}
-@media(max-width:420px){.benefits{grid-template-columns:1fr}.volunteer-hero{min-height:140px}.volunteer-nav .nav-account{padding:8px 14px}}
+.volunteer-actions{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:24px 28px;margin:18px 0 28px;border:1px solid #dbe9de;border-radius:22px;background:linear-gradient(115deg,#eaf6ed,#fff7eb)}.volunteer-actions h2{font-size:clamp(21px,2.5vw,28px);margin:0 0 6px;color:var(--forest)}.volunteer-actions p{margin:0;color:var(--muted)}.volunteer-action-buttons{display:flex;gap:12px;flex-wrap:wrap;flex-shrink:0}.volunteer-action-buttons a{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-width:165px;padding:13px 19px;border-radius:999px;font-weight:800;text-decoration:none}.volunteer-action-buttons .signin-button{margin:0;width:auto;color:white;background:var(--forest)}.join-button{background:white;border:2px solid var(--forest);color:var(--forest)}.join-button:hover{background:#e0f2e5}@media(max-width:950px){.volunteer-nav{gap:12px}.benefits{grid-template-columns:repeat(2,1fr)}.volunteer-intro{grid-template-columns:1fr 330px}.volunteer-hero{min-height:260px}}
+@media(max-width:700px){.volunteer-actions{align-items:stretch;flex-direction:column;padding:20px}.volunteer-action-buttons{width:100%}.volunteer-action-buttons a{flex:1}.hero-copy{max-width:57%}.hero-copy h1{font-size:clamp(24px,5vw,34px)}.volunteer-header{align-items:flex-start;flex-direction:column}.volunteer-header img{height:46px}.volunteer-nav{font-size:13px}.volunteer-intro,.hub-grid{grid-template-columns:1fr}.volunteer-hero{min-height:225px;background-position:center}.intro-copy{padding:22px}.benefits{grid-template-columns:1fr 1fr;gap:8px}.benefit{flex-direction:column}.hub-section{padding:19px}.hub-section h2{font-size:23px}}
+@media(max-width:420px){.hero-copy{max-width:64%}.hero-copy h1{font-size:24px}.hero-copy p{font-size:13px}.volunteer-action-buttons{flex-direction:column}.volunteer-action-buttons a{width:100%}.benefits{grid-template-columns:1fr}.volunteer-hero{min-height:195px}.volunteer-nav .nav-account{padding:8px 14px}}
 @media(max-width:600px){main.volunteer-main{width:calc(100% - 24px);padding-top:16px}.volunteer-hero{background-position:center}.hero-tag{padding:7px 12px;font-size:13px}.volunteer-intro{gap:14px}.intro-copy{padding:20px}.signin-panel{padding:20px}}
 </style>
 </head>
@@ -74,11 +74,11 @@ main.volunteer-main{width:min(var(--bh-max),calc(100% - 32px));max-width:var(--b
 </nav><a class="button button-soft" href="/account">My account</a>
 </header>
 <main class="volunteer-main">
-<section class="volunteer-hero" aria-label="Volunteer Hub community banner"><span class="hero-tag">💚 Volunteer Hub</span></section>
-<div class="volunteer-intro">
-<section class="intro-copy"><h1>Helping our local families</h1><p>Support your community by helping to keep Bubba Hub listings up to date. Every accurate listing makes it easier for families to find something wonderful nearby.</p></section>
-<aside class="signin-panel" id="signin-panel"><span class="signin-icon" aria-hidden="true">🔒</span><h2>Welcome to your Volunteer Hub</h2><p>Sign in to access your assigned areas and listings.</p><a class="signin-button" href="/auth.html">Sign in to your account →</a><p>If you need volunteer access, please contact the Bubba Hub team.</p></aside>
-</div>
+<section class="volunteer-hero" aria-label="Volunteer Hub community banner"><div class="hero-copy"><span class="hero-tag">💚 Volunteer Hub</span><h1>Helping our local families</h1><p>Support your community by helping to keep Bubba Hub listings up to date.</p></div></section>
+<section class="volunteer-actions" id="signin-panel" aria-label="Volunteer access">
+<div><h2>Be part of our community</h2><p>Already helping out? Sign in to your hub. Interested in volunteering? We'd love to hear from you.</p></div>
+<div class="volunteer-action-buttons"><a class="signin-button" href="/auth.html">🔒 Volunteer login</a><a class="join-button" href="/team">💚 Join the team</a></div>
+</section>
 <div class="benefits" aria-label="How volunteers help">
 <div class="benefit"><span class="benefit-icon">👥</span><span><strong>Local focus</strong>Look after activities in your area.</span></div>
 <div class="benefit"><span class="benefit-icon">✏️</span><span><strong>Update listings</strong>Help keep titles and descriptions accurate.</span></div>
