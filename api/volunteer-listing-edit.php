@@ -4,7 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 function volunteerReply(int $code,array $data): never { http_response_code($code); echo json_encode($data); exit; }
-if(!in_array($_SERVER['REQUEST_METHOD']??'',['GET','POST'],true)) volunteerReply(405,['ok'=>false,'error'=>'method_not_allowed']);
+if(!in_array($_SERVER['REQUEST_METHOD']??'',['GET','POST'],true)){header('Allow: GET, POST');volunteerReply(405,['ok'=>false,'error'=>'method_not_allowed']);}
 if(session_status()!==PHP_SESSION_ACTIVE){
  session_name('BUBBAHUBSESSID');
  session_set_cookie_params(['path'=>'/','httponly'=>true,'secure'=>!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off','samesite'=>'Lax']);
@@ -46,7 +46,7 @@ try{
  }
  $title=trim((string)($body['title']??''));
  $description=trim((string)($body['description']??''));
- if(strlen($title)<3||strlen($title)>600||strlen($description)>24000)
+ if(strlen($title)<3||strlen($title)>200||strlen($description)>8000)
    volunteerReply(422,['ok'=>false,'error'=>'invalid_fields']);
  $db->beginTransaction();
  $q=$db->prepare("SELECT id,title,description FROM bh_activities WHERE id=? FOR UPDATE");
