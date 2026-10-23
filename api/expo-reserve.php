@@ -57,8 +57,10 @@ $email=trim((string)($data['contact_email']??''));
 $adult=$data['adults']??null;
 $child=$data['children']??null;
 $consent=$data['contact_consent']??false;
+$slot=(string)($data['arrival_slot']??'');
+$slots=['10:30','11:30','12:30','13:30'];
 if(strlen($name)<2||strlen($name)>150||!filter_var($email,FILTER_VALIDATE_EMAIL)||strlen($email)>190
- || !is_int($adult)||!is_int($child)||$adult<1||$child<0||($adult+$child)<1||($adult+$child)>12||$consent!==true){
+ || !is_int($adult)||!is_int($child)||$adult<1||$child<0||($adult+$child)<1||($adult+$child)>12||$consent!==true||!in_array($slot,$slots,true)){
  expoBookingReply(422,['ok'=>false,'error'=>'invalid_booking_details']);
 }
 // Expo security requires Turnstile even if account registration has it disabled.
@@ -88,9 +90,12 @@ try {
   $db->query("SELECT RELEASE_LOCK('expo-capacity-bubba-me-2027')");
   expoBookingReply(409,['ok'=>false,'error'=>'capacity_reached']);
  }
+ $slotCount=$db->prepare("SELECT COALESCE(SUM(adults+children),0) FROM bh_expo_reservations WHERE event_key='bubba-me-2027' AND arrival_slot=? AND booking_status IN ('pending','confirmed')");
+ $slotCount->execute([$slot]);
+ if((int)$slotCount->fetchColumn()+$adult+$child>75){$db->rollBack();$db->query("SELECT RELEASE_LOCK('expo-capacity-bubba-me-2027')");expoBookingReply(409,['ok'=>false,'error'=>'slot_full']);}
  $ref='BH-'.strtoupper(bin2hex(random_bytes(4)));
- $q=$db->prepare("INSERT INTO bh_expo_reservations (public_reference,event_key,contact_name,contact_email,adults,children,ticket_type,amount_pence,payment_status,booking_status,email_status,consent_at) VALUES (?,'bubba-me-2027',?,?,?,?,'free',0,'not_required','pending','not_sent',UTC_TIMESTAMP())");
- $q->execute([$ref,$name,$email,$adult,$child]);
+ $q=$db->prepare("INSERT INTO bh_expo_reservations (public_reference,event_key,contact_name,contact_email,adults,children,ticket_type,amount_pence,payment_status,booking_status,email_status,consent_at,arrival_slot) VALUES (?,'bubba-me-2027',?,?,?,?,'free',0,'not_required','pending','not_sent',UTC_TIMESTAMP(),?)");
+ $q->execute([$ref,$name,$email,$adult,$child,$slot]);
  $reservationId=(int)$db->lastInsertId();
  $db->commit();
  $_SESSION['expo_booking_last']=time();
