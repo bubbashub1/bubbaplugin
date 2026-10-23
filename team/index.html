@@ -5,7 +5,7 @@
 <title>Meet the Team | Bubba Hub</title>
 <meta name="description" content="Meet the people and local volunteers helping Bubba Hub support families across Devon and Cornwall.">
 <link rel="canonical" href="https://bubbahub.co.uk/team">
-<link rel="stylesheet" href="/assets/css/styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/styles.css">
 <style>
 .team-page{max-width:1120px;margin:0 auto;padding:clamp(24px,5vw,64px) 20px 80px;font-family:Quicksand,Arial,sans-serif;color:#204a3b}
 .team-hero{background:linear-gradient(125deg,#e1f4e7,#fff0d9);border-radius:30px;padding:clamp(26px,6vw,65px);margin-bottom:35px}
@@ -21,19 +21,30 @@
 .team-btn{display:inline-block;background:#17684f;color:white!important;border-radius:999px;padding:14px 23px;text-decoration:none;font-weight:800}
 .team-btn:focus-visible{outline:3px solid #ef8c43;outline-offset:3px}
 .team-note{font-size:.9rem;color:#597267;margin-top:15px}
+.team-page{width:min(var(--bh-max),calc(100% - 32px));max-width:var(--bh-max);padding:24px 0 70px;color:#103d36}
+.team-hero{min-height:310px;background:#e1f4ec url('/images/logos/cheerful-community-volunteer-team-banner-20261023-165300-eb13b0.png') center/cover no-repeat;border-radius:24px;display:flex;align-items:center;padding:clamp(22px,4vw,48px);margin-bottom:24px}
+.team-hero-copy{max-width:51%}.team-eyebrow{display:inline-block;background:#fffffff0;border-radius:999px;padding:9px 15px;letter-spacing:0;text-transform:none;font-size:14px;color:#074c3b}
+.team-hero h1{font-size:clamp(30px,3.7vw,52px);color:#074c3b;line-height:1.1;margin:16px 0 12px}
+.team-hero p{font-size:clamp(15px,1.5vw,19px);font-weight:650;line-height:1.5;color:#103d36;margin:0}
+.team-actions{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:24px 28px;margin:0 0 30px;background:linear-gradient(115deg,#eaf6ed,#fff7eb);border:1px solid #dbe9de;border-radius:22px}
+.team-actions h2{margin:0 0 6px;color:#074c3b}.team-actions p{margin:0;color:#46665e}
+.team-action-links{display:flex;gap:12px;flex-wrap:wrap}.team-action-links a{border-radius:999px;padding:13px 20px;font-weight:800;text-decoration:none;white-space:nowrap}
+.team-action-links .primary{background:#074c3b;color:white}.team-action-links .secondary{background:white;border:2px solid #074c3b;color:#074c3b}
+.team-card{border-radius:20px}.team-callout{background:linear-gradient(115deg,#eaf6ed,#fff7eb);border:1px solid #dbe9de}
+@media(max-width:700px){.team-page{width:calc(100% - 24px);padding-top:16px}.team-hero{min-height:225px}.team-hero-copy{max-width:57%}.team-hero h1{font-size:clamp(24px,5vw,34px)}.team-actions{flex-direction:column;align-items:stretch;padding:20px}.team-action-links a{flex:1;text-align:center}}
+@media(max-width:420px){.team-hero{min-height:195px}.team-hero-copy{max-width:64%}.team-hero h1{font-size:24px}.team-hero p{font-size:13px}.team-action-links{flex-direction:column}}
 </style>
 </head>
 <body>
-<header class="site-header"><a class="brand" href="/"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="/directory.html">Find activities</a><a href="/events.html">Events</a><a href="/my-hub.html">My Hub</a><a href="/leader.html">Class Leaders</a></nav><a class="button button-soft" href="/account.html">My account</a></header>
+<header class="site-header"><a class="brand" href="/" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><button class="mobile-nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="team-nav"><span></span><span></span><span></span></button><nav class="main-nav" id="team-nav" aria-label="Main navigation"><a href="/directory">Find activities</a><a href="/my-hub">My Hub</a><a href="/help-support">Support &amp; Guidance</a><a href="/leader">Class Leaders</a><a href="/account">My Account</a></nav><a class="button button-soft" href="/account">My account</a></header>
 <main class="team-page">
-<section class="team-hero"><div class="team-eyebrow">The people behind Bubba Hub</div><h1>Meet our team 💚</h1><p>Bubba Hub is growing with the help of people who care about making local family life easier. From checking class details to supporting community events, every contribution makes a difference.</p></section>
-<section aria-labelledby="team-heading"><h2 id="team-heading">Our growing community team</h2><p class="team-intro">We're building a friendly volunteer network across Devon and Cornwall. As team members join and agree to be featured, you'll be able to meet them here.</p>
+<section class="team-hero"><div class="team-hero-copy"><span class="team-eyebrow">💚 The people behind Bubba Hub</span><h1>Meet our team</h1><p>Local people helping families discover activities, events and community support.</p></div></section><section class="team-actions" aria-label="Volunteer links"><div><h2>Be part of our community</h2><p>Meet our growing team or lend a hand in your area.</p></div><div class="team-action-links"><a class="primary" href="/team-hub">🔒 Volunteer Hub</a><a class="secondary" href="#join-the-team">💚 Join the team</a></div></section><section id="meet-the-team" aria-labelledby="team-heading"><h2 id="team-heading">Our growing community team</h2><p class="team-intro">We're building a friendly volunteer network across Devon and Cornwall. As team members join and agree to be featured, you'll be able to meet them here.</p>
 <div class="team-grid">
 <article class="team-card"><div class="team-avatar" aria-hidden="true">💚</div><h3>Bubba Hub team</h3><p>Keeping the directory running, connecting families with activities and helping our local community grow.</p></article>
 <article class="team-card"><div class="team-avatar" aria-hidden="true">📍</div><h3>Local area coordinators</h3><p>Helping keep information accurate and up to date in their assigned areas, from Torbay and Exeter to the wider South West.</p></article>
 <article class="team-card"><div class="team-avatar" aria-hidden="true">✨</div><h3>Community volunteers</h3><p>Supporting listings, events, outreach and all the small tasks that make Bubba Hub useful for families.</p></article>
 </div></section>
-<section class="team-callout" aria-labelledby="join-heading"><div><h2 id="join-heading">Would you like to join the team?</h2><p>Whether you can spare an hour to check local listings or want to help coordinate your area, we'd love to hear from you. No technical background is needed for many of our roles.</p><p class="team-note">Our volunteer application form is coming soon. For now, get in touch to express your interest.</p></div><a class="team-btn" href="mailto:contact@bubbahub.co.uk?subject=Volunteer%20with%20Bubba%20Hub">Register your interest →</a></section>
+<section class="team-callout" id="join-the-team" aria-labelledby="join-heading"><div><h2 id="join-heading">Would you like to join the team?</h2><p>Whether you can spare an hour to check local listings or want to help coordinate your area, we'd love to hear from you. No technical background is needed for many of our roles.</p><p class="team-note">Our volunteer application form is coming soon. For now, get in touch to express your interest.</p></div><a class="team-btn" href="mailto:contact@bubbahub.co.uk?subject=Volunteer%20with%20Bubba%20Hub">Register your interest →</a></section>
 <p class="team-note">We only publish volunteer names, photographs and personal profiles with their permission.</p>
 </main>
-</body></html>
+<script>(function(){const h=document.querySelector('.site-header'),b=document.querySelector('.mobile-nav-toggle');if(b&&h)b.addEventListener('click',()=>{const open=h.classList.toggle('mobile-menu-open');b.setAttribute('aria-expanded',String(open))})})();</script></body></html>
