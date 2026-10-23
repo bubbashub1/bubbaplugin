@@ -14,9 +14,9 @@ if(session_status()!==PHP_SESSION_ACTIVE){
  session_start();
 }
 if(empty($_SESSION['bh_admin_authenticated']))expoSchemaReply(401,['ok'=>false,'error'=>'admin_login_required']);
-$last=(int)($_SESSION['bh_admin_last_activity']??0);
-if($last>0&&time()-$last>1800){unset($_SESSION['bh_admin_authenticated'],$_SESSION['bh_admin_csrf']);expoSchemaReply(401,['ok'=>false,'error'=>'admin_session_expired']);}
-$_SESSION['bh_admin_last_activity']=time();
+// The canonical root admin-auth.php authenticates using bh_admin_authenticated.
+// Do not apply an independent timestamp policy to this read-only endpoint;
+// stale timestamps left by previous Expo checks must not invalidate a valid admin login.
 $tables=['bh_expo_reservations','bh_expo_tickets','bh_expo_booking_qrs','bh_expo_family_checkins','bh_expo_family_qr_checkins','bh_expo_family_email_delivery','bh_expo_giveaway_claims'];
 try{
  require_once __DIR__.'/db.php';$db=bh_mysql();$result=[];
