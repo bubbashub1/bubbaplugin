@@ -13,6 +13,15 @@ function expoBookingReply(int $code,array $body): never {
  echo json_encode($body,JSON_UNESCAPED_SLASHES);
  exit;
 }
+$wpLoader=dirname(__DIR__).'/wp-load.php';
+if(is_file($wpLoader)&&is_readable($wpLoader)){ob_start();try{require_once $wpLoader;}finally{ob_end_clean();}}
+$method=$_SERVER['REQUEST_METHOD']??'GET';
+if($method==='GET'){
+ require_once __DIR__.'/turnstile-settings.php';
+ $site=trim(bh_turnstile_setting('BUBBAHUB_TURNSTILE_SITE_KEY'));
+ $enabled=defined('BUBBAHUB_EXPO_BOOKINGS_ENABLED')&&constant('BUBBAHUB_EXPO_BOOKINGS_ENABLED')===true;
+ expoBookingReply(200,['ok'=>true,'bookings_open'=>$enabled,'turnstile_site_key'=>$site]);
+}
 if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST'){
  header('Allow: POST');
  expoBookingReply(405,['ok'=>false,'error'=>'method_not_allowed']);
@@ -30,6 +39,7 @@ if((int)($_SERVER['CONTENT_LENGTH']??0)>8192)expoBookingReply(413,['ok'=>false,'
 $raw=file_get_contents('php://input',false,null,0,8193);
 $data=json_decode($raw?:'',true);
 if(!is_array($data))expoBookingReply(400,['ok'=>false,'error'=>'invalid_json']);
+if(!empty($data['website_confirm']))expoBookingReply(422,['ok'=>false,'error'=>'invalid_submission']);
 $name=trim((string)($data['contact_name']??''));
 $email=trim((string)($data['contact_email']??''));
 $adult=$data['adults']??null;
