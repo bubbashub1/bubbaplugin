@@ -7,10 +7,12 @@ header('X-Content-Type-Options: nosniff');
 function expoSchemaReply(int $code,array $body): never {http_response_code($code);echo json_encode($body,JSON_UNESCAPED_SLASHES);exit;}
 if(($_SERVER['REQUEST_METHOD']??'GET')!=='GET'){header('Allow: GET');expoSchemaReply(405,['ok'=>false,'error'=>'method_not_allowed']);}
 if(!in_array(strtolower((string)($_SERVER['HTTP_HOST']??'')),['bubbahub.co.uk','staging.bubbahub.co.uk'],true))expoSchemaReply(404,['ok'=>false,'error'=>'not_found']);
-ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');
-session_name('BUBBAHUB_ADMINSESSID');
-session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
-session_start();
+if(session_status()!==PHP_SESSION_ACTIVE){
+ ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');
+ session_name('BUBBAHUB_ADMINSESSID');
+ session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>!empty($_SERVER['HTTPS'])&&strtolower((string)$_SERVER['HTTPS'])!=='off','httponly'=>true,'samesite'=>'Lax']);
+ session_start();
+}
 if(empty($_SESSION['bh_admin_authenticated']))expoSchemaReply(401,['ok'=>false,'error'=>'admin_login_required']);
 $last=(int)($_SESSION['bh_admin_last_activity']??0);
 if($last>0&&time()-$last>1800){unset($_SESSION['bh_admin_authenticated'],$_SESSION['bh_admin_csrf']);expoSchemaReply(401,['ok'=>false,'error'=>'admin_session_expired']);}
