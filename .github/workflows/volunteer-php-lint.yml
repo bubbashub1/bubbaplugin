@@ -1,0 +1,35 @@
+name: Volunteer Hub PHP lint
+
+on:
+  pull_request:
+    paths:
+      - 'api/volunteer-dashboard.php'
+      - 'api/volunteer-listing-edit.php'
+      - '.github/workflows/volunteer-php-lint.yml'
+  push:
+    branches:
+      - main
+      - plan/volunteer-dashboard-20261023
+    paths:
+      - 'api/volunteer-dashboard.php'
+      - 'api/volunteer-listing-edit.php'
+      - '.github/workflows/volunteer-php-lint.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  php-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+      - name: Validate Volunteer Hub PHP syntax
+        run: |
+          php -l api/volunteer-dashboard.php
+          php -l api/volunteer-listing-edit.php
