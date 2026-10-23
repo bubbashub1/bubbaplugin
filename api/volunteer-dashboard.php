@@ -36,10 +36,14 @@ try {
     require __DIR__ . '/db.php';
     $db = bh_mysql();
 
-    $user = $db->prepare("SELECT id FROM bh_users WHERE id = ? AND status = 'active' LIMIT 1");
+    $user = $db->prepare("SELECT role FROM bh_users WHERE id = ? AND status = 'active' LIMIT 1");
     $user->execute([$userId]);
-    if (!$user->fetchColumn()) {
+    $role = $user->fetchColumn();
+    if ($role === false) {
         volunteerDashboardReply(403, ['ok' => false, 'error' => 'inactive_account']);
+    }
+    if ($role !== 'volunteer') {
+        volunteerDashboardReply(403, ['ok' => false, 'error' => 'volunteer_role_required']);
     }
 
     $assignment = $db->prepare(
@@ -58,8 +62,6 @@ try {
         ]);
     }
 
-    // Match regions case-insensitively, as the listing editor does. Aggregate venue
-    // labels so activities with several venues still appear once in the dashboard.
     $regionChecks = [];
     $params = [];
     foreach ($regions as $index => $region) {
@@ -68,6 +70,7 @@ try {
         $params[$key] = $region;
     }
 
+    // Use the canonical activity_venues junction so multi-venue listings are checked correctly.
     $sql = "
         SELECT
             a.id,
@@ -76,18 +79,20 @@ try {
             GROUP_CONCAT(DISTINCT NULLIF(TRIM(v.town), '') ORDER BY v.town SEPARATOR ', ') AS town,
             GROUP_CONCAT(DISTINCT NULLIF(TRIM(v.region), '') ORDER BY v.region SEPARATOR ', ') AS region
         FROM bh_activities a
-        INNER JOIN bh_venues v ON v.activity_id = a.id
+        INNER JOIN bh_activity_venues av ON av.activity_id = a.id
+        INNER JOIN bh_venues v ON v.id = av.venue_id
         WHERE (" . implode(' OR ', $regionChecks) . ")
           AND NOT EXISTS (
               SELECT 1
-              FROM bh_venues other_venue
-              WHERE other_venue.activity_id = a.id
+              FROM bh_activity_venues av_other
+              INNER JOIN bh_venues v_other ON v_other.id = av_other.venue_id
+              WHERE av_other.activity_id = a.id
                 AND NOT EXISTS (
                     SELECT 1
                     FROM bh_volunteer_assignments allowed_region
                     WHERE allowed_region.user_id = :assigned_user
                       AND allowed_region.is_active = 1
-                      AND LOWER(TRIM(allowed_region.region)) = LOWER(TRIM(other_venue.region))
+                      AND LOWER(TRIM(allowed_region.region)) = LOWER(TRIM(v_other.region))
                 )
           )
         GROUP BY a.id, a.title, a.status
