@@ -3,7 +3,7 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 function out(int $status,array $body): never {http_response_code($status);echo json_encode($body);exit;}
-if(session_status()!==PHP_SESSION_ACTIVE){session_set_cookie_params(['httponly'=>true,'secure'=>!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off','samesite'=>'Lax','path'=>'/']);session_start();}
+if(session_status()!==PHP_SESSION_ACTIVE){session_name('BUBBAHUBSESSID');session_set_cookie_params(['httponly'=>true,'secure'=>!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off','samesite'=>'Lax','path'=>'/']);session_start();}
 if(empty($_SESSION['bh_admin_authenticated']))out(403,['ok'=>false,'error'=>'admin_required']);
 try{
 require __DIR__.'/db.php';$db=bh_mysql();
