@@ -10,9 +10,12 @@ function bh_expo_confirmation_content(array $reservation): array {
     $reference=trim((string)($reservation['public_reference']??''));
     $adults=(int)($reservation['adults']??0);
     $children=(int)($reservation['children']??0);
-    if($name==='' || !preg_match('/^[A-F0-9]{24}$/',$reference) || $adults<1 || $adults>12 || $children<0 || $adults+$children>12){
+    if($name==='' || !preg_match('/^(?:[A-F0-9]{24}|BH-[A-F0-9]{8})$/',$reference) || $adults<1 || $adults>12 || $children<0 || $adults+$children>12){
         throw new InvalidArgumentException('Invalid Expo reservation for confirmation.');
     }
+    $slots=['10:30'=>'10:30–11:30am','11:30'=>'11:30am–12:30pm','12:30'=>'12:30–1:30pm','13:30'=>'1:30–2:30pm'];
+    $arrival=$slots[(string)($reservation['arrival_slot']??'')]??'Not assigned (existing booking)';
+    $safeArrival=htmlspecialchars($arrival,ENT_QUOTES,'UTF-8');
     $safeName=htmlspecialchars($name,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
     $safeReference=htmlspecialchars($reference,ENT_QUOTES,'UTF-8');
     $html='<!doctype html><html lang="en"><body style="font-family:Arial,sans-serif;color:#163b30;background:#f7faf6;padding:24px">'
@@ -20,13 +23,14 @@ function bh_expo_confirmation_content(array $reservation): array {
         .'<h1 style="color:#195c48">Bubba &amp; Me Expo</h1>'
         .'<p>Hello '.$safeName.',</p><p>Your free visitor booking is confirmed.</p>'
         .'<p><strong>Saturday 9 January 2027</strong><br>10:30am–2:30pm<br>Acorn Centre, Torquay</p>'
+         .'<p><strong>Your arrival window:</strong> '.$safeArrival.'</p><p>You may stay until the event closes at 2:30pm.</p>'
         .'<p><strong>Booking reference:</strong> '.$safeReference.'</p>'
         .'<p><strong>Adult tickets:</strong> '.$adults.'<br><strong>Children attending:</strong> '.$children.'</p>'
         .'<p>Children are counted in your booking and do not need individual QR tickets.</p>'
         .'<p>Your adult QR tickets will be provided separately once ticket delivery is enabled.</p>'
         .'<p>Questions? Email contact@bubbahub.co.uk.</p>'
         .'</div></body></html>';
-    $plain="Hello ".$name.",\nYour free Bubba & Me Expo booking is confirmed.\nSaturday 9 January 2027, 10:30am–2:30pm, Acorn Centre, Torquay.\nBooking reference: ".$reference."\nAdult tickets: ".$adults."\nChildren attending: ".$children."\nChildren do not need individual QR tickets.\nAdult QR tickets will be provided separately once delivery is enabled.\nQuestions: contact@bubbahub.co.uk";
+    $plain="Hello ".$name.",\nYour free Bubba & Me Expo booking is confirmed.\nSaturday 9 January 2027, 10:30am–2:30pm, Acorn Centre, Torquay.\nArrival window: ".$arrival." (you may stay until 2:30pm).\nBooking reference: ".$reference."\nAdult tickets: ".$adults."\nChildren attending: ".$children."\nChildren do not need individual QR tickets.\nAdult QR tickets will be provided separately once delivery is enabled.\nQuestions: contact@bubbahub.co.uk";
     return ['subject'=>'Bubba & Me Expo — booking confirmation '.$reference,'html'=>$html,'plain'=>$plain];
 }
 /**
