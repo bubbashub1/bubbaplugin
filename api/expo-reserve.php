@@ -16,11 +16,14 @@ function expoBookingReply(int $code,array $body): never {
 $wpLoader=dirname(__DIR__).'/wp-load.php';
 if(is_file($wpLoader)&&is_readable($wpLoader)){ob_start();try{require_once $wpLoader;}finally{ob_end_clean();}}
 $method=$_SERVER['REQUEST_METHOD']??'GET';
+ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');
+session_name('BH_EXPO_BOOKING');session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);session_start();
+if(empty($_SESSION['expo_booking_csrf']))$_SESSION['expo_booking_csrf']=bin2hex(random_bytes(32));
 if($method==='GET'){
  require_once __DIR__.'/turnstile-settings.php';
  $site=trim(bh_turnstile_setting('BUBBAHUB_TURNSTILE_SITE_KEY'));
  $enabled=defined('BUBBAHUB_EXPO_BOOKINGS_ENABLED')&&constant('BUBBAHUB_EXPO_BOOKINGS_ENABLED')===true;
- expoBookingReply(200,['ok'=>true,'bookings_open'=>$enabled,'turnstile_site_key'=>$site]);
+ expoBookingReply(200,['ok'=>true,'bookings_open'=>$enabled,'turnstile_site_key'=>$site,'csrf_token'=>$_SESSION['expo_booking_csrf']]);
 }
 if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST'){
  header('Allow: POST');
@@ -32,8 +35,8 @@ $origin=(string)($_SERVER['HTTP_ORIGIN']??'');
 $referer=(string)($_SERVER['HTTP_REFERER']??'');
 $source=$origin!==''?$origin:$referer;
 if($source===''||parse_url($source,PHP_URL_SCHEME)!=='https'||strtolower((string)parse_url($source,PHP_URL_HOST))!==$host)expoBookingReply(403,['ok'=>false,'error'=>'invalid_origin']);
-ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');
-session_name('BH_EXPO_BOOKING');session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);session_start();
+$csrf=(string)($_SERVER['HTTP_X_CSRF_TOKEN']??'');
+if($csrf===''||!hash_equals((string)$_SESSION['expo_booking_csrf'],$csrf))expoBookingReply(403,['ok'=>false,'error'=>'invalid_csrf']);
 if(time()-(int)($_SESSION['expo_booking_last']??0)<45)expoBookingReply(429,['ok'=>false,'error'=>'please_wait_before_retrying']);
 if(!defined('BUBBAHUB_EXPO_BOOKINGS_ENABLED') || constant('BUBBAHUB_EXPO_BOOKINGS_ENABLED')!==true){
  expoBookingReply(503,['ok'=>false,'error'=>'bookings_not_open']);
