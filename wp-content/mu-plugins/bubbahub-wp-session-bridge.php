@@ -55,3 +55,20 @@ add_shortcode('bubbahub_wp_session_bridge', function () {
     return '<button type="button" id="'.esc_attr($id).'">Connect my Bubba Hub account</button><span id="'.esc_attr($id.'-result').'" role="status"></span>'.
         '<script>(function(){const b=document.getElementById('.wp_json_encode($id).');b.addEventListener("click",async function(){b.disabled=true;const output=document.getElementById('.wp_json_encode($id.'-result').');try{const r=await fetch('.wp_json_encode($url).',{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:"bh_start_legacy_session",_ajax_nonce:'.wp_json_encode($nonce).'})});const j=await r.json();output.textContent=j.success?" Account connected. You can now open My Hub or your Class Leader portal.":" Could not connect this account."; }catch(e){output.textContent=" Connection failed.";}finally{b.disabled=false;}})})()</script>';
 });
+
+/**
+ * Clear the separate Bubba Hub session when a WordPress user signs out.
+ * WordPress logout does not normally invalidate a PHP application session.
+ */
+add_action('wp_logout', function () {
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        ini_set('session.use_strict_mode', '1');
+        session_name('BUBBAHUBSESSID');
+        if (!session_start()) return;
+    }
+    unset($_SESSION['bh_user_id'], $_SESSION['bh_family_authenticated'],
+          $_SESSION['bh_leader_authenticated'], $_SESSION['bh_admin_authenticated'],
+          $_SESSION['bh_csrf']);
+    session_regenerate_id(true);
+    session_write_close();
+}, 10);
