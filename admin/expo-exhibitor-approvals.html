@@ -8,7 +8,16 @@
    for(const e of data.exhibitors){
     const card=document.createElement('section');card.className='item';
     const title=document.createElement('h2');title.textContent=e.business_name;card.append(title);
-    const meta=document.createElement('div');meta.className='meta';meta.textContent='Application #'+e.id+' · '+(e.submitted_at||'')+' · Preferred table: '+(e.preferred_table||'not selected');card.append(meta);
+    const meta=document.createElement('div');meta.className='meta';meta.textContent='Application #'+e.id+' · '+(e.submitted_at||'')+' · Status: '+(e.application_status||'unknown');card.append(meta);
+    const booking=document.createElement('div');booking.className='meta';booking.style.cssText='padding:12px;background:#edf7f0;border-radius:12px';booking.textContent='Reserved/preferred table: '+(e.preferred_table||'Not selected')+' · Assigned table: '+(e.assigned_table||'Not assigned');card.append(booking);
+    const contact=document.createElement('p');contact.className='meta';contact.textContent='Contact: '+(e.contact_name||'Not supplied')+' · Email: '+(e.contact_email||'Not supplied');card.append(contact);
+    const details=document.createElement('details');const detailsSummary=document.createElement('summary');detailsSummary.textContent='View application and booking details';details.append(detailsSummary);
+    const detailData=e.application_details&&typeof e.application_details==='object'?e.application_details:{};
+    const detailList=document.createElement('dl');detailList.style.cssText='display:grid;grid-template-columns:minmax(120px,1fr) 2fr;gap:8px;overflow-wrap:anywhere';
+    const appendDetail=(key,value)=>{if(value===null||value===undefined||value==='')return;const dt=document.createElement('dt');dt.textContent=key.replace(/_/g,' ');dt.style.fontWeight='bold';const dd=document.createElement('dd');dd.style.margin='0';dd.textContent=typeof value==='object'?JSON.stringify(value):String(value);detailList.append(dt,dd);};
+    for(const [key,value] of Object.entries(detailData)){if(key==='social_links'||/token|secret|password|csrf|captcha/i.test(key))continue;appendDetail(key,value);}
+    if(!detailList.children.length){const empty=document.createElement('p');empty.textContent='No additional booking details recorded.';details.append(empty);}else details.append(detailList);
+    card.append(details);
     
     if(e.logo_url&&/^https:\/\//i.test(e.logo_url)){const img=document.createElement('img');img.src=e.logo_url;img.alt='Business logo';img.loading='lazy';card.append(img);}
     if(e.website_url&&/^https:\/\//i.test(e.website_url)){const a=document.createElement('a');a.href=e.website_url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Visit business website ↗';card.append(a);}
