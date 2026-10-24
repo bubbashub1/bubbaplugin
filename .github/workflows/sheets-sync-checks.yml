@@ -1,0 +1,33 @@
+name: Sheets sync safety checks
+on:
+  pull_request:
+    paths:
+      - 'api/sheets-sync-*.php'
+      - 'integrations/google-apps-script/*.gs'
+      - '.github/workflows/sheets-sync-checks.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'api/sheets-sync-*.php'
+      - 'integrations/google-apps-script/*.gs'
+      - '.github/workflows/sheets-sync-checks.yml'
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check PHP syntax
+        run: |
+          set -eu
+          for file in api/sheets-sync-*.php; do
+            [ -f "$file" ] || continue
+            php -l "$file"
+          done
+      - name: Check Apps Script JavaScript syntax
+        run: |
+          set -eu
+          for file in integrations/google-apps-script/*.gs; do
+            [ -f "$file" ] || continue
+            cp "$file" /tmp/bh-sheets-check.js
+            node --check /tmp/bh-sheets-check.js
+          done
