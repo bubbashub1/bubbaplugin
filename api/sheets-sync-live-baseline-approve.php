@@ -36,10 +36,13 @@ if (!is_string($raw)||strlen($raw)>4096)
 $data=json_decode($raw,true);
 $ids=$data['activity_ids']??null;
 $fields=$data['fields']??null;
+$expected=$data['expected_values']??null;
+$sheet=$data['sheet_values']??null;
 $allowed=['title','price_from','age_range'];
 if (!is_array($data)||($data['confirmed']??null)!==true||
     !is_array($ids)||!array_is_list($ids)||count($ids)<1||count($ids)>5||
     !is_array($fields)||!array_is_list($fields)||count($fields)<1||count($fields)>3||
+    !is_array($expected)||!is_array($sheet)||
     count(array_unique($fields))!==count($fields)||
     array_diff($fields,$allowed)||
     count(array_unique($ids))!==count($ids)||
@@ -92,6 +95,18 @@ try {
             if (trim($value)==='') {
                 $db->rollBack();
                 bhLiveBaselineReply(409,['ok'=>false,'error'=>'blank_website_field','activity_id'=>$id,'field'=>$field]);
+            }
+            // Both explicitly reviewed sources must match the locked website row.
+            $key=(string)$id;
+            if (!isset($expected[$key],$sheet[$key])||
+                !is_array($expected[$key])||!is_array($sheet[$key])||
+                !is_string($expected[$key][$field]??null)||
+                !is_string($sheet[$key][$field]??null)||
+                !hash_equals($value,$expected[$key][$field])||
+                !hash_equals($value,$sheet[$key][$field])) {
+                $db->rollBack();
+                bhLiveBaselineReply(409,['ok'=>false,'error'=>'baseline_source_mismatch',
+                    'activity_id'=>$id,'field'=>$field]);
             }
             $values[$field]=$value;
         }
