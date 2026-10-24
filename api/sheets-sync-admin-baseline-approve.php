@@ -29,13 +29,24 @@ $adminId = filter_var(getenv('BH_SHEETS_BASELINE_ADMIN_ID'), FILTER_VALIDATE_INT
     ['options'=>['min_range'=>1]]);
 // Match the authenticated username to the same server-side credentials
 // used by admin-auth.php. A numeric environment ID alone is not proof.
-$configFile = dirname(__DIR__, 2) . '/github-deploy-config.php';
-if (!is_readable($configFile)) {
-    $configFile = dirname(__DIR__) . '/github-deploy-config.php';
+$configCandidates = array_filter([
+    dirname(__DIR__, 2) . '/github-deploy-config.php',
+    dirname((string)($_SERVER['DOCUMENT_ROOT'] ?? '')) . '/github-deploy-config.php',
+    (string)($_SERVER['DOCUMENT_ROOT'] ?? '') . '/github-deploy-config.php',
+    '/github-deploy-config.php'
+]);
+$config = null;
+foreach ($configCandidates as $candidate) {
+    if (is_file($candidate)) {
+        $config = require $candidate;
+        break;
+    }
 }
-$config = is_readable($configFile) ? require $configFile : null;
+$configAdminId = is_array($config) ? filter_var($config['sheets_baseline_admin_id'] ?? null,
+    FILTER_VALIDATE_INT, ['options'=>['min_range'=>1]]) : false;
 $sessionUsername = (string)($_SESSION['bh_admin_username'] ?? '');
-if (!$adminId || !is_array($config) || !is_string($config['admin_username'] ?? null)
+if (!$adminId || !$configAdminId || (int)$adminId !== (int)$configAdminId
+    || !is_array($config) || !is_string($config['admin_username'] ?? null)
     || $sessionUsername === '' || !hash_equals($config['admin_username'], $sessionUsername))
     bhApprovalReply(403,['ok'=>false,'error'=>'verified_admin_identity_required']);
 $raw = file_get_contents('php://input', false, null, 0, 4097);
