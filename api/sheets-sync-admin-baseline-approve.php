@@ -103,7 +103,7 @@ try {
     }
     // Approved baseline captures WEBSITE value, not incoming Sheet value.
     $fields=json_encode([$field=>$current],JSON_THROW_ON_ERROR|JSON_UNESCAPED_SLASHES);
-    $auditId='review:'.(int)$review['id'];
+    $auditId='staging:review:'.(int)$review['id'];
     $insert=$db->prepare("INSERT INTO bh_sheets_sync_baselines
       (environment,activity_id,version,approved_by_admin_id,approved_at_utc,
        field_values_json,website_fingerprint,sheet_fingerprint,approval_audit_id)
