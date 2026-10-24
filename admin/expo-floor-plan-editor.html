@@ -23,7 +23,7 @@ input{max-width:100%;padding:8px;border:1px solid #adcbbf;border-radius:7px}inpu
 <div class="toolbar">
 <button id="add">+ Add 6ft table</button><button id="desk">+ Welcome desk</button><button id="rotate">Rotate selected</button>
 <button id="duplicate">Duplicate</button><button id="remove">Delete selected</button><button id="undo">Undo</button><button id="redo">Redo</button>
-<button id="save" class="primary">Save draft</button><button id="export">Export JSON</button>
+<button id="syncExhibitors" type="button">Apply confirmed exhibitor names</button><button id="save" class="primary">Save draft</button><button id="export">Export JSON</button>
 <label class="upload">Import JSON <input id="import" type="file" accept="application/json,.json" hidden></label>
 <button id="print">Print plan</button><button id="reset">Restore starter layout</button>
 </div>
@@ -73,7 +73,7 @@ exits.forEach((e,i)=>{const g=document.createElementNS("http://www.w3.org/2000/s
 g.innerHTML='<rect x="'+e.x+'" y="'+e.y+'" width="'+e.w+'" height="'+e.h+'" rx="5" fill="#ffdcd3" stroke="#c55448" stroke-dasharray="8 5"/><text x="'+(e.x+90)+'" y="'+(e.y+43)+'" text-anchor="middle" fill="#9c332b" font-size="17" font-weight="bold">FIRE EXIT '+(i+1)+'</text>';layer.append(g)});
 items.forEach(o=>{const [w,h]=dims(o),g=document.createElementNS("http://www.w3.org/2000/svg","g");
 g.setAttribute("data-id",o.id);g.setAttribute("tabindex","0");g.setAttribute("role","button");g.setAttribute("aria-label",(o.type==="desk"?"Desk ":"Table ")+o.label);
-g.innerHTML='<rect class="item '+(o.type==="desk"?"fixture ":"")+(selected===o.id?"selected":"")+'" x="'+o.x+'" y="'+o.y+'" width="'+w+'" height="'+h+'" rx="8"/><text x="'+(o.x+w/2)+'" y="'+(o.y+h/2+5)+'" font-size="18" text-anchor="middle" fill="#65304a" pointer-events="none">'+escape(o.label)+'</text>';
+g.innerHTML='<rect class="item '+(o.type==="desk"?"fixture ":"")+(selected===o.id?"selected":"")+'" x="'+o.x+'" y="'+o.y+'" width="'+w+'" height="'+h+'" rx="8"/><text x="'+(o.x+w/2)+'" y="'+(o.y+h/2-3)+'" font-size="16" text-anchor="middle" fill="#65304a" pointer-events="none">'+escape(o.label)+'</text>'+(o.exhibitor?'<text x="'+(o.x+w/2)+'" y="'+(o.y+h/2+17)+'" font-size="12" text-anchor="middle" fill="#174b33" pointer-events="none">'+escape(o.exhibitor.length>23?o.exhibitor.slice(0,22)+'…':o.exhibitor)+'</text>':'');
 g.addEventListener("pointerdown",ev=>{ev.preventDefault();select(o.id);snapshot();drag={id:o.id,start:point(ev),x:o.x,y:o.y};g.setPointerCapture(ev.pointerId)});
 g.addEventListener("pointermove",ev=>{if(!drag||drag.id!==o.id)return;let p=point(ev),old={x:o.x,y:o.y};o.x=Math.round(drag.x+p.x-drag.start.x);o.y=Math.round(drag.y+p.y-drag.start.y);if(!valid(o)){o.x=old.x;o.y=old.y}renderPositions();});
 g.addEventListener("pointerup",()=>{drag=null;render()});g.addEventListener("pointercancel",()=>{drag=null;render()});
@@ -95,6 +95,19 @@ $("remove").onclick=()=>{if(selected===null)return;snapshot();items=items.filter
 $("duplicate").onclick=()=>{let o=items.find(t=>t.id===selected);if(!o)return;let copy={...o,id:nextId(),label:String(nextId()),x:o.x+24,y:o.y+90};if(!valid(copy)){message("No clear space next to selected item.");return}snapshot();items.push(copy);selected=copy.id;render()};
 $("undo").onclick=()=>{if(!history.length)return;future.push(clone(items));items=history.pop();selected=null;render()};
 $("redo").onclick=()=>{if(!future.length)return;history.push(clone(items));items=future.pop();selected=null;render()};
+$("syncExhibitors").onclick=async()=>{
+ const button=$("syncExhibitors");button.disabled=true;message("Checking confirmed table assignments…");
+ try{
+  const response=await fetch("/api/expo-admin-exhibitors.php",{credentials:"same-origin",cache:"no-store"});
+  const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||"Unable to load exhibitors");
+  const assigned=(data.exhibitors||[]).filter(e=>e.application_status==="approved"&&String(e.assigned_table||"").trim());
+  const mapping=new Map();for(const e of assigned){const key=String(e.assigned_table).trim().replace(/^table\\s*#?\\s*/i,"");if(mapping.has(key))throw Error("Multiple exhibitors are assigned to table "+key+". Resolve this before syncing.");mapping.set(key,e.business_name);}
+  const changes=items.filter(o=>o.type==="table"&&mapping.has(String(o.label).trim())&&o.exhibitor!==mapping.get(String(o.label).trim()));
+  if(!changes.length){message("No new confirmed table assignments to apply.");return;}
+  if(!confirm("Apply "+changes.length+" confirmed exhibitor name(s) to the floor plan? You will still need to click Save draft."))return;
+  snapshot();for(const o of changes)o.exhibitor=mapping.get(String(o.label).trim());render();message("Applied "+changes.length+" confirmed exhibitor name(s). Click Save draft to store them.");
+ }catch(e){message("Could not apply assignments: "+e.message)}finally{button.disabled=false;}
+};
 $("save").onclick=async()=>{
 try{
 localStorage.setItem(KEY,JSON.stringify(items));
