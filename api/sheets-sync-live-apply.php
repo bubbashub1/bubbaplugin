@@ -48,9 +48,9 @@ try {
     $pdo = bh_mysql();
     $pdo->beginTransaction();
     // Fail closed unless a genuinely approved, environment-scoped baseline exists.
-    // Every real listing must have a separately approved live baseline.
+    // Every real listing must have a separately approved live baseline in dedicated production table.
     $baseline = $pdo->prepare(
-        "SELECT id, version, field_values_json FROM bh_sheets_sync_baselines
+        "SELECT id, version, field_values_json FROM bh_sheets_sync_live_baselines
          WHERE environment = 'live' AND activity_id = :id
            AND approved_by_admin_id > 0
            AND approved_at_utc <= UTC_TIMESTAMP()
@@ -135,7 +135,7 @@ try {
     // every subsequent six-hour update would fail against the stale baseline.
     $nextFields = $approvedFields;
     $nextFields[$field] = $request['proposed'];
-    $baselineInsert = $pdo->prepare("INSERT INTO bh_sheets_sync_baselines
+    $baselineInsert = $pdo->prepare("INSERT INTO bh_sheets_sync_live_baselines
       (environment,activity_id,version,approved_by_admin_id,approved_at_utc,
        field_values_json,website_fingerprint,sheet_fingerprint,approval_audit_id)
       VALUES ('live',:id,:version,:admin,UTC_TIMESTAMP(),:fields,:website,:sheet,:audit)");
