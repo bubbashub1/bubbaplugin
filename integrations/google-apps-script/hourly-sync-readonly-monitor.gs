@@ -2,7 +2,7 @@
  * Bubba Hub hourly sync readiness monitor.
  * Read-only by design: no database writes and no spreadsheet edits.
  * Run bhInstallHourlySyncMonitor() once from the bound spreadsheet.
- * Configure Script Property BH_SYNC_TOKEN first.
+ * Configure Script Property BH_SHEETS_SYNC_TOKEN first.
  */
 const BH_HOURLY_MONITOR = Object.freeze({
   sheet: 'MASTER SHEET',
@@ -28,8 +28,8 @@ function bhHourlySyncReadOnlyCheck() {
       if (!/^[1-9]\d*$/.test(id) || ids.has(id)) throw new Error('Invalid or duplicate ID on row ' + (i + 1));
       ids.add(id);
     }
-    const token = PropertiesService.getScriptProperties().getProperty('BH_SYNC_TOKEN');
-    if (!token || token.length < 32) throw new Error('BH_SYNC_TOKEN not configured');
+    const token = PropertiesService.getScriptProperties().getProperty('BH_SHEETS_SYNC_TOKEN');
+    if (!token || token.length < 32) throw new Error('BH_SHEETS_SYNC_TOKEN not configured');
     let after = 0, pages = 0, complete = false;
     const websiteIds = new Set();
     while (!complete && pages < BH_HOURLY_MONITOR.maxPages) {
@@ -39,7 +39,7 @@ function bhHourlySyncReadOnlyCheck() {
         payload:JSON.stringify({action:'export',after_id:after,limit:BH_HOURLY_MONITOR.pageSize}),
         followRedirects:false, muteHttpExceptions:true
       });
-      if (response.getResponseCode() !== 200) throw new Error('Live export HTTP ' + response.getResponseCode());
+      if (response.getResponseCode() !== 200) throw new Error('Staging export HTTP ' + response.getResponseCode());
       const result = JSON.parse(response.getContentText());
       if (result.ok !== true || result.mode !== 'read_only_export' ||
           !Array.isArray(result.records) || typeof result.has_more !== 'boolean' ||
