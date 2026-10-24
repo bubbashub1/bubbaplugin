@@ -238,6 +238,9 @@ function bh_check_account_context(array $user, string $ctx): void {
         bh_auth_response(403, ['ok'=>false,'error'=>'account_not_active','message'=>'This account is not currently active.']);
     }
     $role = (string)($user['role'] ?? '');
+    if ($ctx === 'volunteer' && $role !== 'volunteer') {
+        bh_auth_response(403, ['ok'=>false,'error'=>'volunteer_account_required','message'=>'This account is not approved for Team Hub access.']);
+    }
     if ($ctx === 'leader' && $role !== 'leader') {
         bh_auth_response(403, ['ok'=>false,'error'=>'leader_account_required','message'=>'That email is not a class leader account. Please use the family sign in or create a leader account with a separate email.']);
     }
@@ -609,7 +612,7 @@ try {
     $db = bh_mysql();
 
     $authContext = trim((string)($body['context'] ?? 'family'));
-    if (!in_array($authContext, ['family','leader'], true)) $authContext = 'family';
+    if (!in_array($authContext, ['family','leader','volunteer'], true)) $authContext = 'family';
 
     /* Resend verification only to the signed-in account's registered email. */
     if ($action === 'resend_verification') {
@@ -994,6 +997,7 @@ try {
 
     /* ---------------- register (family) ---------------- */
     if ($action === 'register') {
+        if ($authContext === 'volunteer') bh_auth_response(403, ['ok'=>false,'error'=>'volunteer_registration_closed','message'=>'Please apply through the volunteer interest form.']);
         bh_rate_limit($db, "register-ip:$ip", 10, 3600);
 
         $email = bh_clean_email($body['email'] ?? '');
