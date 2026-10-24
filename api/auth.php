@@ -106,8 +106,15 @@ function bh_rate_limit(PDO $db, string $bucket, int $max, int $windowSeconds): v
         $q = $db->prepare("SELECT COUNT(*) FROM bh_rate_limits WHERE bucket=? AND created_at > (NOW() - INTERVAL " . (int)$windowSeconds . " SECOND)");
         $q->execute([$key]);
         if ((int)$q->fetchColumn() >= $max) {
-            header('Retry-After: ' . $windowSeconds);
-            bh_auth_response(429, ['ok'=>false,'error'=>'rate_limited','message'=>'Too many attempts. Please wait a little while and try again.']);
+            // Calculate the remaining cooldown from the oldest counted request.
+            // Keep the same throttle policy; only improve the recovery guidance.
+            $oldest = $db->prepare("SELECT MIN(created_at) FROM bh_rate_limits WHERE bucket=? AND created_at > (NOW() - INTERVAL " . (int)$windowSeconds . " SECOND)");
+            $oldest->execute([$key]);
+            $firstAttempt = $oldest->fetchColumn();
+            $retryAfter = $firstAttempt ? max(1, $windowSeconds - max(0, time() - strtotime((string)$firstAttempt))) : $windowSeconds;
+            header('Retry-After: ' . $retryAfter);
+            $minutes = (int)ceil($retryAfter / 60);
+            bh_auth_response(429, ['ok'=>false,'error'=>'rate_limited','retry_after_seconds'=>$retryAfter,'message'=>'Too many attempts. Please wait about '.$minutes.' minute'.($minutes === 1 ? '' : 's').' before trying again.']);
         }
         $db->prepare("INSERT INTO bh_rate_limits (bucket) VALUES (?)")->execute([$key]);
         if (random_int(1, 100) === 1) {
@@ -747,7 +754,10 @@ try {
             'organiser_id'=>$organiserId,
             'user'=>['id'=>$userId,'email'=>$email,'role'=>'leader','status'=>'active'],
             'csrf'=>$_SESSION['bh_csrf'],
-            'message'=>'Account created. Please check your email and click the verification link before signing in.','verification_email_sent'=>$verificationEmailSent
+            'message'=>$verificationEmailSent
+                ? 'Account created. Please check your email and click the verification link before signing in.'
+                : 'Your account was created, but we could not send the verification email. Please use Resend verification on the sign-in page or contact Bubba Hub support.',
+            'verification_email_sent'=>$verificationEmailSent
         ]);
     }
 
