@@ -65,28 +65,31 @@ function bh_sponsor_receipts_page() {
         $reason = sanitize_textarea_field(wp_unslash($_POST['bh_refund_reason'] ?? ''));
         $valid_amount = preg_match('/^\\d{1,7}(?:\\.\\d{1,2})?$/', $amount_raw);
         $pence = $valid_amount ? (int)round(((float)$amount_raw)*100) : 0;
-        $receipt = $wpdb->get_row($wpdb->prepare(
-            "SELECT r.id,r.amount_pence FROM {$ledger} r
-             JOIN {$entries} e ON e.entry_id=r.entry_id AND e.form_id=88
-             LEFT JOIN {$flags} f ON f.entry_id=e.entry_id
-             WHERE r.id=%d AND COALESCE(f.is_test,0)=0", $receipt_id), ARRAY_A);
-        $previous = ($adjustments_ready && $receipt) ? (int)$wpdb->get_var($wpdb->prepare(
-            "SELECT COALESCE(SUM(amount_pence),0) FROM {$adjustments} WHERE receipt_id=%d", $receipt_id)) : 0;
-        if (!$adjustments_ready || !$receipt || !$valid_amount || $pence<=0
-            || $pence > (int)$receipt['amount_pence']-$previous
-            || strlen($reference)<4 || strlen($reference)>190 || strlen($reason)<5
-            || empty($_POST['bh_refund_confirmed'])) {
-            echo '<div class="notice notice-error"><p>Adjustment not saved. Confirm a real refund or correction with evidence, reason and an amount no greater than the remaining receipt balance.</p></div>';
-        } else {
-            $saved = $wpdb->insert($adjustments, [
-                'receipt_id'=>$receipt_id,'amount_pence'=>$pence,
-                'evidence_reference'=>$reference,'reason'=>$reason,
-                'recorded_by'=>get_current_user_id(),'recorded_at'=>current_time('mysql',true)
-            ], ['%d','%d','%s','%s','%d','%s']);
-            echo $saved
-                ? '<div class="notice notice-success"><p>Adjustment recorded. Original receipt retained.</p></div>'
-                : '<div class="notice notice-error"><p>Adjustment could not be saved. Check for duplicate reference.</p></div>';
+        // Serialize adjustments for a receipt by locking its InnoDB parent row.
+        $valid_input = $adjustments_ready && $valid_amount && $pence > 0
+            && strlen($reference) >= 4 && strlen($reference) <= 190
+            && strlen($reason) >= 5 && !empty($_POST['bh_refund_confirmed']);
+        $saved = false;
+        if ($valid_input && $wpdb->query('START TRANSACTION') !== false) {
+            $receipt = $wpdb->get_row($wpdb->prepare(
+                "SELECT r.id,r.amount_pence FROM {$ledger} r
+                 JOIN {$entries} e ON e.entry_id=r.entry_id AND e.form_id=88
+                 LEFT JOIN {$flags} f ON f.entry_id=e.entry_id
+                 WHERE r.id=%d AND COALESCE(f.is_test,0)=0 FOR UPDATE", $receipt_id), ARRAY_A);
+            $previous = $receipt ? (int)$wpdb->get_var($wpdb->prepare(
+                "SELECT COALESCE(SUM(amount_pence),0) FROM {$adjustments} WHERE receipt_id=%d", $receipt_id)) : 0;
+            if ($receipt && $pence <= (int)$receipt['amount_pence'] - $previous) {
+                $saved = (bool)$wpdb->insert($adjustments, [
+                    'receipt_id'=>$receipt_id,'amount_pence'=>$pence,
+                    'evidence_reference'=>$reference,'reason'=>$reason,
+                    'recorded_by'=>get_current_user_id(),'recorded_at'=>current_time('mysql',true)
+                ], ['%d','%d','%s','%s','%d','%s']);
+            }
+            $wpdb->query($saved ? 'COMMIT' : 'ROLLBACK');
         }
+        echo $saved
+            ? '<div class="notice notice-success"><p>Adjustment recorded. Original receipt retained.</p></div>'
+            : '<div class="notice notice-error"><p>Adjustment not saved. Check evidence, duplicate reference and remaining receipt balance.</p></div>';
     }
     $sum = (int)$wpdb->get_var(
         "SELECT COALESCE(SUM(r.amount_pence),0) FROM {$ledger} r
