@@ -42,6 +42,27 @@ try{
  $input=json_decode((string)file_get_contents('php://input'),true);
  if(!is_array($input))reply(400,['ok'=>false,'error'=>'invalid_json']);
  $id=filter_var($input['id']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
+ if(($input['action']??'')==='manage_table'){
+  if(!$id)reply(422,['ok'=>false,'error'=>'invalid_exhibitor']);
+  $mode=(string)($input['mode']??'');
+  if(!in_array($mode,['reassign','release'],true))reply(422,['ok'=>false,'error'=>'invalid_table_action']);
+  $db->beginTransaction();
+  $q=$db->prepare("SELECT id,business_name,preferred_table,application_status,public_visible FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027' FOR UPDATE");$q->execute([$id]);$current=$q->fetch(PDO::FETCH_ASSOC);
+  if(!$current){$db->rollBack();reply(404,['ok'=>false,'error'=>'not_found']);}
+  if($mode==='release'){
+   $q=$db->prepare("UPDATE bh_expo_exhibitors SET application_status='cancelled',public_visible=0,assigned_table=NULL,reviewed_at=NOW() WHERE id=? AND event_key='bubba-me-2027'");$q->execute([$id]);
+   $db->commit();reply(200,['ok'=>true,'released_table'=>$current['preferred_table'],'application_status'=>'cancelled']);
+  }
+  $table=filter_var($input['table']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1,'max_range'=>150]]);
+  if(!$table){$db->rollBack();reply(422,['ok'=>false,'error'=>'invalid_table']);}
+  $q=$db->prepare("SELECT layout_json FROM bh_expo_floor_plans WHERE event_key='bubba-me-2027' FOR UPDATE");$q->execute();$layout=$q->fetchColumn();$items=json_decode((string)$layout,true);
+  $valid=false;foreach(is_array($items)?$items:[] as $item){if(($item['type']??'')==='table'&&(int)($item['id']??0)===$table){$valid=true;break;}}
+  if(!$valid){$db->rollBack();reply(422,['ok'=>false,'error'=>'table_not_in_floor_plan']);}
+  $q=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE event_key='bubba-me-2027' AND id<>? AND application_status IN ('pending','approved','confirmed') AND (preferred_table=? OR assigned_table=?) LIMIT 1 FOR UPDATE");$q->execute([$id,$table,$table]);
+  if($q->fetchColumn()){$db->rollBack();reply(409,['ok'=>false,'error'=>'table_already_reserved']);}
+  $q=$db->prepare("UPDATE bh_expo_exhibitors SET preferred_table=?,assigned_table=?,reviewed_at=NOW() WHERE id=? AND event_key='bubba-me-2027'");$q->execute([$table,$table,$id]);
+  $db->commit();reply(200,['ok'=>true,'preferred_table'=>$table,'assigned_table'=>$table]);
+ }
  if(($input['action']??'')==='delete'){
   $confirmation=(string)($input['confirm_business_name']??'');
   $lookup=$db->prepare("SELECT business_name FROM bh_expo_exhibitors WHERE id=? AND event_key='bubba-me-2027'");$lookup->execute([$id]);$current=$lookup->fetchColumn();
