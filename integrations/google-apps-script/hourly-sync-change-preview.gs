@@ -24,7 +24,7 @@ function bhPreviewHourlySyncChanges() {
   let after = 0, complete = false, pages = 0;
   const changes = [], websiteOnly = [], seen = new Set();
   while (!complete && pages++ < 100) {
-    const response = UrlFetchApp.fetch('https://bubbahub.co.uk/api/sheets-sync-export.php',{
+    const response = UrlFetchApp.fetch('https://staging.bubbahub.co.uk/api/sheets-sync-export.php',{
       method:'post',contentType:'application/json',
       headers:{Authorization:'Bearer '+token},
       payload:JSON.stringify({action:'export',after_id:after,limit:100}),
