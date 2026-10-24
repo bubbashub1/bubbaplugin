@@ -49,6 +49,11 @@ try {
         $pdo->rollBack();
         bhSheetsRollbackReply(404,['ok'=>false,'error'=>'original_audit_not_found']);
     }
+    // Never roll back real organiser listings while ownership rules are unverified.
+    if ((int)$entry['activity_id'] !== 999999) {
+        $pdo->rollBack();
+        bhSheetsRollbackReply(403,['ok'=>false,'error'=>'test_fixture_only']);
+    }
     $field = (string)$entry['field_name'];
     if (!in_array($field,['title','price_from','age_range'],true)) {
         $pdo->rollBack();
