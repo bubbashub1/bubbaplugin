@@ -50,7 +50,7 @@ try {
     // Fail closed unless a genuinely approved, environment-scoped baseline exists.
     // Every real listing must have a separately approved live baseline in dedicated production table.
     $baseline = $pdo->prepare(
-        "SELECT id, version, field_values_json FROM bh_sheets_sync_live_baselines
+        "SELECT id, version, approved_by_admin_id, field_values_json FROM bh_sheets_sync_live_baselines
          WHERE environment = 'live' AND activity_id = :id
            AND approved_by_admin_id > 0
            AND approved_at_utc <= UTC_TIMESTAMP()
@@ -142,7 +142,7 @@ try {
     $baselineInsert->execute([
       ':id'=>$request['id'],
       ':version'=>((int)$approved['version'])+1,
-      ':admin'=>1, // Carry-forward from previously verified admin approval, not a new manual approval.
+      ':admin'=>(int)$approved['approved_by_admin_id'], // Preserve verified approval identity.
       ':fields'=>json_encode($nextFields, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES),
       ':website'=>hash('sha256',$request['proposed']),
       ':sheet'=>hash('sha256',$request['proposed']),
