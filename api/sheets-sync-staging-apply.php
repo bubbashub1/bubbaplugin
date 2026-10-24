@@ -46,6 +46,8 @@ $pdo = null;
 try {
     require_once __DIR__ . '/db.php';
     $pdo = bh_mysql();
+    // Until ownership/baseline rules are verified, restrict writes to the isolated staging fixture.
+    if ($request['id'] !== 999999) bhSheetsApplyReply(403, ['ok'=>false,'error'=>'test_fixture_only']);
     $pdo->beginTransaction();
     $field = $request['field']; // Fixed allowlist above.
     $stmt = $pdo->prepare('SELECT `'.$field.'` AS value FROM bh_activities WHERE id=:id FOR UPDATE');
