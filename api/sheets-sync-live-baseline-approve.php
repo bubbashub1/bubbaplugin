@@ -53,6 +53,24 @@ if (!is_array($data)||($data['confirmed']??null)!==true||
 $username=(string)($_SESSION['bh_admin_username']??'');
 if ($username===''||strlen($username)>190)
     bhLiveBaselineReply(403,['ok'=>false,'error'=>'verified_admin_required']);
+// Confirm the session username against the server-side admin credentials.
+$configCandidates=array_filter([
+    dirname(__DIR__,2).'/github-deploy-config.php',
+    dirname((string)($_SERVER['DOCUMENT_ROOT']??'')).'/github-deploy-config.php',
+    (string)($_SERVER['DOCUMENT_ROOT']??'').'/github-deploy-config.php',
+    '/github-deploy-config.php'
+]);
+$adminConfig=null;
+foreach ($configCandidates as $candidate) {
+    if (is_file($candidate)) {
+        $adminConfig=require $candidate;
+        break;
+    }
+}
+if (!is_array($adminConfig)||
+    !is_string($adminConfig['admin_username']??null)||
+    !hash_equals($adminConfig['admin_username'],$username))
+    bhLiveBaselineReply(403,['ok'=>false,'error'=>'verified_admin_identity_required']);
 try {
     require_once __DIR__.'/db.php';
     $db=bh_mysql();
