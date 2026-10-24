@@ -18,6 +18,8 @@ function bh_sponsor_receipts_page() {
     $entries = $wpdb->prefix . 'frmt_form_entry';
     $flags = $wpdb->prefix . 'bh_sponsor_audit_flags';
     echo '<div class="wrap"><h1>Sponsor Receipts &amp; Reconciliation</h1>';
+    echo '<style>.bh-sponsor-receipts-form{max-width:680px;background:#f7fcf9;border:1px solid #d7e9df;border-radius:14px;padding:20px 24px;margin:16px 0 24px}.bh-sponsor-receipts-form label{display:block;font-weight:600;color:#214d3a}.bh-sponsor-receipts-form input:not([type=checkbox]),.bh-sponsor-receipts-form select,.bh-sponsor-receipts-form textarea{display:block;width:100%;max-width:100%;margin-top:7px;border:1px solid #b9d5c6;border-radius:8px;padding:8px}.bh-sponsor-receipts-form label:has(input[type=checkbox]){font-weight:400}.bh-sponsor-receipts-form .button-primary{background:#176c4c;border-color:#176c4c;border-radius:8px}</style>';
+    echo '<p><a class="button" href="' . esc_url(admin_url('admin.php?page=bh-sponsor-management')) . '">Back to Sponsor Management</a> <a class="button" href="' . esc_url(admin_url('admin.php?page=bh-sponsor-payment-audit')) . '">Payment Audit</a></p>';
     echo '<p>Manual verification only. A Forminator submission, amount selection or invoice is not proof of payment. Stripe is NOT connected to this screen.</p>';
     foreach ([$ledger,$entries,$flags] as $table) {
         if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s',$table)) !== $table) {
@@ -61,7 +63,7 @@ function bh_sponsor_receipts_page() {
     echo '<h2>Manually verified receipts: £' . esc_html(number_format($sum/100,2)) . '</h2>';
     echo '<p>Includes only recorded evidence-backed receipts for non-test applications. Does not represent automatic Stripe reconciliation.</p>';
     echo '<h2>Record independently verified payment</h2>';
-    echo '<form method="post">';
+    echo '<form method="post" class="bh-sponsor-receipts-form">';
     wp_nonce_field('bh_record_sponsor_receipt');
     echo '<p><label>Genuine application <select name="bh_receipt_entry" required><option value="">Choose entry</option>';
     $applications = $wpdb->get_col(
