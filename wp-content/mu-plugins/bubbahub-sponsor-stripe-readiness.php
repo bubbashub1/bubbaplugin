@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Sponsor Stripe Readiness
  * Description: Read-only sponsor Stripe reconciliation readiness. Never modifies payments.
- * Version: 1.0.0
+ * Version: 1.1.0
  */
 if (!defined('ABSPATH')) exit;
 add_action('admin_menu', static function () {
@@ -39,6 +39,23 @@ function bh_sponsor_stripe_readiness_page() {
         echo '<tr><th>'.esc_html($label).'</th><td>'.esc_html((string)$count).'</td></tr>';
     }
     echo '</tbody></table>';
+    echo '<h2>Forminator payment metadata diagnostics</h2>';
+    echo '<p>Read-only: lists saved field identifiers and counts, never transaction values, emails, card details or Stripe secrets. Empty results do not prove Stripe is disabled.</p>';
+    $keys = $wpdb->get_results($wpdb->prepare(
+        "SELECT m.meta_key, COUNT(DISTINCT m.entry_id) AS entry_count
+         FROM {$meta} m INNER JOIN {$entries} e ON e.entry_id=m.entry_id
+         WHERE e.form_id=%d GROUP BY m.meta_key ORDER BY m.meta_key",88), ARRAY_A);
+    echo '<table class="widefat striped" style="max-width:700px"><thead><tr><th>Saved field identifier</th><th>Entries</th></tr></thead><tbody>';
+    $payment_keys = 0;
+    foreach ($keys as $key) {
+        $name = (string)$key['meta_key'];
+        if (!preg_match('/stripe|payment|transaction|charge|intent|checkout|status/i',$name)) continue;
+        $payment_keys++;
+        echo '<tr><td><code>'.esc_html($name).'</code></td><td>'.esc_html((string)$key['entry_count']).'</td></tr>';
+    }
+    if (!$payment_keys) echo '<tr><td colspan="2">No payment-related field identifiers found in saved submissions. Form settings and Stripe Dashboard must be checked separately.</td></tr>';
+    echo '</tbody></table>';
+    echo '<p><strong>Next verification:</strong> inspect the Stripe field in Forminator #88, confirm its live/test setting, and identify the actual Stripe PaymentIntent or Checkout Session reference before any automated matching.</p>';
     echo '<h2>Required before automatic matching</h2><ol>';
     echo '<li>Confirm Forminator #88 Stripe field and actual payment workflow (one-time, invoice, cash).</li>';
     echo '<li>Capture a trusted sponsor-specific checkout/session or PaymentIntent identifier, not just email or amount.</li>';
