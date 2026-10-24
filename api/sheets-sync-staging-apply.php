@@ -50,6 +50,42 @@ try {
     if ($request['id'] !== 999999) bhSheetsApplyReply(403, ['ok'=>false,'error'=>'test_fixture_only']);
     $pdo->beginTransaction();
     $field = $request['field']; // Fixed allowlist above.
+    // Lock and inspect ownership before considering any update. This is an
+    // additional safeguard; the fixture-only restriction above still applies.
+    $ownership = $pdo->prepare(
+        'SELECT a.status, a.leader_id, a.created_by, a.organiser_id, o.email AS organiser_email
+         FROM bh_activities a
+         LEFT JOIN bh_organisers o ON o.id = a.organiser_id
+         WHERE a.id = :id FOR UPDATE'
+    );
+    $ownership->execute([':id'=>$request['id']]);
+    $owner = $ownership->fetch(PDO::FETCH_ASSOC);
+    if (!$owner) {
+        $pdo->rollBack();
+        bhSheetsApplyReply(404, ['ok'=>false,'error'=>'listing_not_found']);
+    }
+    if ((string)$owner['status'] !== 'published') {
+        $pdo->rollBack();
+        bhSheetsApplyReply(403, ['ok'=>false,'error'=>'non_published_protected','writes_performed'=>false]);
+    }
+    if ($owner['leader_id'] !== null || $owner['created_by'] !== null) {
+        $pdo->rollBack();
+        bhSheetsApplyReply(403, ['ok'=>false,'error'=>'explicit_owner_protected','writes_performed'=>false]);
+    }
+    // Legacy portal grants editing rights through organiser email. Fail
+    // closed if that organiser email matches an active leader account.
+    if (trim((string)($owner['organiser_email'] ?? '')) !== '') {
+        $linked = $pdo->prepare(
+            "SELECT 1 FROM bh_users
+             WHERE role='leader' AND status='active'
+               AND LOWER(TRIM(email)) = LOWER(TRIM(:email)) LIMIT 1"
+        );
+        $linked->execute([':email'=>$owner['organiser_email']]);
+        if ($linked->fetchColumn()) {
+            $pdo->rollBack();
+            bhSheetsApplyReply(403, ['ok'=>false,'error'=>'leader_managed_protected','writes_performed'=>false]);
+        }
+    }
     $stmt = $pdo->prepare('SELECT `'.$field.'` AS value FROM bh_activities WHERE id=:id FOR UPDATE');
     $stmt->execute([':id'=>$request['id']]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
