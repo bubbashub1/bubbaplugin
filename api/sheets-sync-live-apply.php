@@ -50,7 +50,7 @@ try {
     // Fail closed unless a genuinely approved, environment-scoped baseline exists.
     // Every real listing must have a separately approved live baseline.
     $baseline = $pdo->prepare(
-        "SELECT id, field_values_json FROM bh_sheets_sync_baselines
+        "SELECT id, version, field_values_json FROM bh_sheets_sync_baselines
          WHERE environment = 'live' AND activity_id = :id
            AND approved_by_admin_id > 0
            AND approved_at_utc <= UTC_TIMESTAMP()
@@ -123,7 +123,7 @@ try {
         $pdo->rollBack();
         bhSheetsApplyReply(200, ['ok'=>true,'result'=>'already_current','writes_performed'=>false]);
     }
-    // This endpoint never creates listings or overwrites empty/leader-managed fields.
+    // This endpoint never creates listings; ownership and empty input are checked above.
     $update = $pdo->prepare('UPDATE bh_activities SET `'.$field.'`=:new_value WHERE id=:id');
     $update->execute([':new_value'=>$request['proposed'], ':id'=>$request['id']]);
     $audit = $pdo->prepare("INSERT INTO bh_sheets_sync_change_audit
@@ -131,6 +131,23 @@ try {
       VALUES (:id,:field,:old_value,:new_value,'apply')");
     $audit->execute([':id'=>$request['id'],':field'=>$field,':old_value'=>$current,':new_value'=>$request['proposed']]);
     $auditId = (int)$pdo->lastInsertId();
+    // Advance the approved snapshot within the same transaction. Without this,
+    // every subsequent six-hour update would fail against the stale baseline.
+    $nextFields = $approvedFields;
+    $nextFields[$field] = $request['proposed'];
+    $baselineInsert = $pdo->prepare("INSERT INTO bh_sheets_sync_baselines
+      (environment,activity_id,version,approved_by_admin_id,approved_at_utc,
+       field_values_json,website_fingerprint,sheet_fingerprint,approval_audit_id)
+      VALUES ('live',:id,:version,:admin,UTC_TIMESTAMP(),:fields,:website,:sheet,:audit)");
+    $baselineInsert->execute([
+      ':id'=>$request['id'],
+      ':version'=>((int)$approved['version'])+1,
+      ':admin'=>1, // Carry-forward from previously verified admin approval, not a new manual approval.
+      ':fields'=>json_encode($nextFields, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES),
+      ':website'=>hash('sha256',$request['proposed']),
+      ':sheet'=>hash('sha256',$request['proposed']),
+      ':audit'=>'live:apply:'.$auditId
+    ]);
     $pdo->commit();
     bhSheetsApplyReply(200, ['ok'=>true,'result'=>'updated','audit_id'=>$auditId,'writes_performed'=>true]);
 } catch (Throwable $e) {
