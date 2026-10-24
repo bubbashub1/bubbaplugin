@@ -56,6 +56,33 @@ function bh_sponsor_stripe_readiness_page() {
     if (!$payment_keys) echo '<tr><td colspan="2">No payment-related field identifiers found in saved submissions. Form settings and Stripe Dashboard must be checked separately.</td></tr>';
     echo '</tbody></table>';
     echo '<p><strong>Next verification:</strong> inspect the Stripe field in Forminator #88, confirm its live/test setting, and identify the actual Stripe PaymentIntent or Checkout Session reference before any automated matching.</p>';
+    echo '<h2>Form configuration (read-only)</h2>';
+    echo '<p>Checks the saved Forminator #88 field types, not private connection settings or payment credentials.</p>';
+    if (class_exists('Forminator_API') && method_exists('Forminator_API','get_form')) {
+        try {
+            $form = Forminator_API::get_form(88);
+            $fields = (is_object($form) && isset($form->fields) && is_array($form->fields)) ? $form->fields : [];
+            $stripe_ids = [];
+            $calculation_ids = [];
+            foreach ($fields as $field) {
+                if (!is_object($field)) continue;
+                $data = isset($field->raw) && is_array($field->raw) ? $field->raw : [];
+                $type = isset($field->type) && is_string($field->type) ? $field->type : (string)($data['type'] ?? '');
+                $id = isset($field->slug) && is_string($field->slug) ? $field->slug : (string)($data['element_id'] ?? '');
+                if ($type === 'stripe') $stripe_ids[] = $id;
+                if ($type === 'calculation') $calculation_ids[] = $id;
+            }
+            echo '<p><strong>Stripe fields detected:</strong> '.esc_html((string)count($stripe_ids)).'</p>';
+            echo '<p><strong>Calculation fields detected:</strong> '.esc_html((string)count($calculation_ids)).'</p>';
+            if ($stripe_ids) echo '<p>Stripe field IDs: <code>'.esc_html(implode(', ',array_map('sanitize_key',$stripe_ids))).'</code></p>';
+            if (!$fields) echo '<p>Forminator API returned no inspectable fields; verify configuration in the form editor. This is not proof that payments are disabled.</p>';
+        } catch (Throwable $e) {
+            echo '<p>Forminator field inspection unavailable. No payment data was changed.</p>';
+        }
+    } else {
+        echo '<p>Forminator API is unavailable on this request; check the form editor.</p>';
+    }
+    echo '<p><strong>Important:</strong> A configured Stripe field alone does not prove a successful payment. Automatic matching stays disabled until a verified transaction identifier is available.</p>';
     echo '<h2>Required before automatic matching</h2><ol>';
     echo '<li>Confirm Forminator #88 Stripe field and actual payment workflow (one-time, invoice, cash).</li>';
     echo '<li>Capture a trusted sponsor-specific checkout/session or PaymentIntent identifier, not just email or amount.</li>';
