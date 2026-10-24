@@ -36,7 +36,7 @@ function bhPreviewHourlySyncChanges() {
   let after = 0, complete = false, pages = 0;
   const changes = [], websiteOnly = [], seen = new Set();
   while (!complete && pages++ < 100) {
-    const response = UrlFetchApp.fetch('https://staging.bubbahub.co.uk/api/sheets-sync-export.php',{
+    const response = UrlFetchApp.fetch('https://bubbahub.co.uk/api/sheets-sync-export.php',{
       method:'post',contentType:'application/json',
       headers:{Authorization:'Bearer '+token},
       payload:JSON.stringify({action:'export',after_id:after,limit:100}),
@@ -66,7 +66,7 @@ function bhPreviewHourlySyncChanges() {
   }
   if (!complete) throw new Error('Safety stop: export incomplete');
   const sheetOnly = [...byId.keys()].filter(id => !seen.has(id));
-  const preview = {mode:'READ_ONLY_CHANGE_PROPOSAL',target:'staging',matched:seen.size-websiteOnly.length,
+  const preview = {mode:'READ_ONLY_CHANGE_PROPOSAL',target:'live',matched:seen.size-websiteOnly.length,
     proposedFieldChanges:changes.length,changes:changes.slice(0,25),
     sheetOnly,websiteOnly,writesPerformed:false};
   console.log(JSON.stringify(preview));
