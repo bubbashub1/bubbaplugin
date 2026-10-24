@@ -113,11 +113,11 @@ try {
  if(!$layoutRow){$db->rollBack();expoResponse(409,['ok'=>false,'error'=>'floor_plan_not_ready']);}
  $layout=json_decode((string)$layoutRow['layout_json'],true);$valid=false;
  foreach(is_array($layout)?$layout:[] as $item){
-  if(($item['type']??'')==='table' && (int)($item['id']??0)===$preferred && empty($item['exhibitor'])){$valid=true;break;}
+  if(($item['type']??'')==='table' && (int)($item['id']??0)===$preferred){$valid=true;break;}
  }
  if(!$valid){$db->rollBack();expoResponse(409,['ok'=>false,'error'=>'table_unavailable']);}
- $occupied=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE event_key=? AND preferred_table=? AND application_status IN ('pending','approved','confirmed') LIMIT 1");
- $occupied->execute(['bubba-me-2027',$preferred]);
+ $occupied=$db->prepare("SELECT id FROM bh_expo_exhibitors WHERE event_key=? AND (preferred_table=? OR assigned_table=?) AND application_status IN ('pending','approved','confirmed') LIMIT 1");
+ $occupied->execute(['bubba-me-2027',$preferred,$preferred]);
  if($occupied->fetchColumn()){$db->rollBack();expoResponse(409,['ok'=>false,'error'=>'table_already_selected']);}
  // Canonical foundation schema, shared with admin approvals. Never auto-approve.
  $stmt=$db->prepare("INSERT INTO bh_expo_exhibitors
