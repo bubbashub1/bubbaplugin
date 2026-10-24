@@ -27,8 +27,17 @@ if (getenv('BH_SHEETS_BASELINE_APPROVALS') !== 'enabled')
     bhApprovalReply(403,['ok'=>false,'error'=>'baseline_approvals_disabled']);
 $adminId = filter_var(getenv('BH_SHEETS_BASELINE_ADMIN_ID'), FILTER_VALIDATE_INT,
     ['options'=>['min_range'=>1]]);
-if (!$adminId || trim((string)($_SESSION['bh_admin_username'] ?? '')) === '')
-    bhApprovalReply(403,['ok'=>false,'error'=>'verified_admin_id_required']);
+// Match the authenticated username to the same server-side credentials
+// used by admin-auth.php. A numeric environment ID alone is not proof.
+$configFile = dirname(__DIR__, 2) . '/github-deploy-config.php';
+if (!is_readable($configFile)) {
+    $configFile = dirname(__DIR__) . '/github-deploy-config.php';
+}
+$config = is_readable($configFile) ? require $configFile : null;
+$sessionUsername = (string)($_SESSION['bh_admin_username'] ?? '');
+if (!$adminId || !is_array($config) || !is_string($config['admin_username'] ?? null)
+    || $sessionUsername === '' || !hash_equals($config['admin_username'], $sessionUsername))
+    bhApprovalReply(403,['ok'=>false,'error'=>'verified_admin_identity_required']);
 $raw = file_get_contents('php://input', false, null, 0, 4097);
 if (!is_string($raw) || strlen($raw)>4096)
     bhApprovalReply(413,['ok'=>false,'error'=>'payload_too_large']);
@@ -92,6 +101,17 @@ try {
     $insert->execute([':id'=>$review['activity_id'],':admin'=>$adminId,':fields'=>$fields,
         ':website'=>$review['website_fingerprint'],':sheet'=>$review['sheet_fingerprint'],':audit'=>$auditId]);
     $baselineId=(int)$db->lastInsertId();
+    // Audit approval within the same transaction; failure rolls everything back.
+    $audit=$db->prepare("INSERT INTO bh_sheets_sync_baseline_approval_audit
+        (baseline_id,review_id,activity_id,admin_id,admin_username,
+         website_fingerprint,sheet_fingerprint)
+        VALUES (:baseline,:review,:activity,:admin,:username,:website,:sheet)");
+    $audit->execute([
+        ':baseline'=>$baselineId, ':review'=>$review['id'],
+        ':activity'=>$review['activity_id'], ':admin'=>$adminId,
+        ':username'=>$sessionUsername, ':website'=>$review['website_fingerprint'],
+        ':sheet'=>$review['sheet_fingerprint']
+    ]);
     $db->commit();
     bhApprovalReply(200,['ok'=>true,'result'=>'baseline_approved',
         'baseline_id'=>$baselineId,'review_id'=>(int)$review['id'],'baseline_writes_performed'=>1]);
