@@ -49,6 +49,30 @@ try {
     // Until ownership/baseline rules are verified, restrict writes to the isolated staging fixture.
     if ($request['id'] !== 999999) bhSheetsApplyReply(403, ['ok'=>false,'error'=>'test_fixture_only']);
     $pdo->beginTransaction();
+    // Fail closed unless a genuinely approved, environment-scoped baseline exists.
+    // The isolated fixture has no approved baseline yet, so this guard deliberately
+    // blocks its writes until a separate audited approval workflow is verified.
+    $baseline = $pdo->prepare(
+        "SELECT id, field_values_json FROM bh_sheets_sync_baselines
+         WHERE environment = 'staging' AND activity_id = :id
+           AND approved_by_admin_id > 0
+           AND approved_at_utc <= UTC_TIMESTAMP()
+           AND approval_audit_id <> ''
+         ORDER BY version DESC, id DESC LIMIT 1 FOR UPDATE"
+    );
+    $baseline->execute([':id' => $request['id']]);
+    $approved = $baseline->fetch(PDO::FETCH_ASSOC);
+    if (!$approved) {
+        $pdo->rollBack();
+        bhSheetsApplyReply(403, ['ok'=>false,'error'=>'approved_baseline_required','writes_performed'=>false]);
+    }
+    $approvedFields = json_decode((string)$approved['field_values_json'], true);
+    if (!is_array($approvedFields) || !array_key_exists($request['field'], $approvedFields)
+        || !is_scalar($approvedFields[$request['field']])
+        || (string)$approvedFields[$request['field']] !== $request['expected']) {
+        $pdo->rollBack();
+        bhSheetsApplyReply(409, ['ok'=>false,'error'=>'baseline_value_conflict','writes_performed'=>false]);
+    }
     $field = $request['field']; // Fixed allowlist above.
     // Lock and inspect ownership before considering any update. This is an
     // additional safeguard; the fixture-only restriction above still applies.
