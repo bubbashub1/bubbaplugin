@@ -100,8 +100,8 @@ $("syncExhibitors").onclick=async()=>{
  try{
   const response=await fetch("/api/expo-admin-exhibitors.php",{credentials:"same-origin",cache:"no-store"});
   const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||"Unable to load exhibitors");
-  const assigned=(data.exhibitors||[]).filter(e=>e.application_status==="approved"&&String(e.assigned_table||"").trim());
-  const mapping=new Map();for(const e of assigned){const key=String(e.assigned_table).trim().replace(/^table\s*#?\s*/i,"");if(mapping.has(key))throw Error("Multiple exhibitors are assigned to table "+key+". Resolve this before syncing.");mapping.set(key,e.business_name);}
+  const assigned=(data.exhibitors||[]).filter(e=>e.application_status==="approved"&&String(e.assigned_table||e.preferred_table||"").trim());
+  const mapping=new Map();for(const e of assigned){const key=String(e.assigned_table||e.preferred_table).trim().replace(/^table\s*#?\s*/i,"");if(mapping.has(key))throw Error("Multiple exhibitors are assigned to table "+key+". Resolve this before syncing.");mapping.set(key,e.business_name);}
   const changes=items.filter(o=>o.type==="table"&&mapping.has(String(o.label).trim())&&o.exhibitor!==mapping.get(String(o.label).trim()));
   if(!changes.length){message("No new confirmed table assignments to apply.");return;}
   if(!confirm("Apply "+changes.length+" confirmed exhibitor name(s) to the floor plan? You will still need to click Save draft."))return;
