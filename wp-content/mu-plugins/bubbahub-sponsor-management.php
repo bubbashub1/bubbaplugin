@@ -21,6 +21,7 @@ function bh_sponsor_management_page() {
         return $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table)) === $table;
     };
     echo '<div class="wrap"><h1>Bubba &amp; Me — Sponsor Management</h1>';
+    echo '<p><a class="button button-primary" href="' . esc_url(admin_url('admin.php?page=bh-sponsor-receipts')) . '">View Sponsor Receipts</a> <a class="button" href="' . esc_url(admin_url('admin.php?page=bh-sponsor-payment-audit')) . '">Payment Audit</a></p>';
     echo '<p>Applications from Forminator #88. Submission data is not proof of payment. Stripe reconciliation and confirmed income reporting are not enabled.</p>';
     if (!$has_table($entries) || !$has_table($meta) || !$has_table($flags)) {
         echo '<div class="notice notice-error"><p>Required Forminator or sponsor test-flag table missing. No data loaded.</p></div></div>';
