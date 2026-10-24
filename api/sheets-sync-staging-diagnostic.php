@@ -28,7 +28,7 @@ if (strlen($token) < 32) {
     exit;
 }
 $auth = (string)($_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '');
-if (!preg_match('/^Bearer\s+(.+)$/i, $auth, $match) || !hash_equals($token, trim($match[1]))) {
+if (!preg_match('/^Bearer\s+(.+)$/i', $auth, $match) || !hash_equals($token, trim($match[1]))) {
     http_response_code(401);
     echo json_encode(['ok'=>false,'error'=>'unauthorized']);
     exit;
