@@ -36,7 +36,7 @@ try{
   if(empty($_SESSION['bh_expo_csrf']))$_SESSION['bh_expo_csrf']=bin2hex(random_bytes(32));
   $stmt=$db->prepare("SELECT id,business_name,contact_name,contact_email,website_url,logo_url,description,participation_json,preferred_table,assigned_table,application_status,public_visible,submitted_at FROM bh_expo_exhibitors WHERE event_key=? ORDER BY submitted_at DESC LIMIT 250");
   $stmt->execute(['bubba-me-2027']);
-  $rows=$stmt->fetchAll(PDO::FETCH_ASSOC);foreach($rows as &$row){$details=json_decode((string)($row['participation_json']??''),true);$social=is_array($details)?($details['social_links']??[]):[];foreach(['facebook','instagram','tiktok'] as $network)$row[$network.'_url']=is_array($social)?(string)($social[$network]??''):'';unset($row['participation_json']);}unset($row);reply(200,['ok'=>true,'csrf_token'=>$_SESSION['bh_expo_csrf'],'exhibitors'=>$rows]);
+  $rows=$stmt->fetchAll(PDO::FETCH_ASSOC);foreach($rows as &$row){$details=json_decode((string)($row['participation_json']??''),true);$social=is_array($details)?($details['social_links']??[]):[];foreach(['facebook','instagram','tiktok'] as $network)$row[$network.'_url']=is_array($social)?(string)($social[$network]??''):'';$row['application_details']=is_array($details)?$details:[];unset($row['participation_json']);}unset($row);reply(200,['ok'=>true,'csrf_token'=>$_SESSION['bh_expo_csrf'],'exhibitors'=>$rows]);
  }
  if((int)($_SERVER['CONTENT_LENGTH']??0)>4096)reply(413,['ok'=>false,'error'=>'request_too_large']);
  $input=json_decode((string)file_get_contents('php://input'),true);
