@@ -24,6 +24,7 @@ jobs:
           php -l api/admin-listing-url-preview.php
           php -l api/sheets-sync-staging-apply.php
           php -l api/sheets-sync-staging-rollback.php
+          php -l api/sheets-sync-staging-diagnostic.php
 
       - name: Prepare SSH key
         env:
