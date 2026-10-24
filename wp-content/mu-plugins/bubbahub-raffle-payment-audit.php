@@ -5,7 +5,7 @@
  */
 if (!defined('ABSPATH')) exit;
 add_action('admin_menu', function () {
- add_submenu_page('forminator', 'Raffle Payment Audit', 'Raffle Payment Audit', 'manage_options', 'bh-raffle-payment-audit', 'bh_raffle_payment_audit_page');
+ add_submenu_page('bubba-hub', 'Raffle Payment Audit', 'Raffle Payment Audit', 'manage_options', 'bh-raffle-payment-audit', 'bh_raffle_payment_audit_page');
 });
 function bh_raffle_payment_audit_page() {
  if (!current_user_can('manage_options')) wp_die('Not authorised');
