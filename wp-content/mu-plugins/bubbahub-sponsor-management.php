@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Sponsor Management
  * Description: Administrator-only sponsor application review for Forminator form 88.
- * Version: 1.0.0
+ * Version: 1.1.0
  */
 if (!defined('ABSPATH')) exit;
 
@@ -42,13 +42,14 @@ function bh_sponsor_management_page() {
             esc_html($label) . '</span><div style="font-size:28px;font-weight:700">' . esc_html((string)$count) . '</div></div>';
     }
     echo '</div><h2>Recent applications</h2>';
+    echo '<p><strong>Form mapping preview:</strong> The values in select-1 and select-2 are shown exactly as saved (not yet mapped to sponsorship tier or payment method). Check them against Forminator form #88 before enabling income calculations.</p>';
     echo '<p>Contact information is visible only to WordPress administrators. Amount and payment method are shown only when their saved field values can be interpreted reliably; otherwise review the original Forminator entry.</p>';
-    echo '<table class="widefat striped"><thead><tr><th>Entry</th><th>Submitted</th><th>Contact</th><th>Email</th><th>Classification</th><th>Payment</th></tr></thead><tbody>';
-    if (!$rows) echo '<tr><td colspan="6">No sponsor applications yet.</td></tr>';
+    echo '<table class="widefat striped"><thead><tr><th>Entry</th><th>Submitted</th><th>Contact</th><th>Email</th><th>select-1 (unmapped)</th><th>select-2 (unmapped)</th><th>Classification</th><th>Payment</th></tr></thead><tbody>';
+    if (!$rows) echo '<tr><td colspan="8">No sponsor applications yet.</td></tr>';
     foreach ($rows as $row) {
         $id = (int)$row['entry_id'];
         $fields = $wpdb->get_results($wpdb->prepare(
-            "SELECT meta_key, meta_value FROM {$meta} WHERE entry_id=%d AND meta_key IN ('name-1','email-1')", $id
+            "SELECT meta_key, meta_value FROM {$meta} WHERE entry_id=%d AND meta_key IN ('name-1','email-1','select-1','select-2')", $id
         ), ARRAY_A);
         $values = [];
         foreach ($fields as $field) {
@@ -63,11 +64,14 @@ function bh_sponsor_management_page() {
         echo '<tr><td>#' . esc_html((string)$id) . '</td><td>' . esc_html((string)$row['date_created']) .
             '</td><td>' . esc_html($values['name-1'] ?? 'Not supplied') .
             '</td><td>' . esc_html($values['email-1'] ?? 'Not supplied') .
+            '</td><td>' . esc_html($values['select-1'] ?? 'Not saved') .
+            '</td><td>' . esc_html($values['select-2'] ?? 'Not saved') .
             '</td><td>' . ($row['is_test'] ? 'Test' : 'Unverified application') .
             '</td><td>Not verified</td></tr>';
     }
     echo '</tbody></table>';
     if ($total > count($rows)) echo '<p>Showing the most recent 100 entries.</p>';
     echo '<p><a class="button" href="' . esc_url(admin_url('admin.php?page=bh-sponsor-payment-audit')) . '">Review test flags and field diagnostics</a></p>';
+    echo '<div class="notice notice-info inline"><p><strong>Payment safety:</strong> Neither dropdown values nor a submitted form establish payment. Cash, invoices and Stripe must be reconciled separately. Test submissions stay excluded from non-test counts.</p></div>';
     echo '<div class="notice notice-info inline"><p>Next: map sponsor amount and payment method fields from Forminator, then verify paid status against Stripe or recorded cash/invoice receipts. No paid total is calculated until verification is available.</p></div></div>';
 }
