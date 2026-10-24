@@ -6,7 +6,7 @@
  */
 const BH_HOURLY_MONITOR = Object.freeze({
   sheet: 'MASTER SHEET',
-  endpoint: 'https://bubbahub.co.uk/api/sheets-sync-export.php',
+  endpoint: 'https://staging.bubbahub.co.uk/api/sheets-sync-export.php',
   pageSize: 100,
   maxPages: 100
 });
