@@ -43,7 +43,6 @@ if (!is_array($data)||($data['confirmed']??null)!==true||
     !is_array($ids)||!array_is_list($ids)||count($ids)<1||count($ids)>5||
     !is_array($fields)||!array_is_list($fields)||count($fields)<1||count($fields)>3||
     !is_array($expected)||!is_array($sheet)||
-    !isset($data['reviewed_at_utc'])||!is_string($data['reviewed_at_utc'])||
     count(array_unique($fields))!==count($fields)||
     array_diff($fields,$allowed)||
     count(array_unique($ids))!==count($ids)||
