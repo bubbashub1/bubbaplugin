@@ -31,8 +31,8 @@ function bhPreviewHourlySyncChanges() {
     mapped.forEach(name => fields[name] = String(row[headers.indexOf(name)] ?? '').trim());
     byId.set(id,{row:i+2,fields});
   }
-  const token = PropertiesService.getScriptProperties().getProperty('BH_SYNC_TOKEN');
-  if (!token || token.length < 32) throw new Error('BH_SYNC_TOKEN missing');
+  const token = PropertiesService.getScriptProperties().getProperty('BH_SHEETS_SYNC_TOKEN');
+  if (!token || token.length < 32) throw new Error('BH_SHEETS_SYNC_TOKEN missing');
   let after = 0, complete = false, pages = 0;
   const changes = [], websiteOnly = [], seen = new Set();
   while (!complete && pages++ < 100) {
@@ -48,7 +48,7 @@ function bhPreviewHourlySyncChanges() {
         typeof data.has_more !== 'boolean' || !Number.isSafeInteger(data.next_after_id)) throw new Error('Unexpected export response');
     for (const item of data.records) {
       const id = String(item.id);
-      if (!/^[1-9]\d*$/.test(id) || seen.has(id)) throw new Error('Duplicate/invalid live ID');
+      if (!/^[1-9]\d*$/.test(id) || seen.has(id)) throw new Error('Duplicate/invalid website ID');
       seen.add(id);
       if (!byId.has(id)) {websiteOnly.push(id);continue;}
       const source = byId.get(id);
