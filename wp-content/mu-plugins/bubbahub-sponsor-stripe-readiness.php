@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Sponsor Stripe Readiness
  * Description: Read-only sponsor Stripe reconciliation readiness. Never modifies payments.
- * Version: 1.1.0
+ * Version: 1.1.1
  */
 if (!defined('ABSPATH')) exit;
 add_action('admin_menu', static function () {
@@ -61,17 +61,38 @@ function bh_sponsor_stripe_readiness_page() {
     if (class_exists('Forminator_API') && method_exists('Forminator_API','get_form')) {
         try {
             $form = Forminator_API::get_form(88);
-            $fields = (is_object($form) && isset($form->fields) && is_array($form->fields)) ? $form->fields : [];
+            // Forminator models commonly expose fields via get_fields(), not a public fields property.
+            $fields = [];
+            if (is_object($form) && method_exists($form, 'get_fields')) {
+                $fields = $form->get_fields();
+            } elseif (is_object($form) && isset($form->fields)) {
+                $fields = $form->fields;
+            }
+            if (!is_array($fields)) $fields = [];
             $stripe_ids = [];
             $calculation_ids = [];
+            $unrecognised = 0;
             foreach ($fields as $field) {
-                if (!is_object($field)) continue;
-                $data = isset($field->raw) && is_array($field->raw) ? $field->raw : [];
-                $type = isset($field->type) && is_string($field->type) ? $field->type : (string)($data['type'] ?? '');
-                $id = isset($field->slug) && is_string($field->slug) ? $field->slug : (string)($data['element_id'] ?? '');
-                if ($type === 'stripe') $stripe_ids[] = $id;
-                if ($type === 'calculation') $calculation_ids[] = $id;
+                $data = [];
+                if (is_array($field)) {
+                    $data = $field;
+                } elseif (is_object($field)) {
+                    if (isset($field->raw) && is_array($field->raw)) $data = $field->raw;
+                    elseif (method_exists($field, 'to_array')) {
+                        $maybe = $field->to_array();
+                        if (is_array($maybe)) $data = $maybe;
+                    }
+                    if (!isset($data['type']) && isset($field->type)) $data['type'] = $field->type;
+                    if (!isset($data['element_id']) && isset($field->slug)) $data['element_id'] = $field->slug;
+                }
+                $type = strtolower((string)($data['type'] ?? ''));
+                $id = sanitize_key((string)($data['element_id'] ?? $data['slug'] ?? ''));
+                if ($type === 'stripe' || str_starts_with($id, 'stripe-')) $stripe_ids[] = $id;
+                elseif ($type === 'calculation' || str_starts_with($id, 'calculation-')) $calculation_ids[] = $id;
+                elseif (!$type && !$id) $unrecognised++;
             }
+            echo '<p><strong>Inspectable form fields:</strong> '.esc_html((string)count($fields)).'</p>';
+            if ($unrecognised) echo '<p>Some field objects could not be interpreted; counts may be incomplete.</p>';
             echo '<p><strong>Stripe fields detected:</strong> '.esc_html((string)count($stripe_ids)).'</p>';
             echo '<p><strong>Calculation fields detected:</strong> '.esc_html((string)count($calculation_ids)).'</p>';
             if ($stripe_ids) echo '<p>Stripe field IDs: <code>'.esc_html(implode(', ',array_map('sanitize_key',$stripe_ids))).'</code></p>';
