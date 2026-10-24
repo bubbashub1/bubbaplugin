@@ -25,6 +25,7 @@ jobs:
           php -l api/sheets-sync-staging-apply.php
           php -l api/sheets-sync-staging-rollback.php
           php -l api/sheets-sync-staging-diagnostic.php
+          php -l api/sheets-sync-admin-baseline-approve.php
 
       - name: Prepare SSH key
         env:
@@ -93,3 +94,28 @@ jobs:
             exit 1
           fi
           echo "Staging public page EXACTLY matches GitHub events.html."
+
+      - name: Verify staging baseline endpoint is deployed and safe
+        env:
+          SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
+          SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+        run: |
+          set -euo pipefail
+          REMOTE="$SSH_USERNAME@$SSH_HOST"
+          SSH=(ssh -p "$SSH_PORT" -i "$RUNNER_TEMP/eweball_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new)
+          expected=$(sha256sum api/sheets-sync-admin-baseline-approve.php | cut -d' ' -f1)
+          remote=$("${SSH[@]}" "$REMOTE" 'sha256sum "$HOME/staging_html/api/sheets-sync-admin-baseline-approve.php"' | cut -d' ' -f1)
+          test "$expected" = "$remote" || { echo "::error::Staging baseline PHP differs from GitHub"; exit 1; }
+          response=$(curl -sS --max-time 30 -H 'Cache-Control: no-store' -w '\n%{http_code}' "https://staging.bubbahub.co.uk/api/sheets-sync-admin-baseline-approve.php?deploy_check=$GITHUB_SHA")
+          status="${response##*$'\n'}"
+          body="${response%$'\n'*}"
+          if [ "$status" != "401" ] && [ "$status" != "405" ]; then
+            echo "::error::Unexpected baseline endpoint status: $status"
+            exit 1
+          fi
+          if [[ "$body" != *'"ok":false'* ]]; then
+            echo "::error::Baseline endpoint did not return expected JSON"
+            exit 1
+          fi
+          echo "Baseline endpoint is reachable and rejects unauthenticated or GET requests."
