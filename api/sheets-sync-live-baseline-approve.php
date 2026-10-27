@@ -16,6 +16,7 @@ function bhLiveBaselineReply(int $status, array $body): never {
 if (strtolower((string)($_SERVER['HTTP_HOST'] ?? '')) !== 'bubbahub.co.uk')
     bhLiveBaselineReply(403,['ok'=>false,'error'=>'live_host_required']);
 require_once __DIR__.'/admin-session-guard.php';
+require_once __DIR__.'/sheets-sync-baseline-guard.php';
 if (empty($_SESSION['bh_live_baseline_csrf']))
     $_SESSION['bh_live_baseline_csrf']=bin2hex(random_bytes(32));
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET')
@@ -125,7 +126,7 @@ try {
                 !is_string($expected[$key][$field]??null)||
                 !is_string($sheetValue)||
                 !hash_equals($value,$expected[$key][$field])||
-                !hash_equals($value,$sheetValue)) {
+                !bh_sync_field_equal($field,$value,$sheetValue)) {
                 $db->rollBack();
                 bhLiveBaselineReply(409,['ok'=>false,'error'=>'baseline_source_mismatch',
                     'activity_id'=>$id,'field'=>$field]);
