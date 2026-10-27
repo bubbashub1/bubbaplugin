@@ -14,8 +14,8 @@ function bhWebsiteToSheets() {
     if (!token || token.length < 32) throw new Error('Missing BH_SHEETS_SYNC_TOKEN Script Property');
     const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
     if (!spreadsheet) throw new Error('Run from the bound Master Sheet Apps Script project');
-    const columns = ['id', 'title', 'price_from', 'age_range', 'status'];
-    const values = [columns];
+    let columns = null;
+    const values = [];
     const seen = new Set();
     let after = 0;
     for (let page = 0; page < 100; page++) {
@@ -31,6 +31,9 @@ function bhWebsiteToSheets() {
       if (body.ok !== true || !Array.isArray(body.records) || body.mode !== 'read_only_export') {
         throw new Error('Unexpected export response');
       }
+      if (!Array.isArray(body.fields) || body.fields.length < 5 || body.fields[0] !== 'id' || new Set(body.fields).size !== body.fields.length) throw new Error('Invalid export columns');
+      if (columns === null) { columns = body.fields; values.push(columns); }
+      else if (JSON.stringify(columns) !== JSON.stringify(body.fields)) throw new Error('Export columns changed during pagination');
       for (const record of body.records) {
         const id = Number(record.id);
         if (!Number.isSafeInteger(id) || id <= after || seen.has(id)) throw new Error('Invalid or duplicate ID');
