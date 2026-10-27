@@ -66,6 +66,40 @@ try {
       $record['id']=(int)$row['id'];
       $records[]=$record;
     }
+    // Optional related fields: load per page without changing any database records.
+    if($records){
+      $ids=array_column($records,'id');
+      $marks=implode(',',array_fill(0,count($ids),'?'));
+      $index=[];foreach($records as $i=>$record)$index[$record['id']]=$i;
+      $tables=[];
+      $tq=$db->query("SELECT TABLE_NAME,COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('bh_activity_tags','bh_activity_images','bh_activity_schedules')");
+      foreach($tq->fetchAll(PDO::FETCH_ASSOC) as $c)$tables[$c['TABLE_NAME']][$c['COLUMN_NAME']]=true;
+      if(isset($tables['bh_activity_tags']['activity_id'])){
+        $tagCol=isset($tables['bh_activity_tags']['tag'])?'tag':(isset($tables['bh_activity_tags']['name'])?'name':null);
+        if($tagCol){
+          $t=$db->prepare("SELECT activity_id,$tagCol AS tag_value FROM bh_activity_tags WHERE activity_id IN ($marks)");
+          $t->execute($ids);$tags=[];
+          foreach($t->fetchAll(PDO::FETCH_ASSOC) as $v)$tags[(int)$v['activity_id']][]=$v['tag_value'];
+          foreach($tags as $id=>$list)$records[$index[$id]]['tags']=implode(', ',$list);
+        }
+      }
+      if(isset($tables['bh_activity_images']['activity_id'],$tables['bh_activity_images']['image_path'])){
+        $t=$db->prepare("SELECT activity_id,image_path FROM bh_activity_images WHERE activity_id IN ($marks) ORDER BY activity_id,id");
+        $t->execute($ids);$images=[];
+        foreach($t->fetchAll(PDO::FETCH_ASSOC) as $v)$images[(int)$v['activity_id']][]=$v['image_path'];
+        foreach($images as $id=>$list)for($i=0;$i<3;$i++)$records[$index[$id]]['image_'.($i+1)]=(string)($list[$i]??'');
+      }
+      if(isset($tables['bh_activity_schedules']['activity_id'],$tables['bh_activity_schedules']['day_of_week'],$tables['bh_activity_schedules']['start_time'])){
+        $t=$db->prepare("SELECT activity_id,day_of_week,start_time,end_time FROM bh_activity_schedules WHERE activity_id IN ($marks) ORDER BY activity_id,day_of_week,start_time");
+        $t->execute($ids);$sessions=[];
+        $days=[1=>'Mon',2=>'Tue',3=>'Wed',4=>'Thu',5=>'Fri',6=>'Sat',7=>'Sun'];
+        foreach($t->fetchAll(PDO::FETCH_ASSOC) as $v){
+          $day=$days[(int)$v['day_of_week']]??'?';
+          $sessions[(int)$v['activity_id']][]=$day.' '.substr((string)$v['start_time'],0,5).($v['end_time']?'-'.substr((string)$v['end_time'],0,5):'');
+        }
+        foreach($sessions as $id=>$list)$records[$index[$id]]['sessions']=implode('; ',$list);
+      }
+    }
     $next=$records?$records[count($records)-1]['id']:$after;
     bhSheetsExportReply(200,['ok'=>true,'mode'=>'read_only_export','fields'=>$fields,
         'records'=>$records,'has_more'=>$hasMore,'next_after_id'=>$next,'writes_performed'=>false]);
