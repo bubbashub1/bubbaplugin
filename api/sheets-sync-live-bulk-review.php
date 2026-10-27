@@ -71,36 +71,51 @@ try {
 <?php if($error):?><div class="panel" role="alert"><?=h($error)?></div><?php else:?>
 <div class="panel"><p><strong>Approvals:</strong> <?= $enabled?'Enabled':'Disabled' ?> · <strong>Listings displayed:</strong> <?=count($items)?> · <strong>Already approved:</strong> excluded</p>
 <p>Only select listings after checking the exact website and Sheet values. Each selected listing is approved in its own protected request; processing stops if any request fails.</p></div>
-<div class="panel"><table><thead><tr><th>Select</th><th>Activity</th><th>Field</th><th>Website</th><th>Google Sheet</th><th>Status</th></tr></thead><tbody>
+<div class="panel"><table><thead><tr><th>Select</th><th>Activity</th><th>Field to approve</th><th>Website</th><th>Google Sheet</th><th>Status</th></tr></thead><tbody>
 <?php foreach($items as $item): $first=true; foreach($fields as $f): $check=$item['checks'][$f]; ?>
 <tr><td><?php if($first):?><input type="checkbox" class="rowcheck" data-id="<?= $item['id'] ?>" <?= count(array_filter(array_column($item['checks'],'ok')))>0?'':'disabled' ?> aria-label="Select activity <?= $item['id'] ?>"><?php endif;?></td>
 <td><?php if($first):?><strong><?=h($item['id'])?></strong><small><?=h($item['title'])?></small><?php endif;?></td>
-<td><?=h($f)?></td><td><?=h($item['values'][$f])?></td><td><?=h($check['sheet']??'—')?></td>
+<td><label><input type="checkbox" class="fieldcheck" data-id="<?= $item['id'] ?>" data-field="<?=h($f)?>" <?= $check['ok']?'':'disabled' ?>> <?=h($f)?></label></td><td><?=h($item['values'][$f])?></td><td><?=h($check['sheet']??'—')?></td>
 <td class="<?= $check['ok']?'good':'bad' ?>"><?= $check['ok']?'Matches · fresh':h($item['reasons'][$f]??'Unavailable') ?></td></tr>
 <?php $first=false;endforeach;endforeach;?>
 </tbody></table></div>
-<div class="panel"><label><input id="confirm" type="checkbox"> I have checked the selected website and Sheet values and approve creating their trusted baselines.</label>
+<div class="panel"><p id="selectionSummary" class="muted">Select an activity and tick the individual fields you wish to approve. Nothing is preselected.</p><label><input id="partial" type="checkbox"> I understand that approving fewer than all three fields creates a partial baseline; missing fields will not be covered.</label><p><label><input id="confirm" type="checkbox"> I have reviewed the exact selected fields and approve creating their trusted baselines.</label></p>
 <p><button type="button" id="approve" disabled>Approve selected baselines (maximum 10)</button></p>
 <p id="result" role="status" aria-live="polite"></p></div>
 <?php if($next):?><p><a href="?after=<?=$next?>">Next 10 listings →</a></p><?php endif;?>
 <?php endif;?>
 <script>
 const rows=<?=json_encode($items,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_INVALID_UTF8_SUBSTITUTE)?>;
-const confirmBox=document.getElementById('confirm'),button=document.getElementById('approve'),result=document.getElementById('result');
+const confirmBox=document.getElementById('confirm'),partialBox=document.getElementById('partial'),button=document.getElementById('approve'),result=document.getElementById('result'),summary=document.getElementById('selectionSummary');
 const selected=()=>Array.from(document.querySelectorAll('.rowcheck:checked')).map(el=>Number(el.dataset.id));
-const update=()=>{button.disabled=!confirmBox.checked||selected().length===0};
+const fieldsFor=id=>Array.from(document.querySelectorAll('.fieldcheck:checked')).filter(el=>Number(el.dataset.id)===id).map(el=>el.dataset.field);
+const update=()=>{
+ const ids=selected(),partials=ids.filter(id=>fieldsFor(id).length<3),missing=ids.filter(id=>fieldsFor(id).length===0);
+ summary.textContent=ids.length ? ids.map(id=>'Activity '+id+': '+(fieldsFor(id).join(', ')||'no fields selected')).join(' | ')+(partials.length?' — Partial baselines: '+partials.join(', '):'') : 'Select activities and tick each field to approve. No fields are preselected.';
+ button.disabled=!confirmBox.checked||ids.length===0||missing.length>0||(partials.length>0&&!partialBox.checked);
+};
 confirmBox?.addEventListener('change',update);
-document.querySelectorAll('.rowcheck').forEach(el=>el.addEventListener('change',update));
+document.querySelectorAll('.rowcheck').forEach(el=>el.addEventListener('change',()=>{
+ if(!el.checked)document.querySelectorAll('.fieldcheck').forEach(f=>{if(f.dataset.id===el.dataset.id)f.checked=false;});
+ confirmBox.checked=false;update();
+}));
+document.querySelectorAll('.fieldcheck').forEach(el=>el.addEventListener('change',()=>{
+ if(el.checked){const row=document.querySelector('.rowcheck[data-id="'+el.dataset.id+'"]');if(row)row.checked=true;}
+ confirmBox.checked=false;update();
+}));
+partialBox?.addEventListener('change',update);
 button?.addEventListener('click',async()=>{
- const ids=selected();if(!confirmBox.checked||ids.length<1||ids.length>10)return;
- if(!window.confirm('Approve baselines for '+ids.length+' reviewed activities? This stores baselines only; it does not change listings.'))return;
+ const ids=selected();if(!confirmBox.checked||ids.length<1||ids.length>10||ids.some(id=>fieldsFor(id).length===0)||(ids.some(id=>fieldsFor(id).length<3)&&!partialBox.checked))return;
+ const detail=ids.map(id=>'Activity '+id+': '+fieldsFor(id).join(', ')).join('\n');
+ if(!window.confirm('Approve exactly these baseline fields?\n\n'+detail+'\n\nThis does not update activity listings.'))return;
  button.disabled=true;result.textContent='Approving reviewed listings…';
  let success=[];
  try {
    const endpoint='/api/sheets-sync-live-baseline-approve.php';
    for(const id of ids){
      const row=rows.find(x=>x.id===id);
-     const fields=Object.keys(row.checks).filter(f=>row.checks[f].ok);
+     const fields=fieldsFor(id);
+     if(fields.some(f=>!row.checks[f]?.ok))throw Error('Field eligibility changed for activity '+id);
      if(!fields.length)throw Error('No eligible fields for activity '+id);
      const expected={};expected[String(id)]={};
      for(const f of fields)expected[String(id)][f]=String(row.values[f]);
@@ -115,6 +130,7 @@ button?.addEventListener('click',async()=>{
    }
    result.textContent+='\nFinished. Refresh to verify approved listings disappear from this queue.';
    confirmBox.checked=false;document.querySelectorAll('.rowcheck').forEach(el=>{if(success.includes(Number(el.dataset.id))){el.checked=false;el.disabled=true;}});
+   document.querySelectorAll('.fieldcheck').forEach(el=>{if(success.includes(Number(el.dataset.id))){el.checked=false;el.disabled=true;}});
  }catch(e){result.textContent='Approved before stop: '+(success.join(', ')||'none')+'\nStopped: '+e.message+'\nNo automatic retry. Refresh before continuing.';}
  update();
 });
