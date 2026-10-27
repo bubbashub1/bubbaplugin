@@ -36,6 +36,12 @@ function bh_sync_baseline_field_status(array $sheet, array $website, ?array $tru
         }
         $sheetValue = trim((string)($incoming ?? ''));
         $websiteValue = trim((string)($current ?? ''));
+        // A blank spreadsheet value is never an instruction to erase website data,
+        // even when the website value is also blank or a trusted baseline exists.
+        if ($sheetValue === '') {
+            $out[$field] = ['status'=>'blank_sheet_ignored', 'requires_review'=>false, 'eligible_for_write'=>false];
+            continue;
+        }
         if (bh_sync_field_equal($field, $sheetValue, $websiteValue)) {
             $out[$field] = ['status'=>'same', 'requires_review'=>false];
             continue;
