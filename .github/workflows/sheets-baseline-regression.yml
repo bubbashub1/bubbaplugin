@@ -1,0 +1,19 @@
+name: Sheets baseline guard regression
+on:
+  push:
+    paths:
+      - 'api/sheets-sync-baseline-guard.php'
+      - 'tests/sheets-sync-baseline-guard-test.php'
+      - '.github/workflows/sheets-baseline-regression.yml'
+  pull_request:
+    paths:
+      - 'api/sheets-sync-baseline-guard.php'
+      - 'tests/sheets-sync-baseline-guard-test.php'
+      - '.github/workflows/sheets-baseline-regression.yml'
+jobs:
+  baseline-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run PHP baseline guard regression tests
+        run: php tests/sheets-sync-baseline-guard-test.php
