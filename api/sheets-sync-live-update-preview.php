@@ -23,6 +23,10 @@ $fields=['title','price_from','age_range'];
 $simulate=array_key_exists('simulate_field',$_GET)||array_key_exists('simulate_value',$_GET);
 $simulateField=$simulate?(string)($_GET['simulate_field']??''):'';
 $simulateValue=$simulate?(string)($_GET['simulate_value']??''):'';
+$simulateWebsite=array_key_exists('simulate_website_value',$_GET);
+$websiteSimulationValue=$simulateWebsite?(string)($_GET['simulate_website_value']??''):'';
+if($simulateWebsite && (!$simulate||!is_string($_GET['simulate_website_value']??null)||strlen($websiteSimulationValue)>200))
+ previewReply(422,['ok'=>false,'error'=>'invalid_website_simulation']);
 if($simulate && (!in_array($simulateField,$fields,true)||!is_string($_GET['simulate_value']??null)||strlen($simulateValue)>200))
  previewReply(422,['ok'=>false,'error'=>'invalid_simulation_input']);
 try{
@@ -46,7 +50,8 @@ try{
  foreach($q->fetchAll(PDO::FETCH_ASSOC) as $r)$snap[$r['field_name']]=$r;
  $results=[];
  foreach($fields as $field){
-   $current=(string)($activity[$field]??'');
+   $actualWebsite=(string)($activity[$field]??'');
+   $current=($simulateWebsite && $simulateField===$field)?$websiteSimulationValue:$actualWebsite;
    $snapshot=$snap[$field]??null;
    $incoming=$snapshot===null?null:(string)$snapshot['sheet_value'];
    $isSimulated=$simulate && $simulateField===$field;
@@ -66,6 +71,8 @@ try{
    }
    $results[$field]=[
       'website_value'=>$current,
+      'actual_website_value'=>$actualWebsite,
+      'website_simulated'=>$simulateWebsite && $simulateField===$field,
       'sheet_value'=>$incoming,
       'baseline_value'=>$hasBaseline?(string)$trusted[$field]:null,
       'snapshot_received_utc'=>$snapshot['received_at_utc']??null,
@@ -78,6 +85,6 @@ try{
   'protected'=>$protected,'baseline_version'=>$baseline?(int)$baseline['version']:null,
   'live_writes_enabled'=>getenv('BH_SHEETS_SYNC_LIVE_WRITES')==='enabled',
   'fields'=>$results,
-  'simulation'=>$simulate?['field'=>$simulateField,'value'=>$simulateValue,'hypothetical_only'=>true]:null,
+  'simulation'=>$simulate?['field'=>$simulateField,'value'=>$simulateValue,'website_value'=>$simulateWebsite?$websiteSimulationValue:null,'hypothetical_only'=>true]:null,
   'note'=>$simulate?'Hypothetical input only. No Sheet snapshot or activity was changed.':'Read-only preview. No changes are authorised or performed.']);
 }catch(Throwable $e){error_log('Live Sheet update preview: '.$e->getMessage());previewReply(503,['ok'=>false,'error'=>'preview_unavailable']);}
