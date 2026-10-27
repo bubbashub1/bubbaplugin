@@ -14,9 +14,22 @@ $enabled=getenv('BH_SHEETS_LIVE_BASELINE_APPROVALS')==='enabled';
 $after=max(0,min(999999999,(int)($_GET['after']??0)));
 $fields=['title','price_from','age_range'];
 $items=[];$error='';$next=0;
+$progress=['matched'=>0,'full'=>0,'partial'=>0,'pending'=>0,'missing_price'=>0,'missing_age'=>0];
 try {
  require_once __DIR__.'/db.php';
  $db=bh_mysql();
+ // Read-only counts, based on distinct Sheet IDs and stored baselines.
+ $progress['matched']=(int)$db->query("SELECT COUNT(DISTINCT activity_id) FROM bh_sheets_sync_live_sheet_snapshots")->fetchColumn();
+ $baselineRows=$db->query("SELECT b.activity_id,b.field_values_json FROM bh_sheets_sync_live_baselines b WHERE b.environment='live' AND EXISTS (SELECT 1 FROM bh_sheets_sync_live_sheet_snapshots s WHERE s.activity_id=b.activity_id)")->fetchAll(PDO::FETCH_ASSOC);
+ foreach($baselineRows as $baseline) {
+   $values=json_decode((string)$baseline['field_values_json'],true);
+   if(!is_array($values))continue;
+   if(array_key_exists('title',$values)&&array_key_exists('price_from',$values)&&array_key_exists('age_range',$values))$progress['full']++;
+   else $progress['partial']++;
+ }
+ $progress['pending']=max(0,$progress['matched']-$progress['full']-$progress['partial']);
+ $progress['missing_price']=(int)$db->query("SELECT COUNT(DISTINCT t.activity_id) FROM bh_sheets_sync_live_sheet_snapshots t WHERE NOT EXISTS (SELECT 1 FROM bh_sheets_sync_live_sheet_snapshots p WHERE p.activity_id=t.activity_id AND p.field_name='price_from' AND TRIM(p.sheet_value)<>'')")->fetchColumn();
+ $progress['missing_age']=(int)$db->query("SELECT COUNT(DISTINCT t.activity_id) FROM bh_sheets_sync_live_sheet_snapshots t WHERE NOT EXISTS (SELECT 1 FROM bh_sheets_sync_live_sheet_snapshots p WHERE p.activity_id=t.activity_id AND p.field_name='age_range' AND TRIM(p.sheet_value)<>'')")->fetchColumn();
  // Keyset pagination; only rows with stored Sheet snapshots, no existing live baseline.
  $q=$db->prepare("SELECT a.id,a.title,a.price_from,a.age_range,a.status,a.leader_id,a.created_by,o.email AS organiser_email
  FROM bh_activities a
@@ -69,6 +82,10 @@ try {
 <h1>Google Sheets bulk baseline approval</h1>
 <p class="muted">Review up to 10 listings at a time. Only matching, fresh, unprotected fields can be approved. No activity listings are updated.</p>
 <?php if($error):?><div class="panel" role="alert"><?=h($error)?></div><?php else:?>
+<div class="panel"><h2>Baseline progress</h2>
+<p><strong>Matched Sheet IDs:</strong> <?=h($progress['matched'])?> · <strong>Full baselines:</strong> <?=h($progress['full'])?> · <strong>Partial baselines:</strong> <?=h($progress['partial'])?> · <strong>Not yet approved:</strong> <?=h($progress['pending'])?></p>
+<p class="muted">Across matched Sheet IDs: missing populated price snapshots <?=h($progress['missing_price'])?>; missing populated age-range snapshots <?=h($progress['missing_age'])?>. These are coverage counts, not eligibility or safety approvals.</p>
+<p class="muted">Approved baselines are excluded from this queue. Partial baselines cannot be expanded through this approval page; missing fields require separate review.</p></div>
 <div class="panel"><p><strong>Approvals:</strong> <?= $enabled?'Enabled':'Disabled' ?> · <strong>Listings displayed:</strong> <?=count($items)?> · <strong>Already approved:</strong> excluded</p>
 <p>Only select listings after checking the exact website and Sheet values. Each selected listing is approved in its own protected request; processing stops if any request fails.</p></div>
 <div class="panel"><table><thead><tr><th>Select</th><th>Activity</th><th>Field to approve</th><th>Website</th><th>Google Sheet</th><th>Status</th></tr></thead><tbody>
