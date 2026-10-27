@@ -20,6 +20,11 @@ $settings=dirname(__DIR__,2).'/bh-sheets-sync-secret.php';
 if(is_file($settings)&&is_readable($settings))require_once $settings;
 $id=955;
 $fields=['title','price_from','age_range'];
+$simulate=array_key_exists('simulate_field',$_GET)||array_key_exists('simulate_value',$_GET);
+$simulateField=$simulate?(string)($_GET['simulate_field']??''):'';
+$simulateValue=$simulate?(string)($_GET['simulate_value']??''):'';
+if($simulate && (!in_array($simulateField,$fields,true)||!is_string($_GET['simulate_value']??null)||strlen($simulateValue)>200))
+ previewReply(422,['ok'=>false,'error'=>'invalid_simulation_input']);
 try{
  require_once __DIR__.'/db.php';
  $db=bh_mysql();
@@ -44,7 +49,11 @@ try{
    $current=(string)($activity[$field]??'');
    $snapshot=$snap[$field]??null;
    $incoming=$snapshot===null?null:(string)$snapshot['sheet_value'];
+   $isSimulated=$simulate && $simulateField===$field;
+   if($isSimulated)$incoming=$simulateValue;
    $fresh=$snapshot!==null && strtotime((string)$snapshot['received_at_utc'].' UTC')>=time()-86400;
+   // Simulated values have no real snapshot timestamp; they are evaluated only as hypothetical inputs.
+   if($isSimulated)$fresh=true;
    $hasBaseline=$trusted!==null&&array_key_exists($field,$trusted);
    $status='no_snapshot';
    if($protected)$status='protected_listing';
@@ -61,6 +70,7 @@ try{
       'baseline_value'=>$hasBaseline?(string)$trusted[$field]:null,
       'snapshot_received_utc'=>$snapshot['received_at_utc']??null,
       'status'=>$status,
+      'simulated'=>$isSimulated,
       'would_write'=>false
    ];
  }
@@ -68,5 +78,6 @@ try{
   'protected'=>$protected,'baseline_version'=>$baseline?(int)$baseline['version']:null,
   'live_writes_enabled'=>getenv('BH_SHEETS_SYNC_LIVE_WRITES')==='enabled',
   'fields'=>$results,
-  'note'=>'Read-only preview. No changes are authorised or performed.']);
+  'simulation'=>$simulate?['field'=>$simulateField,'value'=>$simulateValue,'hypothetical_only'=>true]:null,
+  'note'=>$simulate?'Hypothetical input only. No Sheet snapshot or activity was changed.':'Read-only preview. No changes are authorised or performed.']);
 }catch(Throwable $e){error_log('Live Sheet update preview: '.$e->getMessage());previewReply(503,['ok'=>false,'error'=>'preview_unavailable']);}
