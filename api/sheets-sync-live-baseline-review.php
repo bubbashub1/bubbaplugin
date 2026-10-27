@@ -20,7 +20,7 @@ $existing=false;
 try {
     require_once __DIR__.'/db.php';
     $db=bh_mysql();
-    $q=$db->prepare('SELECT id,title,price_from,age_range,status,leader_id,created_by FROM bh_activities WHERE id=?');
+    $q=$db->prepare('SELECT a.id,a.title,a.price_from,a.age_range,a.status,a.leader_id,a.created_by,o.email AS organiser_email FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.id=?');
     $q->execute([$id]);
     $website=$q->fetch(PDO::FETCH_ASSOC) ?: [];
     $q=$db->prepare('SELECT field_name,sheet_value,received_at_utc FROM bh_sheets_sync_live_sheet_snapshots WHERE activity_id=? AND field_name IN (\'title\',\'price_from\',\'age_range\')');
@@ -30,6 +30,13 @@ try {
     $q->execute([$id]); $existing=(int)$q->fetchColumn()>0;
 } catch (Throwable $e) { error_log('Baseline review unavailable: '.$e->getMessage()); $error='Could not load the live comparison. No changes made.'; }
 $eligible= !$error && $website && $website['status']==='published' && $website['leader_id']===null && $website['created_by']===null && !$existing;
+if ($eligible && trim((string)($website['organiser_email']??''))!=='') {
+    try {
+        $owner=$db->prepare("SELECT 1 FROM bh_users WHERE role='leader' AND status='active' AND LOWER(TRIM(email))=LOWER(TRIM(?)) LIMIT 1");
+        $owner->execute([$website['organiser_email']]);
+        if ($owner->fetchColumn()) $eligible=false;
+    } catch (Throwable $e) { $eligible=false; error_log('Baseline ownership preview failed: '.$e->getMessage()); }
+}
 $allMatch=$eligible;
 foreach ($fields as $f) {
     if (!isset($sheet[$f]) || trim((string)($website[$f]??''))==='' || !bh_sync_field_equal($f,(string)$website[$f],(string)$sheet[$f])) $allMatch=false;
