@@ -17,6 +17,12 @@ if (strtolower((string)($_SERVER['HTTP_HOST'] ?? '')) !== 'bubbahub.co.uk')
     bhLiveBaselineReply(403,['ok'=>false,'error'=>'live_host_required']);
 require_once __DIR__.'/admin-session-guard.php';
 require_once __DIR__.'/sheets-sync-baseline-guard.php';
+// Load the live private settings before evaluating the approval feature flag.
+// Never require a web-accessible configuration file or expose its contents.
+$privateSettings = dirname(__DIR__, 2) . '/bh-sheets-sync-secret.php';
+if (is_file($privateSettings) && is_readable($privateSettings)) {
+    require_once $privateSettings;
+}
 if (empty($_SESSION['bh_live_baseline_csrf']))
     $_SESSION['bh_live_baseline_csrf']=bin2hex(random_bytes(32));
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET')
