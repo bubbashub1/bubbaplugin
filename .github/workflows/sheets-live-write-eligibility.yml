@@ -1,0 +1,18 @@
+name: Sheets live write eligibility tests
+on:
+  pull_request:
+    paths:
+      - 'api/sheets-sync-live-write-eligibility.php'
+      - 'tests/sheets-sync-live-write-eligibility-test.php'
+      - '.github/workflows/sheets-live-write-eligibility.yml'
+  push:
+    paths:
+      - 'api/sheets-sync-live-write-eligibility.php'
+      - 'tests/sheets-sync-live-write-eligibility-test.php'
+      - '.github/workflows/sheets-live-write-eligibility.yml'
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: php tests/sheets-sync-live-write-eligibility-test.php
