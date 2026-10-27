@@ -34,18 +34,25 @@ try {
  VALUES (?,?,?,UTC_TIMESTAMP(),?)
  ON DUPLICATE KEY UPDATE sheet_value=VALUES(sheet_value),
  received_at_utc=VALUES(received_at_utc),source_run_id=VALUES(source_run_id)");
- $run='master:'.bin2hex(random_bytes(16));$stored=0;
+ $delete=$db->prepare('DELETE FROM bh_sheets_sync_live_sheet_snapshots WHERE activity_id=? AND field_name=?');
+ $run='master:'.bin2hex(random_bytes(16));$stored=0;$cleared=0;
  foreach($rows as $row) {
   if (!is_array($row)||!is_int($row['id']??null)||$row['id']<1||
    !is_array($row['fields']??null)) throw new InvalidArgumentException('invalid_row');
   foreach($row['fields'] as $field=>$value) {
    if (!in_array($field,$allowed,true)||!is_string($value)||strlen($value)>2000)
     throw new InvalidArgumentException('invalid_field');
-   if (trim($value)==='') continue; // Blanks never erase trusted values.
+   if (trim($value)==='') {
+    // Explicit blank invalidates a previous Sheet snapshot, NOT the website or approved baseline.
+    // Omitted fields do not enter this loop and therefore retain their snapshots.
+    $delete->execute([$row['id'],$field]);
+    $cleared += $delete->rowCount();
+    continue;
+   }
    $q->execute([$row['id'],$field,$value,$run]);$stored++;
   }
  }
- $db->commit();reply(200,['ok'=>true,'stored_fields'=>$stored,'source_run_id'=>$run]);
+ $db->commit();reply(200,['ok'=>true,'stored_fields'=>$stored,'cleared_stale_snapshots'=>$cleared,'source_run_id'=>$run]);
 } catch(InvalidArgumentException $e) {
  if (isset($db)&&$db->inTransaction())$db->rollBack();
  reply(422,['ok'=>false,'error'=>'invalid_row_or_field']);
