@@ -323,7 +323,7 @@ final class Bubba_Hub_Manager {
                     if ($has_venue_name) echo '<td>'.esc_html((string)($row['venue_name']?:'Venue name unavailable')).'</td>';
                     {
                         echo '<td>';
-                        if (($has_session_activity && isset($row['activity_id']) && (int)$row['activity_id']===$id) || (!$has_session_activity && $has_junction)) {
+                        if (($has_session_activity && isset($row['activity_id']) && (int)$row['activity_id']===$id) || (!$has_session_activity && $has_junction && isset($row['venue_id']) && (int)$db->get_var($db->prepare('SELECT COUNT(DISTINCT activity_id) FROM bh_activity_venues WHERE venue_id=%d',(int)$row['venue_id']))===1)) {
                             foreach (array_intersect(['day_of_week','start_time','end_time','frequency','start_date','end_date'],$display_cols) as $field) {
                                 echo '<label style="display:block">'.esc_html(ucwords(str_replace('_',' ',$field))).' <input style="width:140px" name="session_'.absint($row['id']).'_'.esc_attr($field).'" value="'.esc_attr((string)($row[$field]??'')).'"></label>';
                             }
