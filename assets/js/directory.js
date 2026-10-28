@@ -377,7 +377,7 @@ const bhInitDirectory=async()=>{
     const initMap = () => {
       if (map || !window.bhMapEngine) return;
       const mapEl = $("mapView");
-      if (!mapEl || (currentView !== "map" && !(currentView === "grid" && window.innerWidth > 900))) return;
+      if (!mapEl || currentView !== "map") return;
       mapEl.hidden = false;
       mapEl.setAttribute("aria-hidden", "false");
       map = bhMapEngine.init("mapView");
@@ -616,7 +616,7 @@ const bhInitDirectory=async()=>{
       const results=$("results"),mapView=$("mapView"),calendarView=$("calendarView");
       if(results)results.hidden=currentView!=="grid";
       if(mapView){
-        mapView.hidden=!(showMap || (currentView==="grid" && window.innerWidth>900));
+        mapView.hidden=!showMap;
         mapView.setAttribute("aria-hidden",String(mapView.hidden));
       }
       const mapPane=document.querySelector(".bh-directory-map-pane");
