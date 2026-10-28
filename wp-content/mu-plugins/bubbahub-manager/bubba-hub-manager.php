@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.8.0
+ * Version: 0.9.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -80,12 +80,16 @@ final class Bubba_Hub_Manager {
         }
         echo '<div class="bh-manager-head"><div><a class="bh-manager-back" href="'.esc_url(admin_url('admin.php?page=bh-manager-activities')).'">&larr; All activities</a><h1>'.esc_html((string)($record['title']??'Edit activity')).'</h1><p>Activity #'.esc_html((string)$id).' <span class="bh-manager-dot">•</span> '.esc_html(ucfirst((string)($record['status']??'Listing'))).'</p></div><span class="bh-manager-tag">Bubba Hub Directory</span></div>';
         
-        echo '<div class="notice notice-info inline"><p>This stage changes activity text, category, age range and basic price fields. Venues, schedules, sessions, images, organisers and publication status are untouched.</p></div>';
+        echo '<div class="notice notice-info inline"><p>Edit activity details, ages, pricing, booking and contact information below. Venues, schedules, sessions, images, organiser assignments and publication status are untouched.</p></div>';
         echo '<form method="post" id="bh-manager-activity-form">';
         echo '<p class="description">Ages are stored in months. Examples: 12 = 1 year; 60 = 5 years. Only change pricing fields that apply to this activity.</p>';
+        echo '<nav class="bh-editor-tabs" aria-label="Activity editor sections"><a href="#bh-basic-details">Details</a><a href="#bh-age-suitability">Ages</a><a href="#bh-pricing">Pricing</a><a href="#bh-helpful-information">Helpful info</a><a href="#bh-booking-attendance">Booking</a><a href="#bh-contact-social-links">Contact</a></nav>';
         echo '<div class="bh-editor-actions"><button type="submit" class="button button-primary" name="bh_manager_save" value="1">Save activity details</button> <span>Changes are saved to this activity only.</span></div>';
         wp_nonce_field('bh_manager_activity_'.$id);
         echo '<style>
+        .bh-editor-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 8px}.bh-editor-tabs a{display:inline-block;text-decoration:none;color:#245e42;background:#fff;border:1px solid #d1e2d6;border-radius:9px;padding:9px 15px;font-weight:650}.bh-editor-tabs a:hover,.bh-editor-tabs a:focus{background:#e7f3eb;border-color:#5c9b75}
+        .bh-editor-section{scroll-margin-top:120px}
+        #bh-manager-activity-form>.submit .button-primary{background:#216647;border-color:#216647;border-radius:7px;padding:4px 18px}
         .bh-manager-head{background:linear-gradient(115deg,#e6f4e9,#f7fbf8);border:1px solid #c9e3d1;border-radius:16px;padding:24px 28px;margin:18px 0;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
         .bh-manager-head h1{font-size:25px;font-weight:750;margin:10px 0 8px;color:#174f39;line-height:1.25}
         .bh-manager-head p{margin:0;color:#53675d}.bh-manager-back{font-weight:650;text-decoration:none;color:#226746}
@@ -106,7 +110,7 @@ final class Bubba_Hub_Manager {
         foreach ($groups as $group=>$group_fields) {
             $visible=array_values(array_intersect($group_fields,$fields));
             if (!$visible) continue;
-            echo '<section class="bh-editor-section"><h3>'.esc_html($group).'</h3>'.($group==='Age suitability'?'<p class="description">Choose an age preset or enter exact minimum and maximum months below.</p><p><select id="bh-age-preset"><option value="">Select age preset (optional)</option><option value="0:6">0–6 months</option><option value="6:12">6–12 months</option><option value="0:12">0–12 months</option><option value="12:48">1–4 years</option><option value="48:216">4+ years</option></select></p>':'').'<table class="form-table"><tbody>';
+            echo '<section id="bh-'.esc_attr(sanitize_title($group)).'" class="bh-editor-section"><h3>'.esc_html($group).'</h3>'.($group==='Age suitability'?'<p class="description">Choose an age preset or enter exact minimum and maximum months below.</p><p><select id="bh-age-preset"><option value="">Select age preset (optional)</option><option value="0:6">0–6 months</option><option value="6:12">6–12 months</option><option value="0:12">0–12 months</option><option value="12:48">1–4 years</option><option value="48:216">4+ years</option></select></p>':'').'<table class="form-table"><tbody>';
             foreach ($visible as $field) {
                     $label=ucwords(str_replace('_',' ',$field));
             echo '<tr><th scope="row"><label for="bh-'.esc_attr($field).'">'.esc_html($label).'</label></th><td>';
