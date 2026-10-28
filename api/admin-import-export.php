@@ -222,7 +222,11 @@ foreach($rows as $idx=>$row){
     $desc=firstv($row,['description','activity_description','details']);$age=firstv($row,['age_range','ages','age','age_group','age_groups']);$county=firstv($row,['county','area','county_area']);if(!in_array($county,['Devon','Cornwall','Plymouth','Torbay'],true))$county='';
     $price=firstv($row,['price_from','price','cost']);$price=$price===''?null:(float)preg_replace('/[^0-9.\-]/','',$price);$status=bool_status(firstv($row,['status'],'published'));$featured=normalise_bool(firstv($row,['featured','is_featured','feature'],'false'));$booking=firstv($row,['booking_url','booking','booking_link']);$image=firstv($row,['image_path','image','image_url']);$email=firstv($row,['email','email_address','contact_email']);$phone=firstv($row,['phone','telephone','phone_number','contact_phone']);$website=firstv($row,['website','website_url','web','url']);/* Skip remote image discovery during bulk imports to prevent timeouts. */$facebook=firstv($row,['facebook_url','facebook']);$instagram=firstv($row,['instagram_url','instagram']);$address=firstv($row,['address','venue_address','full_address','street_address']);if($address==='')$address=implode(', ',array_filter([firstv($row,['venue_address_line_1','address_line_1']),firstv($row,['venue_address_line_2','address_line_2'])],static fn($v)=>$v!==''));$region=firstv($row,['region','area_region','locality','district']);$postcode=firstv($row,['postcode','post_code','postal_code','postal_code','zip']);$lat=firstv($row,['latitude','lat']);$lat=$lat===''?null:(float)$lat;$lng=firstv($row,['longitude','lng','lon']);$lng=$lng===''?null:(float)$lng;
     $accessRaw=firstv($row,['accessibility','accessibility_options']);$access=[];foreach(preg_split('/\s*[;,|]\s*/',$accessRaw) as $v){$v=trim($v);if($v!=='')$access[]=$v;}$access=array_values(array_unique($access));$sessions=import_session_parts(firstv($row,['sessions','session_times','opening_times','schedule']));$tags=firstv($row,['tags','tag','keywords']);foreach(['booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome','what_to_bring','good_to_know','age_min_months','age_max_months'] as $k)$row[$k]=firstv($row,[$k]);
-    $slug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$title),'-'));$base=$slug;$n=2;$q=$db->prepare("SELECT id,organiser_id FROM bh_activities WHERE slug=? LIMIT 1");$q->execute([$slug]);$existing=$q->fetch();
+    $slug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$title),'-'));$base=$slug;$n=2;
+    $activityCols=table_columns($db,'bh_activities');$hasActivitySlug=in_array('slug',$activityCols,true);
+    if($hasActivitySlug){$q=$db->prepare("SELECT id,organiser_id FROM bh_activities WHERE slug=? LIMIT 1");$q->execute([$slug]);}
+    else{$q=$db->prepare("SELECT a.id,a.organiser_id FROM bh_activities a JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.title=? AND o.organisation_name=? LIMIT 1");$q->execute([$title,$org]);}
+    $existing=$q->fetch();
     $importId=(int)firstv($row,['id','activity_id','listing_id']);
     if($importId>0){
       $byId=$db->prepare("SELECT id,organiser_id FROM bh_activities WHERE id=? LIMIT 1");
@@ -232,7 +236,9 @@ foreach($rows as $idx=>$row){
     }
     if($existing&&$mode==='skip'){$skipped++;continue;}
     if(!$db->inTransaction())$db->beginTransaction();
-    if($existing){$id=(int)$existing['id'];$organiserId=(int)$existing['organiser_id'];}else{$q=$db->prepare("SELECT id FROM bh_organisers WHERE organisation_name=? LIMIT 1");$q->execute([$org]);$organiserId=(int)$q->fetchColumn();if(!$organiserId){$oslug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$org),'-'));$ob=$oslug;$on=2;while(true){$q=$db->prepare("SELECT id FROM bh_organisers WHERE slug=? LIMIT 1");$q->execute([$oslug]);if(!$q->fetch())break;$oslug=$ob.'-'.$on++;}$orgCols=table_columns($db,'bh_organisers');$insCols=['organisation_name','slug','email','phone','website','status'];$insVals=[$org,$oslug,$email,$phone,$website,'published'];
+    if($existing){$id=(int)$existing['id'];$organiserId=(int)$existing['organiser_id'];}else{$q=$db->prepare("SELECT id FROM bh_organisers WHERE organisation_name=? LIMIT 1");$q->execute([$org]);$organiserId=(int)$q->fetchColumn();if(!$organiserId){$oslug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$org),'-'));$ob=$oslug;$on=2;$orgCols=table_columns($db,'bh_organisers');if(in_array('slug',$orgCols,true)){while(true){$q=$db->prepare("SELECT id FROM bh_organisers WHERE slug=? LIMIT 1");$q->execute([$oslug]);if(!$q->fetch())break;$oslug=$ob.'-'.$on++;}}
+      $insCols=['organisation_name','email','phone','website','status'];$insVals=[$org,$email,$phone,$website,'published'];
+      if(in_array('slug',$orgCols,true)){$insCols[]='slug';$insVals[]=$oslug;}
       if(in_array('facebook_url',$orgCols,true)){$insCols[]='facebook_url';$insVals[]=$facebook;}
       if(in_array('instagram_url',$orgCols,true)){$insCols[]='instagram_url';$insVals[]=$instagram;}
       $marks=implode(',',array_fill(0,count($insCols),'?'));$q=$db->prepare("INSERT INTO bh_organisers (".implode(',',$insCols).") VALUES (".$marks.")");$q->execute($insVals);$organiserId=(int)$db->lastInsertId();}}
@@ -247,7 +253,7 @@ foreach($rows as $idx=>$row){
       $args=[$title,$desc,$category,$age,$county,$price,$booking,$image,$status];
       if(!in_array('county',$activityCols,true))array_splice($args,4,1);if($ac)$args[]=json_encode($access,JSON_UNESCAPED_SLASHES);if($featuredCol)$args[]=$featured;$args[]=$id;$q=$db->prepare($sql);$q->execute($args);
     }
-    else{while(true){$q=$db->prepare("SELECT id FROM bh_activities WHERE slug=? LIMIT 1");$q->execute([$slug]);if(!$q->fetch())break;$slug=$base.'-'.$n++;}$activityCols=table_columns($db,'bh_activities');$featuredCol=in_array('featured',$activityCols,true);
+    else{if($hasActivitySlug){while(true){$q=$db->prepare("SELECT id FROM bh_activities WHERE slug=? LIMIT 1");$q->execute([$slug]);if(!$q->fetch())break;$slug=$base.'-'.$n++;}}$activityCols=table_columns($db,'bh_activities');$featuredCol=in_array('featured',$activityCols,true);
     $sql=$ac?"INSERT INTO bh_activities (organiser_id,title,slug,description,category,age_range,county,price_from,booking_url,image_path,status,accessibility".($featuredCol?",featured":"").") VALUES (?,?,?,?,?,?,?,?,?,?,?,?".($featuredCol?",?":"").")":"INSERT INTO bh_activities (organiser_id,title,slug,description,category,county,price_from,booking_url,image_path,status".($featuredCol?",featured":"").") VALUES (?,?,?,?,?,?,?,?,?,?".($featuredCol?",?":"").")";
     $args=$ac?[$organiserId,$title,$slug,$desc,$category,$age,$county,$price,$booking,$image,$status,json_encode($access,JSON_UNESCAPED_SLASHES)]:[$organiserId,$title,$slug,$desc,$category,$county,$price,$booking,$image,$status];if($featuredCol)$args[]=$featured;
     if(!$ac && in_array('age_range',$activityCols,true)){
@@ -259,6 +265,12 @@ foreach($rows as $idx=>$row){
       $sql=str_replace('county,','',$sql);
       $sql=preg_replace('/VALUES \(([^)]*)\)/',static function($m){$marks=explode(',',$m[1]);array_splice($marks,6,1);return 'VALUES ('.implode(',',$marks).')';},$sql);
       array_splice($args,6,1);
+    }
+    if(!$hasActivitySlug){
+      $sql=str_replace('title,slug,','title,',$sql);
+      $valuesPos=strpos($sql,'VALUES (');
+      if($valuesPos!==false){$open=$valuesPos+8;$close=strpos($sql,')',$open);$marks=explode(',',substr($sql,$open,$close-$open));array_splice($marks,2,1);$sql=substr($sql,0,$open).implode(',',$marks).substr($sql,$close);}
+      array_splice($args,2,1);
     }
     $q=$db->prepare($sql);$q->execute($args);$id=(int)$db->lastInsertId();}
     $q=$db->prepare("SELECT id FROM bh_venues WHERE activity_id=? ORDER BY id LIMIT 1");$q->execute([$id]);$vid=(int)$q->fetchColumn();if($vid){$q=$db->prepare("UPDATE bh_venues SET venue_name=?,address=?,town=?,region=?,postcode=?,latitude=?,longitude=? WHERE id=?");$q->execute([$venue,$address,$town,$region,$postcode,$lat,$lng,$vid]);}else{$q=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes,leader_id) VALUES (?,?,?,?,?,?,?,?,?,NULL)");$q->execute([$id,$venue,$address,$town,$region,$postcode,$lat,$lng,'']);$vid=(int)$db->lastInsertId();}
