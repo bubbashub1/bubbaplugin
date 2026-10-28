@@ -38,20 +38,22 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
   $countyColumn=false;
   try{$cc=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='county'");$countyColumn=((int)$cc->fetchColumn())>0;}catch(Throwable $ignored){}
   $countySelect=$countyColumn?'a.county':'NULL AS county';
-  $stmt=$db->query("SELECT a.id,a.title,a.category,a.age_range,$countySelect,a.price_from,a.status,o.id organiser_id,COALESCE(o.organisation_name,'') AS organisation_name,MIN(v.town) AS town,MIN(v.region) AS region,COUNT(DISTINCT v.id) venue_count,(SELECT GROUP_CONCAT(DISTINCT CONCAT(CASE s.day_of_week WHEN 1 THEN 'Mon' WHEN 2 THEN 'Tue' WHEN 3 THEN 'Wed' WHEN 4 THEN 'Thu' WHEN 5 THEN 'Fri' WHEN 6 THEN 'Sat' WHEN 7 THEN 'Sun' END,' ',LEFT(s.start_time,5)) ORDER BY s.day_of_week,s.start_time SEPARATOR ', ') FROM bh_sessions s INNER JOIN bh_venues sv ON sv.id=s.venue_id WHERE sv.activity_id=a.id) AS session_summary FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_venues v ON v.activity_id=a.id WHERE a.status<>'archived' GROUP BY a.id,a.title,a.category,a.age_range,a.price_from,a.status,o.id,o.organisation_name".($countyColumn?",a.county":"")." ORDER BY a.updated_at DESC,a.id DESC");bh_admin_response(200,['ok'=>true,'data'=>$stmt->fetchAll(),'csrf'=>$_SESSION['bh_listing_csrf']]);
+  $stmt=$db->query("SELECT a.id,a.title,a.category,a.age_range,$countySelect,a.price_from,a.status,o.id organiser_id,COALESCE(o.organisation_name,'') AS organisation_name,MIN(v.town) AS town,MIN(v.region) AS region,COUNT(DISTINCT v.id) venue_count,(SELECT GROUP_CONCAT(DISTINCT CONCAT(CASE s.day_of_week WHEN 1 THEN 'Mon' WHEN 2 THEN 'Tue' WHEN 3 THEN 'Wed' WHEN 4 THEN 'Thu' WHEN 5 THEN 'Fri' WHEN 6 THEN 'Sat' WHEN 7 THEN 'Sun' END,' ',LEFT(s.start_time,5)) ORDER BY s.day_of_week,s.start_time SEPARATOR ', ') FROM bh_sessions s INNER JOIN bh_venues sv ON sv.id=s.venue_id WHERE sv.activity_id=a.id) AS session_summary FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_venues v ON v.activity_id=a.id WHERE 1=1 GROUP BY a.id,a.title,a.category,a.age_range,a.price_from,a.status,o.id,o.organisation_name".($countyColumn?",a.county":"")." ORDER BY a.updated_at DESC,a.id DESC");bh_admin_response(200,['ok'=>true,'data'=>$stmt->fetchAll(),'csrf'=>$_SESSION['bh_listing_csrf']]);
  }
  if($_SERVER['REQUEST_METHOD']!=='POST')bh_admin_response(405,['ok'=>false,'error'=>'GET or POST required.']);
  $input=json_decode((string)file_get_contents('php://input'),true);if(!is_array($input))bh_admin_response(400,['ok'=>false,'error'=>'Invalid JSON.']);
  $id=(int)($input['id']??0);
  $listingAction=$input['action']??'';
- if(in_array($listingAction,['delete','assign_leader'],true)){
+ if(in_array($listingAction,['delete','assign_leader','restore'],true)){
   if(!hash_equals($_SESSION['bh_listing_csrf'],(string)($input['csrf']??'')))bh_admin_response(403,['ok'=>false,'error'=>'Please refresh the page and try again.']);
   if($id<1)bh_admin_response(422,['ok'=>false,'error'=>'Choose a listing.']);
  $db->beginTransaction();
   try{
-   $q=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND status<>'archived' FOR UPDATE");$q->execute([$id]);
+   $q=$db->prepare("SELECT id FROM bh_activities WHERE id=? FOR UPDATE");$q->execute([$id]);
    if(!$q->fetch()){$db->rollBack();bh_admin_response(404,['ok'=>false,'error'=>'Listing not found.']);}
-   if($listingAction==='delete'){
+   if($listingAction==='restore'){
+    $db->prepare("UPDATE bh_activities SET status='published' WHERE id=? AND status='archived'")->execute([$id]);
+   }elseif($listingAction==='delete'){
     $db->prepare("UPDATE bh_activities SET status='archived' WHERE id=?")->execute([$id]);
    }else{
     $organiserId=(int)($input['organiser_id']??0);
