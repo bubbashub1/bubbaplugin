@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.4.0
+ * Version: 0.5.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -69,9 +69,10 @@ final class Bubba_Hub_Manager {
         echo '<p><a href="'.esc_url(admin_url('admin.php?page=bh-manager-activities')).'">&larr; Back to Activities</a></p>';
         echo '<h2>Edit activity #'.esc_html((string)$id).'</h2>';
         echo '<div class="notice notice-info inline"><p>This stage changes activity text, category, age range and basic price fields. Venues, schedules, sessions, images, organisers and publication status are untouched.</p></div>';
-        echo '<form method="post">';
+        echo '<form method="post" id="bh-manager-activity-form">';
+        echo '<div class="bh-editor-actions"><button type="submit" class="button button-primary" name="bh_manager_save" value="1">Save activity details</button> <span>Changes are saved to this activity only.</span></div>';
         wp_nonce_field('bh_manager_activity_'.$id);
-        echo '<style>.bh-editor-section{max-width:1050px;background:#fff;border:1px solid #dcdcde;border-radius:10px;padding:14px 22px;margin:18px 0}.bh-editor-section h3{margin:4px 0 12px;font-size:17px}.bh-editor-section .form-table th{width:190px}.bh-editor-section .form-table td input.regular-text{max-width:100%;width:460px}.bh-editor-section .form-table textarea{max-width:100%}</style>';
+        echo '<style>.bh-editor-actions{position:sticky;top:32px;z-index:20;background:#f6f7f7;border:1px solid #dcdcde;padding:10px 14px;margin:12px 0;border-radius:8px;display:flex;align-items:center;gap:12px}.bh-editor-actions span{color:#50575e}.bh-editor-section{max-width:1050px;background:#fff;border:1px solid #dcdcde;border-radius:10px;padding:14px 22px;margin:18px 0}.bh-editor-section h3{margin:4px 0 12px;font-size:17px}.bh-editor-section .form-table th{width:190px}.bh-editor-section .form-table td input.regular-text{max-width:100%;width:460px}.bh-editor-section .form-table textarea{max-width:100%}</style>';
         $groups=['Basic details'=>['title','description','category'],'Age suitability'=>['age_range','age_min_months','age_max_months'],'Pricing'=>['price_from','price_free'],'Helpful information'=>['good_to_know','what_to_bring']];
         $category_options=[];
         if (in_array('category',$columns,true)) {
@@ -95,7 +96,7 @@ final class Bubba_Hub_Manager {
             }
             elseif ($field==='age_range') echo '<input class="regular-text" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'" value="'.esc_attr((string)($record[$field]??'')).'"/>';
             elseif ($field==='title') echo '<input required class="regular-text" id="bh-title" name="title" value="'.esc_attr((string)($record[$field]??'')).'"/>';
-            else echo '<textarea class="large-text" rows="7" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'">'.esc_textarea((string)($record[$field]??'')).'</textarea>';
+            else echo '<textarea class="large-text" rows="7" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'">'.esc_textarea(html_entity_decode((string)($record[$field]??''), ENT_QUOTES | ENT_HTML5, 'UTF-8')).'</textarea>';
             echo '</td></tr>';
         }
         echo '</tbody></table></section>'; }
