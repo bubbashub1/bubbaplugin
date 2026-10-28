@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.15.0
+ * Version: 0.16.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -140,20 +140,35 @@ final class Bubba_Hub_Manager {
         echo '</tbody></table></section>'; }
         echo '<section id="bh-session-information" class="bh-editor-section" role="tabpanel"><h3>Session information</h3><p class="description">Read-only timetable preview. Session editing is managed separately.</p>';
         $session_cols=$db->get_col('SHOW COLUMNS FROM `bh_sessions`',0);
-        if (is_array($session_cols) && in_array('activity_id',$session_cols,true)) {
-            $display_cols=array_values(array_intersect(['id','day_of_week','session_date','start_time','end_time','frequency','venue_id','status'],$session_cols));
-            if ($display_cols) {
-                $sql='SELECT '.implode(',',array_map(static fn($c)=>'`'.$c.'`',$display_cols)).' FROM `bh_sessions` WHERE `activity_id` = %d ORDER BY `id` DESC LIMIT 100';
-                $rows=$db->get_results($db->prepare($sql,$id),ARRAY_A);
-                if ($rows) {
-                    echo '<table class="widefat striped"><thead><tr>';
-                    foreach ($display_cols as $col) echo '<th>'.esc_html(ucwords(str_replace('_',' ',$col))).'</th>';
-                    echo '</tr></thead><tbody>';
-                    foreach ($rows as $row) {echo '<tr>';foreach ($display_cols as $col) echo '<td>'.esc_html((string)($row[$col]??'')).'</td>';echo '</tr>';}
-                    echo '</tbody></table>';
-                } else echo '<p>No directly linked sessions found. This does not rule out venue-linked timetables.</p>';
+        $venue_cols=$db->get_col('SHOW COLUMNS FROM `bh_venues`',0);
+        $linked=[];
+        if (is_array($session_cols) && in_array('venue_id',$session_cols,true)) {
+            if (is_array($venue_cols) && in_array('activity_id',$venue_cols,true)) {
+                $linked[]='EXISTS (SELECT 1 FROM `bh_venues` v WHERE v.id=s.venue_id AND v.activity_id=%d)';
             }
-        } else echo '<p>This installation stores sessions using other relationships. The timetable cannot yet be shown safely here.</p>';
+            $junction=$db->get_var($db->prepare('SHOW TABLES LIKE %s','bh_activity_venues'));
+            if ($junction==='bh_activity_venues') {
+                $junction_cols=$db->get_col('SHOW COLUMNS FROM `bh_activity_venues`',0);
+                if (in_array('activity_id',$junction_cols,true) && in_array('venue_id',$junction_cols,true)) {
+                    $linked[]='EXISTS (SELECT 1 FROM `bh_activity_venues` av WHERE av.venue_id=s.venue_id AND av.activity_id=%d)';
+                }
+            }
+        }
+        if (is_array($session_cols) && in_array('activity_id',$session_cols,true)) {
+            $linked[]='s.activity_id=%d';
+        }
+        if ($linked && in_array('id',$session_cols,true)) {
+            $display_cols=array_values(array_intersect(['id','day_of_week','start_time','end_time','frequency','start_date','end_date','venue_id','status'],$session_cols));
+            $sql='SELECT DISTINCT '.implode(',',array_map(static fn($c)=>'s.`'.$c.'`',$display_cols)).' FROM `bh_sessions` s WHERE ('.implode(' OR ',$linked).') ORDER BY s.id DESC LIMIT 100';
+            $rows=$db->get_results($db->prepare($sql,...array_fill(0,count($linked),$id)),ARRAY_A);
+            if ($rows) {
+                echo '<table class="widefat striped"><thead><tr>';
+                foreach ($display_cols as $col) echo '<th>'.esc_html(ucwords(str_replace('_',' ',$col))).'</th>';
+                echo '</tr></thead><tbody>';
+                foreach ($rows as $row) {echo '<tr>';foreach ($display_cols as $col) echo '<td>'.esc_html((string)($row[$col]??'')).'</td>';echo '</tr>';}
+                echo '</tbody></table>';
+            } else echo '<p>No sessions found through the available activity or venue relationships.</p>';
+        } else echo '<p>No supported session relationship was found in the current database schema.</p>';
         echo '</section>';
         if (!in_array('facebook_url',$columns,true) || !in_array('instagram_url',$columns,true) || !in_array('email',$columns,true)) {
             echo '<div class="notice notice-info inline"><p>Some social or email fields are not stored on this activity. Organiser-level contact details are not edited here.</p></div>';
