@@ -238,6 +238,21 @@ foreach($rows as $idx=>$row){
       $existing=$matched;
     }
     if($existing&&$mode==='skip'){$skipped++;continue;}
+    // Never guess which venue to edit when an activity has multiple venues.
+    // Existing multi-venue listings need a separate venue-specific import workflow.
+    if($existing){
+      $linked=table_name($db,['bh_activity_venues']);
+      $venueCountSql='SELECT COUNT(DISTINCT v.id) FROM bh_venues v WHERE v.activity_id=?'.($linked?' OR EXISTS (SELECT 1 FROM bh_activity_venues av WHERE av.activity_id=? AND av.venue_id=v.id)':'');
+      $venueCountQ=$db->prepare($venueCountSql);$venueCountQ->execute($linked?[$existing['id'],$existing['id']]:[$existing['id']]);
+      if((int)$venueCountQ->fetchColumn()>1){
+        $venueColumns=['venue_name','venue','address','venue_address','town','city','region','postcode','latitude','longitude','lat','lng','lon'];
+        foreach($venueColumns as $venueColumn){
+          if(isset($row[$venueColumn]) && trim((string)$row[$venueColumn])!==''){
+            throw new RuntimeException('Multiple venues linked to this activity. Venue changes require a venue-specific import; no changes saved.');
+          }
+        }
+      }
+    }
     // Select canonical fields while preserving their accepted CSV aliases.
     $selectedRaw=trim((string)($_POST['update_fields']??''));
     if($existing && array_key_exists('update_fields',$_POST)){
