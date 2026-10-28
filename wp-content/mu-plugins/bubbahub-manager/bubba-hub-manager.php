@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.27.0
+ * Version: 0.28.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -188,6 +188,9 @@ final class Bubba_Hub_Manager {
             echo '<section id="bh-'.esc_attr(sanitize_title($group)).'" class="bh-editor-section" role="tabpanel"><h3>'.esc_html($group).'</h3>'.($group==='Age suitability'?'<p class="description">Choose an age preset or enter exact minimum and maximum months below.</p><p><select id="bh-age-preset"><option value="">Select age preset (optional)</option><option value="0:6">0–6 months</option><option value="6:12">6–12 months</option><option value="0:12">0–12 months</option><option value="12:48">1–4 years</option><option value="48:216">4+ years</option></select></p>':'').'<table class="form-table"><tbody>';
             if ($group==='Basic details') {
                 echo '<tr><th scope="row">Pull info from website</th><td><input type="url" class="regular-text" id="bh-import-source" placeholder="https://example.com/classes" value="'.esc_attr((string)($record['website']??'')).'"> <button type="button" class="button" id="bh-import-preview">Pull info</button><p class="description">Preview suggested information from the existing Bubba Hub website extractor. Nothing changes until you explicitly apply suggestions and save.</p><div id="bh-import-results" role="status" aria-live="polite"></div></td></tr>';
+            }
+            if ($group==='Booking') {
+                echo '<tr><th scope="row">Import from booking URL</th><td><input type="url" class="regular-text" id="bh-booking-import-source" placeholder="https://booking-provider.example/classes" value="'.esc_attr((string)($record['booking_url']??'')).'"> <button type="button" class="button" id="bh-booking-import-preview">Preview booking page</button><p class="description">Review information from a public booking page. Use this URL applies the booking link only; no timetable or activity is automatically overwritten.</p><div id="bh-booking-import-results" role="status" aria-live="polite"></div></td></tr>';
             }
             foreach ($visible as $field) {
                     $label=ucwords(str_replace('_',' ',$field));
@@ -375,6 +378,26 @@ final class Bubba_Hub_Manager {
                     pullResult.appendChild(panel);
                 }catch(error){pullResult.textContent=error.message||"Could not read website.";}
                 finally{pullBtn.disabled=false;}
+            });
+            var bookingBtn=document.getElementById("bh-booking-import-preview"),bookingResults=document.getElementById("bh-booking-import-results");
+            if(bookingBtn&&bookingResults)bookingBtn.addEventListener("click",async function(){
+                var url=document.getElementById("bh-booking-import-source").value.trim();
+                if(!/^https:\/\//i.test(url)){bookingResults.textContent="Enter a public HTTPS booking URL.";return;}
+                bookingBtn.disabled=true;bookingResults.textContent="Checking booking page…";
+                try{
+                    var response=await fetch("/api/listing-website-preview.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url:url})});
+                    var data=await response.json();
+                    if(!response.ok||!data.ok)throw new Error(data.message||"Could not preview booking page.");
+                    bookingResults.textContent="";
+                    var panel=document.createElement("div");panel.style.cssText="padding:12px;margin-top:10px;border:1px solid #d1e2d6;border-radius:8px";
+                    var heading=document.createElement("strong");heading.textContent="Booking page preview";panel.appendChild(heading);
+                    var note=document.createElement("p");note.textContent="Page: "+(data.title||url);panel.appendChild(note);
+                    if(data.description){var desc=document.createElement("p");desc.textContent=String(data.description).slice(0,350);panel.appendChild(desc);}
+                    var apply=document.createElement("button");apply.type="button";apply.className="button";apply.textContent="Use this booking URL";
+                    apply.addEventListener("click",function(){var target=document.getElementsByName("booking_url")[0];if(!target){bookingResults.textContent="Booking URL field is not available on this activity.";return;}target.value=url;target.dispatchEvent(new Event("change",{bubbles:true}));apply.textContent="URL applied — save activity details";});
+                    panel.appendChild(apply);bookingResults.appendChild(panel);
+                }catch(error){bookingResults.textContent=error.message||"Booking preview unavailable. You can still enter the URL manually.";}
+                finally{bookingBtn.disabled=false;}
             });
             document.querySelectorAll(".bh-image-row input[type=url]").forEach(function(input){
                 input.addEventListener("change",function(){
