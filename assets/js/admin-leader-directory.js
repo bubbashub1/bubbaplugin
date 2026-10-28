@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const form=document.getElementById('leaderFilters'),rows=document.getElementById('leaderDirectoryRows'),status=document.getElementById('leaderDirectoryStatus'),prev=document.getElementById('leaderDirectoryPrev'),next=document.getElementById('leaderDirectoryNext');
 if(!form||!rows)return;
-let page=1,total=0,size=25;
+let page=1,total=0,size=25,csrf='';
 async function load(){
  status.textContent='Loading leaders…';rows.replaceChildren();prev.disabled=true;next.disabled=true;
  const params=new URLSearchParams(new FormData(form));params.set('role','leader');params.set('page',String(page));
@@ -10,7 +10,7 @@ async function load(){
   if(response.status===401){location.href='/admin-login.html?next='+encodeURIComponent(location.pathname);return;}
   if(!(response.headers.get('content-type')||'').includes('application/json'))throw Error('Unexpected server response');
   const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'Unable to load leaders');
-  total=Number(data.total)||0;size=Number(data.page_size)||25;
+  total=Number(data.total)||0;size=Number(data.page_size)||25;csrf=String(data.csrf||'');
   for(const user of data.users||[]){
    const tr=document.createElement('tr');
    for(const value of [user.id,user.email,user.status||'Unknown (needs review)',user.email_verified?'Verified':'Not verified',user.account_type||'Free']){
@@ -49,7 +49,7 @@ async function runAction(button){
  report('Updating '+email+'…');
  button.disabled=true;
  try{
-  const response=await fetch('/api/admin-leader-actions.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,action,status:requestedStatus,confirmation})});
+  const response=await fetch('/api/admin-leader-actions.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,action,status:requestedStatus,confirmation,csrf})});
   const raw=await response.text();let data;try{data=JSON.parse(raw);}catch(_){throw Error('Server returned HTTP '+response.status+' instead of JSON');}
   if(!response.ok||!data.ok)throw Error(({linked_records_prevent_delete:'Deletion blocked: linked records must be reviewed first',linked_organiser_prevents_delete:'Deletion blocked: linked organiser must be reassigned or reviewed',foreign_key_review_required:'Deletion blocked: database relationships require review',deactivate_first:'Deactivate this account before deleting it'})[data.error]||data.error||'Action failed');
   await load();report('✓ '+email+' updated. '+(data.details?.new_status?'Status: '+data.details.new_status:'Action: '+action));
@@ -73,7 +73,7 @@ rows.addEventListener('click',async event=>{
     if(!confirm('Confirm '+label+' for '+data.leader.email+'?'))return;
     btn.disabled=true;
     try{
-     const res=await fetch('/api/admin-leader-actions.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:data.leader.id,action,status:requestedStatus})});
+     const res=await fetch('/api/admin-leader-actions.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:data.leader.id,action,status:requestedStatus,csrf})});
      const result=await res.json();if(!res.ok||!result.ok)throw Error(result.error||'Action failed');
      detailStatus.textContent=label+' completed for '+data.leader.email;load();
     }catch(err){alert('Action failed: '+err.message);}finally{btn.disabled=false;}
