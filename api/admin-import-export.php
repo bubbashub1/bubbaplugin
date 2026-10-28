@@ -268,7 +268,7 @@ foreach($rows as $idx=>$row){
     }
     if(!in_array('county',$activityCols,true)){
       $sql=str_replace('county,','',$sql);
-      $sql=preg_replace('/VALUES \(([^)]*)\)/',static function($m){$marks=explode(',',$m[1]);array_splice($marks,6,1);return 'VALUES ('.implode(',',$marks).')';},$sql);
+      $sql=preg_replace_callback('/VALUES \(([^)]*)\)/',static function($m){$marks=explode(',',$m[1]);array_splice($marks,6,1);return 'VALUES ('.implode(',',$marks).')';},$sql);
       array_splice($args,6,1);
     }
     if(!$hasActivitySlug){
