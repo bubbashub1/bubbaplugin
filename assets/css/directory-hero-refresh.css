@@ -1,0 +1,13 @@
+/* Directory-only compact search overlay on the real image hero. */
+body.bh-directory:not(.bh-calendar-page) .app-shell{position:relative}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner{display:none!important}
+body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder]{min-height:0!important;margin:0 0 22px!important;padding:clamp(18px,3vw,36px)!important;box-sizing:border-box;border-radius:26px;background-image:linear-gradient(90deg,rgba(241,250,240,.97) 0%,rgba(241,250,240,.93) 50%,rgba(241,250,240,.25) 100%),url('/images/logos/34011-20261020-161900-68d306.png')!important;background-position:center!important;background-size:cover!important}
+body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder] .directory-hero-fullwidth{max-width:960px;margin:0!important}
+body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder] .directory-hero-search{background:rgba(255,255,255,.92)!important;padding:clamp(14px,2vw,24px)!important;border-radius:22px!important;box-shadow:0 8px 28px rgba(23,78,59,.1)}
+body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder] .directory-hero-search h2{font-size:clamp(1.6rem,3vw,2.5rem)!important;margin:0 0 12px!important}
+body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder] .directory-hero-search-fields{grid-template-columns:minmax(160px,1.5fr) repeat(3,minmax(110px,1fr)) auto!important;gap:8px!important}
+body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder] .directory-hero-search-fields label:nth-child(4){display:none}
+body.bh-directory:not(.bh-calendar-page) .directory-layout{margin-top:0!important}
+body.bh-directory:not(.bh-calendar-page) .directory-results-heading:empty{display:none}
+@media(max-width:900px){body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder] .directory-hero-search-fields{grid-template-columns:repeat(2,minmax(0,1fr))!important}body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder] .directory-hero-search-fields button{grid-column:1/-1}body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder]{padding:15px!important}}
+@media(max-width:450px){body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder] .directory-hero-search-fields{grid-template-columns:1fr!important}}
