@@ -236,6 +236,28 @@ foreach($rows as $idx=>$row){
       $existing=$matched;
     }
     if($existing&&$mode==='skip'){$skipped++;continue;}
+    // Limit writes to explicitly selected CSV columns. Unselected fields are removed
+    // from the row before any update helpers run.
+    $selectedRaw=trim((string)($_POST['update_fields']??''));
+    if($existing && $selectedRaw!==''){
+      $allowed=array_fill_keys(array_filter(array_map('clean_header',explode(',',$selectedRaw))),true);
+      foreach(array_keys($row) as $column){
+        if(!isset($allowed[$column]) && !in_array($column,['id','activity_id','listing_id'],true))unset($row[$column]);
+      }
+      // Field selection also applies to values already parsed above.
+      $desc=firstv($row,['description','activity_description','details']);
+      $age=firstv($row,['age_range','ages','age','age_group','age_groups']);
+      $county=firstv($row,['county','area','county_area']);
+      $booking=firstv($row,['booking_url','booking','booking_link']);
+      $image=firstv($row,['image_path','image','image_url']);
+      $region=firstv($row,['region','area_region','locality','district']);
+      $postcode=firstv($row,['postcode','post_code','postal_code','zip']);
+      $address=firstv($row,['address','venue_address','full_address','street_address']);
+      $lat=firstv($row,['latitude','lat']);$lat=$lat===''?null:(float)$lat;
+      $lng=firstv($row,['longitude','lng','lon']);$lng=$lng===''?null:(float)$lng;
+      $tags=firstv($row,['tags','tag','keywords']);
+      $sessions=import_session_parts(firstv($row,['sessions','session_times','opening_times','schedule']));
+    }
     if(($_POST['dry_run']??'')==='1'){$existing?$updated++:$created++;continue;}
     if(!$db->inTransaction())$db->beginTransaction();
     if($existing){$id=(int)$existing['id'];$organiserId=(int)$existing['organiser_id'];}else{$q=$db->prepare("SELECT id FROM bh_organisers WHERE organisation_name=? LIMIT 1");$q->execute([$org]);$organiserId=(int)$q->fetchColumn();if(!$organiserId){$oslug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$org),'-'));$ob=$oslug;$on=2;$orgCols=table_columns($db,'bh_organisers');if(in_array('slug',$orgCols,true)){while(true){$q=$db->prepare("SELECT id FROM bh_organisers WHERE slug=? LIMIT 1");$q->execute([$oslug]);if(!$q->fetch())break;$oslug=$ob.'-'.$on++;}}
