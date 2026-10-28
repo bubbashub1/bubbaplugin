@@ -319,6 +319,40 @@ document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',(
  let feedback=document.getElementById('adminPastePreviewMessage');
  if(!feedback){feedback=document.createElement('p');feedback.id='adminPastePreviewMessage';feedback.setAttribute('role','status');button.after(feedback);}
 
+ // Accept ordinary one-session-per-line CSV and weekday-first timetable rows.
+ const simpleSessions=[];
+ const simpleDays={mon:1,monday:1,tue:2,tues:2,tuesday:2,wed:3,wednesday:3,thu:4,thur:4,thurs:4,thursday:4,fri:5,friday:5,sat:6,saturday:6,sun:7,sunday:7};
+ const normaliseClock=value=>{
+  const match=String(value).trim().match(/^(\\d{1,2})(?:[:.](\\d{2}))?\\s*(am|pm)?$/i);
+  if(!match)return '';
+  let hour=Number(match[1]);const minute=Number(match[2]||0),meridiem=(match[3]||'').toLowerCase();
+  if(minute>59||hour>23||(meridiem&&(hour<1||hour>12)))return '';
+  if(meridiem)hour=hour%12+(meridiem==='pm'?12:0);
+  return String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0');
+ };
+ for(const raw of rows){
+  const line=raw.trim();if(!line)continue;
+  let day='',title='',start='',end='';
+  const parts=line.split(',').map(v=>v.trim());
+  if(parts.length>=3){
+   if(simpleDays[parts[0].toLowerCase()]){day=parts[0];title=parts.slice(2).join(',');[start,end]=parts[1].split(/\\s*[-–—]\\s*/);}
+   else if(simpleDays[parts[1].toLowerCase()]){title=parts[0];day=parts[1];if(parts.length>=4){start=parts[2];end=parts[3];}else [start,end]=parts[2].split(/\\s*[-–—]\\s*/);}
+  }
+  if(!day){
+   const match=line.match(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)s?\\s*[,|:]?\\s*(\\d{1,2}(?:[:.]\\d{2})?\\s*(?:am|pm)?)\\s*[-–—]\\s*(\\d{1,2}(?:[:.]\\d{2})?\\s*(?:am|pm)?)\\s*[|,]\\s*(.+)$/i);
+   if(match){day=match[1];start=match[2];end=match[3];title=match[4];}
+  }
+  const from=normaliseClock(start),to=normaliseClock(end),weekday=simpleDays[day.toLowerCase()];
+  if(weekday&&from&&to&&from<to&&title){
+   simpleSessions.push({title,class_name:title,day_of_week:weekday,start_time:from,end_time:to,start_date:'',end_date:'',frequency:'weekly'});
+  }
+ }
+ if(simpleSessions.length){
+  const unique=[...new Map(simpleSessions.map(s=>[[s.day_of_week,s.start_time,s.end_time,s.title].join('|'),s])).values()];
+  feedback.textContent=unique.length+' session(s) recognised. Review all sessions before adding.';
+  previewImportedSessions(unique,'Weekly timetable detected. Review venue and dates before saving.');
+  return;
+ }
  // Natural-language schedules: title, date/weekday + time, optional Location.
  const blocks=field.value.split(/\n\s*\n/).map(s=>s.split(/\r?\n/).map(x=>x.trim()).filter(Boolean)).filter(b=>b.length>=2);
  const dayNames={monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6,sunday:7};
