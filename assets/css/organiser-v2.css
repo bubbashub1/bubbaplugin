@@ -94,3 +94,8 @@ body.bh-organiser-v2{background:#fffdf7;color:#174e3b;font-family:'Quicksand',Ca
 @media(prefers-reduced-motion:reduce){
  .bh-organiser-v2 .storefront-card{transition:none}
 }
+
+/* Ensure hero title remains readable over pale gradients despite sitewide heading rules. */
+body.bh-organiser-v2 .organiser-storefront-page .organiser-hero h1{color:#174e3b!important;-webkit-text-fill-color:#174e3b!important;opacity:1!important;text-shadow:none!important;background:none!important;filter:none!important}
+body.bh-organiser-v2 .organiser-hero-copy{min-width:0}
+body.bh-organiser-v2 .organiser-hero .organiser-intro{color:#315d4a!important}
