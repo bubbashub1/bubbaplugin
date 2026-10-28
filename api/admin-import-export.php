@@ -245,11 +245,25 @@ foreach($rows as $idx=>$row){
         if(!isset($allowed[$column]) && !in_array($column,['id','activity_id','listing_id'],true))unset($row[$column]);
       }
       // Field selection also applies to values already parsed above.
+      $title=firstv($row,['title','activity_title','activity_name']);
+      $category=firstv($row,['category','activity_category','type']);
+      $org=firstv($row,['organisation_name','organisation','organization']);
+      $venue=firstv($row,['venue_name','venue']);
+      $town=firstv($row,['town','city']);
+      $email=firstv($row,['email','email_address','contact_email']);
+      $phone=firstv($row,['phone','telephone','phone_number']);
+      $website=firstv($row,['website','website_url','web']);
+      $facebook=firstv($row,['facebook_url','facebook']);
+      $instagram=firstv($row,['instagram_url','instagram']);
       $desc=firstv($row,['description','activity_description','details']);
       $age=firstv($row,['age_range','ages','age','age_group','age_groups']);
       $county=firstv($row,['county','area','county_area']);
+      $priceRaw=firstv($row,['price_from','price','cost']);$price=$priceRaw===''?null:(float)preg_replace('/[^0-9.\\-]/','',$priceRaw);
       $booking=firstv($row,['booking_url','booking','booking_link']);
       $image=firstv($row,['image_path','image','image_url']);
+      $status=bool_status(firstv($row,['status'],'published'));
+      $featured=normalise_bool(firstv($row,['featured'],'false'));
+      $accessRaw=firstv($row,['accessibility']);$access=array_values(array_filter(array_map('trim',preg_split('/\\s*[;,|]\\s*/',$accessRaw))));
       $region=firstv($row,['region','area_region','locality','district']);
       $postcode=firstv($row,['postcode','post_code','postal_code','zip']);
       $address=firstv($row,['address','venue_address','full_address','street_address']);
