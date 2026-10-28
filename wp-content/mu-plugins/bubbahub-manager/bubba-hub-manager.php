@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.1.2
+ * Version: 0.1.3
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -38,15 +38,32 @@ final class Bubba_Hub_Manager {
             $wanted=['id','title','venue_name','activity_id','venue_id','day_of_week','start_time','end_time','frequency','status','town','region'];
             $selected=array_values(array_intersect($wanted,$cols));
             if (!$selected) throw new RuntimeException('No supported columns found.');
+            $page=max(1,isset($_GET['paged'])?absint($_GET['paged']):1);
+            $search=isset($_GET['s']) && is_string($_GET['s']) ? sanitize_text_field(wp_unslash($_GET['s'])) : '';
+            $search_cols=array_values(array_intersect(['title','venue_name','name','city','region','postcode'],$cols));
+            $where=''; $params=[];
+            if ($search!=='' && $search_cols) {
+                $where=' WHERE ('.implode(' OR ',array_map(static fn($c)=>'`'.$c.'` LIKE %s',$search_cols)).')';
+                $params=array_fill(0,count($search_cols),'%'.$db->esc_like($search).'%');
+            }
+            $count_sql='SELECT COUNT(*) FROM `'.$table.'`'.$where;
+            $total=(int)$db->get_var($params?$db->prepare($count_sql,$params):$count_sql);
             $order=in_array('id',$selected,true)?' ORDER BY `id` DESC':'';
-            $sql='SELECT '.implode(',',array_map(static fn($col)=>'`'.$col.'`',$selected)).' FROM `'.$table.'`'.$order.' LIMIT 100';
-            $rows=$db->get_results($sql, ARRAY_A);
-            echo '<p>Showing up to 100 records. Session and venue relationships are not yet resolved.</p><table class="widefat striped"><thead><tr>';
+            $sql='SELECT '.implode(',',array_map(static fn($col)=>'`'.$col.'`',$selected)).' FROM `'.$table.'`'.$where.$order.' LIMIT %d OFFSET %d';
+            $rows=$db->get_results($db->prepare($sql,array_merge($params,[30,($page-1)*30])), ARRAY_A);
+            echo '<form method="get"><input type="hidden" name="page" value="'.esc_attr('bh-manager-'.$type).'"/><p class="search-box"><input type="search" name="s" aria-label="Search '.esc_attr($label).'" value="'.esc_attr($search).'"/> <input type="submit" class="button" value="Search"/></p></form>';
+            echo '<p>'.esc_html(number_format_i18n($total)).' records found. Showing up to 30 per page.</p><table class="widefat striped"><thead><tr>';
             foreach ($selected as $col) echo '<th>'.esc_html($col).'</th>';
             echo '</tr></thead><tbody>';
             foreach ($rows as $row) { echo '<tr>'; foreach ($selected as $col) echo '<td>'.esc_html((string)($row[$col]??'')).'</td>'; echo '</tr>'; }
             if (!$rows) echo '<tr><td colspan="'.count($selected).'">No records found.</td></tr>';
             echo '</tbody></table>';
+            $pages=(int)ceil($total/30);
+            if ($pages>1) {
+                echo '<div class="tablenav"><div class="tablenav-pages">';
+                echo wp_kses_post(paginate_links(['base'=>add_query_arg(['page'=>'bh-manager-'.$type,'s'=>$search,'paged'=>'%#%'],admin_url('admin.php')),'current'=>$page,'total'=>$pages]));
+                echo '</div></div>';
+            }
         } catch (Throwable $e) {
             error_log('Bubba Hub Manager read error: '.$e->getMessage());
             echo '<div class="notice notice-error"><p>Unable to read '.esc_html($label).'. Check the PHP error log and table permissions.</p></div>';
