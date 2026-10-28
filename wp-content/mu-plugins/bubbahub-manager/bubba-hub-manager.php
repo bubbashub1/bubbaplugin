@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.21.0
+ * Version: 0.24.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -41,6 +41,38 @@ final class Bubba_Hub_Manager {
         $record=$db->get_row($db->prepare('SELECT * FROM `bh_activities` WHERE id = %d LIMIT 1',$id),ARRAY_A);
         if (!$record) { echo '<div class="notice notice-error"><p>Activity not found.</p></div>'; return; }
         $fields=array_values(array_intersect(['title','description','good_to_know','what_to_bring','category','age_range','age_min_months','age_max_months','price_from','price_free','price_per_session','price_per_family','booking_url','website','facebook_url','instagram_url','email','booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome','image_path','image_1','image_2','image_3'], $columns));
+        if (isset($_POST['bh_manager_session_edit'])) {
+            check_admin_referer('bh_manager_activity_'.$id);
+            $sid=absint($_POST['bh_manager_session_edit']);
+            $cols=$db->get_col('SHOW COLUMNS FROM bh_sessions',0);
+            $owned=is_array($cols) && in_array('activity_id',$cols,true) && $db->get_var($db->prepare('SELECT id FROM bh_sessions WHERE id=%d AND activity_id=%d',$sid,$id));
+            if (!$owned) echo '<div class="notice notice-error"><p>Session ownership unconfirmed; editing blocked.</p></div>';
+            else {
+                $changes=[];$valid=true;
+                foreach (array_intersect(['day_of_week','start_time','end_time','frequency','start_date','end_date'],$cols) as $field) {
+                    $key='session_'.$sid.'_'.$field;
+                    if (!isset($_POST[$key]) || !is_string($_POST[$key])) continue;
+                    $v=trim(wp_unslash($_POST[$key]));
+                    if ($field==='day_of_week') $valid=$valid && preg_match('/^[0-6]$/',$v)===1;
+                    elseif ($field==='start_time' || $field==='end_time') $valid=$valid && preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/',$v)===1;
+                    elseif ($field==='start_date' || $field==='end_date') $valid=$valid && ($v==='' || (preg_match('/^\\d{4}-\\d{2}-\\d{2}$/',$v)===1 && checkdate((int)substr($v,5,2),(int)substr($v,8,2),(int)substr($v,0,4))));
+                    else $valid=$valid && strlen($v)<=40 && preg_match('/^[a-zA-Z_ -]+$/',$v)===1;
+                    $changes[$field]=$v==='' && ($field==='start_date' || $field==='end_date')?null:$v;
+                }
+                $old=$db->get_row($db->prepare('SELECT * FROM bh_sessions WHERE id=%d AND activity_id=%d',$sid,$id),ARRAY_A);
+                $start=$changes['start_time']??$old['start_time']??'';
+                $end=$changes['end_time']??$old['end_time']??'';
+                if ($start && $end && $start>=$end) $valid=false;
+                $from=$changes['start_date']??$old['start_date']??null;
+                $to=$changes['end_date']??$old['end_date']??null;
+                if ($from && $to && $from>$to) $valid=false;
+                if (!$valid || !$changes) echo '<div class="notice notice-error"><p>Invalid session details; nothing saved.</p></div>';
+                else {
+                    $result=$db->update('bh_sessions',$changes,['id'=>$sid,'activity_id'=>$id]);
+                    echo $result===false?'<div class="notice notice-error"><p>Session save failed.</p></div>':'<div class="notice notice-success"><p>Session saved.</p></div>';
+                }
+            }
+        }
         if (isset($_POST['bh_manager_save'])) {
             check_admin_referer('bh_manager_activity_'.$id);
             $changes=[]; $invalid_url=false; $invalid_email=false;
@@ -202,6 +234,7 @@ final class Bubba_Hub_Manager {
         }
         if ($linked && in_array('id',$session_cols,true)) {
             $display_cols=array_values(array_intersect(['id','day_of_week','start_time','end_time','frequency','start_date','end_date','venue_id','status'],$session_cols));
+            if ($has_session_activity) $display_cols[]='activity_id';
             if ($has_session_activity) {
                 $linked=array_map(static fn($condition)=>$condition==='s.activity_id=%d'?$condition:'(s.activity_id IS NULL AND '.$condition.')',$linked);
             }
@@ -214,11 +247,22 @@ final class Bubba_Hub_Manager {
                 echo '<div style="overflow-x:auto"><table class="widefat striped"><thead><tr>';
                 foreach ($display_cols as $col) echo '<th scope="col">'.esc_html(ucwords(str_replace('_',' ',$col))).'</th>';
                 if ($has_venue_name) echo '<th scope="col">Venue name</th>';
+                if ($has_session_activity) echo '<th>Edit session</th>';
                 echo '</tr></thead><tbody>';
                 foreach ($rows as $row) {
                     echo '<tr>';
                     foreach ($display_cols as $col) echo '<td>'.esc_html((string)($row[$col]??'')).'</td>';
                     if ($has_venue_name) echo '<td>'.esc_html((string)($row['venue_name']?:'Venue name unavailable')).'</td>';
+                    if ($has_session_activity) {
+                        echo '<td>';
+                        if (isset($row['activity_id']) && (int)$row['activity_id']===$id) {
+                            foreach (array_intersect(['day_of_week','start_time','end_time','frequency','start_date','end_date'],$display_cols) as $field) {
+                                echo '<label style="display:block">'.esc_html(ucwords(str_replace('_',' ',$field))).' <input style="width:140px" name="session_'.absint($row['id']).'_'.esc_attr($field).'" value="'.esc_attr((string)($row[$field]??'')).'"></label>';
+                            }
+                            echo '<button type="submit" class="button" name="bh_manager_session_edit" value="'.absint($row['id']).'">Save session</button>';
+                        } else echo 'Read-only: shared or unassigned';
+                        echo '</td>';
+                    }
                     echo '</tr>';
                 }
                 echo '</tbody></table></div>';
