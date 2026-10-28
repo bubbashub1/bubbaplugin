@@ -170,9 +170,17 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
       $imageCols=table_columns($db,$imageTable);
       if(in_array('image_path',$imageCols,true)){ $q=$db->prepare("SELECT image_path FROM ".$imageTable." WHERE activity_id=? ORDER BY ".(in_array('sort_order',$imageCols,true)?'sort_order':'id')." LIMIT 4");$q->execute([(int)$a['id']]);$images=$q->fetchAll(PDO::FETCH_COLUMN);}
     }
+    // Legacy session tables without activity_id cannot safely export a timetable
+    // when the venue is linked to multiple activities.
+    $exportSessionsSafe=in_array('activity_id',$sessionCols,true);
+    if(!$exportSessionsSafe && $a['export_venue_id'] && table_name($db,['bh_activity_venues'])){
+      $shareQ=$db->prepare('SELECT COUNT(DISTINCT activity_id) FROM bh_activity_venues WHERE venue_id=?');
+      $shareQ->execute([(int)$a['export_venue_id']]);
+      $exportSessionsSafe=(int)$shareQ->fetchColumn()<=1;
+    }elseif(!$exportSessionsSafe){$exportSessionsSafe=true;}
     $sq=$db->prepare("SELECT day_of_week,start_time,end_time,term_time_only FROM bh_sessions WHERE venue_id=?".(in_array('activity_id',$sessionCols,true)?" AND activity_id=?":"")." ORDER BY day_of_week,start_time");
     $sessionArgs=[(int)($a['export_venue_id']??0)];if(in_array('activity_id',$sessionCols,true))$sessionArgs[]=(int)$a['id'];$sq->execute($sessionArgs);$sessions=[];
-    foreach($sq->fetchAll() as $s){$sessions[]=$days[(int)$s['day_of_week']].' '.substr((string)$s['start_time'],0,5).(!empty($s['end_time'])?'-'.substr((string)$s['end_time'],0,5):'').(!empty($s['term_time_only'])?' | term':'');}
+    foreach(($exportSessionsSafe?$sq->fetchAll():[]) as $s){$sessions[]=$days[(int)$s['day_of_week']].' '.substr((string)$s['start_time'],0,5).(!empty($s['end_time'])?'-'.substr((string)$s['end_time'],0,5):'').(!empty($s['term_time_only'])?' | term':'');}
 
     csv_row([
       $a['id'],$a['title'],$a['category'],!empty($a['featured'])?'true':'false',$a['description'],$a['age_range'],$a['age_min_months'],$a['age_max_months'],$a['county'],$a['price_from'],'','','',$a['booking_url'],$a['booking_required'],$a['drop_in_welcome'],$a['trial_available'],$a['term_time_only'],$a['holiday_sessions'],$a['siblings_welcome'],$a['what_to_bring'],$a['good_to_know'],$a['image_path'],$images[0]??'',$images[1]??'',$images[2]??'',$a['status'],$a['organisation_name'],$a['facebook_url'],$a['instagram_url'],$a['email'],$a['phone'],$a['website'],$a['venue_name'],$a['address'],$a['address'],'',$a['town'],$a['region'],$a['postcode'],$a['latitude'],$a['longitude'],$a['venue_phone'],$a['venue_email'],$a['venue_website'],$a['venue_notes'],$a['accessibility'],implode(', ',$tags),implode('; ',$sessions)
@@ -369,7 +377,7 @@ foreach($rows as $idx=>$row){
       $venueAliases=['venue_name'=>['venue_name','venue'],'address'=>['address','venue_address'],'town'=>['town','city'],'region'=>['region'],'postcode'=>['postcode'],'latitude'=>['latitude','lat'],'longitude'=>['longitude','lng','lon']];
       $sets=[];$args=[];foreach($venueAliases as $col=>$names){foreach($names as $name){if(array_key_exists($name,$row)&&trim((string)$row[$name])!==''){$sets[]="$col=?";$args[]=$venueValues[$col];break;}}}
       if($sets && $sharedCount===0){$args[]=$vid;$db->prepare("UPDATE bh_venues SET ".implode(',',$sets)." WHERE id=?")->execute($args);}
-    }else{$q=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes,leader_id) VALUES (?,?,?,?,?,?,?,?,?,NULL)");$q->execute([$id,$venue,$address,$town,$region,$postcode,$lat,$lng,'']);$vid=(int)$db->lastInsertId();}
+    }else{if($existing)throw new RuntimeException('Existing activity has no linked venue; import cannot safely create one. Repair the activity venue link first.');$q=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes,leader_id) VALUES (?,?,?,?,?,?,?,?,?,NULL)");$q->execute([$id,$venue,$address,$town,$region,$postcode,$lat,$lng,'']);$vid=(int)$db->lastInsertId();}
     $sessionCols=table_columns($db,'bh_sessions');
     $hasSessionActivityId=in_array('activity_id',$sessionCols,true);
     if(!$existing || (isset($row['sessions']) && trim((string)$row['sessions'])!=='' && ($_POST['replace_sessions']??'')==='1')){
