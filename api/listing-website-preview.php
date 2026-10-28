@@ -59,6 +59,7 @@ foreach($scopes as $scope){
  }
 }
 $description=$bestBlocks?implode("\n\n",$bestBlocks):$summary;
+if(preg_match('/\\b(?:road|street|avenue|postcode|address|opening hours|find us|directions)\\b/iu',mb_substr($description,0,240)) && !preg_match('/\\b(?:baby|toddler|session|class|activity|storytime|rhyme|play)\\b/iu',mb_substr($description,0,240)))$description=$summary;
 $title=mb_substr(strip_tags($title),0,160);
 $description=mb_substr(strip_tags($description),0,4000);
 // Enrich the preview with a same-host homepage and About page (no cross-site crawling).
@@ -98,13 +99,14 @@ foreach(array_slice($pages,0,3) as $pageUrl){
  if($pageBlocks)$extra[]=implode("\n\n",$pageBlocks);
 }
 $aboutDescription=mb_substr(implode("\n\n",$extra),0,3000);
+if(preg_match('/\\b(?:road|street|avenue|postcode|address|opening hours|find us|directions)\\b/iu',mb_substr($aboutDescription,0,240)) && !preg_match('/\\b(?:baby|toddler|session|class|activity|storytime|rhyme|play)\\b/iu',mb_substr($aboutDescription,0,240)))$aboutDescription='';
 // Resolve only public HTTPS images on the same website; never fetch image bytes server-side.
 $imageCandidates=[];
-foreach(['logo','og:image','twitter:image'] as $property){
+foreach(['og:image','twitter:image'] as $property){
  $value=$meta($property);
  if($value!=='')$imageCandidates[]=$value;
 }
-foreach($xp->query('//link[contains(translate(@rel,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"),"icon")]/@href')?:[] as $node)$imageCandidates[]=$node->nodeValue;
+// Favicons and site logos are not suitable activity photographs; never suggest them.
 $imageUrl='';
 foreach($imageCandidates as $candidate){
  $candidate=trim((string)$candidate);
@@ -113,6 +115,8 @@ foreach($imageCandidates as $candidate){
  elseif(!str_starts_with($candidate,'https://'))continue;
  $parts=parse_url($candidate);
  if(!$parts||strtolower((string)($parts['host']??''))!==strtolower($host)||isset($parts['user'])||isset($parts['pass'])||isset($parts['port']))continue;
+ if(preg_match('~(?:favicon|apple-touch-icon|site-icon|\\.ico(?:$|[?#])|/logo[._/-])~i',$candidate))continue;
+ if(!preg_match('~\\.(?:jpe?g|png|webp)(?:$|[?#])~i',$candidate))continue;
  $imageUrl=$candidate;break;
 }
 $keywords=$meta('keywords');
