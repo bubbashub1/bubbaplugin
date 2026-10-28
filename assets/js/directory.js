@@ -496,6 +496,7 @@ const bhInitDirectory=async()=>{
       return events;
     };
 
+    let calendarTimeFilter = "all";
     const renderCalendar = list => {
       const calendar = $("calendarView");
       if (!calendar) return;
@@ -528,7 +529,14 @@ const bhInitDirectory=async()=>{
         return date;
       });
       const events = buildCalendarEvents(displayedList, days[0], days[6]);
-      const totalSessions = Object.values(events).reduce((sum,dayEvents)=>sum+dayEvents.length,0);
+      const filteredEvents = Object.fromEntries(Object.entries(events).map(([day, entries]) => [day, entries.filter(event => {
+        if (calendarTimeFilter === "all") return true;
+        const match = String(event.time || "").match(/^(\d{1,2}):(\d{2})/);
+        if (!match) return false;
+        const hour = Number(match[1]);
+        return calendarTimeFilter === "am" ? hour < 12 : hour >= 12;
+      })]));
+      const totalSessions = Object.values(filteredEvents).reduce((sum,dayEvents)=>sum+dayEvents.length,0);
 
       const weekLabel = days[0].toLocaleDateString("en-GB", {day:"numeric", month:"short"}) +
         " – " + days[6].toLocaleDateString("en-GB", {day:"numeric", month:"short", year:"numeric"});
@@ -538,6 +546,12 @@ const bhInitDirectory=async()=>{
         <div class="directory-calendar-head">
           <div><strong>${escapeHtml(weekLabel)}</strong><span>${scheduledCount} scheduled activit${scheduledCount === 1 ? "y" : "ies"}${hasMore ? " · first " + calendarLimit + " scheduled listings shown; refine filters for more" : ""}</span></div>
           <div class="directory-calendar-actions">
+            <label for="directoryCalendarTime">Time</label>
+            <select id="directoryCalendarTime" aria-label="Filter calendar by time of day">
+              <option value="all" ${calendarTimeFilter === "all" ? "selected" : ""}>All day</option>
+              <option value="am" ${calendarTimeFilter === "am" ? "selected" : ""}>AM · Before 12pm</option>
+              <option value="pm" ${calendarTimeFilter === "pm" ? "selected" : ""}>PM · From 12pm</option>
+            </select>
             <button type="button" class="button button-soft" data-calendar-prev aria-label="Previous week">‹</button>
             <button type="button" class="button button-soft" data-calendar-today>Today</button>
             <button type="button" class="button button-soft" data-calendar-next aria-label="Next week">›</button>
@@ -548,7 +562,7 @@ const bhInitDirectory=async()=>{
           ${days.map(date => `<div class="directory-calendar-weekday">${date.toLocaleDateString("en-GB",{weekday:"short"})}<span>${date.getDate()}</span></div>`).join("")}
           ${days.map(date => {
             const key = calendarDateKey(date);
-            const dayEvents = events[key] || [];
+            const dayEvents = filteredEvents[key] || [];
             return `<div class="directory-calendar-day${key === todayKey ? " is-today" : ""}">
               <div class="directory-calendar-date">${date.toLocaleDateString("en-GB",{weekday:"long"})}</div>
               <div class="directory-calendar-events">
@@ -564,6 +578,10 @@ const bhInitDirectory=async()=>{
         </div>
       `;
 
+      calendar.querySelector("#directoryCalendarTime").onchange = event => {
+        calendarTimeFilter = event.target.value;
+        render();
+      };
       calendar.querySelector("[data-calendar-prev]").onclick = () => {
         calendarMonth = new Date(weekStart);
         calendarMonth.setDate(calendarMonth.getDate() - 7);
