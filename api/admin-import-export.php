@@ -253,7 +253,7 @@ foreach($rows as $idx=>$row){
     if(in_array('instagram_url',$orgCols,true)){$orgSets[]='instagram_url=?';$orgArgs[]=$instagram;}
     $validSets=[];$validArgs=[];foreach($orgSets as $index=>$set){$col=substr($set,0,-2);if(in_array($col,$orgCols,true)){$validSets[]=$set;$validArgs[]=$orgArgs[$index];}}
     if($existing){$filteredSets=[];$filteredArgs=[];foreach($validSets as $i=>$set){$column=substr($set,0,-2);if(array_key_exists($column,$row)&&trim((string)$row[$column])!==''){$filteredSets[]=$set;$filteredArgs[]=$validArgs[$i];}}$validSets=$filteredSets;$validArgs=$filteredArgs;}
-    if($existing && $validSets){$q=$db->prepare('SELECT COUNT(*) FROM bh_activities WHERE organiser_id=?');$q->execute([$organiserId]);if((int)$q->fetchColumn()>1)throw new RuntimeException('Shared organiser details must be edited through the organiser profile, not a listing import.');}
+    if($existing && $validSets){$q=$db->prepare('SELECT COUNT(*) FROM bh_activities WHERE organiser_id=?');$q->execute([$organiserId]);if((int)$q->fetchColumn()>1){$validSets=[];$validArgs=[];}}
     if($validSets){$validArgs[]=$organiserId;$q=$db->prepare("UPDATE bh_organisers SET ".implode(',',$validSets)." WHERE id=?");$q->execute($validArgs);}
     if($existing){
       $activityCols=table_columns($db,'bh_activities');$featuredCol=in_array('featured',$activityCols,true);
