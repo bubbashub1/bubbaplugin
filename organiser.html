@@ -293,14 +293,30 @@
         attribution: "© OpenStreetMap contributors"
       }).addTo(map);
 
-      const markers = points.map(venue =>
-        L.marker([Number(venue.lat), Number(venue.long)])
-          .addTo(map)
-          .bindPopup(
-            "<strong>" + bhEscape(venue.name || "Venue") + "</strong><br>" +
-            bhEscape(venue.address || venue.town || "")
-          )
-      );
+      const markers = points.map(venue => {
+        const activities = organiserGroups.filter(activity => (activity.venues || []).some(v => {
+          const postcode = String(v.postcode || "").trim().toLowerCase();
+          const targetPostcode = String(venue.postcode || "").trim().toLowerCase();
+          const name = String(v.name || v.venue_name || "").trim().toLowerCase();
+          const targetName = String(venue.name || "").trim().toLowerCase();
+          return (postcode && targetPostcode && postcode === targetPostcode) ||
+            (name && targetName && name === targetName && String(v.town || "").toLowerCase() === String(venue.town || "").toLowerCase());
+        }));
+        const cards = activities.map(activity => {
+          const image = resolveImage(activity.image_url);
+          const age = Array.isArray(activity.age_range) ? activity.age_range.join(", ") : "";
+          return '<a class="organiser-map-activity" href="' + bhEscape(activityUrl(activity)) + '">' +
+            (image ? '<img src="' + bhEscape(image) + '" alt="" loading="lazy">' : '') +
+            '<span><strong>' + bhEscape(activity.title || "Activity") + '</strong>' +
+            '<small>' + bhEscape([activity.category, age, activity.price].filter(Boolean).join(" · ")) + '</small></span></a>';
+        }).join("");
+        return L.marker([Number(venue.lat), Number(venue.long)]).addTo(map).bindPopup(
+          '<div class="organiser-map-popup"><strong>' + bhEscape(venue.name || "Venue") + '</strong>' +
+          '<p>' + bhEscape(venue.address || venue.town || "") + '</p>' +
+          '<div class="organiser-map-activities">' + (cards || '<p>No linked activities at this venue.</p>') + '</div></div>',
+          {maxWidth:340, minWidth:230}
+        );
+      });
 
       if (markers.length === 1) {
         map.setView([Number(points[0].lat), Number(points[0].long)], 13);

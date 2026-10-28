@@ -130,3 +130,15 @@ body.bh-organiser-v2{background:#fffdf7;color:#174e3b;font-family:'Quicksand',Ca
 .bh-organiser-v2 .organiser-scroll-sentinel[hidden]{display:none}
 @media(max-width:760px){.bh-organiser-v2 .storefront-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.bh-organiser-v2 .storefront-card-image,.bh-organiser-v2 .storefront-card-image img{height:110px}.bh-organiser-v2 .storefront-card-body{padding:10px}.bh-organiser-v2 .storefront-card-body h3{font-size:.95rem}}
 @media(max-width:430px){.bh-organiser-v2 .storefront-grid{grid-template-columns:1fr}}
+
+/* Clickable activity cards in organiser venue map popups */
+.bh-organiser-v2 .organiser-map-popup{font-family:Quicksand,Calibri,sans-serif;color:#174e3b}
+.bh-organiser-v2 .organiser-map-popup>strong{font-size:1rem}
+.bh-organiser-v2 .organiser-map-popup>p{margin:5px 0 10px;font-size:.8rem}
+.bh-organiser-v2 .organiser-map-activities{display:grid;gap:7px;max-height:270px;overflow-y:auto}
+.bh-organiser-v2 .organiser-map-activity{display:flex;gap:9px;align-items:center;padding:8px;border:1px solid #dce9df;border-radius:12px;background:#f7faf6;color:#174e3b!important;text-decoration:none!important}
+.bh-organiser-v2 .organiser-map-activity:hover{background:#e5f1df}
+.bh-organiser-v2 .organiser-map-activity img{width:54px;height:54px;flex:0 0 54px;border-radius:8px;object-fit:cover}
+.bh-organiser-v2 .organiser-map-activity span{min-width:0;display:grid;gap:3px}
+.bh-organiser-v2 .organiser-map-activity strong{font-size:.83rem;line-height:1.25}
+.bh-organiser-v2 .organiser-map-activity small{font-size:.72rem;color:#416651}
