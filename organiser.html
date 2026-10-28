@@ -209,6 +209,7 @@
       const venue = activity.venues?.[0];
       const age = Array.isArray(activity.age_range) ? activity.age_range.join(" · ") : "";
       const location = activity.town || venue?.town || activity.region || venue?.region || "";
+      const venueCount = (activity.venues || []).length;
       const href = activityUrl(activity);
       const image = resolveImage(activity.image_url);
       const badges = getBadges(activity, activity.organiser || {});
@@ -231,7 +232,9 @@
             <div class="storefront-card-meta">
               ${location ? '<span>📍 ' + bhEscape(location) + "</span>" : ""}
               ${age ? '<span>👶 ' + bhEscape(age) + "</span>" : ""}
-              ${activity.price ? "<span>" + bhEscape(activity.price) + "</span>" : ""}
+              ${activity.price ? "<span>💷 " + bhEscape(activity.price) + "</span>" : ""}
+              ${venueCount > 1 ? "<span>📍 " + venueCount + " locations</span>" : ""}
+              ${venue?.name ? "<span>🏠 " + bhEscape(venue.name) + "</span>" : ""}
             </div>
             <a class="button button-soft button-full" href="${bhEscape(href)}">View activity</a>
           </div>
@@ -435,8 +438,10 @@
               </div>
               <section id="activities" class="storefront-section" aria-label="Organiser activities">
                 <div class="storefront-grid">
-                  ${organiserGroups.map(renderActivity).join("")}
+                  ${organiserGroups.slice(0,12).map(renderActivity).join("")}
                 </div>
+                <p id="organiserActivityCount" class="organiser-list-progress" aria-live="polite"></p>
+                <div id="organiserScrollSentinel" class="organiser-scroll-sentinel" aria-hidden="true"></div>
               </section>
             </div>
 
@@ -548,6 +553,27 @@
           } finally { button.disabled = false; }
         });
 
+        const grid = state.querySelector(".storefront-grid");
+        const sentinel = document.getElementById("organiserScrollSentinel");
+        const count = document.getElementById("organiserActivityCount");
+        let visible = Math.min(12, organiserGroups.length);
+        const updateCount = () => {
+          if (count) count.textContent = "Showing " + visible + " of " + organiserGroups.length + " activities";
+          if (sentinel) sentinel.hidden = visible >= organiserGroups.length;
+        };
+        updateCount();
+        if (grid && sentinel && visible < organiserGroups.length) {
+          const showMore = () => {
+            const next = Math.min(visible + 12, organiserGroups.length);
+            grid.insertAdjacentHTML("beforeend", organiserGroups.slice(visible,next).map(renderActivity).join(""));
+            visible = next; updateCount();
+            if (visible >= organiserGroups.length) observer.disconnect();
+          };
+          const observer = new IntersectionObserver(entries => {
+            if (entries.some(entry => entry.isIntersecting)) showMore();
+          }, {rootMargin:"450px 0px"});
+          observer.observe(sentinel);
+        }
         await renderMap(venues);
       } catch (error) {
         console.error("Organiser storefront load failed:", error);
