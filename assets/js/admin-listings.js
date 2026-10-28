@@ -2,7 +2,20 @@
 const rows=document.getElementById('listingRows'),search=document.getElementById('listingSearch'),filter=document.getElementById('listingStatus'),message=document.getElementById('listingMessage'),retry=document.getElementById('retryListings'),count=document.getElementById('listingCount');
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let all=[],csrf="";
-function render(){const q=search.value.trim().toLowerCase(),status=filter.value;const list=all.filter(a=>(!status||(a.status==='publish'?'published':a.status)===status)&&[a.title,a.organisation_name,a.town,a.category,a.region].join(' ').toLowerCase().includes(q));count.textContent=list.length+' of '+all.length+' listings';rows.innerHTML=list.map(a=>'<tr><td><strong>'+escape(a.title)+'</strong><br><small>'+escape(a.organisation_name)+'</small></td><td>'+escape(a.town||'—')+'</td><td>'+escape(a.session_summary||'—')+'</td><td>'+escape(a.status)+'</td><td><a class="button button-soft" href="/admin/admin-activities-add-listing.html?id='+encodeURIComponent(a.id)+'">Edit</a> <button type="button" class="button button-soft" data-assign="'+escape(a.id)+'">Assign to leader</button> <button type="button" class="button button-soft" data-delete="'+escape(a.id)+'">Delete</button></td></tr>').join('')||'<tr><td colspan="5">No listings found.</td></tr>';}
+function render(){
+ const q=search.value.trim().toLowerCase(),status=filter.value;
+ const list=all.filter(a=>(!status||(a.status==='publish'?'published':a.status)===status)&&[a.title,a.organisation_name,a.town,a.category,a.region].join(' ').toLowerCase().includes(q));
+ count.textContent=list.length+' of '+all.length+' listings';
+ rows.innerHTML=list.map(a=>{
+  const rawStatus=(a.status==='publish'?'published':a.status)||'unknown';
+  const statusLabel=rawStatus.charAt(0).toUpperCase()+rawStatus.slice(1);
+  const statusClass=['published','draft','pending'].includes(rawStatus)?rawStatus:'other';
+  const summary=String(a.session_summary||'').trim();
+  const sessions=summary?summary.split(',').map(x=>x.trim()).filter(Boolean):[];
+  const sessionHtml=sessions.length>2?'<details class="listing-sessions"><summary>'+sessions.length+' sessions</summary><div>'+escape(summary)+'</div></details>':escape(summary||'—');
+  return '<tr><td data-label="Activity"><strong class="listing-title">'+escape(a.title)+'</strong>'+(a.organisation_name?'<small class="listing-organiser">'+escape(a.organisation_name)+'</small>':'')+'</td><td data-label="Town">'+escape(a.town||'—')+'</td><td data-label="Sessions">'+sessionHtml+'</td><td data-label="Status"><span class="listing-status listing-status--'+statusClass+'">'+escape(statusLabel)+'</span></td><td data-label="Actions"><div class="listing-actions"><a class="listing-action listing-action--edit" href="/admin/admin-activities-add-listing.html?id='+encodeURIComponent(a.id)+'">Edit</a><button type="button" class="listing-action" data-assign="'+escape(a.id)+'">Assign</button><details class="listing-more"><summary aria-label="More actions for '+escape(a.title)+'">⋯</summary><button type="button" data-delete="'+escape(a.id)+'">Delete listing</button></details></div></td></tr>';
+ }).join('')||'<tr><td colspan="5" class="listing-empty">No listings found. Try changing your search or status filter.</td></tr>';
+}
 async function load(){message.textContent='';retry.hidden=true;try{const r=await fetch('/api/admin-activities.php',{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});if(r.status===401){location.replace('/admin-login.html?next='+encodeURIComponent(location.pathname));return;}const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load listings.');csrf=d.csrf||"";all=Array.isArray(d.data)?d.data:[];render();}catch(e){count.textContent='Listings unavailable';message.textContent=e.message;retry.hidden=false;}}
 const dialog=document.createElement('dialog');
 dialog.setAttribute('aria-labelledby','assignLeaderTitle');
