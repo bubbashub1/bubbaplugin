@@ -142,6 +142,8 @@ final class Bubba_Hub_Manager {
         $session_cols=$db->get_col('SHOW COLUMNS FROM `bh_sessions`',0);
         $venue_cols=$db->get_col('SHOW COLUMNS FROM `bh_venues`',0);
         $linked=[];
+        $has_session_activity=is_array($session_cols) && in_array('activity_id',$session_cols,true);
+        $has_junction=false;
         if (is_array($session_cols) && in_array('venue_id',$session_cols,true)) {
             if (is_array($venue_cols) && in_array('activity_id',$venue_cols,true)) {
                 $linked[]='EXISTS (SELECT 1 FROM `bh_venues` v WHERE v.id=s.venue_id AND v.activity_id=%d)';
@@ -150,15 +152,21 @@ final class Bubba_Hub_Manager {
             if ($junction==='bh_activity_venues') {
                 $junction_cols=$db->get_col('SHOW COLUMNS FROM `bh_activity_venues`',0);
                 if (in_array('activity_id',$junction_cols,true) && in_array('venue_id',$junction_cols,true)) {
-                    $linked[]='EXISTS (SELECT 1 FROM `bh_activity_venues` av WHERE av.venue_id=s.venue_id AND av.activity_id=%d)';
+                    $has_junction=true;
+                    // A venue shared by several activities is ambiguous unless
+                    // the session itself identifies its activity.
+                    $linked[]='EXISTS (SELECT 1 FROM `bh_activity_venues` av WHERE av.venue_id=s.venue_id AND av.activity_id=%d AND (SELECT COUNT(DISTINCT av2.activity_id) FROM `bh_activity_venues` av2 WHERE av2.venue_id=s.venue_id)=1)';
                 }
             }
         }
-        if (is_array($session_cols) && in_array('activity_id',$session_cols,true)) {
+        if ($has_session_activity) {
             $linked[]='s.activity_id=%d';
         }
         if ($linked && in_array('id',$session_cols,true)) {
             $display_cols=array_values(array_intersect(['id','day_of_week','start_time','end_time','frequency','start_date','end_date','venue_id','status'],$session_cols));
+            if ($has_session_activity) {
+                $linked=array_map(static fn($condition)=>$condition==='s.activity_id=%d'?$condition:'(s.activity_id IS NULL AND '.$condition.')',$linked);
+            }
             $sql='SELECT DISTINCT '.implode(',',array_map(static fn($c)=>'s.`'.$c.'`',$display_cols)).' FROM `bh_sessions` s WHERE ('.implode(' OR ',$linked).') ORDER BY s.id DESC LIMIT 100';
             $rows=$db->get_results($db->prepare($sql,...array_fill(0,count($linked),$id)),ARRAY_A);
             if ($rows) {
@@ -169,6 +177,7 @@ final class Bubba_Hub_Manager {
                 echo '</tbody></table>';
             } else echo '<p>No sessions found through the available activity or venue relationships.</p>';
         } else echo '<p>No supported session relationship was found in the current database schema.</p>';
+        if ($has_junction) echo '<p class="description">Sessions from venues shared by multiple activities are omitted unless a direct activity assignment confirms ownership.</p>';
         echo '</section>';
         if (!in_array('facebook_url',$columns,true) || !in_array('instagram_url',$columns,true) || !in_array('email',$columns,true)) {
             echo '<div class="notice notice-info inline"><p>Some social or email fields are not stored on this activity. Organiser-level contact details are not edited here.</p></div>';
