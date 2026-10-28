@@ -343,6 +343,11 @@ document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',(
    const match=line.match(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)s?\s*[,|:]?\s*(\d{1,2}(?:[:.]\d{2})?\s*(?:am|pm)?)\s*[-–—]\s*(\d{1,2}(?:[:.]\d{2})?\s*(?:am|pm)?)\s*[|,]\s*(.+)$/i);
    if(match){day=match[1];start=match[2];end=match[3];title=match[4];}
   }
+  // Allow pasted spreadsheet rows with separate start and finish columns.
+  if(day&&parts.length>=4&&simpleDays[parts[0].toLowerCase()]){
+   const candidateStart=normaliseClock(parts[1]),candidateEnd=normaliseClock(parts[2]);
+   if(candidateStart&&candidateEnd){start=parts[1];end=parts[2];title=parts.slice(3).join(',');}
+  }
   const from=normaliseClock(start),to=normaliseClock(end),weekday=simpleDays[day.toLowerCase()];
   if(weekday&&from&&to&&from<to&&title){
    simpleSessions.push({title,class_name:title,day_of_week:weekday,start_time:from,end_time:to,start_date:'',end_date:'',frequency:'weekly'});
