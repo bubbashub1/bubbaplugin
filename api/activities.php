@@ -17,6 +17,8 @@ try {
     $activityId = isset($_GET['id']) && $_GET['id'] !== '' ? (int)$_GET['id'] : null;
     $organiserSlug = trim((string)($_GET['organiser_slug'] ?? ''));
     $category = trim((string)($_GET['category'] ?? ''));
+    $listingType = trim((string)($_GET['listing_type'] ?? 'activity'));
+    if (!in_array($listingType, ['activity','event','business'], true)) { http_response_code(422); echo json_encode(['ok'=>false,'error'=>'Invalid listing type']); exit; }
     $town = trim((string)($_GET['town'] ?? ''));
     $region = trim((string)($_GET['region'] ?? ''));
     $day = isset($_GET['day']) ? (int)$_GET['day'] : null;
@@ -62,9 +64,11 @@ try {
     foreach (['booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome','what_to_bring','good_to_know'] as $infoColumn) {
         $infoSelect .= ($infoColumns[$infoColumn] ?? false) ? ", a.$infoColumn" : ", NULL AS $infoColumn";
     }
-    $where = ["LOWER(TRIM(COALESCE(a.status, ''))) IN ('published', 'publish')"];
     $params = [];
-
+    $where = ["LOWER(TRIM(COALESCE(a.status, ''))) IN ('published', 'publish')"];
+    $listingTypeColumn = (bool)$db->query("SHOW COLUMNS FROM bh_activities LIKE 'listing_type'")->fetch();
+    if ($listingTypeColumn) { $where[] = "a.listing_type = :listing_type"; $params[':listing_type'] = $listingType; }
+    elseif ($listingType !== 'activity') { echo json_encode(['ok'=>true,'data'=>[],'pagination'=>['page'=>$page,'per_page'=>$perPage,'total'=>0,'pages'=>0]]); exit; }
     if ($slug !== '') {
         $where[] = "LOWER(TRIM(a.slug)) = LOWER(TRIM(:slug))";
         $params[':slug'] = $slug;
