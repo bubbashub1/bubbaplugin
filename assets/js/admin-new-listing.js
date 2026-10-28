@@ -272,8 +272,8 @@ const previewImportedSessions=(entries,note='')=>{
  add.addEventListener('click',()=>{
   const selected=checks.filter(row=>row.check.checked);
   if(!selected.length){importMessage.textContent='Select at least one class to add.';return;}
-  const invalid=selected.find(row=>!row.title.value.trim()||/confirm/i.test(row.title.value.trim())||!row.startTime.value||(row.from.value&&row.to.value&&row.to.value<row.from.value));
-  if(invalid){invalid.check.closest('fieldset').style.borderColor='#b42318';importMessage.textContent='Class '+(checks.indexOf(invalid)+1)+' needs a class name, start time and valid dates. Correct the highlighted class and try again.';return;}
+  const invalid=selected.find(row=>!row.title.value.trim()||/confirm/i.test(row.title.value.trim())||!row.startTime.value||!row.endTime.value||row.endTime.value<=row.startTime.value||(row.from.value&&row.to.value&&row.to.value<row.from.value));
+  if(invalid){invalid.check.closest('fieldset').style.borderColor='#b42318';importMessage.textContent='Class '+(checks.indexOf(invalid)+1)+' needs a class name, valid start/end times and valid dates. Correct the highlighted class and try again.';return;}
   const known=new Set([...scheduleRows.children].map(row=>{
    const v={};row.querySelectorAll('[data-session-field]').forEach(el=>v[el.dataset.sessionField]=el.value);
    return [row.querySelector('[data-session-venue]')?.value||'0',v.start_date,v.end_date,v.start_time,v.day_of_week,String(v.class_name||'').trim().toLowerCase()].join('|');
@@ -321,6 +321,7 @@ document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',(
 
  // Accept ordinary one-session-per-line CSV and weekday-first timetable rows.
  const simpleSessions=[];
+ const unrecognisedLines=[];
  const simpleDays={mon:1,monday:1,tue:2,tues:2,tuesday:2,wed:3,wednesday:3,thu:4,thur:4,thurs:4,thursday:4,fri:5,friday:5,sat:6,saturday:6,sun:7,sunday:7};
  const normaliseClock=value=>{
   const match=String(value).trim().match(/^(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm)?$/i);
@@ -345,11 +346,11 @@ document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',(
   const from=normaliseClock(start),to=normaliseClock(end),weekday=simpleDays[day.toLowerCase()];
   if(weekday&&from&&to&&from<to&&title){
    simpleSessions.push({title,class_name:title,day_of_week:weekday,start_time:from,end_time:to,start_date:'',end_date:'',frequency:'weekly'});
-  }
+  }else if(line.includes(',')||/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/i.test(line))unrecognisedLines.push(line);
  }
  if(simpleSessions.length){
   const unique=[...new Map(simpleSessions.map(s=>[[s.day_of_week,s.start_time,s.end_time,s.title].join('|'),s])).values()];
-  feedback.textContent=unique.length+' session(s) recognised. Review all sessions before adding.';
+  feedback.textContent=unique.length+' session(s) recognised. Review all sessions before adding.'+(unrecognisedLines.length?' '+unrecognisedLines.length+' line(s) need manual review: '+unrecognisedLines.slice(0,3).join(' | '):'');
   previewImportedSessions(unique,'Weekly timetable detected. Review venue and dates before saving.');
   return;
  }
