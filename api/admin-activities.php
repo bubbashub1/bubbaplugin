@@ -19,7 +19,8 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
  if($_SERVER['REQUEST_METHOD']==='GET'&&($_GET['action']??'')==='leaders'){
   $hasUserId=(bool)$db->query("SHOW COLUMNS FROM bh_organisers LIKE 'user_id'")->fetch();
   $join=$hasUserId?'u.id=o.user_id':'u.email=o.email';
-  $q=$db->query("SELECT o.id,o.organisation_name,u.email FROM bh_organisers o JOIN bh_users u ON ".$join." WHERE u.role='leader' AND u.status='active' AND o.status<>'suspended' ORDER BY o.organisation_name,o.id");
+  $organiserStatusFilter=$db->query("SHOW COLUMNS FROM bh_organisers LIKE 'status'")->fetch()?" AND o.status<>'suspended'":"";
+  $q=$db->query("SELECT o.id,o.organisation_name,u.email FROM bh_organisers o JOIN bh_users u ON ".$join." WHERE u.role='leader' AND u.status='active'".$organiserStatusFilter." ORDER BY o.organisation_name,o.id");
   bh_admin_response(200,['ok'=>true,'data'=>$q->fetchAll(),'csrf'=>$_SESSION['bh_listing_csrf']]);
  }
  $venueBookingColumn=false;try{$venueBookingColumn=(bool)$db->query("SHOW COLUMNS FROM bh_venues LIKE 'booking_url'")->fetch();if(!$venueBookingColumn&&$_SERVER['REQUEST_METHOD']==='POST'){$db->exec("ALTER TABLE bh_venues ADD COLUMN booking_url VARCHAR(2048) NULL DEFAULT NULL");$venueBookingColumn=true;}}catch(Throwable $ignored){}
@@ -59,7 +60,8 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
     $organiserId=(int)($input['organiser_id']??0);
     $hasUserId=(bool)$db->query("SHOW COLUMNS FROM bh_organisers LIKE 'user_id'")->fetch();
     $join=$hasUserId?'u.id=o.user_id':'u.email=o.email';
-    $q=$db->prepare("SELECT o.id FROM bh_organisers o JOIN bh_users u ON ".$join." WHERE o.id=? AND u.role='leader' AND u.status='active' AND o.status<>'suspended' LIMIT 1");$q->execute([$organiserId]);
+    $organiserStatusFilter=$db->query("SHOW COLUMNS FROM bh_organisers LIKE 'status'")->fetch()?" AND o.status<>'suspended'":"";
+    $q=$db->prepare("SELECT o.id FROM bh_organisers o JOIN bh_users u ON ".$join." WHERE o.id=? AND u.role='leader' AND u.status='active'".$organiserStatusFilter." LIMIT 1");$q->execute([$organiserId]);
     if(!$q->fetch()){$db->rollBack();bh_admin_response(422,['ok'=>false,'error'=>'Choose an active registered leader organisation.']);}
     $db->prepare("UPDATE bh_activities SET organiser_id=? WHERE id=?")->execute([$organiserId,$id]);
    }
