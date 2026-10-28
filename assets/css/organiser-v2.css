@@ -3,8 +3,8 @@ body.bh-organiser-v2{background:#fffdf7;color:#174e3b;font-family:'Quicksand',Ca
 .bh-organiser-v2 .organiser-storefront-page{font-family:'Quicksand',Calibri,Arial,sans-serif;padding-top:20px!important;padding-bottom:52px!important}
 .bh-organiser-v2 .organiser-storefront-page :is(h1,h2,h3){font-family:'Quicksand',Calibri,Arial,sans-serif;letter-spacing:-.035em;font-weight:800}
 .bh-organiser-v2 .organiser-hero{
-  background:linear-gradient(125deg,#e5f1df 0%,#def1f4 74%,#fff0d0 100%);
-  border:1px solid #d1e4d4;border-radius:34px;
+  background:linear-gradient(125deg,#b6d6bd 0%,#b6d7d9 74%,#ead5a9 100%);
+  border:1px solid #91b8a1;border-radius:34px;
   padding:clamp(22px,4vw,48px);gap:clamp(16px,3vw,36px);
   box-shadow:0 13px 32px rgba(23,78,59,.08);color:#174e3b;
 }
