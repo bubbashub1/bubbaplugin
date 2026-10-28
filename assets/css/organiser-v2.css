@@ -113,3 +113,20 @@ body.bh-organiser-v2{background:#fffdf7;color:#174e3b;font-family:'Quicksand',Ca
 .bh-organiser-v2 .organiser-venues-copy{min-width:0}
 .bh-organiser-v2 .organiser-venue-card{overflow-wrap:anywhere}
 @media(max-width:760px){.bh-organiser-v2 .organiser-summary-stat{min-height:70px}.bh-organiser-v2 .storefront-grid{grid-template-columns:1fr}.bh-organiser-v2 .organiser-hero{gap:16px}}
+
+/* Compact multi-location activity feed */
+.bh-organiser-v2 .organiser-venues{align-items:start}
+.bh-organiser-v2 .storefront-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:12px}
+.bh-organiser-v2 .storefront-card{border-radius:17px}
+.bh-organiser-v2 .storefront-card-image{max-height:145px;overflow:hidden}
+.bh-organiser-v2 .storefront-card-image img{height:145px;width:100%;object-fit:cover}
+.bh-organiser-v2 .storefront-card-body{padding:13px}
+.bh-organiser-v2 .storefront-card-body h3{font-size:1.05rem;line-height:1.25}
+.bh-organiser-v2 .storefront-description{font-size:.85rem;line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.bh-organiser-v2 .storefront-card-meta{gap:5px}
+.bh-organiser-v2 .storefront-card-meta span{font-size:.76rem}
+.bh-organiser-v2 .organiser-list-progress{text-align:center;font-size:.85rem;color:#416651;margin:16px 0 4px}
+.bh-organiser-v2 .organiser-scroll-sentinel{height:2px}
+.bh-organiser-v2 .organiser-scroll-sentinel[hidden]{display:none}
+@media(max-width:760px){.bh-organiser-v2 .storefront-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.bh-organiser-v2 .storefront-card-image,.bh-organiser-v2 .storefront-card-image img{height:110px}.bh-organiser-v2 .storefront-card-body{padding:10px}.bh-organiser-v2 .storefront-card-body h3{font-size:.95rem}}
+@media(max-width:430px){.bh-organiser-v2 .storefront-grid{grid-template-columns:1fr}}
