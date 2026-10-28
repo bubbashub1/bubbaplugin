@@ -485,6 +485,10 @@ document.getElementById('adminPosterRead')?.addEventListener('click',async event
   const result=await posterOcrWorker.recognize(prepared);
   const recognised=String(result?.data?.text||'').trim();
   if(!recognised)throw new Error('No readable text found');
+  if(output.value.trim()&&!window.confirm('Replace the text currently in the poster text box with the newly recognised text?')){
+   message.textContent='Existing poster text kept. You can review or apply it as before.';
+   return;
+  }
   output.value=recognised;
   const confidence=Number(result?.data?.confidence);
   message.textContent='Text extracted'+(Number.isFinite(confidence)&&confidence<65?' (some words may be unclear)':'')+'. Review and correct it before applying details.';
