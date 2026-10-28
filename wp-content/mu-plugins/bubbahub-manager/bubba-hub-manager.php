@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.2.0
+ * Version: 0.3.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -34,16 +34,28 @@ final class Bubba_Hub_Manager {
         if (!$id) { echo '<div class="notice notice-error"><p>Invalid activity ID.</p></div>'; return; }
         $record=$db->get_row($db->prepare('SELECT * FROM `bh_activities` WHERE id = %d LIMIT 1',$id),ARRAY_A);
         if (!$record) { echo '<div class="notice notice-error"><p>Activity not found.</p></div>'; return; }
-        $fields=array_values(array_intersect(['title','description','good_to_know','what_to_bring'], $columns));
+        $fields=array_values(array_intersect(['title','description','good_to_know','what_to_bring','category','age_range','age_min_months','age_max_months','price_from','price_free'], $columns));
         if (isset($_POST['bh_manager_save'])) {
             check_admin_referer('bh_manager_activity_'.$id);
             $changes=[];
             foreach ($fields as $field) {
                 if (!isset($_POST[$field]) || !is_string($_POST[$field])) continue;
                 $raw=wp_unslash($_POST[$field]);
-                $changes[$field]=$field==='title'?sanitize_text_field($raw):wp_kses_post($raw);
+                if (in_array($field,['age_min_months','age_max_months'],true)) {
+                    if ($raw!=='' && (!ctype_digit($raw) || (int)$raw>216)) continue;
+                    $changes[$field]=$raw===''?null:(int)$raw;
+                } elseif ($field==='price_from') {
+                    if ($raw!=='' && (!is_numeric($raw) || (float)$raw<0 || (float)$raw>99999)) continue;
+                    $changes[$field]=$raw===''?null:round((float)$raw,2);
+                } elseif ($field==='price_free') {
+                    $changes[$field]=in_array($raw,['0','1'],true)?(int)$raw:0;
+                } else {
+                    $changes[$field]=in_array($field,['title','category','age_range'],true)?sanitize_text_field($raw):wp_kses_post($raw);
+                }
             }
-            if (isset($changes['title']) && trim($changes['title'])==='') {
+            if (isset($changes['age_min_months'],$changes['age_max_months']) && $changes['age_min_months']>$changes['age_max_months']) {
+                echo '<div class="notice notice-error"><p>Minimum age cannot exceed maximum age.</p></div>';
+            } elseif (isset($changes['title']) && trim($changes['title'])==='') {
                 echo '<div class="notice notice-error"><p>Title cannot be blank.</p></div>';
             } elseif ($changes) {
                 $result=$db->update('bh_activities',$changes,['id'=>$id]);
@@ -56,14 +68,17 @@ final class Bubba_Hub_Manager {
         }
         echo '<p><a href="'.esc_url(admin_url('admin.php?page=bh-manager-activities')).'">&larr; Back to Activities</a></p>';
         echo '<h2>Edit activity #'.esc_html((string)$id).'</h2>';
-        echo '<div class="notice notice-info inline"><p>This first editing stage changes only basic activity text. Venues, schedules, sessions, images, organisers and publication status are untouched.</p></div>';
+        echo '<div class="notice notice-info inline"><p>This stage changes activity text, category, age range and basic price fields. Venues, schedules, sessions, images, organisers and publication status are untouched.</p></div>';
         echo '<form method="post">';
         wp_nonce_field('bh_manager_activity_'.$id);
         echo '<table class="form-table"><tbody>';
         foreach ($fields as $field) {
             $label=ucwords(str_replace('_',' ',$field));
             echo '<tr><th scope="row"><label for="bh-'.esc_attr($field).'">'.esc_html($label).'</label></th><td>';
-            if ($field==='title') echo '<input required class="regular-text" id="bh-title" name="title" value="'.esc_attr((string)($record[$field]??'')).'"/>';
+            if ($field==='price_free') echo '<select id="bh-price_free" name="price_free"><option value="0" '.selected((string)($record[$field]??'0'),'0',false).'>No</option><option value="1" '.selected((string)($record[$field]??'0'),'1',false).'>Yes</option></select>';
+            elseif (in_array($field,['age_min_months','age_max_months','price_from'],true)) echo '<input type="number" min="0" '.($field==='price_from'?'step="0.01"':'step="1" max="216"').' id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'" value="'.esc_attr((string)($record[$field]??'')).'"/>';
+            elseif (in_array($field,['category','age_range'],true)) echo '<input class="regular-text" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'" value="'.esc_attr((string)($record[$field]??'')).'"/>';
+            elseif ($field==='title') echo '<input required class="regular-text" id="bh-title" name="title" value="'.esc_attr((string)($record[$field]??'')).'"/>';
             else echo '<textarea class="large-text" rows="7" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'">'.esc_textarea((string)($record[$field]??'')).'</textarea>';
             echo '</td></tr>';
         }
