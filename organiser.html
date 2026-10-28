@@ -367,6 +367,8 @@
         const location = [...new Set(
           organiserGroups.flatMap(a => (a.venues || []).map(v => v.town || v.region).filter(Boolean))
         )].slice(0, 3).join(" · ") || "Devon & Cornwall";
+        const venueTowns = [...new Set(venues.map(v => v.town).filter(Boolean))];
+        const locationLabel = venueTowns.length > 3 ? venueTowns.length + " locations across " + (organiserSlugPlaceholder => organiserSlugPlaceholder)(/libraries.unlimited/i.test(name) ? "Devon" : /cornwall.council/i.test(name) ? "Cornwall" : "the region") : location;
         const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join("").toUpperCase();
         const organiserBadges = getOrganiserDetailBadges(organiserGroups, first.organiser || publicContent || {});
 
@@ -394,7 +396,7 @@
               <h1>${bhEscape(name)}</h1>
               <p class="organiser-intro">Discover family activities from ${bhEscape(name)} and see what’s available through Bubba Hub — including locations, age ranges and booking information.</p>
               <div class="organiser-meta">
-                <span>📍 ${bhEscape(location)}</span>
+                <span>📍 ${bhEscape(locationLabel)}</span>
                 <span>✓ Listed on Bubba Hub</span>
               </div>
               <div class="organiser-actions">
@@ -424,7 +426,7 @@
             </div>
           </div>
 
-          <section class="organiser-summary" aria-label="Organiser summary">\n            <div class="organiser-summary-stat"><strong>${organiserGroups.length}</strong><span>Activities</span></div>\n            <div class="organiser-summary-stat"><strong>${categories.length}</strong><span>Categories</span></div>\n            <div class="organiser-summary-stat"><strong>${venues.length}</strong><span>Venues</span></div>\n            ${renderBadges(organiserBadges, "bh-organiser-badges")}\n          </section>
+          <section class="organiser-summary" aria-label="Organiser summary">\n            <div class="organiser-summary-stat"><strong>${organiserGroups.length}</strong><span>Activities</span></div>\n            <div class="organiser-summary-stat"><strong>${categories.length}</strong><span>Categories</span></div>\n            <div class="organiser-summary-stat"><strong>${venues.length}</strong><span>Locations</span></div>\n            ${renderBadges(organiserBadges, "bh-organiser-badges")}\n          </section>
 
           <section class="organiser-venues">
             <div class="organiser-venues-copy">
