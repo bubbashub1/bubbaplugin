@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.13.0
+ * Version: 0.15.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -89,7 +89,7 @@ final class Bubba_Hub_Manager {
         echo '<div class="notice notice-info inline"><p>Edit activity details, ages, pricing, booking and contact information below. Venues, schedules, sessions, organiser assignments and publication status are untouched. Image fields accept web URLs; local file paths remain unchanged unless edited.</p></div>';
         echo '<form method="post" id="bh-manager-activity-form">';
         echo '<p class="description">Ages are stored in months. Examples: 12 = 1 year; 60 = 5 years. Only change pricing fields that apply to this activity.</p>';
-        echo '<nav class="bh-editor-tabs" role="tablist" aria-label="Activity editor sections"><a href="#bh-basic-details">Details</a><a href="#bh-age-suitability">Ages</a><a href="#bh-pricing">Pricing</a><a href="#bh-helpful-information">Helpful info</a><a href="#bh-booking-attendance">Booking</a><a href="#bh-contact-social-links">Contact</a><a href="#bh-listing-images">Images</a></nav>';
+        echo '<nav class="bh-editor-tabs" role="tablist" aria-label="Activity editor sections"><a href="#bh-basic-details">Details</a><a href="#bh-age-suitability">Ages</a><a href="#bh-pricing">Pricing</a><a href="#bh-helpful-information">Helpful info</a><a href="#bh-booking-attendance">Booking</a><a href="#bh-contact-social-links">Contact</a><a href="#bh-listing-images">Images</a><a href="#bh-session-information">Sessions</a></nav>';
         echo '<div class="bh-editor-actions"><button type="submit" class="button button-primary" name="bh_manager_save" value="1">Save activity details</button> <span>Changes are saved to this activity only.</span></div>';
         wp_nonce_field('bh_manager_activity_'.$id);
         echo '<style>
@@ -120,7 +120,7 @@ final class Bubba_Hub_Manager {
             foreach ($visible as $field) {
                     $label=ucwords(str_replace('_',' ',$field));
             echo '<tr'.(in_array($field,['image_path','image_1','image_2','image_3'],true)?' class="bh-image-row"':'').'><th scope="row"><label for="bh-'.esc_attr($field).'">'.esc_html($field==='image_path'?'Featured image':str_replace('_',' ',$label)).'</label></th><td>';
-            if (in_array($field,['price_free','booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome'],true)) echo '<select id="bh-price_free" name="price_free"><option value="0" '.selected((string)($record[$field]??'0'),'0',false).'>No</option><option value="1" '.selected((string)($record[$field]??'0'),'1',false).'>Yes</option></select>';
+            if (in_array($field,['price_free','booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome'],true)) echo '<select id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'"><option value="0" '.selected((string)($record[$field]??'0'),'0',false).'>No</option><option value="1" '.selected((string)($record[$field]??'0'),'1',false).'>Yes</option></select>';
             elseif (in_array($field,['age_min_months','age_max_months','price_from','price_per_session','price_per_family'],true)) echo '<input type="number" min="0" '.(in_array($field,['price_from','price_per_session','price_per_family'],true)?'step="0.01"':'step="1" max="216"').' id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'" value="'.esc_attr((string)($record[$field]??'')).'"/>';
             elseif ($field==='category') {
                 echo '<select id="bh-category" name="category"><option value="">Select category</option>';
@@ -138,6 +138,26 @@ final class Bubba_Hub_Manager {
             echo '</td></tr>';
         }
         echo '</tbody></table></section>'; }
+        echo '<section id="bh-session-information" class="bh-editor-section" role="tabpanel"><h3>Session information</h3><p class="description">Read-only timetable preview. Session editing is managed separately.</p>';
+        $session_cols=$db->get_col('SHOW COLUMNS FROM `bh_sessions`',0);
+        if (is_array($session_cols) && in_array('activity_id',$session_cols,true)) {
+            $display_cols=array_values(array_intersect(['id','day_of_week','session_date','start_time','end_time','frequency','venue_id','status'],$session_cols));
+            if ($display_cols) {
+                $sql='SELECT '.implode(',',array_map(static fn($c)=>'`'.$c.'`',$display_cols)).' FROM `bh_sessions` WHERE `activity_id` = %d ORDER BY `id` DESC LIMIT 100';
+                $rows=$db->get_results($db->prepare($sql,$id),ARRAY_A);
+                if ($rows) {
+                    echo '<table class="widefat striped"><thead><tr>';
+                    foreach ($display_cols as $col) echo '<th>'.esc_html(ucwords(str_replace('_',' ',$col))).'</th>';
+                    echo '</tr></thead><tbody>';
+                    foreach ($rows as $row) {echo '<tr>';foreach ($display_cols as $col) echo '<td>'.esc_html((string)($row[$col]??'')).'</td>';echo '</tr>';}
+                    echo '</tbody></table>';
+                } else echo '<p>No directly linked sessions found. This does not rule out venue-linked timetables.</p>';
+            }
+        } else echo '<p>This installation stores sessions using other relationships. The timetable cannot yet be shown safely here.</p>';
+        echo '</section>';
+        if (!in_array('facebook_url',$columns,true) || !in_array('instagram_url',$columns,true) || !in_array('email',$columns,true)) {
+            echo '<div class="notice notice-info inline"><p>Some social or email fields are not stored on this activity. Organiser-level contact details are not edited here.</p></div>';
+        }
         echo '<script>document.addEventListener("DOMContentLoaded",function(){
             document.querySelectorAll(".bh-image-row input[type=url]").forEach(function(input){
                 input.addEventListener("change",function(){
