@@ -241,11 +241,16 @@ foreach($rows as $idx=>$row){
       if(in_array('slug',$orgCols,true)){$insCols[]='slug';$insVals[]=$oslug;}
       if(in_array('facebook_url',$orgCols,true)){$insCols[]='facebook_url';$insVals[]=$facebook;}
       if(in_array('instagram_url',$orgCols,true)){$insCols[]='instagram_url';$insVals[]=$instagram;}
+      // Legacy organiser tables may omit status, email, phone, website or social columns.
+      $insertValues=array_combine($insCols,$insVals);
+      $insCols=array_values(array_filter($insCols,static fn($col)=>in_array($col,$orgCols,true)));
+      $insVals=array_map(static fn($col)=>$insertValues[$col],$insCols);
       $marks=implode(',',array_fill(0,count($insCols),'?'));$q=$db->prepare("INSERT INTO bh_organisers (".implode(',',$insCols).") VALUES (".$marks.")");$q->execute($insVals);$organiserId=(int)$db->lastInsertId();}}
     $orgCols=table_columns($db,'bh_organisers');$orgSets=['organisation_name=?','email=?','phone=?','website=?'];$orgArgs=[$org,$email,$phone,$website];
     if(in_array('facebook_url',$orgCols,true)){$orgSets[]='facebook_url=?';$orgArgs[]=$facebook;}
     if(in_array('instagram_url',$orgCols,true)){$orgSets[]='instagram_url=?';$orgArgs[]=$instagram;}
-    $orgArgs[]=$organiserId;$q=$db->prepare("UPDATE bh_organisers SET ".implode(',',$orgSets)." WHERE id=?");$q->execute($orgArgs);
+    $validSets=[];$validArgs=[];foreach($orgSets as $index=>$set){$col=substr($set,0,-2);if(in_array($col,$orgCols,true)){$validSets[]=$set;$validArgs[]=$orgArgs[$index];}}
+    $validArgs[]=$organiserId;$q=$db->prepare("UPDATE bh_organisers SET ".implode(',',$validSets)." WHERE id=?");$q->execute($validArgs);
     if($existing){
       $activityCols=table_columns($db,'bh_activities');$featuredCol=in_array('featured',$activityCols,true);
       $sql=$ac?"UPDATE bh_activities SET title=?,description=?,category=?,age_range=?,county=?,price_from=?,booking_url=?,image_path=?,status=?,accessibility=?".($featuredCol?",featured=?":"")." WHERE id=?":"UPDATE bh_activities SET title=?,description=?,category=?,age_range=?,county=?,price_from=?,booking_url=?,image_path=?,status=?".($featuredCol?",featured=?":"")." WHERE id=?";
