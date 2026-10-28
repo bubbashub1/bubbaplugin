@@ -34,12 +34,12 @@
    ========================================================================= */
 :root {
   /* Brand */
-  --bh-green:        #416651;
-  --bh-green-dark:   #144400;
-  --bh-green-soft:   #d8e6db;
-  --bh-green-pale:   #f4f7f4;
-  --bh-teal:         #3c8e96;
-  --bh-teal-dark:    #2e7780;   /* use for teal buttons: white text passes AA */
+  --bh-green:        #174b33;
+  --bh-green-dark:   #123e2b;
+  --bh-green-soft:   #c7ebd4;
+  --bh-green-pale:   #f5f7ed;
+  --bh-teal:         #0f8589;
+  --bh-teal-dark:    #086c70;   /* use for teal buttons: white text passes AA */
   --bh-yellow:       #f6c84a;
   --bh-yellow-dark:  #eab83b;
   --bh-pink:         #ee6684;
@@ -60,7 +60,7 @@
   --bh-accent:       #9cb8a4;
 
   /* Lines, shadows, radii, sizes */
-  --bh-border:       #d5ddd6;
+  --bh-border:       #c4d9cc;
   --bh-line:         rgba(18, 63, 49, .09);
   --bh-shadow:       0 8px 24px rgba(20, 68, 0, .08);
   --bh-shadow-lg:    0 18px 40px rgba(18, 63, 49, .12);
@@ -7507,3 +7507,8 @@ button.bh-header-signout:disabled{opacity:.65;cursor:wait}
   .auth-page .auth-layout{width:100%;max-width:none;margin-inline:auto}
   .bh-header-inner,.bh-header-search-bar{max-width:none;width:100%}
 }
+
+/* PR #276 reconciliation: scoped public header and card definition; preserve form and admin styling. */
+body:not(.bh-admin):not(.bh-leader) .site-header{border-bottom:2px solid var(--bh-green);box-shadow:0 5px 16px rgba(18,62,43,.1)}
+body:not(.bh-admin):not(.bh-leader) .site-header .main-nav a:focus-visible{outline:3px solid var(--bh-teal-dark);outline-offset:2px}
+.bh-directory :is(.activity-card,.event-card){border-color:var(--bh-border);box-shadow:var(--bh-shadow)}
