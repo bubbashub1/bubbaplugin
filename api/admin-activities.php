@@ -39,10 +39,36 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
   $countyColumn=false;
   try{$cc=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='county'");$countyColumn=((int)$cc->fetchColumn())>0;}catch(Throwable $ignored){}
   $countySelect=$countyColumn?'a.county':'NULL AS county';
-  $stmt=$db->query("SELECT a.id,a.title,a.category,a.age_range,$countySelect,a.price_from,a.status,o.id organiser_id,COALESCE(o.organisation_name,'') AS organisation_name,MIN(v.town) AS town,MIN(v.region) AS region,COUNT(DISTINCT v.id) venue_count,(SELECT GROUP_CONCAT(DISTINCT CONCAT(CASE s.day_of_week WHEN 1 THEN 'Mon' WHEN 2 THEN 'Tue' WHEN 3 THEN 'Wed' WHEN 4 THEN 'Thu' WHEN 5 THEN 'Fri' WHEN 6 THEN 'Sat' WHEN 7 THEN 'Sun' END,' ',LEFT(s.start_time,5)) ORDER BY s.day_of_week,s.start_time SEPARATOR ', ') FROM bh_sessions s INNER JOIN bh_venues sv ON sv.id=s.venue_id WHERE sv.activity_id=a.id) AS session_summary FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_venues v ON v.activity_id=a.id WHERE 1=1 GROUP BY a.id,a.title,a.category,a.age_range,a.price_from,a.status,o.id,o.organisation_name".($countyColumn?",a.county":"")." ORDER BY a.updated_at DESC,a.id DESC");bh_admin_response(200,['ok'=>true,'data'=>$stmt->fetchAll(),'csrf'=>$_SESSION['bh_listing_csrf']]);
+  $tagsSelect=$db->query("SHOW COLUMNS FROM bh_activities LIKE 'tags'")->fetch()?'MAX(a.tags) AS tags':'NULL AS tags';
+  $stmt=$db->query("SELECT a.id,a.title,a.category,$tagsSelect,a.age_range,$countySelect,a.price_from,a.status,o.id organiser_id,COALESCE(o.organisation_name,'') AS organisation_name,MIN(v.town) AS town,MIN(v.region) AS region,COUNT(DISTINCT v.id) venue_count,(SELECT GROUP_CONCAT(DISTINCT CONCAT(CASE s.day_of_week WHEN 1 THEN 'Mon' WHEN 2 THEN 'Tue' WHEN 3 THEN 'Wed' WHEN 4 THEN 'Thu' WHEN 5 THEN 'Fri' WHEN 6 THEN 'Sat' WHEN 7 THEN 'Sun' END,' ',LEFT(s.start_time,5)) ORDER BY s.day_of_week,s.start_time SEPARATOR ', ') FROM bh_sessions s INNER JOIN bh_venues sv ON sv.id=s.venue_id WHERE sv.activity_id=a.id) AS session_summary FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_venues v ON v.activity_id=a.id WHERE 1=1 GROUP BY a.id,a.title,a.category,a.age_range,a.price_from,a.status,o.id,o.organisation_name".($countyColumn?",a.county":"")." ORDER BY a.updated_at DESC,a.id DESC");bh_admin_response(200,['ok'=>true,'data'=>$stmt->fetchAll(),'csrf'=>$_SESSION['bh_listing_csrf']]);
  }
  if($_SERVER['REQUEST_METHOD']!=='POST')bh_admin_response(405,['ok'=>false,'error'=>'GET or POST required.']);
  $input=json_decode((string)file_get_contents('php://input'),true);if(!is_array($input))bh_admin_response(400,['ok'=>false,'error'=>'Invalid JSON.']);
+ if(($input['action']??'')==='bulk_update'){
+  if(!hash_equals($_SESSION['bh_listing_csrf'],(string)($input['csrf']??'')))bh_admin_response(403,['ok'=>false,'error'=>'Please refresh the page.']);
+  $ids=array_values(array_unique(array_map('intval',(array)($input['ids']??[]))));
+  if(!$ids||count($ids)>500||min($ids)<1)bh_admin_response(422,['ok'=>false,'error'=>'Select between 1 and 500 listings.']);
+  $changes=$input['changes']??null;
+  if(!is_array($changes)||!$changes||array_diff(array_keys($changes),['status','category','tags']))bh_admin_response(422,['ok'=>false,'error'=>'Unsupported change.']);
+  $cols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);
+  $sets=[];$values=[];
+  foreach($changes as $field=>$value){
+   if(!in_array($field,$cols,true))bh_admin_response(422,['ok'=>false,'error'=>'This database does not support the '.$field.' field.']);
+   if(!is_string($value))bh_admin_response(422,['ok'=>false,'error'=>'Invalid '.$field.' value.']);
+   $value=trim($value);
+   if($field==='status'&&!in_array($value,['draft','published'],true))bh_admin_response(422,['ok'=>false,'error'=>'Invalid listing status.']);
+   if($field==='category'&&($value===''||mb_strlen($value)>255))bh_admin_response(422,['ok'=>false,'error'=>'Enter a category of at most 255 characters.']);
+   if($field==='tags'&&mb_strlen($value)>1000)bh_admin_response(422,['ok'=>false,'error'=>'Tags are too long.']);
+   $sets[]="`".$field."`=?";$values[]=$value;
+  }
+  $placeholders=implode(',',array_fill(0,count($ids),'?'));
+  $db->beginTransaction();
+  try{
+   $sql="UPDATE bh_activities SET ".implode(',',$sets)." WHERE id IN (".$placeholders.") AND status<>'archived'";
+   $stmt=$db->prepare($sql);$stmt->execute([...$values,...$ids]);$updated=$stmt->rowCount();
+   $db->commit();bh_admin_response(200,['ok'=>true,'updated'=>$updated]);
+  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+ }
  $id=(int)($input['id']??0);
  $listingAction=$input['action']??'';
  if(in_array($listingAction,['delete','assign_leader','restore'],true)){
