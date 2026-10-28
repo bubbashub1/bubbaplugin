@@ -1,14 +1,15 @@
 <?php
 declare(strict_types=1);
-/** Read existing Cloudflare Turnstile configuration from WordPress constants or environment. */
+/** Read Turnstile settings without bootstrapping WordPress. */
 function bh_turnstile_setting(string $name): string {
-    $aliases = [
-        'BUBBAHUB_TURNSTILE_SITE_KEY' => ['BUBBAHUB_TURNSTILE_SITE_KEY','BH_TURNSTILE_SITE_KEY','TURNSTILE_SITE_KEY'],
-        'BUBBAHUB_TURNSTILE_SECRET_KEY' => ['BUBBAHUB_TURNSTILE_SECRET_KEY','BH_TURNSTILE_SECRET_KEY','TURNSTILE_SECRET_KEY'],
-    ];
-    foreach ($aliases[$name] ?? [$name] as $key) {
-        if (defined($key)) { $value = trim((string)constant($key)); if ($value !== '') return $value; }
-        $value = getenv($key); if (is_string($value) && trim($value) !== '') return trim($value);
-    }
+    $value=getenv($name);
+    if(is_string($value)&&$value!=='')return $value;
+    if(!in_array($name,['BUBBAHUB_TURNSTILE_SITE_KEY','BUBBAHUB_TURNSTILE_SECRET_KEY'],true))return '';
+    $file=dirname(__DIR__).'/wp-config.php';
+    if(!is_readable($file))return '';
+    $contents=file_get_contents($file);
+    if($contents===false)return '';
+    $quoted=preg_quote($name,'/');
+    if(preg_match('/^[ \t]*putenv\(\s*([\x27\x22])'.$quoted.'=([^\x27\x22\r\n]*)\1\s*\)\s*;/m',$contents,$m))return trim($m[2]);
     return '';
 }
