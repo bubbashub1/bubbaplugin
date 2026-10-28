@@ -211,9 +211,11 @@ if($csvUrl!==''){
 }
 if(!$fh){if($csvTmp)@unlink($csvTmp);http_response_code(422);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>'Could not read the CSV.']);exit;}
 $headers=fgetcsv($fh);if(!$headers||count($headers)<1){http_response_code(422);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>'The CSV has no header row.']);exit;}
-$headers=array_map('clean_header',$headers);$rows=[];while(($r=fgetcsv($fh))!==false){if(count(array_filter($r,fn($x)=>trim((string)$x)!==''))===0)continue;$r=array_pad($r,count($headers),'');$row=[];foreach($headers as $i=>$h)$row[$h]=trim((string)($r[$i]??''));$rows[]=$row;}fclose($fh);
+$headers=array_map('clean_header',$headers);
+if(in_array('',$headers,true)||count($headers)!==count(array_unique($headers))){http_response_code(422);echo json_encode(['ok'=>false,'error'=>'CSV headers must be nonempty and unique.']);exit;}
+$rows=[];while(($r=fgetcsv($fh))!==false){if(count(array_filter($r,fn($x)=>trim((string)$x)!==''))===0)continue;$r=array_pad($r,count($headers),'');$row=[];foreach($headers as $i=>$h)$row[$h]=trim((string)($r[$i]??''));$rows[]=$row;}fclose($fh);
 $mode=($_POST['mode']??'update')==='skip'?'skip':'update';$ac=false;try{$q=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='accessibility'");$ac=(int)$q->fetchColumn()>0;}catch(Throwable $e){}
-$totalRows=count($rows);$offset=max(0,(int)($_POST['offset']??0));$limit=min(25,max(1,(int)($_POST['limit']??25)));$rows=array_slice($rows,$offset,$limit);$created=$updated=$skipped=$failed=0;$errors=[];
+$totalRows=count($rows);if($totalRows>20000){http_response_code(422);echo json_encode(['ok'=>false,'error'=>'CSV exceeds the 20,000-row safety limit.']);exit;}$offset=max(0,(int)($_POST['offset']??0));$limit=min(25,max(1,(int)($_POST['limit']??25)));$rows=array_slice($rows,$offset,$limit);$created=$updated=$skipped=$failed=0;$errors=[];
 foreach($rows as $idx=>$row){
   $line=$offset+$idx+2;
   try{
