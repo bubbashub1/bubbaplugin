@@ -288,7 +288,12 @@ foreach($rows as $idx=>$row){
     if($vid){
       // A shared venue must not be silently changed for other activities.
       $sharedCount=0;if($venueLink){$shared=$db->prepare('SELECT COUNT(DISTINCT activity_id) FROM bh_activity_venues WHERE venue_id=? AND activity_id<>?');$shared->execute([$vid,$id]);$sharedCount=(int)$shared->fetchColumn();}
-      if($sharedCount>0 && ($region!=='' || $town!=='' || $address!=='' || $postcode!=='' || $lat!==null || $lng!==null))throw new RuntimeException('Shared venue: update manually to avoid changing other activities.');
+      if($sharedCount>0){
+        $current=$db->prepare('SELECT venue_name,address,town,region,postcode,latitude,longitude FROM bh_venues WHERE id=?');$current->execute([$vid]);$venueBefore=$current->fetch(PDO::FETCH_ASSOC)?:[];
+        $incoming=['venue_name'=>$venue,'address'=>$address,'town'=>$town,'region'=>$region,'postcode'=>$postcode,'latitude'=>$lat,'longitude'=>$lng];
+        $present=['venue_name'=>['venue_name','venue'],'address'=>['address','venue_address'],'town'=>['town','city'],'region'=>['region'],'postcode'=>['postcode'],'latitude'=>['latitude','lat'],'longitude'=>['longitude','lng','lon']];
+        foreach($present as $column=>$names){foreach($names as $name){if(array_key_exists($name,$row)&&trim((string)$row[$name])!==''){if((string)($venueBefore[$column]??'')!==(string)$incoming[$column])throw new RuntimeException('Shared venue '.$vid.' has different '.$column.'; edit venue centrally.');break;}}}
+      }
       $venueValues=['venue_name'=>$venue,'address'=>$address,'town'=>$town,'region'=>$region,'postcode'=>$postcode,'latitude'=>$lat,'longitude'=>$lng];
       $venueAliases=['venue_name'=>['venue_name','venue'],'address'=>['address','venue_address'],'town'=>['town','city'],'region'=>['region'],'postcode'=>['postcode'],'latitude'=>['latitude','lat'],'longitude'=>['longitude','lng','lon']];
       $sets=[];$args=[];foreach($venueAliases as $col=>$names){foreach($names as $name){if(array_key_exists($name,$row)&&trim((string)$row[$name])!==''){$sets[]="$col=?";$args[]=$venueValues[$col];break;}}}
