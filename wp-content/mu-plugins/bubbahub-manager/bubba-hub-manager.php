@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.3.0
+ * Version: 0.4.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -71,18 +71,34 @@ final class Bubba_Hub_Manager {
         echo '<div class="notice notice-info inline"><p>This stage changes activity text, category, age range and basic price fields. Venues, schedules, sessions, images, organisers and publication status are untouched.</p></div>';
         echo '<form method="post">';
         wp_nonce_field('bh_manager_activity_'.$id);
-        echo '<table class="form-table"><tbody>';
-        foreach ($fields as $field) {
-            $label=ucwords(str_replace('_',' ',$field));
+        echo '<style>.bh-editor-section{max-width:1050px;background:#fff;border:1px solid #dcdcde;border-radius:10px;padding:14px 22px;margin:18px 0}.bh-editor-section h3{margin:4px 0 12px;font-size:17px}.bh-editor-section .form-table th{width:190px}.bh-editor-section .form-table td input.regular-text{max-width:100%;width:460px}.bh-editor-section .form-table textarea{max-width:100%}</style>';
+        $groups=['Basic details'=>['title','description','category'],'Age suitability'=>['age_range','age_min_months','age_max_months'],'Pricing'=>['price_from','price_free'],'Helpful information'=>['good_to_know','what_to_bring']];
+        $category_options=[];
+        if (in_array('category',$columns,true)) {
+            $category_options=$db->get_col("SELECT DISTINCT `category` FROM `bh_activities` WHERE `category` IS NOT NULL AND `category` <> '' ORDER BY `category` ASC LIMIT 100");
+        }
+        foreach ($groups as $group=>$group_fields) {
+            $visible=array_values(array_intersect($group_fields,$fields));
+            if (!$visible) continue;
+            echo '<section class="bh-editor-section"><h3>'.esc_html($group).'</h3><table class="form-table"><tbody>';
+            foreach ($visible as $field) {
+                    $label=ucwords(str_replace('_',' ',$field));
             echo '<tr><th scope="row"><label for="bh-'.esc_attr($field).'">'.esc_html($label).'</label></th><td>';
             if ($field==='price_free') echo '<select id="bh-price_free" name="price_free"><option value="0" '.selected((string)($record[$field]??'0'),'0',false).'>No</option><option value="1" '.selected((string)($record[$field]??'0'),'1',false).'>Yes</option></select>';
             elseif (in_array($field,['age_min_months','age_max_months','price_from'],true)) echo '<input type="number" min="0" '.($field==='price_from'?'step="0.01"':'step="1" max="216"').' id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'" value="'.esc_attr((string)($record[$field]??'')).'"/>';
-            elseif (in_array($field,['category','age_range'],true)) echo '<input class="regular-text" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'" value="'.esc_attr((string)($record[$field]??'')).'"/>';
+            elseif ($field==='category') {
+                echo '<select id="bh-category" name="category"><option value="">Select category</option>';
+                $current=(string)($record[$field]??'');
+                if ($current!=='' && !in_array($current,$category_options,true)) echo '<option selected value="'.esc_attr($current).'">'.esc_html($current).' (current)</option>';
+                foreach ($category_options as $option) echo '<option value="'.esc_attr((string)$option).'" '.selected($current,(string)$option,false).'>'.esc_html((string)$option).'</option>';
+                echo '</select>';
+            }
+            elseif ($field==='age_range') echo '<input class="regular-text" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'" value="'.esc_attr((string)($record[$field]??'')).'"/>';
             elseif ($field==='title') echo '<input required class="regular-text" id="bh-title" name="title" value="'.esc_attr((string)($record[$field]??'')).'"/>';
             else echo '<textarea class="large-text" rows="7" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'">'.esc_textarea((string)($record[$field]??'')).'</textarea>';
             echo '</td></tr>';
         }
-        echo '</tbody></table>';
+        echo '</tbody></table></section>'; }
         submit_button('Save activity details','primary','bh_manager_save');
         echo '</form>';
     }
