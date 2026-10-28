@@ -10,12 +10,13 @@ if (!defined('ABSPATH')) exit;
 final class Bubba_Hub_Manager {
     private const CAP = 'manage_options';
     public static function init(): void {
-        add_action('admin_menu', [__CLASS__, 'menu']);
+        add_action('admin_menu', [__CLASS__, 'menu'], 40);
     }
     public static function menu(): void {
-        add_menu_page('Bubba Hub Manager', 'Bubba Hub', self::CAP, 'bh-manager', [__CLASS__, 'overview'], 'dashicons-location-alt', 26);
+        $parent = function_exists('bh_admin_sections') ? 'bubba-hub' : 'bh-manager';
+        if ($parent === 'bh-manager') add_menu_page('Bubba Hub Manager', 'Bubba Hub', self::CAP, 'bh-manager', [__CLASS__, 'overview'], 'dashicons-location-alt', 26);
         foreach (['activities'=>'Activities','venues'=>'Venues','sessions'=>'Sessions'] as $slug=>$label) {
-            add_submenu_page('bh-manager', $label, $label, self::CAP, 'bh-manager-'.$slug, static function () use ($slug, $label) { self::listing($slug, $label); });
+            add_submenu_page($parent, $label, $label, self::CAP, 'bh-manager-'.$slug, static function () use ($slug, $label) { self::listing($slug, $label); });
         }
     }
     private static function connection(): ?PDO {
