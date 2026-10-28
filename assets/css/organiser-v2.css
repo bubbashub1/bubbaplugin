@@ -94,3 +94,6 @@ body.bh-organiser-v2{background:#fffdf7;color:#174e3b;font-family:'Quicksand',Ca
 @media(prefers-reduced-motion:reduce){
  .bh-organiser-v2 .storefront-card{transition:none}
 }
+
+/* Keep organiser names legible over the pastel hero, including inherited heading overrides. */
+.bh-organiser-v2 .organiser-storefront-page .organiser-hero .organiser-hero-copy h1{color:#124936 !important;text-shadow:none !important;opacity:1 !important}
