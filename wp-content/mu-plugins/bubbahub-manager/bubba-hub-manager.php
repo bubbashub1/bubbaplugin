@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.12.0
+ * Version: 0.13.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -94,7 +94,7 @@ final class Bubba_Hub_Manager {
         wp_nonce_field('bh_manager_activity_'.$id);
         echo '<style>
         .bh-editor-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 8px}.bh-editor-tabs a{display:inline-block;text-decoration:none;color:#245e42;background:#fff;border:1px solid #d1e2d6;border-radius:9px;padding:9px 15px;font-weight:650}.bh-editor-tabs a:hover,.bh-editor-tabs a:focus,.bh-editor-tabs a.is-active{background:#216647;color:#fff;border-color:#216647}.bh-editor-section[hidden]{display:none!important}
-        .bh-editor-section{scroll-margin-top:120px}
+        .bh-editor-section{scroll-margin-top:120px}.bh-image-row td{padding-top:18px;padding-bottom:20px}.bh-image-row .bh-media-select{margin-left:8px;border-radius:8px}.bh-image-row .bh-image-preview{display:block;background:#f8faf8;padding:5px}
         #bh-manager-activity-form>.submit .button-primary{background:#216647;border-color:#216647;border-radius:7px;padding:4px 18px}
         .bh-manager-head{background:linear-gradient(115deg,#e6f4e9,#f7fbf8);border:1px solid #c9e3d1;border-radius:16px;padding:24px 28px;margin:18px 0;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
         .bh-manager-head h1{font-size:25px;font-weight:750;margin:10px 0 8px;color:#174f39;line-height:1.25}
@@ -119,7 +119,7 @@ final class Bubba_Hub_Manager {
             echo '<section id="bh-'.esc_attr(sanitize_title($group)).'" class="bh-editor-section" role="tabpanel"><h3>'.esc_html($group).'</h3>'.($group==='Age suitability'?'<p class="description">Choose an age preset or enter exact minimum and maximum months below.</p><p><select id="bh-age-preset"><option value="">Select age preset (optional)</option><option value="0:6">0–6 months</option><option value="6:12">6–12 months</option><option value="0:12">0–12 months</option><option value="12:48">1–4 years</option><option value="48:216">4+ years</option></select></p>':'').'<table class="form-table"><tbody>';
             foreach ($visible as $field) {
                     $label=ucwords(str_replace('_',' ',$field));
-            echo '<tr><th scope="row"><label for="bh-'.esc_attr($field).'">'.esc_html($label).'</label></th><td>';
+            echo '<tr'.(in_array($field,['image_path','image_1','image_2','image_3'],true)?' class="bh-image-row"':'').'><th scope="row"><label for="bh-'.esc_attr($field).'">'.esc_html($field==='image_path'?'Featured image':str_replace('_',' ',$label)).'</label></th><td>';
             if (in_array($field,['price_free','booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome'],true)) echo '<select id="bh-price_free" name="price_free"><option value="0" '.selected((string)($record[$field]??'0'),'0',false).'>No</option><option value="1" '.selected((string)($record[$field]??'0'),'1',false).'>Yes</option></select>';
             elseif (in_array($field,['age_min_months','age_max_months','price_from','price_per_session','price_per_family'],true)) echo '<input type="number" min="0" '.(in_array($field,['price_from','price_per_session','price_per_family'],true)?'step="0.01"':'step="1" max="216"').' id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'" value="'.esc_attr((string)($record[$field]??'')).'"/>';
             elseif ($field==='category') {
@@ -133,12 +133,18 @@ final class Bubba_Hub_Manager {
             elseif ($field==='age_range') echo '<input class="regular-text" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'" value="'.esc_attr((string)($record[$field]??'')).'"/>';
             elseif ($field==='title') echo '<input required class="regular-text" id="bh-title" name="title" value="'.esc_attr((string)($record[$field]??'')).'"/>';
             else echo '<textarea class="large-text" rows="7" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'">'.esc_textarea(html_entity_decode((string)($record[$field]??''), ENT_QUOTES | ENT_HTML5, 'UTF-8')).'</textarea>';
-            if (in_array($field,['image_path','image_1','image_2','image_3'],true)) echo ' <button type="button" class="button bh-media-select" data-target="bh-'.esc_attr($field).'">Choose from Media Library</button>';
-            if (in_array($field,['image_path','image_1','image_2','image_3'],true) && !empty($record[$field]) && filter_var($record[$field],FILTER_VALIDATE_URL)) echo '<p><img loading="lazy" alt="Current listing image" src="'.esc_url((string)$record[$field]).'" style="max-width:240px;max-height:160px;object-fit:contain;border:1px solid #dce7df;border-radius:8px;margin-top:8px"/></p>';
+            if (in_array($field,['image_path','image_1','image_2','image_3'],true)) echo ' <button type="button" class="button bh-media-select" data-target="bh-'.esc_attr($field).'">Choose / replace image</button><p class="description">Use the WordPress Media Library or paste a direct image URL, then save this activity.</p>';
+            if (in_array($field,['image_path','image_1','image_2','image_3'],true) && !empty($record[$field]) && filter_var($record[$field],FILTER_VALIDATE_URL)) echo '<p><img loading="lazy" alt="Current listing image" src="'.esc_url((string)$record[$field]).'" class="bh-image-preview" style="max-width:240px;max-height:160px;object-fit:contain;border:1px solid #dce7df;border-radius:8px;margin-top:8px"/></p>';
             echo '</td></tr>';
         }
         echo '</tbody></table></section>'; }
         echo '<script>document.addEventListener("DOMContentLoaded",function(){
+            document.querySelectorAll(".bh-image-row input[type=url]").forEach(function(input){
+                input.addEventListener("change",function(){
+                    var row=input.closest(".bh-image-row"),preview=row&&row.querySelector(".bh-image-preview");
+                    if(preview){if(/^https?:\\/\\//i.test(input.value)){preview.src=input.value;preview.style.display="";}else{preview.style.display="none";}}
+                });
+            });
             document.querySelectorAll(".bh-media-select").forEach(function(btn){
                 btn.addEventListener("click",function(){
                     if(!window.wp||!wp.media){alert("WordPress Media Library is unavailable.");return;}
