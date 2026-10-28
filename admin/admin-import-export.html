@@ -11,9 +11,25 @@
 <section class="admin-panel"><p role="note"><strong>Legacy manual import:</strong> This tool writes directly to activity records. Use the automatic Sheets sync for routine updates. Manual imports require confirmation before proceeding.</p><div class="admin-panel-head"><div><span class="eyebrow">Import</span><h2>Upload activities CSV</h2><p>Upload a CSV file from your computer, or import directly from a published Google Sheet.</p></div></div>
 <label>CSV file<input id="activityCsvFile" type="file" accept=".csv,text/csv"></label>
 <small class="bh-address-help">Use a CSV with the columns shown in the template below. Maximum file size: 10 MB.</small>
-<div class="admin-form-grid">
+<fieldset style="margin:1rem 0;padding:1rem;border:1px solid #c8d9d1;border-radius:12px"><legend><strong>Fields to update on existing listings</strong></legend><p>Tick only the information you want to update. Unticked fields are preserved.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.5rem" id="activityCsvFieldChoices">
+<label><input type="checkbox" value="region" checked> Region</label>
+<label><input type="checkbox" value="town" checked> Town</label>
+<label><input type="checkbox" value="postcode" checked> Postcode</label>
+<label><input type="checkbox" value="address" checked> Address</label>
+<label><input type="checkbox" value="latitude" checked> Latitude</label>
+<label><input type="checkbox" value="longitude" checked> Longitude</label>
+<label><input type="checkbox" value="description"> Description</label>
+<label><input type="checkbox" value="category"> Category</label>
+<label><input type="checkbox" value="age_range"> Age range</label>
+<label><input type="checkbox" value="price_from"> Price</label>
+<label><input type="checkbox" value="booking_url"> Booking URL</label>
+<label><input type="checkbox" value="image_path"> Main image</label>
+<label><input type="checkbox" value="tags"> Tags</label>
+<label><input type="checkbox" value="sessions"> Sessions (protected unless replacement is enabled)</label>
+</div></fieldset><div class="admin-form-grid">
 <label>When an activity already exists<select id="activityCsvMode"><option value="update">Update the existing listing</option><option value="skip">Skip the existing listing</option></select></label>
 </div>
+<p class="bh-address-help">Existing sessions and galleries are preserved. Blank CSV values do not clear existing fields. Shared venues may require manual review.</p>
 <button class="button button-primary" id="uploadActivityCsv" type="button">Upload CSV</button>
 <div class="admin-import-divider">
 <label>Or use a published Google Sheets CSV link<input id="activityCsvUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?...&output=csv"></label>

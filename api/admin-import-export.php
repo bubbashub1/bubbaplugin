@@ -170,9 +170,17 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
       $imageCols=table_columns($db,$imageTable);
       if(in_array('image_path',$imageCols,true)){ $q=$db->prepare("SELECT image_path FROM ".$imageTable." WHERE activity_id=? ORDER BY ".(in_array('sort_order',$imageCols,true)?'sort_order':'id')." LIMIT 4");$q->execute([(int)$a['id']]);$images=$q->fetchAll(PDO::FETCH_COLUMN);}
     }
+    // Legacy session tables without activity_id cannot safely export a timetable
+    // when the venue is linked to multiple activities.
+    $exportSessionsSafe=in_array('activity_id',$sessionCols,true);
+    if(!$exportSessionsSafe && $a['export_venue_id'] && table_name($db,['bh_activity_venues'])){
+      $shareQ=$db->prepare('SELECT COUNT(DISTINCT activity_id) FROM bh_activity_venues WHERE venue_id=?');
+      $shareQ->execute([(int)$a['export_venue_id']]);
+      $exportSessionsSafe=(int)$shareQ->fetchColumn()<=1;
+    }elseif(!$exportSessionsSafe){$exportSessionsSafe=true;}
     $sq=$db->prepare("SELECT day_of_week,start_time,end_time,term_time_only FROM bh_sessions WHERE venue_id=?".(in_array('activity_id',$sessionCols,true)?" AND activity_id=?":"")." ORDER BY day_of_week,start_time");
     $sessionArgs=[(int)($a['export_venue_id']??0)];if(in_array('activity_id',$sessionCols,true))$sessionArgs[]=(int)$a['id'];$sq->execute($sessionArgs);$sessions=[];
-    foreach($sq->fetchAll() as $s){$sessions[]=$days[(int)$s['day_of_week']].' '.substr((string)$s['start_time'],0,5).(!empty($s['end_time'])?'-'.substr((string)$s['end_time'],0,5):'').(!empty($s['term_time_only'])?' | term':'');}
+    foreach(($exportSessionsSafe?$sq->fetchAll():[]) as $s){$sessions[]=$days[(int)$s['day_of_week']].' '.substr((string)$s['start_time'],0,5).(!empty($s['end_time'])?'-'.substr((string)$s['end_time'],0,5):'').(!empty($s['term_time_only'])?' | term':'');}
 
     csv_row([
       $a['id'],$a['title'],$a['category'],!empty($a['featured'])?'true':'false',$a['description'],$a['age_range'],$a['age_min_months'],$a['age_max_months'],$a['county'],$a['price_from'],'','','',$a['booking_url'],$a['booking_required'],$a['drop_in_welcome'],$a['trial_available'],$a['term_time_only'],$a['holiday_sessions'],$a['siblings_welcome'],$a['what_to_bring'],$a['good_to_know'],$a['image_path'],$images[0]??'',$images[1]??'',$images[2]??'',$a['status'],$a['organisation_name'],$a['facebook_url'],$a['instagram_url'],$a['email'],$a['phone'],$a['website'],$a['venue_name'],$a['address'],$a['address'],'',$a['town'],$a['region'],$a['postcode'],$a['latitude'],$a['longitude'],$a['venue_phone'],$a['venue_email'],$a['venue_website'],$a['venue_notes'],$a['accessibility'],implode(', ',$tags),implode('; ',$sessions)
@@ -211,13 +219,17 @@ if($csvUrl!==''){
 }
 if(!$fh){if($csvTmp)@unlink($csvTmp);http_response_code(422);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>'Could not read the CSV.']);exit;}
 $headers=fgetcsv($fh);if(!$headers||count($headers)<1){http_response_code(422);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>'The CSV has no header row.']);exit;}
-$headers=array_map('clean_header',$headers);$rows=[];while(($r=fgetcsv($fh))!==false){if(count(array_filter($r,fn($x)=>trim((string)$x)!==''))===0)continue;$r=array_pad($r,count($headers),'');$row=[];foreach($headers as $i=>$h)$row[$h]=trim((string)($r[$i]??''));$rows[]=$row;}fclose($fh);
+$headers=array_map('clean_header',$headers);
+if(in_array('',$headers,true)||count($headers)!==count(array_unique($headers))){http_response_code(422);echo json_encode(['ok'=>false,'error'=>'CSV headers must be nonempty and unique.']);exit;}
+$rows=[];while(($r=fgetcsv($fh))!==false){if(count(array_filter($r,fn($x)=>trim((string)$x)!==''))===0)continue;$r=array_pad($r,count($headers),'');$row=[];foreach($headers as $i=>$h)$row[$h]=trim((string)($r[$i]??''));$rows[]=$row;}fclose($fh);
 $mode=($_POST['mode']??'update')==='skip'?'skip':'update';$ac=false;try{$q=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='accessibility'");$ac=(int)$q->fetchColumn()>0;}catch(Throwable $e){}
-$totalRows=count($rows);$offset=max(0,(int)($_POST['offset']??0));$limit=min(25,max(1,(int)($_POST['limit']??25)));$rows=array_slice($rows,$offset,$limit);$created=$updated=$skipped=$failed=0;$errors=[];
+$totalRows=count($rows);if($totalRows>20000){http_response_code(422);echo json_encode(['ok'=>false,'error'=>'CSV exceeds the 20,000-row safety limit.']);exit;}$offset=max(0,(int)($_POST['offset']??0));$limit=min(25,max(1,(int)($_POST['limit']??25)));$rows=array_slice($rows,$offset,$limit);$created=$updated=$skipped=$failed=0;$errors=[];
 foreach($rows as $idx=>$row){
   $line=$offset+$idx+2;
   try{
     $title=firstv($row,['title','activity_title','activity_name','activity','class_name','class','name']);$category=firstv($row,['category','activity_category','type','class_type']);$org=firstv($row,['organisation_name','organisation','organization','organizer','organiser','company','company_name','provider','provider_name','leader','leader_name']);$venue=firstv($row,['venue_name','venue','venue_name_location','location','location_name','venue_location','address_name']);$town=firstv($row,['town','village_town_or_city','village_town_city','village_town_or_city_name','city','town_city','town_or_city','village','location_town']);
+    $importId=(int)firstv($row,['id','activity_id','listing_id']);
+    if($importId>0){$venueLink=table_name($db,['bh_activity_venues']);$venueWhere='v2.activity_id=a.id'.($venueLink?' OR EXISTS (SELECT 1 FROM bh_activity_venues av WHERE av.activity_id=a.id AND av.venue_id=v2.id)':'');$q=$db->prepare('SELECT a.title,a.category,o.organisation_name,v.venue_name,v.town FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_venues v ON v.id=(SELECT v2.id FROM bh_venues v2 WHERE ('.$venueWhere.') ORDER BY v2.id LIMIT 1) WHERE a.id=? LIMIT 1');$q->execute([$importId]);$defaults=$q->fetch(PDO::FETCH_ASSOC);if($defaults){$title=$title?:$defaults['title'];$category=$category?:$defaults['category'];$org=$org?:$defaults['organisation_name'];$venue=$venue?:$defaults['venue_name'];$town=$town?:$defaults['town'];}}
     if($title===''||$category===''||$org===''||$venue===''||$town===''){ $missing=[];if($title==='')$missing[]='title';if($category==='')$missing[]='category';if($org==='')$missing[]='organisation';if($venue==='')$missing[]='venue';if($town==='')$missing[]='town';throw new RuntimeException('Required fields missing: '.implode(', ',$missing).'.');}
     $desc=firstv($row,['description','activity_description','details']);$age=firstv($row,['age_range','ages','age','age_group','age_groups']);$county=firstv($row,['county','area','county_area']);if(!in_array($county,['Devon','Cornwall','Plymouth','Torbay'],true))$county='';
     $price=firstv($row,['price_from','price','cost']);$price=$price===''?null:(float)preg_replace('/[^0-9.\-]/','',$price);$status=bool_status(firstv($row,['status'],'published'));$featured=normalise_bool(firstv($row,['featured','is_featured','feature'],'false'));$booking=firstv($row,['booking_url','booking','booking_link']);$image=firstv($row,['image_path','image','image_url']);$email=firstv($row,['email','email_address','contact_email']);$phone=firstv($row,['phone','telephone','phone_number','contact_phone']);$website=firstv($row,['website','website_url','web','url']);/* Skip remote image discovery during bulk imports to prevent timeouts. */$facebook=firstv($row,['facebook_url','facebook']);$instagram=firstv($row,['instagram_url','instagram']);$address=firstv($row,['address','venue_address','full_address','street_address']);if($address==='')$address=implode(', ',array_filter([firstv($row,['venue_address_line_1','address_line_1']),firstv($row,['venue_address_line_2','address_line_2'])],static fn($v)=>$v!==''));$region=firstv($row,['region','area_region','locality','district']);$postcode=firstv($row,['postcode','post_code','postal_code','postal_code','zip']);$lat=firstv($row,['latitude','lat']);$lat=$lat===''?null:(float)$lat;$lng=firstv($row,['longitude','lng','lon']);$lng=$lng===''?null:(float)$lng;
@@ -227,7 +239,6 @@ foreach($rows as $idx=>$row){
     if($hasActivitySlug){$q=$db->prepare("SELECT id,organiser_id FROM bh_activities WHERE slug=? LIMIT 1");$q->execute([$slug]);}
     else{$q=$db->prepare("SELECT a.id,a.organiser_id FROM bh_activities a JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.title=? AND o.organisation_name=? LIMIT 1");$q->execute([$title,$org]);}
     $existing=$q->fetch();
-    $importId=(int)firstv($row,['id','activity_id','listing_id']);
     if($importId>0){
       $byId=$db->prepare("SELECT id,organiser_id FROM bh_activities WHERE id=? LIMIT 1");
       $byId->execute([$importId]);$matched=$byId->fetch(PDO::FETCH_ASSOC);
@@ -235,6 +246,76 @@ foreach($rows as $idx=>$row){
       $existing=$matched;
     }
     if($existing&&$mode==='skip'){$skipped++;continue;}
+    // Select canonical fields while preserving their accepted CSV aliases.
+    $selectedRaw=trim((string)($_POST['update_fields']??''));
+    if($existing && array_key_exists('update_fields',$_POST)){
+      $groups=[
+        'title'=>['title','activity_title','activity_name','activity','class_name','class','name'],
+        'category'=>['category','activity_category','type','class_type'],
+        'organisation_name'=>['organisation_name','organisation','organization','organizer','organiser','company','company_name','provider','provider_name','leader','leader_name'],
+        'venue_name'=>['venue_name','venue','venue_name_location','location','location_name','venue_location','address_name'],
+        'town'=>['town','village_town_or_city','village_town_city','village_town_or_city_name','city','town_city','town_or_city','village','location_town'],
+        'description'=>['description','activity_description','details'],
+        'age_range'=>['age_range','ages','age','age_group','age_groups'],
+        'price_from'=>['price_from','price','cost'],
+        'booking_url'=>['booking_url','booking','booking_link'],
+        'image_path'=>['image_path','image','image_url'],
+        'address'=>['address','venue_address','full_address','street_address','venue_address_line_1','venue_address_line_2','address_line_1','address_line_2'],
+        'region'=>['region','area_region','locality','district'],
+        'postcode'=>['postcode','post_code','postal_code','zip'],
+        'latitude'=>['latitude','lat'],
+        'longitude'=>['longitude','lng','lon'],
+        'tags'=>['tags','tag','keywords'],
+        'sessions'=>['sessions','session_times','opening_times','schedule'],
+        'email'=>['email','email_address','contact_email'],
+        'phone'=>['phone','telephone','phone_number','contact_phone'],
+        'website'=>['website','website_url','web','url'],
+        'facebook_url'=>['facebook_url','facebook'],
+        'instagram_url'=>['instagram_url','instagram'],
+        'featured'=>['featured','is_featured','feature'],
+        'accessibility'=>['accessibility','accessibility_options']
+      ];
+      $allowed=['id'=>true,'activity_id'=>true,'listing_id'=>true];
+      foreach(explode(',',$selectedRaw) as $selected){
+        $selected=clean_header($selected);
+        foreach(($groups[$selected]??[$selected]) as $alias)$allowed[clean_header($alias)]=true;
+      }
+      foreach(array_keys($row) as $column)if(!isset($allowed[$column]))unset($row[$column]);
+      // Recalculate all derived values from the filtered row.
+      $title=firstv($row,$groups['title']);$category=firstv($row,$groups['category']);
+      $org=firstv($row,$groups['organisation_name']);$venue=firstv($row,$groups['venue_name']);
+      $town=firstv($row,$groups['town']);$desc=firstv($row,$groups['description']);
+      $age=firstv($row,$groups['age_range']);$county=firstv($row,['county']);
+      $priceRaw=firstv($row,$groups['price_from']);$price=$priceRaw===''?null:(float)preg_replace('/[^0-9.\\-]/','',$priceRaw);
+      $booking=firstv($row,$groups['booking_url']);$image=firstv($row,$groups['image_path']);
+      $email=firstv($row,$groups['email']);$phone=firstv($row,$groups['phone']);
+      $website=firstv($row,$groups['website']);$facebook=firstv($row,$groups['facebook_url']);
+      $instagram=firstv($row,$groups['instagram_url']);
+      $address=firstv($row,$groups['address']);$region=firstv($row,$groups['region']);
+      $postcode=firstv($row,$groups['postcode']);
+      $lat=firstv($row,$groups['latitude']);$lat=$lat===''?null:(float)$lat;
+      $lng=firstv($row,$groups['longitude']);$lng=$lng===''?null:(float)$lng;
+      $status=bool_status(firstv($row,['status'],'published'));
+      $featured=normalise_bool(firstv($row,$groups['featured'],'false'));
+      $accessRaw=firstv($row,$groups['accessibility']);$access=array_values(array_filter(array_map('trim',preg_split('/\\s*[;,|]\\s*/',$accessRaw))));
+      $tags=firstv($row,$groups['tags']);$sessions=import_session_parts(firstv($row,$groups['sessions']));
+    }
+    // Never guess which venue to edit when an activity has multiple venues.
+    // Existing multi-venue listings need a separate venue-specific import workflow.
+    if($existing){
+      $linked=table_name($db,['bh_activity_venues']);
+      $venueCountSql='SELECT COUNT(DISTINCT v.id) FROM bh_venues v WHERE v.activity_id=?'.($linked?' OR EXISTS (SELECT 1 FROM bh_activity_venues av WHERE av.activity_id=? AND av.venue_id=v.id)':'');
+      $venueCountQ=$db->prepare($venueCountSql);$venueCountQ->execute($linked?[$existing['id'],$existing['id']]:[$existing['id']]);
+      if((int)$venueCountQ->fetchColumn()>1){
+        $venueColumns=['venue_name','venue','address','venue_address','town','city','region','postcode','latitude','longitude','lat','lng','lon'];
+        foreach($venueColumns as $venueColumn){
+          if(isset($row[$venueColumn]) && trim((string)$row[$venueColumn])!==''){
+            throw new RuntimeException('Multiple venues linked to this activity. Venue changes require a venue-specific import; no changes saved.');
+          }
+        }
+      }
+    }
+    if(($_POST['dry_run']??'')==='1'){$existing?$updated++:$created++;continue;}
     if(!$db->inTransaction())$db->beginTransaction();
     if($existing){$id=(int)$existing['id'];$organiserId=(int)$existing['organiser_id'];}else{$q=$db->prepare("SELECT id FROM bh_organisers WHERE organisation_name=? LIMIT 1");$q->execute([$org]);$organiserId=(int)$q->fetchColumn();if(!$organiserId){$oslug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$org),'-'));$ob=$oslug;$on=2;$orgCols=table_columns($db,'bh_organisers');if(in_array('slug',$orgCols,true)){while(true){$q=$db->prepare("SELECT id FROM bh_organisers WHERE slug=? LIMIT 1");$q->execute([$oslug]);if(!$q->fetch())break;$oslug=$ob.'-'.$on++;}}
       $insCols=['organisation_name','email','phone','website','status'];$insVals=[$org,$email,$phone,$website,'published'];
@@ -250,13 +331,17 @@ foreach($rows as $idx=>$row){
     if(in_array('facebook_url',$orgCols,true)){$orgSets[]='facebook_url=?';$orgArgs[]=$facebook;}
     if(in_array('instagram_url',$orgCols,true)){$orgSets[]='instagram_url=?';$orgArgs[]=$instagram;}
     $validSets=[];$validArgs=[];foreach($orgSets as $index=>$set){$col=substr($set,0,-2);if(in_array($col,$orgCols,true)){$validSets[]=$set;$validArgs[]=$orgArgs[$index];}}
-    $validArgs[]=$organiserId;$q=$db->prepare("UPDATE bh_organisers SET ".implode(',',$validSets)." WHERE id=?");$q->execute($validArgs);
+    if($existing){$filteredSets=[];$filteredArgs=[];foreach($validSets as $i=>$set){$column=substr($set,0,-2);if(array_key_exists($column,$row)&&trim((string)$row[$column])!==''){$filteredSets[]=$set;$filteredArgs[]=$validArgs[$i];}}$validSets=$filteredSets;$validArgs=$filteredArgs;}
+    if($existing && $validSets){$q=$db->prepare('SELECT COUNT(*) FROM bh_activities WHERE organiser_id=?');$q->execute([$organiserId]);if((int)$q->fetchColumn()>1){$validSets=[];$validArgs=[];}}
+    if($validSets){$validArgs[]=$organiserId;$q=$db->prepare("UPDATE bh_organisers SET ".implode(',',$validSets)." WHERE id=?");$q->execute($validArgs);}
     if($existing){
       $activityCols=table_columns($db,'bh_activities');$featuredCol=in_array('featured',$activityCols,true);
-      $sql=$ac?"UPDATE bh_activities SET title=?,description=?,category=?,age_range=?,county=?,price_from=?,booking_url=?,image_path=?,status=?,accessibility=?".($featuredCol?",featured=?":"")." WHERE id=?":"UPDATE bh_activities SET title=?,description=?,category=?,age_range=?,county=?,price_from=?,booking_url=?,image_path=?,status=?".($featuredCol?",featured=?":"")." WHERE id=?";
-      if(!in_array('county',$activityCols,true))$sql=str_replace('county=?,','',$sql);
-      $args=[$title,$desc,$category,$age,$county,$price,$booking,$image,$status];
-      if(!in_array('county',$activityCols,true))array_splice($args,4,1);if($ac)$args[]=json_encode($access,JSON_UNESCAPED_SLASHES);if($featuredCol)$args[]=$featured;$args[]=$id;$q=$db->prepare($sql);$q->execute($args);
+      // Existing records: update only explicitly supplied nonblank fields.
+      $fieldValues=['title'=>$title,'description'=>$desc,'category'=>$category,'age_range'=>$age,'county'=>$county,'price_from'=>$price,'booking_url'=>$booking,'image_path'=>$image,'status'=>$status,'featured'=>$featured,'accessibility'=>json_encode($access,JSON_UNESCAPED_SLASHES)];
+      $aliases=['title'=>['title','activity_title','activity_name'],'description'=>['description','activity_description','details'],'category'=>['category','activity_category'],'age_range'=>['age_range','ages'],'county'=>['county'],'price_from'=>['price_from','price','cost'],'booking_url'=>['booking_url','booking','booking_link'],'image_path'=>['image_path','image','image_url'],'status'=>['status'],'featured'=>['featured'],'accessibility'=>['accessibility']];
+      $sets=[];$args=[];foreach($aliases as $col=>$names){if(!in_array($col,$activityCols,true))continue;foreach($names as $name){if(array_key_exists($name,$row)&&trim((string)$row[$name])!==''){$sets[]="$col=?";$args[]=$fieldValues[$col];break;}}}
+      if($sets){$args[]=$id;$q=$db->prepare("UPDATE bh_activities SET ".implode(',',$sets)." WHERE id=?");$q->execute($args);}
+
     }
     else{if($hasActivitySlug){while(true){$q=$db->prepare("SELECT id FROM bh_activities WHERE slug=? LIMIT 1");$q->execute([$slug]);if(!$q->fetch())break;$slug=$base.'-'.$n++;}}$activityCols=table_columns($db,'bh_activities');$featuredCol=in_array('featured',$activityCols,true);
     $sql=$ac?"INSERT INTO bh_activities (organiser_id,title,slug,description,category,age_range,county,price_from,booking_url,image_path,status,accessibility".($featuredCol?",featured":"").") VALUES (?,?,?,?,?,?,?,?,?,?,?,?".($featuredCol?",?":"").")":"INSERT INTO bh_activities (organiser_id,title,slug,description,category,county,price_from,booking_url,image_path,status".($featuredCol?",featured":"").") VALUES (?,?,?,?,?,?,?,?,?,?".($featuredCol?",?":"").")";
@@ -278,9 +363,25 @@ foreach($rows as $idx=>$row){
       array_splice($args,2,1);
     }
     $q=$db->prepare($sql);$q->execute($args);$id=(int)$db->lastInsertId();}
-    $q=$db->prepare("SELECT id FROM bh_venues WHERE activity_id=? ORDER BY id LIMIT 1");$q->execute([$id]);$vid=(int)$q->fetchColumn();if($vid){$q=$db->prepare("UPDATE bh_venues SET venue_name=?,address=?,town=?,region=?,postcode=?,latitude=?,longitude=? WHERE id=?");$q->execute([$venue,$address,$town,$region,$postcode,$lat,$lng,$vid]);}else{$q=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes,leader_id) VALUES (?,?,?,?,?,?,?,?,?,NULL)");$q->execute([$id,$venue,$address,$town,$region,$postcode,$lat,$lng,'']);$vid=(int)$db->lastInsertId();}
+    $venueLink=table_name($db,['bh_activity_venues']);$venueSql='SELECT v.id FROM bh_venues v WHERE v.activity_id=?'.($venueLink?' OR EXISTS (SELECT 1 FROM bh_activity_venues av WHERE av.activity_id=? AND av.venue_id=v.id)':'').' ORDER BY (v.activity_id=?) DESC,v.id LIMIT 1';$q=$db->prepare($venueSql);$q->execute($venueLink?[$id,$id,$id]:[$id,$id]);$vid=(int)$q->fetchColumn();
+    if($vid){
+      // A shared venue must not be silently changed for other activities.
+      $sharedCount=0;if($venueLink){$shared=$db->prepare('SELECT COUNT(DISTINCT activity_id) FROM bh_activity_venues WHERE venue_id=? AND activity_id<>?');$shared->execute([$vid,$id]);$sharedCount=(int)$shared->fetchColumn();}
+      if($sharedCount>0){
+        $current=$db->prepare('SELECT venue_name,address,town,region,postcode,latitude,longitude FROM bh_venues WHERE id=?');$current->execute([$vid]);$venueBefore=$current->fetch(PDO::FETCH_ASSOC)?:[];
+        $incoming=['venue_name'=>$venue,'address'=>$address,'town'=>$town,'region'=>$region,'postcode'=>$postcode,'latitude'=>$lat,'longitude'=>$lng];
+        $present=['venue_name'=>['venue_name','venue'],'address'=>['address','venue_address'],'town'=>['town','city'],'region'=>['region'],'postcode'=>['postcode'],'latitude'=>['latitude','lat'],'longitude'=>['longitude','lng','lon']];
+        foreach($present as $column=>$names){foreach($names as $name){if(array_key_exists($name,$row)&&trim((string)$row[$name])!==''){if((string)($venueBefore[$column]??'')!==(string)$incoming[$column])throw new RuntimeException('Shared venue '.$vid.' has different '.$column.'; edit venue centrally.');break;}}}
+      }
+      $venueValues=['venue_name'=>$venue,'address'=>$address,'town'=>$town,'region'=>$region,'postcode'=>$postcode,'latitude'=>$lat,'longitude'=>$lng];
+      $venueAliases=['venue_name'=>['venue_name','venue'],'address'=>['address','venue_address'],'town'=>['town','city'],'region'=>['region'],'postcode'=>['postcode'],'latitude'=>['latitude','lat'],'longitude'=>['longitude','lng','lon']];
+      $sets=[];$args=[];foreach($venueAliases as $col=>$names){foreach($names as $name){if(array_key_exists($name,$row)&&trim((string)$row[$name])!==''){$sets[]="$col=?";$args[]=$venueValues[$col];break;}}}
+      if($sets && $sharedCount===0){$args[]=$vid;$db->prepare("UPDATE bh_venues SET ".implode(',',$sets)." WHERE id=?")->execute($args);}
+    }else{if($existing)throw new RuntimeException('Existing activity has no linked venue; import cannot safely create one. Repair the activity venue link first.');$q=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes,leader_id) VALUES (?,?,?,?,?,?,?,?,?,NULL)");$q->execute([$id,$venue,$address,$town,$region,$postcode,$lat,$lng,'']);$vid=(int)$db->lastInsertId();}
     $sessionCols=table_columns($db,'bh_sessions');
     $hasSessionActivityId=in_array('activity_id',$sessionCols,true);
+    if(!$existing || (isset($row['sessions']) && trim((string)$row['sessions'])!=='' && ($_POST['replace_sessions']??'')==='1')){
+    if($existing && !$hasSessionActivityId)throw new RuntimeException('Session replacement requires activity-scoped sessions; existing timetable preserved.');
     if($hasSessionActivityId){$db->prepare("DELETE FROM bh_sessions WHERE venue_id=? AND activity_id=?")->execute([$vid,$id]);}
     else{$db->prepare("DELETE FROM bh_sessions WHERE venue_id=?")->execute([$vid]);}
     foreach($sessions as $s){
@@ -292,9 +393,10 @@ foreach($rows as $idx=>$row){
       $q=$db->prepare("INSERT INTO bh_sessions ($columns) VALUES ($marks)");
       $q->execute($values);
     }
-    optional_activity_fields($db,$row,$id);import_tags($db,$id,$tags);import_images($db,$id,$row);$db->commit();if($existing)$updated++;else$created++;
+    }
+    optional_activity_fields($db,$row,$id);if(!$existing || (array_key_exists('tags',$row)&&$tags!==''))import_tags($db,$id,$tags);if(!$existing || ($_POST['replace_gallery']??'')==='1')import_images($db,$id,$row);$db->commit();if($existing)$updated++;else$created++;
   }catch(Throwable $e){if($db->inTransaction())$db->rollBack();$failed++;if(count($errors)<20)$errors[]='Row '.$line.': '.$e->getMessage();}
 }
 header('Content-Type: application/json; charset=utf-8');
-echo json_encode(['ok'=>true,'rows'=>count($rows),'total_rows'=>$totalRows,'next_offset'=>$offset+count($rows),'has_more'=>($offset+count($rows)<$totalRows),'created'=>$created,'updated'=>$updated,'skipped'=>$skipped,'failed'=>$failed,'errors'=>$errors],JSON_UNESCAPED_SLASHES);
+echo json_encode(['ok'=>true,'rows'=>count($rows),'total_rows'=>$totalRows,'next_offset'=>$offset+count($rows),'has_more'=>($offset+count($rows)<$totalRows),'created'=>$created,'updated'=>$updated,'skipped'=>$skipped,'failed'=>$failed,'dry_run'=>(($_POST['dry_run']??'')==='1'),'errors'=>$errors],JSON_UNESCAPED_SLASHES);
 ?>

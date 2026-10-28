@@ -1,0 +1,21 @@
+name: CSV importer regression checks
+on:
+  pull_request:
+    paths:
+      - 'api/admin-import-export.php'
+      - 'assets/js/admin-import-export.js'
+      - 'admin/admin-import-export.html'
+      - 'tests/csv-importer-regression.mjs'
+      - '.github/workflows/csv-importer-checks.yml'
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l api/admin-import-export.php
+      - name: JavaScript syntax
+        run: node --check assets/js/admin-import-export.js
+      - name: Importer contract regression checks
+        run: node tests/csv-importer-regression.mjs
