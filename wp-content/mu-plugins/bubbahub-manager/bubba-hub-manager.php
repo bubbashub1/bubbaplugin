@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.12.0
+ * Version: 0.14.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -89,7 +89,7 @@ final class Bubba_Hub_Manager {
         echo '<div class="notice notice-info inline"><p>Edit activity details, ages, pricing, booking and contact information below. Venues, schedules, sessions, organiser assignments and publication status are untouched. Image fields accept web URLs; local file paths remain unchanged unless edited.</p></div>';
         echo '<form method="post" id="bh-manager-activity-form">';
         echo '<p class="description">Ages are stored in months. Examples: 12 = 1 year; 60 = 5 years. Only change pricing fields that apply to this activity.</p>';
-        echo '<nav class="bh-editor-tabs" role="tablist" aria-label="Activity editor sections"><a href="#bh-basic-details">Details</a><a href="#bh-age-suitability">Ages</a><a href="#bh-pricing">Pricing</a><a href="#bh-helpful-information">Helpful info</a><a href="#bh-booking-attendance">Booking</a><a href="#bh-contact-social-links">Contact</a><a href="#bh-listing-images">Images</a></nav>';
+        echo '<nav class="bh-editor-tabs" role="tablist" aria-label="Activity editor sections"><a href="#bh-basic-details">Details</a><a href="#bh-age-suitability">Ages</a><a href="#bh-pricing">Pricing</a><a href="#bh-helpful-information">Helpful info</a><a href="#bh-booking-attendance">Booking</a><a href="#bh-contact-social-links">Contact</a><a href="#bh-listing-images">Images</a><a href="#bh-session-information">Sessions</a></nav>';
         echo '<div class="bh-editor-actions"><button type="submit" class="button button-primary" name="bh_manager_save" value="1">Save activity details</button> <span>Changes are saved to this activity only.</span></div>';
         wp_nonce_field('bh_manager_activity_'.$id);
         echo '<style>
@@ -138,6 +138,26 @@ final class Bubba_Hub_Manager {
             echo '</td></tr>';
         }
         echo '</tbody></table></section>'; }
+        echo '<section id="bh-session-information" class="bh-editor-section" role="tabpanel"><h3>Session information</h3><p class="description">Read-only: sessions are not edited from this form until venue relationships have been verified.</p>';
+        $session_cols=$db->get_col('SHOW COLUMNS FROM `bh_sessions`',0);
+        if (is_array($session_cols) && in_array('activity_id',$session_cols,true)) {
+            $safe_cols=array_values(array_intersect(['id','day_of_week','start_time','end_time','frequency','session_date','venue_id','status'],$session_cols));
+            if ($safe_cols) {
+                $sql='SELECT '.implode(',',array_map(static fn($c)=>'`'.$c.'`',$safe_cols)).' FROM `bh_sessions` WHERE activity_id = %d ORDER BY id DESC LIMIT 100';
+                $session_rows=$db->get_results($db->prepare($sql,$id),ARRAY_A);
+                if ($session_rows) {
+                    echo '<table class="widefat striped"><thead><tr>';
+                    foreach ($safe_cols as $col) echo '<th>'.esc_html(ucwords(str_replace('_',' ',$col))).'</th>';
+                    echo '</tr></thead><tbody>';
+                    foreach ($session_rows as $sr) { echo '<tr>'; foreach ($safe_cols as $col) echo '<td>'.esc_html((string)($sr[$col]??'')).'</td>'; echo '</tr>'; }
+                    echo '</tbody></table>';
+                } else echo '<p>No directly linked sessions found.</p>';
+            }
+        } else echo '<p>Sessions are stored through venue or schedule relationships. These need a separate relationship-safe view before they can be displayed here.</p>';
+        echo '</section>';
+        if (!in_array('facebook_url',$columns,true) || !in_array('instagram_url',$columns,true) || !in_array('email',$columns,true)) {
+            echo '<div class="notice notice-warning inline"><p>Some contact fields are absent from the activity table. They may belong to the organiser record; no duplicate fields have been created.</p></div>';
+        }
         echo '<script>document.addEventListener("DOMContentLoaded",function(){
             document.querySelectorAll(".bh-media-select").forEach(function(btn){
                 btn.addEventListener("click",function(){
