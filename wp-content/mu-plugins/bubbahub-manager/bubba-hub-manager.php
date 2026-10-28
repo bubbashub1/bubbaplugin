@@ -167,13 +167,16 @@ final class Bubba_Hub_Manager {
             if ($has_session_activity) {
                 $linked=array_map(static fn($condition)=>$condition==='s.activity_id=%d'?$condition:'(s.activity_id IS NULL AND '.$condition.')',$linked);
             }
-            $sql='SELECT DISTINCT '.implode(',',array_map(static fn($c)=>'s.`'.$c.'`',$display_cols)).' FROM `bh_sessions` s WHERE ('.implode(' OR ',$linked).') ORDER BY s.id DESC LIMIT 100';
+            $has_venue_name=in_array('venue_id',$session_cols,true) && is_array($venue_cols) && in_array('id',$venue_cols,true) && in_array('name',$venue_cols,true);
+            $venue_select=$has_venue_name?', v.`name` AS venue_name':'';
+            $venue_join=$has_venue_name?' LEFT JOIN `bh_venues` v ON v.id=s.venue_id':'';
+            $sql='SELECT DISTINCT '.implode(',',array_map(static fn($c)=>'s.`'.$c.'`',$display_cols)).$venue_select.' FROM `bh_sessions` s'.$venue_join.' WHERE ('.implode(' OR ',$linked).') ORDER BY s.id DESC LIMIT 100';
             $rows=$db->get_results($db->prepare($sql,...array_fill(0,count($linked),$id)),ARRAY_A);
             if ($rows) {
                 echo '<table class="widefat striped"><thead><tr>';
-                foreach ($display_cols as $col) echo '<th>'.esc_html(ucwords(str_replace('_',' ',$col))).'</th>';
+                if ($has_venue_name) echo '<th>Venue name</th>';
                 echo '</tr></thead><tbody>';
-                foreach ($rows as $row) {echo '<tr>';foreach ($display_cols as $col) echo '<td>'.esc_html((string)($row[$col]??'')).'</td>';echo '</tr>';}
+                foreach ($rows as $row) {echo '<tr>';foreach ($display_cols as $col) echo '<td>'.esc_html((string)($row[$col]??'')).'</td>';if ($has_venue_name) echo '<td>'.esc_html((string)($row['venue_name']??'')).'</td>';echo '</tr>';}
                 echo '</tbody></table>';
             } else echo '<p>No sessions found through the available activity or venue relationships.</p>';
         } else echo '<p>No supported session relationship was found in the current database schema.</p>';
