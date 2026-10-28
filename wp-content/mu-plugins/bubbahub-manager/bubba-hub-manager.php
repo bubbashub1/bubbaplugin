@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.15.0
+ * Version: 0.17.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -132,6 +132,17 @@ final class Bubba_Hub_Manager {
             elseif (in_array($field,['booking_url','website','facebook_url','instagram_url','email','image_path','image_1','image_2','image_3'],true)) echo '<input type="'.($field==='email'?'email':'url').'" class="regular-text" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'" value="'.esc_attr((string)($record[$field]??'')).'"/>';
             elseif ($field==='age_range') echo '<input class="regular-text" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'" value="'.esc_attr((string)($record[$field]??'')).'"/>';
             elseif ($field==='title') echo '<input required class="regular-text" id="bh-title" name="title" value="'.esc_attr((string)($record[$field]??'')).'"/>';
+            elseif ($field==='description') {
+                wp_editor((string)($record[$field]??''),'bh_description_editor',[
+                    'textarea_name'=>'description',
+                    'textarea_rows'=>14,
+                    'media_buttons'=>false,
+                    'teeny'=>false,
+                    'quicktags'=>true,
+                    'tinymce'=>['wpautop'=>true,'toolbar1'=>'formatselect,bold,italic,bullist,numlist,blockquote,alignleft,aligncenter,alignright,link,unlink,undo,redo','toolbar2'=>''],
+                ]);
+                echo '<p class="description">Use Visual for rich text or Text to edit HTML. Only safe WordPress HTML is saved.</p>';
+            }
             else echo '<textarea class="large-text" rows="7" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'">'.esc_textarea(html_entity_decode((string)($record[$field]??''), ENT_QUOTES | ENT_HTML5, 'UTF-8')).'</textarea>';
             if (in_array($field,['image_path','image_1','image_2','image_3'],true)) echo ' <button type="button" class="button bh-media-select" data-target="bh-'.esc_attr($field).'">Choose / replace image</button><p class="description">Use the WordPress Media Library or paste a direct image URL, then save this activity.</p>';
             if (in_array($field,['image_path','image_1','image_2','image_3'],true) && !empty($record[$field]) && filter_var($record[$field],FILTER_VALIDATE_URL)) echo '<p><img loading="lazy" alt="Current listing image" src="'.esc_url((string)$record[$field]).'" class="bh-image-preview" style="max-width:240px;max-height:160px;object-fit:contain;border:1px solid #dce7df;border-radius:8px;margin-top:8px"/></p>';
