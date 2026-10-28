@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.6.0
+ * Version: 0.7.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -66,14 +66,26 @@ final class Bubba_Hub_Manager {
                 }
             }
         }
-        echo '<p><a href="'.esc_url(admin_url('admin.php?page=bh-manager-activities')).'">&larr; Back to Activities</a></p>';
-        echo '<h2>Edit activity #'.esc_html((string)$id).'</h2>';
+        echo '<div class="bh-manager-head"><div><a class="bh-manager-back" href="'.esc_url(admin_url('admin.php?page=bh-manager-activities')).'">&larr; All activities</a><h1>'.esc_html((string)($record['title']??'Edit activity')).'</h1><p>Activity #'.esc_html((string)$id).' <span class="bh-manager-dot">•</span> '.esc_html(ucfirst((string)($record['status']??'Listing'))).'</p></div><span class="bh-manager-tag">Bubba Hub Directory</span></div>';
+        
         echo '<div class="notice notice-info inline"><p>This stage changes activity text, category, age range and basic price fields. Venues, schedules, sessions, images, organisers and publication status are untouched.</p></div>';
         echo '<form method="post" id="bh-manager-activity-form">';
         echo '<p class="description">Ages are stored in months. Examples: 12 = 1 year; 60 = 5 years. Only change pricing fields that apply to this activity.</p>';
         echo '<div class="bh-editor-actions"><button type="submit" class="button button-primary" name="bh_manager_save" value="1">Save activity details</button> <span>Changes are saved to this activity only.</span></div>';
         wp_nonce_field('bh_manager_activity_'.$id);
-        echo '<style>.bh-editor-actions{position:sticky;top:32px;z-index:20;background:#f6f7f7;border:1px solid #dcdcde;padding:10px 14px;margin:12px 0;border-radius:8px;display:flex;align-items:center;gap:12px}.bh-editor-actions span{color:#50575e}.bh-editor-section{max-width:1050px;background:#fff;border:1px solid #dcdcde;border-radius:10px;padding:14px 22px;margin:18px 0}.bh-editor-section h3{margin:4px 0 12px;font-size:17px}.bh-editor-section .form-table th{width:190px}.bh-editor-section .form-table td input.regular-text{max-width:100%;width:460px}.bh-editor-section .form-table textarea{max-width:100%}</style>';
+        echo '<style>
+        .bh-manager-head{background:linear-gradient(115deg,#e6f4e9,#f7fbf8);border:1px solid #c9e3d1;border-radius:16px;padding:24px 28px;margin:18px 0;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+        .bh-manager-head h1{font-size:25px;font-weight:750;margin:10px 0 8px;color:#174f39;line-height:1.25}
+        .bh-manager-head p{margin:0;color:#53675d}.bh-manager-back{font-weight:650;text-decoration:none;color:#226746}
+        .bh-manager-dot{padding:0 6px}.bh-manager-tag{display:inline-block;border-radius:24px;background:#d0ead8;color:#18553b;font-weight:700;padding:8px 14px}
+        .bh-editor-section{box-shadow:0 3px 12px rgba(24,67,45,.05);border-color:#dce7df!important;border-radius:14px!important;padding:22px 26px!important}
+        .bh-editor-section h3{color:#1c5d40;font-size:19px!important;border-bottom:1px solid #edf1ed;padding-bottom:14px;margin-bottom:15px!important}
+        .bh-editor-section input,.bh-editor-section textarea,.bh-editor-section select{border-radius:8px;min-height:39px;border-color:#cbd7cf}
+        .bh-editor-section input:focus,.bh-editor-section textarea:focus,.bh-editor-section select:focus{border-color:#28754e;box-shadow:0 0 0 1px #28754e}
+        .bh-editor-actions{box-shadow:0 4px 16px rgba(15,48,29,.09);border-color:#d7e5dc!important;border-radius:10px!important;background:#fff!important}
+        .bh-editor-actions .button-primary{background:#216647;border-color:#216647;border-radius:7px;padding:3px 18px}
+        @media(max-width:782px){.bh-manager-head{padding:18px}.bh-editor-section{padding:14px!important}.bh-editor-section .form-table th{padding-bottom:4px}.bh-editor-section .form-table td{padding-top:0}}
+        </style><style>.bh-editor-actions{position:sticky;top:32px;z-index:20;background:#f6f7f7;border:1px solid #dcdcde;padding:10px 14px;margin:12px 0;border-radius:8px;display:flex;align-items:center;gap:12px}.bh-editor-actions span{color:#50575e}.bh-editor-section{max-width:1050px;background:#fff;border:1px solid #dcdcde;border-radius:10px;padding:14px 22px;margin:18px 0}.bh-editor-section h3{margin:4px 0 12px;font-size:17px}.bh-editor-section .form-table th{width:190px}.bh-editor-section .form-table td input.regular-text{max-width:100%;width:460px}.bh-editor-section .form-table textarea{max-width:100%}</style>';
         $groups=['Basic details'=>['title','description','category'],'Age suitability'=>['age_range','age_min_months','age_max_months'],'Pricing'=>['price_free','price_from','price_per_session','price_per_family'],'Helpful information'=>['good_to_know','what_to_bring']];
         $category_options=[];
         if (in_array('category',$columns,true)) {
