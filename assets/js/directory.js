@@ -818,7 +818,7 @@ const bhInitDirectory=async()=>{
             ? `<img src="${escapeHtml(activity.image_url)}" alt="${escapeHtml(activity.title)}" loading="lazy">`
             : `<img src="/wp-content/uploads/logo/placeholder.jpeg" alt="" aria-hidden="true" loading="lazy">`}</div>
           <div class="activity-body">
-            <div class="activity-meta">${escapeHtml(categoryMap[activity.category] || activity.category || "Family activity")}</div>
+            <div class="activity-meta">${escapeHtml(String(categoryMap[activity.category] || activity.category || "Family activity").split(/[,;|]/)[0].trim() || "Family activity")}</div>
             <h3>${escapeHtml(activity.title)}</h3>
             <p>${escapeHtml(venues.length > 1
               ? venues.length + " venues"

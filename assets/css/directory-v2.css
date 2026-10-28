@@ -1219,3 +1219,16 @@ body.bh-directory:not(.bh-calendar-page) #directoryPlannerView .bh-directory-nat
   flex:1 1 140px!important;
  }
 }
+
+/* Full-width activity cards; the map is available only through the Map tab. */
+body.bh-directory .bh-directory-content-grid{display:block!important;grid-template-columns:minmax(0,1fr)!important;width:100%;min-width:0}
+body.bh-directory .bh-directory-list-pane{width:100%;max-width:none!important;min-width:0}
+body.bh-directory .bh-directory-map-pane{display:none!important}
+body.bh-directory #results.activity-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:16px;width:100%;min-width:0}
+body.bh-directory #results .activity-card{min-width:0;width:100%;max-width:none;overflow:hidden}
+body.bh-directory #results .activity-body{min-width:0;overflow-wrap:anywhere}
+body.bh-directory #results .activity-meta{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;font-size:.78rem}
+body.bh-directory #results .activity-card h3{overflow-wrap:break-word;word-break:normal}
+body.bh-directory #mapView:not([hidden]){display:block!important;width:100%;height:min(70vh,680px);min-height:380px}
+@media(max-width:1050px){body.bh-directory #results.activity-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}}
+@media(max-width:600px){body.bh-directory #results.activity-grid{grid-template-columns:minmax(0,1fr);gap:14px}body.bh-directory .directory-layout{min-width:0}body.bh-directory #results .activity-card{max-width:100%}}
