@@ -21,5 +21,8 @@ check('shared organiser details are preserved', php.includes('if((int)$q->fetchC
 check('existing sessions require explicit replacement', php.includes("($_POST['replace_sessions']??'')==='1'"));
 check('unscoped session replacements are rejected', php.includes('Session replacement requires activity-scoped sessions'));
 check('existing gallery replacement is opt-in', php.includes("($_POST['replace_gallery']??'')==='1'"));
+check('multi-venue edits require explicit targeting', php.includes('Multiple venues linked to this activity. Venue changes require a venue-specific import'));
+check('CSV headers must be unique', php.includes('CSV headers must be nonempty and unique'));
+check('row count is capped', php.includes('20,000-row safety limit'));
 check('unknown IDs cannot silently create duplicates', php.includes('refusing to create a duplicate'));
 console.log('Static importer contracts passed; staging/database integration tests still required.');
