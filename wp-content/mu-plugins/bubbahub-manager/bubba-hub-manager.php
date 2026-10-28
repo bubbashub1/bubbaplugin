@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.18.0
+ * Version: 0.19.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -89,7 +89,7 @@ final class Bubba_Hub_Manager {
         echo '<div class="notice notice-info inline"><p>Edit activity details, ages, pricing, booking and contact information below. Venues, schedules, sessions, organiser assignments and publication status are untouched. Image fields accept web URLs; local file paths remain unchanged unless edited.</p></div>';
         echo '<form method="post" id="bh-manager-activity-form">';
         echo '<p class="description">Ages are stored in months. Examples: 12 = 1 year; 60 = 5 years. Only change pricing fields that apply to this activity.</p>';
-        echo '<nav class="bh-editor-tabs" role="tablist" aria-label="Activity editor sections"><a href="#bh-basic-details">Details</a><a href="#bh-age-suitability">Ages</a><a href="#bh-pricing">Pricing</a><a href="#bh-helpful-information">Helpful info</a><a href="#bh-booking-attendance">Booking</a><a href="#bh-contact-social-links">Contact</a><a href="#bh-listing-images">Images</a><a href="#bh-session-information">Sessions</a></nav>';
+        echo '<nav class="bh-editor-tabs" role="tablist" aria-label="Activity editor sections"><a href="#bh-basic-details">Details</a><a href="#bh-age-suitability">Ages</a><a href="#bh-pricing">Pricing</a><a href="#bh-helpful-information">Helpful info</a><a href="#bh-booking-attendance">Booking</a><a href="#bh-contact-social-links">Contact</a><a href="#bh-listing-images">Images</a><a href="#bh-venue-information">Venues</a><a href="#bh-session-information">Sessions</a></nav>';
         echo '<div class="bh-editor-actions"><button type="submit" class="button button-primary" name="bh_manager_save" value="1">Save activity details</button> <span>Changes are saved to this activity only.</span></div>';
         wp_nonce_field('bh_manager_activity_'.$id);
         echo '<style>
@@ -138,6 +138,33 @@ final class Bubba_Hub_Manager {
             echo '</td></tr>';
         }
         echo '</tbody></table></section>'; }
+        echo '<section id="bh-venue-information" class="bh-editor-section" role="tabpanel"><h3>Linked venues</h3><p class="description">Read-only venue details for this activity. Venue editing is managed separately.</p>';
+        $venue_columns=$db->get_col('SHOW COLUMNS FROM `bh_venues`',0);
+        $venue_conditions=[];
+        if (is_array($venue_columns) && in_array('activity_id',$venue_columns,true)) $venue_conditions[]='v.activity_id=%d';
+        $venue_junction=$db->get_var($db->prepare('SHOW TABLES LIKE %s','bh_activity_venues'));
+        if ($venue_junction==='bh_activity_venues') {
+            $venue_junction_columns=$db->get_col('SHOW COLUMNS FROM `bh_activity_venues`',0);
+            if (in_array('activity_id',$venue_junction_columns,true) && in_array('venue_id',$venue_junction_columns,true))
+                $venue_conditions[]='EXISTS (SELECT 1 FROM `bh_activity_venues` av WHERE av.venue_id=v.id AND av.activity_id=%d)';
+        }
+        if ($venue_conditions && in_array('id',$venue_columns,true)) {
+            $venue_display=array_values(array_intersect(['id','name','address','address_line_1','city','postcode','latitude','longitude'],$venue_columns));
+            $venue_sql='SELECT DISTINCT '.implode(',',array_map(static fn($c)=>'v.`'.$c.'`',$venue_display)).' FROM `bh_venues` v WHERE '.implode(' OR ',$venue_conditions).' ORDER BY v.id ASC LIMIT 100';
+            $venue_rows=$db->get_results($db->prepare($venue_sql,...array_fill(0,count($venue_conditions),$id)),ARRAY_A);
+            if ($venue_rows) {
+                echo '<div style="overflow-x:auto"><table class="widefat striped"><thead><tr>';
+                foreach ($venue_display as $col) echo '<th scope="col">'.esc_html(ucwords(str_replace('_',' ',$col))).'</th>';
+                echo '</tr></thead><tbody>';
+                foreach ($venue_rows as $venue_row) {
+                    echo '<tr>';
+                    foreach ($venue_display as $col) echo '<td>'.esc_html((string)($venue_row[$col]??'')).'</td>';
+                    echo '</tr>';
+                }
+                echo '</tbody></table></div>';
+            } else echo '<p>No directly linked venues found for this activity.</p>';
+        } else echo '<p>Venue relationships are unavailable in the current database schema.</p>';
+        echo '</section>';
         echo '<section id="bh-session-information" class="bh-editor-section" role="tabpanel"><h3>Session information</h3><p class="description">Read-only timetable preview. Session editing is managed separately.</p>';
         $session_cols=$db->get_col('SHOW COLUMNS FROM `bh_sessions`',0);
         $venue_cols=$db->get_col('SHOW COLUMNS FROM `bh_venues`',0);
