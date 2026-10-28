@@ -99,3 +99,8 @@ body.bh-organiser-v2{background:#fffdf7;color:#174e3b;font-family:'Quicksand',Ca
 body.bh-organiser-v2 .organiser-storefront-page .organiser-hero h1{color:#174e3b!important;-webkit-text-fill-color:#174e3b!important;opacity:1!important;text-shadow:none!important;background:none!important;filter:none!important}
 body.bh-organiser-v2 .organiser-hero-copy{min-width:0}
 body.bh-organiser-v2 .organiser-hero .organiser-intro{color:#315d4a!important}
+
+/* Contain long organiser activity lists instead of extending the whole page. */
+.bh-organiser-v2 .organiser-activities-scroll{max-height:min(76vh,780px);overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding:4px 10px 12px 4px;align-content:start;}
+.bh-organiser-v2 .organiser-activities-scroll:focus-visible{outline:3px solid #328d87;outline-offset:3px;border-radius:12px}
+@media(max-width:760px){.bh-organiser-v2 .organiser-activities-scroll{max-height:65vh;scrollbar-gutter:auto}}
