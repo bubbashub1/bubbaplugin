@@ -351,7 +351,7 @@ foreach($rows as $idx=>$row){
       $venueValues=['venue_name'=>$venue,'address'=>$address,'town'=>$town,'region'=>$region,'postcode'=>$postcode,'latitude'=>$lat,'longitude'=>$lng];
       $venueAliases=['venue_name'=>['venue_name','venue'],'address'=>['address','venue_address'],'town'=>['town','city'],'region'=>['region'],'postcode'=>['postcode'],'latitude'=>['latitude','lat'],'longitude'=>['longitude','lng','lon']];
       $sets=[];$args=[];foreach($venueAliases as $col=>$names){foreach($names as $name){if(array_key_exists($name,$row)&&trim((string)$row[$name])!==''){$sets[]="$col=?";$args[]=$venueValues[$col];break;}}}
-      if($sets){$args[]=$vid;$db->prepare("UPDATE bh_venues SET ".implode(',',$sets)." WHERE id=?")->execute($args);}
+      if($sets && $sharedCount===0){$args[]=$vid;$db->prepare("UPDATE bh_venues SET ".implode(',',$sets)." WHERE id=?")->execute($args);}
     }else{$q=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes,leader_id) VALUES (?,?,?,?,?,?,?,?,?,NULL)");$q->execute([$id,$venue,$address,$town,$region,$postcode,$lat,$lng,'']);$vid=(int)$db->lastInsertId();}
     $sessionCols=table_columns($db,'bh_sessions');
     $hasSessionActivityId=in_array('activity_id',$sessionCols,true);
