@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.11.0
+ * Version: 0.12.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -11,6 +11,12 @@ final class Bubba_Hub_Manager {
     private const CAP = 'manage_options';
     public static function init(): void {
         add_action('admin_menu', [__CLASS__, 'menu'], 40);
+        add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_media']);
+    }
+    public static function enqueue_media(string $hook): void {
+        if (!current_user_can(self::CAP)) return;
+        if (!isset($_GET['page'],$_GET['activity_id']) || $_GET['page']!=='bh-manager-activities' || !absint($_GET['activity_id'])) return;
+        wp_enqueue_media();
     }
     public static function menu(): void {
         $parent = function_exists('bh_admin_sections') ? 'bubba-hub' : 'bh-manager';
@@ -127,11 +133,21 @@ final class Bubba_Hub_Manager {
             elseif ($field==='age_range') echo '<input class="regular-text" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'" value="'.esc_attr((string)($record[$field]??'')).'"/>';
             elseif ($field==='title') echo '<input required class="regular-text" id="bh-title" name="title" value="'.esc_attr((string)($record[$field]??'')).'"/>';
             else echo '<textarea class="large-text" rows="7" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'">'.esc_textarea(html_entity_decode((string)($record[$field]??''), ENT_QUOTES | ENT_HTML5, 'UTF-8')).'</textarea>';
+            if (in_array($field,['image_path','image_1','image_2','image_3'],true)) echo ' <button type="button" class="button bh-media-select" data-target="bh-'.esc_attr($field).'">Choose from Media Library</button>';
             if (in_array($field,['image_path','image_1','image_2','image_3'],true) && !empty($record[$field]) && filter_var($record[$field],FILTER_VALIDATE_URL)) echo '<p><img loading="lazy" alt="Current listing image" src="'.esc_url((string)$record[$field]).'" style="max-width:240px;max-height:160px;object-fit:contain;border:1px solid #dce7df;border-radius:8px;margin-top:8px"/></p>';
             echo '</td></tr>';
         }
         echo '</tbody></table></section>'; }
         echo '<script>document.addEventListener("DOMContentLoaded",function(){
+            document.querySelectorAll(".bh-media-select").forEach(function(btn){
+                btn.addEventListener("click",function(){
+                    if(!window.wp||!wp.media){alert("WordPress Media Library is unavailable.");return;}
+                    var target=document.getElementById(btn.getAttribute("data-target"));
+                    var frame=wp.media({title:"Select listing image",button:{text:"Use this image"},library:{type:"image"},multiple:false});
+                    frame.on("select",function(){var item=frame.state().get("selection").first();if(item&&target){target.value=item.toJSON().url;target.dispatchEvent(new Event("change",{bubbles:true}));}});
+                    frame.open();
+                });
+            });
             var nav=document.querySelector(".bh-editor-tabs"),panels=Array.from(document.querySelectorAll(".bh-editor-section"));
             if(nav&&panels.length){
                 var links=Array.from(nav.querySelectorAll("a")).filter(function(a){return document.querySelector(a.getAttribute("href"));});
