@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.24.0
+ * Version: 0.25.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -41,6 +41,27 @@ final class Bubba_Hub_Manager {
         $record=$db->get_row($db->prepare('SELECT * FROM `bh_activities` WHERE id = %d LIMIT 1',$id),ARRAY_A);
         if (!$record) { echo '<div class="notice notice-error"><p>Activity not found.</p></div>'; return; }
         $fields=array_values(array_intersect(['title','description','good_to_know','what_to_bring','category','age_range','age_min_months','age_max_months','price_from','price_free','price_per_session','price_per_family','booking_url','website','facebook_url','instagram_url','email','booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome','image_path','image_1','image_2','image_3'], $columns));
+        if (isset($_POST['bh_manager_session_add'])) {
+            check_admin_referer('bh_manager_activity_'.$id);
+            $cols=$db->get_col('SHOW COLUMNS FROM bh_sessions',0);
+            $vcols=$db->get_col('SHOW COLUMNS FROM bh_venues',0);
+            $required=['activity_id','venue_id','day_of_week','start_time','end_time','frequency'];
+            $vid=absint($_POST['bh_new_venue_id']??0);
+            $direct=is_array($cols) && !array_diff($required,$cols);
+            $venue_owned=$direct && is_array($vcols) && in_array('activity_id',$vcols,true) && (int)$db->get_var($db->prepare('SELECT COUNT(*) FROM bh_venues WHERE id=%d AND activity_id=%d',$vid,$id))===1;
+            $day=trim((string)wp_unslash($_POST['bh_new_day']??''));
+            $start=trim((string)wp_unslash($_POST['bh_new_start']??''));
+            $end=trim((string)wp_unslash($_POST['bh_new_end']??''));
+            $frequency=trim((string)wp_unslash($_POST['bh_new_frequency']??'weekly'));
+            $time_pattern='/^([01][0-9]|2[0-3]):[0-5][0-9]$/';
+            if (!$venue_owned || !preg_match('/^[0-6]$/',$day) || !preg_match($time_pattern,$start) || !preg_match($time_pattern,$end) || $start>=$end || !in_array($frequency,['weekly','once','fortnightly','monthly'],true)) {
+                echo '<div class="notice notice-error"><p>Cannot add session: select a directly owned venue and valid day, time and frequency.</p></div>';
+            } else {
+                $data=['activity_id'=>$id,'venue_id'=>$vid,'day_of_week'=>(int)$day,'start_time'=>$start.':00','end_time'=>$end.':00','frequency'=>$frequency];
+                $saved=$db->insert('bh_sessions',$data);
+                echo $saved===false?'<div class="notice notice-error"><p>Session creation failed. No other sessions were changed.</p></div>':'<div class="notice notice-success"><p>Session added.</p></div>';
+            }
+        }
         if (isset($_POST['bh_manager_session_edit'])) {
             check_admin_referer('bh_manager_activity_'.$id);
             $sid=absint($_POST['bh_manager_session_edit']);
@@ -213,6 +234,22 @@ final class Bubba_Hub_Manager {
         $venue_cols=$db->get_col('SHOW COLUMNS FROM `bh_venues`',0);
         $linked=[];
         $has_session_activity=is_array($session_cols) && in_array('activity_id',$session_cols,true);
+        if ($has_session_activity && is_array($venue_cols) && in_array('activity_id',$venue_cols,true) && !array_diff(['activity_id','venue_id','day_of_week','start_time','end_time','frequency'],$session_cols)) {
+            $own_venues=$db->get_results($db->prepare('SELECT id FROM bh_venues WHERE activity_id=%d ORDER BY id',$id),ARRAY_A);
+            if ($own_venues) {
+                echo '<div style="padding:14px;border:1px solid #d1e2d6;border-radius:9px;margin:12px 0"><h4>Add session</h4><p class="description">Only directly owned venues can be selected. This does not modify existing sessions.</p>';
+                echo '<label>Venue <select name="bh_new_venue_id">';
+                foreach ($own_venues as $v) echo '<option value="'.absint($v['id']).'">Venue #'.absint($v['id']).'</option>';
+                echo '</select></label> ';
+                echo '<label>Day <select name="bh_new_day">';
+                foreach (['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'] as $n=>$day_name) echo '<option value="'.$n.'">'.esc_html($day_name).'</option>';
+                echo '</select></label> ';
+                echo '<label>Start <input type="time" name="bh_new_start" required></label> <label>End <input type="time" name="bh_new_end" required></label> ';
+                echo '<label>Frequency <select name="bh_new_frequency"><option value="weekly">Weekly</option><option value="once">Once</option><option value="fortnightly">Fortnightly</option><option value="monthly">Monthly</option></select></label> ';
+                echo '<button class="button button-secondary" type="submit" name="bh_manager_session_add" value="1">Add session</button></div>';
+            }
+        }
+
         $has_junction=false;
         if (is_array($session_cols) && in_array('venue_id',$session_cols,true)) {
             if (is_array($venue_cols) && in_array('activity_id',$venue_cols,true)) {
