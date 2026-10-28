@@ -32,10 +32,23 @@ async function load(){
  try{const d=await request("results");results=d.results||[];renderSummary(d.summary||{});render()}catch(e){status(e.message,true)}
 }
 async function run(mode,button){
- busy(button,true);status(mode==="existing"?"Checking existing listings…":"Searching for new local listings…");
- $("#listingCheckResults").innerHTML='<div class="listing-check-empty"><strong>Checking sources…</strong><div class="listing-check-progress"><span></span></div></div>';
- try{const d=await request("scan",{mode,region:$("#checkRegion").value,query:$("#checkQuery").value});results=d.results||[];renderSummary(d.summary||{});render();status("✓ Listing Check complete. "+results.length+" findings ready to review.")}catch(e){status(e.message,true);load()}finally{busy(button,false)}
+ if(mode==="new"){status("New listing discovery needs a separate search provider. Existing-listing checks are free and available now.",true);return}
+ busy(button,true);let offset=0;
+ try{
+  let done=false;
+  while(!done){
+   status("Checking existing listings… "+offset+" processed");
+   const d=await request("scan_free",{offset,region:$("#checkRegion").value});
+   results=d.results||[];renderSummary(d.summary||{});render();
+   if(d.next_offset<=offset && !d.done)throw Error("Scan did not advance.");
+   offset=d.next_offset;done=!!d.done;
+   status("Checked "+Math.min(offset,d.total)+" of "+d.total+" listings.");
+  }
+  status("✓ Free listing check complete. Review flagged findings below.");
+ }catch(e){status("Scan stopped after "+offset+" listings: "+e.message,true)}
+ finally{busy(button,false)}
 }
+
 document.addEventListener("click",async e=>{
  const create=e.target.closest(".lc-create-draft");if(create){busy(create,true);try{const d=await request("create_draft",{id:create.dataset.id});status("✓ Draft created. Open Activities to review it.");await load()}catch(err){status(err.message,true)}finally{busy(create,false)}return}
  const dismiss=e.target.closest(".lc-dismiss");if(dismiss){busy(dismiss,true);try{await request("dismiss",{id:dismiss.dataset.id});await load()}catch(err){status(err.message,true)}finally{busy(dismiss,false)}}
