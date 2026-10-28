@@ -2,6 +2,11 @@ DirectoryIndex index.html index.php
 
 RewriteEngine On
 
+# Canonical host: send www traffic to the same Bubba Hub homepage and paths.
+# Keep HTTPS and preserve the requested path/query string.
+RewriteCond %{HTTP_HOST} ^www\.bubbahub\.co\.uk$ [NC]
+RewriteRule ^ https://bubbahub.co.uk%{REQUEST_URI} [R=301,L,NE]
+
 # Revalidate page documents after deployments; do not cache personalised responses.
 <IfModule mod_headers.c>
   <FilesMatch "\\.(html|htm)$">
