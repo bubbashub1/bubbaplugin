@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.20.0
+ * Version: 0.21.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -117,6 +117,9 @@ final class Bubba_Hub_Manager {
             $visible=array_values(array_intersect($group_fields,$fields));
             if (!$visible) continue;
             echo '<section id="bh-'.esc_attr(sanitize_title($group)).'" class="bh-editor-section" role="tabpanel"><h3>'.esc_html($group).'</h3>'.($group==='Age suitability'?'<p class="description">Choose an age preset or enter exact minimum and maximum months below.</p><p><select id="bh-age-preset"><option value="">Select age preset (optional)</option><option value="0:6">0–6 months</option><option value="6:12">6–12 months</option><option value="0:12">0–12 months</option><option value="12:48">1–4 years</option><option value="48:216">4+ years</option></select></p>':'').'<table class="form-table"><tbody>';
+            if ($group==='Basic details') {
+                echo '<tr><th scope="row">Pull info from website</th><td><input type="url" class="regular-text" id="bh-import-source" placeholder="https://example.com/classes" value="'.esc_attr((string)($record['website']??'')).'"> <button type="button" class="button" id="bh-import-preview">Pull info</button><p class="description">Preview suggested information from the existing Bubba Hub website extractor. Nothing changes until you explicitly apply suggestions and save.</p><div id="bh-import-results" role="status" aria-live="polite"></div></td></tr>';
+            }
             foreach ($visible as $field) {
                     $label=ucwords(str_replace('_',' ',$field));
             echo '<tr'.(in_array($field,['image_path','image_1','image_2','image_3'],true)?' class="bh-image-row"':'').'><th scope="row"><label for="bh-'.esc_attr($field).'">'.esc_html($field==='image_path'?'Featured image':str_replace('_',' ',$label)).'</label></th><td>';
@@ -227,6 +230,40 @@ final class Bubba_Hub_Manager {
             echo '<div class="notice notice-info inline"><p>Some social or email fields are not stored on this activity. Organiser-level contact details are not edited here.</p></div>';
         }
         echo '<script>document.addEventListener("DOMContentLoaded",function(){
+            var pullBtn=document.getElementById("bh-import-preview"),pullResult=document.getElementById("bh-import-results");
+            if(pullBtn&&pullResult)pullBtn.addEventListener("click",async function(){
+                var source=document.getElementById("bh-import-source").value.trim();
+                if(!/^https?:\\/\\//i.test(source)){pullResult.textContent="Enter a public website URL.";return;}
+                pullBtn.disabled=true;pullResult.textContent="Reading website…";
+                try{
+                    var response=await fetch("/api/listing-website-preview.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url:source})});
+                    var data=await response.json();
+                    if(!response.ok||!data.ok)throw new Error(data.message||"Website preview failed.");
+                    pullResult.textContent="";
+                    var panel=document.createElement("div");
+                    panel.style.cssText="padding:12px;margin-top:10px;border:1px solid #d1e2d6;border-radius:8px";
+                    var title=document.createElement("strong");title.textContent="Review website suggestions";panel.appendChild(title);
+                    var suggestions=[["Title","title",data.title],["Description","description",data.about_description||data.description],["Featured image","image_path",data.image_url]];
+                    suggestions.forEach(function(item){
+                        if(!item[2])return;
+                        var row=document.createElement("p"),label=document.createElement("strong"),value=document.createElement("span"),apply=document.createElement("button");
+                        label.textContent=item[0]+": ";value.textContent=String(item[2]).slice(0,500)+" ";
+                        apply.type="button";apply.className="button";apply.textContent="Use this";
+                        apply.addEventListener("click",function(){
+                            var input=document.querySelector('[name="'+item[1]+'"]');
+                            if(!input){pullResult.appendChild(document.createTextNode("Field unavailable."));return;}
+                            if(item[1]==="description"&&window.tinymce){
+                                var ed=tinymce.get("bh_description_editor");
+                                if(ed&&!ed.isHidden()){ed.setContent(String(item[2]));return;}
+                            }
+                            input.value=String(item[2]);input.dispatchEvent(new Event("change",{bubbles:true}));
+                        });
+                        row.appendChild(label);row.appendChild(value);row.appendChild(apply);panel.appendChild(row);
+                    });
+                    pullResult.appendChild(panel);
+                }catch(error){pullResult.textContent=error.message||"Could not read website.";}
+                finally{pullBtn.disabled=false;}
+            });
             document.querySelectorAll(".bh-image-row input[type=url]").forEach(function(input){
                 input.addEventListener("change",function(){
                     var row=input.closest(".bh-image-row"),preview=row&&row.querySelector(".bh-image-preview");
