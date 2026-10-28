@@ -250,7 +250,7 @@ final class Bubba_Hub_Manager {
                         label.textContent=item[0]+": ";value.textContent=String(item[2]).slice(0,500)+" ";
                         apply.type="button";apply.className="button";apply.textContent="Use this";
                         apply.addEventListener("click",function(){
-                            var input=document.querySelector('[name="'+item[1]+'"]');
+                            var input=document.getElementsByName(item[1])[0];
                             if(!input){pullResult.appendChild(document.createTextNode("Field unavailable."));return;}
                             if(item[1]==="description"&&window.tinymce){
                                 var ed=tinymce.get("bh_description_editor");
