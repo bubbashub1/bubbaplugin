@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.9.0
+ * Version: 0.10.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -34,7 +34,7 @@ final class Bubba_Hub_Manager {
         if (!$id) { echo '<div class="notice notice-error"><p>Invalid activity ID.</p></div>'; return; }
         $record=$db->get_row($db->prepare('SELECT * FROM `bh_activities` WHERE id = %d LIMIT 1',$id),ARRAY_A);
         if (!$record) { echo '<div class="notice notice-error"><p>Activity not found.</p></div>'; return; }
-        $fields=array_values(array_intersect(['title','description','good_to_know','what_to_bring','category','age_range','age_min_months','age_max_months','price_from','price_free','price_per_session','price_per_family','booking_url','website','facebook_url','instagram_url','email','booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome'], $columns));
+        $fields=array_values(array_intersect(['title','description','good_to_know','what_to_bring','category','age_range','age_min_months','age_max_months','price_from','price_free','price_per_session','price_per_family','booking_url','website','facebook_url','instagram_url','email','booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome','image_path','image_1','image_2','image_3'], $columns));
         if (isset($_POST['bh_manager_save'])) {
             check_admin_referer('bh_manager_activity_'.$id);
             $changes=[]; $invalid_url=false; $invalid_email=false;
@@ -49,7 +49,7 @@ final class Bubba_Hub_Manager {
                     $changes[$field]=$raw===''?null:round((float)$raw,2);
                 } elseif (in_array($field,['price_free','booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome'],true)) {
                     $changes[$field]=in_array($raw,['0','1'],true)?(int)$raw:0;
-                } elseif (in_array($field,['booking_url','website','facebook_url','instagram_url'],true)) {
+                } elseif (in_array($field,['booking_url','website','facebook_url','instagram_url','image_path','image_1','image_2','image_3'],true)) {
                     $url=trim($raw);
                     if ($url!=='' && (!wp_http_validate_url($url) || !in_array(strtolower((string)wp_parse_url($url,PHP_URL_SCHEME)),['http','https'],true))) {
                         $invalid_url=true;
@@ -80,10 +80,10 @@ final class Bubba_Hub_Manager {
         }
         echo '<div class="bh-manager-head"><div><a class="bh-manager-back" href="'.esc_url(admin_url('admin.php?page=bh-manager-activities')).'">&larr; All activities</a><h1>'.esc_html((string)($record['title']??'Edit activity')).'</h1><p>Activity #'.esc_html((string)$id).' <span class="bh-manager-dot">•</span> '.esc_html(ucfirst((string)($record['status']??'Listing'))).'</p></div><span class="bh-manager-tag">Bubba Hub Directory</span></div>';
         
-        echo '<div class="notice notice-info inline"><p>Edit activity details, ages, pricing, booking and contact information below. Venues, schedules, sessions, images, organiser assignments and publication status are untouched.</p></div>';
+        echo '<div class="notice notice-info inline"><p>Edit activity details, ages, pricing, booking and contact information below. Venues, schedules, sessions, organiser assignments and publication status are untouched. Image fields accept web URLs; local file paths remain unchanged unless edited.</p></div>';
         echo '<form method="post" id="bh-manager-activity-form">';
         echo '<p class="description">Ages are stored in months. Examples: 12 = 1 year; 60 = 5 years. Only change pricing fields that apply to this activity.</p>';
-        echo '<nav class="bh-editor-tabs" aria-label="Activity editor sections"><a href="#bh-basic-details">Details</a><a href="#bh-age-suitability">Ages</a><a href="#bh-pricing">Pricing</a><a href="#bh-helpful-information">Helpful info</a><a href="#bh-booking-attendance">Booking</a><a href="#bh-contact-social-links">Contact</a></nav>';
+        echo '<nav class="bh-editor-tabs" aria-label="Activity editor sections"><a href="#bh-basic-details">Details</a><a href="#bh-age-suitability">Ages</a><a href="#bh-pricing">Pricing</a><a href="#bh-helpful-information">Helpful info</a><a href="#bh-booking-attendance">Booking</a><a href="#bh-contact-social-links">Contact</a><a href="#bh-listing-images">Images</a></nav>';
         echo '<div class="bh-editor-actions"><button type="submit" class="button button-primary" name="bh_manager_save" value="1">Save activity details</button> <span>Changes are saved to this activity only.</span></div>';
         wp_nonce_field('bh_manager_activity_'.$id);
         echo '<style>
@@ -102,7 +102,7 @@ final class Bubba_Hub_Manager {
         .bh-editor-actions .button-primary{background:#216647;border-color:#216647;border-radius:7px;padding:3px 18px}
         @media(max-width:782px){.bh-manager-head{padding:18px}.bh-editor-section{padding:14px!important}.bh-editor-section .form-table th{padding-bottom:4px}.bh-editor-section .form-table td{padding-top:0}}
         </style><style>.bh-editor-actions{position:sticky;top:32px;z-index:20;background:#f6f7f7;border:1px solid #dcdcde;padding:10px 14px;margin:12px 0;border-radius:8px;display:flex;align-items:center;gap:12px}.bh-editor-actions span{color:#50575e}.bh-editor-section{max-width:1050px;background:#fff;border:1px solid #dcdcde;border-radius:10px;padding:14px 22px;margin:18px 0}.bh-editor-section h3{margin:4px 0 12px;font-size:17px}.bh-editor-section .form-table th{width:190px}.bh-editor-section .form-table td input.regular-text{max-width:100%;width:460px}.bh-editor-section .form-table textarea{max-width:100%}</style>';
-        $groups=['Basic details'=>['title','description','category'],'Age suitability'=>['age_range','age_min_months','age_max_months'],'Pricing'=>['price_free','price_from','price_per_session','price_per_family'],'Helpful information'=>['good_to_know','what_to_bring'],'Booking & attendance'=>['booking_required','booking_url','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome'],'Contact & social links'=>['website','facebook_url','instagram_url','email']];
+        $groups=['Basic details'=>['title','description','category'],'Age suitability'=>['age_range','age_min_months','age_max_months'],'Pricing'=>['price_free','price_from','price_per_session','price_per_family'],'Helpful information'=>['good_to_know','what_to_bring'],'Booking & attendance'=>['booking_required','booking_url','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome'],'Contact & social links'=>['website','facebook_url','instagram_url','email'],'Listing images'=>['image_path','image_1','image_2','image_3']];
         $category_options=[];
         if (in_array('category',$columns,true)) {
             $category_options=$db->get_col("SELECT DISTINCT `category` FROM `bh_activities` WHERE `category` IS NOT NULL AND `category` <> '' ORDER BY `category` ASC LIMIT 100");
@@ -123,10 +123,11 @@ final class Bubba_Hub_Manager {
                 foreach ($category_options as $option) echo '<option value="'.esc_attr((string)$option).'" '.selected($current,(string)$option,false).'>'.esc_html((string)$option).'</option>';
                 echo '</select>';
             }
-            elseif (in_array($field,['booking_url','website','facebook_url','instagram_url','email'],true)) echo '<input type="'.($field==='email'?'email':'url').'" class="regular-text" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'" value="'.esc_attr((string)($record[$field]??'')).'"/>';
+            elseif (in_array($field,['booking_url','website','facebook_url','instagram_url','email','image_path','image_1','image_2','image_3'],true)) echo '<input type="'.($field==='email'?'email':'url').'" class="regular-text" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'" value="'.esc_attr((string)($record[$field]??'')).'"/>';
             elseif ($field==='age_range') echo '<input class="regular-text" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'" value="'.esc_attr((string)($record[$field]??'')).'"/>';
             elseif ($field==='title') echo '<input required class="regular-text" id="bh-title" name="title" value="'.esc_attr((string)($record[$field]??'')).'"/>';
             else echo '<textarea class="large-text" rows="7" id="bh-'.esc_attr($field).'" name="'.esc_attr($field).'">'.esc_textarea(html_entity_decode((string)($record[$field]??''), ENT_QUOTES | ENT_HTML5, 'UTF-8')).'</textarea>';
+            if (in_array($field,['image_path','image_1','image_2','image_3'],true) && !empty($record[$field]) && filter_var($record[$field],FILTER_VALIDATE_URL)) echo '<p><img loading="lazy" alt="Current listing image" src="'.esc_url((string)$record[$field]).'" style="max-width:240px;max-height:160px;object-fit:contain;border:1px solid #dce7df;border-radius:8px;margin-top:8px"/></p>';
             echo '</td></tr>';
         }
         echo '</tbody></table></section>'; }
