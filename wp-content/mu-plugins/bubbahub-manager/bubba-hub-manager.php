@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.16.0
+ * Version: 0.18.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -173,11 +173,17 @@ final class Bubba_Hub_Manager {
             $sql='SELECT DISTINCT '.implode(',',array_map(static fn($c)=>'s.`'.$c.'`',$display_cols)).$venue_select.' FROM `bh_sessions` s'.$venue_join.' WHERE ('.implode(' OR ',$linked).') ORDER BY s.id DESC LIMIT 100';
             $rows=$db->get_results($db->prepare($sql,...array_fill(0,count($linked),$id)),ARRAY_A);
             if ($rows) {
-                echo '<table class="widefat striped"><thead><tr>';
-                if ($has_venue_name) echo '<th>Venue name</th>';
+                echo '<div style="overflow-x:auto"><table class="widefat striped"><thead><tr>';
+                foreach ($display_cols as $col) echo '<th scope="col">'.esc_html(ucwords(str_replace('_',' ',$col))).'</th>';
+                if ($has_venue_name) echo '<th scope="col">Venue name</th>';
                 echo '</tr></thead><tbody>';
-                foreach ($rows as $row) {echo '<tr>';foreach ($display_cols as $col) echo '<td>'.esc_html((string)($row[$col]??'')).'</td>';if ($has_venue_name) echo '<td>'.esc_html((string)($row['venue_name']??'')).'</td>';echo '</tr>';}
-                echo '</tbody></table>';
+                foreach ($rows as $row) {
+                    echo '<tr>';
+                    foreach ($display_cols as $col) echo '<td>'.esc_html((string)($row[$col]??'')).'</td>';
+                    if ($has_venue_name) echo '<td>'.esc_html((string)($row['venue_name']?:'Venue name unavailable')).'</td>';
+                    echo '</tr>';
+                }
+                echo '</tbody></table></div>';
             } else echo '<p>No sessions found through the available activity or venue relationships.</p>';
         } else echo '<p>No supported session relationship was found in the current database schema.</p>';
         if ($has_junction) echo '<p class="description">Sessions from venues shared by multiple activities are omitted unless a direct activity assignment confirms ownership.</p>';
