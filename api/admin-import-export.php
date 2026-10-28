@@ -219,7 +219,7 @@ foreach($rows as $idx=>$row){
   try{
     $title=firstv($row,['title','activity_title','activity_name','activity','class_name','class','name']);$category=firstv($row,['category','activity_category','type','class_type']);$org=firstv($row,['organisation_name','organisation','organization','organizer','organiser','company','company_name','provider','provider_name','leader','leader_name']);$venue=firstv($row,['venue_name','venue','venue_name_location','location','location_name','venue_location','address_name']);$town=firstv($row,['town','village_town_or_city','village_town_city','village_town_or_city_name','city','town_city','town_or_city','village','location_town']);
     $importId=(int)firstv($row,['id','activity_id','listing_id']);
-    if($importId>0){$q=$db->prepare('SELECT a.title,a.category,o.organisation_name,v.venue_name,v.town FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_venues v ON v.activity_id=a.id WHERE a.id=? ORDER BY v.id LIMIT 1');$q->execute([$importId]);$defaults=$q->fetch(PDO::FETCH_ASSOC);if($defaults){$title=$title?:$defaults['title'];$category=$category?:$defaults['category'];$org=$org?:$defaults['organisation_name'];$venue=$venue?:$defaults['venue_name'];$town=$town?:$defaults['town'];}}
+    if($importId>0){$q=$db->prepare('SELECT a.title,a.category,o.organisation_name,v.venue_name,v.town FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_venues v ON v.id=(SELECT v2.id FROM bh_venues v2 WHERE v2.activity_id=a.id OR EXISTS (SELECT 1 FROM bh_activity_venues av WHERE av.activity_id=a.id AND av.venue_id=v2.id) ORDER BY v2.id LIMIT 1) WHERE a.id=? LIMIT 1');$q->execute([$importId]);$defaults=$q->fetch(PDO::FETCH_ASSOC);if($defaults){$title=$title?:$defaults['title'];$category=$category?:$defaults['category'];$org=$org?:$defaults['organisation_name'];$venue=$venue?:$defaults['venue_name'];$town=$town?:$defaults['town'];}}
     if($title===''||$category===''||$org===''||$venue===''||$town===''){ $missing=[];if($title==='')$missing[]='title';if($category==='')$missing[]='category';if($org==='')$missing[]='organisation';if($venue==='')$missing[]='venue';if($town==='')$missing[]='town';throw new RuntimeException('Required fields missing: '.implode(', ',$missing).'.');}
     $desc=firstv($row,['description','activity_description','details']);$age=firstv($row,['age_range','ages','age','age_group','age_groups']);$county=firstv($row,['county','area','county_area']);if(!in_array($county,['Devon','Cornwall','Plymouth','Torbay'],true))$county='';
     $price=firstv($row,['price_from','price','cost']);$price=$price===''?null:(float)preg_replace('/[^0-9.\-]/','',$price);$status=bool_status(firstv($row,['status'],'published'));$featured=normalise_bool(firstv($row,['featured','is_featured','feature'],'false'));$booking=firstv($row,['booking_url','booking','booking_link']);$image=firstv($row,['image_path','image','image_url']);$email=firstv($row,['email','email_address','contact_email']);$phone=firstv($row,['phone','telephone','phone_number','contact_phone']);$website=firstv($row,['website','website_url','web','url']);/* Skip remote image discovery during bulk imports to prevent timeouts. */$facebook=firstv($row,['facebook_url','facebook']);$instagram=firstv($row,['instagram_url','instagram']);$address=firstv($row,['address','venue_address','full_address','street_address']);if($address==='')$address=implode(', ',array_filter([firstv($row,['venue_address_line_1','address_line_1']),firstv($row,['venue_address_line_2','address_line_2'])],static fn($v)=>$v!==''));$region=firstv($row,['region','area_region','locality','district']);$postcode=firstv($row,['postcode','post_code','postal_code','postal_code','zip']);$lat=firstv($row,['latitude','lat']);$lat=$lat===''?null:(float)$lat;$lng=firstv($row,['longitude','lng','lon']);$lng=$lng===''?null:(float)$lng;
@@ -236,6 +236,7 @@ foreach($rows as $idx=>$row){
       $existing=$matched;
     }
     if($existing&&$mode==='skip'){$skipped++;continue;}
+    if(($_POST['dry_run']??'')==='1'){$existing?$updated++:$created++;continue;}
     if(!$db->inTransaction())$db->beginTransaction();
     if($existing){$id=(int)$existing['id'];$organiserId=(int)$existing['organiser_id'];}else{$q=$db->prepare("SELECT id FROM bh_organisers WHERE organisation_name=? LIMIT 1");$q->execute([$org]);$organiserId=(int)$q->fetchColumn();if(!$organiserId){$oslug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$org),'-'));$ob=$oslug;$on=2;$orgCols=table_columns($db,'bh_organisers');if(in_array('slug',$orgCols,true)){while(true){$q=$db->prepare("SELECT id FROM bh_organisers WHERE slug=? LIMIT 1");$q->execute([$oslug]);if(!$q->fetch())break;$oslug=$ob.'-'.$on++;}}
       $insCols=['organisation_name','email','phone','website','status'];$insVals=[$org,$email,$phone,$website,'published'];
@@ -282,8 +283,11 @@ foreach($rows as $idx=>$row){
       array_splice($args,2,1);
     }
     $q=$db->prepare($sql);$q->execute($args);$id=(int)$db->lastInsertId();}
-    $q=$db->prepare("SELECT id FROM bh_venues WHERE activity_id=? ORDER BY id LIMIT 1");$q->execute([$id]);$vid=(int)$q->fetchColumn();
+    $q=$db->prepare("SELECT v.id FROM bh_venues v WHERE v.activity_id=? OR EXISTS (SELECT 1 FROM bh_activity_venues av WHERE av.activity_id=? AND av.venue_id=v.id) ORDER BY (v.activity_id=? ) DESC,v.id LIMIT 1");$q->execute([$id,$id,$id]);$vid=(int)$q->fetchColumn();
     if($vid){
+      // A shared venue must not be silently changed for other activities.
+      $shared=$db->prepare('SELECT COUNT(DISTINCT activity_id) FROM bh_activity_venues WHERE venue_id=? AND activity_id<>?');$shared->execute([$vid,$id]);
+      if((int)$shared->fetchColumn()>0 && ($region!=='' || $town!=='' || $address!=='' || $postcode!=='' || $lat!==null || $lng!==null))throw new RuntimeException('Shared venue: update manually to avoid changing other activities.');
       $venueValues=['venue_name'=>$venue,'address'=>$address,'town'=>$town,'region'=>$region,'postcode'=>$postcode,'latitude'=>$lat,'longitude'=>$lng];
       $venueAliases=['venue_name'=>['venue_name','venue'],'address'=>['address','venue_address'],'town'=>['town','city'],'region'=>['region'],'postcode'=>['postcode'],'latitude'=>['latitude','lat'],'longitude'=>['longitude','lng','lon']];
       $sets=[];$args=[];foreach($venueAliases as $col=>$names){foreach($names as $name){if(array_key_exists($name,$row)&&trim((string)$row[$name])!==''){$sets[]="$col=?";$args[]=$venueValues[$col];break;}}}
@@ -304,9 +308,9 @@ foreach($rows as $idx=>$row){
       $q->execute($values);
     }
     }
-    optional_activity_fields($db,$row,$id);if(!$existing || (array_key_exists('tags',$row)&&$tags!==''))import_tags($db,$id,$tags);import_images($db,$id,$row);$db->commit();if($existing)$updated++;else$created++;
+    optional_activity_fields($db,$row,$id);if(!$existing || (array_key_exists('tags',$row)&&$tags!==''))import_tags($db,$id,$tags);if(!$existing || ($_POST['replace_gallery']??'')==='1')import_images($db,$id,$row);$db->commit();if($existing)$updated++;else$created++;
   }catch(Throwable $e){if($db->inTransaction())$db->rollBack();$failed++;if(count($errors)<20)$errors[]='Row '.$line.': '.$e->getMessage();}
 }
 header('Content-Type: application/json; charset=utf-8');
-echo json_encode(['ok'=>true,'rows'=>count($rows),'total_rows'=>$totalRows,'next_offset'=>$offset+count($rows),'has_more'=>($offset+count($rows)<$totalRows),'created'=>$created,'updated'=>$updated,'skipped'=>$skipped,'failed'=>$failed,'errors'=>$errors],JSON_UNESCAPED_SLASHES);
+echo json_encode(['ok'=>true,'rows'=>count($rows),'total_rows'=>$totalRows,'next_offset'=>$offset+count($rows),'has_more'=>($offset+count($rows)<$totalRows),'created'=>$created,'updated'=>$updated,'skipped'=>$skipped,'failed'=>$failed,'dry_run'=>(($_POST['dry_run']??'')==='1'),'errors'=>$errors],JSON_UNESCAPED_SLASHES);
 ?>
