@@ -28,6 +28,27 @@
 <main class="team-page">
 <section class="team-hero"><div class="team-eyebrow">The people behind Bubba Hub</div><h1>Meet our team 💚</h1><p>Bubba Hub is growing with the help of people who care about making local family life easier. From checking class details to supporting community events, every contribution makes a difference.</p></section>
 <section aria-labelledby="team-heading"><h2 id="team-heading">Our growing community team</h2><p class="team-intro">We're building a friendly volunteer network across Devon and Cornwall. As team members join and agree to be featured, you'll be able to meet them here.</p>
+<div id="team-profiles" class="team-grid" aria-live="polite"></div>
+<script>
+(async function(){
+ const root=document.getElementById('team-profiles');
+ if(!root)return;
+ try{
+  const response=await fetch('/wp-json/bubbahub/v1/team',{credentials:'omit'});
+  if(!response.ok)throw Error('Profiles unavailable');
+  const profiles=await response.json();
+  if(!Array.isArray(profiles))return;
+  for(const profile of profiles){
+   const card=document.createElement('article');card.className='team-card';
+   if(profile.image){const img=document.createElement('img');img.src=profile.image;img.alt='';img.loading='lazy';img.style.cssText='width:110px;height:110px;object-fit:cover;border-radius:22px;margin-bottom:16px';card.append(img)}
+   const title=document.createElement('h3');title.textContent=profile.name||'';card.append(title);
+   const role=document.createElement('p');role.style.fontWeight='800';role.textContent=[profile.role,profile.area].filter(Boolean).join(' · ');card.append(role);
+   const bio=document.createElement('p');bio.textContent=profile.bio||'';card.append(bio);
+   root.append(card);
+  }
+ }catch(e){console.warn('Team profiles could not be loaded');}
+})();
+</script>
 <div class="team-grid">
 <article class="team-card"><div class="team-avatar" aria-hidden="true">💚</div><h3>Bubba Hub team</h3><p>Keeping the directory running, connecting families with activities and helping our local community grow.</p></article>
 <article class="team-card"><div class="team-avatar" aria-hidden="true">📍</div><h3>Local area coordinators</h3><p>Helping keep information accurate and up to date in their assigned areas, from Torbay and Exeter to the wider South West.</p></article>
