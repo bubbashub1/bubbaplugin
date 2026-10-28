@@ -122,7 +122,7 @@ if($_SERVER['REQUEST_METHOD']==='POST' && !empty($_FILES['image']) && ($_POST['a
  $cols=[];$q=$db->prepare("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME IN ('image_path','image_url','gallery_images')");$q->execute();foreach($q->fetchAll(PDO::FETCH_COLUMN) as $col)$cols[$col]=true;
  if(empty($cols['gallery_images'])){try{$db->exec("ALTER TABLE bh_activities ADD COLUMN gallery_images TEXT NULL");$cols['gallery_images']=true;}catch(Throwable $ignored){}}
  $row=$db->prepare("SELECT image_path".(isset($cols['image_url'])?",image_url":"").",gallery_images FROM bh_activities WHERE id=? LIMIT 1");$row->execute([$activityId]);$current=$row->fetch()?:[];
- $gallery=[];if(!empty($current['gallery_images'])){$decoded=json_decode((string)$current['gallery_images'],true);if(is_array($decoded))$gallery=$decoded;}$gallery[]=$url;
+ $gallery=[];if(!empty($current['gallery_images'])){$decoded=json_decode((string)$current['gallery_images'],true);if(is_array($decoded))$gallery=$decoded;}if(count($gallery)>=$imageLimit){@unlink($path);lp(422,['ok'=>false,'error'=>'too_many_photos','message'=>'A listing can have no more than '.$imageLimit.' images.']);}$gallery[]=$url;
  if(isset($cols['image_path']) && empty($current['image_path']))$db->prepare("UPDATE bh_activities SET image_path=? WHERE id=?")->execute([$url,$activityId]);
  if(isset($cols['image_url']) && empty($current['image_url']))$db->prepare("UPDATE bh_activities SET image_url=? WHERE id=?")->execute([$url,$activityId]);
  if(isset($cols['gallery_images']))$db->prepare("UPDATE bh_activities SET gallery_images=? WHERE id=?")->execute([json_encode($gallery,JSON_UNESCAPED_SLASHES),$activityId]);
