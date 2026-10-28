@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bubba Hub Manager
  * Description: Read-only WordPress management screens for the existing Bubba Hub activities, venues and sessions.
- * Version: 0.26.0
+ * Version: 0.27.0
  * Requires PHP: 8.0
  * Text Domain: bubba-hub-manager
  */
@@ -47,7 +47,8 @@ final class Bubba_Hub_Manager {
             $vcols=$db->get_col('SHOW COLUMNS FROM bh_venues',0);
             $required=['activity_id','venue_id','day_of_week','start_time','end_time','frequency'];
             $vid=absint($_POST['bh_new_venue_id']??0);
-            $direct=is_array($cols) && !array_diff($required,$cols);
+            $direct=is_array($cols) && !array_diff(['venue_id','day_of_week','start_time','end_time','frequency'],$cols);
+            $has_direct_activity=$direct && in_array('activity_id',$cols,true);
             $venue_owned=false;
             if ($direct && $vid && is_array($vcols) && in_array('activity_id',$vcols,true)) {
                 $venue_owned=(int)$db->get_var($db->prepare('SELECT COUNT(*) FROM bh_venues WHERE id=%d AND activity_id=%d',$vid,$id))===1;
@@ -56,6 +57,7 @@ final class Bubba_Hub_Manager {
                 $junction_cols=$db->get_col('SHOW COLUMNS FROM bh_activity_venues',0);
                 if (is_array($junction_cols) && !array_diff(['activity_id','venue_id'],$junction_cols)) {
                     $venue_owned=(int)$db->get_var($db->prepare('SELECT COUNT(*) FROM bh_activity_venues WHERE venue_id=%d AND activity_id=%d',$vid,$id))>0;
+                    if (!$has_direct_activity) $venue_owned=$venue_owned && (int)$db->get_var($db->prepare('SELECT COUNT(DISTINCT activity_id) FROM bh_activity_venues WHERE venue_id=%d',$vid))===1;
                 }
             }
             $day=trim((string)wp_unslash($_POST['bh_new_day']??''));
@@ -66,7 +68,8 @@ final class Bubba_Hub_Manager {
             if (!$venue_owned || !preg_match('/^[0-6]$/',$day) || !preg_match($time_pattern,$start) || !preg_match($time_pattern,$end) || $start>=$end || !in_array($frequency,['weekly','once','fortnightly','monthly'],true)) {
                 echo '<div class="notice notice-error"><p>Cannot add session: select a directly owned venue and valid day, time and frequency.</p></div>';
             } else {
-                $data=['activity_id'=>$id,'venue_id'=>$vid,'day_of_week'=>(int)$day,'start_time'=>$start.':00','end_time'=>$end.':00','frequency'=>$frequency];
+                $data=['venue_id'=>$vid,'day_of_week'=>(int)$day,'start_time'=>$start.':00','end_time'=>$end.':00','frequency'=>$frequency];
+                if ($has_direct_activity) $data['activity_id']=$id;
                 $saved=$db->insert('bh_sessions',$data);
                 echo $saved===false?'<div class="notice notice-error"><p>Session creation failed. No other sessions were changed.</p></div>':'<div class="notice notice-success"><p>Session added.</p></div>';
             }
@@ -75,7 +78,11 @@ final class Bubba_Hub_Manager {
             check_admin_referer('bh_manager_activity_'.$id);
             $sid=absint($_POST['bh_manager_session_edit']);
             $cols=$db->get_col('SHOW COLUMNS FROM bh_sessions',0);
-            $owned=is_array($cols) && in_array('activity_id',$cols,true) && $db->get_var($db->prepare('SELECT id FROM bh_sessions WHERE id=%d AND activity_id=%d',$sid,$id));
+            $has_direct=is_array($cols) && in_array('activity_id',$cols,true);
+            $owned=$has_direct && $db->get_var($db->prepare('SELECT id FROM bh_sessions WHERE id=%d AND activity_id=%d',$sid,$id));
+            if (!$has_direct && is_array($cols) && in_array('venue_id',$cols,true) && $db->get_var($db->prepare('SHOW TABLES LIKE %s','bh_activity_venues'))==='bh_activity_venues') {
+                $owned=$db->get_var($db->prepare('SELECT s.id FROM bh_sessions s JOIN bh_activity_venues av ON av.venue_id=s.venue_id WHERE s.id=%d AND av.activity_id=%d AND (SELECT COUNT(DISTINCT av2.activity_id) FROM bh_activity_venues av2 WHERE av2.venue_id=s.venue_id)=1 LIMIT 1',$sid,$id));
+            }
             if (!$owned) echo '<div class="notice notice-error"><p>Session ownership unconfirmed; editing blocked.</p></div>';
             else {
                 $changes=[];$valid=true;
@@ -89,7 +96,7 @@ final class Bubba_Hub_Manager {
                     else $valid=$valid && strlen($v)<=40 && preg_match('/^[a-zA-Z_ -]+$/',$v)===1;
                     $changes[$field]=$v==='' && ($field==='start_date' || $field==='end_date')?null:$v;
                 }
-                $old=$db->get_row($db->prepare('SELECT * FROM bh_sessions WHERE id=%d AND activity_id=%d',$sid,$id),ARRAY_A);
+                $old=$db->get_row($db->prepare('SELECT * FROM bh_sessions WHERE id=%d',$sid),ARRAY_A);
                 $start=$changes['start_time']??$old['start_time']??'';
                 $end=$changes['end_time']??$old['end_time']??'';
                 if ($start && $end && $start>=$end) $valid=false;
@@ -98,7 +105,7 @@ final class Bubba_Hub_Manager {
                 if ($from && $to && $from>$to) $valid=false;
                 if (!$valid || !$changes) echo '<div class="notice notice-error"><p>Invalid session details; nothing saved.</p></div>';
                 else {
-                    $result=$db->update('bh_sessions',$changes,['id'=>$sid,'activity_id'=>$id]);
+                    $result=$db->update('bh_sessions',$changes,$has_direct?['id'=>$sid,'activity_id'=>$id]:['id'=>$sid,'venue_id'=>(int)$old['venue_id']]);
                     echo $result===false?'<div class="notice notice-error"><p>Session save failed.</p></div>':'<div class="notice notice-success"><p>Session saved.</p></div>';
                 }
             }
@@ -238,13 +245,13 @@ final class Bubba_Hub_Manager {
             } else echo '<p>No directly linked venues found for this activity.</p>';
         } else echo '<p>Venue relationships are unavailable in the current database schema.</p>';
         echo '</section>';
-        echo '<section id="bh-session-information" class="bh-editor-section" role="tabpanel"><h3>Session information</h3><p class="description">Read-only timetable preview. Session editing is managed separately.</p>';
+        echo '<section id="bh-session-information" class="bh-editor-section" role="tabpanel"><h3>Session information</h3><p class="description">Review and manage sessions. Shared venues remain protected.</p>';
         $session_cols=$db->get_col('SHOW COLUMNS FROM `bh_sessions`',0);
         $venue_cols=$db->get_col('SHOW COLUMNS FROM `bh_venues`',0);
         $linked=[];
         $has_session_activity=is_array($session_cols) && in_array('activity_id',$session_cols,true);
         echo '<div style="padding:14px;border:1px solid #d1e2d6;border-radius:9px;margin:12px 0"><h4>Add session</h4>';
-        $can_add=$has_session_activity && is_array($session_cols) && !array_diff(['activity_id','venue_id','day_of_week','start_time','end_time','frequency'],$session_cols);
+        $can_add=is_array($session_cols) && !array_diff(['venue_id','day_of_week','start_time','end_time','frequency'],$session_cols);
         $own_venues=[];
         if ($can_add) {
             if (is_array($venue_cols) && in_array('activity_id',$venue_cols,true)) {
@@ -253,16 +260,16 @@ final class Bubba_Hub_Manager {
             if ($db->get_var($db->prepare('SHOW TABLES LIKE %s','bh_activity_venues'))==='bh_activity_venues') {
                 $junction_cols=$db->get_col('SHOW COLUMNS FROM bh_activity_venues',0);
                 if (is_array($junction_cols) && !array_diff(['activity_id','venue_id'],$junction_cols)) {
-                    $junction_venues=$db->get_results($db->prepare('SELECT DISTINCT venue_id AS id FROM bh_activity_venues WHERE activity_id=%d ORDER BY venue_id',$id),ARRAY_A)?:[];
+                    $junction_venues=$db->get_results($db->prepare('SELECT DISTINCT av.venue_id AS id FROM bh_activity_venues av WHERE av.activity_id=%d AND (SELECT COUNT(DISTINCT av2.activity_id) FROM bh_activity_venues av2 WHERE av2.venue_id=av.venue_id)=1 ORDER BY av.venue_id',$id),ARRAY_A)?:[];
                     $own_venues=array_merge($own_venues,$junction_venues);
                 }
             }
         }
         $own_venues=array_values(array_column(array_column($own_venues,null,'id'),'id'));
-        if (!$can_add) echo '<p class="description">Session creation is unavailable: this database does not have a supported direct activity-to-session relationship.</p>';
-        elseif (!$own_venues) echo '<p class="description">No venues are linked to this activity. Link a venue first to enable Add Session.</p>';
+        if (!$can_add) echo '<p class="description">Session creation is unavailable: this database does not have the required session fields.</p>';
+        elseif (!$own_venues) echo '<p class="description">No exclusively linked venue is available. Shared venues cannot be used without a direct activity-to-session relationship.</p>';
         else {
-            echo '<p class="description">Choose an activity-linked venue. The new session will be assigned directly to this activity.</p>';
+            echo '<p class="description">Choose an activity-linked venue. Shared venues are excluded where session ownership cannot be confirmed.</p>';
             echo '<label>Venue <select name="bh_new_venue_id">';
             foreach ($own_venues as $vid) echo '<option value="'.absint($vid).'">Venue #'.absint($vid).'</option>';
             echo '</select></label> ';
@@ -308,15 +315,15 @@ final class Bubba_Hub_Manager {
                 echo '<div style="overflow-x:auto"><table class="widefat striped"><thead><tr>';
                 foreach ($display_cols as $col) echo '<th scope="col">'.esc_html(ucwords(str_replace('_',' ',$col))).'</th>';
                 if ($has_venue_name) echo '<th scope="col">Venue name</th>';
-                if ($has_session_activity) echo '<th>Edit session</th>';
+                echo '<th>Edit session</th>';
                 echo '</tr></thead><tbody>';
                 foreach ($rows as $row) {
                     echo '<tr>';
                     foreach ($display_cols as $col) echo '<td>'.esc_html((string)($row[$col]??'')).'</td>';
                     if ($has_venue_name) echo '<td>'.esc_html((string)($row['venue_name']?:'Venue name unavailable')).'</td>';
-                    if ($has_session_activity) {
+                    {
                         echo '<td>';
-                        if (isset($row['activity_id']) && (int)$row['activity_id']===$id) {
+                        if (($has_session_activity && isset($row['activity_id']) && (int)$row['activity_id']===$id) || (!$has_session_activity && $has_junction && isset($row['venue_id']) && (int)$db->get_var($db->prepare('SELECT COUNT(DISTINCT activity_id) FROM bh_activity_venues WHERE venue_id=%d',(int)$row['venue_id']))===1)) {
                             foreach (array_intersect(['day_of_week','start_time','end_time','frequency','start_date','end_date'],$display_cols) as $field) {
                                 echo '<label style="display:block">'.esc_html(ucwords(str_replace('_',' ',$field))).' <input style="width:140px" name="session_'.absint($row['id']).'_'.esc_attr($field).'" value="'.esc_attr((string)($row[$field]??'')).'"></label>';
                             }
