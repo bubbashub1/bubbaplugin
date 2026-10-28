@@ -236,41 +236,59 @@ foreach($rows as $idx=>$row){
       $existing=$matched;
     }
     if($existing&&$mode==='skip'){$skipped++;continue;}
-    // Limit writes to explicitly selected CSV columns. Unselected fields are removed
-    // from the row before any update helpers run.
+    // Select canonical fields while preserving their accepted CSV aliases.
     $selectedRaw=trim((string)($_POST['update_fields']??''));
-    if($existing && $selectedRaw!==''){
-      $allowed=array_fill_keys(array_filter(array_map('clean_header',explode(',',$selectedRaw))),true);
-      foreach(array_keys($row) as $column){
-        if(!isset($allowed[$column]) && !in_array($column,['id','activity_id','listing_id'],true))unset($row[$column]);
+    if($existing && array_key_exists('update_fields',$_POST)){
+      $groups=[
+        'title'=>['title','activity_title','activity_name','activity','class_name','class','name'],
+        'category'=>['category','activity_category','type','class_type'],
+        'organisation_name'=>['organisation_name','organisation','organization','organizer','organiser','company','company_name','provider','provider_name','leader','leader_name'],
+        'venue_name'=>['venue_name','venue','venue_name_location','location','location_name','venue_location','address_name'],
+        'town'=>['town','village_town_or_city','village_town_city','village_town_or_city_name','city','town_city','town_or_city','village','location_town'],
+        'description'=>['description','activity_description','details'],
+        'age_range'=>['age_range','ages','age','age_group','age_groups'],
+        'price_from'=>['price_from','price','cost'],
+        'booking_url'=>['booking_url','booking','booking_link'],
+        'image_path'=>['image_path','image','image_url'],
+        'address'=>['address','venue_address','full_address','street_address','venue_address_line_1','venue_address_line_2','address_line_1','address_line_2'],
+        'region'=>['region','area_region','locality','district'],
+        'postcode'=>['postcode','post_code','postal_code','zip'],
+        'latitude'=>['latitude','lat'],
+        'longitude'=>['longitude','lng','lon'],
+        'tags'=>['tags','tag','keywords'],
+        'sessions'=>['sessions','session_times','opening_times','schedule'],
+        'email'=>['email','email_address','contact_email'],
+        'phone'=>['phone','telephone','phone_number','contact_phone'],
+        'website'=>['website','website_url','web','url'],
+        'facebook_url'=>['facebook_url','facebook'],
+        'instagram_url'=>['instagram_url','instagram'],
+        'featured'=>['featured','is_featured','feature'],
+        'accessibility'=>['accessibility','accessibility_options']
+      ];
+      $allowed=['id'=>true,'activity_id'=>true,'listing_id'=>true];
+      foreach(explode(',',$selectedRaw) as $selected){
+        $selected=clean_header($selected);
+        foreach(($groups[$selected]??[$selected]) as $alias)$allowed[clean_header($alias)]=true;
       }
-      // Field selection also applies to values already parsed above.
-      $title=firstv($row,['title','activity_title','activity_name']);
-      $category=firstv($row,['category','activity_category','type']);
-      $org=firstv($row,['organisation_name','organisation','organization']);
-      $venue=firstv($row,['venue_name','venue']);
-      $town=firstv($row,['town','city']);
-      $email=firstv($row,['email','email_address','contact_email']);
-      $phone=firstv($row,['phone','telephone','phone_number']);
-      $website=firstv($row,['website','website_url','web']);
-      $facebook=firstv($row,['facebook_url','facebook']);
-      $instagram=firstv($row,['instagram_url','instagram']);
-      $desc=firstv($row,['description','activity_description','details']);
-      $age=firstv($row,['age_range','ages','age','age_group','age_groups']);
-      $county=firstv($row,['county','area','county_area']);
-      $priceRaw=firstv($row,['price_from','price','cost']);$price=$priceRaw===''?null:(float)preg_replace('/[^0-9.\\-]/','',$priceRaw);
-      $booking=firstv($row,['booking_url','booking','booking_link']);
-      $image=firstv($row,['image_path','image','image_url']);
+      foreach(array_keys($row) as $column)if(!isset($allowed[$column]))unset($row[$column]);
+      // Recalculate all derived values from the filtered row.
+      $title=firstv($row,$groups['title']);$category=firstv($row,$groups['category']);
+      $org=firstv($row,$groups['organisation_name']);$venue=firstv($row,$groups['venue_name']);
+      $town=firstv($row,$groups['town']);$desc=firstv($row,$groups['description']);
+      $age=firstv($row,$groups['age_range']);$county=firstv($row,['county']);
+      $priceRaw=firstv($row,$groups['price_from']);$price=$priceRaw===''?null:(float)preg_replace('/[^0-9.\\-]/','',$priceRaw);
+      $booking=firstv($row,$groups['booking_url']);$image=firstv($row,$groups['image_path']);
+      $email=firstv($row,$groups['email']);$phone=firstv($row,$groups['phone']);
+      $website=firstv($row,$groups['website']);$facebook=firstv($row,$groups['facebook_url']);
+      $instagram=firstv($row,$groups['instagram_url']);
+      $address=firstv($row,$groups['address']);$region=firstv($row,$groups['region']);
+      $postcode=firstv($row,$groups['postcode']);
+      $lat=firstv($row,$groups['latitude']);$lat=$lat===''?null:(float)$lat;
+      $lng=firstv($row,$groups['longitude']);$lng=$lng===''?null:(float)$lng;
       $status=bool_status(firstv($row,['status'],'published'));
-      $featured=normalise_bool(firstv($row,['featured'],'false'));
-      $accessRaw=firstv($row,['accessibility']);$access=array_values(array_filter(array_map('trim',preg_split('/\\s*[;,|]\\s*/',$accessRaw))));
-      $region=firstv($row,['region','area_region','locality','district']);
-      $postcode=firstv($row,['postcode','post_code','postal_code','zip']);
-      $address=firstv($row,['address','venue_address','full_address','street_address']);
-      $lat=firstv($row,['latitude','lat']);$lat=$lat===''?null:(float)$lat;
-      $lng=firstv($row,['longitude','lng','lon']);$lng=$lng===''?null:(float)$lng;
-      $tags=firstv($row,['tags','tag','keywords']);
-      $sessions=import_session_parts(firstv($row,['sessions','session_times','opening_times','schedule']));
+      $featured=normalise_bool(firstv($row,$groups['featured'],'false'));
+      $accessRaw=firstv($row,$groups['accessibility']);$access=array_values(array_filter(array_map('trim',preg_split('/\\s*[;,|]\\s*/',$accessRaw))));
+      $tags=firstv($row,$groups['tags']);$sessions=import_session_parts(firstv($row,$groups['sessions']));
     }
     if(($_POST['dry_run']??'')==='1'){$existing?$updated++:$created++;continue;}
     if(!$db->inTransaction())$db->beginTransaction();
