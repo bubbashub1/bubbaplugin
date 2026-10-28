@@ -145,6 +145,34 @@ if($action==='create_draft'){
  lc_insert_activity($db,[$org,$r['title'],$slug,$desc],$county);$aid=(int)$db->lastInsertId();
  $db->prepare("UPDATE bh_listing_check_results SET draft_activity_id=?,updated_at=NOW() WHERE id=?")->execute([$aid,$id]);lc_out(200,['ok'=>true,'draft_activity_id'=>$aid]);
 }
+if($action==='scan_free'){
+ $offset=max(0,(int)($input['offset']??0));$limit=5;
+ $region=trim((string)($input['region']??''));
+ $countySql=lc_has_county($db)?'a.county':'NULL';
+ $where=" WHERE a.status IN ('published','publish')";$params=[];
+ if($region!=='' && lc_has_county($db)){$where.=" AND a.county=?";$params[]=$region;}
+ $count=$db->prepare("SELECT COUNT(*) FROM bh_activities a".$where);$count->execute($params);$total=(int)$count->fetchColumn();
+ $st=$db->prepare("SELECT a.id,a.title,a.booking_url,$countySql AS county,COALESCE(o.website,'') website FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id".$where." ORDER BY a.id LIMIT $limit OFFSET $offset");
+ $st->execute($params);$activities=$st->fetchAll();
+ foreach($activities as $a){
+  $website=trim((string)$a['website']);$title=trim((string)$a['title']);
+  $page=$website!==''?lc_fetch($website):['ok'=>false,'http'=>0,'signals'=>[],'url'=>''];
+  $changes=[];$status='same';$label='No change';$evidence='';
+  if($website===''){$status='changed';$label='Needs review';$evidence='Organiser website is missing.';$changes[]=['field'=>'Website','before'=>'Missing','after'=>'Add organiser website'];}
+  elseif(!$page['ok']){$status='changed';$label='Needs review';$evidence='Website could not be reached (HTTP '.(int)($page['http']??0).'). This does not prove closure.';}
+  elseif(!empty($page['signals'])){$status='changed';$label='Needs review';$evidence='Possible change-related wording found: '.implode(', ',$page['signals']).'. Check context manually.';}
+  else{$evidence='Website responded successfully; no change-related keywords detected. This does not verify timetable accuracy.';}
+  if(trim((string)($a['booking_url']??''))===''){$status='changed';$label='Needs review';$changes[]=['field'=>'Booking link','before'=>'Missing','after'=>'Check whether booking is required'];}
+  $dupe=$db->prepare("SELECT id FROM bh_activities WHERE id<>? AND LOWER(TRIM(title))=LOWER(TRIM(?)) AND status IN ('published','publish') LIMIT 3");$dupe->execute([(int)$a['id'],$title]);$ids=$dupe->fetchAll(PDO::FETCH_COLUMN);
+  if($ids){$status='changed';$label='Needs review';$changes[]=['field'=>'Possible duplicate title','before'=>$title,'after'=>'Compare activity IDs: '.implode(', ',$ids)];}
+  $key=lc_key($title,$website);$source=json_encode([['label'=>'Organiser website','url'=>$website]],JSON_UNESCAPED_SLASHES);
+  $json=json_encode($changes,JSON_UNESCAPED_UNICODE);
+  $find=$db->prepare("SELECT id FROM bh_listing_check_results WHERE activity_id=? ORDER BY id DESC LIMIT 1");$find->execute([(int)$a['id']]);$existing=$find->fetchColumn();
+  if($existing){$up=$db->prepare("UPDATE bh_listing_check_results SET title=?,website=?,website_key=?,status=?,label=?,confidence=?,region=?,website_evidence=?,changes_json=?,sources_json=?,updated_at=NOW() WHERE id=?");$up->execute([$title,$website,$key,$status,$label,0,$a['county'],$evidence,$json,$source,$existing]);}
+  else{$up=$db->prepare("INSERT INTO bh_listing_check_results (activity_id,title,website,website_key,status,label,confidence,region,website_evidence,changes_json,sources_json) VALUES (?,?,?,?,?,?,?,?,?,?,?)");$up->execute([(int)$a['id'],$title,$website,$key,$status,$label,0,$a['county'],$evidence,$json,$source]);}
+ }
+ $rows=lc_results($db);lc_out(200,['ok'=>true,'results'=>$rows,'summary'=>lc_summary($rows),'processed'=>count($activities),'next_offset'=>$offset+count($activities),'total'=>$total,'done'=>$offset+count($activities)>=$total]);
+}
 if($action!=='scan')lc_out(400,['ok'=>false,'error'=>'Unknown action.']);
 $mode=(string)($input['mode']??'existing');$region=trim((string)($input['region']??''));$query=trim((string)($input['query']??''));$cfg=lc_config();
 try{
