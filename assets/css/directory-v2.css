@@ -1232,3 +1232,9 @@ body.bh-directory #results .activity-card h3{overflow-wrap:break-word;word-break
 body.bh-directory #mapView:not([hidden]){display:block!important;width:100%;height:min(70vh,680px);min-height:380px}
 @media(max-width:1050px){body.bh-directory #results.activity-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}}
 @media(max-width:600px){body.bh-directory #results.activity-grid{grid-template-columns:minmax(0,1fr);gap:14px}body.bh-directory .directory-layout{min-width:0}body.bh-directory #results .activity-card{max-width:100%}}
+
+/* Calendar AM/PM control */
+.bh-directory .directory-calendar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bh-directory .directory-calendar-actions label{font-size:.85rem;font-weight:800;color:#174e3b}
+.bh-directory #directoryCalendarTime{min-height:39px;max-width:210px;border:1px solid #cfe3d2;border-radius:12px;background:#fff;color:#174e3b;padding:7px 10px;font:700 .85rem Quicksand,sans-serif}
+@media(max-width:600px){.bh-directory #directoryCalendarTime{max-width:160px}}
