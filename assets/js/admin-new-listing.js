@@ -272,8 +272,8 @@ const previewImportedSessions=(entries,note='')=>{
  add.addEventListener('click',()=>{
   const selected=checks.filter(row=>row.check.checked);
   if(!selected.length){importMessage.textContent='Select at least one class to add.';return;}
-  const invalid=selected.find(row=>!row.title.value.trim()||/confirm/i.test(row.title.value.trim())||!row.startTime.value||(row.from.value&&row.to.value&&row.to.value<row.from.value));
-  if(invalid){invalid.check.closest('fieldset').style.borderColor='#b42318';importMessage.textContent='Class '+(checks.indexOf(invalid)+1)+' needs a class name, start time and valid dates. Correct the highlighted class and try again.';return;}
+  const invalid=selected.find(row=>!row.title.value.trim()||/confirm/i.test(row.title.value.trim())||!row.startTime.value||!row.endTime.value||row.endTime.value<=row.startTime.value||(row.from.value&&row.to.value&&row.to.value<row.from.value));
+  if(invalid){invalid.check.closest('fieldset').style.borderColor='#b42318';importMessage.textContent='Class '+(checks.indexOf(invalid)+1)+' needs a class name, valid start/end times and valid dates. Correct the highlighted class and try again.';return;}
   const known=new Set([...scheduleRows.children].map(row=>{
    const v={};row.querySelectorAll('[data-session-field]').forEach(el=>v[el.dataset.sessionField]=el.value);
    return [row.querySelector('[data-session-venue]')?.value||'0',v.start_date,v.end_date,v.start_time,v.day_of_week,String(v.class_name||'').trim().toLowerCase()].join('|');
@@ -319,6 +319,46 @@ document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',(
  let feedback=document.getElementById('adminPastePreviewMessage');
  if(!feedback){feedback=document.createElement('p');feedback.id='adminPastePreviewMessage';feedback.setAttribute('role','status');button.after(feedback);}
 
+ // Accept ordinary one-session-per-line CSV and weekday-first timetable rows.
+ const simpleSessions=[];
+ const unrecognisedLines=[];
+ const simpleDays={mon:1,monday:1,tue:2,tues:2,tuesday:2,wed:3,wednesday:3,thu:4,thur:4,thurs:4,thursday:4,fri:5,friday:5,sat:6,saturday:6,sun:7,sunday:7};
+ const normaliseClock=value=>{
+  const match=String(value).trim().match(/^(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm)?$/i);
+  if(!match)return '';
+  let hour=Number(match[1]);const minute=Number(match[2]||0),meridiem=(match[3]||'').toLowerCase();
+  if(minute>59||hour>23||(meridiem&&(hour<1||hour>12)))return '';
+  if(meridiem)hour=hour%12+(meridiem==='pm'?12:0);
+  return String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0');
+ };
+ for(const raw of rows){
+  const line=raw.trim();if(!line)continue;
+  let day='',title='',start='',end='';
+  const parts=line.split(',').map(v=>v.trim());
+  if(parts.length>=3){
+   if(simpleDays[parts[0].toLowerCase()]){day=parts[0];title=parts.slice(2).join(',');[start,end]=parts[1].split(/\s*[-–—]\s*/);}
+   else if(simpleDays[parts[1].toLowerCase()]){title=parts[0];day=parts[1];if(parts.length>=4){start=parts[2];end=parts[3];}else [start,end]=parts[2].split(/\s*[-–—]\s*/);}
+  }
+  if(!day){
+   const match=line.match(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)s?\s*[,|:]?\s*(\d{1,2}(?:[:.]\d{2})?\s*(?:am|pm)?)\s*[-–—]\s*(\d{1,2}(?:[:.]\d{2})?\s*(?:am|pm)?)\s*[|,]\s*(.+)$/i);
+   if(match){day=match[1];start=match[2];end=match[3];title=match[4];}
+  }
+  // Allow pasted spreadsheet rows with separate start and finish columns.
+  if(day&&parts.length>=4&&simpleDays[parts[0].toLowerCase()]){
+   const candidateStart=normaliseClock(parts[1]),candidateEnd=normaliseClock(parts[2]);
+   if(candidateStart&&candidateEnd){start=parts[1];end=parts[2];title=parts.slice(3).join(',');}
+  }
+  const from=normaliseClock(start),to=normaliseClock(end),weekday=simpleDays[day.toLowerCase()];
+  if(weekday&&from&&to&&from<to&&title){
+   simpleSessions.push({title,class_name:title,day_of_week:weekday,start_time:from,end_time:to,start_date:'',end_date:'',frequency:'weekly'});
+  }else if(line.includes(',')||/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/i.test(line))unrecognisedLines.push(line);
+ }
+ if(simpleSessions.length){
+  const unique=[...new Map(simpleSessions.map(s=>[[s.day_of_week,s.start_time,s.end_time,s.title].join('|'),s])).values()];
+  feedback.textContent=unique.length+' session(s) recognised. Review all sessions before adding.'+(unrecognisedLines.length?' '+unrecognisedLines.length+' line(s) need manual review: '+unrecognisedLines.slice(0,3).join(' | '):'');
+  previewImportedSessions(unique,'Weekly timetable detected. Review venue and dates before saving.');
+  return;
+ }
  // Natural-language schedules: title, date/weekday + time, optional Location.
  const blocks=field.value.split(/\n\s*\n/).map(s=>s.split(/\r?\n/).map(x=>x.trim()).filter(Boolean)).filter(b=>b.length>=2);
  const dayNames={monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6,sunday:7};
