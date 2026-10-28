@@ -477,6 +477,7 @@ void bhHydrateSaved();
   const meta=document.getElementById("homeAccountMeta");
   const action=document.getElementById("homeAccountAction");
   const edit=card.querySelector('a[href="account/profile.html"]');
+  const accountLinks=document.getElementById("homeAccountLinks");
 
   const setText=(el,value)=>{if(el)el.textContent=String(value||"")};
   const initials=(first,last,email)=>{
@@ -491,6 +492,7 @@ void bhHydrateSaved();
     setText(name,"Welcome to Bubba Hub");
     setText(meta,"Sign in to see your family account");
     if(edit)edit.hidden=true;
+    if(accountLinks)accountLinks.hidden=true;
     if(action){
       action.textContent="Sign in";
       action.href="auth.html";
@@ -499,6 +501,8 @@ void bhHydrateSaved();
   };
 
   const renderSignedIn=async(auth)=>{
+    if(edit)edit.hidden=false;
+    if(accountLinks)accountLinks.hidden=false;
     const user=auth?.user||{};
     let profile=null,hub=null;
 
@@ -556,7 +560,8 @@ void bhHydrateSaved();
   };
 
   const render=async()=>{
-    const auth=await bhAuthSession();
+    let auth=null;
+    try{auth=await bhAuthSession();}catch(_){renderSignedOut();return;}
     if(!auth?.authenticated||auth?.is_admin&&!auth?.user?.id){
       renderSignedOut();
       return;
@@ -755,7 +760,11 @@ void bhHydrateSaved();
         img.src=resolveImage(a.image_url);
         img.alt=a.title||"Family activity";
         img.addEventListener("error",()=>{
-          if(img.src.endsWith(PLACEHOLDER_IMAGE))return;
+          if(img.src.endsWith(PLACEHOLDER_IMAGE)){
+            img.style.display="none";
+            imageWrap.setAttribute("aria-label","Activity image unavailable");
+            return;
+          }
           img.src=PLACEHOLDER_IMAGE;
         },{once:true});
         imageWrap.appendChild(img);
