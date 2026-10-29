@@ -598,6 +598,7 @@ const renderStep=()=>{
  const current=steps[step];
  if(identity)identity.hidden=step!==0;
  if(descriptionSection)descriptionSection.hidden=step!==2;
+ const suggestedImage=document.getElementById('bhSuggestedImage');if(suggestedImage)suggestedImage.style.display=step===6?'':'none';
  const gallerySection=document.getElementById('adminListingGallery');if(gallerySection)gallerySection.hidden=step!==6;
  if(websiteImport)websiteImport.hidden=step!==0;
  if(posterImport)posterImport.hidden=step!==0;
