@@ -16,6 +16,7 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
   $unique=[];foreach($names as $name){$key=mb_strtolower(trim((string)$name));if($key!=='')$unique[$key]=trim((string)$name);}
   natcasesort($unique);bh_admin_response(200,['ok'=>true,'data'=>array_values($unique)]);
  }
+ if($_SERVER['REQUEST_METHOD']==='GET'&&($_GET['action']??'')==='organisations'){ $q=$db->query("SELECT id,organisation_name FROM bh_organisers WHERE organisation_name IS NOT NULL AND organisation_name<>'' ORDER BY organisation_name,id LIMIT 5000");bh_admin_response(200,['ok'=>true,'data'=>$q->fetchAll(PDO::FETCH_ASSOC)]); }
  if($_SERVER['REQUEST_METHOD']==='GET'&&($_GET['action']??'')==='leaders'){
   $hasUserId=(bool)$db->query("SHOW COLUMNS FROM bh_organisers LIKE 'user_id'")->fetch();
   $join=$hasUserId?'u.id=o.user_id':'u.email=o.email';
