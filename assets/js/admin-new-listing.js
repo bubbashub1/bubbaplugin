@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded',async()=>{
 const form=document.getElementById('newListingForm');if(!form)return;
 const status=document.getElementById('newListingStatus'),button=form.querySelector('button[type="submit"]'),id=new URLSearchParams(location.search).get('id');let original=null;let listingCsrf='';
+const gallery=document.getElementById('adminGalleryFields');
+if(gallery){for(let n=1;n<=10;n++){const label=document.createElement('label');label.textContent='Extra image '+n;const field=document.createElement('input');field.type='url';field.name='image_'+n;field.placeholder='https://example.co.uk/photo-'+n+'.jpg';label.append(field);gallery.append(label);}}
 const preset=form.elements.namedItem('age_preset'),free=form.elements.namedItem('price_free'),price=form.elements.namedItem('price_from'),unit=form.elements.namedItem('pricing_unit');
 let directoryVenues=[];
 const blockWeeks=form.elements.namedItem('block_length_weeks'),blockField=document.getElementById('blockWeeksField');
