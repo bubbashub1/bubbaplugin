@@ -91,10 +91,22 @@
               items=Array.isArray(payload.data)?payload.data:[];
             }
             const categoryMap={"Baby classes":"Baby","Baby & toddler":"Toddler","Family activities":"Family"};
+            const splitCategories = value => {
+              const decoder = document.createElement("textarea");
+              const decode = text => {
+                decoder.innerHTML = String(text || "");
+                return decoder.value;
+              };
+              return (Array.isArray(value) ? value : [value])
+                .flatMap(item => String(item || "").split(","))
+                .map(item => decode(item).trim())
+                .filter(Boolean)
+                .map(item => categoryMap[item] || item);
+            };
             const values={
               region:[...new Set(items.flatMap(a=>(a.venues||[]).map(v=>v.region||a.region)).filter(Boolean))].sort(),
               town:[...new Set(items.flatMap(a=>(a.venues||[]).map(v=>v.town||a.town)).filter(Boolean))].sort(),
-              category:[...new Set(items.map(a=>categoryMap[a.category]||a.category).filter(Boolean))].sort()
+              category:[...new Set(items.flatMap(a=>splitCategories(a.categories?.length ? a.categories : a.category)))].sort()
             };
 
             Object.entries(values).forEach(([name,list])=>{
