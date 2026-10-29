@@ -1,0 +1,14 @@
+/* Site-wide polish: additive, low-risk rules for public templates. */
+:root{--bh-unified-ink:#174d3c;--bh-unified-line:#d9e9e1;--bh-unified-focus:#126d57}
+html{scroll-padding-top:90px}
+body{overflow-wrap:break-word}
+:where(.site-header,.site-footer,.app-shell) :where(a,button,input,select,textarea):focus-visible{outline:3px solid var(--bh-unified-focus);outline-offset:3px}
+:where(.app-shell) :where(img,video,iframe){max-width:100%}
+:where(.app-shell) :where(input,select,textarea){max-width:100%;box-sizing:border-box}
+:where(.app-shell) :where(.button,button){touch-action:manipulation}
+:where(.app-shell) :where(.admin-panel,.account-dashboard-card,.hub-panel){border-radius:20px}
+:where(.app-shell) :where(h1,h2,h3){text-wrap:balance}
+:where(.site-header) .brand-logo{object-fit:contain}
+:where(.site-footer) a:focus-visible{border-radius:4px}
+@media(max-width:767px){:where(.app-shell) :where(.button,button){min-height:42px}:where(.app-shell) :where(.admin-panel,.account-dashboard-card){min-width:0}:where(.app-shell) :where(.hub-dashboard-grid,.account-dashboard-grid){min-width:0}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
