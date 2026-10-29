@@ -1,6 +1,10 @@
 document.addEventListener('DOMContentLoaded',async()=>{
 const form=document.getElementById('newListingForm');if(!form)return;
-const status=document.getElementById('newListingStatus'),button=form.querySelector('button[type="submit"]'),id=new URLSearchParams(location.search).get('id');let original=null;
+const status=document.getElementById('newListingStatus'),button=form.querySelector('button[type="submit"]'),id=new URLSearchParams(location.search).get('id');let original=null;let listingCsrf='';
+const gallery=document.getElementById('adminGalleryFields');
+if(gallery){for(let n=1;n<=10;n++){const label=document.createElement('label');label.textContent='Extra image '+n;const field=document.createElement('input');field.type='url';field.name='image_'+n;field.placeholder='https://example.co.uk/photo-'+n+'.jpg';label.append(field);const preview=document.createElement('img');preview.alt='Image '+n+' preview';preview.hidden=true;preview.loading='lazy';preview.style.cssText='display:block;max-width:180px;max-height:120px;object-fit:contain;margin-top:8px;border-radius:10px';preview.addEventListener('error',()=>{preview.hidden=true;});field.addEventListener('input',()=>{const value=field.value.trim();preview.hidden=!(value.startsWith('https://')||value.startsWith('http://'));if(!preview.hidden)preview.src=value;else preview.removeAttribute('src');});label.append(preview);gallery.append(label);}}
+const organisationField=form.elements.namedItem('organisation_name');const organisationList=document.getElementById('adminOrganisationSuggestions');const organisationHint=document.getElementById('adminOrganisationHint');
+if(organisationField&&organisationList){fetch('/api/admin-activities.php?action=organisations',{credentials:'same-origin',cache:'no-store'}).then(r=>r.json()).then(d=>{if(!d.ok||!Array.isArray(d.data))return;const seen=new Set();for(const item of d.data){const name=String(item.organisation_name||'').trim();if(!name||seen.has(name.toLocaleLowerCase()))continue;seen.add(name.toLocaleLowerCase());const option=document.createElement('option');option.value=name;organisationList.append(option);}const refresh=()=>{const match=[...organisationList.options].some(o=>o.value.toLocaleLowerCase()===organisationField.value.trim().toLocaleLowerCase());if(organisationHint)organisationHint.textContent=match?'Existing organisation selected — this listing will use its organiser record.':'New organisation name — a new organiser may be created when saving.';};organisationField.addEventListener('input',refresh);refresh();}).catch(()=>{if(organisationHint)organisationHint.textContent='Suggestions unavailable. You can still enter the organisation manually.';});}
 const preset=form.elements.namedItem('age_preset'),free=form.elements.namedItem('price_free'),price=form.elements.namedItem('price_from'),unit=form.elements.namedItem('pricing_unit');
 let directoryVenues=[];
 const blockWeeks=form.elements.namedItem('block_length_weeks'),blockField=document.getElementById('blockWeeksField');
@@ -13,7 +17,7 @@ const syncBlockWeeks=()=>{const show=unit.value==='per_block'&&!free.checked;blo
 preset.addEventListener('change',applyPreset);
 free.addEventListener('change',()=>{price.disabled=free.checked;if(free.checked)price.value='0';});
 if(!id){syncBlockWeeks();[...preset.options].forEach(o=>o.selected=o.value==='0-12');applyPreset();}
-if(id){status.textContent='Loading listing…';const r=await fetch('/api/admin-activities.php?id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load listing.');original=d.data;for(const el of form.elements){if(el.name&&Object.hasOwn(original,el.name))el.value=original[el.name]??'';}syncBlockWeeks();const lo=original.age_min_months,hi=original.age_max_months;
+if(id){status.textContent='Loading listing…';const r=await fetch('/api/admin-activities.php?id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load listing.');original=d.data;listingCsrf=d.csrf||'';for(const el of form.elements){if(el.name&&Object.hasOwn(original,el.name))el.value=original[el.name]??'';}for(const input of gallery?.querySelectorAll('input')||[])input.dispatchEvent(new Event('input'));syncBlockWeeks();const lo=original.age_min_months,hi=original.age_max_months;
 
 const existing=Object.entries(presets).find(([,v])=>lo!==null&&lo!==undefined&&lo!==''&&Number(lo)===v[0]&&((hi===null||hi===undefined||hi==='')?v[1]===null:Number(hi)===v[1]));
 const savedLabels=String(original.age_range||'').split(',').map(s=>s.trim());const matches=Object.entries(presets).filter(([,v])=>savedLabels.includes(v[2])).map(([k])=>k);[...preset.options].forEach(o=>o.selected=matches.length?matches.includes(o.value):o.value===(existing?.[0]||''));
@@ -122,6 +126,16 @@ if(venueSelect){
   const response=await fetch('/api/venues.php',{credentials:'same-origin',cache:'no-store'});
   const payload=await response.json();if(!response.ok||!payload.ok)throw Error(payload.error||'Could not load venues');
   venues=Array.isArray(payload.data)?payload.data:[];directoryVenues=venues;renderVenues();
+  const suggestions=document.getElementById('adminVenueNameSuggestions');
+  const hint=document.getElementById('adminVenueNameHint');
+  if(suggestions&&venueName){
+   const byName=new Map();
+   for(const v of venues){const name=String(v.name||'').trim();if(!name)continue;const key=name.toLocaleLowerCase();if(!byName.has(key))byName.set(key,[]);byName.get(key).push(v);}
+   for(const [key,rows] of byName){const option=document.createElement('option');option.value=rows[0].name;option.label=rows.length===1?[rows[0].town,rows[0].postcode].filter(Boolean).join(' · '):rows.length+' venues — use Choose existing venue to pick the right location';suggestions.append(option);}
+   const chooseVenue=()=>{const name=venueName.value.trim().toLocaleLowerCase();const matches=byName.get(name)||[];if(matches.length===1){const v=matches[0];for(const [fieldName,value] of Object.entries({venue_name:v.name,address:v.address,town:v.town,postcode:v.postcode,region:v.region})){const field=form.elements.namedItem(fieldName);if(field&&value!=null)field.value=String(value);}suggestArea();venueSelect.value=String(v.id);if(hint)hint.textContent='✓ Existing venue selected. Address and postcode filled — review before saving.';}else if(matches.length>1){if(hint)hint.textContent='Multiple locations use this name. Choose the correct one in the existing venue dropdown above.';}else if(hint)hint.textContent='New venue name — complete the address fields manually.';};
+   venueName.addEventListener('change',chooseVenue);
+  }
+
   if(original){const current=venues.find(v=>String(v.name||'').trim().toLowerCase()===String(original.venue_name||'').trim().toLowerCase()&&String(v.postcode||'').trim().toLowerCase()===String(original.postcode||'').trim().toLowerCase());if(current)venueSelect.value=String(current.id);}
   venueMessage.textContent=venues.length+' existing venues available.';
  }catch(error){venueMessage.textContent='Venue lookup unavailable; you can still enter venue details manually.';renderVenues();}
@@ -138,10 +152,49 @@ const addVenue=(venue={})=>{
  [['venue_name','Venue name','text'],['town','Town','text'],['region','Region','text'],['postcode','Postcode','text'],['address','Full address','text'],['latitude','Latitude (optional)','number'],['longitude','Longitude (optional)','number'],['booking_url','Booking URL for this location (optional)','url']].forEach(([key,label,type])=>{
  const wrap=document.createElement('label');wrap.textContent=label;wrap.style.cssText='display:block;margin:8px 0';const input=document.createElement('input');input.type=type;input.dataset.vfield=key;input.value=venue[key]??'';input.style.width='100%';if(type==='number'){input.step='any';input.min=key==='latitude'?'-90':'-180';input.max=key==='latitude'?'90':'180';}wrap.append(input);row.append(wrap);
  });
- const remove=document.createElement('button');remove.type='button';remove.className='button button-soft';remove.textContent='Remove unsaved location';remove.addEventListener('click',()=>{if(Number(row.dataset.savedId)){status.textContent='Saved locations cannot be removed here yet. You can edit their details.';status.classList.add('is-error');return;}row.remove();syncVenueSelectors();});row.append(remove);
+ const remove=document.createElement('button');remove.type='button';remove.className='button button-soft';remove.textContent=Number(row.dataset.savedId)?'Remove saved location':'Remove unsaved location';remove.addEventListener('click',async()=>{
+ const savedId=Number(row.dataset.savedId);
+ if(!savedId){row.remove();syncVenueSelectors();return;}
+ const options=(original?.venues||[]).filter(v=>Number(v.id)!==savedId);
+ const selected=options.find(v=>String(v.venue_name||'').trim().toLowerCase()===String(venue.venue_name||'').trim().toLowerCase())||options[0];
+ if(!selected){status.textContent='No location available to retain.';return;}
+ const choice=window.prompt('Move any sessions to which saved location? Enter its ID:\\n'+options.map(v=>v.id+' — '+v.venue_name+' ('+v.postcode+')').join('\\n'),String(selected.id));
+ if(choice===null)return;
+ const targetId=Number(choice);
+ if(!options.some(v=>Number(v.id)===targetId)){status.textContent='Choose one of the listed location IDs.';status.classList.add('is-error');return;}
+ if(!window.confirm('Remove '+venue.venue_name+' and reassign its sessions to '+options.find(v=>Number(v.id)===targetId).venue_name+'? This changes saved records immediately.'))return;
+ remove.disabled=true;
+ try{
+  const response=await fetch('/api/admin-activities.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'remove_saved_venue',id:original.id,venue_id:savedId,target_venue_id:targetId,csrf:listingCsrf})});
+  const result=await response.json();if(!response.ok||!result.ok)throw Error(result.error||'Could not remove saved location.');
+  location.reload();
+ }catch(error){status.textContent=error.message;status.classList.add('is-error');remove.disabled=false;}
+});row.append(remove);
  row.addEventListener('input',syncVenueSelectors);extraVenueRows.append(row);addLocationLookup(row,key=>row.querySelector('[data-vfield="'+key+'"]'));syncVenueSelectors();
 };
 (original?.venues||[]).slice(1).forEach(addVenue);
+if(original?.id){
+ const duplicates=new Map();
+ for(const venue of original.venues||[]){
+  const key=String(venue.venue_name||'').trim().toLowerCase()+'|'+String(venue.postcode||'').replace(/\\s+/g,'').toUpperCase();
+  if(key.split('|')[0]&&key.split('|')[1])duplicates.set(key,(duplicates.get(key)||0)+1);
+ }
+ if([...duplicates.values()].some(n=>n>1)){
+  const consolidate=document.createElement('button');consolidate.type='button';consolidate.className='button button-soft';consolidate.textContent='Consolidate duplicate saved locations';
+  consolidate.addEventListener('click',async()=>{
+   if(!window.confirm('Merge saved locations with identical names and postcodes? Their sessions will be moved to the earliest venue record. Reload after completion.'))return;
+   consolidate.disabled=true;
+   try{
+    const response=await fetch('/api/admin-activities.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'consolidate_duplicate_venues',id:original.id,csrf:listingCsrf})});
+    const result=await response.json();if(!response.ok||!result.ok)throw Error(result.error||'Could not consolidate locations.');
+    status.textContent='Consolidated '+result.removed+' duplicate location(s); reassigned '+result.sessions_reassigned+' session(s). Reloading…';
+    location.reload();
+   }catch(error){status.textContent=error.message;status.classList.add('is-error');consolidate.disabled=false;}
+  });
+  extraVenueRows.parentElement.insertBefore(consolidate,extraVenueRows);
+ }
+}
+
 document.getElementById('adminAddVenue')?.addEventListener('click',()=>addVenue());
 form.elements.namedItem('venue_name')?.addEventListener('input',syncVenueSelectors);
 // Postcode geocoding: user may override the coordinates at any time.
@@ -186,6 +239,20 @@ function addLocationLookup(container,field){if(!container)return;const postcode=
 addLocationLookup(document.getElementById('adminAdditionalVenues'), key=>form.elements.namedItem(key));
 extraVenueRows?.addEventListener('click',event=>{if(event.target.id!=='adminAddVenue')return;});
 const collectVenues=()=>[...extraVenueRows.children].map(row=>({id:Number(row.dataset.savedId)||0,...Object.fromEntries([...row.querySelectorAll('[data-vfield]')].map(input=>[input.dataset.vfield,input.value.trim()]))}));
+const duplicateVenueWarning=()=>{
+ const venues=[{venue_name:form.elements.namedItem('venue_name')?.value,postcode:form.elements.namedItem('postcode')?.value},...collectVenues()];
+ const seen=new Set();
+ for(const venue of venues){
+  const name=String(venue.venue_name||'').trim().toLowerCase().replace(/\s+/g,' ');
+  const postcode=String(venue.postcode||'').toUpperCase().replace(/\s+/g,'');
+  if(!name)continue;
+  const key=name+'|'+postcode;
+  if(seen.has(key))return 'Duplicate location: '+venue.venue_name+'. Reuse the existing location rather than saving another copy.';
+  seen.add(key);
+ }
+ return '';
+};
+
 // Schedule editor: preserves existing sessions and supports multiple new sessions.
 const scheduleSection=document.getElementById('adminListingSchedule'),scheduleRows=document.getElementById('adminScheduleRows');
 const addSession=(s={})=>{
@@ -272,8 +339,8 @@ const previewImportedSessions=(entries,note='')=>{
  add.addEventListener('click',()=>{
   const selected=checks.filter(row=>row.check.checked);
   if(!selected.length){importMessage.textContent='Select at least one class to add.';return;}
-  const invalid=selected.find(row=>!row.title.value.trim()||/confirm/i.test(row.title.value.trim())||!row.startTime.value||(row.from.value&&row.to.value&&row.to.value<row.from.value));
-  if(invalid){invalid.check.closest('fieldset').style.borderColor='#b42318';importMessage.textContent='Class '+(checks.indexOf(invalid)+1)+' needs a class name, start time and valid dates. Correct the highlighted class and try again.';return;}
+  const invalid=selected.find(row=>!row.title.value.trim()||/confirm/i.test(row.title.value.trim())||!row.startTime.value||!row.endTime.value||row.endTime.value<=row.startTime.value||(row.from.value&&row.to.value&&row.to.value<row.from.value));
+  if(invalid){invalid.check.closest('fieldset').style.borderColor='#b42318';importMessage.textContent='Class '+(checks.indexOf(invalid)+1)+' needs a class name, valid start/end times and valid dates. Correct the highlighted class and try again.';return;}
   const known=new Set([...scheduleRows.children].map(row=>{
    const v={};row.querySelectorAll('[data-session-field]').forEach(el=>v[el.dataset.sessionField]=el.value);
    return [row.querySelector('[data-session-venue]')?.value||'0',v.start_date,v.end_date,v.start_time,v.day_of_week,String(v.class_name||'').trim().toLowerCase()].join('|');
@@ -319,6 +386,46 @@ document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',(
  let feedback=document.getElementById('adminPastePreviewMessage');
  if(!feedback){feedback=document.createElement('p');feedback.id='adminPastePreviewMessage';feedback.setAttribute('role','status');button.after(feedback);}
 
+ // Accept ordinary one-session-per-line CSV and weekday-first timetable rows.
+ const simpleSessions=[];
+ const unrecognisedLines=[];
+ const simpleDays={mon:1,monday:1,tue:2,tues:2,tuesday:2,wed:3,wednesday:3,thu:4,thur:4,thurs:4,thursday:4,fri:5,friday:5,sat:6,saturday:6,sun:7,sunday:7};
+ const normaliseClock=value=>{
+  const match=String(value).trim().match(/^(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm)?$/i);
+  if(!match)return '';
+  let hour=Number(match[1]);const minute=Number(match[2]||0),meridiem=(match[3]||'').toLowerCase();
+  if(minute>59||hour>23||(meridiem&&(hour<1||hour>12)))return '';
+  if(meridiem)hour=hour%12+(meridiem==='pm'?12:0);
+  return String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0');
+ };
+ for(const raw of rows){
+  const line=raw.trim();if(!line)continue;
+  let day='',title='',start='',end='';
+  const parts=line.split(',').map(v=>v.trim());
+  if(parts.length>=3){
+   if(simpleDays[parts[0].toLowerCase()]){day=parts[0];title=parts.slice(2).join(',');[start,end]=parts[1].split(/\s*[-–—]\s*/);}
+   else if(simpleDays[parts[1].toLowerCase()]){title=parts[0];day=parts[1];if(parts.length>=4){start=parts[2];end=parts[3];}else [start,end]=parts[2].split(/\s*[-–—]\s*/);}
+  }
+  if(!day){
+   const match=line.match(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)s?\s*[,|:]?\s*(\d{1,2}(?:[:.]\d{2})?\s*(?:am|pm)?)\s*[-–—]\s*(\d{1,2}(?:[:.]\d{2})?\s*(?:am|pm)?)\s*[|,]\s*(.+)$/i);
+   if(match){day=match[1];start=match[2];end=match[3];title=match[4];}
+  }
+  // Allow pasted spreadsheet rows with separate start and finish columns.
+  if(day&&parts.length>=4&&simpleDays[parts[0].toLowerCase()]){
+   const candidateStart=normaliseClock(parts[1]),candidateEnd=normaliseClock(parts[2]);
+   if(candidateStart&&candidateEnd){start=parts[1];end=parts[2];title=parts.slice(3).join(',');}
+  }
+  const from=normaliseClock(start),to=normaliseClock(end),weekday=simpleDays[day.toLowerCase()];
+  if(weekday&&from&&to&&from<to&&title){
+   simpleSessions.push({title,class_name:title,day_of_week:weekday,start_time:from,end_time:to,start_date:'',end_date:'',frequency:'weekly'});
+  }else if(line.includes(',')||/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/i.test(line))unrecognisedLines.push(line);
+ }
+ if(simpleSessions.length){
+  const unique=[...new Map(simpleSessions.map(s=>[[s.day_of_week,s.start_time,s.end_time,s.title].join('|'),s])).values()];
+  feedback.textContent=unique.length+' session(s) recognised. Review all sessions before adding.'+(unrecognisedLines.length?' '+unrecognisedLines.length+' line(s) need manual review: '+unrecognisedLines.slice(0,3).join(' | '):'');
+  previewImportedSessions(unique,'Weekly timetable detected. Review venue and dates before saving.');
+  return;
+ }
  // Natural-language schedules: title, date/weekday + time, optional Location.
  const blocks=field.value.split(/\n\s*\n/).map(s=>s.split(/\r?\n/).map(x=>x.trim()).filter(Boolean)).filter(b=>b.length>=2);
  const dayNames={monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6,sunday:7};
@@ -522,12 +629,16 @@ document.getElementById('adminPosterApply')?.addEventListener('click',()=>{
 });
 const collectSessions=()=>[...scheduleRows.children].map(row=>{const s={id:Number(row.dataset.sessionId||0),venue_index:Number(row.querySelector('[data-session-venue]')?.value||0)};row.querySelectorAll('[data-session-field]').forEach(el=>s[el.dataset.sessionField]=el.type==='checkbox'?(el.checked?1:0):el.value);return s;}).filter(s=>s.day_of_week||s.start_time);
  // Seven-step admin editor, matching the class leader's new listing workflow.
-const steps=[['Basics',['title','organisation_name']],['About',['description','category','tags','age_preset','age_range','price_from','pricing_unit','block_length_weeks','price_free']],['Extra',['booking_url','email','phone','website','status']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address','latitude','longitude']],['Photos',['image_path']],['Review',[]]];
+const steps=[['Basics',['title','organisation_name']],['About',['category','tags','age_preset','age_range','price_from','pricing_unit','block_length_weeks','price_free']],['Description',[]],['Extra',['booking_url','email','phone','website','status']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address','latitude','longitude']],['Photos',['image_path']],['Review',[]]];
 const stepNav=document.getElementById('adminListingSteps');
 const back=document.getElementById('adminListingBack'),next=document.getElementById('adminListingNext'),save=document.getElementById('adminListingSubmit');
-const labels=[...form.querySelectorAll('.admin-form-grid > label')];
+document.getElementById('adminSaveNow')?.addEventListener('click',()=>form.requestSubmit(save));
+const labels=[...form.querySelectorAll('.admin-form-grid > label')].filter(label=>!label.closest('#adminListingGallery'));
 let step=0;
 const review=document.createElement('div');review.className='bh-review';review.hidden=true;form.querySelector('.admin-form-grid:last-of-type').after(review);
+const descriptionField=form.elements.namedItem('description');const richEditor=document.getElementById('adminDescriptionEditor');const descriptionSection=document.getElementById('adminDescriptionSection');
+const cleanDescription=html=>{const doc=new DOMParser().parseFromString(html,'text/html');const allowed=new Set(['P','BR','STRONG','B','EM','I','H2','H3','UL','OL','LI','A']);const walk=node=>{for(const child of [...node.childNodes]){if(child.nodeType===8){child.remove();continue;}if(child.nodeType!==1)continue;if(!allowed.has(child.tagName)){if(['SCRIPT','STYLE','IFRAME','OBJECT','SVG','FORM'].includes(child.tagName)){child.remove();continue;}walk(child);child.replaceWith(...child.childNodes);continue;}for(const attr of [...child.attributes]){if(child.tagName==='A'&&attr.name==='href'&&/^https?:\/\//i.test(attr.value))continue;child.removeAttribute(attr.name);}walk(child);}};walk(doc.body);return doc.body.innerHTML;};
+if(richEditor&&descriptionField){richEditor.innerHTML=cleanDescription(descriptionField.value);richEditor.addEventListener('input',()=>{descriptionField.value=cleanDescription(richEditor.innerHTML);});document.querySelectorAll('[data-format]').forEach(btn=>btn.addEventListener('click',()=>{richEditor.focus();const cmd=btn.dataset.format;if(cmd==='createLink'){const url=prompt('Enter an https:// link');if(!url||!/^https?:\/\//i.test(url))return;document.execCommand('createLink',false,url);}else if(cmd==='h3')document.execCommand('formatBlock',false,'h3');else document.execCommand(cmd,false,null);descriptionField.value=cleanDescription(richEditor.innerHTML);}));}
 const identity=document.getElementById('adminListingIdentity');
 const websiteImport=document.getElementById('bhAutoFillRun')?.closest('section');
 const posterImport=document.getElementById('adminPosterImage')?.closest('.bh-card');
@@ -535,12 +646,14 @@ form.noValidate=true;
 const renderStep=()=>{
  const current=steps[step];
  if(identity)identity.hidden=step!==0;
+ if(descriptionSection)descriptionSection.hidden=step!==2;
+ const gallerySection=document.getElementById('adminListingGallery');if(gallerySection)gallerySection.hidden=step!==6;
  if(websiteImport)websiteImport.hidden=step!==0;
  if(posterImport)posterImport.hidden=step!==0;
- labels.forEach(label=>{const field=label.querySelector('[name]');const name=field?.name;label.hidden=step===6||(!current[1].includes(name)&&!(step===4&&label.querySelector('#existingVenueSelect')));label.style.display=label.hidden?'none':'';});
- review.hidden=step!==6;const extraSection=document.getElementById('adminAdditionalVenues');if(extraSection)extraSection.hidden=step!==4;if(scheduleSection)scheduleSection.hidden=step!==3;
- if(step===6){review.replaceChildren();labels.forEach(label=>{const el=label.querySelector('[name]');if(!el)return;const line=document.createElement('p');const strong=document.createElement('strong');strong.textContent=label.textContent.trim()+': ';line.append(strong,document.createTextNode(el.value||'—'));review.append(line);});}
- back.hidden=step===0;next.hidden=step===6;save.hidden=step!==6;
+ labels.forEach(label=>{const field=label.querySelector('[name]');const name=field?.name;label.hidden=step===7||(!current[1].includes(name)&&!(step===4&&label.querySelector('#existingVenueSelect')));label.style.display=label.hidden?'none':'';});
+ review.hidden=step!==7;const extraSection=document.getElementById('adminAdditionalVenues');if(extraSection)extraSection.hidden=step!==5;if(scheduleSection)scheduleSection.hidden=step!==4;
+ if(step===7){review.replaceChildren();labels.forEach(label=>{const el=label.querySelector('[name]');if(!el)return;const line=document.createElement('p');const strong=document.createElement('strong');strong.textContent=label.textContent.trim()+': ';line.append(strong,document.createTextNode(el.value||'—'));review.append(line);});}
+ back.hidden=step===0;next.hidden=step===7;save.hidden=step!==7;
  [...stepNav.children].forEach((b,i)=>{b.classList.toggle('active',i===step);b.setAttribute('aria-current',i===step?'step':'false');});
 };
 steps.forEach(([name],i)=>{const b=document.createElement('button');b.type='button';b.className='bh-step';b.innerHTML='<span>'+(i+1)+'</span>'+name;b.addEventListener('click',()=>{step=i;renderStep();});stepNav.append(b);});
@@ -550,21 +663,21 @@ next.addEventListener('click',()=>{
  const required=labels.filter(l=>!l.hidden).map(l=>l.querySelector('[required]')).filter(Boolean).filter(el=>!(hasImported&&['venue_name','town'].includes(el.name)));
  const invalid=required.find(el=>!String(el.value||'').trim());
  if(invalid){invalid.reportValidity();return;}
- step=Math.min(6,step+1);renderStep();
+ step=Math.min(7,step+1);renderStep();
  document.getElementById('adminListingSteps')?.scrollIntoView({block:'start',behavior:'smooth'});
 });
 renderStep();
-form.addEventListener('submit',async e=>{e.preventDefault();status.textContent='Checking listing…';try{status.classList.remove('is-error');const importedLocations=collectVenues().filter(v=>v.venue_name);
+form.addEventListener('submit',async e=>{e.preventDefault();if(richEditor&&descriptionField)descriptionField.value=cleanDescription(richEditor.innerHTML);status.textContent='Checking listing…';try{status.classList.remove('is-error');const importedLocations=collectVenues().filter(v=>v.venue_name);
 if(importedLocations.length&&!String(form.elements.namedItem('town')?.value||'').trim()){
  const first=importedLocations[0];
- if(!first.town){status.textContent='Please confirm the town for '+first.venue_name+' in Additional locations before saving.';status.classList.add('is-error');step=4;renderStep();return;}
+ if(!first.town){status.textContent='Please confirm the town for '+first.venue_name+' in Additional locations before saving.';status.classList.add('is-error');step=5;renderStep();return;}
  for(const key of ['venue_name','town','region','postcode','address','latitude','longitude']){
   const field=form.elements.namedItem(key);if(field)field.value=first[key]||'';
  }
  const firstRow=[...extraVenueRows.children].find(row=>row.querySelector('[data-vfield="venue_name"]')?.value===first.venue_name&&postcodeKey(row.querySelector('[data-vfield="postcode"]')?.value)===postcodeKey(first.postcode));
  if(firstRow){firstRow.remove();scheduleRows.querySelectorAll('[data-session-venue]').forEach(select=>{const previous=Number(select.value);select.value=String(previous===1?0:previous>1?previous-1:0);});syncVenueSelectors();}
 }
-const requiredNames=['title','organisation_name','category',...(collectVenues().some(v=>v.venue_name)?[]:['venue_name','town'])];const missing=requiredNames.find(name=>!String(form.elements.namedItem(name)?.value||'').trim());if(missing){status.textContent='Please complete '+missing.replaceAll('_',' ')+' before saving.';status.classList.add('is-error');step=['title','organisation_name'].includes(missing)?0:missing==='category'?1:4;renderStep();return;}const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};delete body.age_preset;body.tags=String(form.elements.namedItem("tags")?.value||"").split(",").map(t=>t.trim()).filter(Boolean).slice(0,20).join(", ");
+const requiredNames=['title','organisation_name','category',...(collectVenues().some(v=>v.venue_name)?[]:['venue_name','town'])];const missing=requiredNames.find(name=>!String(form.elements.namedItem(name)?.value||'').trim());if(missing){status.textContent='Please complete '+missing.replaceAll('_',' ')+' before saving.';status.classList.add('is-error');step=['title','organisation_name'].includes(missing)?0:missing==='category'?1:5;renderStep();return;}const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};delete body.age_preset;body.tags=String(form.elements.namedItem("tags")?.value||"").split(",").map(t=>t.trim()).filter(Boolean).slice(0,20).join(", ");
 body.price_free=free.checked?1:0;body.price_per_family=!free.checked&&unit.value==='per_family'?1:0;body.price_per_session=!free.checked&&unit.value==='per_session'?1:0;body.pricing_unit=unit.value;body.block_length_weeks=unit.value==='per_block'&&!free.checked?Number(blockWeeks.value):null;body.id=original?.id||null;// When the review is still open, transfer the selected classes before collecting
 // the payload. The user should not have to click a second button to save them.
 if(importResults.querySelector('fieldset')){
@@ -573,11 +686,11 @@ if(importResults.querySelector('fieldset')){
   accept.click();
   if(importResults.querySelector('fieldset')){
    status.textContent=importMessage.textContent||'Please correct the highlighted imported class before saving.';
-   status.classList.add('is-error');step=3;renderStep();return;
+   status.classList.add('is-error');step=4;renderStep();return;
   }
  }
 }
-body.sessions=collectSessions();body.venues=collectVenues();body.import_source_urls=[...new Set((document.getElementById('adminIcalUrl')?.value||'').split(/[\s,]+/).map(v=>v.trim()).filter(v=>/^https:\/\//i.test(v)))];if(importResults.querySelector('fieldset')&&body.sessions.length===0){status.textContent='Imported classes are awaiting review. Click Add reviewed classes before saving.';status.classList.add('is-error');step=3;renderStep();return;}if(importResults.querySelector('fieldset')&&body.sessions.length>0){importMessage.textContent='Imported preview remains open, but the '+body.sessions.length+' timetable rows below will be saved. Preview-only classes will not be included.';}body.accessibility=original?.accessibility||[];
+const duplicateWarning=duplicateVenueWarning();if(duplicateWarning){status.textContent=duplicateWarning;status.classList.add('is-error');step=4;renderStep();return;}body.sessions=collectSessions();body.venues=collectVenues();body.import_source_urls=[...new Set((document.getElementById('adminIcalUrl')?.value||'').split(/[\s,]+/).map(v=>v.trim()).filter(v=>/^https:\/\//i.test(v)))];if(importResults.querySelector('fieldset')&&body.sessions.length===0){status.textContent='Imported classes are awaiting review. Click Add reviewed classes before saving.';status.classList.add('is-error');step=3;renderStep();return;}if(importResults.querySelector('fieldset')&&body.sessions.length>0){importMessage.textContent='Imported preview remains open, but the '+body.sessions.length+' timetable rows below will be saved. Preview-only classes will not be included.';}body.accessibility=original?.accessibility||[];
 body.latitude=form.elements.namedItem('latitude')?.value||'';body.longitude=form.elements.namedItem('longitude')?.value||'';body.sessions=body.sessions.map(s=>({...s,price:s.price??'',start_date:s.start_date??'',end_date:s.end_date??''}));
 if(body.sessions.some(s=>!s.day_of_week||!s.start_time||s.end_time&&s.end_time<=s.start_time)){status.textContent='Each session needs a day and start time, and its end time must be later than its start time.';status.classList.add('is-error');step=3;renderStep();return;}if(original?.id&&body.sessions.length===0&&!window.confirm('No sessions are included in this save. Existing sessions will be kept, but no new timetable will be added. Continue?'))return;button.disabled=true;status.textContent='Saving listing and '+body.sessions.length+' session(s)…';status.classList.remove('is-error');
 try{const r=await fetch('/api/admin-activities.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(body)});if(r.status===401){redirect();return;}const raw=await r.text();let d;try{d=JSON.parse(raw);}catch{throw Error('Server returned an invalid response (HTTP '+r.status+').');}if(!r.ok||!d.ok)throw Error(d.error||'Could not save listing (HTTP '+r.status+').');status.textContent='Checking saved timetable against the editor…';
