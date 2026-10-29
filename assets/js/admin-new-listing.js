@@ -17,7 +17,7 @@ const syncBlockWeeks=()=>{const show=unit.value==='per_block'&&!free.checked;blo
 preset.addEventListener('change',applyPreset);
 free.addEventListener('change',()=>{price.disabled=free.checked;if(free.checked)price.value='0';});
 if(!id){syncBlockWeeks();[...preset.options].forEach(o=>o.selected=o.value==='0-12');applyPreset();}
-if(id){status.textContent='Loading listing…';const r=await fetch('/api/admin-activities.php?id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load listing.');original=d.data;listingCsrf=d.csrf||'';for(const el of form.elements){if(el.name&&Object.hasOwn(original,el.name))el.value=original[el.name]??'';}for(const input of gallery?.querySelectorAll('input')||[])input.dispatchEvent(new Event('input'));syncBlockWeeks();const lo=original.age_min_months,hi=original.age_max_months;
+if(id){status.textContent='Loading listing…';const r=await fetch('/api/admin-activities.php?id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load listing.');original=d.data;listingCsrf=d.csrf||'';for(const el of form.elements){if(el.name&&Object.hasOwn(original,el.name))el.value=original[el.name]??'';}window.bhLoadRichDescription?.();for(const input of gallery?.querySelectorAll('input')||[])input.dispatchEvent(new Event('input'));syncBlockWeeks();const lo=original.age_min_months,hi=original.age_max_months;
 
 const existing=Object.entries(presets).find(([,v])=>lo!==null&&lo!==undefined&&lo!==''&&Number(lo)===v[0]&&((hi===null||hi===undefined||hi==='')?v[1]===null:Number(hi)===v[1]));
 const savedLabels=String(original.age_range||'').split(',').map(s=>s.trim());const matches=Object.entries(presets).filter(([,v])=>savedLabels.includes(v[2])).map(([k])=>k);[...preset.options].forEach(o=>o.selected=matches.length?matches.includes(o.value):o.value===(existing?.[0]||''));
@@ -589,7 +589,39 @@ let step=0;
 const review=document.createElement('div');review.className='bh-review';review.hidden=true;form.querySelector('.admin-form-grid:last-of-type').after(review);
 const descriptionField=form.elements.namedItem('description');const richEditor=document.getElementById('adminDescriptionEditor');const descriptionSection=document.getElementById('adminDescriptionSection');
 const cleanDescription=html=>{const doc=new DOMParser().parseFromString(html,'text/html');const allowed=new Set(['P','BR','STRONG','B','EM','I','H2','H3','UL','OL','LI','A']);const walk=node=>{for(const child of [...node.childNodes]){if(child.nodeType===8){child.remove();continue;}if(child.nodeType!==1)continue;if(!allowed.has(child.tagName)){if(['SCRIPT','STYLE','IFRAME','OBJECT','SVG','FORM'].includes(child.tagName)){child.remove();continue;}walk(child);child.replaceWith(...child.childNodes);continue;}for(const attr of [...child.attributes]){if(child.tagName==='A'&&attr.name==='href'&&/^https?:\/\//i.test(attr.value))continue;child.removeAttribute(attr.name);}walk(child);}};walk(doc.body);return doc.body.innerHTML;};
-if(richEditor&&descriptionField){richEditor.innerHTML=cleanDescription(descriptionField.value);richEditor.addEventListener('input',()=>{descriptionField.value=cleanDescription(richEditor.innerHTML);});document.querySelectorAll('[data-format]').forEach(btn=>btn.addEventListener('click',()=>{richEditor.focus();const cmd=btn.dataset.format;if(cmd==='createLink'){const url=prompt('Enter an https:// link');if(!url||!/^https?:\/\//i.test(url))return;document.execCommand('createLink',false,url);}else if(cmd==='h3')document.execCommand('formatBlock',false,'h3');else document.execCommand(cmd,false,null);descriptionField.value=cleanDescription(richEditor.innerHTML);}));}
+if(richEditor&&descriptionField){
+ const syncDescription=()=>{descriptionField.value=cleanDescription(richEditor.innerHTML);};
+ const loadDescription=()=>{richEditor.innerHTML=cleanDescription(descriptionField.value);};
+ let selectedRange=null;
+ const captureSelection=()=>{const selection=window.getSelection();if(selection&&selection.rangeCount&&richEditor.contains(selection.anchorNode)&&richEditor.contains(selection.focusNode))selectedRange=selection.getRangeAt(0).cloneRange();};
+ const restoreSelection=()=>{richEditor.focus();if(selectedRange){const selection=window.getSelection();selection.removeAllRanges();selection.addRange(selectedRange);}};
+ loadDescription();
+ richEditor.addEventListener('input',()=>{syncDescription();captureSelection();});
+ richEditor.addEventListener('keyup',captureSelection);
+ richEditor.addEventListener('mouseup',captureSelection);
+ document.addEventListener('selectionchange',()=>{if(!descriptionSection.hidden)captureSelection();});
+ document.querySelectorAll('[data-format]').forEach(btn=>{
+  btn.addEventListener('mousedown',event=>event.preventDefault());
+  btn.addEventListener('click',()=>{
+   const cmd=btn.dataset.format;
+   let url='';
+   if(cmd==='createLink'){url=prompt('Enter a full https:// or http:// link')||'';if(!/^https?:\/\//i.test(url))return;}
+   restoreSelection();
+   if(cmd==='createLink')document.execCommand('createLink',false,url);
+   else if(cmd==='h3')document.execCommand('formatBlock',false,'h3');
+   else document.execCommand(cmd,false,null);
+   syncDescription();captureSelection();
+  });
+ });
+ richEditor.addEventListener('paste',event=>{
+  event.preventDefault();
+  const plain=event.clipboardData?.getData('text/plain')||'';
+  document.execCommand('insertText',false,plain);
+  syncDescription();
+ });
+ window.bhSyncRichDescription=syncDescription;
+ window.bhLoadRichDescription=loadDescription;
+}
 const identity=document.getElementById('adminListingIdentity');
 const websiteImport=document.getElementById('bhAutoFillRun')?.closest('section');
 const posterImport=document.getElementById('adminPosterImage')?.closest('.bh-card');
