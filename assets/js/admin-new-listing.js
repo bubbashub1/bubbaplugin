@@ -580,13 +580,16 @@ document.getElementById('adminPosterApply')?.addEventListener('click',()=>{
 });
 const collectSessions=()=>[...scheduleRows.children].map(row=>{const s={id:Number(row.dataset.sessionId||0),venue_index:Number(row.querySelector('[data-session-venue]')?.value||0)};row.querySelectorAll('[data-session-field]').forEach(el=>s[el.dataset.sessionField]=el.type==='checkbox'?(el.checked?1:0):el.value);return s;}).filter(s=>s.day_of_week||s.start_time);
  // Seven-step admin editor, matching the class leader's new listing workflow.
-const steps=[['Basics',['title','organisation_name']],['About',['description','category','tags','age_preset','age_range','price_from','pricing_unit','block_length_weeks','price_free']],['Extra',['booking_url','email','phone','website','status']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address','latitude','longitude']],['Photos',['image_path']],['Review',[]]];
+const steps=[['Basics',['title','organisation_name']],['About',['category','tags','age_preset','age_range','price_from','pricing_unit','block_length_weeks','price_free']],['Description',[]],['Extra',['booking_url','email','phone','website','status']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address','latitude','longitude']],['Photos',['image_path']],['Review',[]]];
 const stepNav=document.getElementById('adminListingSteps');
 const back=document.getElementById('adminListingBack'),next=document.getElementById('adminListingNext'),save=document.getElementById('adminListingSubmit');
 document.getElementById('adminSaveNow')?.addEventListener('click',()=>form.requestSubmit(save));
 const labels=[...form.querySelectorAll('.admin-form-grid > label')].filter(label=>!label.closest('#adminListingGallery'));
 let step=0;
 const review=document.createElement('div');review.className='bh-review';review.hidden=true;form.querySelector('.admin-form-grid:last-of-type').after(review);
+const descriptionField=form.elements.namedItem('description');const richEditor=document.getElementById('adminDescriptionEditor');const descriptionSection=document.getElementById('adminDescriptionSection');
+const cleanDescription=html=>{const doc=new DOMParser().parseFromString(html,'text/html');const allowed=new Set(['P','BR','STRONG','B','EM','I','H2','H3','UL','OL','LI','A']);const walk=node=>{for(const child of [...node.childNodes]){if(child.nodeType===8){child.remove();continue;}if(child.nodeType!==1)continue;if(!allowed.has(child.tagName)){if(['SCRIPT','STYLE','IFRAME','OBJECT','SVG','FORM'].includes(child.tagName)){child.remove();continue;}walk(child);child.replaceWith(...child.childNodes);continue;}for(const attr of [...child.attributes]){if(child.tagName==='A'&&attr.name==='href'&&/^https?:\\/\\//i.test(attr.value))continue;child.removeAttribute(attr.name);}walk(child);}};walk(doc.body);return doc.body.innerHTML;};
+if(richEditor&&descriptionField){richEditor.innerHTML=cleanDescription(descriptionField.value);richEditor.addEventListener('input',()=>{descriptionField.value=cleanDescription(richEditor.innerHTML);});document.querySelectorAll('[data-format]').forEach(btn=>btn.addEventListener('click',()=>{richEditor.focus();const cmd=btn.dataset.format;if(cmd==='createLink'){const url=prompt('Enter an https:// link');if(!url||!/^https?:\\/\\//i.test(url))return;document.execCommand('createLink',false,url);}else if(cmd==='h3')document.execCommand('formatBlock',false,'h3');else document.execCommand(cmd,false,null);descriptionField.value=cleanDescription(richEditor.innerHTML);}));}
 const identity=document.getElementById('adminListingIdentity');
 const websiteImport=document.getElementById('bhAutoFillRun')?.closest('section');
 const posterImport=document.getElementById('adminPosterImage')?.closest('.bh-card');
@@ -594,13 +597,14 @@ form.noValidate=true;
 const renderStep=()=>{
  const current=steps[step];
  if(identity)identity.hidden=step!==0;
- const gallerySection=document.getElementById('adminListingGallery');if(gallerySection)gallerySection.hidden=step!==5;
+ if(descriptionSection)descriptionSection.hidden=step!==2;
+ const gallerySection=document.getElementById('adminListingGallery');if(gallerySection)gallerySection.hidden=step!==6;
  if(websiteImport)websiteImport.hidden=step!==0;
  if(posterImport)posterImport.hidden=step!==0;
- labels.forEach(label=>{const field=label.querySelector('[name]');const name=field?.name;label.hidden=step===6||(!current[1].includes(name)&&!(step===4&&label.querySelector('#existingVenueSelect')));label.style.display=label.hidden?'none':'';});
- review.hidden=step!==6;const extraSection=document.getElementById('adminAdditionalVenues');if(extraSection)extraSection.hidden=step!==4;if(scheduleSection)scheduleSection.hidden=step!==3;
- if(step===6){review.replaceChildren();labels.forEach(label=>{const el=label.querySelector('[name]');if(!el)return;const line=document.createElement('p');const strong=document.createElement('strong');strong.textContent=label.textContent.trim()+': ';line.append(strong,document.createTextNode(el.value||'—'));review.append(line);});}
- back.hidden=step===0;next.hidden=step===6;save.hidden=step!==6;
+ labels.forEach(label=>{const field=label.querySelector('[name]');const name=field?.name;label.hidden=step===7||(!current[1].includes(name)&&!(step===4&&label.querySelector('#existingVenueSelect')));label.style.display=label.hidden?'none':'';});
+ review.hidden=step!==7;const extraSection=document.getElementById('adminAdditionalVenues');if(extraSection)extraSection.hidden=step!==5;if(scheduleSection)scheduleSection.hidden=step!==4;
+ if(step===7){review.replaceChildren();labels.forEach(label=>{const el=label.querySelector('[name]');if(!el)return;const line=document.createElement('p');const strong=document.createElement('strong');strong.textContent=label.textContent.trim()+': ';line.append(strong,document.createTextNode(el.value||'—'));review.append(line);});}
+ back.hidden=step===0;next.hidden=step===7;save.hidden=step!==7;
  [...stepNav.children].forEach((b,i)=>{b.classList.toggle('active',i===step);b.setAttribute('aria-current',i===step?'step':'false');});
 };
 steps.forEach(([name],i)=>{const b=document.createElement('button');b.type='button';b.className='bh-step';b.innerHTML='<span>'+(i+1)+'</span>'+name;b.addEventListener('click',()=>{step=i;renderStep();});stepNav.append(b);});
@@ -610,21 +614,21 @@ next.addEventListener('click',()=>{
  const required=labels.filter(l=>!l.hidden).map(l=>l.querySelector('[required]')).filter(Boolean).filter(el=>!(hasImported&&['venue_name','town'].includes(el.name)));
  const invalid=required.find(el=>!String(el.value||'').trim());
  if(invalid){invalid.reportValidity();return;}
- step=Math.min(6,step+1);renderStep();
+ step=Math.min(7,step+1);renderStep();
  document.getElementById('adminListingSteps')?.scrollIntoView({block:'start',behavior:'smooth'});
 });
 renderStep();
-form.addEventListener('submit',async e=>{e.preventDefault();status.textContent='Checking listing…';try{status.classList.remove('is-error');const importedLocations=collectVenues().filter(v=>v.venue_name);
+form.addEventListener('submit',async e=>{e.preventDefault();if(richEditor&&descriptionField)descriptionField.value=cleanDescription(richEditor.innerHTML);status.textContent='Checking listing…';try{status.classList.remove('is-error');const importedLocations=collectVenues().filter(v=>v.venue_name);
 if(importedLocations.length&&!String(form.elements.namedItem('town')?.value||'').trim()){
  const first=importedLocations[0];
- if(!first.town){status.textContent='Please confirm the town for '+first.venue_name+' in Additional locations before saving.';status.classList.add('is-error');step=4;renderStep();return;}
+ if(!first.town){status.textContent='Please confirm the town for '+first.venue_name+' in Additional locations before saving.';status.classList.add('is-error');step=5;renderStep();return;}
  for(const key of ['venue_name','town','region','postcode','address','latitude','longitude']){
   const field=form.elements.namedItem(key);if(field)field.value=first[key]||'';
  }
  const firstRow=[...extraVenueRows.children].find(row=>row.querySelector('[data-vfield="venue_name"]')?.value===first.venue_name&&postcodeKey(row.querySelector('[data-vfield="postcode"]')?.value)===postcodeKey(first.postcode));
  if(firstRow){firstRow.remove();scheduleRows.querySelectorAll('[data-session-venue]').forEach(select=>{const previous=Number(select.value);select.value=String(previous===1?0:previous>1?previous-1:0);});syncVenueSelectors();}
 }
-const requiredNames=['title','organisation_name','category',...(collectVenues().some(v=>v.venue_name)?[]:['venue_name','town'])];const missing=requiredNames.find(name=>!String(form.elements.namedItem(name)?.value||'').trim());if(missing){status.textContent='Please complete '+missing.replaceAll('_',' ')+' before saving.';status.classList.add('is-error');step=['title','organisation_name'].includes(missing)?0:missing==='category'?1:4;renderStep();return;}const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};delete body.age_preset;body.tags=String(form.elements.namedItem("tags")?.value||"").split(",").map(t=>t.trim()).filter(Boolean).slice(0,20).join(", ");
+const requiredNames=['title','organisation_name','category',...(collectVenues().some(v=>v.venue_name)?[]:['venue_name','town'])];const missing=requiredNames.find(name=>!String(form.elements.namedItem(name)?.value||'').trim());if(missing){status.textContent='Please complete '+missing.replaceAll('_',' ')+' before saving.';status.classList.add('is-error');step=['title','organisation_name'].includes(missing)?0:missing==='category'?1:5;renderStep();return;}const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};delete body.age_preset;body.tags=String(form.elements.namedItem("tags")?.value||"").split(",").map(t=>t.trim()).filter(Boolean).slice(0,20).join(", ");
 body.price_free=free.checked?1:0;body.price_per_family=!free.checked&&unit.value==='per_family'?1:0;body.price_per_session=!free.checked&&unit.value==='per_session'?1:0;body.pricing_unit=unit.value;body.block_length_weeks=unit.value==='per_block'&&!free.checked?Number(blockWeeks.value):null;body.id=original?.id||null;// When the review is still open, transfer the selected classes before collecting
 // the payload. The user should not have to click a second button to save them.
 if(importResults.querySelector('fieldset')){
@@ -633,7 +637,7 @@ if(importResults.querySelector('fieldset')){
   accept.click();
   if(importResults.querySelector('fieldset')){
    status.textContent=importMessage.textContent||'Please correct the highlighted imported class before saving.';
-   status.classList.add('is-error');step=3;renderStep();return;
+   status.classList.add('is-error');step=4;renderStep();return;
   }
  }
 }
