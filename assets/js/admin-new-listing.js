@@ -592,6 +592,7 @@ form.noValidate=true;
 const renderStep=()=>{
  const current=steps[step];
  if(identity)identity.hidden=step!==0;
+ const gallerySection=document.getElementById('adminListingGallery');if(gallerySection)gallerySection.hidden=step!==5;
  if(websiteImport)websiteImport.hidden=step!==0;
  if(posterImport)posterImport.hidden=step!==0;
  labels.forEach(label=>{const field=label.querySelector('[name]');const name=field?.name;label.hidden=step===6||(!current[1].includes(name)&&!(step===4&&label.querySelector('#existingVenueSelect')));label.style.display=label.hidden?'none':'';});
