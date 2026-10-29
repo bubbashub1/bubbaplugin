@@ -126,6 +126,16 @@ if(venueSelect){
   const response=await fetch('/api/venues.php',{credentials:'same-origin',cache:'no-store'});
   const payload=await response.json();if(!response.ok||!payload.ok)throw Error(payload.error||'Could not load venues');
   venues=Array.isArray(payload.data)?payload.data:[];directoryVenues=venues;renderVenues();
+  const suggestions=document.getElementById('adminVenueNameSuggestions');
+  const hint=document.getElementById('adminVenueNameHint');
+  if(suggestions&&venueName){
+   const byName=new Map();
+   for(const v of venues){const name=String(v.name||'').trim();if(!name)continue;const key=name.toLocaleLowerCase();if(!byName.has(key))byName.set(key,[]);byName.get(key).push(v);}
+   for(const [key,rows] of byName){const option=document.createElement('option');option.value=rows[0].name;option.label=rows.length===1?[rows[0].town,rows[0].postcode].filter(Boolean).join(' · '):rows.length+' venues — use Choose existing venue to pick the right location';suggestions.append(option);}
+   const chooseVenue=()=>{const name=venueName.value.trim().toLocaleLowerCase();const matches=byName.get(name)||[];if(matches.length===1){const v=matches[0];for(const [fieldName,value] of Object.entries({venue_name:v.name,address:v.address,town:v.town,postcode:v.postcode,region:v.region})){const field=form.elements.namedItem(fieldName);if(field&&value!=null)field.value=String(value);}suggestArea();venueSelect.value=String(v.id);if(hint)hint.textContent='✓ Existing venue selected. Address and postcode filled — review before saving.';}else if(matches.length>1){if(hint)hint.textContent='Multiple locations use this name. Choose the correct one in the existing venue dropdown above.';}else if(hint)hint.textContent='New venue name — complete the address fields manually.';};
+   venueName.addEventListener('change',chooseVenue);
+  }
+
   if(original){const current=venues.find(v=>String(v.name||'').trim().toLowerCase()===String(original.venue_name||'').trim().toLowerCase()&&String(v.postcode||'').trim().toLowerCase()===String(original.postcode||'').trim().toLowerCase());if(current)venueSelect.value=String(current.id);}
   venueMessage.textContent=venues.length+' existing venues available.';
  }catch(error){venueMessage.textContent='Venue lookup unavailable; you can still enter venue details manually.';renderVenues();}
