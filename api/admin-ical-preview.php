@@ -24,7 +24,48 @@ if(!is_string($body)||strlen($body)>1048576||$code!==200)fail(422,'Could not ret
 if(!str_contains($body,'BEGIN:VCALENDAR')){
  $isBookwhen=(bool)preg_match('/(^|\\.)bookwhen\\.com$/i',$host);
  $isBloom=(bool)preg_match('/(^|\\.)bloombabyclasses\\.com$/i',$host);
- if(!$isBookwhen&&!$isBloom)fail(422,'This page does not contain an iCalendar feed. Try the public timetable text importer.');
+ if(!$isBookwhen&&!$isBloom){
+  // Generic public HTML timetable: parse weekday sections and start times.
+  // Do not invent end times or dates. Keep the user-facing preview mandatory.
+  if(!class_exists('DOMDocument'))fail(422,'HTML timetable parsing is unavailable on this server.');
+  $dom=new DOMDocument();$previous=libxml_use_internal_errors(true);
+  $dom->loadHTML('<?xml encoding="utf-8" ?>'.$body);libxml_clear_errors();libxml_use_internal_errors($previous);
+  $xpath=new DOMXPath($dom);
+  foreach($xpath->query('//script|//style|//nav|//footer|//header|//noscript') as $node){$node->parentNode?->removeChild($node);}
+  foreach($xpath->query('//br|//p|//div|//h1|//h2|//h3|//h4|//li|//tr|//td|//section') as $node){
+   if($node->parentNode)$node->parentNode->insertBefore($dom->createTextNode("\n"),$node);
+  }
+  $text=html_entity_decode($dom->textContent,ENT_QUOTES|ENT_HTML5,'UTF-8');
+  $lines=preg_split('/\n+/u',$text);$found=[];$day=0;$context='';
+  $days=['monday'=>1,'tuesday'=>2,'wednesday'=>3,'thursday'=>4,'friday'=>5,'saturday'=>6,'sunday'=>7];
+  foreach($lines as $line){
+   $line=trim(preg_replace('/\s+/u',' ',$line));if($line===''||mb_strlen($line)>250)continue;
+   if(preg_match('/^(?:every\s+)?(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)s?\b[\s:,-]*(.*)$/iu',$line,$dm)){
+    $day=$days[strtolower($dm[1])];$line=trim($dm[2]);$context='';
+    if($line==='')continue;
+   }
+   if(!$day)continue;
+   if(!preg_match_all('/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/iu',$line,$matches,PREG_SET_ORDER)){
+    if(preg_match('/\b(pilates|somatics|yoga|class|online|zoom|studio|with\s+\w+)\b/iu',$line))$context=mb_substr($line,0,120);
+    continue;
+   }
+   foreach($matches as $m){
+    $hour=(int)$m[1];$minute=(int)($m[2]??0);
+    if($hour<1||$hour>12||$minute>59)continue;
+    $hour=$hour%12+(strtolower($m[3])==='pm'?12:0);
+    $start=sprintf('%02d:%02d',$hour,$minute);
+    $title=trim(preg_replace('/\b\d{1,2}(?::\d{2})?\s*(?:am|pm)\b/iu','',$line));
+    $title=trim($title," \t\n\r\0\x0B,|:-–—");
+    if($title===''||mb_strlen($title)<4)$title=$context;
+    if($title==='')$title='Class name to confirm';
+    $key=$day.'|'.$start.'|'.$title;
+    $found[$key]=['title'=>mb_substr($title,0,180),'day_of_week'=>$day,'start_time'=>$start,'end_time'=>'','start_date'=>'','end_date'=>'','frequency'=>'weekly','url'=>$url,'uid'=>$key];
+    if(count($found)>=150)break 2;
+   }
+  }
+  if(!$found)fail(422,'Website retrieved (HTTP 200), but no weekly timetable was recognised. Try Paste Timetable or check whether the schedule loads only in JavaScript.');
+  echo json_encode(['ok'=>true,'data'=>array_values($found),'skipped_recurring'=>0,'source'=>'generic_html_timetable','note'=>'Weekly times found on the public webpage. Confirm class names, venues and missing end times before saving.']);exit;
+ }
  if($isBloom){
   $found=[];
   if(class_exists('DOMDocument')){
