@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded',async()=>{
 const form=document.getElementById('newListingForm');if(!form)return;
-const status=document.getElementById('newListingStatus'),button=form.querySelector('button[type="submit"]'),id=new URLSearchParams(location.search).get('id');let original=null;
+const status=document.getElementById('newListingStatus'),button=form.querySelector('button[type="submit"]'),id=new URLSearchParams(location.search).get('id');let original=null;let listingCsrf='';
 const preset=form.elements.namedItem('age_preset'),free=form.elements.namedItem('price_free'),price=form.elements.namedItem('price_from'),unit=form.elements.namedItem('pricing_unit');
 let directoryVenues=[];
 const blockWeeks=form.elements.namedItem('block_length_weeks'),blockField=document.getElementById('blockWeeksField');
@@ -13,7 +13,7 @@ const syncBlockWeeks=()=>{const show=unit.value==='per_block'&&!free.checked;blo
 preset.addEventListener('change',applyPreset);
 free.addEventListener('change',()=>{price.disabled=free.checked;if(free.checked)price.value='0';});
 if(!id){syncBlockWeeks();[...preset.options].forEach(o=>o.selected=o.value==='0-12');applyPreset();}
-if(id){status.textContent='Loading listing…';const r=await fetch('/api/admin-activities.php?id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load listing.');original=d.data;for(const el of form.elements){if(el.name&&Object.hasOwn(original,el.name))el.value=original[el.name]??'';}syncBlockWeeks();const lo=original.age_min_months,hi=original.age_max_months;
+if(id){status.textContent='Loading listing…';const r=await fetch('/api/admin-activities.php?id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load listing.');original=d.data;listingCsrf=d.csrf||'';for(const el of form.elements){if(el.name&&Object.hasOwn(original,el.name))el.value=original[el.name]??'';}syncBlockWeeks();const lo=original.age_min_months,hi=original.age_max_months;
 
 const existing=Object.entries(presets).find(([,v])=>lo!==null&&lo!==undefined&&lo!==''&&Number(lo)===v[0]&&((hi===null||hi===undefined||hi==='')?v[1]===null:Number(hi)===v[1]));
 const savedLabels=String(original.age_range||'').split(',').map(s=>s.trim());const matches=Object.entries(presets).filter(([,v])=>savedLabels.includes(v[2])).map(([k])=>k);[...preset.options].forEach(o=>o.selected=matches.length?matches.includes(o.value):o.value===(existing?.[0]||''));
@@ -142,6 +142,28 @@ const addVenue=(venue={})=>{
  row.addEventListener('input',syncVenueSelectors);extraVenueRows.append(row);addLocationLookup(row,key=>row.querySelector('[data-vfield="'+key+'"]'));syncVenueSelectors();
 };
 (original?.venues||[]).slice(1).forEach(addVenue);
+if(original?.id){
+ const duplicates=new Map();
+ for(const venue of original.venues||[]){
+  const key=String(venue.venue_name||'').trim().toLowerCase()+'|'+String(venue.postcode||'').replace(/\\s+/g,'').toUpperCase();
+  if(key.split('|')[0]&&key.split('|')[1])duplicates.set(key,(duplicates.get(key)||0)+1);
+ }
+ if([...duplicates.values()].some(n=>n>1)){
+  const consolidate=document.createElement('button');consolidate.type='button';consolidate.className='button button-soft';consolidate.textContent='Consolidate duplicate saved locations';
+  consolidate.addEventListener('click',async()=>{
+   if(!window.confirm('Merge saved locations with identical names and postcodes? Their sessions will be moved to the earliest venue record. Reload after completion.'))return;
+   consolidate.disabled=true;
+   try{
+    const response=await fetch('/api/admin-activities.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'consolidate_duplicate_venues',id:original.id,csrf:listingCsrf})});
+    const result=await response.json();if(!response.ok||!result.ok)throw Error(result.error||'Could not consolidate locations.');
+    status.textContent='Consolidated '+result.removed+' duplicate location(s); reassigned '+result.sessions_reassigned+' session(s). Reloading…';
+    location.reload();
+   }catch(error){status.textContent=error.message;status.classList.add('is-error');consolidate.disabled=false;}
+  });
+  extraVenueRows.parentElement.insertBefore(consolidate,extraVenueRows);
+ }
+}
+
 document.getElementById('adminAddVenue')?.addEventListener('click',()=>addVenue());
 form.elements.namedItem('venue_name')?.addEventListener('input',syncVenueSelectors);
 // Postcode geocoding: user may override the coordinates at any time.
