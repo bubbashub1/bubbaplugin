@@ -71,6 +71,20 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
  }
  $id=(int)($input['id']??0);
  $listingAction=$input['action']??'';
+ if($listingAction==='remove_saved_venue'){
+  if(!hash_equals($_SESSION['bh_listing_csrf'],(string)($input['csrf']??'')))bh_admin_response(403,['ok'=>false,'error'=>'Refresh the editor and try again.']);
+  $venueId=(int)($input['venue_id']??0);$targetId=(int)($input['target_venue_id']??0);
+  if($id<1||$venueId<1||$targetId<1||$venueId===$targetId)bh_admin_response(422,['ok'=>false,'error'=>'Choose a different saved location to keep.']);
+  $db->beginTransaction();
+  try{
+   $q=$db->prepare("SELECT id FROM bh_venues WHERE activity_id=? ORDER BY id FOR UPDATE");$q->execute([$id]);$venueIds=array_map('intval',$q->fetchAll(PDO::FETCH_COLUMN));
+   if(count($venueIds)<2||!in_array($venueId,$venueIds,true)||!in_array($targetId,$venueIds,true)||$venueId===$venueIds[0])throw new RuntimeException('Invalid venue selection. The primary location cannot be removed.');
+   $q=$db->prepare("SELECT COUNT(*) FROM bh_sessions WHERE venue_id=?");$q->execute([$venueId]);$moved=(int)$q->fetchColumn();
+   $db->prepare("UPDATE bh_sessions SET venue_id=? WHERE venue_id=?")->execute([$targetId,$venueId]);
+   $db->prepare("DELETE FROM bh_venues WHERE id=? AND activity_id=?")->execute([$venueId,$id]);
+   $db->commit();bh_admin_response(200,['ok'=>true,'sessions_reassigned'=>$moved]);
+  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+ }
  if($listingAction==='consolidate_duplicate_venues'){
   if(!hash_equals($_SESSION['bh_listing_csrf'],(string)($input['csrf']??'')))bh_admin_response(403,['ok'=>false,'error'=>'Refresh and try again.']);
   if($id<1)bh_admin_response(422,['ok'=>false,'error'=>'Listing ID required.']);
