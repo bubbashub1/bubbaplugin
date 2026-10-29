@@ -10,3 +10,12 @@ body.bh-my-hub,body.bh-account-v2,body.bh-planner-v2{--family-ink:#174d3c;--fami
 .bh-my-hub .button,.bh-account-v2 .button,.bh-planner-v2 .button{border-radius:999px;font-weight:700}
 @media(max-width:650px){.bh-family-nav{margin:10px 12px;padding:8px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.bh-family-nav a{font-size:12px;padding:11px 5px;text-align:center}.bh-my-hub .my-hub-hero,.bh-planner-v2 .planner-hero,.bh-account-v2 .page-heading{border-radius:20px;padding:20px}}
 @media print{.bh-family-nav{display:none!important}}
+
+/* Family hub simplification: remove duplicate visual noise without hiding actions. */
+.bh-my-hub .hub-welcome>.hub-account-link{font-size:.85rem}
+.bh-my-hub .hub-personal-cta p{max-width:62ch}
+.bh-account-v2 .account-welcome-note{margin-block:12px}
+.bh-account-v2 .account-dashboard-card{display:flex;flex-direction:column;gap:8px}
+.bh-account-v2 .account-dashboard-card .card-link{margin-top:auto}
+.bh-family-nav{position:relative;z-index:2}
+@media(max-width:650px){.bh-family-nav{grid-template-columns:repeat(5,minmax(0,1fr))}.bh-family-nav a{font-size:11px;overflow-wrap:anywhere}}

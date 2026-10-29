@@ -1,0 +1,34 @@
+/* Site-wide polish: additive, low-risk rules for public templates. */
+:root{--bh-unified-ink:#174d3c;--bh-unified-line:#d9e9e1;--bh-unified-focus:#126d57}
+html{scroll-padding-top:90px}
+body{overflow-wrap:break-word}
+:where(.site-header,.site-footer,.app-shell) :where(a,button,input,select,textarea):focus-visible{outline:3px solid var(--bh-unified-focus);outline-offset:3px}
+:where(.app-shell) :where(img,video,iframe){max-width:100%}
+:where(.app-shell) :where(input,select,textarea){max-width:100%;box-sizing:border-box}
+:where(.app-shell) :where(.button,button){touch-action:manipulation}
+:where(.app-shell) :where(.admin-panel,.account-dashboard-card,.hub-panel){border-radius:20px}
+:where(.app-shell) :where(h1,h2,h3){text-wrap:balance}
+:where(.site-header) .brand-logo{object-fit:contain}
+:where(.site-footer) a:focus-visible{border-radius:4px}
+@media(max-width:767px){:where(.app-shell) :where(.button,button){min-height:42px}:where(.app-shell) :where(.admin-panel,.account-dashboard-card){min-width:0}:where(.app-shell) :where(.hub-dashboard-grid,.account-dashboard-grid){min-width:0}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Streamlined global rhythm and predictable layout. */
+:where(.app-shell,.sm-wrap){width:min(100% - 32px,1200px);margin-inline:auto;box-sizing:border-box}
+:where(.app-shell) :where(section,article){scroll-margin-top:90px}
+:where(.app-shell) :where(p){line-height:1.6}
+:where(.app-shell) :where(.button,.button-primary,.button-soft){white-space:normal;text-align:center}
+:where(.site-header) :where(.main-nav a){text-underline-offset:4px}
+:where(.site-header) :where(.main-nav a):hover{text-decoration:underline}
+@media(max-width:767px){:where(.app-shell,.sm-wrap){width:calc(100% - 24px)}:where(.app-shell) :where(.hub-stats,.hub-dashboard-grid,.account-dashboard-grid)>*{min-width:0}}
+
+/* Five-destination app navigation: mobile bottom bar, desktop compact rail. */
+.bh-app-nav{position:fixed;z-index:1000;left:50%;bottom:max(8px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(560px,calc(100% - 20px));display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;padding:7px;background:#fff;border:1px solid #d7e7dd;border-radius:20px;box-shadow:0 8px 32px #174d3c25}
+.bh-app-nav a{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;min-height:52px;border-radius:14px;color:#175d46;text-decoration:none;font-weight:700}
+.bh-app-nav a span{font-size:24px;line-height:1.1}.bh-app-nav a small{font-size:11px}
+.bh-app-nav a[aria-current=page]{background:#e0f1e7}.bh-app-nav a:hover{background:#e6f2fa}
+body:has(.bh-app-nav){padding-bottom:88px}
+.bh-footer-extra{display:flex;justify-content:center;flex-wrap:wrap;gap:12px 24px;padding:18px;background:#e5f2ea}
+.bh-footer-extra a{color:#175d46;font-weight:700}
+@media(min-width:1024px){.bh-app-nav{bottom:20px;width:min(560px,calc(100% - 32px))}}
+@media print{.bh-app-nav{display:none!important}body:has(.bh-app-nav){padding-bottom:0}}
