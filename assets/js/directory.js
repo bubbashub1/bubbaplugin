@@ -42,6 +42,19 @@ const bhInitDirectory=async()=>{
       "Family activities": "Family"
     };
 
+    const splitCategories = value => {
+      const decoder = document.createElement("textarea");
+      const decode = text => {
+        decoder.innerHTML = String(text || "");
+        return decoder.value;
+      };
+      return (Array.isArray(value) ? value : [value])
+        .flatMap(item => String(item || "").split(","))
+        .map(item => decode(item).trim())
+        .filter(Boolean)
+        .map(item => categoryMap[item] || item);
+    };
+
     const ageText = value => {
       const n = Number(value);
       if (n === 9) return "9 years";
@@ -85,7 +98,7 @@ const bhInitDirectory=async()=>{
       const aliases={"exeter city":"Exeter","city of exeter":"Exeter","torbay borough":"Torbay","borough of torbay":"Torbay","teignbridge district":"Teignbridge","south hams district":"South Hams","cornwall council":"Cornwall","cornwall county":"Cornwall"};
       return aliases[key]||({"exeter":"Exeter","torbay":"Torbay","teignbridge":"Teignbridge","south hams":"South Hams","cornwall":"Cornwall"}[key]||raw);
     };
-    const categoryValues = [...new Set(activities.map(x => categoryMap[x.category] || x.category).filter(Boolean))].sort();
+    const categoryValues = [...new Set(activities.flatMap(x => splitCategories(x.categories?.length ? x.categories : x.category)))].sort();
     const regionValues = [...new Set(activities.flatMap(x => bhVenues(x).map(v => canonicalRegion(v.region || x.region))).filter(Boolean))].sort();
 
     fillSelect("category", categoryValues, params.get("category") || "", "All categories");
@@ -756,7 +769,7 @@ const bhInitDirectory=async()=>{
         const accessibilityMatch = !accessibility.length || accessibility.every(option => activityAccessibility.includes(option));
 
         return (!search || text.includes(search)) &&
-          (!category || (activity.categories||[activity.category]).some(c => (categoryMap[c] || c) === category)) &&
+          (!category || splitCategories(activity.categories?.length ? activity.categories : activity.category).includes(category)) &&
           locationMatch &&
           ageMatches(activity, minAge, maxAge) &&
           sessionMatch &&
