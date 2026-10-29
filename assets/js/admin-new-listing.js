@@ -582,7 +582,7 @@ const steps=[['Basics',['title','organisation_name']],['About',['description','c
 const stepNav=document.getElementById('adminListingSteps');
 const back=document.getElementById('adminListingBack'),next=document.getElementById('adminListingNext'),save=document.getElementById('adminListingSubmit');
 document.getElementById('adminSaveNow')?.addEventListener('click',()=>form.requestSubmit(save));
-const labels=[...form.querySelectorAll('.admin-form-grid > label')];
+const labels=[...form.querySelectorAll('.admin-form-grid > label')].filter(label=>!label.closest('#adminListingGallery'));
 let step=0;
 const review=document.createElement('div');review.className='bh-review';review.hidden=true;form.querySelector('.admin-form-grid:last-of-type').after(review);
 const identity=document.getElementById('adminListingIdentity');
