@@ -1041,3 +1041,17 @@ window.bhPopulatePopularCategories = async function(container) {
     container.innerHTML = "";
   }
 };
+
+/* Public site map link in the shared footer on pages using app.js. */
+(function(){
+  function addSitemapFooterLink(){
+    document.querySelectorAll('footer.site-footer').forEach(function(footer){
+      if(footer.querySelector('a[href="/sitemap.html"],a[href="sitemap.html"]'))return;
+      var nav=footer.querySelector('nav[aria-label="Footer explore and tools"]') || footer.querySelector('.site-footer-column:nth-child(3) .site-footer-links');
+      if(!nav)return;
+      var link=document.createElement('a');link.href='/sitemap.html';link.textContent='Site Map';nav.appendChild(link);
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addSitemapFooterLink);
+  else addSitemapFooterLink();
+})();
