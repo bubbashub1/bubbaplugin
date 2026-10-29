@@ -12,3 +12,12 @@ body{overflow-wrap:break-word}
 :where(.site-footer) a:focus-visible{border-radius:4px}
 @media(max-width:767px){:where(.app-shell) :where(.button,button){min-height:42px}:where(.app-shell) :where(.admin-panel,.account-dashboard-card){min-width:0}:where(.app-shell) :where(.hub-dashboard-grid,.account-dashboard-grid){min-width:0}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Streamlined global rhythm and predictable layout. */
+:where(.app-shell,.sm-wrap){width:min(100% - 32px,1200px);margin-inline:auto;box-sizing:border-box}
+:where(.app-shell) :where(section,article){scroll-margin-top:90px}
+:where(.app-shell) :where(p){line-height:1.6}
+:where(.app-shell) :where(.button,.button-primary,.button-soft){white-space:normal;text-align:center}
+:where(.site-header) :where(.main-nav a){text-underline-offset:4px}
+:where(.site-header) :where(.main-nav a):hover{text-decoration:underline}
+@media(max-width:767px){:where(.app-shell,.sm-wrap){width:calc(100% - 24px)}:where(.app-shell) :where(.hub-stats,.hub-dashboard-grid,.account-dashboard-grid)>*{min-width:0}}
