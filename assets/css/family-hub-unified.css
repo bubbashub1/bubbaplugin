@@ -19,3 +19,18 @@ body.bh-my-hub,body.bh-account-v2,body.bh-planner-v2{--family-ink:#174d3c;--fami
 .bh-account-v2 .account-dashboard-card .card-link{margin-top:auto}
 .bh-family-nav{position:relative;z-index:2}
 @media(max-width:650px){.bh-family-nav{grid-template-columns:repeat(5,minmax(0,1fr))}.bh-family-nav a{font-size:11px;overflow-wrap:anywhere}}
+
+/* Compact mobile account navigation and hero. */
+@media(max-width:767px){
+.bh-subpage-v2 .bh-family-nav{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:5px;margin:8px 12px 12px;padding:8px;border-radius:16px;scrollbar-width:none}
+.bh-subpage-v2 .bh-family-nav a{flex:0 0 auto;white-space:nowrap;overflow-wrap:normal;font-size:12px;padding:10px 13px;border-radius:999px}
+.bh-subpage-v2 .account-profile-layout{display:block;min-width:0}
+.bh-subpage-v2 .account-side-nav{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:6px;margin:0 0 14px;padding:8px;scrollbar-width:none}
+.bh-subpage-v2 .account-side-nav a{display:inline-flex;align-items:center;gap:5px;flex:0 0 auto;width:auto;min-width:0;padding:10px 12px;font-size:13px;white-space:nowrap;border-radius:999px}
+.bh-subpage-v2 .account-side-nav a span{white-space:nowrap}
+.bh-subpage-v2 .page-heading{padding:20px!important;margin-bottom:16px;border-radius:18px}
+.bh-subpage-v2 .page-heading h1{font-size:clamp(28px,8vw,40px);line-height:1.15}
+.bh-subpage-v2 .page-heading p{font-size:15px;line-height:1.5}
+.bh-subpage-v2 .preferences-layout{min-width:0}
+.bh-subpage-v2 .preferences-two-col{grid-template-columns:minmax(0,1fr)}
+}
