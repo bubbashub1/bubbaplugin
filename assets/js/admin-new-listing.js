@@ -464,16 +464,49 @@ document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',(
  previewImportedSessions(events,'Please confirm all dates, class names and finishing times. No sessions have been saved.'+(assumedMonth?' Initial month was assumed.':''));
  if(events.length)document.getElementById('adminIcalResults')?.scrollIntoView({behavior:'smooth',block:'nearest'});
 });
-// Optional on-device poster OCR. No image is uploaded to a third-party OCR service.
-document.getElementById('adminPosterRead')?.addEventListener('click',async()=>{
- const file=document.getElementById('adminPosterImage').files?.[0],message=document.getElementById('adminPosterMessage'),preview=document.getElementById('adminPosterPreview');
- if(!file){message.textContent='Choose a poster first.';return;}
- if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024){message.textContent='Choose PNG, JPEG or WebP under 5 MB.';return;}
- const url=URL.createObjectURL(file);preview.src=url;preview.hidden=false;preview.onload=()=>URL.revokeObjectURL(url);
- if(typeof window.TextDetector!=='function'){
- message.textContent='Loading poster text reader…';
+// On-device OCR: improve contrast and size before recognition; no poster is sent to an OCR API.
+let posterOcrWorker=null;
+const preparePosterForOcr=async(file)=>{
+ const bitmap=await createImageBitmap(file);
  try{
+  const scale=Math.min(3,2200/Math.max(bitmap.width,bitmap.height));
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(bitmap.width*scale));
+  canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  if(!ctx)throw new Error('Image processing is not supported in this browser.');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+  const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
+  const data=pixels.data;
+  // Convert coloured flyer backgrounds to readable greyscale with a mild contrast boost.
+  for(let i=0;i<data.length;i+=4){
+   const grey=.299*data[i]+.587*data[i+1]+.114*data[i+2];
+   const value=Math.max(0,Math.min(255,(grey-128)*1.35+128));
+   data[i]=data[i+1]=data[i+2]=value;data[i+3]=255;
+  }
+  ctx.putImageData(pixels,0,0);
+  return canvas;
+ }finally{bitmap.close?.();}
+};
+document.getElementById('adminPosterRead')?.addEventListener('click',async event=>{
+ const button=event.currentTarget;
+ const file=document.getElementById('adminPosterImage')?.files?.[0];
+ const message=document.getElementById('adminPosterMessage');
+ const preview=document.getElementById('adminPosterPreview');
+ const output=document.getElementById('adminPosterText');
+ if(!file){message.textContent='Choose a poster first.';return;}
+ if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024){message.textContent='Choose a PNG, JPEG or WebP image under 5 MB.';return;}
+ button.disabled=true;button.textContent='Reading poster…';
+ const url=URL.createObjectURL(file);
+ preview.src=url;preview.hidden=false;
+ preview.onload=()=>URL.revokeObjectURL(url);
+ preview.onerror=()=>URL.revokeObjectURL(url);
+ try{
+  message.textContent='Preparing poster for clearer text recognition…';
+  const prepared=await preparePosterForOcr(file);
   if(!window.Tesseract){
+   message.textContent='Loading free text reader…';
    await new Promise((resolve,reject)=>{
     const script=document.createElement('script');
     script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
@@ -481,22 +514,28 @@ document.getElementById('adminPosterRead')?.addEventListener('click',async()=>{
     document.head.appendChild(script);
    });
   }
-  message.textContent='Reading poster… this may take a moment.';
-  const result=await window.Tesseract.recognize(file,'eng',{logger:progress=>{
-   if(progress.status==='recognizing text')message.textContent='Reading poster… '+Math.round((progress.progress||0)*100)+'%';
-  }});
+  if(!posterOcrWorker){
+   message.textContent='Starting text reader…';
+   posterOcrWorker=await window.Tesseract.createWorker('eng',1,{logger:p=>{
+    if(p.status==='recognizing text')message.textContent='Reading poster… '+Math.round((p.progress||0)*100)+'%';
+   }});
+  }
+  // Posters often mix headings, dates, and short timetable rows.
+  await posterOcrWorker.setParameters({tessedit_pageseg_mode:window.Tesseract.PSM?.AUTO||3,preserve_interword_spaces:'1'});
+  const result=await posterOcrWorker.recognize(prepared);
   const recognised=String(result?.data?.text||'').trim();
-  if(!recognised)throw new Error('No text detected');
-  document.getElementById('adminPosterText').value=recognised;
-  message.textContent='Poster text recognised. Review it and choose Apply recognised details.';
- }catch(error){message.textContent='Automatic poster reading was unavailable ('+String(error.message||error)+'). You can paste poster text below instead.';}
- return;
-}
- message.textContent='Reading poster…';
- try{const bitmap=await createImageBitmap(file);let blocks;try{blocks=await new TextDetector().detect(bitmap);}finally{bitmap.close?.();}
- document.getElementById('adminPosterText').value=blocks.map(x=>x.rawValue).filter(Boolean).join('\n');
- message.textContent='Poster text recognised. Review it and choose Apply recognised details.';
- }catch(error){message.textContent='Could not recognise text from this image. You can paste the text manually.';}
+  if(!recognised)throw new Error('No readable text found');
+  if(output.value.trim()&&!window.confirm('Replace the text currently in the poster text box with the newly recognised text?')){
+   message.textContent='Existing poster text kept. You can review or apply it as before.';
+   return;
+  }
+  output.value=recognised;
+  const confidence=Number(result?.data?.confidence);
+  message.textContent='Text extracted'+(Number.isFinite(confidence)&&confidence<65?' (some words may be unclear)':'')+'. Review and correct it before applying details.';
+ }catch(error){
+  // Keep any manually entered text intact on failure.
+  message.textContent='Could not read this poster ('+String(error.message||error)+'). Try a sharper, well-lit image or paste the text below.';
+ }finally{button.disabled=false;button.textContent='Read poster';}
 });
 document.getElementById('adminPosterApply')?.addEventListener('click',()=>{
  const message=document.getElementById('adminPosterMessage'),text=document.getElementById('adminPosterText').value.trim();
