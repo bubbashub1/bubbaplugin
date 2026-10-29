@@ -136,5 +136,5 @@ fetch("/api/subscription.php",{credentials:"same-origin",cache:"no-store"}).then
 </script>
 <script>
 (async()=>{try{const r=await fetch('/api/leader-messages.php',{credentials:'same-origin',cache:'no-store'});if(!r.ok)return;const d=await r.json();const count=Number(d.unanswered_count||0),badge=document.getElementById('leaderMessageCount');if(badge&&count>0){badge.textContent=count+' new';badge.hidden=false;badge.style.display='inline-flex';document.title='('+count+') Leader Portal · Bubba Hub';}}catch(e){}})();
-</script><script src="/assets/js/leader-pro-nav.js"></script></body>
+</script><script src="/assets/js/leader-pro-nav.js"></script><script defer src="/assets/js/sitewide-app-navigation.js?v=20261029"></script></body>
 </html>
