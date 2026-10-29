@@ -186,6 +186,20 @@ function addLocationLookup(container,field){if(!container)return;const postcode=
 addLocationLookup(document.getElementById('adminAdditionalVenues'), key=>form.elements.namedItem(key));
 extraVenueRows?.addEventListener('click',event=>{if(event.target.id!=='adminAddVenue')return;});
 const collectVenues=()=>[...extraVenueRows.children].map(row=>({id:Number(row.dataset.savedId)||0,...Object.fromEntries([...row.querySelectorAll('[data-vfield]')].map(input=>[input.dataset.vfield,input.value.trim()]))}));
+const duplicateVenueWarning=()=>{
+ const venues=[{venue_name:form.elements.namedItem('venue_name')?.value,postcode:form.elements.namedItem('postcode')?.value},...collectVenues()];
+ const seen=new Set();
+ for(const venue of venues){
+  const name=String(venue.venue_name||'').trim().toLowerCase().replace(/\s+/g,' ');
+  const postcode=String(venue.postcode||'').toUpperCase().replace(/\s+/g,'');
+  if(!name)continue;
+  const key=name+'|'+postcode;
+  if(seen.has(key))return 'Duplicate location: '+venue.venue_name+'. Reuse the existing location rather than saving another copy.';
+  seen.add(key);
+ }
+ return '';
+};
+
 // Schedule editor: preserves existing sessions and supports multiple new sessions.
 const scheduleSection=document.getElementById('adminListingSchedule'),scheduleRows=document.getElementById('adminScheduleRows');
 const addSession=(s={})=>{
@@ -526,6 +540,7 @@ const collectSessions=()=>[...scheduleRows.children].map(row=>{const s={id:Numbe
 const steps=[['Basics',['title','organisation_name']],['About',['description','category','tags','age_preset','age_range','price_from','pricing_unit','block_length_weeks','price_free']],['Extra',['booking_url','email','phone','website','status']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address','latitude','longitude']],['Photos',['image_path']],['Review',[]]];
 const stepNav=document.getElementById('adminListingSteps');
 const back=document.getElementById('adminListingBack'),next=document.getElementById('adminListingNext'),save=document.getElementById('adminListingSubmit');
+document.getElementById('adminSaveNow')?.addEventListener('click',()=>form.requestSubmit(save));
 const labels=[...form.querySelectorAll('.admin-form-grid > label')];
 let step=0;
 const review=document.createElement('div');review.className='bh-review';review.hidden=true;form.querySelector('.admin-form-grid:last-of-type').after(review);
@@ -578,7 +593,7 @@ if(importResults.querySelector('fieldset')){
   }
  }
 }
-body.sessions=collectSessions();body.venues=collectVenues();body.import_source_urls=[...new Set((document.getElementById('adminIcalUrl')?.value||'').split(/[\s,]+/).map(v=>v.trim()).filter(v=>/^https:\/\//i.test(v)))];if(importResults.querySelector('fieldset')&&body.sessions.length===0){status.textContent='Imported classes are awaiting review. Click Add reviewed classes before saving.';status.classList.add('is-error');step=3;renderStep();return;}if(importResults.querySelector('fieldset')&&body.sessions.length>0){importMessage.textContent='Imported preview remains open, but the '+body.sessions.length+' timetable rows below will be saved. Preview-only classes will not be included.';}body.accessibility=original?.accessibility||[];
+const duplicateWarning=duplicateVenueWarning();if(duplicateWarning){status.textContent=duplicateWarning;status.classList.add('is-error');step=4;renderStep();return;}body.sessions=collectSessions();body.venues=collectVenues();body.import_source_urls=[...new Set((document.getElementById('adminIcalUrl')?.value||'').split(/[\s,]+/).map(v=>v.trim()).filter(v=>/^https:\/\//i.test(v)))];if(importResults.querySelector('fieldset')&&body.sessions.length===0){status.textContent='Imported classes are awaiting review. Click Add reviewed classes before saving.';status.classList.add('is-error');step=3;renderStep();return;}if(importResults.querySelector('fieldset')&&body.sessions.length>0){importMessage.textContent='Imported preview remains open, but the '+body.sessions.length+' timetable rows below will be saved. Preview-only classes will not be included.';}body.accessibility=original?.accessibility||[];
 body.latitude=form.elements.namedItem('latitude')?.value||'';body.longitude=form.elements.namedItem('longitude')?.value||'';body.sessions=body.sessions.map(s=>({...s,price:s.price??'',start_date:s.start_date??'',end_date:s.end_date??''}));
 if(body.sessions.some(s=>!s.day_of_week||!s.start_time||s.end_time&&s.end_time<=s.start_time)){status.textContent='Each session needs a day and start time, and its end time must be later than its start time.';status.classList.add('is-error');step=3;renderStep();return;}if(original?.id&&body.sessions.length===0&&!window.confirm('No sessions are included in this save. Existing sessions will be kept, but no new timetable will be added. Continue?'))return;button.disabled=true;status.textContent='Saving listing and '+body.sessions.length+' session(s)…';status.classList.remove('is-error');
 try{const r=await fetch('/api/admin-activities.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(body)});if(r.status===401){redirect();return;}const raw=await r.text();let d;try{d=JSON.parse(raw);}catch{throw Error('Server returned an invalid response (HTTP '+r.status+').');}if(!r.ok||!d.ok)throw Error(d.error||'Could not save listing (HTTP '+r.status+').');status.textContent='Checking saved timetable against the editor…';
