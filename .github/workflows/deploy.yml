@@ -76,6 +76,34 @@ jobs:
               find "$HOME" -maxdepth 3 -type d -name public_html -print 2>/dev/null || true
             '
 
+      - name: Inject GA4 into standalone HTML pages
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          tag = '''<!-- Bubba Hub GA4 -->
+          <script async src="https://www.googletagmanager.com/gtag/js?id=G-PPG9B0GHN2"></script>
+          <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-PPG9B0GHN2');
+          </script>
+          '''
+          count = 0
+          for page in Path('.').rglob('*.html'):
+              if '.git' in page.parts or 'vendor' in page.parts:
+                  continue
+              html = page.read_text(encoding='utf-8')
+              if 'G-PPG9B0GHN2' in html or '</head>' not in html.lower():
+                  continue
+              idx = html.lower().index('</head>')
+              page.write_text(html[:idx] + tag + html[idx:], encoding='utf-8')
+              count += 1
+          print(f'Injected GA4 into {count} standalone HTML pages')
+          if count == 0:
+              raise SystemExit('No standalone HTML pages updated')
+          PY
+
       - name: Deploy via SSH tar stream
         env:
           SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
@@ -151,3 +179,11 @@ jobs:
             fi
           done
           echo "Production smoke checks passed."
+          for path in /index.html /directory.html /expo.html; do
+            html=$(curl -L -fsS --max-time 25 "https://bubbahub.co.uk${path}")
+            if ! printf '%s' "$html" | grep -q 'G-PPG9B0GHN2'; then
+              echo "::error::GA4 tag missing on ${path}"
+              exit 1
+            fi
+          done
+          echo "GA4 verified on standalone production pages."
