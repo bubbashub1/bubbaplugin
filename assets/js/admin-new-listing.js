@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded',async()=>{
 const form=document.getElementById('newListingForm');if(!form)return;
 const status=document.getElementById('newListingStatus'),button=form.querySelector('button[type="submit"]'),id=new URLSearchParams(location.search).get('id');let original=null;let listingCsrf='';
+const gallery=document.getElementById('adminGalleryFields');
+if(gallery){for(let n=1;n<=10;n++){const label=document.createElement('label');label.textContent='Extra image '+n;const field=document.createElement('input');field.type='url';field.name='image_'+n;field.placeholder='https://example.co.uk/photo-'+n+'.jpg';label.append(field);const preview=document.createElement('img');preview.alt='Image '+n+' preview';preview.hidden=true;preview.loading='lazy';preview.style.cssText='display:block;max-width:180px;max-height:120px;object-fit:contain;margin-top:8px;border-radius:10px';preview.addEventListener('error',()=>{preview.hidden=true;});field.addEventListener('input',()=>{const value=field.value.trim();preview.hidden=!/^https?:\\/\\//i.test(value);if(!preview.hidden)preview.src=value;else preview.removeAttribute('src');});label.append(preview);gallery.append(label);}}
 const preset=form.elements.namedItem('age_preset'),free=form.elements.namedItem('price_free'),price=form.elements.namedItem('price_from'),unit=form.elements.namedItem('pricing_unit');
 let directoryVenues=[];
 const blockWeeks=form.elements.namedItem('block_length_weeks'),blockField=document.getElementById('blockWeeksField');
@@ -13,7 +15,7 @@ const syncBlockWeeks=()=>{const show=unit.value==='per_block'&&!free.checked;blo
 preset.addEventListener('change',applyPreset);
 free.addEventListener('change',()=>{price.disabled=free.checked;if(free.checked)price.value='0';});
 if(!id){syncBlockWeeks();[...preset.options].forEach(o=>o.selected=o.value==='0-12');applyPreset();}
-if(id){status.textContent='Loading listing…';const r=await fetch('/api/admin-activities.php?id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load listing.');original=d.data;listingCsrf=d.csrf||'';for(const el of form.elements){if(el.name&&Object.hasOwn(original,el.name))el.value=original[el.name]??'';}syncBlockWeeks();const lo=original.age_min_months,hi=original.age_max_months;
+if(id){status.textContent='Loading listing…';const r=await fetch('/api/admin-activities.php?id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load listing.');original=d.data;listingCsrf=d.csrf||'';for(const el of form.elements){if(el.name&&Object.hasOwn(original,el.name))el.value=original[el.name]??'';}for(const input of gallery?.querySelectorAll('input')||[])input.dispatchEvent(new Event('input'));syncBlockWeeks();const lo=original.age_min_months,hi=original.age_max_months;
 
 const existing=Object.entries(presets).find(([,v])=>lo!==null&&lo!==undefined&&lo!==''&&Number(lo)===v[0]&&((hi===null||hi===undefined||hi==='')?v[1]===null:Number(hi)===v[1]));
 const savedLabels=String(original.age_range||'').split(',').map(s=>s.trim());const matches=Object.entries(presets).filter(([,v])=>savedLabels.includes(v[2])).map(([k])=>k);[...preset.options].forEach(o=>o.selected=matches.length?matches.includes(o.value):o.value===(existing?.[0]||''));
