@@ -40,6 +40,11 @@ RewriteRule ^$ index.html [L]
 # Treat /index and /index/ as the homepage, not an activity slug.
 RewriteRule ^index/?$ index.html [L,QSA]
 
+# Redirect legacy activity URLs to the clean activity permalink when a slug exists.
+RewriteCond %{THE_REQUEST} \s/+activity\.html[?\s] [NC]
+RewriteCond %{QUERY_STRING} (?:^|&)slug=([a-z0-9-]+)(?:&|$) [NC]
+RewriteRule ^activity\.html$ /activity/%1? [R=301,L,NE]
+
 # Resolve canonical activity URLs before the generic slug fallback.
 RewriteRule ^activity/([^/]+)/?$ activity.html?slug=$1 [B,L,QSA]
 
