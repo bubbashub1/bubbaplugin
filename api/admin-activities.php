@@ -34,7 +34,7 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
    $countySelect=$countyColumn?'a.county':'NULL AS county';
    $q=$db->prepare("SELECT a.*,$countySelect,o.organisation_name,o.email,o.phone,o.website,v.id venue_id,v.venue_name,v.address,v.town,v.region,v.postcode,v.latitude,v.longitude FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_venues v ON v.activity_id=a.id WHERE a.id=? ORDER BY v.id LIMIT 1");$q->execute([$id]);$a=$q->fetch();if(!$a)bh_admin_response(404,['ok'=>false,'error'=>'Activity not found.']);
    $q=$db->prepare("SELECT id,venue_name,address,town,region,postcode,latitude,longitude FROM bh_venues WHERE activity_id=? ORDER BY id");$q->execute([$id]);$a['venues']=$q->fetchAll();$rawAccessibility=$a['accessibility']??null;$a['accessibility']=[];if($accessibilityColumn&&$rawAccessibility!==null){$decoded=json_decode((string)$rawAccessibility,true);$a['accessibility']=is_array($decoded)?$decoded:[];}$a['sessions']=[];foreach($a['venues'] as $vi=>$venue){$sessionCols=$db->query("SHOW COLUMNS FROM bh_sessions")->fetchAll(PDO::FETCH_COLUMN);$sessionNameCol=in_array('class_name',$sessionCols,true)?'class_name':(in_array('title',$sessionCols,true)?'title':null);$nameSelect=$sessionNameCol?",`".$sessionNameCol."` AS class_name":",'' AS class_name";$sq=$db->prepare("SELECT id,venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date".$nameSelect." FROM bh_sessions WHERE venue_id=? ORDER BY day_of_week,start_time");$sq->execute([(int)$venue['id']]);foreach($sq->fetchAll() as $session){$session['venue_index']=$vi;$a['sessions'][]=$session;}}$a['id']=(int)$a['id'];$a['price_from']=$a['price_from']!==null?(float)$a['price_from']:null;$a['latitude']=$a['latitude']!==null?(float)$a['latitude']:null;$a['longitude']=$a['longitude']!==null?(float)$a['longitude']:null;
-   bh_admin_response(200,['ok'=>true,'data'=>$a]);
+   bh_admin_response(200,['ok'=>true,'data'=>$a,'csrf'=>$_SESSION['bh_listing_csrf']]);
   }
   $countyColumn=false;
   try{$cc=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='county'");$countyColumn=((int)$cc->fetchColumn())>0;}catch(Throwable $ignored){}
@@ -71,6 +71,27 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
  }
  $id=(int)($input['id']??0);
  $listingAction=$input['action']??'';
+ if($listingAction==='consolidate_duplicate_venues'){
+  if(!hash_equals($_SESSION['bh_listing_csrf'],(string)($input['csrf']??'')))bh_admin_response(403,['ok'=>false,'error'=>'Refresh and try again.']);
+  if($id<1)bh_admin_response(422,['ok'=>false,'error'=>'Listing ID required.']);
+  $db->beginTransaction();
+  try{
+   $q=$db->prepare("SELECT id,venue_name,postcode FROM bh_venues WHERE activity_id=? ORDER BY id FOR UPDATE");$q->execute([$id]);$venues=$q->fetchAll(PDO::FETCH_ASSOC);
+   $keepers=[];$removed=0;$moved=0;
+   foreach($venues as $venue){
+    $name=mb_strtolower(trim((string)$venue['venue_name']));$postcodeKey=strtoupper(preg_replace('/\\s+/', '',(string)$venue['postcode']));
+    if($name===''||$postcodeKey==='')continue; // Never merge uncertain locations.
+    $key=$name.'|'.$postcodeKey;$vid=(int)$venue['id'];
+    if(!isset($keepers[$key])){$keepers[$key]=$vid;continue;}
+    $target=$keepers[$key];
+    $count=$db->prepare("SELECT COUNT(*) FROM bh_sessions WHERE venue_id=?");$count->execute([$vid]);$moved+=(int)$count->fetchColumn();
+    $db->prepare("UPDATE bh_sessions SET venue_id=? WHERE venue_id=?")->execute([$target,$vid]);
+    $db->prepare("DELETE FROM bh_venues WHERE id=? AND activity_id=?")->execute([$vid,$id]);$removed++;
+   }
+   $db->commit();bh_admin_response(200,['ok'=>true,'removed'=>$removed,'sessions_reassigned'=>$moved]);
+  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+ }
+
  if(in_array($listingAction,['delete','assign_leader','restore'],true)){
   if(!hash_equals($_SESSION['bh_listing_csrf'],(string)($input['csrf']??'')))bh_admin_response(403,['ok'=>false,'error'=>'Please refresh the page and try again.']);
   if($id<1)bh_admin_response(422,['ok'=>false,'error'=>'Choose a listing.']);
