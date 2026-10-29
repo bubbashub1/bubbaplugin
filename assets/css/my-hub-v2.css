@@ -94,3 +94,38 @@ body.bh-my-hub{background:#fffdf7;color:#123f31;font-family:'Quicksand',Calibri,
  .bh-my-hub .hub-pro-pitch .button{justify-self:start}
 }
 @media(max-width:560px){.bh-my-hub .hub-pro-pitch .button{width:100%}}
+
+/* App-inspired My Hub layout: preserve all live sections, IDs and behaviour. */
+body.bh-my-hub{background:#f3f6f4;color:#1b3430}
+.bh-my-hub .my-hub-page{max-width:1216px;margin:auto}
+.bh-my-hub .my-hub-hero{background:#162a25;border:0;border-radius:0 0 24px 24px;box-shadow:0 5px 14px #10261f15;padding:28px clamp(22px,4vw,46px)}
+.bh-my-hub .my-hub-hero :is(h1,h2,p,.eyebrow){color:#fff}
+.bh-my-hub .my-hub-hero h1{font-size:clamp(2rem,4vw,3.25rem)}
+.bh-my-hub .my-hub-hero .eyebrow{color:#a9d2bd}
+.bh-my-hub .my-hub-hero-actions .button-soft{background:#eaf4ef}
+.bh-my-hub #myHubApp{display:flex;flex-direction:column;gap:22px}
+.bh-my-hub #myHubApp>.hub-family-panel{order:1}
+.bh-my-hub #myHubApp>.hub-suggestions{order:2}
+.bh-my-hub #myHubApp>.hub-main-dashboard{order:3}
+.bh-my-hub #myHubApp>.hub-welcome{order:0}
+.bh-my-hub #myHubApp>.hub-stats{order:4}
+.bh-my-hub #myHubApp>.hub-personal-cta{order:5}
+.bh-my-hub #myHubApp>[data-bh-inspire-me]{order:6}
+.bh-my-hub #myHubApp>#my-messages{order:7}
+.bh-my-hub #myHubApp>.hub-tools-grid{order:8}
+.bh-my-hub .my-hub-page :is(.hub-panel,.hub-suggestions,.hub-brief,.hub-welcome){background:#fff;border:1px solid #e1e8e4;border-radius:24px;box-shadow:0 2px 3px #142e2412;padding:clamp(18px,2.3vw,28px)}
+.bh-my-hub .my-hub-page :is(.hub-panel,.hub-suggestions,.hub-brief) h2{font-family:Georgia,serif;font-size:clamp(1.25rem,2vw,1.6rem);letter-spacing:-.02em;color:#1b3430}
+.bh-my-hub .hub-family-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.bh-my-hub .hub-family-card{background:#fff;border:1px solid #dfe7e3;border-radius:18px;box-shadow:0 2px 3px #10261f12;padding:20px}
+.bh-my-hub .hub-family-card:hover{border-color:#7ca69a}
+.bh-my-hub .hub-suggestions-track>*{background:#f8faf7;border:1px solid #e0e7e3;border-radius:18px}
+.bh-my-hub .hub-main-dashboard{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:start}
+.bh-my-hub .hub-main-dashboard>.hub-brief{grid-column:1/-1}
+.bh-my-hub .hub-main-dashboard>.hub-panel:has(#hubSaved){order:1}
+.bh-my-hub .hub-main-dashboard>.hub-panel:has(#hubVisited){order:2}
+.bh-my-hub .hub-main-dashboard>.hub-panel:has(#hubRecent){order:3}
+.bh-my-hub .hub-main-dashboard>.hub-panel:has(#hubBookings){order:4}
+.bh-my-hub .hub-main-dashboard>.hub-brief{order:5}
+.bh-my-hub .hub-list>*{background:#f8faf7;border:1px solid #e3eae6;border-radius:15px}
+@media(max-width:850px){.bh-my-hub .hub-family-list{grid-template-columns:repeat(2,minmax(0,1fr))}.bh-my-hub .hub-main-dashboard{grid-template-columns:1fr}.bh-my-hub .hub-main-dashboard>.hub-brief{grid-column:auto}}
+@media(max-width:570px){.bh-my-hub .hub-family-list{grid-template-columns:1fr}.bh-my-hub .my-hub-hero{border-radius:0 0 18px 18px}.bh-my-hub .my-hub-page :is(.hub-panel,.hub-suggestions,.hub-brief,.hub-welcome){padding:17px;border-radius:19px}}
