@@ -391,3 +391,43 @@ body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listin
   height:195px!important;max-height:195px!important;
  }
 }
+
+/* Visual 2 structural layout, independent of legacy .listing-main grid */
+body.bh-activity-v2 .activity-concept-two .listing-layout{display:block!important;margin-top:18px!important}
+body.bh-activity-v2 .activity-concept-two .activity-concept-content{
+ display:grid!important;grid-template-columns:minmax(0,1.45fr) minmax(310px,.85fr)!important;
+ gap:20px!important;align-items:start!important;
+}
+body.bh-activity-v2 .activity-concept-two .activity-concept-lead,
+body.bh-activity-v2 .activity-concept-two .activity-concept-support{
+ display:flex!important;flex-direction:column!important;gap:18px!important;min-width:0!important;
+}
+body.bh-activity-v2 .activity-concept-two .activity-concept-content :is(.activity-reference-about,.activity-reference-schedule,.activity-reference-contact,.activity-useful-info){
+ grid-column:auto!important;grid-row:auto!important;order:0!important;width:100%!important;margin:0!important;
+ border-radius:22px!important;padding:clamp(18px,2.3vw,28px)!important;
+}
+body.bh-activity-v2 .activity-concept-two .activity-reference-about{background:#fff!important}
+body.bh-activity-v2 .activity-concept-two .activity-reference-schedule{background:#e7f3fb!important}
+body.bh-activity-v2 .activity-concept-two .activity-reference-contact{background:#fff!important}
+body.bh-activity-v2 .activity-concept-two .activity-useful-info{background:#fff0d7!important}
+body.bh-activity-v2 .activity-concept-two .activity-concept-extras{
+ display:flex!important;flex-direction:column!important;gap:16px!important;margin:0!important;
+}
+body.bh-activity-v2 .activity-concept-two .activity-concept-extras .organiser-card{display:none!important}
+body.bh-activity-v2 .activity-concept-two .activity-concept-extras>.listing-card{width:100%!important}
+body.bh-activity-v2 .activity-concept-two .activity-reference-contact .activity-map-unavailable{
+ height:auto!important;max-height:none!important;min-height:0!important;
+ padding:14px!important;border-radius:12px!important;
+}
+body.bh-activity-v2 .activity-concept-two .activity-reference-contact .activity-map-unavailable :is(p,div){
+ margin:0!important;min-height:0!important;
+}
+body.bh-activity-v2 .activity-concept-two .activity-reference-about .activity-keyword-tags{
+ display:flex!important;flex-wrap:wrap!important;gap:6px!important;
+}
+body.bh-activity-v2 .activity-concept-two .activity-reference-about .activity-keyword-tags>span:nth-child(n+5){display:none!important}
+body.bh-activity-v2 .activity-concept-two .activity-reference-about .activity-reference-facts{display:none!important}
+body.bh-activity-v2 .activity-concept-two .activity-hero-intro{max-width:55ch!important}
+@media(max-width:850px){
+ body.bh-activity-v2 .activity-concept-two .activity-concept-content{grid-template-columns:1fr!important}
+}
