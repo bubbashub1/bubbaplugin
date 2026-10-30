@@ -28,6 +28,12 @@ jobs:
           tools: composer:v2
           coverage: none
 
+      - name: Validate claim invitation PHP before production upload
+        run: |
+          php -l api/admin-claim-invitations.php
+          php -l api/claim-listing.php
+          php -l scripts/migrate-claim-invitations.php
+
       - name: Install PHP dependencies into deployment archive
         run: |
           set -euo pipefail
@@ -165,6 +171,16 @@ jobs:
 
           echo "Deployment archive extracted successfully."
           echo "Deployment completed (archive contents were verified before extraction)."
+
+      - name: Apply claim invitation database migration on live
+        env:
+          SSH_HOST: ${{ secrets.EWEBALL_SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.EWEBALL_SSH_USERNAME }}
+          SSH_PORT: ${{ secrets.EWEBALL_SSH_PORT }}
+          REMOTE_PATH: ${{ secrets.EWEBALL_REMOTE_PATH }}
+        run: |
+          set -euo pipefail
+          ssh -p "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no "$SSH_USERNAME@$SSH_HOST" "cd \"$REMOTE_PATH\" && php scripts/migrate-claim-invitations.php"
 
       - name: Verify production pages and assets
         run: |

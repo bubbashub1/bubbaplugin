@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claim invitations · Bubba Hub Admin</title><link rel="stylesheet" href="/assets/css/styles.css">
+<style>main{max-width:1080px;margin:3rem auto;padding:1rem}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:.85rem;border-bottom:1px solid #ddd}button{cursor:pointer} .notice{padding:1rem;background:#e9f4ee;border-radius:12px} .error{color:#9d2727} .muted{color:#555} @media(max-width:700px){table{display:block;overflow-x:auto}}</style></head>
+<body><main><p><a href="/admin/">← Admin dashboard</a></p><h1>Claim invitations</h1>
+<p>Send a claim email directly to the contact email on an unclaimed listing. Automatic invitations remain off during testing.</p>
+<p class="notice" id="message" role="status">Loading eligible listings…</p><h2>Claims awaiting approval</h2><div id="claims"></div><h2>Send claim email now</h2>
+<table><thead><tr><th>Listing</th><th>Contact email</th><th>Invitation</th><th>Action</th></tr></thead><tbody id="items"></tbody></table>
+</main><script>
+let csrf='';
+const message=document.getElementById('message');
+async function load(){
+ try{
+ const r=await fetch('/api/admin-claim-invitations.php',{credentials:'same-origin'});
+ const j=await r.json();if(!r.ok||!j.ok)throw Error(j.error||'Unable to load invitations');
+ csrf=j.csrf;const claims=document.getElementById('claims');claims.replaceChildren();for(const c of (j.claims||[])){const p=document.createElement('p');p.textContent=c.title+' — '+c.email+' ';for(const action of ['approve','reject']){const b=document.createElement('button');b.type='button';b.textContent=action==='approve'?'Approve':'Reject';b.addEventListener('click',()=>review(c.id,action));p.append(b,' ');}claims.append(p);}if(!(j.claims||[]).length)claims.textContent='No claims awaiting approval.';const tbody=document.getElementById('items');tbody.replaceChildren();
+ for(const item of j.data){
+ const tr=document.createElement('tr');
+ for(const value of [item.title,item.recipient,item.invitation_status||'Not invited']){
+ const td=document.createElement('td');td.textContent=value||'';tr.appendChild(td);
+ }
+ const td=document.createElement('td'),button=document.createElement('button');
+ button.textContent='Send claim email now';button.type='button';
+ button.disabled=item.invitation_status==='sent';
+ button.addEventListener('click',()=>send(item.id,button));td.appendChild(button);tr.appendChild(td);tbody.appendChild(tr);
+ }
+ message.textContent=j.data.length+' eligible listing(s) shown.';
+ }catch(e){message.textContent=e.message;message.classList.add('error')}
+}
+async function review(id,decision){if(!confirm((decision==='approve'?'Approve and link this organiser?':'Reject this claim?')))return;try{const r=await fetch('/api/admin-claim-invitations.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({claim_id:id,decision,csrf})});const j=await r.json();if(!r.ok||!j.ok)throw Error(j.error||'Unable to review claim');message.textContent=j.message;await load();}catch(e){message.textContent=e.message;message.classList.add('error')}}
+async function send(id,button){
+ if(!confirm('Send the claim email now to this listing’s contact email?'))return;
+ button.disabled=true;
+ try{
+ const r=await fetch('/api/admin-claim-invitations.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({activity_id:id,csrf})});
+ const j=await r.json();if(!r.ok||!j.ok)throw Error(j.error||'Could not send');
+ message.textContent='Claim email sent.';await load();
+ }catch(e){message.textContent=e.message;message.classList.add('error');button.disabled=false}
+}
+load();
+</script></body></html>
