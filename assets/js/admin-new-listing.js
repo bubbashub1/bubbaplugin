@@ -200,13 +200,13 @@ if(original?.id){
 // Registered venue picker: copy details into a NEW activity-specific venue row.
 // Existing venue IDs belong to their original activity and must not be reused across listings.
 const registeredVenuePicker=document.createElement('section');
-registeredVenuePicker.className='bh-card';
+registeredVenuePicker.className='bh-card bh-registered-picker';
 registeredVenuePicker.style.cssText='padding:16px;margin:12px 0;border:1px solid #ced7c7;border-radius:14px';
 const pickerTitle=document.createElement('h3');pickerTitle.textContent='Use a registered location';
 const pickerHelp=document.createElement('p');pickerHelp.textContent='Search existing locations and select one or more. The address is copied into this listing; its sessions and original listing stay unchanged.';
 const pickerSearch=document.createElement('input');pickerSearch.type='search';pickerSearch.placeholder='Search venue, town or postcode';pickerSearch.setAttribute('aria-label','Search registered venues');pickerSearch.style.width='100%';
 const pickerStatus=document.createElement('small');pickerStatus.setAttribute('role','status');pickerStatus.textContent='Loading registered venues…';
-const pickerTable=document.createElement('div');pickerTable.style.cssText='max-height:280px;overflow:auto;margin:10px 0;border:1px solid #d9e2d5;border-radius:10px';
+const pickerTable=document.createElement('div');pickerTable.style.cssText='max-height:220px;overflow:auto;margin:10px 0;border:1px solid #d9e2d5;border-radius:10px';pickerTable.hidden=true;
 const pickerAdd=document.createElement('button');pickerAdd.type='button';pickerAdd.className='button button-soft';pickerAdd.textContent='Add selected locations';pickerAdd.disabled=true;
 registeredVenuePicker.append(pickerTitle,pickerHelp,pickerSearch,pickerStatus,pickerTable,pickerAdd);
 extraVenueRows.parentElement.insertBefore(registeredVenuePicker,extraVenueRows);
@@ -215,14 +215,14 @@ const chosenRegistered=new Set();
 const renderRegistered=()=>{
  pickerTable.replaceChildren();
  const term=pickerSearch.value.trim().toLocaleLowerCase();
- const matching=registeredVenues.filter(v=>[v.venue_name,v.town,v.postcode,v.address].some(value=>String(value||'').toLocaleLowerCase().includes(term))).slice(0,100);
+ const matching=term.length<2?[]:registeredVenues.filter(v=>[v.venue_name,v.town,v.postcode,v.address].some(value=>String(value||'').toLocaleLowerCase().includes(term))).slice(0,30);pickerTable.hidden=!matching.length;
  for(const venue of matching){
   const label=document.createElement('label');label.style.cssText='display:flex;align-items:center;gap:12px;padding:9px 12px;border-bottom:1px solid #e4e9e0;cursor:pointer';
   const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=chosenRegistered.has(Number(venue.id));checkbox.addEventListener('change',()=>{if(checkbox.checked)chosenRegistered.add(Number(venue.id));else chosenRegistered.delete(Number(venue.id));pickerAdd.disabled=!chosenRegistered.size;});
   const detail=document.createElement('span');detail.textContent=[venue.venue_name,venue.town,venue.postcode].filter(Boolean).join(' · ');
   label.append(checkbox,detail);pickerTable.append(label);
  }
- pickerStatus.textContent=matching.length+' matching registered venues'+(registeredVenues.length>100?' (showing first 100 matches)':'')+'. '+chosenRegistered.size+' selected.';
+ pickerStatus.textContent=term.length<2?'Type at least 2 characters to find a venue. '+chosenRegistered.size+' selected.':matching.length+' matching venues (up to 30 shown). '+chosenRegistered.size+' selected.';
 };
 pickerSearch.addEventListener('input',renderRegistered);
 pickerAdd.addEventListener('click',()=>{
@@ -236,7 +236,7 @@ pickerAdd.addEventListener('click',()=>{
   seen.add(key(venue));added++;
  }
  chosenRegistered.clear();pickerAdd.disabled=true;renderRegistered();
- pickerStatus.textContent=added+' location(s) added. Review details and save the listing to keep them.';
+ pickerSearch.value='';renderRegistered();pickerStatus.textContent=added+' location(s) added. Review details and save the listing to keep them.';
 });
 fetch('/api/admin-activities.php?action=registered_venues',{credentials:'same-origin',cache:'no-store'})
  .then(r=>r.json()).then(payload=>{if(!payload.ok)throw Error(payload.error||'Venue list unavailable');registeredVenues=Array.isArray(payload.data)?payload.data:[];renderRegistered();})
