@@ -112,3 +112,65 @@ body.bh-activity-v2 .app-shell .listing-page.activity-reference-exact .listing-g
  height:320px!important;
  }
 }
+
+/* Requested: six real-data fact cards below photo and actions in hero corner */
+body.bh-activity-v2 .activity-reference-exact .activity-quick-strip{
+ display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ gap:10px!important;margin:12px 0 18px!important;padding:0!important;
+ background:transparent!important;box-shadow:none!important;border-radius:0!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-quick-strip>span{
+ display:flex!important;flex-direction:column!important;justify-content:center!important;
+ align-items:flex-start!important;position:relative!important;min-height:66px!important;
+ padding:12px 12px 12px 52px!important;background:#fff!important;
+ border:1px solid #e2eae4!important;border-radius:15px!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-quick-strip>span::before{
+ left:11px!important;top:50%!important;transform:translateY(-50%)!important;
+ width:32px!important;height:32px!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-quick-strip>span strong{
+ font-size:.68rem!important;color:#557267!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-quick-strip>span b{
+ font-size:.94rem!important;color:#164535!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-hero .listing-gallery .activity-hero-actions{
+ position:absolute!important;z-index:5!important;right:16px!important;top:16px!important;
+ left:auto!important;bottom:auto!important;display:flex!important;flex-direction:column!important;
+ gap:6px!important;width:170px!important;max-width:calc(100% - 32px)!important;
+ margin:0!important;padding:10px!important;border-radius:17px!important;
+ background:rgba(255,255,255,.93)!important;box-shadow:0 4px 20px #102e2830!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-hero .listing-gallery .activity-hero-actions>*{
+ display:block!important;position:static!important;grid-column:auto!important;grid-row:auto!important;
+ width:100%!important;min-width:0!important;min-height:32px!important;
+ padding:6px 10px!important;margin:0!important;font-size:.76rem!important;
+ border-radius:999px!important;background:#f2f7f3!important;color:#174a39!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-hero .listing-gallery .activity-hero-actions #planner,
+body.bh-activity-v2 .activity-reference-exact .activity-hero .listing-gallery .activity-hero-actions .activity-book-button{
+ background:#07543e!important;color:#fff!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-hero .listing-gallery .activity-hero-actions #save{
+ font-size:.76rem!important;height:auto!important;box-shadow:none!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-hero .listing-gallery .activity-hero-actions #save::before{
+ content:none!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-feature-strip{display:none!important}
+@media(max-width:700px){
+ body.bh-activity-v2 .activity-reference-exact .activity-quick-strip{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+ body.bh-activity-v2 .activity-reference-exact .activity-quick-strip>span{
+  padding:9px 8px 9px 44px!important;min-height:60px!important;text-align:left!important;align-items:flex-start!important;
+ }
+ body.bh-activity-v2 .activity-reference-exact .activity-quick-strip>span::before{
+  left:7px!important;top:50%!important;transform:translateY(-50%)!important;
+ }
+ body.bh-activity-v2 .activity-reference-exact .activity-hero .listing-gallery .activity-hero-actions{
+  right:8px!important;top:8px!important;width:132px!important;padding:7px!important;
+ }
+ body.bh-activity-v2 .activity-reference-exact .activity-hero .listing-gallery .activity-hero-actions>*{
+  font-size:.68rem!important;min-height:28px!important;padding:4px 6px!important;
+ }
+}
