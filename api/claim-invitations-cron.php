@@ -15,7 +15,7 @@ $db = bh_mysql();
 $lock = $db->query("SELECT GET_LOCK('bh_claim_auto_invites',0)")->fetchColumn();
 if ((int)$lock !== 1) { echo "Worker already running\n"; exit; }
 try {
-  // Only contact new, unclaimed listings; never email an organiser already attached to an account.
+  // Work through existing and new unclaimed listings, prioritising recently updated entries.\n  // Never email an organiser already attached to an account.
   // An existing invitation of any status permanently excludes automated re-sends.
   $sql = "SELECT a.id,a.title,a.contact_email
     FROM bh_activities a
@@ -25,7 +25,7 @@ try {
       AND (o.user_id IS NULL OR o.user_id=0)
       AND NOT EXISTS (SELECT 1 FROM bh_claim_invitations i WHERE i.activity_id=a.id)
       AND NOT EXISTS (SELECT 1 FROM bh_listing_claims c WHERE c.activity_id=a.id)
-    ORDER BY a.id ASC LIMIT 20";
+    ORDER BY a.updated_at DESC, a.id DESC LIMIT 100";
   $rows = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
   $today = $db->query("SELECT COUNT(*) FROM bh_claim_invitations WHERE sent_at >= CURRENT_DATE()")->fetchColumn();
   $remaining = max(0, $limit-(int)$today);
