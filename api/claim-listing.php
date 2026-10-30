@@ -19,11 +19,23 @@ try {
  $q=$db->prepare("SELECT id,title,organiser_id,status FROM bh_activities WHERE id=? LIMIT 1");$q->execute([$activityId]);$activity=$q->fetch(PDO::FETCH_ASSOC);
  if(!$activity) bh_claim_response(404,['ok'=>false,'error'=>'activity_not_found','message'=>'This listing could not be found.']);
  $db->exec("CREATE TABLE IF NOT EXISTS bh_listing_claims (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,activity_id BIGINT UNSIGNED NOT NULL,user_id BIGINT UNSIGNED NOT NULL,organiser_id BIGINT UNSIGNED NULL,status VARCHAR(20) NOT NULL DEFAULT 'pending',message TEXT NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,reviewed_at DATETIME NULL,reviewed_by BIGINT UNSIGNED NULL,PRIMARY KEY(id),KEY idx_claim_activity_status(activity_id,status),KEY idx_claim_user_status(user_id,status)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+ $inviteToken=(string)($body['invite']??'');
+ if($inviteToken!==''){
+   if(!preg_match('/^[a-f0-9]{64}$/D',$inviteToken)) bh_claim_response(422,['ok'=>false,'error'=>'invalid_invitation']);
+   $v=$db->prepare("SELECT id,recipient FROM bh_claim_invitations WHERE activity_id=? AND token_hash=? AND status='sent' AND expires_at>NOW() LIMIT 1");
+   $v->execute([$activityId,hash('sha256',$inviteToken)]);$invitation=$v->fetch(PDO::FETCH_ASSOC);
+   if(!$invitation || strcasecmp(trim((string)$invitation['recipient']),trim((string)$user['email']))!==0)
+     bh_claim_response(403,['ok'=>false,'error'=>'invitation_mismatch','message'=>'This invitation has expired or belongs to another email address.']);
+ }
  $e=$db->prepare("SELECT id,status FROM bh_listing_claims WHERE activity_id=? AND user_id=? AND status='pending' LIMIT 1");$e->execute([$activityId,$userId]);
  if($e->fetch()) bh_claim_response(200,['ok'=>true,'already_submitted'=>true,'message'=>'Your claim request is already with Bubba Hub for review.']);
  $message=trim((string)($body['message']??'')); if(mb_strlen($message)>2000)$message=mb_substr($message,0,2000);
  $i=$db->prepare("INSERT INTO bh_listing_claims (activity_id,user_id,organiser_id,status,message) VALUES (?,?,?,'pending',?)");
  $i->execute([$activityId,$userId,!empty($activity['organiser_id'])?(int)$activity['organiser_id']:null,$message!==''?$message:null]);
+ if(!empty($invitation)){
+   $used=$db->prepare("UPDATE bh_claim_invitations SET status='pending' WHERE id=? AND status='sent'");
+   $used->execute([(int)$invitation['id']]);
+ }
  bh_claim_response(201,['ok'=>true,'claim_id'=>(int)$db->lastInsertId(),'message'=>'Claim request sent. Bubba Hub will review it and get back to you.']);
 } catch(Throwable $e){ bh_claim_response(500,['ok'=>false,'error'=>'claim_error','message'=>'We could not submit the claim right now. Please try again.']); }
 ?>
