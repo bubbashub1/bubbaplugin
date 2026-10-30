@@ -24,7 +24,7 @@ $setting = static function(string $name, string $fallback=''): string {
 $enabled = $setting('BH_CLAIM_AUTO_ENABLED') === '1';
 $paused = $setting('BH_CLAIM_AUTO_PAUSED','1') !== '0';
 if (!$enabled || $paused) { echo "Claim auto invitations disabled or paused\n"; exit; }
-$limit = max(1, min(5, (int)$setting('BH_CLAIM_AUTO_DAILY_LIMIT','2')));
+$limit = max(1, min(15, (int)$setting('BH_CLAIM_AUTO_DAILY_LIMIT','2')));
 $db = bh_mysql();
 $lock = $db->query("SELECT GET_LOCK('bh_claim_auto_invites',0)")->fetchColumn();
 if ((int)$lock !== 1) { echo "Worker already running\n"; exit; }
