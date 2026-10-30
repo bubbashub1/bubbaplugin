@@ -7512,3 +7512,52 @@ button.bh-header-signout:disabled{opacity:.65;cursor:wait}
 body:not(.bh-admin):not(.bh-leader) .site-header{border-bottom:2px solid var(--bh-green);box-shadow:0 5px 16px rgba(18,62,43,.1)}
 body:not(.bh-admin):not(.bh-leader) .site-header .main-nav a:focus-visible{outline:3px solid var(--bh-teal-dark);outline-offset:2px}
 .bh-directory :is(.activity-card,.event-card){border-color:var(--bh-border);box-shadow:var(--bh-shadow)}
+
+
+/* =========================================================================
+   APP-FLOW FOUNDATION — 2026-10-30
+   Shared visual polish for public, family and leader routes.
+   Uses existing brand tokens; does not override functional page layouts.
+   ========================================================================= */
+:root {
+  --bh-app-radius: 18px;
+  --bh-app-radius-lg: 26px;
+  --bh-app-focus: #0f8589;
+  --bh-app-surface: #fff;
+  --bh-app-canvas: #f7faf7;
+  --bh-app-shadow: 0 8px 28px rgba(18,63,49,.075);
+}
+:where(a,button,input,select,textarea,[role="button"]):focus-visible {
+  outline: 3px solid var(--bh-app-focus);
+  outline-offset: 3px;
+}
+:where(button,.button,input[type="submit"],input[type="button"]) {
+  transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+:where(button,.button,input[type="submit"],input[type="button"]):not(:disabled):active {
+  transform: translateY(1px);
+}
+:where(button,.button,input[type="submit"],input[type="button"]):disabled {
+  cursor: not-allowed;
+  opacity: .6;
+}
+:where(input:not([type="checkbox"]):not([type="radio"]),select,textarea) {
+  max-width: 100%;
+  font: inherit;
+}
+:where(.site-header,.site-footer) a { text-underline-offset: .2em; }
+:where(.app-shell) { min-width: 0; }
+:where(.app-shell) img { max-width: 100%; }
+:where(.app-shell) :is(h1,h2,h3) { overflow-wrap: break-word; }
+:where(.app-shell) :is(.activity-card,.directory-event-card,.account-dashboard-card,.hub-panel) {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  :where(.app-shell) { padding-inline: max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right)); }
+  :where(.app-shell) :is(button,.button,a[role="button"]) { min-height: 44px; }
+  :where(.app-shell) :is(input,select,textarea) { font-size: max(16px,1rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  :where(button,.button,input[type="submit"],input[type="button"]) { transition: none; }
+}
