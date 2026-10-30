@@ -65,7 +65,8 @@ $q=$db->prepare("SELECT COUNT(*) FROM bh_listing_claims WHERE activity_id=? AND 
 $q->execute([$id]);if((int)$q->fetchColumn()>0)respond(409,['ok'=>false,'error'=>'Claim already pending or approved']);
 $q=$db->prepare("SELECT status,sent_at FROM bh_claim_invitations WHERE activity_id=? AND recipient=?");
 $q->execute([$id,$a['email']]);$prior=$q->fetch(PDO::FETCH_ASSOC);
-if($prior && $prior['sent_at'] && strtotime($prior['sent_at'])>time()-7*86400)respond(409,['ok'=>false,'error'=>'Invitation already sent within seven days']);
+$pilotRetest=(($input['pilot_test']??false)===true && ($input['retest']??false)===true && (string)$a['title']==='Bubba and Me Cranbrook' && strtolower(trim((string)$a['email']))==='contact@bubbahub.co.uk');
+if($prior && $prior['sent_at'] && strtotime($prior['sent_at'])>time()-($pilotRetest?600:7*86400))respond(409,['ok'=>false,'error'=>$pilotRetest?'Please wait 10 minutes between test emails.':'Invitation already sent within seven days']);
 $token=bin2hex(random_bytes(32));$hash=hash('sha256',$token);
 $origin=rtrim((string)(getenv('BH_PUBLIC_BASE_URL')?:'https://bubbahub.co.uk'),'/');
 if(!in_array($origin,['https://bubbahub.co.uk','https://staging.bubbahub.co.uk'],true))respond(500,['ok'=>false,'error'=>'Invalid public site URL']);
@@ -84,13 +85,13 @@ $safeListing=htmlspecialchars($origin.'/activity.html?id='.$id,ENT_QUOTES,'UTF-8
 $html='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:0;background:#f6f9f3;font-family:Arial,Helvetica,sans-serif;color:#21452d;">'
 .'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f6f9f3;"><tr><td align="center" style="padding:32px 12px;">'
 .'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:600px;background:#ffffff;border-radius:20px;overflow:hidden;">'
-.'<tr><td style="background:#dcefe1;padding:26px 32px;text-align:center;"><p style="font-size:25px;font-weight:800;color:#174b2c;margin:0;">Bubba Hub <span style="color:#cf763c;">South West</span></p><p style="font-size:13px;color:#38644a;margin:8px 0 0;">Connecting local families with amazing activities</p></td></tr>'
+ .'<tr><td style="background:#e4f1dc;padding:24px 28px;text-align:center;"><img src="'.$origin.'/images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub South West" width="270" style="display:block;width:100%;max-width:270px;height:auto;margin:0 auto 12px;border:0;"><p style="font-size:14px;color:#285c3a;margin:0;">Helping local families find, enjoy and make the most of family life in Devon &amp; Cornwall</p></td></tr>'
 .'<tr><td style="padding:32px 34px;"><p style="margin:0 0 12px;font-size:14px;color:#64806c;font-weight:700;">YOUR FREE LISTING IS READY</p>'
 .'<h1 style="font-size:29px;line-height:1.2;color:#174b2c;margin:0 0 18px;">Your activity is on Bubba Hub!</h1>'
 .'<p style="font-size:16px;line-height:1.65;margin:0 0 18px;">Hello! We have added <strong>'.$safeTitle.'</strong> to Bubba Hub South West so local families can discover you.</p>'
 .'<p style="font-size:16px;line-height:1.65;margin:0 0 24px;">Please take a moment to review your activity and <strong>claim your free listing</strong>.</p>'
 .'<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#205b36;border-radius:12px;"><a href="'.$safeUrl.'" style="display:inline-block;padding:15px 26px;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;">Claim my free listing</a></td></tr></table>'
-.'<p style="font-size:14px;line-height:1.6;margin:16px 0 26px;"><a href="'.$safeListing.'" style="color:#205b36;text-decoration:underline;">View your listing first</a></p>'
+ .'<p style="font-size:14px;line-height:1.6;margin:16px 0 26px;"><a href="'.$safeListing.'" style="color:#205b36;text-decoration:underline;">View your listing first</a></p><p style="font-size:14px;line-height:1.6;margin:0 0 24px;color:#496b53;">Once claimed, you can keep your details, photos and timetable up to date for local families.</p>'
 .'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#eff7f0;border-radius:14px;"><tr><td style="padding:20px 22px;"><p style="font-size:17px;font-weight:700;margin:0 0 8px;color:#174b2c;">New to Bubba Hub?</p><p style="font-size:15px;line-height:1.6;margin:0;">If you have not got an account yet, <strong>create a free Class Leader account today!</strong> Follow the claim button above and choose <strong>Create account</strong> to get started. Once signed in, submit your claim for approval.</p></td></tr></table>'
 .'<p style="font-size:15px;line-height:1.6;margin:26px 0 0;">We look forward to welcoming you!<br><strong>The Bubba Hub South West Team</strong></p></td></tr>'
 .'<tr><td style="background:#f0f5ed;padding:19px 28px;text-align:center;font-size:12px;line-height:1.6;color:#637b69;">You are receiving this because your activity contact email is listed on Bubba Hub.<br>Claiming your listing is free.</td></tr>'
