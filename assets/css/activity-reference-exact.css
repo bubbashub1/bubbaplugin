@@ -580,3 +580,37 @@ body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activit
 body.bh-activity-v2 .listing-page.activity-reference-exact .activity-quick-strip{
  border-radius:0 0 20px 20px!important;
 }
+
+/* Clean 2x2 icon-only action panel; SVG avoids platform-specific glyph rendering. */
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery .listing-actions.activity-hero-actions{
+ display:grid!important;grid-template-columns:repeat(2,48px)!important;grid-template-rows:repeat(2,48px)!important;
+ gap:10px!important;width:max-content!important;height:auto!important;max-width:none!important;
+ padding:12px!important;right:16px!important;top:16px!important;
+ background:#174b3d!important;border:1px solid #ffffff40!important;border-radius:16px!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery .listing-actions.activity-hero-actions > button.activity-icon-action{
+ box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;
+ width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important;
+ padding:0!important;margin:0!important;overflow:hidden!important;flex:none!important;
+ border-radius:12px!important;background:#07543e!important;color:#fff!important;
+ border:1px solid #ffffff38!important;box-shadow:none!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery .listing-actions.activity-hero-actions > button.activity-icon-action::before,
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery .listing-actions.activity-hero-actions > button.activity-icon-action::after{content:none!important;display:none!important}
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery .listing-actions.activity-hero-actions > button.activity-icon-action .bh-action-svg{
+ display:block!important;flex:none!important;width:24px!important;height:24px!important;
+ stroke:#fff!important;color:#fff!important;fill:none!important;opacity:1!important;
+ visibility:visible!important;transform:none!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery .listing-actions.activity-hero-actions > button.activity-icon-action:hover,
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery .listing-actions.activity-hero-actions > button.activity-icon-action:focus-visible{
+ background:#247e62!important;outline:2px solid #fff!important;outline-offset:2px!important;
+}
+/* Image and attached fact bar form one continuous block: square top, rounded base. */
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero,
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero > .listing-gallery{
+ border-radius:0!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .activity-quick-strip{
+ border-radius:0 0 20px 20px!important;
+}
