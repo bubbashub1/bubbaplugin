@@ -6,7 +6,7 @@
 <title>Activity · Bubba Hub</title>
 <link rel="stylesheet" href="/assets/css/styles.css">
 <link rel="stylesheet" href="/assets/css/activity-v2.css">
-<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030g">
+<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030h">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
@@ -318,7 +318,16 @@ document.addEventListener("DOMContentLoaded",async()=>{
         const label=document.createElement("span");
         label.className="activity-action-label";
         label.textContent=original.replace(/^\\+\\s*/,"");
-        button.replaceChildren(symbol,label);
+        button.replaceChildren(symbol);
+        button.style.setProperty("font-size","0","important");
+        button.style.setProperty("color","transparent","important");
+        button.style.setProperty("width","48px","important");
+        button.style.setProperty("height","48px","important");
+        button.style.setProperty("min-width","48px","important");
+        button.style.setProperty("min-height","48px","important");
+        button.style.setProperty("padding","0","important");
+        symbol.style.setProperty("font-size","26px","important");
+        symbol.style.setProperty("color","#07543e","important");
       });
 
       const strip=document.createElement("div");
