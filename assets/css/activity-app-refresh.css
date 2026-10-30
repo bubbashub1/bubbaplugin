@@ -220,3 +220,77 @@ body.bh-activity-v2 .activity-reference-about .activity-keyword-tags{margin-bott
  body.bh-activity-v2 .listing-side{grid-template-columns:1fr!important}
  body.bh-activity-v2 .listing-main>.activity-reference-contact{padding:14px!important}
 }
+
+/* Approved Visual 2 — image-led homepage-aligned activity detail */
+body.bh-activity-v2{background:#f7faf5!important}
+body.bh-activity-v2 .app-shell{max-width:1380px!important;margin:auto!important}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero{
+ background:linear-gradient(125deg,#edf7ed 0%,#f6faf5 60%,#e8f6f2 100%)!important;
+ border-radius:28px!important;display:grid!important;
+ grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)!important;
+ gap:clamp(20px,3vw,40px)!important;padding:clamp(18px,2.8vw,34px)!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-gallery{
+ height:clamp(290px,31vw,425px)!important;max-height:none!important;
+ border-radius:23px!important;overflow:hidden!important;position:relative!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-gallery img{
+ width:100%!important;height:100%!important;object-fit:cover!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-gallery img.listing-gallery-fallback{
+ object-fit:contain!important;padding:32px!important;background:#fff!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-summary{
+ padding:10px 0!important;display:flex!important;flex-direction:column!important;justify-content:center!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-summary h1{
+ font-size:clamp(2.2rem,3.8vw,3.8rem)!important;line-height:1.08!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .hero-quick-facts{
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;margin:16px 0!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .hero-quick-facts>span{
+ background:#fff!important;border:1px solid #e5eee6!important;padding:13px!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-actions{
+ display:grid!important;grid-template-columns:1.4fr 1fr!important;gap:10px!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-actions>*{
+ min-width:0!important;width:100%!important;min-height:47px!important;border-radius:999px!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-actions #planner{
+ grid-column:1!important;grid-row:1!important;background:#07543e!important;color:white!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-actions #save{
+ grid-column:2!important;grid-row:1!important;background:white!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-actions #visited,
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-actions #compare{
+ font-size:.83rem!important;min-height:35px!important;background:transparent!important;
+}
+body.bh-activity-v2 .listing-main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:18px!important}
+body.bh-activity-v2 .listing-main>.activity-reference-about{grid-column:1!important;grid-row:1!important}
+body.bh-activity-v2 .listing-main>.activity-reference-schedule{grid-column:2!important;grid-row:1!important}
+body.bh-activity-v2 .listing-main>.activity-reference-contact{grid-column:1!important;grid-row:2!important}
+body.bh-activity-v2 .listing-main>.activity-useful-info{grid-column:2!important;grid-row:2!important}
+body.bh-activity-v2 .listing-main>:is(.activity-reference-about,.activity-reference-schedule,.activity-reference-contact,.activity-useful-info){
+ border-radius:23px!important;min-width:0!important;
+}
+body.bh-activity-v2 .listing-main>.activity-reference-schedule{background:#e8f4fd!important}
+body.bh-activity-v2 .listing-main>.activity-useful-info{background:#fff3d8!important}
+body.bh-activity-v2 .listing-main>.activity-reference-contact{background:#fff!important}
+body.bh-activity-v2 .listing-main>.activity-reference-about{background:#fff!important}
+body.bh-activity-v2 .app-shell .listing-description :is(p,li){color:#25392f!important}
+@media(max-width:850px){
+ body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero{grid-template-columns:1fr!important}
+ body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-gallery{height:300px!important}
+ body.bh-activity-v2 .listing-main{grid-template-columns:1fr!important}
+ body.bh-activity-v2 .listing-main>.activity-reference-about,
+ body.bh-activity-v2 .listing-main>.activity-reference-schedule,
+ body.bh-activity-v2 .listing-main>.activity-reference-contact,
+ body.bh-activity-v2 .listing-main>.activity-useful-info{grid-column:1!important;grid-row:auto!important}
+}
+@media(max-width:550px){
+ body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero{padding:14px!important;border-radius:20px!important}
+ body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-gallery{height:235px!important}
+}
