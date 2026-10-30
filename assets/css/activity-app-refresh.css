@@ -92,3 +92,39 @@ body.bh-activity-v2 .listing-actions #compare{background:#f6f8f6!important;color
 @media(max-width:760px){
  body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero{border-radius:18px!important;padding:15px!important}
 }
+
+/* Replace oversized top banner with an integrated editorial overview. */
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero{
+ background:transparent!important;border:0!important;border-radius:0!important;
+ box-shadow:none!important;padding:clamp(12px,2vw,22px) 0 clamp(16px,2vw,24px)!important;
+ gap:clamp(18px,3vw,36px)!important;
+}
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .listing-gallery{
+ border-radius:18px!important;background:#fff!important;
+ box-shadow:0 5px 18px rgba(20,53,40,.055)!important;
+}
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .listing-summary{
+ background:transparent!important;box-shadow:none!important;border:0!important;
+ padding:6px 0!important;
+}
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .hero-quick-facts{
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;
+}
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .hero-quick-facts>span{
+ border-radius:12px!important;background:#fff!important;
+ box-shadow:0 2px 8px rgba(20,53,40,.025)!important;
+}
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .listing-actions{
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .listing-actions>*{
+ border-radius:12px!important;min-height:44px!important;
+}
+@media(max-width:760px){
+ body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero{
+  padding:12px 0 16px!important;gap:15px!important;
+ }
+ body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .hero-quick-facts{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+}
