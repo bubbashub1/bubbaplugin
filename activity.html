@@ -367,14 +367,22 @@ document.addEventListener("DOMContentLoaded",async()=>{
         ["Phone",a.phone||a.contact_phone||a.organiser_phone,"phone"]
       ];
       contactOptions.forEach(([label,value,kind])=>{
-        const raw=String(value||"").trim();if(!raw)return;
-        const url=kind==="web"?validWeb(raw):kind==="email"&&/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(raw)?"mailto:"+raw:kind==="phone"&&/^[+0-9()\\s.-]{7,24}$/.test(raw)?"tel:"+raw.replace(/[^+0-9]/g,""):null;
+        const raw=String(value||"").trim();
+        if(!raw)return;
+        let url=null;
+        if(kind==="web")url=validWeb(raw);
+        else if(kind==="email" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw))url="mailto:"+raw;
+        else if(kind==="phone"){
+          const digits=raw.replace(/[^0-9]/g,"");
+          if(digits.length>=7 && digits.length<=15)url="tel:"+(raw.startsWith("+")?"+":"")+digits;
+        }
         if(!url)return;
-        const link=document.createElement("a");link.href=url;link.className="activity-contact-link";link.textContent=label;
+        const link=document.createElement("a");
+        link.href=url;link.className="activity-contact-link";link.textContent=label;
         if(kind==="web"){link.target="_blank";link.rel="noopener noreferrer";}
         links.append(link);
       });
-      
+
       footer.append(links);
       footer.classList.toggle("activity-contacts-empty",!links.querySelector("a"));
       const organiserCard=layout.querySelector('.activity-reference-organiser');
