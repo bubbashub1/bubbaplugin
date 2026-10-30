@@ -33,6 +33,7 @@ $input=json_decode((string)file_get_contents('php://input'),true)?:[];
 if(!hash_equals($_SESSION['bh_claim_invite_csrf'],(string)($input['csrf']??'')))respond(403,['ok'=>false,'error'=>'CSRF validation failed']);
 $id=(int)($input['activity_id']??0);
 if($id<1)respond(422,['ok'=>false,'error'=>'Invalid listing']);
+if(!empty($input['automatic']) && getenv('BH_CLAIM_AUTO_INVITES_ENABLED')!=='1')respond(409,['ok'=>false,'error'=>'Automatic invitations disabled']);
 $q=$db->prepare("SELECT a.id,a.title,a.contact_email AS email FROM bh_activities a WHERE a.id=? LIMIT 1");
 $q->execute([$id]);$a=$q->fetch(PDO::FETCH_ASSOC);
 if(!$a||!filter_var($a['email'],FILTER_VALIDATE_EMAIL))respond(422,['ok'=>false,'error'=>'Missing valid activity contact email']);
