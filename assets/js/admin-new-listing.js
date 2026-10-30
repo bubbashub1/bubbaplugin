@@ -660,6 +660,28 @@ const back=document.getElementById('adminListingBack'),next=document.getElementB
 document.getElementById('adminSaveNow')?.addEventListener('click',()=>form.requestSubmit(save));
 
 // Make contact details a focused, easy-to-scan step.
+
+// Keep optional photo slots out of the way until needed.
+if(gallery){
+ const photoFields=[...gallery.querySelectorAll('label')];
+ photoFields.forEach((label,index)=>{
+  label.classList.add('bh-photo-slot');
+  const input=label.querySelector('input');
+  const refresh=()=>{label.hidden=index>0&&!input.value.trim()&&!gallery.classList.contains('bh-show-all-photos');};
+  input?.addEventListener('input',refresh);
+  refresh();
+ });
+ const expandPhotos=document.createElement('button');expandPhotos.type='button';expandPhotos.className='button button-soft';expandPhotos.textContent='Show all 10 photo slots';
+ expandPhotos.addEventListener('click',()=>{
+  gallery.classList.toggle('bh-show-all-photos');
+  expandPhotos.textContent=gallery.classList.contains('bh-show-all-photos')?'Show only used photo slots':'Show all 10 photo slots';
+  photoFields.forEach((label,index)=>{const input=label.querySelector('input');label.hidden=!gallery.classList.contains('bh-show-all-photos')&&index>0&&!input.value.trim();});
+ });
+ gallery.before(expandPhotos);
+ const photoStyle=document.createElement('style');
+ photoStyle.textContent='#adminGalleryFields{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}#adminGalleryFields .bh-photo-slot{padding:12px;border:1px solid #d8e6db;border-radius:12px;background:#fff}#adminGalleryFields .bh-photo-slot input{width:100%}';
+ document.head.append(photoStyle);
+}
 const contactHeading=document.createElement('div');
 contactHeading.className='bh-contact-intro';
 contactHeading.innerHTML='<h2>Contact details</h2><p>How can families contact you or book a place? Add the links you use; leave anything irrelevant blank.</p>';
