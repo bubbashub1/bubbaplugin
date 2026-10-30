@@ -31,3 +31,14 @@
  .bh-activity-v2 .listing-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
  .bh-activity-v2 .listing-gallery{min-height:180px}
 }
+
+/* Higher specificity than legacy global body:not(.bh-home) activity rules. */
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero{
+ background:linear-gradient(125deg,#e5f1df,#def1f4 80%,#fff7e5)!important;
+ color:#174e3b!important;border:1px solid #d5e7db!important;border-radius:28px!important;
+}
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .listing-summary h1{color:#174e3b!important}
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .listing-summary :is(.eyebrow,strong,b){color:#174e3b!important}
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .hero-quick-facts>span{background:rgba(255,255,255,.83)!important;color:#174e3b!important}
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .listing-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
+@media(max-width:650px){body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero{border-radius:20px!important}}
