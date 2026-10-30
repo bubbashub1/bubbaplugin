@@ -21,7 +21,7 @@ $db->exec("CREATE TABLE IF NOT EXISTS bh_claim_invitations (
 $_SESSION['bh_claim_invite_csrf']??=bin2hex(random_bytes(32));
 if($_SERVER['REQUEST_METHOD']==='GET') {
  $rows=$db->query("SELECT a.id,a.title,a.contact_email AS recipient,i.status AS invitation_status,i.sent_at
- FROM bh_activities a JOIN bh_organisers o ON o.id=a.organiser_id
+ FROM bh_activities a
  LEFT JOIN bh_claim_invitations i ON i.activity_id=a.id AND i.recipient=a.contact_email
  WHERE a.contact_email IS NOT NULL AND a.contact_email<>'' AND NOT EXISTS (
  SELECT 1 FROM bh_listing_claims c WHERE c.activity_id=a.id AND c.status IN ('approved','pending')
@@ -35,7 +35,7 @@ $id=(int)($input['activity_id']??0);
 if($id<1)respond(422,['ok'=>false,'error'=>'Invalid listing']);
 $q=$db->prepare("SELECT a.id,a.title,a.contact_email AS email FROM bh_activities a WHERE a.id=? LIMIT 1");
 $q->execute([$id]);$a=$q->fetch(PDO::FETCH_ASSOC);
-if(!$a||!filter_var($a['email'],FILTER_VALIDATE_EMAIL))respond(422,['ok'=>false,'error'=>'Missing valid organiser email']);
+if(!$a||!filter_var($a['email'],FILTER_VALIDATE_EMAIL))respond(422,['ok'=>false,'error'=>'Missing valid activity contact email']);
 $q=$db->prepare("SELECT COUNT(*) FROM bh_listing_claims WHERE activity_id=? AND status IN ('approved','pending')");
 $q->execute([$id]);if((int)$q->fetchColumn()>0)respond(409,['ok'=>false,'error'=>'Claim already pending or approved']);
 $q=$db->prepare("SELECT status,sent_at FROM bh_claim_invitations WHERE activity_id=? AND recipient=?");
@@ -43,7 +43,7 @@ $q->execute([$id,$a['email']]);$prior=$q->fetch(PDO::FETCH_ASSOC);
 if($prior && $prior['sent_at'] && strtotime($prior['sent_at'])>time()-7*86400)respond(409,['ok'=>false,'error'=>'Invitation already sent within seven days']);
 $token=bin2hex(random_bytes(32));$hash=hash('sha256',$token);
 $url='https://staging.bubbahub.co.uk/auth.html?context=leader&claim_activity='.rawurlencode((string)$id).'&invite='.rawurlencode($token);
-$subject='Your activity is on Bubba Hub – review and claim it';
+$subject='Your activity is now on Bubba Hub – Claim your free listing!';
 $body="Hello,\n\nWe've added ". $a['title'] ." to Bubba Hub South West. Please review your listing and claim it for free.\n\nView listing: https://staging.bubbahub.co.uk/activity.html?id=".$id."\nClaim listing: ".$url."\n\nThanks,\nBubba Hub South West";
 if(getenv('BH_CLAIM_INVITES_ENABLED')!=='1')respond(409,['ok'=>false,'error'=>'Sending disabled. Set BH_CLAIM_INVITES_ENABLED=1 after staging verification.']);
 if(!mail($a['email'],$subject,$body,"From: Bubba Hub South West <noreply@bubbahub.co.uk>\r\nContent-Type: text/plain; charset=UTF-8"))respond(502,['ok'=>false,'error'=>'Mail transport rejected message']);
