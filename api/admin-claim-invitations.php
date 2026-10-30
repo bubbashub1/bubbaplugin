@@ -20,10 +20,10 @@ $db->exec("CREATE TABLE IF NOT EXISTS bh_claim_invitations (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 $_SESSION['bh_claim_invite_csrf']??=bin2hex(random_bytes(32));
 if($_SERVER['REQUEST_METHOD']==='GET') {
- $rows=$db->query("SELECT a.id,a.title,o.email AS recipient,i.status AS invitation_status,i.sent_at
+ $rows=$db->query("SELECT a.id,a.title,a.contact_email AS recipient,i.status AS invitation_status,i.sent_at
  FROM bh_activities a JOIN bh_organisers o ON o.id=a.organiser_id
- LEFT JOIN bh_claim_invitations i ON i.activity_id=a.id AND i.recipient=o.email
- WHERE o.email IS NOT NULL AND o.email<>'' AND NOT EXISTS (
+ LEFT JOIN bh_claim_invitations i ON i.activity_id=a.id AND i.recipient=a.contact_email
+ WHERE a.contact_email IS NOT NULL AND a.contact_email<>'' AND NOT EXISTS (
  SELECT 1 FROM bh_listing_claims c WHERE c.activity_id=a.id AND c.status IN ('approved','pending')
  ) ORDER BY a.id DESC LIMIT 250")->fetchAll(PDO::FETCH_ASSOC);
  respond(200,['ok'=>true,'data'=>$rows,'csrf'=>$_SESSION['bh_claim_invite_csrf']]);
@@ -33,7 +33,7 @@ $input=json_decode((string)file_get_contents('php://input'),true)?:[];
 if(!hash_equals($_SESSION['bh_claim_invite_csrf'],(string)($input['csrf']??'')))respond(403,['ok'=>false,'error'=>'CSRF validation failed']);
 $id=(int)($input['activity_id']??0);
 if($id<1)respond(422,['ok'=>false,'error'=>'Invalid listing']);
-$q=$db->prepare("SELECT a.id,a.title,o.email FROM bh_activities a JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.id=? LIMIT 1");
+$q=$db->prepare("SELECT a.id,a.title,a.contact_email AS email FROM bh_activities a WHERE a.id=? LIMIT 1");
 $q->execute([$id]);$a=$q->fetch(PDO::FETCH_ASSOC);
 if(!$a||!filter_var($a['email'],FILTER_VALIDATE_EMAIL))respond(422,['ok'=>false,'error'=>'Missing valid organiser email']);
 $q=$db->prepare("SELECT COUNT(*) FROM bh_listing_claims WHERE activity_id=? AND status IN ('approved','pending')");
