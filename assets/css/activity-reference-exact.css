@@ -463,3 +463,44 @@ body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-foo
  grid-template-columns:1fr!important;
  }
 }
+
+/* Contact bar: organiser identity first, profile beneath, contacts only when available */
+body.bh-activity-v2 .activity-contact-footer{
+ display:grid!important;grid-template-columns:minmax(220px,1fr) minmax(220px,2fr)!important;
+ align-items:center!important;gap:18px 24px!important;
+}
+body.bh-activity-v2 .activity-contact-footer > h2{grid-column:1;grid-row:1;margin:0!important;}
+body.bh-activity-v2 .activity-contact-footer .activity-contact-organiser{
+ grid-column:1!important;grid-row:2!important;display:flex!important;flex-direction:column!important;
+ align-items:flex-start!important;justify-content:flex-start!important;gap:10px!important;
+ margin:0!important;padding:0!important;min-width:0!important;
+}
+body.bh-activity-v2 .activity-contact-footer .activity-contact-organiser .activity-organiser-link{
+ display:inline-flex!important;width:max-content!important;max-width:100%!important;
+}
+body.bh-activity-v2 .activity-contact-footer .activity-contact-buttons{
+ grid-column:2!important;grid-row:1 / span 2!important;
+ display:flex!important;flex-wrap:wrap!important;gap:10px!important;justify-content:flex-end!important;
+}
+body.bh-activity-v2 .activity-contact-footer.activity-contacts-empty .activity-contact-buttons{display:none!important;}
+/* Icon buttons: hide text regardless of nested markup or prior specificity */
+body.bh-activity-v2 .activity-hero-actions .activity-icon-action{
+ position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;
+ font-size:0!important;line-height:1!important;color:transparent!important;
+}
+body.bh-activity-v2 .activity-hero-actions .activity-icon-action .activity-action-label{
+ display:none!important;visibility:hidden!important;font-size:0!important;
+}
+body.bh-activity-v2 .activity-hero-actions .activity-icon-action .activity-action-symbol{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ font-size:24px!important;line-height:1!important;color:#07543e!important;
+}
+@media(max-width:700px){
+ body.bh-activity-v2 .activity-contact-footer{grid-template-columns:1fr!important;}
+ body.bh-activity-v2 .activity-contact-footer > h2,
+ body.bh-activity-v2 .activity-contact-footer .activity-contact-organiser,
+ body.bh-activity-v2 .activity-contact-footer .activity-contact-buttons{
+ grid-column:1!important;grid-row:auto!important;
+ }
+ body.bh-activity-v2 .activity-contact-footer .activity-contact-buttons{justify-content:flex-start!important;}
+}

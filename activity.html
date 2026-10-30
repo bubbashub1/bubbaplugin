@@ -6,7 +6,7 @@
 <title>Activity · Bubba Hub</title>
 <link rel="stylesheet" href="/assets/css/styles.css">
 <link rel="stylesheet" href="/assets/css/activity-v2.css">
-<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030f">
+<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030g">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
@@ -327,7 +327,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       hero.after(strip);
       const footer=document.createElement("aside");
       footer.className="activity-friendly-footer activity-contact-footer";
-      const heading=document.createElement("h2");heading.textContent="Contact details";footer.append(heading);
+      const heading=document.createElement("h2");heading.textContent="Organiser";footer.append(heading);
       const links=document.createElement("div");links.className="activity-contact-buttons";
       const validWeb=value=>{try{const url=new URL(String(value||""));return ["https:","http:"].includes(url.protocol)?url.href:null;}catch(e){return null;}};
       const contactOptions=[
@@ -345,7 +345,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
         if(kind==="web"){link.target="_blank";link.rel="noopener noreferrer";}
         links.append(link);
       });
-      if(!links.children.length){const empty=document.createElement("p");empty.textContent="Contact details have not been provided for this activity.";links.append(empty);}
+      
       footer.append(links);
       footer.classList.toggle("activity-contacts-empty",!links.querySelector("a"));
       const organiserCard=layout.querySelector('.activity-reference-organiser');
