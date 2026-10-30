@@ -69,19 +69,27 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
     if(preg_match('/\b(pilates|somatics|yoga|class|online|zoom|studio|with\s+\w+)\b/iu',$line))$context=mb_substr($line,0,120);
     continue;
    }
-   foreach($matches as $m){
-    if(!empty($m[4])){$hour=(int)$m[4];$minute=(int)$m[5];}
-    else {$hour=(int)$m[1];$minute=(int)($m[2]??0);if($hour<1||$hour>12||$minute>59)continue;$hour=$hour%12+(strtolower($m[3])==='pm'?12:0);}
-    $start=sprintf('%02d:%02d',$hour,$minute);
-    $title=trim(preg_replace('/\b(?:\d{1,2}(?::\d{2})?\s*(?:am|pm)|(?:[01]?\d|2[0-3]):[0-5]\d)\b/iu','',$line));
-    $title=trim($title," \t\n\r\0\x0B,|:-–—");
-    if($title===''||mb_strlen($title)<4)$title=$context;
-    if($title==='')$title='Class name to confirm';
-    $key=$day.'|'.$start.'|'.$title;
-    $found[$key]=['title'=>mb_substr($title,0,180),'day_of_week'=>$day,'start_time'=>$start,'end_time'=>'','start_date'=>'','end_date'=>'','frequency'=>'weekly','url'=>$url,'uid'=>$key];
-    if(count($found)>=150)break 2;
+   // A range such as 10:30-11:30 is one class, not two separate sessions.
+   $m=$matches[0];
+   if(!empty($m[4])){$hour=(int)$m[4];$minute=(int)$m[5];}
+   else {$hour=(int)$m[1];$minute=(int)($m[2]??0);if($hour<1||$hour>12||$minute>59)continue;$hour=$hour%12+(strtolower($m[3])==='pm'?12:0);}
+   $start=sprintf('%02d:%02d',$hour,$minute);
+   $endTime='';
+   if(count($matches)>1&&preg_match('/[-–—]\\s*$/u',substr($line,0,strpos($line,$matches[1][0])))){
+    $n=$matches[1];
+    if(!empty($n[4])){$eh=(int)$n[4];$em=(int)$n[5];}
+    else {$eh=(int)$n[1];$em=(int)($n[2]??0);$eh=$eh%12+(strtolower($n[3])==='pm'?12:0);}
+    $endTime=sprintf('%02d:%02d',$eh,$em);
    }
+   $title=trim(preg_replace('/\\b(?:\\d{1,2}(?::\\d{2})?\\s*(?:am|pm)|(?:[01]?\\d|2[0-3]):[0-5]\\d)\\b/iu','',$line));
+   $title=trim($title," \\t\\n\\r\\0\\x0B,|:-–—");
+   if($title===''||mb_strlen($title)<4)$title=$context;
+   if($title==='')$title='Class name to confirm';
+   $key=$day.'|'.$start.'|'.$title;
+   $found[$key]=['title'=>mb_substr($title,0,180),'day_of_week'=>$day,'start_time'=>$start,'end_time'=>$endTime,'start_date'=>'','end_date'=>'','frequency'=>'weekly','url'=>$url,'uid'=>$key];
+   if(count($found)>=150)break;
   }
+
   if(!$found){
    $hasIframe=(bool)$xpath->query('//iframe')->length;
    $hasDynamicBooking=(bool)preg_match('/(?:book\s*(?:an?\s*)?appointment|select\s+a\s+time|see\s+availability|booking\s+diary|datepicker|calendar\s+widget)/iu',$text);
