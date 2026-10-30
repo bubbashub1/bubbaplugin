@@ -3,7 +3,7 @@
 <title>Claim invitations · Bubba Hub Admin</title><link rel="stylesheet" href="/assets/css/styles.css">
 <style>main{max-width:1080px;margin:3rem auto;padding:1rem}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:.85rem;border-bottom:1px solid #ddd}button{cursor:pointer} .notice{padding:1rem;background:#e9f4ee;border-radius:12px} .error{color:#9d2727} .muted{color:#555} @media(max-width:700px){table{display:block;overflow-x:auto}}</style></head>
 <body><main><p><a href="/admin/">← Admin dashboard</a></p><h1>Claim invitations</h1>
-<p>Review activity contacts and send claim invitations individually. Emails are disabled until the staging configuration and verification flow are approved.</p>
+<p>Send a claim email directly to the contact email on an unclaimed listing. Automatic invitations remain off during testing.</p>
 <p class="notice" id="message" role="status">Loading eligible listings…</p>
 <table><thead><tr><th>Listing</th><th>Contact email</th><th>Invitation</th><th>Action</th></tr></thead><tbody id="items"></tbody></table>
 </main><script>
@@ -20,7 +20,7 @@ async function load(){
  const td=document.createElement('td');td.textContent=value||'';tr.appendChild(td);
  }
  const td=document.createElement('td'),button=document.createElement('button');
- button.textContent='Send invitation';button.type='button';
+ button.textContent='Send claim email now';button.type='button';
  button.disabled=item.invitation_status==='sent';
  button.addEventListener('click',()=>send(item.id,button));td.appendChild(button);tr.appendChild(td);tbody.appendChild(tr);
  }
@@ -28,12 +28,12 @@ async function load(){
  }catch(e){message.textContent=e.message;message.classList.add('error')}
 }
 async function send(id,button){
- if(!confirm('Send a claim invitation to the contact email for this listing?'))return;
+ if(!confirm('Send the claim email now to this listing’s contact email?'))return;
  button.disabled=true;
  try{
  const r=await fetch('/api/admin-claim-invitations.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({activity_id:id,csrf})});
  const j=await r.json();if(!r.ok||!j.ok)throw Error(j.error||'Could not send');
- message.textContent='Invitation sent.';await load();
+ message.textContent='Claim email sent.';await load();
  }catch(e){message.textContent=e.message;message.classList.add('error');button.disabled=false}
 }
 load();
