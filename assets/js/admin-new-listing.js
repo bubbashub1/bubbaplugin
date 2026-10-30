@@ -44,7 +44,7 @@ if(statusLabel&&websiteLabel)websiteLabel.after(statusLabel);
 const locationSection=document.getElementById('adminAdditionalVenues');
 const extraVenueContainer=document.getElementById('adminExtraVenueRows');
 if(locationSection&&extraVenueContainer){
- const primaryCard=document.createElement('fieldset');
+ const primaryCard=document.createElement('fieldset');primaryCard.hidden=true;
  primaryCard.className='bh-card bh-primary-venue';
  primaryCard.style.cssText='padding:16px;margin:14px 0;border:1px solid #ced7c7;border-radius:14px';
  const heading=document.createElement('legend');heading.textContent='Main location';primaryCard.append(heading);
@@ -781,6 +781,7 @@ const renderStep=()=>{
  contactHeading.hidden=step!==3;
  const advancedVenue=document.querySelector('.bh-venue-advanced');if(advancedVenue)advancedVenue.hidden=step!==5;
  const venueIntro=document.querySelector('.bh-venue-intro');if(venueIntro)venueIntro.hidden=step!==5;
+ const primaryVenueCard=document.querySelector('.bh-primary-venue');if(primaryVenueCard)primaryVenueCard.hidden=step!==5;
 
  if(identity)identity.hidden=step!==0;
  if(descriptionSection)descriptionSection.hidden=step!==2;
