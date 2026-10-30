@@ -41,11 +41,23 @@ document.head.append(venuePolish);
 const statusLabel=form.elements.namedItem('status')?.closest('label');
 const websiteLabel=form.elements.namedItem('website')?.closest('label');
 if(statusLabel&&websiteLabel)websiteLabel.after(statusLabel);
+const locationSection=document.getElementById('adminAdditionalVenues');
+const extraVenueContainer=document.getElementById('adminExtraVenueRows');
+if(locationSection&&extraVenueContainer){
+ const primaryCard=document.createElement('fieldset');primaryCard.hidden=true;
+ primaryCard.className='bh-card bh-primary-venue';
+ primaryCard.style.cssText='padding:16px;margin:14px 0;border:1px solid #ced7c7;border-radius:14px';
+ const heading=document.createElement('legend');heading.textContent='Main location';primaryCard.append(heading);
+ const primaryFields=['venue_name','town','county','region','postcode','address'];
+ for(const name of primaryFields){const label=form.elements.namedItem(name)?.closest('label');if(label)primaryCard.append(label);}
+ const advanced=document.querySelector('.bh-venue-advanced');if(advanced)primaryCard.append(advanced);
+ extraVenueContainer.before(primaryCard);
+}
 const venueNameInput=form.elements.namedItem('venue_name');
 if(venueNameInput){
  const venueLabel=venueNameInput.closest('label');
  if(venueLabel){
-  const intro=document.createElement('p');intro.className='bh-venue-intro';intro.textContent='Start with a venue name. Search registered locations in Additional locations, or enter a new address below.';
+  const intro=document.createElement('p');intro.className='bh-venue-intro';intro.textContent='Search for a registered location above, or enter a new main location here.';
   venueLabel.before(intro);
  }
  const coordinateLabels=['latitude','longitude'].map(name=>form.elements.namedItem(name)?.closest('label')).filter(Boolean);
@@ -305,7 +317,16 @@ pickerAdd.addEventListener('click',()=>{
  let added=0;
  for(const venue of registeredVenues.filter(v=>chosenRegistered.has(Number(v.id)))){
   if(seen.has(key(venue)))continue;
-  addVenue({venue_name:venue.venue_name,town:venue.town,region:venue.region,postcode:venue.postcode,address:venue.address,latitude:venue.latitude,longitude:venue.longitude});
+  const primaryName=form.elements.namedItem('venue_name');
+  if(primaryName&&!primaryName.value.trim()){
+   for(const fieldName of ['venue_name','town','region','postcode','address','latitude','longitude']){
+    const field=form.elements.namedItem(fieldName);
+    if(field)field.value=venue[fieldName]??'';
+   }
+   suggestArea();syncVenueSelectors();
+  }else{
+   addVenue({venue_name:venue.venue_name,town:venue.town,region:venue.region,postcode:venue.postcode,address:venue.address,latitude:venue.latitude,longitude:venue.longitude});
+  }
   seen.add(key(venue));added++;
  }
  chosenRegistered.clear();pickerAdd.disabled=true;renderRegistered();
@@ -760,6 +781,7 @@ const renderStep=()=>{
  contactHeading.hidden=step!==3;
  const advancedVenue=document.querySelector('.bh-venue-advanced');if(advancedVenue)advancedVenue.hidden=step!==5;
  const venueIntro=document.querySelector('.bh-venue-intro');if(venueIntro)venueIntro.hidden=step!==5;
+ const primaryVenueCard=document.querySelector('.bh-primary-venue');if(primaryVenueCard)primaryVenueCard.hidden=step!==5;
 
  if(identity)identity.hidden=step!==0;
  if(descriptionSection)descriptionSection.hidden=step!==2;
