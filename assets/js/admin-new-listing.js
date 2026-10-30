@@ -528,7 +528,14 @@ importButton?.addEventListener('click',async()=>{
    const url=urls[i];importMessage.textContent='Checking booking page '+(i+1)+' of '+urls.length+'…';
    try{
     const response=await fetch('/api/admin-ical-preview.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
-    const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'No classes found');
+    const contentType=response.headers.get('content-type')||'';
+    if(!contentType.toLowerCase().includes('application/json')){
+     throw Error('Importer returned HTTP '+response.status+' but not JSON. Check the server PHP endpoint and admin session.');
+    }
+    let data;
+    try{data=await response.json();}catch(_){throw Error('Importer returned invalid JSON (HTTP '+response.status+'). Check server PHP errors.');}
+    if(!response.ok||!data.ok)throw Error(data.error||'Importer returned HTTP '+response.status+' without session data.');
+    if(!Array.isArray(data.data)||data.data.length===0)throw Error('Page loaded, but no session dates or times were recognised.');
     for(const entry of data.data||[])all.push({...entry,url:entry.url||url,source_url:url});
    }catch(error){errors.push('URL '+(i+1)+': '+error.message);}
   }
