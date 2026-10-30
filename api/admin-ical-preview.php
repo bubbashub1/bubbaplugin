@@ -31,6 +31,26 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
   $dom=new DOMDocument();$previous=libxml_use_internal_errors(true);
   $dom->loadHTML('<?xml encoding="utf-8" ?>'.$body);libxml_clear_errors();libxml_use_internal_errors($previous);
   $xpath=new DOMXPath($dom);
+  // Prefer structured public event data before flattening the visible page.
+  $structured=[];
+  foreach($xpath->query('//script[@type="application/ld+json"]') as $script){
+   $decoded=json_decode($script->textContent,true);if(!is_array($decoded))continue;
+   $queue=[$decoded];
+   while($queue&&count($structured)<150){
+    $item=array_pop($queue);if(!is_array($item))continue;
+    $types=array_map('strtolower',(array)($item['@type']??[]));
+    if(in_array('event',$types,true)&&is_string($item['startDate']??null)){
+     try{
+      $start=(new DateTimeImmutable($item['startDate']))->setTimezone(new DateTimeZone('Europe/London'));
+      $end=isset($item['endDate'])?(new DateTimeImmutable($item['endDate']))->setTimezone(new DateTimeZone('Europe/London')):null;
+      $key=$start->format('c').'|'.(string)($item['name']??'');
+      $structured[$key]=['title'=>mb_substr((string)($item['name']??'Class session'),0,180),'day_of_week'=>(int)$start->format('N'),'start_time'=>$start->format('H:i'),'end_time'=>$end?$end->format('H:i'):'','start_date'=>$start->format('Y-m-d'),'end_date'=>$start->format('Y-m-d'),'frequency'=>'once','url'=>is_string($item['url']??null)?$item['url']:$url,'uid'=>$key];
+     }catch(Throwable $ignored){}
+    }
+    foreach($item as $child)if(is_array($child))$queue[]=$child;
+   }
+  }
+  if($structured){echo json_encode(['ok'=>true,'data'=>array_values($structured),'source'=>'structured_event_data','skipped_recurring'=>0,'note'=>'Public structured event dates found. Review times and venues before saving.']);exit;}
   foreach($xpath->query('//script|//style|//nav|//footer|//header|//noscript') as $node){$node->parentNode?->removeChild($node);}
   foreach($xpath->query('//br|//p|//div|//h1|//h2|//h3|//h4|//li|//tr|//td|//section') as $node){
    if($node->parentNode)$node->parentNode->insertBefore($dom->createTextNode("\n"),$node);
