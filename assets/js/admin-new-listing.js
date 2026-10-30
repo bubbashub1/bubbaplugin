@@ -4,7 +4,11 @@ const tidyStyle=document.createElement('style');
 tidyStyle.textContent=[
  '.bh-wizard-layout{grid-template-columns:190px minmax(0,1fr);gap:24px}',
  '.bh-wizard-layout #adminListingSteps{background:#f4f8f4;border-radius:16px;padding:10px}',
- '#newListingForm .admin-form-grid{gap:16px}',
+ '#newListingForm .admin-form-grid{gap:16px;grid-template-columns:minmax(0,1fr)}',
+ '#newListingForm .admin-form-grid>label{grid-column:1/-1;width:100%;max-width:100%}',
+ '#newListingForm .admin-form-grid>label input,#newListingForm .admin-form-grid>label select{width:100%;box-sizing:border-box}',
+ '#newListingForm .bh-category-options{max-height:230px;overflow:auto}',
+ '#newListingForm .bh-category-picker{width:100%}',
  '#newListingForm .bh-card{border-radius:16px;border-color:#d5e5d8}',
  '#newListingForm .hero-actions{position:sticky;bottom:0;z-index:5;background:#fff;padding:12px 0;border-top:1px solid #d5e5d8}',
  '#adminExtraVenueRows{display:grid;gap:12px}',
