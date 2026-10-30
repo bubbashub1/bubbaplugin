@@ -209,6 +209,46 @@ document.addEventListener("DOMContentLoaded",async()=>{
     if(side){side.classList.add("activity-concept-extras");supporting.append(side);}
     details.append(lead,supporting);
     layout.replaceChildren(details);
+    // Each venue is a keyboard-accessible accordion; first five sessions remain visible.
+    if(schedule){
+      schedule.querySelectorAll(".venue-schedule").forEach((venue,index)=>{
+        const heading=venue.querySelector("h3");
+        const rows=Array.from(venue.querySelectorAll(".session-row"));
+        const originalHeader=venue.querySelector(".bh-session-head");
+        const panel=document.createElement("div");
+        panel.className="activity-venue-panel";
+        const toggle=document.createElement("button");
+        toggle.type="button";
+        toggle.className="activity-venue-toggle";
+        toggle.setAttribute("aria-expanded",index===0?"true":"false");
+        const panelId="activity-venue-panel-"+index;
+        panel.id=panelId;
+        toggle.setAttribute("aria-controls",panelId);
+        toggle.textContent=(heading?.textContent?.trim()||"Venue")+" · "+rows.length+" session"+(rows.length===1?"":"s");
+        if(originalHeader)panel.append(originalHeader);
+        rows.forEach((row,rowIndex)=>{
+          if(rowIndex>=5)row.classList.add("activity-extra-session");
+          panel.append(row);
+        });
+        const list=venue.querySelector(".session-list");
+        if(list)list.replaceChildren(toggle,panel);
+        const more=rows.length>5?document.createElement("button"):null;
+        if(more){
+          more.type="button";more.className="activity-show-more";
+          more.textContent="Show all "+rows.length+" sessions";
+          panel.append(more);
+          more.addEventListener("click",()=>{
+            const expanded=venue.classList.toggle("activity-all-sessions");
+            more.textContent=expanded?"Show first 5 sessions":"Show all "+rows.length+" sessions";
+          });
+        }
+        venue.classList.toggle("activity-venue-collapsed",index!==0);
+        toggle.addEventListener("click",()=>{
+          const open=venue.classList.toggle("activity-venue-collapsed")===false;
+          toggle.setAttribute("aria-expanded",String(open));
+        });
+      });
+    }
     const map=location?.querySelector("#listingMap");
     if(map){
       const observer=new MutationObserver(()=>{
@@ -242,6 +282,23 @@ document.addEventListener("DOMContentLoaded",async()=>{
       // Keep all existing action buttons and their event handlers.
       actions.classList.add("activity-hero-actions");
       gallery.append(actions);
+      // Icon actions preserve original button IDs and click handlers.
+      const actionIcons={save:"♡",planner:"▣",visited:"✓",compare:"⇄",heroBookNow:"↗"};
+      Array.from(actions.querySelectorAll("button")).forEach(button=>{
+        const original=button.textContent.trim();
+        button.setAttribute("aria-label",original);
+        button.setAttribute("title",original);
+        button.classList.add("activity-icon-action");
+        const symbol=document.createElement("span");
+        symbol.className="activity-action-symbol";
+        symbol.setAttribute("aria-hidden","true");
+        symbol.textContent=actionIcons[button.id]||"↗";
+        const label=document.createElement("span");
+        label.className="activity-action-label";
+        label.textContent=original.replace(/^\\+\\s*/,"");
+        button.replaceChildren(symbol,label);
+      });
+
       const strip=document.createElement("div");
       strip.className="activity-quick-strip";
       Array.from(facts.children).forEach(item=>strip.append(item));
