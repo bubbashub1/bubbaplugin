@@ -46,7 +46,9 @@ $url='https://staging.bubbahub.co.uk/auth.html?context=leader&claim_activity='.r
 $subject='Your activity is now on Bubba Hub – Claim your free listing!';
 $body="Hello,\n\nWe've added ". $a['title'] ." to Bubba Hub South West. Please review your listing and claim it for free.\n\nView listing: https://staging.bubbahub.co.uk/activity.html?id=".$id."\nClaim listing: ".$url."\n\nThanks,\nBubba Hub South West";
 if(getenv('BH_CLAIM_INVITES_ENABLED')!=='1')respond(409,['ok'=>false,'error'=>'Sending disabled. Set BH_CLAIM_INVITES_ENABLED=1 after staging verification.']);
-if(!mail($a['email'],$subject,$body,"From: Bubba Hub South West <noreply@bubbahub.co.uk>\r\nContent-Type: text/plain; charset=UTF-8"))respond(502,['ok'=>false,'error'=>'Mail transport rejected message']);
+require_once __DIR__.'/mailer.php';
+$html='<p>Hello,</p><p>We have added <strong>'.htmlspecialchars((string)$a['title'],ENT_QUOTES,'UTF-8').'</strong> to Bubba Hub South West.</p><p>Please review your listing and claim it for free.</p><p><a href="'.htmlspecialchars($url,ENT_QUOTES,'UTF-8').'">Claim your listing</a></p><p>Thanks,<br>Bubba Hub South West</p>';
+if(!bh_send_smtp_mail($a['email'],$subject,$html,$body,''))respond(502,['ok'=>false,'error'=>'Mail transport rejected message']);
 $q=$db->prepare("INSERT INTO bh_claim_invitations(activity_id,recipient,token_hash,status,sent_at,expires_at) VALUES (?,?,?,'sent',NOW(),DATE_ADD(NOW(),INTERVAL 14 DAY)) ON DUPLICATE KEY UPDATE token_hash=VALUES(token_hash),status='sent',sent_at=NOW(),expires_at=VALUES(expires_at)");
 $q->execute([$id,$a['email'],$hash]);
 respond(200,['ok'=>true,'message'=>'Invitation sent']);
