@@ -231,6 +231,18 @@ document.addEventListener("DOMContentLoaded",async()=>{
         if(heading)heading.remove();
         if(venueAddress)venueAddress.remove();
         toggle.textContent=venueName+" · "+rows.length+" session"+(rows.length===1?"":"s");
+        const venueData=(venues||[])[index];
+        if(venueData){
+          const destination=venueData.lat&&venueData.long?venueData.lat+","+venueData.long:[venueData.address,venueData.town,venueData.postcode].filter(Boolean).join(", ")||venueData.name;
+          if(destination){
+            const directions=document.createElement("a");
+            directions.className="activity-schedule-directions";
+            directions.href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(destination);
+            directions.target="_blank";directions.rel="noopener noreferrer";
+            directions.textContent="↗ Directions";directions.setAttribute("aria-label","Directions to "+venueName);
+            panel.append(directions);
+          }
+        }
         if(originalHeader)panel.append(originalHeader);
         rows.forEach((row,rowIndex)=>{
           if(rowIndex>=5)row.classList.add("activity-extra-session");
@@ -367,6 +379,17 @@ document.addEventListener("DOMContentLoaded",async()=>{
       if(organiserCard){organiserCard.classList.add('activity-contact-organiser');footer.insertBefore(organiserCard,links);}
       layout.after(footer);
     }
+  }
+  const claimWrap=document.querySelector(".listing-claim-wrap");
+  if(claimWrap){
+    const moveClaim=()=>{
+      const feedback=document.querySelector(".listing-feedback-actions, .listing-feedback, .activity-feedback-actions");
+      const footer=document.querySelector(".activity-contact-footer");
+      if(feedback)feedback.prepend(claimWrap);
+      else if(footer)footer.after(claimWrap);
+    };
+    moveClaim();
+    window.addEventListener("load",moveClaim,{once:true});
   }
   const claimButton=document.getElementById("claimListingButton");
   const claimMessage=document.getElementById("claimListingMessage");
