@@ -3,11 +3,7 @@ declare(strict_types=1);
 /** Staging claim invitation management. Enable only after SMTP and claim-flow QA. */
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
-session_name('BUBBAHUB_ADMINSESSID');
-session_set_cookie_params(['path'=>'/','secure'=>!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off','httponly'=>true,'samesite'=>'Lax']);
-session_start();
-function respond(int $code,array $data):never {http_response_code($code);echo json_encode($data);exit;}
-if(empty($_SESSION['bh_admin_authenticated']))respond(401,['ok'=>false,'error'=>'Admin authentication required']);
+require_once __DIR__.'/admin-session-guard.php';
 require_once __DIR__.'/db.php';
 try {
 $db=bh_mysql();
@@ -33,7 +29,7 @@ $input=json_decode((string)file_get_contents('php://input'),true)?:[];
 if(!hash_equals($_SESSION['bh_claim_invite_csrf'],(string)($input['csrf']??'')))respond(403,['ok'=>false,'error'=>'CSRF validation failed']);
 $id=(int)($input['activity_id']??0);
 if($id<1)respond(422,['ok'=>false,'error'=>'Invalid listing']);
-if(!empty($input['automatic']) && getenv('BH_CLAIM_AUTO_INVITES_ENABLED')!=='1')respond(409,['ok'=>false,'error'=>'Automatic invitations disabled']);
+if(!empty($input['automatic']))respond(403,['ok'=>false,'error'=>'Automatic sends are not supported by the admin endpoint']);
 $q=$db->prepare("SELECT a.id,a.title,a.contact_email AS email FROM bh_activities a WHERE a.id=? LIMIT 1");
 $q->execute([$id]);$a=$q->fetch(PDO::FETCH_ASSOC);
 if(!$a||!filter_var($a['email'],FILTER_VALIDATE_EMAIL))respond(422,['ok'=>false,'error'=>'Missing valid activity contact email']);
