@@ -347,3 +347,47 @@ body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listin
   height:220px!important;
  }
 }
+
+/* Compact activity hero — keep Visual 2 proportions without excessive height */
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero{
+ padding:16px 22px!important;gap:24px!important;align-items:center!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-gallery{
+ height:260px!important;max-height:260px!important;min-height:0!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-summary{
+ padding:0!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-summary h1{
+ font-size:clamp(1.9rem,3vw,2.8rem)!important;margin:5px 0 7px!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .activity-hero-intro{
+ font-size:.94rem!important;line-height:1.4!important;margin:0 0 5px!important;
+ display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;
+ overflow:hidden!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .hero-quick-facts{
+ margin:9px 0!important;gap:6px!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .hero-quick-facts>span{
+ min-height:51px!important;padding:7px 9px 7px 48px!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .hero-quick-facts>span::before{
+ left:9px!important;width:29px!important;height:29px!important;font-size:14px!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-actions{
+ gap:6px!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-actions>*{
+ min-height:38px!important;padding:7px 12px!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-actions #visited,
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-actions #compare{
+ min-height:29px!important;
+}
+@media(max-width:700px){
+ body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero{padding:14px!important;gap:12px!important}
+ body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-gallery{
+  height:195px!important;max-height:195px!important;
+ }
+}
