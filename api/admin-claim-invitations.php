@@ -12,18 +12,12 @@ $db=bh_mysql();
 // Schema is installed by the migration, never during a user request.
 $_SESSION['bh_claim_invite_csrf']??=bin2hex(random_bytes(32));
 if($_SERVER['REQUEST_METHOD']==='GET') {
- // Verify schema first to provide a useful error rather than a generic 500.
- foreach (['bh_claim_invitations','bh_listing_claims'] as $table) {
-  $exists=$db->query("SHOW TABLES LIKE ".$db->quote($table))->fetchColumn();
-  if(!$exists)respond(503,['ok'=>false,'error'=>'Claim system setup incomplete: missing '.$table.'. Apply the production migration.']);
- }
-
  $rows=$db->query("SELECT a.id,a.title,a.contact_email AS recipient,i.status AS invitation_status,i.sent_at
  FROM bh_activities a
  LEFT JOIN bh_claim_invitations i ON i.activity_id=a.id AND i.recipient=a.contact_email
  WHERE a.contact_email IS NOT NULL AND a.contact_email<>'' AND NOT EXISTS (
  SELECT 1 FROM bh_listing_claims c WHERE c.activity_id=a.id AND c.status IN ('approved','pending')
- ) ORDER BY CASE WHEN a.id=36 THEN 0 ELSE 1 END,a.id DESC LIMIT 250")->fetchAll(PDO::FETCH_ASSOC);
+ ) ORDER BY a.id DESC LIMIT 250")->fetchAll(PDO::FETCH_ASSOC);
  $claims=$db->query("SELECT c.id,c.activity_id,c.user_id,c.organiser_id,c.status,c.created_at,a.title,u.email FROM bh_listing_claims c JOIN bh_activities a ON a.id=c.activity_id JOIN bh_users u ON u.id=c.user_id WHERE c.status='pending' ORDER BY c.created_at DESC LIMIT 100")->fetchAll(PDO::FETCH_ASSOC);
  respond(200,['ok'=>true,'data'=>$rows,'claims'=>$claims,'csrf'=>$_SESSION['bh_claim_invite_csrf']]);
 }
@@ -89,4 +83,4 @@ if(!bh_send_smtp_mail($a['email'],$subject,$html,$body,'')){
 $q=$db->prepare("UPDATE bh_claim_invitations SET status='sent',sent_at=NOW() WHERE activity_id=? AND recipient=? AND token_hash=? AND status='sending'");
 $q->execute([$id,$a['email'],$hash]);
 respond(200,['ok'=>true,'message'=>'Invitation sent']);
-} catch(Throwable $e){error_log('Claim invitation error: '.$e->getMessage());$message='Invitation operation failed';if($e instanceof PDOException){$code=(string)$e->getCode();if($code==='42S02')$message='Claim database tables are missing. Check the live migration.';elseif($code==='42S22')$message='Claim database columns do not match the live schema.';}respond(500,['ok'=>false,'error'=>$message]);}
+} catch(Throwable $e){error_log('Claim invitation error: '.$e->getMessage());respond(500,['ok'=>false,'error'=>'Invitation operation failed']);}
