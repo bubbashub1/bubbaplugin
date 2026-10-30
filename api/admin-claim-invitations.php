@@ -35,6 +35,8 @@ if(isset($input['claim_id'])) {
  $q->execute([$claimId]);$claim=$q->fetch(PDO::FETCH_ASSOC);
  if(!$claim||$claim['status']!=='pending')respond(409,['ok'=>false,'error'=>'Claim no longer pending']);
  if($decision==='approve'){
+  $testUser=$db->prepare("SELECT email FROM bh_users WHERE id=? LIMIT 1");$testUser->execute([(int)$claim['user_id']]);
+  if(strcasecmp(trim((string)$testUser->fetchColumn()),'harveygamerbros@gmail.com')===0 && (int)$claim['activity_id']===36)respond(409,['ok'=>false,'error'=>'Test account claim: approval blocked to protect the live organiser. Reject after testing.']);
   if(empty($claim['organiser_id'])||(int)$claim['organiser_id']!==(int)$claim['current_organiser'])respond(409,['ok'=>false,'error'=>'Organiser link needs manual review before approval']);
   $q=$db->prepare("SELECT user_id FROM bh_organisers WHERE id=? LIMIT 1");$q->execute([(int)$claim['organiser_id']]);$owner=$q->fetchColumn();
   if($owner!==false && $owner!==null && (int)$owner>0 && (int)$owner!==(int)$claim['user_id'])respond(409,['ok'=>false,'error'=>'Organiser already belongs to another account']);
@@ -64,7 +66,9 @@ if(!$a||!filter_var($a['email'],FILTER_VALIDATE_EMAIL))respond(422,['ok'=>false,
 $q=$db->prepare("SELECT COUNT(*) FROM bh_listing_claims WHERE activity_id=? AND status IN ('approved','pending')");
 $q->execute([$id]);if((int)$q->fetchColumn()>0)respond(409,['ok'=>false,'error'=>'Claim already pending or approved']);
 $q=$db->prepare("SELECT status,sent_at FROM bh_claim_invitations WHERE activity_id=? AND recipient=?");
-$q->execute([$id,$a['email']]);$prior=$q->fetch(PDO::FETCH_ASSOC);
+$testRecipient=(($input['pilot_test']??false)===true && ($input['test_recipient']??'')==='harveygamerbros@gmail.com' && (int)$id===36 && (string)$a['title']==='Bubba and Me Cranbrook' && strtolower(trim((string)$a['email']))==='contact@bubbahub.co.uk');
+$recipient=$testRecipient?'harveygamerbros@gmail.com':(string)$a['email'];
+$q->execute([$id,$recipient]);$prior=$q->fetch(PDO::FETCH_ASSOC);
 $pilotRetest=(($input['pilot_test']??false)===true && ($input['retest']??false)===true && (string)$a['title']==='Bubba and Me Cranbrook' && strtolower(trim((string)$a['email']))==='contact@bubbahub.co.uk');
 if($prior && $prior['sent_at'] && strtotime($prior['sent_at'])>time()-($pilotRetest?600:7*86400))respond(409,['ok'=>false,'error'=>$pilotRetest?'Please wait 10 minutes between test emails.':'Invitation already sent within seven days']);
 $token=bin2hex(random_bytes(32));$hash=hash('sha256',$token);
@@ -98,8 +102,8 @@ $html='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="vi
 .'</table></td></tr></table></body></html>';
 // Persist the token before sending, so an emailed link is never missing from storage.
 $q=$db->prepare("INSERT INTO bh_claim_invitations(activity_id,recipient,token_hash,status,sent_at,expires_at) VALUES (?,?,?,'sending',NULL,DATE_ADD(NOW(),INTERVAL 14 DAY)) ON DUPLICATE KEY UPDATE token_hash=VALUES(token_hash),status='sending',sent_at=NULL,expires_at=VALUES(expires_at)");
-$q->execute([$id,$a['email'],$hash]);
-if(!bh_send_smtp_mail($a['email'],$subject,$html,$body,'')){
+$q->execute([$id,$recipient,$hash]);
+if(!bh_send_smtp_mail($recipient,$subject,$html,$body,'')){
  $failed=$db->prepare("UPDATE bh_claim_invitations SET status='failed' WHERE activity_id=? AND recipient=? AND token_hash=? AND status='sending'");
  $failed->execute([$id,$a['email'],$hash]);
  respond(502,['ok'=>false,'error'=>'Mail transport rejected message']);
