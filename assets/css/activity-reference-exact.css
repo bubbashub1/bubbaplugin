@@ -552,3 +552,23 @@ body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-foo
  grid-column:1!important;grid-row:3!important;justify-content:flex-start!important;
  }
 }
+
+/* Icon-only hero actions: final override, independent of legacy button content. */
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery .listing-actions.activity-hero-actions > button.activity-icon-action{
+ position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;
+ overflow:hidden!important;white-space:nowrap!important;text-indent:0!important;
+ font-size:0!important;color:transparent!important;line-height:0!important;
+ width:48px!important;height:48px!important;min-width:48px!important;max-width:48px!important;
+ min-height:48px!important;max-height:48px!important;padding:0!important;margin:0!important;
+ background:#07543e!important;border:1px solid rgba(255,255,255,.22)!important;
+ border-radius:12px!important;box-shadow:none!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery .listing-actions.activity-hero-actions > button.activity-icon-action::before{
+ content:attr(data-icon)!important;display:block!important;position:static!important;
+ width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;
+ margin:0!important;padding:0!important;background:none!important;border:0!important;
+ color:#fff!important;font-family:Arial,sans-serif!important;font-size:27px!important;
+ font-weight:700!important;line-height:1!important;letter-spacing:0!important;
+ text-indent:0!important;opacity:1!important;visibility:visible!important;
+ transform:none!important;
+}
