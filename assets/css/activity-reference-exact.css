@@ -684,3 +684,11 @@ body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule .venu
 body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule .activity-venue-toggle{background:#e0f2e9!important;color:#124d3a!important;border:1px solid #b8dec9!important;border-radius:10px!important;font-weight:700!important}
 body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule .venue-schedule:nth-child(even) .activity-venue-toggle{background:#e7f2fb!important;border-color:#c9e1f3!important}
 body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule .session-row:nth-child(even){background:#f5f9f7!important;border-radius:9px!important}
+
+/* Simplify nested timetable outlines and keep one clear venue card */
+body.bh-activity-v2 .activity-reference-schedule .schedule-list{border:0!important;background:transparent!important;padding:0!important}
+body.bh-activity-v2 .activity-reference-schedule .venue-schedule{border:0!important;box-shadow:none!important;background:transparent!important;padding:0!important;margin:0 0 10px!important}
+body.bh-activity-v2 .activity-reference-schedule .session-list{border:0!important;background:transparent!important;padding:0!important}
+body.bh-activity-v2 .activity-reference-schedule .activity-venue-toggle{width:100%;min-height:48px;border-radius:12px!important}
+body.bh-activity-v2 .activity-schedule-directions{display:inline-flex;align-items:center;gap:6px;margin:10px 0 8px;padding:8px 14px;border-radius:999px;background:#dcebe0;color:#07513e;font-weight:700;text-decoration:none;font-size:13px}
+body.bh-activity-v2 .listing-claim-wrap{margin:16px 0 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
