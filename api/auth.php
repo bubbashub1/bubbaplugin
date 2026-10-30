@@ -795,8 +795,11 @@ try {
             bh_auth_response(401, ['ok' => false, 'error' => 'invalid_login', 'message' => 'That email or password is not correct.']);
         }
 
-        if ($authContext === 'leader' && (($user['role'] ?? '') !== 'leader' || empty($user['email_verified_at']))) {
-            bh_auth_response(403, ['ok'=>false,'error'=>'email_not_verified','message'=>'Please verify your email address using the link we sent before signing in as a leader.']);
+        if ($authContext === 'leader' && ($user['role'] ?? '') !== 'leader') {
+            bh_auth_response(403, ['ok'=>false,'error'=>'leader_account_required','message'=>'This email is registered with a different account type. To manage a listing, sign in with a Class Leader account or upgrade your existing family account.']);
+        }
+        if ($authContext === 'leader' && empty($user['email_verified_at'])) {
+            bh_auth_response(403, ['ok'=>false,'error'=>'email_not_verified','message'=>'Your Class Leader email is not verified yet. Please check your inbox and spam folder, or request a new verification email.']);
         }
 
         bh_check_account_context($user, $authContext);
