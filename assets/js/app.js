@@ -384,7 +384,8 @@ void bhHydrateSaved();
     {label:"Account",url:"/account.html"}
   ];
   const applyMainNav=()=>document.querySelectorAll(".site-header .main-nav").forEach(nav=>{
-    nav.innerHTML=MAIN_NAV.map(x=>'<a href="'+bhEscape(x.url)+'">'+bhEscape(x.label)+'</a>').join("");
+    const currentPath=location.pathname.replace(/\/$/,"")||"/";
+    nav.innerHTML=MAIN_NAV.map(x=>{const target=x.url.replace(/\/$/,"")||"/";const isCurrent=currentPath===target||(currentPath==="/"&&target==="/index.html");return '<a href="'+bhEscape(x.url)+'"'+(isCurrent?' aria-current="page"':"")+'>'+bhEscape(x.label)+'</a>';}).join("");
     const header=nav.closest(".site-header");
     const toggle=header?.querySelector(".mobile-nav-toggle");
     if(nav.dataset.bhCloseBound!=="true"){
