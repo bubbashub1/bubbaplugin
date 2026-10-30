@@ -203,8 +203,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const supporting=document.createElement("div");
     supporting.className="activity-concept-support";
     if(about)lead.append(about);
-    if(schedule)lead.append(schedule);
     if(location)supporting.append(location);
+    // Keep the timetable alongside its map and directions, rather than beneath long descriptions.
+    if(schedule)supporting.append(schedule);
     if(useful)supporting.append(useful);
     if(side){side.classList.add("activity-concept-extras");supporting.append(side);}
     details.append(lead,supporting);
@@ -224,7 +225,12 @@ document.addEventListener("DOMContentLoaded",async()=>{
         const panelId="activity-venue-panel-"+index;
         panel.id=panelId;
         toggle.setAttribute("aria-controls",panelId);
-        toggle.textContent=(heading?.textContent?.trim()||"Venue")+" · "+rows.length+" session"+(rows.length===1?"":"s");
+        // The map/directions already shows the full venue address. Keep only one compact label here.
+        const venueName=heading?.textContent?.trim()||"Venue";
+        const venueAddress=venue.querySelector("p");
+        if(heading)heading.remove();
+        if(venueAddress)venueAddress.remove();
+        toggle.textContent=venueName+" · "+rows.length+" session"+(rows.length===1?"":"s");
         if(originalHeader)panel.append(originalHeader);
         rows.forEach((row,rowIndex)=>{
           if(rowIndex>=5)row.classList.add("activity-extra-session");
