@@ -654,10 +654,18 @@ document.getElementById('adminPosterApply')?.addEventListener('click',()=>{
 });
 const collectSessions=()=>[...scheduleRows.children].map(row=>{const s={id:Number(row.dataset.sessionId||0),venue_index:Number(row.querySelector('[data-session-venue]')?.value||0)};row.querySelectorAll('[data-session-field]').forEach(el=>s[el.dataset.sessionField]=el.type==='checkbox'?(el.checked?1:0):el.value);return s;}).filter(s=>s.day_of_week||s.start_time);
  // Seven-step admin editor, matching the class leader's new listing workflow.
-const steps=[['Basics',['title','organisation_name']],['About',['category','tags','age_preset','age_range','price_from','pricing_unit','block_length_weeks','price_free']],['Description',[]],['Extra',['booking_url','email','phone','website','status']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address','latitude','longitude']],['Photos',['image_path']],['Review',[]]];
+const steps=[['Basics',['title','organisation_name']],['About',['category','tags','age_preset','age_range','price_from','pricing_unit','block_length_weeks','price_free']],['Description',[]],['Contact Details',['booking_url','email','phone','website','status']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address','latitude','longitude']],['Photos',['image_path']],['Review',[]]];
 const stepNav=document.getElementById('adminListingSteps');
 const back=document.getElementById('adminListingBack'),next=document.getElementById('adminListingNext'),save=document.getElementById('adminListingSubmit');
 document.getElementById('adminSaveNow')?.addEventListener('click',()=>form.requestSubmit(save));
+
+// Make contact details a focused, easy-to-scan step.
+const contactHeading=document.createElement('div');
+contactHeading.className='bh-contact-intro';
+contactHeading.innerHTML='<h2>Contact details</h2><p>How can families contact you or book a place? Add the links you use; leave anything irrelevant blank.</p>';
+const contactStyles=document.createElement('style');
+contactStyles.textContent='.bh-contact-intro{grid-column:1/-1;margin:0 0 8px;padding:16px 18px;background:#f2f8f3;border:1px solid #d6e6d9;border-radius:14px}.bh-contact-intro h2{margin:0 0 4px;font-size:1.35rem;color:#194b36}.bh-contact-intro p{margin:0;color:#456353}.bh-contact-step .admin-form-grid>label:not([hidden]){background:#fff;border:1px solid #e0ebe2;border-radius:14px;padding:12px 14px}.bh-contact-step .admin-form-grid>label:not([hidden]) input{margin-top:6px}.bh-contact-step .admin-form-grid>label:not([hidden]) input:focus{outline:2px solid #148c7b;outline-offset:2px}';
+document.head.append(contactStyles);
 const labels=[...form.querySelectorAll('.admin-form-grid > label')].filter(label=>!label.closest('#adminListingGallery'));
 let step=0;
 const review=document.createElement('div');review.className='bh-review';review.hidden=true;form.querySelector('.admin-form-grid:last-of-type').after(review);
@@ -670,12 +678,16 @@ const posterImport=document.getElementById('adminPosterImage')?.closest('.bh-car
 form.noValidate=true;
 const renderStep=()=>{
  const current=steps[step];
+ form.classList.toggle('bh-contact-step',step===3);
+ contactHeading.hidden=step!==3;
+
  if(identity)identity.hidden=step!==0;
  if(descriptionSection)descriptionSection.hidden=step!==2;
  const suggestedImage=document.getElementById('bhSuggestedImage');if(suggestedImage)suggestedImage.style.display=step===6?'':'none';
  const gallerySection=document.getElementById('adminListingGallery');if(gallerySection)gallerySection.hidden=step!==6;
  if(websiteImport)websiteImport.hidden=step!==0;
  if(posterImport)posterImport.hidden=step!==0;
+ if(!contactHeading.isConnected){const firstContact=labels.find(label=>label.querySelector('[name="booking_url"]'));if(firstContact)firstContact.before(contactHeading);}
  labels.forEach(label=>{const field=label.querySelector('[name]');const name=field?.name;label.hidden=step===7||(!current[1].includes(name)&&!(step===4&&label.querySelector('#existingVenueSelect')));label.style.display=label.hidden?'none':'';});
  review.hidden=step!==7;const extraSection=document.getElementById('adminAdditionalVenues');if(extraSection)extraSection.hidden=step!==5;if(scheduleSection)scheduleSection.hidden=step!==4;
  if(step===7){review.replaceChildren();labels.forEach(label=>{const el=label.querySelector('[name]');if(!el)return;const line=document.createElement('p');const strong=document.createElement('strong');strong.textContent=label.textContent.trim()+': ';line.append(strong,document.createTextNode(el.value||'—'));review.append(line);});}
