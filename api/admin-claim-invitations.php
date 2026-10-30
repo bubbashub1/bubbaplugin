@@ -22,11 +22,39 @@ if($_SERVER['REQUEST_METHOD']==='GET') {
  WHERE a.contact_email IS NOT NULL AND a.contact_email<>'' AND NOT EXISTS (
  SELECT 1 FROM bh_listing_claims c WHERE c.activity_id=a.id AND c.status IN ('approved','pending')
  ) ORDER BY a.id DESC LIMIT 250")->fetchAll(PDO::FETCH_ASSOC);
- respond(200,['ok'=>true,'data'=>$rows,'csrf'=>$_SESSION['bh_claim_invite_csrf']]);
+ $claims=$db->query("SELECT c.id,c.activity_id,c.user_id,c.organiser_id,c.status,c.created_at,a.title,u.email FROM bh_listing_claims c JOIN bh_activities a ON a.id=c.activity_id JOIN bh_users u ON u.id=c.user_id WHERE c.status='pending' ORDER BY c.created_at DESC LIMIT 100")->fetchAll(PDO::FETCH_ASSOC);
+ respond(200,['ok'=>true,'data'=>$rows,'claims'=>$claims,'csrf'=>$_SESSION['bh_claim_invite_csrf']]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')respond(405,['ok'=>false,'error'=>'Method not allowed']);
 $input=json_decode((string)file_get_contents('php://input'),true)?:[];
 if(!hash_equals($_SESSION['bh_claim_invite_csrf'],(string)($input['csrf']??'')))respond(403,['ok'=>false,'error'=>'CSRF validation failed']);
+if(isset($input['claim_id'])) {
+ $claimId=(int)$input['claim_id'];$decision=(string)($input['decision']??'');
+ if($claimId<1||!in_array($decision,['approve','reject'],true))respond(422,['ok'=>false,'error'=>'Invalid claim decision']);
+ $q=$db->prepare("SELECT c.id,c.activity_id,c.user_id,c.organiser_id,c.status,a.organiser_id AS current_organiser FROM bh_listing_claims c JOIN bh_activities a ON a.id=c.activity_id WHERE c.id=? LIMIT 1");
+ $q->execute([$claimId]);$claim=$q->fetch(PDO::FETCH_ASSOC);
+ if(!$claim||$claim['status']!=='pending')respond(409,['ok'=>false,'error'=>'Claim no longer pending']);
+ if($decision==='approve'){
+  if(empty($claim['organiser_id'])||(int)$claim['organiser_id']!==(int)$claim['current_organiser'])respond(409,['ok'=>false,'error'=>'Organiser link needs manual review before approval']);
+  $q=$db->prepare("SELECT user_id FROM bh_organisers WHERE id=? LIMIT 1");$q->execute([(int)$claim['organiser_id']]);$owner=$q->fetchColumn();
+  if($owner!==false && $owner!==null && (int)$owner>0 && (int)$owner!==(int)$claim['user_id'])respond(409,['ok'=>false,'error'=>'Organiser already belongs to another account']);
+ }
+ $db->beginTransaction();
+ try{
+  $q=$db->prepare("UPDATE bh_listing_claims SET status=?,reviewed_at=NOW() WHERE id=? AND status='pending'");
+  $q->execute([$decision==='approve'?'approved':'rejected',$claimId]);
+  if($q->rowCount()!==1)throw new RuntimeException('Claim changed while reviewing');
+  if($decision==='approve'){
+   $q=$db->prepare("UPDATE bh_organisers SET user_id=? WHERE id=? AND (user_id IS NULL OR user_id=0 OR user_id=?)");
+   $q->execute([(int)$claim['user_id'],(int)$claim['organiser_id'],(int)$claim['user_id']]);
+   if($q->rowCount()===0){$check=$db->prepare("SELECT user_id FROM bh_organisers WHERE id=?");$check->execute([(int)$claim['organiser_id']]);if((int)$check->fetchColumn()!==(int)$claim['user_id'])throw new RuntimeException('Unable to link organiser');}
+   $q=$db->prepare("UPDATE bh_listing_claims SET status='rejected',reviewed_at=NOW() WHERE activity_id=? AND id<>? AND status='pending'");$q->execute([(int)$claim['activity_id'],$claimId]);
+  }
+  $q=$db->prepare("UPDATE bh_claim_invitations SET status=? WHERE activity_id=? AND status IN ('sent','pending')");$q->execute([$decision==='approve'?'approved':'rejected',(int)$claim['activity_id']]);
+  $db->commit();
+ }catch(Throwable $e){$db->rollBack();throw $e;}
+ respond(200,['ok'=>true,'message'=>$decision==='approve'?'Claim approved and organiser linked':'Claim rejected']);
+}
 $id=(int)($input['activity_id']??0);
 if($id<1)respond(422,['ok'=>false,'error'=>'Invalid listing']);
 if(!empty($input['automatic']))respond(403,['ok'=>false,'error'=>'Automatic sends are not supported by the admin endpoint']);
