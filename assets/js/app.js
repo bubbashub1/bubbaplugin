@@ -1041,3 +1041,27 @@ window.bhPopulatePopularCategories = async function(container) {
     container.innerHTML = "";
   }
 };
+
+
+/* Sitewide back-to-top control: shared by pages loading app.js. */
+(function bhInstallScrollToTop(){
+  if(typeof document==="undefined")return;
+  const install=()=>{
+    if(document.getElementById("bhScrollToTop"))return;
+    const button=document.createElement("button");
+    button.id="bhScrollToTop";
+    button.type="button";
+    button.className="bh-scroll-to-top";
+    button.setAttribute("aria-label","Scroll to top");
+    button.setAttribute("title","Back to top");
+    button.textContent="↑";
+    button.style.cssText="position:fixed;right:18px;bottom:calc(20px + env(safe-area-inset-bottom, 0px));z-index:9998;width:48px;height:48px;border:1px solid rgba(255,255,255,.3);border-radius:50%;background:#07553f;color:#fff;font-size:28px;line-height:1;box-shadow:0 5px 18px rgba(0,0,0,.2);cursor:pointer;display:none;align-items:center;justify-content:center";
+    button.addEventListener("click",()=>window.scrollTo({top:0,behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}));
+    document.body.appendChild(button);
+    const update=()=>{button.style.display=(window.scrollY>320)?"flex":"none";};
+    window.addEventListener("scroll",update,{passive:true});
+    update();
+  };
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",install,{once:true});
+  else install();
+})();
