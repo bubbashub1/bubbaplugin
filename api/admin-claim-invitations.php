@@ -78,7 +78,23 @@ $pilotAllowed=$pilot && (string)$a['title']==='Bubba and Me Cranbrook' && strtol
 $normalAllowed=!$pilot && getenv('BH_CLAIM_INVITES_ENABLED')==='1' && (getenv('BH_CLAIM_INVITES_ALL_ENABLED')==='1' || ((string)$a['title']==='Bubba and Me Cranbrook' && strtolower(trim((string)$a['email']))==='contact@bubbahub.co.uk'));
 if(!$pilotAllowed && !$normalAllowed)respond(409,['ok'=>false,'error'=>'Sending is disabled. Only the confirmed Cranbrook pilot to contact@bubbahub.co.uk is available.']);
 require_once __DIR__.'/mailer.php';
-$html='<p>Hello,</p><p>We have added <strong>'.htmlspecialchars((string)$a['title'],ENT_QUOTES,'UTF-8').'</strong> to Bubba Hub South West.</p><p>Please review your listing and claim it for free.</p><p><strong>New to Bubba Hub?</strong> If you do not have an account, create a free Class Leader account today. Follow the claim link below and choose Create account to get started.</p><p><a href="'.htmlspecialchars($url,ENT_QUOTES,'UTF-8').'">Claim your listing</a></p><p>Thanks,<br>Bubba Hub South West</p>';
+$safeTitle=htmlspecialchars((string)$a['title'],ENT_QUOTES,'UTF-8');
+$safeUrl=htmlspecialchars($url,ENT_QUOTES,'UTF-8');
+$safeListing=htmlspecialchars($origin.'/activity.html?id='.$id,ENT_QUOTES,'UTF-8');
+$html='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:0;background:#f6f9f3;font-family:Arial,Helvetica,sans-serif;color:#21452d;">'
+.'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f6f9f3;"><tr><td align="center" style="padding:32px 12px;">'
+.'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:600px;background:#ffffff;border-radius:20px;overflow:hidden;">'
+.'<tr><td style="background:#dcefe1;padding:26px 32px;text-align:center;"><p style="font-size:25px;font-weight:800;color:#174b2c;margin:0;">Bubba Hub <span style="color:#cf763c;">South West</span></p><p style="font-size:13px;color:#38644a;margin:8px 0 0;">Connecting local families with amazing activities</p></td></tr>'
+.'<tr><td style="padding:32px 34px;"><p style="margin:0 0 12px;font-size:14px;color:#64806c;font-weight:700;">YOUR FREE LISTING IS READY</p>'
+.'<h1 style="font-size:29px;line-height:1.2;color:#174b2c;margin:0 0 18px;">Your activity is on Bubba Hub!</h1>'
+.'<p style="font-size:16px;line-height:1.65;margin:0 0 18px;">Hello! We have added <strong>'.$safeTitle.'</strong> to Bubba Hub South West so local families can discover you.</p>'
+.'<p style="font-size:16px;line-height:1.65;margin:0 0 24px;">Please take a moment to review your activity and <strong>claim your free listing</strong>.</p>'
+.'<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#205b36;border-radius:12px;"><a href="'.$safeUrl.'" style="display:inline-block;padding:15px 26px;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;">Claim my free listing</a></td></tr></table>'
+.'<p style="font-size:14px;line-height:1.6;margin:16px 0 26px;"><a href="'.$safeListing.'" style="color:#205b36;text-decoration:underline;">View your listing first</a></p>'
+.'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#eff7f0;border-radius:14px;"><tr><td style="padding:20px 22px;"><p style="font-size:17px;font-weight:700;margin:0 0 8px;color:#174b2c;">New to Bubba Hub?</p><p style="font-size:15px;line-height:1.6;margin:0;">If you have not got an account yet, <strong>create a free Class Leader account today!</strong> Follow the claim button above and choose <strong>Create account</strong> to get started. Once signed in, submit your claim for approval.</p></td></tr></table>'
+.'<p style="font-size:15px;line-height:1.6;margin:26px 0 0;">We look forward to welcoming you!<br><strong>The Bubba Hub South West Team</strong></p></td></tr>'
+.'<tr><td style="background:#f0f5ed;padding:19px 28px;text-align:center;font-size:12px;line-height:1.6;color:#637b69;">You are receiving this because your activity contact email is listed on Bubba Hub.<br>Claiming your listing is free.</td></tr>'
+.'</table></td></tr></table></body></html>';
 // Persist the token before sending, so an emailed link is never missing from storage.
 $q=$db->prepare("INSERT INTO bh_claim_invitations(activity_id,recipient,token_hash,status,sent_at,expires_at) VALUES (?,?,?,'sending',NULL,DATE_ADD(NOW(),INTERVAL 14 DAY)) ON DUPLICATE KEY UPDATE token_hash=VALUES(token_hash),status='sending',sent_at=NULL,expires_at=VALUES(expires_at)");
 $q->execute([$id,$a['email'],$hash]);
