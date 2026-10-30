@@ -755,6 +755,8 @@ const renderStep=()=>{
  const current=steps[step];
  form.classList.toggle('bh-contact-step',step===3);
  contactHeading.hidden=step!==3;
+ const advancedVenue=document.querySelector('.bh-venue-advanced');if(advancedVenue)advancedVenue.hidden=step!==5;
+ const venueIntro=document.querySelector('.bh-venue-intro');if(venueIntro)venueIntro.hidden=step!==5;
 
  if(identity)identity.hidden=step!==0;
  if(descriptionSection)descriptionSection.hidden=step!==2;
