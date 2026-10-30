@@ -1,0 +1,31 @@
+/* Bubba Hub homepage visual refresh — staging trial 2026-10-30 */
+.bh-home .home-hero{padding-top:clamp(24px,3vw,48px);padding-bottom:26px;column-gap:clamp(24px,4vw,64px);row-gap:22px}
+.bh-home .home-hero-copy{max-width:650px}
+.bh-home h1.home-brush{font-size:clamp(3.5rem,7.2vw,6.4rem);line-height:.97;letter-spacing:-.055em;margin-block:12px 16px}
+.bh-home .bh-hero-subtitle{font-size:clamp(1.12rem,1.8vw,1.45rem);line-height:1.4}
+.bh-home .bh-hero-detail{font-size:1rem;line-height:1.55;max-width:44ch}
+.bh-home .home-hero-image{min-height:270px;max-height:390px}
+.bh-home .home-search{padding:clamp(18px,2vw,28px);border-radius:28px;box-shadow:0 12px 38px rgba(21,67,48,.09)}
+.bh-home .home-search h2{font-size:clamp(1.12rem,1.8vw,1.4rem);margin-bottom:14px}
+.bh-home .bh-quick-links{justify-content:flex-start;gap:8px;margin-top:12px}
+.bh-home .bh-quick-links a{font-size:.84rem;padding:8px 14px}
+.bh-home .home-category-row{gap:16px;padding-top:24px;padding-bottom:35px}
+.bh-home .home-category-row>a{min-height:220px;padding:22px;border-radius:26px;box-shadow:0 5px 14px rgba(21,67,48,.035);border:1px solid rgba(25,77,56,.045)}
+.bh-home .home-category-row .home-category-icon{width:58px;height:58px;min-height:58px;border-radius:19px;font-size:2rem}
+.bh-home .home-category-row strong{font-size:clamp(1.1rem,1.4vw,1.4rem)}
+.bh-home .home-category-row .bh-category-description{line-height:1.5}
+.bh-home .home-category-row>a:hover{transform:translateY(-4px);box-shadow:0 10px 24px rgba(21,67,48,.10)}
+@media(max-width:1100px){.bh-home .home-hero-image{min-height:250px}}
+@media(max-width:760px){
+ .bh-home .home-hero{padding:24px 16px;gap:16px}
+ .bh-home h1.home-brush{font-size:clamp(3.2rem,12vw,5.1rem);line-height:.98}
+ .bh-home .home-hero-image{min-height:195px;max-height:245px;aspect-ratio:1.8}
+ .bh-home .home-search{padding:18px}
+ .bh-home .home-search-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .bh-home .home-search-fields label:first-child{grid-column:1/-1}
+ .bh-home .home-search-fields button{grid-column:1/-1}
+ .bh-home .home-category-row>a{min-height:200px;padding:17px}
+ .bh-home .home-category-row .home-category-icon{width:50px;height:50px;min-height:50px}
+}
+@media(max-width:400px){.bh-home .home-search-fields{grid-template-columns:1fr}.bh-home .home-category-row>a{min-height:210px}}
+@media(prefers-reduced-motion:reduce){.bh-home .home-category-row>a{transition:none}}
