@@ -6,7 +6,7 @@
 <title>Activity · Bubba Hub</title>
 <link rel="stylesheet" href="/assets/css/styles.css">
 <link rel="stylesheet" href="/assets/css/activity-v2.css">
-<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030k">
+<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030m">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
@@ -305,17 +305,22 @@ document.addEventListener("DOMContentLoaded",async()=>{
       actions.classList.add("activity-hero-actions");
       gallery.append(actions);
       // Icon actions preserve original button IDs and click handlers.
-      const actionIcons={save:"♥",planner:"▣",visited:"✓",compare:"⇄",heroBookNow:"↗"};
+      // Use real SVG icons instead of font glyphs/pseudo-elements, which were blank on some browsers.
+      const iconPaths={
+        save:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/>',
+        planner:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M12 13v5M9.5 15.5h5"/>',
+        visited:'<path d="m5 12 4.5 4.5L19 7"/>',
+        compare:'<path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/>',
+        heroBookNow:'<path d="M5 12h14m-6-6 6 6-6 6"/>'
+      };
       Array.from(actions.querySelectorAll("button")).forEach(button=>{
         const original=button.textContent.trim();
         button.setAttribute("aria-label",original);
         button.setAttribute("title",original);
         button.classList.add("activity-icon-action");
-        button.replaceChildren();
-        // A CSS pseudo-element is isolated from legacy button text and icon styles.
-        button.dataset.icon=actionIcons[button.id]||"↗";
-        button.style.setProperty("font-size","0","important");
-        button.style.setProperty("color","transparent","important");
+        button.removeAttribute("data-icon");
+        button.removeAttribute("style");
+        button.innerHTML='<svg class="bh-action-svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(iconPaths[button.id]||iconPaths.heroBookNow)+'</svg>';
       });
 
       const strip=document.createElement("div");
