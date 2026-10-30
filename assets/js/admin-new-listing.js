@@ -35,6 +35,13 @@ venuePolish.textContent=[
  '#newListingForm .bh-registered-picker{max-width:100%;box-sizing:border-box}',
  '#newListingForm #adminListingGallery{max-width:100%;box-sizing:border-box}',
  '#newListingForm .bh-venue-intro{padding:12px 16px;border-radius:12px;background:#f2f8f3;margin-bottom:16px}',
+ '#newListingForm .bh-primary-venue>label{display:block!important;margin:0 0 16px!important;line-height:1.5;clear:both}',
+ '#newListingForm .bh-primary-venue>label>input,#newListingForm .bh-primary-venue>label>select{display:block;width:100%;margin-top:8px;box-sizing:border-box}',
+ '#newListingForm .bh-primary-venue>label>small{display:block;margin-top:6px;line-height:1.5}',
+ '#newListingForm .bh-primary-venue .bh-venue-advanced{margin-top:20px}',
+ '#newListingForm .bh-primary-location-editor{border:1px solid #d5e5d8;border-radius:14px;margin:14px 0;padding:14px;background:#fff}',
+ '#newListingForm .bh-primary-location-editor>summary{cursor:pointer;font-weight:700;color:#205d45;padding:6px}',
+ '#newListingForm .bh-primary-location-editor>.bh-primary-venue{margin-top:12px}',
  '@media(max-width:760px){.bh-wizard-layout{grid-template-columns:1fr!important}.bh-wizard-layout #adminListingSteps{display:flex;overflow-x:auto;gap:4px}}'
 ].join('');
 document.head.append(venuePolish);
@@ -52,12 +59,17 @@ if(locationSection&&extraVenueContainer){
  for(const name of primaryFields){const label=form.elements.namedItem(name)?.closest('label');if(label)primaryCard.append(label);}
  const advanced=document.querySelector('.bh-venue-advanced');if(advanced)primaryCard.append(advanced);
  extraVenueContainer.before(primaryCard);
+ const editPanel=document.createElement('details');editPanel.className='bh-primary-location-editor';editPanel.hidden=true;
+ const editSummary=document.createElement('summary');editSummary.textContent='+ New location / Edit location details';
+ editPanel.append(editSummary);primaryCard.before(editPanel);editPanel.append(primaryCard);
+ primaryCard.hidden=false;
+
 }
 const venueNameInput=form.elements.namedItem('venue_name');
 if(venueNameInput){
  const venueLabel=venueNameInput.closest('label');
  if(venueLabel){
-  const intro=document.createElement('p');intro.className='bh-venue-intro';intro.textContent='Search for a registered location above, or enter a new main location here.';
+  const intro=document.createElement('p');intro.className='bh-venue-intro';intro.textContent='Enter a new main location here if it is not in the registered location search.';
   venueLabel.before(intro);
  }
  const coordinateLabels=['latitude','longitude'].map(name=>form.elements.namedItem(name)?.closest('label')).filter(Boolean);
@@ -66,6 +78,7 @@ if(venueNameInput){
   const summary=document.createElement('summary');summary.textContent='Advanced: map coordinates (optional)';
   details.append(summary);coordinateLabels[0].before(details);
   coordinateLabels.forEach(label=>details.append(label));
+  const mainLocation=document.querySelector('.bh-primary-venue');if(mainLocation)mainLocation.append(details);
  }
 }
 const blockLengthLabel=form.elements.namedItem('block_length_weeks')?.closest('label');
@@ -295,6 +308,7 @@ const pickerTable=document.createElement('div');pickerTable.style.cssText='max-h
 const pickerAdd=document.createElement('button');pickerAdd.type='button';pickerAdd.className='button button-soft';pickerAdd.textContent='Add selected locations';pickerAdd.disabled=true;
 registeredVenuePicker.append(pickerTitle,pickerHelp,pickerSearch,pickerStatus,pickerTable,pickerAdd);
 extraVenueRows.parentElement.insertBefore(registeredVenuePicker,extraVenueRows);
+const mainLocationCard=document.querySelector('.bh-primary-location-editor');if(mainLocationCard)registeredVenuePicker.after(mainLocationCard);
 let registeredVenues=[];
 const chosenRegistered=new Set();
 const renderRegistered=()=>{
@@ -324,6 +338,7 @@ pickerAdd.addEventListener('click',()=>{
     if(field)field.value=venue[fieldName]??'';
    }
    suggestArea();syncVenueSelectors();
+   const locationSummary=document.querySelector('.bh-primary-location-editor>summary');if(locationSummary)locationSummary.textContent='Selected location: '+venue.venue_name+' — Edit details';
   }else{
    addVenue({venue_name:venue.venue_name,town:venue.town,region:venue.region,postcode:venue.postcode,address:venue.address,latitude:venue.latitude,longitude:venue.longitude});
   }
@@ -781,7 +796,7 @@ const renderStep=()=>{
  contactHeading.hidden=step!==3;
  const advancedVenue=document.querySelector('.bh-venue-advanced');if(advancedVenue)advancedVenue.hidden=step!==5;
  const venueIntro=document.querySelector('.bh-venue-intro');if(venueIntro)venueIntro.hidden=step!==5;
- const primaryVenueCard=document.querySelector('.bh-primary-venue');if(primaryVenueCard)primaryVenueCard.hidden=step!==5;
+ const primaryVenueCard=document.querySelector('.bh-primary-location-editor');if(primaryVenueCard)primaryVenueCard.hidden=step!==5;
 
  if(identity)identity.hidden=step!==0;
  if(descriptionSection)descriptionSection.hidden=step!==2;
