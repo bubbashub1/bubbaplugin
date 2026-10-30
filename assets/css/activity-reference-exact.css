@@ -504,3 +504,51 @@ body.bh-activity-v2 .activity-hero-actions .activity-icon-action .activity-actio
  }
  body.bh-activity-v2 .activity-contact-footer .activity-contact-buttons{justify-content:flex-start!important;}
 }
+
+/* Final explicit grid: override old hero action flex rules */
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery .listing-actions.activity-hero-actions{
+ display:grid!important;grid-template-columns:repeat(2,48px)!important;grid-template-rows:repeat(2,48px)!important;
+ grid-auto-flow:row!important;justify-items:stretch!important;align-items:stretch!important;
+ gap:10px!important;width:140px!important;height:140px!important;padding:12px!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery .listing-actions.activity-hero-actions > button.activity-icon-action{
+ display:grid!important;place-items:center!important;width:48px!important;height:48px!important;
+ min-width:48px!important;min-height:48px!important;max-width:48px!important;max-height:48px!important;
+ font-size:0!important;line-height:0!important;padding:0!important;margin:0!important;
+ border-radius:12px!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery .listing-actions.activity-hero-actions > button.activity-icon-action .activity-action-symbol{
+ display:grid!important;place-items:center!important;width:42px!important;height:42px!important;
+ font-size:26px!important;line-height:1!important;color:#07543e!important;background:white!important;
+ border-radius:10px!important;
+}
+/* Organiser content: never squeeze the name into a tiny grid column */
+body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer{
+ grid-template-columns:minmax(0,1fr) minmax(220px,1fr)!important;align-items:start!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer > h2{
+ grid-column:1!important;grid-row:1!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer .activity-contact-organiser{
+ grid-column:1!important;grid-row:2!important;display:flex!important;flex-direction:column!important;
+ align-items:flex-start!important;width:100%!important;min-width:0!important;gap:10px!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer .activity-contact-organiser .activity-organiser-left{
+ display:flex!important;align-items:center!important;gap:12px!important;width:100%!important;
+ min-width:0!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer .activity-contact-organiser .activity-organiser-left > *{
+ min-width:0!important;overflow-wrap:break-word!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer .activity-contact-organiser .activity-organiser-link{
+ display:inline-flex!important;width:auto!important;max-width:100%!important;align-self:flex-start!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer .activity-contact-buttons{
+ grid-column:2!important;grid-row:1 / span 2!important;align-self:center!important;
+}
+@media(max-width:700px){
+ body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer{grid-template-columns:1fr!important;}
+ body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer .activity-contact-buttons{
+ grid-column:1!important;grid-row:3!important;justify-content:flex-start!important;
+ }
+}
