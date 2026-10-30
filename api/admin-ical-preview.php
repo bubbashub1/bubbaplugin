@@ -62,7 +62,12 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
     if(count($found)>=150)break 2;
    }
   }
-  if(!$found)fail(422,'Website retrieved (HTTP 200), but no weekly timetable was recognised. Try Paste Timetable or check whether the schedule loads only in JavaScript.');
+  if(!$found){
+   $hasIframe=(bool)$xpath->query('//iframe')->length;
+   $hasDynamicBooking=(bool)preg_match('/(?:book\s*(?:an?\s*)?appointment|select\s+a\s+time|see\s+availability|booking\s+diary|datepicker|calendar\s+widget)/iu',$text);
+   $reason=$hasIframe?'The booking calendar is embedded in an iframe and is not included in the page HTML.':($hasDynamicBooking?'The page contains an interactive booking calendar but does not expose dated sessions in its public HTML.':'No recognisable timetable rows were found in the public HTML.');
+   fail(422,'Website opened successfully (HTTP 200), but no session dates and times could be extracted. '.$reason.' Please use a public calendar feed or paste the timetable for review.');
+  }
   echo json_encode(['ok'=>true,'data'=>array_values($found),'skipped_recurring'=>0,'source'=>'generic_html_timetable','note'=>'Weekly times found on the public webpage. Confirm class names, venues and missing end times before saving.']);exit;
  }
  if($isBloom){
