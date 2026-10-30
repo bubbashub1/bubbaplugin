@@ -28,3 +28,8 @@ Status: PREPARED, NOT EXECUTED. No staging deployment or emails sent.
 - Database migration should be separate from public/admin request handlers.
 - Wire invitation token through sign-in UI to claim submission.
 - Verify approval workflow and test on staging before enabling automatic triggers.
+
+
+## Required staging database preparation
+
+Before opening the admin invitations page, ensure both `bh_listing_claims` (as defined in `api/claim-listing.php`) and `bh_claim_invitations` (as defined in the feature branch history) exist. The admin endpoint no longer creates tables on request. Do not enable `BH_CLAIM_INVITES_ENABLED` until the migration has been applied and verified. During the first test, only listing 36 can be emailed unless `BH_CLAIM_INVITES_ALL_ENABLED=1` is explicitly set.
