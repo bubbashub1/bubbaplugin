@@ -7534,3 +7534,16 @@ body :is(.button,.btn,.bh-button):not(:disabled){transition:background-color .18
 /* Preserve accessible dark text on the light baby-blue accent. */
 .bh-expo-detail .expo-section-nav a{border-radius:10px}
 .bh-expo-detail .expo-panel{border-radius:16px}
+
+
+/* Staging-only app flow trial, 2026-10-30: shared UI details. */
+:root{--bh-app-canvas:#f7faf7;--bh-app-surface:#fff;--bh-app-radius:20px;--bh-app-focus:#0f8589}
+:where(a,button,input,select,textarea,[role="button"]):focus-visible{outline:3px solid var(--bh-app-focus);outline-offset:3px}
+:where(.app-shell) img{max-width:100%}
+:where(.app-shell) :is(h1,h2,h3){overflow-wrap:break-word}
+:where(button,.button,input[type="submit"]):disabled{opacity:.6;cursor:not-allowed}
+@media(max-width:760px){
+ :where(.app-shell) :is(button,.button,a[role="button"]){min-height:44px}
+ :where(.app-shell) :is(input,select,textarea){font-size:max(16px,1rem)}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}button,.button{transition:none!important}}
