@@ -38,9 +38,9 @@ venuePolish.textContent=[
  '@media(max-width:760px){.bh-wizard-layout{grid-template-columns:1fr!important}.bh-wizard-layout #adminListingSteps{display:flex;overflow-x:auto;gap:4px}}'
 ].join('');
 document.head.append(venuePolish);
+// Status is controlled from the admin listings page; keep its value in the form for save compatibility.
 const statusLabel=form.elements.namedItem('status')?.closest('label');
-const websiteLabel=form.elements.namedItem('website')?.closest('label');
-if(statusLabel&&websiteLabel)websiteLabel.after(statusLabel);
+if(statusLabel){statusLabel.hidden=true;statusLabel.style.display='none';}
 const venueNameInput=form.elements.namedItem('venue_name');
 if(venueNameInput){
  const venueLabel=venueNameInput.closest('label');
@@ -710,7 +710,7 @@ document.getElementById('adminPosterApply')?.addEventListener('click',()=>{
 });
 const collectSessions=()=>[...scheduleRows.children].map(row=>{const s={id:Number(row.dataset.sessionId||0),venue_index:Number(row.querySelector('[data-session-venue]')?.value||0)};row.querySelectorAll('[data-session-field]').forEach(el=>s[el.dataset.sessionField]=el.type==='checkbox'?(el.checked?1:0):el.value);return s;}).filter(s=>s.day_of_week||s.start_time);
  // Seven-step admin editor, matching the class leader's new listing workflow.
-const steps=[['Basics',['title','organisation_name']],['About',['category','tags','age_preset','age_range','price_from','pricing_unit','block_length_weeks','price_free']],['Description',[]],['Contact Details',['booking_url','email','phone','website','facebook_url','instagram_url','status']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address','latitude','longitude']],['Photos',['image_path']],['Review',[]]];
+const steps=[['Basics',['title','organisation_name']],['About',['category','tags','age_preset','age_range','price_from','pricing_unit','block_length_weeks','price_free']],['Description',[]],['Contact Details',['email','phone','website','facebook_url','instagram_url','booking_url']],['Schedule',[]],['Venue',['venue_name','town','county','region','postcode','address','latitude','longitude']],['Photos',['image_path']],['Review',[]]];
 const stepNav=document.getElementById('adminListingSteps');
 const back=document.getElementById('adminListingBack'),next=document.getElementById('adminListingNext'),save=document.getElementById('adminListingSubmit');
 document.getElementById('adminSaveNow')?.addEventListener('click',()=>form.requestSubmit(save));
