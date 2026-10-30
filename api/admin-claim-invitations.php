@@ -105,10 +105,11 @@ $q=$db->prepare("INSERT INTO bh_claim_invitations(activity_id,recipient,token_ha
 $q->execute([$id,$recipient,$hash]);
 if(!bh_send_smtp_mail($recipient,$subject,$html,$body,'')){
  $failed=$db->prepare("UPDATE bh_claim_invitations SET status='failed' WHERE activity_id=? AND recipient=? AND token_hash=? AND status='sending'");
- $failed->execute([$id,$a['email'],$hash]);
+ $failed->execute([$id,$recipient,$hash]);
  respond(502,['ok'=>false,'error'=>'Mail transport rejected message']);
 }
 $q=$db->prepare("UPDATE bh_claim_invitations SET status='sent',sent_at=NOW() WHERE activity_id=? AND recipient=? AND token_hash=? AND status='sending'");
-$q->execute([$id,$a['email'],$hash]);
+$q->execute([$id,$recipient,$hash]);
+if($q->rowCount()!==1)respond(500,['ok'=>false,'error'=>'Invitation email was delivered but activation failed. Please contact support before using the link.']);
 respond(200,['ok'=>true,'message'=>'Invitation sent']);
 } catch(Throwable $e){error_log('Claim invitation error: '.$e->getMessage());$message='Invitation operation failed';if($e instanceof PDOException){if((string)$e->getCode()==='42S22')$message='Claim database column mismatch';elseif((string)$e->getCode()==='42S02')$message='Claim database table missing';}respond(500,['ok'=>false,'error'=>$message]);}
