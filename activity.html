@@ -366,9 +366,18 @@ document.addEventListener("DOMContentLoaded",async()=>{
         ["Email",a.email||a.contact_email||a.organiser_email,"email"],
         ["Phone",a.phone||a.contact_phone||a.organiser_phone,"phone"]
       ];
+      // Email enquiries use the existing on-site contact form rather than opening mailto.
+      const hasContactEmail=String(a.email||a.contact_email||a.organiser_email||"").trim();
+      if(hasContactEmail){
+        const contact=document.createElement("button");
+        contact.type="button";contact.id="contactOrganiser";
+        contact.className="activity-contact-link";
+        contact.textContent="Email";
+        links.append(contact);
+      }
       contactOptions.forEach(([label,value,kind])=>{
         const raw=String(value||"").trim();
-        if(!raw)return;
+        if(!raw||kind==="email")return;
         let url=null;
         if(kind==="web")url=validWeb(raw);
         else if(kind==="email" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw))url="mailto:"+raw;
