@@ -662,3 +662,11 @@ body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activit
 body.bh-activity-v2 .listing-page.activity-reference-exact .activity-quick-strip {
  border-radius:0!important;
 }
+
+/* Compact, colourful schedule beneath the location map; avoid repeated addresses. */
+body.bh-activity-v2 .activity-reference-exact .activity-concept-support .activity-reference-schedule{margin-top:16px;background:#fffaf2!important;border:1px solid #f0dfc3!important}
+body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule .venue-schedule{background:#f3f9f4!important;border:1px solid #d8e9dc!important;border-radius:14px!important;padding:8px!important;margin-bottom:10px!important}
+body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule .activity-venue-toggle{background:#e0f2e9!important;color:#124d3a!important;border:1px solid #b8dec9!important;border-radius:10px!important;font-weight:700!important}
+body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule .venue-schedule:nth-child(even) .activity-venue-toggle{background:#e7f2fb!important;border-color:#c9e1f3!important}
+body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule .session-row:nth-child(even){background:#f5f9f7!important;border-radius:9px!important}
+body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule .bh-session-plan{background:#d7e9dc!important;color:#07543e!important}
