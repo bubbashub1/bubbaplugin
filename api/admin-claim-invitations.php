@@ -72,8 +72,8 @@ if(!in_array($origin,['https://bubbahub.co.uk','https://staging.bubbahub.co.uk']
 $next='/claim-invitation.html?activity_id='.rawurlencode((string)$id).'&invite='.rawurlencode($token);
 $url=$origin.'/auth.html?context=leader&next='.rawurlencode($next);
 $subject='Your activity is now on Bubba Hub – Claim your free listing!';
-$body="Hello,\n\nWe've added ". $a['title'] ." to Bubba Hub South West. Please review your listing and claim it for free.\n\nView listing: https://staging.bubbahub.co.uk/activity.html?id=".$id."\nClaim listing: ".$url."\n\nThanks,\nBubba Hub South West";
-if(getenv('BH_CLAIM_INVITES_ENABLED')!=='1' || ((int)$id!==36 && getenv('BH_CLAIM_INVITES_ALL_ENABLED')!=='1'))respond(409,['ok'=>false,'error'=>'Sending disabled. Set BH_CLAIM_INVITES_ENABLED=1 after staging verification.']);
+$body="Hello,\n\nWe've added ". $a['title'] ." to Bubba Hub South West. Please review your listing and claim it for free.\n\nView listing: ".$origin."/activity.html?id=".$id."\nClaim listing: ".$url."\n\nThanks,\nBubba Hub South West";
+if(getenv('BH_CLAIM_INVITES_ENABLED')!=='1' || (!((string)$a['title']==='Bubba and Me Cranbrook' && strtolower((string)$a['email'])==='contact@bubbahub.co.uk') && getenv('BH_CLAIM_INVITES_ALL_ENABLED')!=='1'))respond(409,['ok'=>false,'error'=>'Sending disabled. Set BH_CLAIM_INVITES_ENABLED=1 after staging verification.']);
 require_once __DIR__.'/mailer.php';
 $html='<p>Hello,</p><p>We have added <strong>'.htmlspecialchars((string)$a['title'],ENT_QUOTES,'UTF-8').'</strong> to Bubba Hub South West.</p><p>Please review your listing and claim it for free.</p><p><a href="'.htmlspecialchars($url,ENT_QUOTES,'UTF-8').'">Claim your listing</a></p><p>Thanks,<br>Bubba Hub South West</p>';
 // Persist the token before sending, so an emailed link is never missing from storage.
