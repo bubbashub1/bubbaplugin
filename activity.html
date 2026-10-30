@@ -6,7 +6,7 @@
 <title>Activity · Bubba Hub</title>
 <link rel="stylesheet" href="/assets/css/styles.css">
 <link rel="stylesheet" href="/assets/css/activity-v2.css">
-<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030j">
+<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030k">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
@@ -305,7 +305,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       actions.classList.add("activity-hero-actions");
       gallery.append(actions);
       // Icon actions preserve original button IDs and click handlers.
-      const actionIcons={save:"♡",planner:"▣",visited:"✓",compare:"⇄",heroBookNow:"↗"};
+      const actionIcons={save:"♥",planner:"▣",visited:"✓",compare:"⇄",heroBookNow:"↗"};
       Array.from(actions.querySelectorAll("button")).forEach(button=>{
         const original=button.textContent.trim();
         button.setAttribute("aria-label",original);
