@@ -6,7 +6,7 @@
 <title>Activity · Bubba Hub</title>
 <link rel="stylesheet" href="/assets/css/styles.css">
 <link rel="stylesheet" href="/assets/css/activity-v2.css">
-<link rel="stylesheet" href="/assets/css/activity-app-refresh.css?v=20261030">
+<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030b">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
@@ -216,6 +216,51 @@ document.addEventListener("DOMContentLoaded",async()=>{
         map.classList.toggle("activity-map-unavailable",error);
       });
       observer.observe(map,{childList:true,subtree:true,characterData:true});
+    }
+  }
+  // Approved reference: photo-overlay hero, compact fact strip, feature icons and two-column cards.
+  if(page.classList.contains("activity-concept-two")){
+    page.classList.add("activity-reference-exact");
+    const summary=hero.querySelector(".listing-summary");
+    const gallery=hero.querySelector(".listing-gallery");
+    const facts=summary?.querySelector(".hero-quick-facts");
+    const actions=summary?.querySelector(".listing-actions");
+    const intro=summary?.querySelector(".activity-hero-intro");
+    if(summary&&gallery&&facts&&actions){
+      const photo=gallery.querySelector("img");
+      if(photo&&!photo.classList.contains("listing-gallery-fallback")){
+        hero.classList.add("activity-has-photo");
+      }
+      const save=actions.querySelector("#save");
+      if(save){save.classList.add("activity-floating-save");gallery.append(save);}
+      const title=summary.querySelector("h1");
+      const category=summary.querySelector(".eyebrow");
+      const overlay=document.createElement("div");
+      overlay.className="activity-photo-overlay";
+      if(category)overlay.append(category);
+      if(title)overlay.append(title);
+      if(intro)overlay.append(intro);
+      gallery.append(overlay);
+      const strip=document.createElement("div");
+      strip.className="activity-quick-strip";
+      const important=Array.from(facts.children).filter(item=>/Price|Age range|Location|Sessions/i.test(item.querySelector("strong")?.textContent||"")).slice(0,3);
+      important.forEach(item=>strip.append(item));
+      const planner=actions.querySelector("#planner");
+      if(planner)strip.append(planner);
+      hero.append(strip);
+      const extras=document.createElement("div");
+      extras.className="activity-feature-strip";
+      const features=[["♧","Toys & craft"],["♫","Songs & music"],["♧","Meet other families"],["✦","Free to attend"],["♡","Friendly atmosphere"]];
+      const description=String(a.description||a.content||"").toLowerCase();
+      const matching=features.filter(([icon,label])=>label==="Meet other families"||label==="Friendly atmosphere"||(label==="Free to attend"?/free to attend|free entry|free session/.test(description):label==="Songs & music"?/song|music|singing/.test(description):/toy|craft|play/.test(description)));
+      matching.forEach(([icon,label])=>{const item=document.createElement("div");item.className="activity-feature";const symbol=document.createElement("span");symbol.className="activity-feature-icon";symbol.textContent=icon;const text=document.createElement("span");text.textContent=label;item.append(symbol,text);extras.append(item);});
+      if(extras.childElementCount)hero.after(extras);
+      const footer=document.createElement("aside");
+      footer.className="activity-friendly-footer";
+      const message=document.createElement("p");message.textContent="A relaxed and friendly space for little ones to play and grow";
+      footer.append(message);
+      if(photo&&!photo.classList.contains("listing-gallery-fallback")){const thumb=document.createElement("img");thumb.src=photo.src;thumb.alt="Activity photo";thumb.loading="lazy";footer.append(thumb);}
+      layout.after(footer);
     }
   }
   const claimButton=document.getElementById("claimListingButton");
