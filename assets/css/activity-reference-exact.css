@@ -309,3 +309,51 @@ body.bh-activity-v2 .activity-reference-exact .activity-hero .listing-gallery .a
  body.bh-activity-v2 .activity-reference-exact .activity-contact-buttons{width:100%}
  body.bh-activity-v2 .activity-reference-exact .activity-contact-link{flex:1}
 }
+
+/* 2026-10-30: override inherited .listing-actions/button rules for hero CTA icons */
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery > .listing-actions.activity-hero-actions{
+ position:absolute!important;top:18px!important;right:18px!important;bottom:auto!important;left:auto!important;
+ z-index:20!important;display:flex!important;flex-flow:row nowrap!important;
+ align-items:flex-start!important;justify-content:flex-end!important;
+ width:auto!important;max-width:calc(100% - 36px)!important;height:auto!important;
+ padding:10px 12px!important;margin:0!important;gap:12px!important;
+ background:rgba(10,59,45,.91)!important;border:1px solid rgba(255,255,255,.25)!important;
+ border-radius:20px!important;box-shadow:0 8px 26px #123b3040!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery > .listing-actions.activity-hero-actions > button.activity-icon-action{
+ position:relative!important;display:flex!important;flex-direction:column!important;
+ justify-content:center!important;align-items:center!important;flex:0 0 64px!important;
+ width:64px!important;min-width:64px!important;max-width:64px!important;
+ height:auto!important;min-height:62px!important;padding:4px!important;margin:0!important;
+ border:0!important;border-radius:12px!important;background:transparent!important;
+ color:white!important;opacity:1!important;visibility:visible!important;
+ font-size:12px!important;line-height:1.25!important;box-shadow:none!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery > .listing-actions.activity-hero-actions > button.activity-icon-action > .activity-action-symbol{
+ display:grid!important;place-items:center!important;flex:none!important;
+ width:42px!important;height:42px!important;min-width:42px!important;
+ border-radius:50%!important;background:#fff!important;color:#07543e!important;
+ font-size:24px!important;line-height:1!important;font-weight:800!important;
+ opacity:1!important;visibility:visible!important;box-shadow:0 2px 10px #001e1640!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery > .listing-actions.activity-hero-actions > button.activity-icon-action > .activity-action-label{
+ display:block!important;position:static!important;max-width:100%!important;
+ padding:0!important;margin:3px 0 0!important;white-space:normal!important;
+ color:#fff!important;background:transparent!important;opacity:1!important;visibility:visible!important;
+ font-size:10px!important;font-weight:700!important;text-align:center!important;line-height:1.2!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery > .listing-actions.activity-hero-actions > button.activity-icon-action:hover > .activity-action-symbol{
+ background:#cce9da!important;
+}
+@media(max-width:700px){
+ body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery > .listing-actions.activity-hero-actions{
+  top:8px!important;right:8px!important;gap:3px!important;padding:6px!important;border-radius:14px!important;
+ }
+ body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery > .listing-actions.activity-hero-actions > button.activity-icon-action{
+  flex-basis:46px!important;width:46px!important;min-width:46px!important;max-width:46px!important;min-height:54px!important;
+ }
+ body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery > .listing-actions.activity-hero-actions > button.activity-icon-action > .activity-action-symbol{
+  width:33px!important;height:33px!important;min-width:33px!important;font-size:19px!important;
+ }
+ body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery > .listing-actions.activity-hero-actions > button.activity-icon-action > .activity-action-label{font-size:8px!important}
+}
