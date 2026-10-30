@@ -7,10 +7,24 @@ declare(strict_types=1);
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 require_once __DIR__.'/db.php';
 require_once __DIR__.'/mailer.php';
-$enabled = getenv('BH_CLAIM_AUTO_ENABLED') === '1';
-$paused = getenv('BH_CLAIM_AUTO_PAUSED') === '1';
+// eWebAll cron does not reliably accept environment-variable command prefixes.
+// Prefer explicit wp-config.php constants, falling back to process environment.
+// Do not include wp-config.php via require: it boots WordPress and may exit.
+$configFile = dirname(__DIR__).'/wp-config.php';
+if (is_file($configFile)) {
+  // WordPress configuration is loaded by the SMTP mailer when sending.
+  // Load it here as well so define() settings are available to the worker.
+  require_once $configFile;
+}
+$setting = static function(string $name, string $fallback=''): string {
+  if (defined($name)) return (string)constant($name);
+  $value=getenv($name);
+  return $value===false ? $fallback : (string)$value;
+};
+$enabled = $setting('BH_CLAIM_AUTO_ENABLED') === '1';
+$paused = $setting('BH_CLAIM_AUTO_PAUSED','1') !== '0';
 if (!$enabled || $paused) { echo "Claim auto invitations disabled or paused\n"; exit; }
-$limit = max(1, min(5, (int)(getenv('BH_CLAIM_AUTO_DAILY_LIMIT') ?: 2)));
+$limit = max(1, min(5, (int)$setting('BH_CLAIM_AUTO_DAILY_LIMIT','2')));
 $db = bh_mysql();
 $lock = $db->query("SELECT GET_LOCK('bh_claim_auto_invites',0)")->fetchColumn();
 if ((int)$lock !== 1) { echo "Worker already running\n"; exit; }
