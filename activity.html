@@ -6,7 +6,7 @@
 <title>Activity · Bubba Hub</title>
 <link rel="stylesheet" href="/assets/css/styles.css">
 <link rel="stylesheet" href="/assets/css/activity-v2.css">
-<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030e">
+<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030f">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
@@ -347,6 +347,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       });
       if(!links.children.length){const empty=document.createElement("p");empty.textContent="Contact details have not been provided for this activity.";links.append(empty);}
       footer.append(links);
+      footer.classList.toggle("activity-contacts-empty",!links.querySelector("a"));
       const organiserCard=layout.querySelector('.activity-reference-organiser');
       if(organiserCard){organiserCard.classList.add('activity-contact-organiser');footer.insertBefore(organiserCard,links);}
       layout.after(footer);
