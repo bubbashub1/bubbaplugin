@@ -294,3 +294,22 @@ body.bh-activity-v2 .app-shell .listing-description :is(p,li){color:#25392f!impo
  body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero{padding:14px!important;border-radius:20px!important}
  body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-gallery{height:235px!important}
 }
+
+/* Visual 2 fidelity: icons, introduction, richer cards, tighter map fallback */
+body.bh-activity-v2 .activity-hero-intro{color:#2a453b!important;font-size:clamp(.98rem,1.25vw,1.12rem)!important;line-height:1.55!important;margin:0 0 10px!important;max-width:56ch}
+body.bh-activity-v2 .hero-quick-facts>span{position:relative!important;padding-left:52px!important;min-height:65px!important;display:flex!important;flex-direction:column!important;justify-content:center!important}
+body.bh-activity-v2 .hero-quick-facts>span::before{position:absolute;left:12px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:32px;height:32px;border-radius:50%;font-size:17px;font-weight:800;color:#174e3b;background:#e7f1e9}
+body.bh-activity-v2 .hero-quick-facts>.fact-price::before{content:"£";background:#fff0ca;color:#956015}
+body.bh-activity-v2 .hero-quick-facts>.fact-age::before{content:"♧";background:#e0efff;color:#226294}
+body.bh-activity-v2 .hero-quick-facts>.fact-location::before{content:"⌖";background:#eee6ff;color:#6951a1}
+body.bh-activity-v2 .hero-quick-facts>.fact-sessions::before{content:"▦";background:#ffe3e9;color:#a63d62}
+body.bh-activity-v2 .activity-location-heading{font-size:1.35rem!important;margin:0 0 14px!important;color:#173f32!important}
+body.bh-activity-v2 .activity-reference-contact .listing-map{max-height:220px!important;height:220px!important;min-height:0!important;overflow:hidden!important}
+body.bh-activity-v2 .activity-reference-contact .listing-map:has(.listing-map-error),
+body.bh-activity-v2 .activity-reference-contact .listing-map:has(.map-error){max-height:100px!important;height:auto!important}
+body.bh-activity-v2 .activity-reference-contact .listing-map:not(:has(canvas)):not(:has(.leaflet-container)):not(:has(iframe)):not(:has(img)){height:auto!important;min-height:85px!important;max-height:110px!important;padding:14px!important}
+body.bh-activity-v2 .listing-main>.activity-reference-about{padding:24px!important}
+body.bh-activity-v2 .listing-main>.activity-reference-schedule{padding:24px!important}
+body.bh-activity-v2 .listing-main>.activity-useful-info{padding:24px!important}
+body.bh-activity-v2 .listing-main>.activity-reference-contact{padding:24px!important}
+@media(max-width:550px){body.bh-activity-v2 .hero-quick-facts>span{padding-left:44px!important}body.bh-activity-v2 .hero-quick-facts>span::before{left:7px}}
