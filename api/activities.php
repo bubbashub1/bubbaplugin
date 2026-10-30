@@ -147,6 +147,14 @@ try {
             ? "LEFT JOIN bh_activity_venues av ON av.activity_id = a.id LEFT JOIN bh_venues v ON v.id = av.venue_id"
             : "LEFT JOIN bh_venues v ON v.id = (SELECT s3.venue_id FROM bh_sessions s3 INNER JOIN bh_venues v3 ON v3.id=s3.venue_id WHERE v3.activity_id = a.id AND s3.venue_id IS NOT NULL ORDER BY s3.id LIMIT 1)");
 
+    // Contact columns are optional on older installations; expose only fields that exist.
+    $contactColumns = ['website', 'facebook_url', 'instagram_url', 'contact_email', 'contact_phone'];
+    $contactSelect = '';
+    $availableColumns = $db->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities'")->fetchAll(PDO::FETCH_COLUMN);
+    foreach ($contactColumns as $column) {
+        $contactSelect .= ", " . (in_array($column, $availableColumns, true) ? "a.`$column`" : "NULL") . " AS `$column`";
+    }
+
     $sql = "
         SELECT
             a.id,
@@ -160,6 +168,7 @@ try {
             $countySelect,
             a.price_from,
             a.booking_url
+            $contactSelect
             $infoSelect,
             a.image_path,
             $featuredSelect,
@@ -204,6 +213,11 @@ try {
                 'county' => $row['county'],
                 'price_from' => $row['price_from'] !== null ? (float)$row['price_from'] : null,
                 'booking_url' => $row['booking_url'],
+                'website' => $row['website'],
+                'facebook_url' => $row['facebook_url'],
+                'instagram_url' => $row['instagram_url'],
+                'contact_email' => $row['contact_email'],
+                'contact_phone' => $row['contact_phone'],
                 'booking_required' => (bool)$row['booking_required'],
                 'drop_in_welcome' => (bool)$row['drop_in_welcome'],
                 'trial_available' => (bool)$row['trial_available'],
