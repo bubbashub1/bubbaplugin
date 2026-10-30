@@ -6,7 +6,7 @@
 <title>Activity · Bubba Hub</title>
 <link rel="stylesheet" href="/assets/css/styles.css">
 <link rel="stylesheet" href="/assets/css/activity-v2.css">
-<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030h">
+<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030i">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
@@ -311,23 +311,19 @@ document.addEventListener("DOMContentLoaded",async()=>{
         button.setAttribute("aria-label",original);
         button.setAttribute("title",original);
         button.classList.add("activity-icon-action");
-        const symbol=document.createElement("span");
-        symbol.className="activity-action-symbol";
-        symbol.setAttribute("aria-hidden","true");
-        symbol.textContent=actionIcons[button.id]||"↗";
-        const label=document.createElement("span");
-        label.className="activity-action-label";
-        label.textContent=original.replace(/^\\+\\s*/,"");
-        button.replaceChildren(symbol);
-        button.style.setProperty("font-size","0","important");
-        button.style.setProperty("color","transparent","important");
+        // Render the glyph directly in the button: older activity styles hide nested spans.
+        button.textContent=actionIcons[button.id]||"↗";
+        button.style.setProperty("font-size","26px","important");
+        button.style.setProperty("font-weight","700","important");
+        button.style.setProperty("line-height","1","important");
+        button.style.setProperty("color","#ffffff","important");
+        button.style.setProperty("visibility","visible","important");
+        button.style.setProperty("opacity","1","important");
         button.style.setProperty("width","48px","important");
         button.style.setProperty("height","48px","important");
         button.style.setProperty("min-width","48px","important");
         button.style.setProperty("min-height","48px","important");
         button.style.setProperty("padding","0","important");
-        symbol.style.setProperty("font-size","26px","important");
-        symbol.style.setProperty("color","#07543e","important");
       });
 
       const strip=document.createElement("div");
