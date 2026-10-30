@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-/** Staging claim invitation management. Enable only after SMTP and claim-flow QA. */
+/** Claim invitation management. Sending remains disabled unless explicitly enabled. */
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 require_once __DIR__.'/admin-session-guard.php';
@@ -9,7 +9,7 @@ function respond(int $code,array $data):never {http_response_code($code);echo js
 
 try {
 $db=bh_mysql();
-// Schema is installed by the staging migration, never during a user request.
+// Schema is installed by the migration, never during a user request.
 $_SESSION['bh_claim_invite_csrf']??=bin2hex(random_bytes(32));
 if($_SERVER['REQUEST_METHOD']==='GET') {
  $rows=$db->query("SELECT a.id,a.title,a.contact_email AS recipient,i.status AS invitation_status,i.sent_at
@@ -69,7 +69,7 @@ $next='/claim-invitation.html?activity_id='.rawurlencode((string)$id).'&invite='
 $url=$origin.'/auth.html?context=leader&next='.rawurlencode($next);
 $subject='Your activity is now on Bubba Hub – Claim your free listing!';
 $body="Hello,\n\nWe've added ". $a['title'] ." to Bubba Hub South West. Please review your listing and claim it for free.\n\nView listing: https://staging.bubbahub.co.uk/activity.html?id=".$id."\nClaim listing: ".$url."\n\nThanks,\nBubba Hub South West";
-if(getenv('BH_CLAIM_INVITES_ENABLED')!=='1' || (int)$id!==36 && getenv('BH_CLAIM_INVITES_ALL_ENABLED')!=='1')respond(409,['ok'=>false,'error'=>'Sending disabled. Set BH_CLAIM_INVITES_ENABLED=1 after staging verification.']);
+if(getenv('BH_CLAIM_INVITES_ENABLED')!=='1' || ((int)$id!==36 && getenv('BH_CLAIM_INVITES_ALL_ENABLED')!=='1'))respond(409,['ok'=>false,'error'=>'Sending disabled. Set BH_CLAIM_INVITES_ENABLED=1 after staging verification.']);
 require_once __DIR__.'/mailer.php';
 $html='<p>Hello,</p><p>We have added <strong>'.htmlspecialchars((string)$a['title'],ENT_QUOTES,'UTF-8').'</strong> to Bubba Hub South West.</p><p>Please review your listing and claim it for free.</p><p><a href="'.htmlspecialchars($url,ENT_QUOTES,'UTF-8').'">Claim your listing</a></p><p>Thanks,<br>Bubba Hub South West</p>';
 // Persist the token before sending, so an emailed link is never missing from storage.
