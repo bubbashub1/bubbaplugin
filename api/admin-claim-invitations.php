@@ -72,7 +72,7 @@ if(!in_array($origin,['https://bubbahub.co.uk','https://staging.bubbahub.co.uk']
 $next='/claim-invitation.html?activity_id='.rawurlencode((string)$id).'&invite='.rawurlencode($token);
 $url=$origin.'/auth.html?context=leader&next='.rawurlencode($next);
 $subject='Your activity is now on Bubba Hub – Claim your free listing!';
-$body="Hello,\n\nWe've added ". $a['title'] ." to Bubba Hub South West. Please review your listing and claim it for free.\n\nView listing: ".$origin."/activity.html?id=".$id."\nClaim listing: ".$url."\n\nThanks,\nBubba Hub South West";
+$body="Hello,\n\nWe've added ". $a['title'] ." to Bubba Hub South West. To claim your free listing, sign in or create a free Bubba Hub Class Leader account using the link below, then submit your claim for admin approval.\n\nView listing: ".$origin."/activity.html?id=".$id."\nClaim listing: ".$url."\n\nThanks,\nBubba Hub South West";
 $pilot=(($input['pilot_test']??false)===true);
 $pilotAllowed=$pilot && (string)$a['title']==='Bubba and Me Cranbrook' && strtolower(trim((string)$a['email']))==='contact@bubbahub.co.uk' && $origin==='https://bubbahub.co.uk';
 $normalAllowed=!$pilot && getenv('BH_CLAIM_INVITES_ENABLED')==='1' && (getenv('BH_CLAIM_INVITES_ALL_ENABLED')==='1' || ((string)$a['title']==='Bubba and Me Cranbrook' && strtolower(trim((string)$a['email']))==='contact@bubbahub.co.uk'));
@@ -94,7 +94,7 @@ $html=<<<HTML
 <h1 style="font-size:27px;line-height:1.25;color:#124b3b;margin:0 0 18px;">Claim your free listing</h1>
 <p style="font-size:16px;line-height:1.65;margin:0 0 16px;">Hello,</p>
 <p style="font-size:16px;line-height:1.65;margin:0 0 16px;">We've added <strong>$safeTitle</strong> to Bubba Hub South West so local families can discover your activity.</p>
-<p style="font-size:16px;line-height:1.65;margin:0 0 26px;">Please check your listing and claim it for free. Once you submit your claim, our team will review it before giving you access to manage the listing.</p>
+<p style="font-size:16px;line-height:1.65;margin:0 0 26px;">To manage your listing, you'll need a free Bubba Hub Class Leader account. Select the button below, then sign in or create your Class Leader account if you're new to Bubba Hub. Once signed in, submit your claim for our team to review before we give you access to manage the listing.</p>
 <table role="presentation" cellpadding="0" cellspacing="0"><tr><td bgcolor="#07563f" style="border-radius:12px;"><a href="$safeClaimUrl" style="display:inline-block;padding:16px 25px;font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none;border-radius:12px;">Claim your free listing</a></td></tr></table>
 <p style="margin:22px 0 0;font-size:15px;"><a href="$safeListingUrl" style="color:#08735e;text-decoration:underline;">View your listing first</a></p>
 <p style="margin:30px 0 0;font-size:15px;line-height:1.6;">Thanks,<br><strong>Bubba Hub South West</strong></p>
