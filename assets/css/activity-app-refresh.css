@@ -313,3 +313,37 @@ body.bh-activity-v2 .listing-main>.activity-reference-schedule{padding:24px!impo
 body.bh-activity-v2 .listing-main>.activity-useful-info{padding:24px!important}
 body.bh-activity-v2 .listing-main>.activity-reference-contact{padding:24px!important}
 @media(max-width:550px){body.bh-activity-v2 .hero-quick-facts>span{padding-left:44px!important}body.bh-activity-v2 .hero-quick-facts>span::before{left:7px}}
+
+/* Correct icon collision from legacy fact-card flex rules */
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .hero-quick-facts>span{
+ display:flex!important;flex-direction:column!important;align-items:flex-start!important;
+ justify-content:center!important;position:relative!important;box-sizing:border-box!important;
+ padding:12px 12px 12px 58px!important;min-height:72px!important;overflow:hidden!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .hero-quick-facts>span::before{
+ left:12px!important;top:50%!important;transform:translateY(-50%)!important;
+ width:34px!important;height:34px!important;z-index:1!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .hero-quick-facts>span>strong,
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .hero-quick-facts>span>b{
+ display:block!important;position:relative!important;z-index:2!important;
+ width:100%!important;max-width:100%!important;white-space:normal!important;
+ line-height:1.35!important;overflow-wrap:anywhere!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-gallery{
+ height:clamp(260px,26vw,355px)!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-gallery img.listing-gallery-fallback{
+ padding:clamp(28px,4vw,56px)!important;
+}
+@media(max-width:550px){
+ body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .hero-quick-facts>span{
+  padding-left:49px!important;min-height:70px!important;
+ }
+ body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .hero-quick-facts>span::before{
+  left:8px!important;width:31px!important;height:31px!important;
+ }
+ body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-gallery{
+  height:220px!important;
+ }
+}
