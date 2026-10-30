@@ -23,7 +23,7 @@ if($_SERVER['REQUEST_METHOD']==='GET') {
  LEFT JOIN bh_claim_invitations i ON i.activity_id=a.id AND i.recipient=a.contact_email
  WHERE a.contact_email IS NOT NULL AND a.contact_email<>'' AND NOT EXISTS (
  SELECT 1 FROM bh_listing_claims c WHERE c.activity_id=a.id AND c.status IN ('approved','pending')
- ) ORDER BY a.id DESC LIMIT 250")->fetchAll(PDO::FETCH_ASSOC);
+ ) ORDER BY CASE WHEN a.id=36 THEN 0 ELSE 1 END,a.id DESC LIMIT 250")->fetchAll(PDO::FETCH_ASSOC);
  $claims=$db->query("SELECT c.id,c.activity_id,c.user_id,c.organiser_id,c.status,c.created_at,a.title,u.email FROM bh_listing_claims c JOIN bh_activities a ON a.id=c.activity_id JOIN bh_users u ON u.id=c.user_id WHERE c.status='pending' ORDER BY c.created_at DESC LIMIT 100")->fetchAll(PDO::FETCH_ASSOC);
  respond(200,['ok'=>true,'data'=>$rows,'claims'=>$claims,'csrf'=>$_SESSION['bh_claim_invite_csrf']]);
 }
