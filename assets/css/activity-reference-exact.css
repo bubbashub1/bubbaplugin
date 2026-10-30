@@ -614,3 +614,44 @@ body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activit
 body.bh-activity-v2 .listing-page.activity-reference-exact .activity-quick-strip{
  border-radius:0 0 20px 20px!important;
 }
+
+/* Content-rich activities: cards grow with their own content, without stretched empty panels. */
+body.bh-activity-v2 .activity-reference-exact .activity-concept-content{
+ align-items:start!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-concept-lead,
+body.bh-activity-v2 .activity-reference-exact .activity-concept-support{
+ align-self:start!important;min-height:0!important;height:auto!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-reference-about,
+body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule,
+body.bh-activity-v2 .activity-reference-exact .activity-reference-contact{
+ height:auto!important;max-height:none!important;overflow:visible!important;
+}
+body.bh-activity-v2 .activity-reference-exact .listing-description{
+ max-height:none!important;height:auto!important;overflow:visible!important;
+ overflow-wrap:break-word!important;word-break:normal!important;
+}
+body.bh-activity-v2 .activity-reference-exact .listing-description :is(p,ul,ol,blockquote){
+ margin:0 0 1rem!important;
+}
+body.bh-activity-v2 .activity-reference-exact .listing-description :is(ul,ol){
+ padding-left:1.5rem!important;
+}
+body.bh-activity-v2 .activity-reference-exact .listing-description li{
+ margin-bottom:.35rem!important;
+}
+body.bh-activity-v2 .activity-reference-exact .listing-description :is(h2,h3,h4){
+ margin:1.25rem 0 .55rem!important;line-height:1.3!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-keyword-tags{
+ display:flex!important;flex-wrap:wrap!important;gap:6px!important;max-width:100%!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-keyword-tags > *{
+ max-width:100%!important;overflow-wrap:anywhere!important;
+}
+@media(max-width:760px){
+ body.bh-activity-v2 .activity-reference-exact .activity-concept-content{
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+}
