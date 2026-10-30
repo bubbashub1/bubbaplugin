@@ -20,6 +20,52 @@ tidyStyle.textContent=[
  '@media(max-width:760px){#adminExtraVenueRows fieldset{grid-template-columns:1fr}.bh-wizard-layout #adminListingSteps{padding:0}}'
 ].join('');
 document.head.append(tidyStyle);
+const venuePolish=document.createElement('style');
+venuePolish.textContent=[
+ '#newListingForm .admin-form-grid{max-width:850px;margin-inline:auto}',
+ '#newListingForm .admin-form-grid>label{margin:0}',
+ '#newListingForm .admin-form-grid>label input,#newListingForm .admin-form-grid>label select{max-width:none}',
+ '#newListingForm .bh-category-picker .bh-category-options:empty{display:none}',
+ '#newListingForm .bh-category-picker .bh-category-options{border:0;background:transparent;padding:0;max-height:190px}',
+ '#newListingForm .bh-category-picker .bh-category-options label{background:#f4f9f4}',
+ '#newListingForm .bh-venue-advanced{border:1px solid #d5e5d8;border-radius:14px;padding:12px 16px;margin:10px 0}',
+ '#newListingForm .bh-venue-advanced summary{font-weight:700;cursor:pointer;color:#225944}',
+ '#newListingForm .bh-venue-advanced label{display:block;margin:12px 0}',
+ '#newListingForm #adminExtraVenueRows fieldset{grid-template-columns:1fr;max-width:100%}',
+ '#newListingForm .bh-registered-picker{max-width:100%;box-sizing:border-box}',
+ '#newListingForm #adminListingGallery{max-width:100%;box-sizing:border-box}',
+ '#newListingForm .bh-venue-intro{padding:12px 16px;border-radius:12px;background:#f2f8f3;margin-bottom:16px}',
+ '@media(max-width:760px){.bh-wizard-layout{grid-template-columns:1fr!important}.bh-wizard-layout #adminListingSteps{display:flex;overflow-x:auto;gap:4px}}'
+].join('');
+document.head.append(venuePolish);
+const venueNameInput=form.elements.namedItem('venue_name');
+if(venueNameInput){
+ const venueLabel=venueNameInput.closest('label');
+ if(venueLabel){
+  const intro=document.createElement('p');intro.className='bh-venue-intro';intro.textContent='Start with a venue name. Search registered locations in Additional locations, or enter a new address below.';
+  venueLabel.before(intro);
+ }
+ const coordinateLabels=['latitude','longitude'].map(name=>form.elements.namedItem(name)?.closest('label')).filter(Boolean);
+ if(coordinateLabels.length){
+  const details=document.createElement('details');details.className='bh-venue-advanced';
+  const summary=document.createElement('summary');summary.textContent='Advanced: map coordinates (optional)';
+  details.append(summary);coordinateLabels[0].before(details);
+  coordinateLabels.forEach(label=>details.append(label));
+ }
+}
+const blockLengthLabel=form.elements.namedItem('block_length_weeks')?.closest('label');
+const pricingUnit=form.elements.namedItem('pricing_unit');
+if(blockLengthLabel&&pricingUnit){
+ const refreshBlock=()=>{blockLengthLabel.hidden=pricingUnit.value!=='per_block';};
+ pricingUnit.addEventListener('change',refreshBlock);refreshBlock();
+}
+const priceFree=form.elements.namedItem('price_free');
+const priceAmount=form.elements.namedItem('price_from');
+if(priceFree&&priceAmount){
+ const refreshPrice=()=>{priceAmount.closest('label').hidden=priceFree.checked;};
+ priceFree.addEventListener('change',refreshPrice);refreshPrice();
+}
+
 
 const status=document.getElementById('newListingStatus'),button=form.querySelector('button[type="submit"]'),id=new URLSearchParams(location.search).get('id');let original=null;let listingCsrf='';
 const gallery=document.getElementById('adminGalleryFields');
