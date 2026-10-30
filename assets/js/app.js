@@ -1041,3 +1041,20 @@ window.bhPopulatePopularCategories = async function(container) {
     container.innerHTML = "";
   }
 };
+
+
+// Shared scroll-to-top control for every page loading the Bubba Hub app shell.
+(function initSitewideScrollToTop(){
+  function mount(){
+    if(document.getElementById("activityScrollTop")||document.getElementById("bhScrollToTop"))return;
+    const button=document.createElement("button");
+    button.id="bhScrollToTop";button.type="button";button.className="bh-scroll-to-top";
+    button.setAttribute("aria-label","Scroll to top");button.title="Back to top";
+    button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 14 7-7 7 7M12 7v13"/></svg>';
+    document.body.appendChild(button);
+    const update=()=>button.classList.toggle("is-visible",window.scrollY>420);
+    window.addEventListener("scroll",update,{passive:true});update();
+    button.addEventListener("click",()=>window.scrollTo({top:0,behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}));
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
+})();
