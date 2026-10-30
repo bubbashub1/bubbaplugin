@@ -7512,3 +7512,10 @@ button.bh-header-signout:disabled{opacity:.65;cursor:wait}
 body:not(.bh-admin):not(.bh-leader) .site-header{border-bottom:2px solid var(--bh-green);box-shadow:0 5px 16px rgba(18,62,43,.1)}
 body:not(.bh-admin):not(.bh-leader) .site-header .main-nav a:focus-visible{outline:3px solid var(--bh-teal-dark);outline-offset:2px}
 .bh-directory :is(.activity-card,.event-card){border-color:var(--bh-border);box-shadow:var(--bh-shadow)}
+
+/* Sitewide floating back-to-top control */
+.bh-scroll-to-top{position:fixed;right:max(18px,env(safe-area-inset-right));bottom:calc(22px + env(safe-area-inset-bottom));z-index:1100;width:48px;height:48px;padding:0;border:1px solid rgba(255,255,255,.25);border-radius:50%;background:#07543f;color:#fff;display:grid;place-items:center;box-shadow:0 5px 18px rgba(0,45,30,.25);cursor:pointer;opacity:0;visibility:hidden;transform:translateY(10px);transition:opacity .2s,transform .2s,visibility .2s}
+.bh-scroll-to-top.is-visible{opacity:1;visibility:visible;transform:none}
+.bh-scroll-to-top:hover,.bh-scroll-to-top:focus-visible{background:#083e31;outline-offset:3px}
+.bh-scroll-to-top svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+@media(prefers-reduced-motion:reduce){.bh-scroll-to-top{transition:none}}
