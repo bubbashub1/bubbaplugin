@@ -42,3 +42,53 @@ body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .list
 body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .hero-quick-facts>span{background:rgba(255,255,255,.83)!important;color:#174e3b!important}
 body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .listing-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
 @media(max-width:650px){body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero{border-radius:20px!important}}
+
+/* Modern editorial activity detail: calmer surfaces, crisp typography, clear actions. */
+body.bh-activity-v2{background:#f7f9f7!important;color:#24362f!important}
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero{
+ background:#fff!important;color:#20392f!important;border:1px solid #e2e9e3!important;
+ box-shadow:0 12px 32px rgba(19,52,38,.06)!important;border-radius:24px!important;
+ padding:clamp(16px,2.5vw,30px)!important;gap:clamp(18px,2.8vw,36px)!important;
+}
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .listing-summary h1{
+ color:#173f32!important;font-size:clamp(2rem,3.5vw,3.6rem)!important;letter-spacing:-.045em!important;
+}
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .listing-summary .eyebrow{
+ display:inline-block!important;max-width:100%;padding:7px 12px!important;border-radius:999px;
+ background:#edf4ef!important;color:#295e4b!important;font-size:.8rem!important;line-height:1.4!important;
+}
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .hero-quick-facts>span{
+ background:#f6f8f6!important;border:1px solid #e3eae4!important;border-radius:12px!important;
+}
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .hero-quick-facts strong{
+ color:#52645a!important;font-size:.68rem!important;letter-spacing:.055em!important;
+}
+body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero .hero-quick-facts b{
+ color:#183f32!important;font-size:.95rem!important;
+}
+body.bh-activity-v2 .listing-gallery{border-radius:18px!important;border:1px solid #edf0ec}
+body.bh-activity-v2 .listing-layout :is(.listing-card,.good-to-know-card,.activity-reference-contact,.activity-reference-schedule,.organiser-card){
+ background:#fff!important;border:1px solid #e3eae4!important;border-radius:20px!important;
+ box-shadow:0 5px 20px rgba(21,54,40,.035)!important;
+}
+body.bh-activity-v2 .app-shell .listing-description,
+body.bh-activity-v2 .app-shell .listing-description :is(p,li,div),
+body.bh-activity-v2 .app-shell .activity-reference-about :is(p,li),
+body.bh-activity-v2 .app-shell .activity-useful-info :is(p,li),
+body.bh-activity-v2 .app-shell .activity-reference-schedule :is(p,td,span),
+body.bh-activity-v2 .app-shell .activity-reference-contact :is(p,span){
+ color:#263c33!important;line-height:1.7!important;
+}
+body.bh-activity-v2 .app-shell :is(.activity-reference-about,.activity-reference-schedule,.activity-reference-contact) h2{
+ color:#183f32!important;letter-spacing:-.035em!important;
+}
+body.bh-activity-v2 .app-shell .listing-description a{color:#176f76!important;text-decoration:underline;text-underline-offset:3px}
+body.bh-activity-v2 .activity-keyword-tags>span{background:#edf3ee!important;color:#315f4b!important;font-size:.75rem!important}
+body.bh-activity-v2 .listing-actions #save{background:#edf4ef!important;color:#174e3b!important}
+body.bh-activity-v2 .listing-actions #planner,
+body.bh-activity-v2 .listing-actions #heroBookNow{background:#174e3b!important;color:#fff!important}
+body.bh-activity-v2 .listing-actions #visited,
+body.bh-activity-v2 .listing-actions #compare{background:#f6f8f6!important;color:#365748!important}
+@media(max-width:760px){
+ body.bh-activity-v2 .app-shell > .listing-page .listing-hero.activity-hero{border-radius:18px!important;padding:15px!important}
+}
