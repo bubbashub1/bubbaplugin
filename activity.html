@@ -248,6 +248,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
           if(rowIndex>=5)row.classList.add("activity-extra-session");
           panel.append(row);
         });
+        const venueDirections=panel.querySelector(".activity-schedule-directions");
+        if(venueDirections)panel.append(venueDirections);
         const list=venue.querySelector(".session-list");
         if(list)list.replaceChildren(toggle,panel);
         const more=rows.length>5?document.createElement("button"):null;
