@@ -387,7 +387,14 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const moveClaim=()=>{
       const feedback=document.querySelector(".listing-feedback-actions, .listing-feedback, .activity-feedback-actions");
       const footer=document.querySelector(".activity-contact-footer");
-      if(feedback)feedback.prepend(claimWrap);
+      // Feedback controls are sometimes rendered without a shared wrapper.
+      // Locate the actual Suggest an Edit action so the claim control sits beside it.
+      const suggest=Array.from(document.querySelectorAll("a,button")).find(el=>/suggest an edit/i.test((el.textContent||"").trim()));
+      if(suggest && suggest.parentElement){
+        const actionRow=suggest.parentElement;
+        actionRow.classList.add("bh-feedback-action-row");
+        actionRow.insertBefore(claimWrap,suggest);
+      }else if(feedback)feedback.prepend(claimWrap);
       else if(footer)footer.after(claimWrap);
     };
     moveClaim();
