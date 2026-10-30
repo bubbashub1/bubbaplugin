@@ -18,7 +18,7 @@ if($_SERVER['REQUEST_METHOD']==='GET') {
 
  $rows=$db->query("SELECT a.id,a.title,a.contact_email AS recipient,i.status AS invitation_status,i.sent_at
  FROM bh_activities a
- LEFT JOIN bh_claim_invitations i ON i.activity_id=a.id AND i.recipient=a.contact_email
+ LEFT JOIN bh_claim_invitations i ON i.activity_id=a.id AND i.recipient COLLATE utf8mb4_unicode_ci = a.contact_email COLLATE utf8mb4_unicode_ci
  WHERE a.contact_email IS NOT NULL AND a.contact_email<>'' AND NOT EXISTS (
  SELECT 1 FROM bh_listing_claims c WHERE c.activity_id=a.id AND c.status IN ('approved','pending')
  ) ORDER BY CASE WHEN a.id=36 THEN 0 ELSE 1 END,a.id DESC LIMIT 250")->fetchAll(PDO::FETCH_ASSOC);
