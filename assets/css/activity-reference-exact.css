@@ -80,3 +80,35 @@ body.bh-activity-v2 .activity-reference-exact .listing-map.activity-map-unavaila
   height:330px!important;max-height:none!important;
  }
 }
+
+/* Final hero layout fix: reset legacy two-column grid and dark background. */
+body.bh-activity-v2 .app-shell .listing-page.activity-reference-exact > section.listing-hero.activity-hero{
+ display:block!important;grid-template-columns:none!important;grid-template-rows:none!important;
+ width:100%!important;max-width:100%!important;min-height:0!important;
+ height:auto!important;overflow:visible!important;position:relative!important;
+ background:transparent!important;background-image:none!important;
+ border:0!important;box-shadow:none!important;border-radius:0!important;
+ padding:0!important;margin:0!important;
+}
+body.bh-activity-v2 .app-shell .listing-page.activity-reference-exact > section.listing-hero.activity-hero > div.listing-gallery{
+ display:block!important;grid-column:1 / -1!important;grid-row:auto!important;
+ float:none!important;position:relative!important;
+ width:100%!important;max-width:100%!important;min-width:0!important;
+ height:clamp(290px,34vw,425px)!important;max-height:none!important;
+ margin:0!important;padding:0!important;overflow:hidden!important;
+ background:#eaf2e9!important;border-radius:22px!important;
+}
+body.bh-activity-v2 .app-shell .listing-page.activity-reference-exact > section.listing-hero.activity-hero > div.listing-gallery > img{
+ width:100%!important;height:100%!important;max-width:none!important;object-fit:cover!important;
+}
+body.bh-activity-v2 .app-shell .listing-page.activity-reference-exact > section.listing-hero.activity-hero > div.listing-gallery > img.listing-gallery-fallback{
+ object-fit:contain!important;padding:clamp(15px,3vw,36px)!important;
+}
+body.bh-activity-v2 .app-shell .listing-page.activity-reference-exact .listing-gallery .activity-photo-overlay{
+ width:100%!important;box-sizing:border-box!important;
+}
+@media(max-width:700px){
+ body.bh-activity-v2 .app-shell .listing-page.activity-reference-exact > section.listing-hero.activity-hero > div.listing-gallery{
+ height:320px!important;
+ }
+}
