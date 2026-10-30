@@ -655,3 +655,10 @@ body.bh-activity-v2 .activity-reference-exact .activity-keyword-tags > *{
   grid-template-columns:minmax(0,1fr)!important;
  }
 }
+
+/* Straight-edged activity hero and attached facts bar. */
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero,
+body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero > .listing-gallery,
+body.bh-activity-v2 .listing-page.activity-reference-exact .activity-quick-strip {
+ border-radius:0!important;
+}
