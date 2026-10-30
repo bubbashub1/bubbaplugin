@@ -28,6 +28,11 @@ jobs:
           tools: composer:v2
           coverage: none
 
+      - name: Validate claim invitation PHP before production upload
+        run: |
+          php -l api/admin-claim-invitations.php
+          php -l api/claim-listing.php
+
       - name: Install PHP dependencies into deployment archive
         run: |
           set -euo pipefail
