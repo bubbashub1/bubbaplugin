@@ -38,6 +38,9 @@ venuePolish.textContent=[
  '@media(max-width:760px){.bh-wizard-layout{grid-template-columns:1fr!important}.bh-wizard-layout #adminListingSteps{display:flex;overflow-x:auto;gap:4px}}'
 ].join('');
 document.head.append(venuePolish);
+const statusLabel=form.elements.namedItem('status')?.closest('label');
+const websiteLabel=form.elements.namedItem('website')?.closest('label');
+if(statusLabel&&websiteLabel)websiteLabel.after(statusLabel);
 const venueNameInput=form.elements.namedItem('venue_name');
 if(venueNameInput){
  const venueLabel=venueNameInput.closest('label');
