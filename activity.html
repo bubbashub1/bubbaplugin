@@ -6,29 +6,12 @@
 <title>Activity · Bubba Hub</title>
 <link rel="stylesheet" href="/assets/css/styles.css">
 <link rel="stylesheet" href="/assets/css/activity-v2.css">
+<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030n">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<style>
-.activity-where-when-title{margin:20px 0 12px;color:#174b2c}
-.activity-venue-combined{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:12px;align-items:start}
-.activity-venue-timetable{grid-column:2 / -1;width:100%;min-width:0;padding:8px 0 14px}
-.activity-venue-timetable .session-list{overflow-x:auto}
-.activity-session-unavailable{font-size:13px;opacity:.75;margin:4px 0}
-@media(max-width:650px){.activity-venue-combined{grid-template-columns:20px minmax(0,1fr)}.activity-venue-combined>a{grid-column:2;justify-self:start}.activity-venue-timetable{grid-column:1 / -1}}
-
-/* Compact Where & When venue cards */
-.activity-where-when-title{margin:22px 0 16px!important;font-size:clamp(1.45rem,2.5vw,1.9rem);color:#173f32}
-.activity-reference-addresses{display:grid;gap:12px}
-.activity-reference-addresses .activity-address-row.activity-venue-combined{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:18px;row-gap:8px;align-items:center;padding:18px 20px;margin:0;border:1px solid #dfe8e2;border-radius:18px;background:#f8faf8;box-shadow:0 2px 5px #1a46320c}
-.activity-reference-addresses .activity-venue-combined> :first-child{grid-column:1;grid-row:1}
-.activity-reference-addresses .activity-venue-combined>a{grid-column:2;grid-row:1 / span 2;align-self:center;justify-self:end;white-space:nowrap}
-.activity-reference-addresses .activity-venue-combined .activity-venue-timetable{grid-column:1/-1;grid-row:auto;padding:10px 0 0;margin-top:5px;border-top:1px solid #e0e8e2}
-.activity-reference-addresses .activity-venue-combined .activity-session-unavailable{margin:0;color:#688177;font-size:.88rem;line-height:1.45}
-.activity-reference-addresses .activity-venue-combined .activity-address-row span{line-height:1.45}
-@media(max-width:650px){.activity-reference-addresses .activity-address-row.activity-venue-combined{grid-template-columns:minmax(0,1fr);padding:16px}.activity-reference-addresses .activity-venue-combined>a{grid-column:1;grid-row:auto;justify-self:start}.activity-reference-addresses .activity-venue-combined .activity-venue-timetable{grid-column:1}}
-</style><link rel="stylesheet" href="/assets/css/sitewide-unified-polish.css?v=20261029"></head>
+</head>
 <body class="bh-activity-v2">
 <div id="siteHeaderMount"></div>
 
@@ -181,50 +164,204 @@ document.addEventListener("DOMContentLoaded",async()=>{
     }
   }catch(e){}
   document.title=a.title+" · Bubba Hub";
-  const cats=Array.isArray(a.category)?a.category:[a.category].filter(Boolean),ages=Array.isArray(a.age_range)?a.age_range:[a.age_range].filter(Boolean);
+  const cats=(Array.isArray(a.category)?a.category:[a.category]).flatMap(v=>String(v||"").split(",")).map(v=>v.trim()).filter(Boolean),ages=Array.isArray(a.age_range)?a.age_range:[a.age_range].filter(Boolean);
   const rawKeywords=Array.isArray(a.keywords)?a.keywords:(Array.isArray(a.tags)?a.tags:(typeof a.keywords==="string"?a.keywords.split(","):(typeof a.tags==="string"?a.tags.split(","):[])));
   const keywords=[...new Set([...cats,...rawKeywords].map(v=>String(v||"").trim()).filter(Boolean))].slice(0,10);
   const badges=getBadges(a);
   const hasBookableOption=Boolean(a.booking_url||(Array.isArray(a.booking_slots)&&a.booking_slots.length));
   state.className="listing-page";
-  state.innerHTML='<section class="listing-hero activity-hero"><div class="listing-gallery">'+(images.length?images.map((src,i)=>'<img src="'+bhEscape(src)+'" alt="'+bhEscape(a.title)+'"'+(i?' loading="lazy"':'')+'>').join(""):'<img src="/wp-content/uploads/logo/logoheader.png" alt="'+bhEscape(a.title||"Bubba Hub activity")+'" class="listing-gallery-fallback">')+'</div><div class="listing-summary">'+renderBadges(badges)+'<span class="eyebrow">'+bhEscape(cats.join(" · ")||"Family activity")+'</span><h1>'+bhEscape(a.title)+'</h1><div class="hero-quick-facts" aria-label="Quick Facts"><span><strong>Price</strong><b>'+(a.price?bhEscape(a.price):"Check listing")+'</b></span><span><strong>Age range</strong><b>'+(ages.length?bhEscape(ages.length>1?ages[0]+" + "+(ages.length-1)+" more":ages[0]):"All ages")+'</b></span><span><strong>Location</strong><b>'+bhEscape(a.town||venues.find(v=>v.town)?.town||"Town not specified")+'</b></span><span><strong>Sessions</strong><b>'+(sessions.length?sessions.length+" available":"See schedule")+'</b></span><span><strong>Term Time</strong><b>'+(sessions.length?(sessions.some(s=>s.term_time)?"Yes":"No"):(a.term_time_only?"Yes":"Not specified"))+'</b></span><span><strong>Session Length</strong><b>'+(sessions.find(s=>s.duration)?.duration||(Number(a.session_length_minutes)>0?String(a.session_length_minutes)+" mins":"Not specified"))+'</b></span></div><div class="listing-actions" aria-label="Activity actions"><button class="button button-soft activity-action" id="save" type="button" aria-label="Save activity"></button><button class="button button-soft activity-action" id="planner" aria-label="Add to planner" type="button"></button><button class="button button-soft activity-action" id="visited" type="button" aria-label="Mark as visited"></button><button class="button button-soft activity-action" id="compare" type="button" aria-label="Compare activity"></button>'+(hasBookableOption?'<button class="button activity-book-button" id="heroBookNow" type="button">Book Now</button>':"")+'</div></div></section><div class="listing-layout"><div class="listing-main"><section class="listing-card good-to-know-card"><span class="eyebrow">Quick Facts!</span><h2>Quick Facts!</h2><div class="good-to-know-grid">'+(a.price?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Price</span><strong>'+bhEscape(a.price)+'</strong></div>':"")+(ages.length?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Age range</span><strong>'+bhEscape(ages.join(", "))+'</strong></div>':"")+(sessions.some(s=>s.term_time)?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Term time</span><strong>'+bhEscape("Term time")+'</strong></div>':"")+(a.region?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Location</span><strong>'+bhEscape(a.region)+'</strong></div>':"")+'</div></section><section class="listing-card activity-reference-about"><div class="activity-keyword-tags" aria-label="Activity tags">'+keywords.map(k=>'<span>'+bhEscape(k)+'</span>').join("")+'</div><h2>About '+bhEscape(a.title)+'</h2><div class="listing-description">'+safeRichText(a.description||a.content||"<p>More information about this activity will appear here.</p>")+'</div><div class="activity-reference-facts">'+(cats.length?'<span>'+bhEscape(cats[0])+'</span>':"")+(ages.length?'<span>'+bhEscape(ages.join(", "))+'</span>':"")+(a.town?'<span>'+bhEscape(a.town)+'</span>':"")+(sessions.some(s=>s.term_time)?'<span>Term time</span>':"")+'</div></section><section class="activity-reference-contact"><div id="listingMap" class="listing-map activity-reference-contact-map" aria-label="Activity venue map"></div><div class="activity-reference-addresses">'+(venues||[]).map(v=>'<article class="activity-address-row"><div class="activity-address-icon">⌖</div><div><strong>'+bhEscape(v.name||"Venue")+'</strong><span>'+[v.address,v.town,v.postcode].filter(Boolean).map(x=>bhEscape(x)).join(", ")+'</span></div><a class="button button-soft" target="_blank" rel="noopener" href="'+(v.lat&&v.long?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.lat+","+v.long):"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.address||v.town||v.name||""))+'">Directions</a></article>').join("")+'</div><div class="activity-reference-organiser"><div class="activity-organiser-left"><div class="activity-organiser-icon">♧</div><div class="activity-organiser-copy"><small>Organiser</small><strong>'+bhEscape(a.organiser_name||a.organiser||"Activity organiser")+'</strong></div></div><a class="activity-organiser-link" href="organiser/'+encodeURIComponent(a.organiser_slug||a.organiser_name||"organiser")+'/">View organiser profile ›</a></div><div id="activityOrganiserEditMount" class="activity-organiser-edit-mount"></div><div class="listing-claim-wrap"><button class="button button-soft listing-claim-button" id="claimListingButton" type="button">Are you the class leader? Claim this listing</button><p id="claimListingMessage" class="listing-claim-message" role="status" aria-live="polite"></p></div></section><section class="listing-card activity-useful-info"><span class="eyebrow">Good to know</span><h2>Before you book</h2><div class="activity-info-badges">'+(a.booking_required?'<span>Booking required</span>':"")+(a.drop_in_welcome?'<span>Drop-in welcome</span>':"")+(a.trial_available?'<span>Trial session available</span>':"")+(a.term_time_only?'<span>Term-time only</span>':"")+(a.holiday_sessions?'<span>Holiday sessions available</span>':"")+(a.siblings_welcome?'<span>Siblings welcome</span>':"")+'</div>'+(a.what_to_bring?'<p><strong>What to bring:</strong> '+bhEscape(a.what_to_bring)+'</p>':"")+(a.good_to_know?'<p><strong>Good to know:</strong> '+bhEscape(a.good_to_know)+'</p>':"")+'</section><section class="listing-card activity-reference-schedule"><span class="eyebrow">When</span><h2>Schedule &amp; hours</h2><div class="schedule-list">'+venues.map(v=>'<article class="venue-schedule"><div><h3>'+bhEscape(v.name||"Venue")+(v.town?", "+bhEscape(v.town):"")+'</h3><p>'+bhEscape(v.address||v.town||v.region||"")+'</p></div><div class="session-list"><div class="bh-session-head" style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 38px;gap:10px;padding:10px 12px;font-weight:700"><span>Class name</span><span>Day</span><span>Start time</span><span>Price</span><span></span></div>'+(v.sessions||[]).map(s=>'<div class="session-row bh-compact-session" style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 38px;gap:10px;align-items:center;padding:5px 10px;min-height:38px"><strong>'+bhEscape(s.class_name||a.title||"Class")+(s.start_date||s.end_date||s.frequency?'<small style="display:block;font-size:11px;font-weight:400;line-height:1.3;opacity:.75">'+bhEscape([s.frequency==='once'?'One-off':s.frequency==='weekly'?'Weekly':s.frequency||'',s.start_date&&s.end_date&&s.start_date===s.end_date?s.start_date:[s.start_date,s.end_date].filter(Boolean).join(' – ')].filter(Boolean).join(' · '))+'</small>':'')+'</strong><span>'+bhEscape(s.day||"—")+'</span><span>'+bhEscape(bhFormatTime(s.start||s.time||""))+'</span><span>'+((s.price!==undefined&&s.price!=="")?bhEscape(String(s.price).startsWith("£")?s.price:"£"+s.price):"—")+'</span><button type="button" class="button button-soft bh-session-plan" style="display:inline-flex;align-items:center;justify-content:center;padding:0;width:28px;min-width:28px;height:28px;min-height:28px;border-radius:50%;font-size:16px;line-height:1;margin:0" aria-label="Add '+bhEscape(s.class_name||a.title||"class")+' on '+bhEscape(s.day||"this day")+' to Planner" title="Add to Planner" data-session-id="'+bhEscape(s.id||'')+'">+</button></div>').join("")+'</div></article>').join("")+'</div></section></div><aside class="listing-side"><section class="listing-card organiser-card"><span class="eyebrow">Organiser</span><div class="organiser-profile"><div class="organiser-avatar">'+(a.organiser_avatar?'<img src="'+bhEscape(a.organiser_avatar)+'" alt="'+bhEscape(a.organiser_name||"Organiser")+'">':'<span>BH</span>')+'</div><div><h2>'+bhEscape(a.organiser_name||a.organiser||"Activity organiser")+'</h2></div></div><div class="organiser-links"><a class="button button-soft organiser-icon-link" href="organiser/'+encodeURIComponent(a.organiser_slug||a.organiser_name||"organiser")+'/">🏪 <span>View organiser</span></a>'+(a.organiser_website?'<a class="organiser-icon-link" title="Business website" aria-label="Business website" target="_blank" rel="noopener" href="'+bhEscape(a.organiser_website)+'">🌐</a>':"")+(a.email?'<a class="organiser-icon-link" title="Email organiser" aria-label="Email organiser" href="mailto:'+bhEscape(a.email)+'">✉</a>':"")+'</div></section>'+(hasBookableOption?'<section class="listing-card booking-card"><span class="eyebrow">Join in</span><h2>Book or reserve</h2><div id="bookingSchedule"><p>Loading booking options…</p></div></section>':"")+'<section class="listing-card contact-card"><span class="eyebrow">Contact</span><h2>Contact organiser</h2><p>Have a question about the activity, venue or sessions?</p><button class="button button-soft button-full" id="contactOrganiser" type="button">Contact organiser</button></section></aside></div><div class="listing-bottom"><a class="button button-soft" href="directory.html">← Back to activities</a></div>';
-
-// Keep venue directions and their timetables together, without duplicating the venue list.
-(function combineVenueDetails(){
-  const contact=document.querySelector('.activity-reference-contact');
-  const addresses=contact?.querySelector('.activity-reference-addresses');
-  const schedule=document.querySelector('.activity-reference-schedule');
-  if(!addresses||!schedule)return;
-  const cards=[...addresses.querySelectorAll('.activity-address-row')];
-  const schedules=[...schedule.querySelectorAll('.venue-schedule')];
-  const heading=document.createElement('h2');
-  heading.textContent='Where & When';
-  heading.className='activity-where-when-title';
-  addresses.before(heading);
-  cards.forEach((card,index)=>{
-    const session=schedules[index]?.querySelector('.session-list');
-    if(!session)return;
-    const rows=session.querySelectorAll('.session-row');
-    const wrap=document.createElement('div');
-    wrap.className='activity-venue-timetable';
-    if(rows.length){
-      wrap.appendChild(session);
-    }else{
-      wrap.innerHTML='<p class="activity-session-unavailable">Timetable not yet available — contact the organiser for class times.</p>';
+  state.innerHTML='<section class="listing-hero activity-hero"><div class="listing-gallery">'+(images.length?images.map((src,i)=>'<img src="'+bhEscape(src)+'" alt="'+bhEscape(a.title)+'"'+(i?' loading="lazy"':'')+'>').join(""):'<img src="/wp-content/uploads/logo/logoheader.png" alt="'+bhEscape(a.title||"Bubba Hub activity")+'" class="listing-gallery-fallback">')+'</div><div class="listing-summary">'+renderBadges(badges)+'<span class="eyebrow">'+bhEscape(cats.slice(0,2).join(" · ")||"Family activity")+'</span><h1>'+bhEscape(a.title)+'</h1><p class="activity-hero-intro">'+bhEscape(String(a.short_description||a.excerpt||a.description||"Find out more about this family activity, including sessions and where to go.").replace(/<[^>]*>/g," ").replace(/\s+/g," ").slice(0,205).replace(/\s+\S*$/,"").trim()+(String(a.short_description||a.excerpt||a.description||"").replace(/<[^>]*>/g," ").length>205?"…":""))+'</p><div class="hero-quick-facts" aria-label="Quick Facts"><span class="fact-price"><strong>Price</strong><b>'+(a.price?bhEscape(a.price):"Check listing")+'</b></span><span class="fact-age"><strong>Age range</strong><b>'+(ages.length?bhEscape(ages.length>1?ages[0]+" + "+(ages.length-1)+" more":ages[0]):"All ages")+'</b></span><span class="fact-location"><strong>Location</strong><b>'+bhEscape(a.town||venues.find(v=>v.town)?.town||"Town not specified")+'</b></span><span class="fact-sessions"><strong>Sessions</strong><b>'+(sessions.length?sessions.length+" available":"See schedule")+'</b></span><span><strong>Term Time</strong><b>'+(sessions.length?(sessions.some(s=>s.term_time)?"Yes":(a.term_time_only?"Yes":"Not specified")):(a.term_time_only?"Yes":"Not specified"))+'</b></span><span><strong>Session Length</strong><b>'+(sessions.find(s=>s.duration)?.duration||(Number(a.session_length_minutes)>0?String(a.session_length_minutes)+" mins":"Not specified"))+'</b></span></div><div class="listing-actions" aria-label="Activity actions"><button class="button button-soft activity-action" id="save" type="button" aria-label="Save activity"></button><button class="button button-soft activity-action" id="planner" aria-label="Add to planner" type="button"></button><button class="button button-soft activity-action" id="visited" type="button" aria-label="Mark as visited"></button><button class="button button-soft activity-action" id="compare" type="button" aria-label="Compare activity"></button>'+(hasBookableOption?'<button class="button activity-book-button" id="heroBookNow" type="button">Book Now</button>':"")+'</div></div></section><div class="listing-layout"><div class="listing-main"><section class="listing-card good-to-know-card"><span class="eyebrow">Quick Facts!</span><h2>Quick Facts!</h2><div class="good-to-know-grid">'+(a.price?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Price</span><strong>'+bhEscape(a.price)+'</strong></div>':"")+(ages.length?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Age range</span><strong>'+bhEscape(ages.join(", "))+'</strong></div>':"")+(sessions.some(s=>s.term_time)?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Term time</span><strong>'+bhEscape("Term time")+'</strong></div>':"")+(a.region?'<div class="good-to-know-pill"><span class="good-to-know-pill-label">Location</span><strong>'+bhEscape(a.region)+'</strong></div>':"")+'</div></section><section class="listing-card activity-reference-about"><div class="activity-keyword-tags" aria-label="Activity tags">'+keywords.map(k=>'<span>'+bhEscape(k)+'</span>').join("")+'</div><h2>About '+bhEscape(a.title)+'</h2><div class="listing-description">'+safeRichText(a.description||a.content||"<p>More information about this activity will appear here.</p>")+'</div><div class="activity-reference-facts">'+(cats.length?'<span>'+bhEscape(cats[0])+'</span>':"")+(ages.length?'<span>'+bhEscape(ages.join(", "))+'</span>':"")+(a.town?'<span>'+bhEscape(a.town)+'</span>':"")+(sessions.some(s=>s.term_time)?'<span>Term time</span>':"")+'</div></section><section class="activity-reference-contact"><h2 class="activity-location-heading">Location &amp; directions</h2><div id="listingMap" class="listing-map activity-reference-contact-map" aria-label="Activity venue map"></div><div class="activity-reference-addresses">'+(venues||[]).map(v=>'<article class="activity-address-row"><div class="activity-address-icon">⌖</div><div><strong>'+bhEscape(v.name||"Venue")+'</strong><span>'+[v.address,v.town,v.postcode].filter(Boolean).map(x=>bhEscape(x)).join(", ")+'</span></div><a class="button button-soft" target="_blank" rel="noopener" href="'+(v.lat&&v.long?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.lat+","+v.long):"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.address||v.town||v.name||""))+'">Directions</a></article>').join("")+'</div><div class="activity-reference-organiser"><div class="activity-organiser-left"><div class="activity-organiser-icon">♧</div><div class="activity-organiser-copy"><small>Organiser</small><strong>'+bhEscape(a.organiser_name||a.organiser||"Activity organiser")+'</strong></div></div><a class="activity-organiser-link" href="organiser/'+encodeURIComponent(a.organiser_slug||a.organiser_name||"organiser")+'/">View organiser profile ›</a></div><div id="activityOrganiserEditMount" class="activity-organiser-edit-mount"></div><div class="listing-claim-wrap"><button class="button button-soft listing-claim-button" id="claimListingButton" type="button">Are you the class leader? Claim this listing</button><p id="claimListingMessage" class="listing-claim-message" role="status" aria-live="polite"></p></div></section><section class="listing-card activity-useful-info"><span class="eyebrow">Good to know</span><h2>Before you book</h2><div class="activity-info-badges">'+(a.booking_required?'<span>Booking required</span>':"")+(a.drop_in_welcome?'<span>Drop-in welcome</span>':"")+(a.trial_available?'<span>Trial session available</span>':"")+(a.term_time_only?'<span>Term-time only</span>':"")+(a.holiday_sessions?'<span>Holiday sessions available</span>':"")+(a.siblings_welcome?'<span>Siblings welcome</span>':"")+'</div>'+(a.what_to_bring?'<p><strong>What to bring:</strong> '+bhEscape(a.what_to_bring)+'</p>':"")+(a.good_to_know?'<p><strong>Good to know:</strong> '+bhEscape(a.good_to_know)+'</p>':"")+'</section><section class="listing-card activity-reference-schedule"><span class="eyebrow">When</span><h2>Schedule &amp; hours</h2><div class="schedule-list">'+venues.map(v=>'<article class="venue-schedule"><div><h3>'+bhEscape(v.name||"Venue")+(v.town?", "+bhEscape(v.town):"")+'</h3><p>'+bhEscape(v.address||v.town||v.region||"")+'</p></div><div class="session-list"><div class="bh-session-head" style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 38px;gap:10px;padding:10px 12px;font-weight:700"><span>Class name</span><span>Day</span><span>Start time</span><span>Price</span><span></span></div>'+(v.sessions||[]).map(s=>'<div class="session-row bh-compact-session" style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 38px;gap:10px;align-items:center;padding:5px 10px;min-height:38px"><strong>'+bhEscape(s.class_name||a.title||"Class")+(s.start_date||s.end_date||s.frequency?'<small style="display:block;font-size:11px;font-weight:400;line-height:1.3;opacity:.75">'+bhEscape([s.frequency==='once'?'One-off':s.frequency==='weekly'?'Weekly':s.frequency||'',s.start_date&&s.end_date&&s.start_date===s.end_date?s.start_date:[s.start_date,s.end_date].filter(Boolean).join(' – ')].filter(Boolean).join(' · '))+'</small>':'')+'</strong><span>'+bhEscape(s.day||"—")+'</span><span>'+bhEscape(bhFormatTime(s.start||s.time||""))+'</span><span>'+((s.price!==undefined&&s.price!=="")?bhEscape(String(s.price).startsWith("£")?s.price:"£"+s.price):"—")+'</span><button type="button" class="button button-soft bh-session-plan" style="display:inline-flex;align-items:center;justify-content:center;padding:0;width:28px;min-width:28px;height:28px;min-height:28px;border-radius:50%;font-size:16px;line-height:1;margin:0" aria-label="Add '+bhEscape(s.class_name||a.title||"class")+' on '+bhEscape(s.day||"this day")+' to Planner" title="Add to Planner" data-session-id="'+bhEscape(s.id||'')+'">+</button></div>').join("")+'</div></article>').join("")+'</div></section></div><aside class="listing-side"><section class="listing-card organiser-card"><span class="eyebrow">Organiser</span><div class="organiser-profile"><div class="organiser-avatar">'+(a.organiser_avatar?'<img src="'+bhEscape(a.organiser_avatar)+'" alt="'+bhEscape(a.organiser_name||"Organiser")+'">':'<span>BH</span>')+'</div><div><h2>'+bhEscape(a.organiser_name||a.organiser||"Activity organiser")+'</h2></div></div><div class="organiser-links"><a class="button button-soft organiser-icon-link" href="organiser/'+encodeURIComponent(a.organiser_slug||a.organiser_name||"organiser")+'/">🏪 <span>View organiser</span></a>'+(a.organiser_website?'<a class="organiser-icon-link" title="Business website" aria-label="Business website" target="_blank" rel="noopener" href="'+bhEscape(a.organiser_website)+'">🌐</a>':"")+(a.email?'<a class="organiser-icon-link" title="Email organiser" aria-label="Email organiser" href="mailto:'+bhEscape(a.email)+'">✉</a>':"")+'</div></section>'+(hasBookableOption?'<section class="listing-card booking-card"><span class="eyebrow">Join in</span><h2>Book or reserve</h2><div id="bookingSchedule"><p>Loading booking options…</p></div></section>':"")+'<section class="listing-card contact-card"><span class="eyebrow">Contact</span><h2>Contact organiser</h2><p>Have a question about the activity, venue or sessions?</p><button class="button button-soft button-full" id="contactOrganiser" type="button">Contact organiser</button></section></aside></div><div class="listing-bottom"><a class="button button-soft" href="directory.html">← Back to activities</a></div>';
+  // Visual 2: rebuild the content hierarchy instead of styling the legacy columns.
+  const page=state;
+  const hero=page.querySelector(".activity-hero");
+  const layout=page.querySelector(".listing-layout");
+  const main=layout?.querySelector(".listing-main");
+  const side=layout?.querySelector(".listing-side");
+  if(hero&&layout&&main){
+    page.classList.add("activity-concept-two");
+    const intro=hero.querySelector(".activity-hero-intro");
+    if(intro){
+      const text=intro.textContent||"";
+      intro.textContent=text.length>165?text.slice(0,165).replace(/\\s+\\S*$/,"").trim()+"…":text;
     }
-    // Use the saved venue address, without repeated town/postcode fragments.
-    const addressText=card.querySelector('.activity-address-row span');
-    if(addressText){
-      const parts=addressText.textContent.split(',').map(p=>p.trim()).filter(Boolean);
-      const seen=new Set();
-      addressText.textContent=parts.filter(p=>{const key=p.toLowerCase();if(seen.has(key))return false;seen.add(key);return true;}).join(', ');
+    const facts=hero.querySelector(".hero-quick-facts");
+    if(facts){
+      facts.querySelectorAll("span").forEach((item)=>{
+        const label=item.querySelector("strong")?.textContent?.trim();
+        const value=item.querySelector("b")?.textContent?.trim();
+        if((label==="Term Time"||label==="Session Length")&&(value==="Not specified"||value==="No"))item.remove();
+      });
     }
-    card.appendChild(wrap);
-    card.classList.add('activity-venue-combined');
-  });
-  schedule.remove();
-})();
+    const about=main.querySelector(".activity-reference-about");
+    const schedule=main.querySelector(".activity-reference-schedule");
+    const location=main.querySelector(".activity-reference-contact");
+    const useful=main.querySelector(".activity-useful-info");
+    const details=document.createElement("div");
+    details.className="activity-concept-content";
+    const lead=document.createElement("div");
+    lead.className="activity-concept-lead";
+    const supporting=document.createElement("div");
+    supporting.className="activity-concept-support";
+    if(about)lead.append(about);
+    if(schedule)lead.append(schedule);
+    if(location)supporting.append(location);
+    if(useful)supporting.append(useful);
+    if(side){side.classList.add("activity-concept-extras");supporting.append(side);}
+    details.append(lead,supporting);
+    layout.replaceChildren(details);
+    // Each venue is a keyboard-accessible accordion; first five sessions remain visible.
+    if(schedule){
+      schedule.querySelectorAll(".venue-schedule").forEach((venue,index)=>{
+        const heading=venue.querySelector("h3");
+        const rows=Array.from(venue.querySelectorAll(".session-row"));
+        const originalHeader=venue.querySelector(".bh-session-head");
+        const panel=document.createElement("div");
+        panel.className="activity-venue-panel";
+        const toggle=document.createElement("button");
+        toggle.type="button";
+        toggle.className="activity-venue-toggle";
+        toggle.setAttribute("aria-expanded",index===0?"true":"false");
+        const panelId="activity-venue-panel-"+index;
+        panel.id=panelId;
+        toggle.setAttribute("aria-controls",panelId);
+        toggle.textContent=(heading?.textContent?.trim()||"Venue")+" · "+rows.length+" session"+(rows.length===1?"":"s");
+        if(originalHeader)panel.append(originalHeader);
+        rows.forEach((row,rowIndex)=>{
+          if(rowIndex>=5)row.classList.add("activity-extra-session");
+          panel.append(row);
+        });
+        const list=venue.querySelector(".session-list");
+        if(list)list.replaceChildren(toggle,panel);
+        const more=rows.length>5?document.createElement("button"):null;
+        if(more){
+          more.type="button";more.className="activity-show-more";
+          more.textContent="Show all "+rows.length+" sessions";
+          panel.append(more);
+          more.addEventListener("click",()=>{
+            const expanded=venue.classList.toggle("activity-all-sessions");
+            more.textContent=expanded?"Show first 5 sessions":"Show all "+rows.length+" sessions";
+          });
+        }
+        venue.classList.toggle("activity-venue-collapsed",index!==0);
+        toggle.addEventListener("click",()=>{
+          const open=venue.classList.toggle("activity-venue-collapsed")===false;
+          toggle.setAttribute("aria-expanded",String(open));
+        });
+      });
+    }
+    const map=location?.querySelector("#listingMap");
+    if(map){
+      const observer=new MutationObserver(()=>{
+        const error=/venue map unavailable|could not locate this venue/i.test(map.textContent||"");
+        map.classList.toggle("activity-map-unavailable",error);
+      });
+      observer.observe(map,{childList:true,subtree:true,characterData:true});
+    }
+  }
+  // Approved reference: photo-overlay hero, compact fact strip, feature icons and two-column cards.
+  if(page.classList.contains("activity-concept-two")){
+    page.classList.add("activity-reference-exact");
+    const summary=hero.querySelector(".listing-summary");
+    const gallery=hero.querySelector(".listing-gallery");
+    const facts=summary?.querySelector(".hero-quick-facts");
+    const actions=summary?.querySelector(".listing-actions");
+    const intro=summary?.querySelector(".activity-hero-intro");
+    if(summary&&gallery&&facts&&actions){
+      const photo=gallery.querySelector("img");
+      if(photo&&!photo.classList.contains("listing-gallery-fallback")){
+        hero.classList.add("activity-has-photo");
+      }
+      const title=summary.querySelector("h1");
+      const category=summary.querySelector(".eyebrow");
+      const overlay=document.createElement("div");
+      overlay.className="activity-photo-overlay";
+      if(category)overlay.append(category);
+      if(title)overlay.append(title);
+      if(intro)overlay.append(intro);
+      gallery.append(overlay);
+      // Carousel uses up to ten real listing images, with no invented photos.
+      const slides=Array.from(gallery.querySelectorAll(":scope > img")).slice(0,10);
+      gallery.querySelectorAll(":scope > img").forEach((img,i)=>{if(i>=10)img.remove();});
+      if(slides.length>1){
+        gallery.classList.add("activity-gallery-slider");
+        let current=0;
+        const controls=document.createElement("div");
+        controls.className="activity-gallery-controls";
+        const previous=document.createElement("button");
+        previous.type="button";previous.className="activity-gallery-prev";
+        previous.textContent="‹";previous.setAttribute("aria-label","Previous activity photo");
+        const counter=document.createElement("span");
+        counter.className="activity-gallery-count";counter.setAttribute("aria-live","polite");
+        const next=document.createElement("button");
+        next.type="button";next.className="activity-gallery-next";
+        next.textContent="›";next.setAttribute("aria-label","Next activity photo");
+        const render=()=>{slides.forEach((img,i)=>{img.hidden=i!==current;img.classList.toggle("activity-gallery-active",i===current);});counter.textContent=(current+1)+" / "+slides.length;};
+        previous.addEventListener("click",()=>{current=(current-1+slides.length)%slides.length;render();});
+        next.addEventListener("click",()=>{current=(current+1)%slides.length;render();});
+        controls.append(previous,counter,next);gallery.append(controls);render();
+      }
 
+      // Keep all existing action buttons and their event handlers.
+      actions.classList.add("activity-hero-actions");
+      gallery.append(actions);
+      // Icon actions preserve original button IDs and click handlers.
+      // Use real SVG icons instead of font glyphs/pseudo-elements, which were blank on some browsers.
+      const iconPaths={
+        save:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/>',
+        planner:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M12 13v5M9.5 15.5h5"/>',
+        visited:'<path d="m5 12 4.5 4.5L19 7"/>',
+        compare:'<path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/>',
+        heroBookNow:'<path d="M5 12h14m-6-6 6 6-6 6"/>'
+      };
+      Array.from(actions.querySelectorAll("button")).forEach(button=>{
+        const original=button.textContent.trim();
+        button.setAttribute("aria-label",original);
+        button.setAttribute("title",original);
+        button.classList.add("activity-icon-action");
+        button.removeAttribute("data-icon");
+        button.removeAttribute("style");
+        // Paint the icon as a button background so legacy nested button styles cannot hide it.
+        const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+(iconPaths[button.id]||iconPaths.heroBookNow)+'</svg>';
+        button.textContent="";
+        button.style.setProperty("background-image",'url("data:image/svg+xml,'+encodeURIComponent(svg)+'")',"important");
+        button.style.setProperty("background-position","center","important");
+        button.style.setProperty("background-repeat","no-repeat","important");
+        button.style.setProperty("background-size","25px 25px","important");
+        button.style.setProperty("font-size","0","important");
+      });
+
+      const strip=document.createElement("div");
+      strip.className="activity-quick-strip";
+      Array.from(facts.children).forEach(item=>strip.append(item));
+      hero.after(strip);
+      const footer=document.createElement("aside");
+      footer.className="activity-friendly-footer activity-contact-footer";
+      const heading=document.createElement("h2");heading.textContent="Organiser";footer.append(heading);
+      const links=document.createElement("div");links.className="activity-contact-buttons";
+      const validWeb=value=>{try{const url=new URL(String(value||""));return ["https:","http:"].includes(url.protocol)?url.href:null;}catch(e){return null;}};
+      const contactOptions=[
+        ["Website",a.website||a.website_url||a.organiser_website,"web"],
+        ["Facebook",a.facebook||a.facebook_url||a.social_facebook,"web"],
+        ["Instagram",a.instagram||a.instagram_url||a.social_instagram,"web"],
+        ["Email",a.email||a.contact_email||a.organiser_email,"email"],
+        ["Phone",a.phone||a.contact_phone||a.organiser_phone,"phone"]
+      ];
+      contactOptions.forEach(([label,value,kind])=>{
+        const raw=String(value||"").trim();if(!raw)return;
+        const url=kind==="web"?validWeb(raw):kind==="email"&&/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(raw)?"mailto:"+raw:kind==="phone"&&/^[+0-9()\\s.-]{7,24}$/.test(raw)?"tel:"+raw.replace(/[^+0-9]/g,""):null;
+        if(!url)return;
+        const link=document.createElement("a");link.href=url;link.className="activity-contact-link";link.textContent=label;
+        if(kind==="web"){link.target="_blank";link.rel="noopener noreferrer";}
+        links.append(link);
+      });
+      
+      footer.append(links);
+      footer.classList.toggle("activity-contacts-empty",!links.querySelector("a"));
+      const organiserCard=layout.querySelector('.activity-reference-organiser');
+      if(organiserCard){organiserCard.classList.add('activity-contact-organiser');footer.insertBefore(organiserCard,links);}
+      layout.after(footer);
+    }
+  }
   const claimButton=document.getElementById("claimListingButton");
   const claimMessage=document.getElementById("claimListingMessage");
   if(claimButton){
