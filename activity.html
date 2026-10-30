@@ -6,7 +6,7 @@
 <title>Activity · Bubba Hub</title>
 <link rel="stylesheet" href="/assets/css/styles.css">
 <link rel="stylesheet" href="/assets/css/activity-v2.css">
-<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030b">
+<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030c">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
@@ -279,6 +279,28 @@ document.addEventListener("DOMContentLoaded",async()=>{
       if(title)overlay.append(title);
       if(intro)overlay.append(intro);
       gallery.append(overlay);
+      // Carousel uses up to ten real listing images, with no invented photos.
+      const slides=Array.from(gallery.querySelectorAll(":scope > img")).slice(0,10);
+      gallery.querySelectorAll(":scope > img").forEach((img,i)=>{if(i>=10)img.remove();});
+      if(slides.length>1){
+        gallery.classList.add("activity-gallery-slider");
+        let current=0;
+        const controls=document.createElement("div");
+        controls.className="activity-gallery-controls";
+        const previous=document.createElement("button");
+        previous.type="button";previous.className="activity-gallery-prev";
+        previous.textContent="‹";previous.setAttribute("aria-label","Previous activity photo");
+        const counter=document.createElement("span");
+        counter.className="activity-gallery-count";counter.setAttribute("aria-live","polite");
+        const next=document.createElement("button");
+        next.type="button";next.className="activity-gallery-next";
+        next.textContent="›";next.setAttribute("aria-label","Next activity photo");
+        const render=()=>{slides.forEach((img,i)=>{img.hidden=i!==current;img.classList.toggle("activity-gallery-active",i===current);});counter.textContent=(current+1)+" / "+slides.length;};
+        previous.addEventListener("click",()=>{current=(current-1+slides.length)%slides.length;render();});
+        next.addEventListener("click",()=>{current=(current+1)%slides.length;render();});
+        controls.append(previous,counter,next);gallery.append(controls);render();
+      }
+
       // Keep all existing action buttons and their event handlers.
       actions.classList.add("activity-hero-actions");
       gallery.append(actions);
@@ -304,10 +326,27 @@ document.addEventListener("DOMContentLoaded",async()=>{
       Array.from(facts.children).forEach(item=>strip.append(item));
       hero.after(strip);
       const footer=document.createElement("aside");
-      footer.className="activity-friendly-footer";
-      const message=document.createElement("p");message.textContent="A relaxed and friendly space for little ones to play and grow";
-      footer.append(message);
-      if(photo&&!photo.classList.contains("listing-gallery-fallback")){const thumb=document.createElement("img");thumb.src=photo.src;thumb.alt="Activity photo";thumb.loading="lazy";footer.append(thumb);}
+      footer.className="activity-friendly-footer activity-contact-footer";
+      const heading=document.createElement("h2");heading.textContent="Contact details";footer.append(heading);
+      const links=document.createElement("div");links.className="activity-contact-buttons";
+      const validWeb=value=>{try{const url=new URL(String(value||""));return ["https:","http:"].includes(url.protocol)?url.href:null;}catch(e){return null;}};
+      const contactOptions=[
+        ["Website",a.website||a.website_url||a.organiser_website,"web"],
+        ["Facebook",a.facebook||a.facebook_url||a.social_facebook,"web"],
+        ["Instagram",a.instagram||a.instagram_url||a.social_instagram,"web"],
+        ["Email",a.email||a.contact_email||a.organiser_email,"email"],
+        ["Phone",a.phone||a.contact_phone||a.organiser_phone,"phone"]
+      ];
+      contactOptions.forEach(([label,value,kind])=>{
+        const raw=String(value||"").trim();if(!raw)return;
+        const url=kind==="web"?validWeb(raw):kind==="email"&&/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(raw)?"mailto:"+raw:kind==="phone"&&/^[+0-9()\\s.-]{7,24}$/.test(raw)?"tel:"+raw.replace(/[^+0-9]/g,""):null;
+        if(!url)return;
+        const link=document.createElement("a");link.href=url;link.className="activity-contact-link";link.textContent=label;
+        if(kind==="web"){link.target="_blank";link.rel="noopener noreferrer";}
+        links.append(link);
+      });
+      if(!links.children.length){const empty=document.createElement("p");empty.textContent="Contact details have not been provided for this activity.";links.append(empty);}
+      footer.append(links);
       layout.after(footer);
     }
   }
