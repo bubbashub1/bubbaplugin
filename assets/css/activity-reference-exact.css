@@ -357,3 +357,37 @@ body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activit
  }
  body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery > .listing-actions.activity-hero-actions > button.activity-icon-action > .activity-action-label{font-size:8px!important}
 }
+
+/* Contact and organiser consolidated into a single soft-colour card */
+body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer{
+ background:linear-gradient(115deg,#e1f2eb 0%,#e7f5f5 58%,#fceadf 100%)!important;
+ border:1px solid #c8e3d7!important;display:grid!important;
+ grid-template-columns:minmax(180px,.75fr) minmax(200px,1fr) minmax(180px,1fr)!important;
+ gap:18px!important;align-items:center!important;padding:22px 26px!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer h2{
+ color:#104c3b!important;font-size:1.35rem!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer .activity-contact-organiser{
+ display:flex!important;align-items:center!important;gap:10px!important;
+ padding:0!important;margin:0!important;min-width:0!important;
+ border:0!important;background:transparent!important;box-shadow:none!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer .activity-contact-organiser .activity-organiser-left{
+ display:flex!important;align-items:center!important;gap:10px!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer .activity-contact-organiser .activity-organiser-link{
+ display:inline-flex!important;font-size:.8rem!important;white-space:normal!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer .activity-contact-buttons{
+ justify-content:flex-end!important;gap:8px!important;
+}
+body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer .activity-contact-buttons p{
+ color:#27594c!important;font-size:.9rem!important;margin:0!important;
+}
+@media(max-width:950px){
+ body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer{
+ grid-template-columns:1fr!important;gap:14px!important;
+ }
+ body.bh-activity-v2 .listing-page.activity-reference-exact .activity-contact-footer .activity-contact-buttons{justify-content:flex-start!important}
+}
