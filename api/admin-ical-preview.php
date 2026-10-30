@@ -51,6 +51,7 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
    }
   }
   if($structured){echo json_encode(['ok'=>true,'data'=>array_values($structured),'source'=>'structured_event_data','skipped_recurring'=>0,'note'=>'Public structured event dates found. Review times and venues before saving.']);exit;}
+  $pageHasIframe=(bool)$xpath->query('//iframe')->length;
   foreach($xpath->query('//script|//style|//nav|//footer|//header|//noscript') as $node){$node->parentNode?->removeChild($node);}
   foreach($xpath->query('//br|//p|//div|//h1|//h2|//h3|//h4|//li|//tr|//td|//section') as $node){
    if($node->parentNode)$node->parentNode->insertBefore($dom->createTextNode("\n"),$node);
@@ -91,7 +92,7 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
   }
 
   if(!$found){
-   $hasIframe=(bool)$xpath->query('//iframe')->length;
+   $hasIframe=$pageHasIframe;
    $hasDynamicBooking=(bool)preg_match('/(?:book\s*(?:an?\s*)?appointment|select\s+a\s+time|see\s+availability|booking\s+diary|datepicker|calendar\s+widget)/iu',$text);
    $reason=$hasIframe?'The booking calendar is embedded in an iframe and is not included in the page HTML.':($hasDynamicBooking?'The page contains an interactive booking calendar but does not expose dated sessions in its public HTML.':'No recognisable timetable rows were found in the public HTML.');
    fail(422,'Website opened successfully (HTTP 200), but no session dates and times could be extracted. '.$reason.' Please use a public calendar feed or paste the timetable for review.');
