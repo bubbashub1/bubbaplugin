@@ -70,8 +70,15 @@ $body="Hello,\n\nWe've added ". $a['title'] ." to Bubba Hub South West. Please r
 if(getenv('BH_CLAIM_INVITES_ENABLED')!=='1' || (int)$id!==36 && getenv('BH_CLAIM_INVITES_ALL_ENABLED')!=='1')respond(409,['ok'=>false,'error'=>'Sending disabled. Set BH_CLAIM_INVITES_ENABLED=1 after staging verification.']);
 require_once __DIR__.'/mailer.php';
 $html='<p>Hello,</p><p>We have added <strong>'.htmlspecialchars((string)$a['title'],ENT_QUOTES,'UTF-8').'</strong> to Bubba Hub South West.</p><p>Please review your listing and claim it for free.</p><p><a href="'.htmlspecialchars($url,ENT_QUOTES,'UTF-8').'">Claim your listing</a></p><p>Thanks,<br>Bubba Hub South West</p>';
-if(!bh_send_smtp_mail($a['email'],$subject,$html,$body,''))respond(502,['ok'=>false,'error'=>'Mail transport rejected message']);
-$q=$db->prepare("INSERT INTO bh_claim_invitations(activity_id,recipient,token_hash,status,sent_at,expires_at) VALUES (?,?,?,'sent',NOW(),DATE_ADD(NOW(),INTERVAL 14 DAY)) ON DUPLICATE KEY UPDATE token_hash=VALUES(token_hash),status='sent',sent_at=NOW(),expires_at=VALUES(expires_at)");
+// Persist the token before sending, so an emailed link is never missing from storage.
+$q=$db->prepare("INSERT INTO bh_claim_invitations(activity_id,recipient,token_hash,status,sent_at,expires_at) VALUES (?,?,?,'sending',NULL,DATE_ADD(NOW(),INTERVAL 14 DAY)) ON DUPLICATE KEY UPDATE token_hash=VALUES(token_hash),status='sending',sent_at=NULL,expires_at=VALUES(expires_at)");
+$q->execute([$id,$a['email'],$hash]);
+if(!bh_send_smtp_mail($a['email'],$subject,$html,$body,'')){
+ $failed=$db->prepare("UPDATE bh_claim_invitations SET status='failed' WHERE activity_id=? AND recipient=? AND token_hash=? AND status='sending'");
+ $failed->execute([$id,$a['email'],$hash]);
+ respond(502,['ok'=>false,'error'=>'Mail transport rejected message']);
+}
+$q=$db->prepare("UPDATE bh_claim_invitations SET status='sent',sent_at=NOW() WHERE activity_id=? AND recipient=? AND token_hash=? AND status='sending'");
 $q->execute([$id,$a['email'],$hash]);
 respond(200,['ok'=>true,'message'=>'Invitation sent']);
 } catch(Throwable $e){error_log('Claim invitation error: '.$e->getMessage());respond(500,['ok'=>false,'error'=>'Invitation operation failed']);}
