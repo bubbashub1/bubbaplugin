@@ -85,7 +85,8 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
    $title=trim(preg_replace('/\\b(?:\\d{1,2}(?::\\d{2})?\\s*(?:am|pm)|(?:[01]?\\d|2[0-3]):[0-5]\\d)\\b/iu','',$line));
    $title=trim($title," \\t\\n\\r\\0\\x0B,|:-–—");
    if($title===''||mb_strlen($title)<4)$title=$context;
-   if($title==='')$title='Class name to confirm';
+   // A time without a class name is not a trustworthy timetable entry.
+   if($title==='')continue;
    $key=$day.'|'.$start.'|'.$title;
    $found[$key]=['title'=>mb_substr($title,0,180),'day_of_week'=>$day,'start_time'=>$start,'end_time'=>$endTime,'start_date'=>'','end_date'=>'','frequency'=>'weekly','url'=>$url,'uid'=>$key];
    if(count($found)>=150)break;
