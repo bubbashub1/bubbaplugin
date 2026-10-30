@@ -78,7 +78,30 @@ $pilotAllowed=$pilot && (string)$a['title']==='Bubba and Me Cranbrook' && strtol
 $normalAllowed=!$pilot && getenv('BH_CLAIM_INVITES_ENABLED')==='1' && (getenv('BH_CLAIM_INVITES_ALL_ENABLED')==='1' || ((string)$a['title']==='Bubba and Me Cranbrook' && strtolower(trim((string)$a['email']))==='contact@bubbahub.co.uk'));
 if(!$pilotAllowed && !$normalAllowed)respond(409,['ok'=>false,'error'=>'Sending is disabled. Only the confirmed Cranbrook pilot to contact@bubbahub.co.uk is available.']);
 require_once __DIR__.'/mailer.php';
-$html='<p>Hello,</p><p>We have added <strong>'.htmlspecialchars((string)$a['title'],ENT_QUOTES,'UTF-8').'</strong> to Bubba Hub South West.</p><p>Please review your listing and claim it for free.</p><p><a href="'.htmlspecialchars($url,ENT_QUOTES,'UTF-8').'">Claim your listing</a></p><p>Thanks,<br>Bubba Hub South West</p>';
+$safeTitle=htmlspecialchars((string)$a['title'],ENT_QUOTES,'UTF-8');
+$safeClaimUrl=htmlspecialchars($url,ENT_QUOTES,'UTF-8');
+$safeListingUrl=htmlspecialchars($origin.'/activity.html?id='.$id,ENT_QUOTES,'UTF-8');
+$safeLogoUrl=htmlspecialchars($origin.'/wp-content/uploads/logo/logoheader.png',ENT_QUOTES,'UTF-8');
+$html=<<<HTML
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Claim your Bubba Hub listing</title></head>
+<body style="margin:0;padding:0;background:#f2f7f0;color:#173e30;font-family:Arial,Helvetica,sans-serif;">
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#f2f7f0;"><tr><td align="center" style="padding:32px 16px;">
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:560px;background:#ffffff;border:1px solid #dce9df;border-radius:20px;overflow:hidden;">
+<tr><td align="center" style="padding:28px 28px 20px;background:#e5f4ed;"><img src="$safeLogoUrl" width="180" alt="Bubba Hub South West" style="max-width:100%;height:auto;border:0;display:block;"></td></tr>
+<tr><td style="padding:32px 32px 36px;">
+<p style="font-size:14px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;color:#247a67;margin:0 0 12px;">Your activity is on Bubba Hub</p>
+<h1 style="font-size:27px;line-height:1.25;color:#124b3b;margin:0 0 18px;">Claim your free listing</h1>
+<p style="font-size:16px;line-height:1.65;margin:0 0 16px;">Hello,</p>
+<p style="font-size:16px;line-height:1.65;margin:0 0 16px;">We've added <strong>$safeTitle</strong> to Bubba Hub South West so local families can discover your activity.</p>
+<p style="font-size:16px;line-height:1.65;margin:0 0 26px;">Please check your listing and claim it for free. Once you submit your claim, our team will review it before giving you access to manage the listing.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td bgcolor="#07563f" style="border-radius:12px;"><a href="$safeClaimUrl" style="display:inline-block;padding:16px 25px;font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none;border-radius:12px;">Claim your free listing</a></td></tr></table>
+<p style="margin:22px 0 0;font-size:15px;"><a href="$safeListingUrl" style="color:#08735e;text-decoration:underline;">View your listing first</a></p>
+<p style="margin:30px 0 0;font-size:15px;line-height:1.6;">Thanks,<br><strong>Bubba Hub South West</strong></p>
+</td></tr></table>
+<p style="max-width:560px;margin:18px 0 0;font-size:12px;line-height:1.6;color:#60796e;text-align:center;">You received this email because your contact address is listed for this activity on Bubba Hub South West. If you don't manage this activity, you can ignore this invitation.</p>
+</td></tr></table></body></html>
+HTML;
 // Persist the token before sending, so an emailed link is never missing from storage.
 $q=$db->prepare("INSERT INTO bh_claim_invitations(activity_id,recipient,token_hash,status,sent_at,expires_at) VALUES (?,?,?,'sending',NULL,DATE_ADD(NOW(),INTERVAL 14 DAY)) ON DUPLICATE KEY UPDATE token_hash=VALUES(token_hash),status='sending',sent_at=NULL,expires_at=VALUES(expires_at)");
 $q->execute([$id,$a['email'],$hash]);
