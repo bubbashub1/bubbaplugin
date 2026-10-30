@@ -83,4 +83,4 @@ if(!bh_send_smtp_mail($a['email'],$subject,$html,$body,'')){
 $q=$db->prepare("UPDATE bh_claim_invitations SET status='sent',sent_at=NOW() WHERE activity_id=? AND recipient=? AND token_hash=? AND status='sending'");
 $q->execute([$id,$a['email'],$hash]);
 respond(200,['ok'=>true,'message'=>'Invitation sent']);
-} catch(Throwable $e){error_log('Claim invitation error: '.$e->getMessage());respond(500,['ok'=>false,'error'=>'Invitation operation failed']);}
+} catch(Throwable $e){error_log('Claim invitation error: '.$e->getMessage());$message='Invitation operation failed';if($e instanceof PDOException){$code=(string)$e->getCode();if($code==='42S02')$message='Claim database tables are missing. Check the live migration.';elseif($code==='42S22')$message='Claim database columns do not match the live schema.';}respond(500,['ok'=>false,'error'=>$message]);}
