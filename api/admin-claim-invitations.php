@@ -5,15 +5,11 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 require_once __DIR__.'/admin-session-guard.php';
 require_once __DIR__.'/db.php';
+function respond(int $code,array $data):never {http_response_code($code);echo json_encode($data);exit;}
+
 try {
 $db=bh_mysql();
-$db->exec("CREATE TABLE IF NOT EXISTS bh_claim_invitations (
- id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, activity_id BIGINT UNSIGNED NOT NULL,
- recipient VARCHAR(190) NOT NULL, token_hash CHAR(64) NOT NULL,
- status VARCHAR(24) NOT NULL DEFAULT 'pending', sent_at DATETIME NULL,
- expires_at DATETIME NOT NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
- UNIQUE KEY unique_activity_recipient (activity_id,recipient), KEY status_idx(status)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+// Schema is installed by the staging migration, never during a user request.
 $_SESSION['bh_claim_invite_csrf']??=bin2hex(random_bytes(32));
 if($_SERVER['REQUEST_METHOD']==='GET') {
  $rows=$db->query("SELECT a.id,a.title,a.contact_email AS recipient,i.status AS invitation_status,i.sent_at
@@ -27,7 +23,7 @@ if($_SERVER['REQUEST_METHOD']==='GET') {
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')respond(405,['ok'=>false,'error'=>'Method not allowed']);
 $input=json_decode((string)file_get_contents('php://input'),true)?:[];
-if(!hash_equals($_SESSION['bh_claim_invite_csrf'],(string)($input['csrf']??'')))respond(403,['ok'=>false,'error'=>'CSRF validation failed']);
+if(!hash_equals((string)$_SESSION['bh_claim_invite_csrf'],(string)($input['csrf']??'')))respond(403,['ok'=>false,'error'=>'CSRF validation failed']);
 if(isset($input['claim_id'])) {
  $claimId=(int)$input['claim_id'];$decision=(string)($input['decision']??'');
  if($claimId<1||!in_array($decision,['approve','reject'],true))respond(422,['ok'=>false,'error'=>'Invalid claim decision']);
@@ -71,7 +67,7 @@ $next='/claim-invitation.html?activity_id='.rawurlencode((string)$id).'&invite='
 $url='https://staging.bubbahub.co.uk/auth.html?context=leader&next='.rawurlencode($next);
 $subject='Your activity is now on Bubba Hub – Claim your free listing!';
 $body="Hello,\n\nWe've added ". $a['title'] ." to Bubba Hub South West. Please review your listing and claim it for free.\n\nView listing: https://staging.bubbahub.co.uk/activity.html?id=".$id."\nClaim listing: ".$url."\n\nThanks,\nBubba Hub South West";
-if(getenv('BH_CLAIM_INVITES_ENABLED')!=='1')respond(409,['ok'=>false,'error'=>'Sending disabled. Set BH_CLAIM_INVITES_ENABLED=1 after staging verification.']);
+if(getenv('BH_CLAIM_INVITES_ENABLED')!=='1' || (int)$id!==36 && getenv('BH_CLAIM_INVITES_ALL_ENABLED')!=='1')respond(409,['ok'=>false,'error'=>'Sending disabled. Set BH_CLAIM_INVITES_ENABLED=1 after staging verification.']);
 require_once __DIR__.'/mailer.php';
 $html='<p>Hello,</p><p>We have added <strong>'.htmlspecialchars((string)$a['title'],ENT_QUOTES,'UTF-8').'</strong> to Bubba Hub South West.</p><p>Please review your listing and claim it for free.</p><p><a href="'.htmlspecialchars($url,ENT_QUOTES,'UTF-8').'">Claim your listing</a></p><p>Thanks,<br>Bubba Hub South West</p>';
 if(!bh_send_smtp_mail($a['email'],$subject,$html,$body,''))respond(502,['ok'=>false,'error'=>'Mail transport rejected message']);
