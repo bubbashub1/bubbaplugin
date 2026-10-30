@@ -655,3 +655,25 @@ body.bh-activity-v2 .activity-reference-exact .activity-keyword-tags > *{
   grid-template-columns:minmax(0,1fr)!important;
  }
 }
+
+/* Mobile: keep all hero actions in one slim horizontal toolbar above the photo.
+   Override legacy 2x2 positioning without affecting desktop. */
+@media (max-width:760px){
+ body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery .listing-actions.activity-hero-actions{
+  position:absolute!important;top:10px!important;right:10px!important;left:auto!important;bottom:auto!important;
+  display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;
+  grid-template-columns:none!important;grid-template-rows:none!important;
+  width:max-content!important;max-width:calc(100% - 20px)!important;
+  padding:6px!important;gap:5px!important;border-radius:13px!important;
+  background:#174b3d!important;z-index:12!important;
+ }
+ body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery .listing-actions.activity-hero-actions>button.activity-icon-action{
+  flex:0 0 38px!important;width:38px!important;min-width:38px!important;max-width:38px!important;
+  height:38px!important;min-height:38px!important;max-height:38px!important;
+  padding:0!important;margin:0!important;border-radius:9px!important;
+  background-color:#07543e!important;background-size:22px 22px!important;
+ }
+ body.bh-activity-v2 .listing-page.activity-reference-exact .listing-hero.activity-hero .listing-gallery .listing-actions.activity-hero-actions>button.activity-icon-action:focus-visible{
+  outline:2px solid white!important;outline-offset:1px!important;
+ }
+}
