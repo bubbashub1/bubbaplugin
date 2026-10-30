@@ -1,5 +1,22 @@
 document.addEventListener('DOMContentLoaded',async()=>{
 const form=document.getElementById('newListingForm');if(!form)return;
+const tidyStyle=document.createElement('style');
+tidyStyle.textContent=[
+ '.bh-wizard-layout{grid-template-columns:190px minmax(0,1fr);gap:24px}',
+ '.bh-wizard-layout #adminListingSteps{background:#f4f8f4;border-radius:16px;padding:10px}',
+ '#newListingForm .admin-form-grid{gap:16px}',
+ '#newListingForm .bh-card{border-radius:16px;border-color:#d5e5d8}',
+ '#newListingForm .hero-actions{position:sticky;bottom:0;z-index:5;background:#fff;padding:12px 0;border-top:1px solid #d5e5d8}',
+ '#adminExtraVenueRows{display:grid;gap:12px}',
+ '#adminExtraVenueRows fieldset{min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px}',
+ '#adminExtraVenueRows fieldset label{min-width:0}',
+ '#adminExtraVenueRows fieldset input{width:100%;box-sizing:border-box}',
+ '.bh-registered-picker{background:#f8fbf8}',
+ '.bh-registered-picker label:hover{background:#eef7f1}',
+ '@media(max-width:760px){#adminExtraVenueRows fieldset{grid-template-columns:1fr}.bh-wizard-layout #adminListingSteps{padding:0}}'
+].join('');
+document.head.append(tidyStyle);
+
 const status=document.getElementById('newListingStatus'),button=form.querySelector('button[type="submit"]'),id=new URLSearchParams(location.search).get('id');let original=null;let listingCsrf='';
 const gallery=document.getElementById('adminGalleryFields');
 if(gallery){for(let n=1;n<=10;n++){const label=document.createElement('label');label.textContent='Extra image '+n;const field=document.createElement('input');field.type='url';field.name='image_'+n;field.placeholder='https://example.co.uk/photo-'+n+'.jpg';label.append(field);const preview=document.createElement('img');preview.alt='Image '+n+' preview';preview.hidden=true;preview.loading='lazy';preview.style.cssText='display:block;max-width:180px;max-height:120px;object-fit:contain;margin-top:8px;border-radius:10px';preview.addEventListener('error',()=>{preview.hidden=true;});field.addEventListener('input',()=>{const value=field.value.trim();preview.hidden=!(value.startsWith('https://')||value.startsWith('http://'));if(!preview.hidden)preview.src=value;else preview.removeAttribute('src');});label.append(preview);gallery.append(label);}}
