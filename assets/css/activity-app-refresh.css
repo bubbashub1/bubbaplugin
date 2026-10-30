@@ -1,0 +1,33 @@
+/* Activity detail app refresh — staging only. Scoped to v2 page. */
+.bh-activity-v2 .app-shell{max-width:1320px;padding-top:18px}
+.bh-activity-v2 .listing-hero.activity-hero{background:linear-gradient(125deg,#e5f1df,#def1f4 80%,#fff7e5)!important;border:1px solid #d5e7db!important;border-radius:28px!important;box-shadow:0 10px 28px rgba(23,78,59,.065)!important}
+.bh-activity-v2 .listing-hero.activity-hero h1{color:#174e3b!important;font-size:clamp(2rem,3.5vw,3.3rem)!important;line-height:1.12!important;margin-block:8px 14px!important}
+.bh-activity-v2 .listing-hero .listing-summary{min-width:0;padding-block:clamp(14px,2vw,26px)!important}
+.bh-activity-v2 .listing-hero .eyebrow{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.5!important;font-size:.79rem!important;max-width:100%;margin-bottom:8px!important}
+.bh-activity-v2 .listing-gallery{background:#fff;border-radius:20px!important;overflow:hidden}
+.bh-activity-v2 .listing-gallery img{object-fit:contain!important;background:#fff}
+.bh-activity-v2 .hero-quick-facts{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px!important}
+.bh-activity-v2 .hero-quick-facts>span{min-width:0;border:1px solid #d8e6dc!important;border-radius:14px!important;background:#ffffffd9!important;padding:10px 12px!important}
+.bh-activity-v2 .hero-quick-facts :is(strong,b){overflow-wrap:anywhere}
+.bh-activity-v2 .listing-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px!important;margin-top:12px!important}
+.bh-activity-v2 .listing-actions>*{min-width:0;width:100%;min-height:44px!important}
+.bh-activity-v2 .listing-actions #planner,.bh-activity-v2 .listing-actions #heroBookNow{background:#174e3b!important;color:#fff!important;border-color:#174e3b!important}
+.bh-activity-v2 .listing-actions #visited,.bh-activity-v2 .listing-actions #compare{background:#f5f8f4!important}
+.bh-activity-v2 .listing-layout{gap:18px!important;margin-top:20px!important}
+.bh-activity-v2 .listing-main,.bh-activity-v2 .listing-side{gap:14px!important}
+.bh-activity-v2 .activity-keyword-tags{display:flex!important;flex-wrap:wrap;gap:6px}
+.bh-activity-v2 .activity-keyword-tags>span{max-width:100%;overflow-wrap:anywhere;white-space:normal!important;border-radius:999px!important}
+.bh-activity-v2 .activity-reference-about,.bh-activity-v2 .activity-reference-contact,.bh-activity-v2 .activity-reference-schedule{min-height:0!important}
+.bh-activity-v2 .listing-description{line-height:1.65}
+.bh-activity-v2 .activity-reference-contact-map{min-height:240px;max-height:340px;border-radius:18px}
+.bh-activity-v2 .good-to-know-card{background:#fff9ed!important}
+@media(max-width:850px){
+ .bh-activity-v2 .listing-layout{grid-template-columns:1fr!important}
+ .bh-activity-v2 .hero-quick-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:520px){
+ .bh-activity-v2 .listing-hero.activity-hero{border-radius:20px!important}
+ .bh-activity-v2 .hero-quick-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .bh-activity-v2 .listing-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .bh-activity-v2 .listing-gallery{min-height:180px}
+}
