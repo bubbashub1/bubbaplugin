@@ -12,6 +12,12 @@ $db=bh_mysql();
 // Schema is installed by the migration, never during a user request.
 $_SESSION['bh_claim_invite_csrf']??=bin2hex(random_bytes(32));
 if($_SERVER['REQUEST_METHOD']==='GET') {
+ // Verify schema first to provide a useful error rather than a generic 500.
+ foreach (['bh_claim_invitations','bh_listing_claims'] as $table) {
+  $exists=$db->query("SHOW TABLES LIKE ".$db->quote($table))->fetchColumn();
+  if(!$exists)respond(503,['ok'=>false,'error'=>'Claim system setup incomplete: missing '.$table.'. Apply the production migration.']);
+ }
+
  $rows=$db->query("SELECT a.id,a.title,a.contact_email AS recipient,i.status AS invitation_status,i.sent_at
  FROM bh_activities a
  LEFT JOIN bh_claim_invitations i ON i.activity_id=a.id AND i.recipient=a.contact_email
