@@ -6,7 +6,7 @@
 <title>Activity · Bubba Hub</title>
 <link rel="stylesheet" href="/assets/css/styles.css">
 <link rel="stylesheet" href="/assets/css/activity-v2.css">
-<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030m">
+<link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261030n">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
@@ -320,7 +320,14 @@ document.addEventListener("DOMContentLoaded",async()=>{
         button.classList.add("activity-icon-action");
         button.removeAttribute("data-icon");
         button.removeAttribute("style");
-        button.innerHTML='<svg class="bh-action-svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(iconPaths[button.id]||iconPaths.heroBookNow)+'</svg>';
+        // Paint the icon as a button background so legacy nested button styles cannot hide it.
+        const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+(iconPaths[button.id]||iconPaths.heroBookNow)+'</svg>';
+        button.textContent="";
+        button.style.setProperty("background-image",'url("data:image/svg+xml,'+encodeURIComponent(svg)+'")',"important");
+        button.style.setProperty("background-position","center","important");
+        button.style.setProperty("background-repeat","no-repeat","important");
+        button.style.setProperty("background-size","25px 25px","important");
+        button.style.setProperty("font-size","0","important");
       });
 
       const strip=document.createElement("div");
