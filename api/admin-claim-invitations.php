@@ -63,8 +63,10 @@ $q=$db->prepare("SELECT status,sent_at FROM bh_claim_invitations WHERE activity_
 $q->execute([$id,$a['email']]);$prior=$q->fetch(PDO::FETCH_ASSOC);
 if($prior && $prior['sent_at'] && strtotime($prior['sent_at'])>time()-7*86400)respond(409,['ok'=>false,'error'=>'Invitation already sent within seven days']);
 $token=bin2hex(random_bytes(32));$hash=hash('sha256',$token);
+$origin=rtrim((string)(getenv('BH_PUBLIC_BASE_URL')?:'https://bubbahub.co.uk'),'/');
+if(!in_array($origin,['https://bubbahub.co.uk','https://staging.bubbahub.co.uk'],true))respond(500,['ok'=>false,'error'=>'Invalid public site URL']);
 $next='/claim-invitation.html?activity_id='.rawurlencode((string)$id).'&invite='.rawurlencode($token);
-$url='https://staging.bubbahub.co.uk/auth.html?context=leader&next='.rawurlencode($next);
+$url=$origin.'/auth.html?context=leader&next='.rawurlencode($next);
 $subject='Your activity is now on Bubba Hub – Claim your free listing!';
 $body="Hello,\n\nWe've added ". $a['title'] ." to Bubba Hub South West. Please review your listing and claim it for free.\n\nView listing: https://staging.bubbahub.co.uk/activity.html?id=".$id."\nClaim listing: ".$url."\n\nThanks,\nBubba Hub South West";
 if(getenv('BH_CLAIM_INVITES_ENABLED')!=='1' || (int)$id!==36 && getenv('BH_CLAIM_INVITES_ALL_ENABLED')!=='1')respond(409,['ok'=>false,'error'=>'Sending disabled. Set BH_CLAIM_INVITES_ENABLED=1 after staging verification.']);
