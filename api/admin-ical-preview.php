@@ -45,16 +45,15 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
     if($line==='')continue;
    }
    if(!$day)continue;
-   if(!preg_match_all('/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/iu',$line,$matches,PREG_SET_ORDER)){
+   if(!preg_match_all('/\b(?:(\d{1,2})(?::(\d{2}))?\s*(am|pm)|([01]?\d|2[0-3]):([0-5]\d))\b/iu',$line,$matches,PREG_SET_ORDER|PREG_UNMATCHED_AS_NULL)){
     if(preg_match('/\b(pilates|somatics|yoga|class|online|zoom|studio|with\s+\w+)\b/iu',$line))$context=mb_substr($line,0,120);
     continue;
    }
    foreach($matches as $m){
-    $hour=(int)$m[1];$minute=(int)($m[2]??0);
-    if($hour<1||$hour>12||$minute>59)continue;
-    $hour=$hour%12+(strtolower($m[3])==='pm'?12:0);
+    if(!empty($m[4])){$hour=(int)$m[4];$minute=(int)$m[5];}
+    else {$hour=(int)$m[1];$minute=(int)($m[2]??0);if($hour<1||$hour>12||$minute>59)continue;$hour=$hour%12+(strtolower($m[3])==='pm'?12:0);}
     $start=sprintf('%02d:%02d',$hour,$minute);
-    $title=trim(preg_replace('/\b\d{1,2}(?::\d{2})?\s*(?:am|pm)\b/iu','',$line));
+    $title=trim(preg_replace('/\b(?:\d{1,2}(?::\d{2})?\s*(?:am|pm)|(?:[01]?\d|2[0-3]):[0-5]\d)\b/iu','',$line));
     $title=trim($title," \t\n\r\0\x0B,|:-–—");
     if($title===''||mb_strlen($title)<4)$title=$context;
     if($title==='')$title='Class name to confirm';
