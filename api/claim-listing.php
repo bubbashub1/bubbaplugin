@@ -4,7 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 function bh_claim_response(int $status, array $data): void { http_response_code($status); echo json_encode($data, JSON_UNESCAPED_SLASHES); exit; }
 try {
- require_once __DIR__ . '/db.php'; session_start();
+ require_once __DIR__ . '/db.php'; if(session_status()!==PHP_SESSION_ACTIVE){session_name('BUBBAHUBSESSID');session_start();}
  if ($_SERVER['REQUEST_METHOD'] !== 'POST') bh_claim_response(405,['ok'=>false,'error'=>'method_not_allowed']);
  $userId=(int)($_SESSION['bh_user_id']??0);
  if($userId<1) bh_claim_response(401,['ok'=>false,'error'=>'login_required','message'=>'Please sign in to claim a listing.']);
