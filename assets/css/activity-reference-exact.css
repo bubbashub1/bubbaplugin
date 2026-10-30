@@ -244,3 +244,68 @@ body.bh-activity-v2 .activity-reference-exact .activity-show-more{
  body.bh-activity-v2 .activity-reference-exact .activity-hero .listing-gallery .activity-hero-actions .activity-action-symbol{width:35px;height:35px;font-size:20px}
  body.bh-activity-v2 .activity-reference-exact .activity-hero .listing-gallery .activity-hero-actions .activity-action-label{font-size:.55rem}
 }
+
+/* Unified white cards: remove nested grey backgrounds and soften borders */
+body.bh-activity-v2 .activity-reference-exact .listing-layout,
+body.bh-activity-v2 .activity-reference-exact .activity-concept-content,
+body.bh-activity-v2 .activity-reference-exact .activity-concept-lead,
+body.bh-activity-v2 .activity-reference-exact .activity-concept-support{
+ background:transparent!important;border:0!important;box-shadow:none!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-concept-content :is(.activity-reference-about,.activity-reference-schedule,.activity-reference-contact){
+ background:#fff!important;border:1px solid #e9eee9!important;
+ box-shadow:0 5px 18px #163f3010!important;border-radius:20px!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-concept-content .activity-useful-info{display:none!important}
+body.bh-activity-v2 .activity-reference-exact .activity-concept-content .activity-reference-schedule :is(.venue-schedule,.session-list,.activity-venue-panel),
+body.bh-activity-v2 .activity-reference-exact .activity-concept-content .activity-reference-contact :is(.activity-reference-addresses,.activity-reference-organiser){
+ background:transparent!important;box-shadow:none!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-concept-content .venue-schedule{
+ border:1px solid #e9eee9!important;border-radius:14px!important;padding:12px!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-contact-footer{
+ display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:space-between!important;
+ gap:16px!important;margin-top:18px!important;padding:22px!important;
+ min-height:0!important;border-radius:20px!important;
+ background:#fff!important;border:1px solid #e9eee9!important;
+ box-shadow:0 5px 18px #163f3010!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-contact-footer::before{content:none!important}
+body.bh-activity-v2 .activity-reference-exact .activity-contact-footer h2{font-size:1.25rem!important;margin:0!important;color:#153d31!important}
+body.bh-activity-v2 .activity-reference-exact .activity-contact-buttons{display:flex;flex-wrap:wrap;gap:10px}
+body.bh-activity-v2 .activity-reference-exact .activity-contact-link{
+ display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 18px;
+ border-radius:999px;background:#07543e;color:#fff!important;text-decoration:none!important;
+ font-weight:700;font-size:.88rem;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-contact-link:hover{background:#0e7256}
+body.bh-activity-v2 .activity-reference-exact .activity-contact-link:focus-visible{outline:3px solid #e5ac39;outline-offset:3px}
+body.bh-activity-v2 .activity-reference-exact .activity-gallery-slider>img[hidden]{display:none!important}
+body.bh-activity-v2 .activity-reference-exact .activity-gallery-slider>img.activity-gallery-active{display:block!important}
+body.bh-activity-v2 .activity-reference-exact .activity-gallery-controls{
+ position:absolute;z-index:6;bottom:15px;right:15px;display:flex;align-items:center;gap:9px;
+ background:rgba(15,51,41,.83);color:#fff;padding:5px 8px;border-radius:999px;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-gallery-controls button{
+ display:grid;place-items:center;border:0;background:#fff;color:#07543e;
+ border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:25px;line-height:1;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-gallery-count{font-size:.8rem;font-weight:700;min-width:38px;text-align:center}
+body.bh-activity-v2 .activity-reference-exact .activity-hero .listing-gallery .activity-hero-actions{
+ gap:12px!important;right:18px!important;top:16px!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-hero .listing-gallery .activity-hero-actions .activity-action-symbol{
+ background:#07543e!important;color:#fff!important;border:2px solid #d1eee1!important;
+ width:47px!important;height:47px!important;
+}
+body.bh-activity-v2 .activity-reference-exact .activity-hero .listing-gallery .activity-hero-actions .activity-icon-action:hover .activity-action-symbol{
+ background:#0d7456!important;transform:translateY(-2px);
+}
+@media(max-width:650px){
+ body.bh-activity-v2 .activity-reference-exact .activity-hero .listing-gallery .activity-hero-actions{gap:4px!important;right:6px!important;top:8px!important}
+ body.bh-activity-v2 .activity-reference-exact .activity-hero .listing-gallery .activity-hero-actions .activity-action-symbol{width:35px!important;height:35px!important}
+ body.bh-activity-v2 .activity-reference-exact .activity-contact-footer{padding:16px!important}
+ body.bh-activity-v2 .activity-reference-exact .activity-contact-buttons{width:100%}
+ body.bh-activity-v2 .activity-reference-exact .activity-contact-link{flex:1}
+}
