@@ -4,7 +4,11 @@ const tidyStyle=document.createElement('style');
 tidyStyle.textContent=[
  '.bh-wizard-layout{grid-template-columns:190px minmax(0,1fr);gap:24px}',
  '.bh-wizard-layout #adminListingSteps{background:#f4f8f4;border-radius:16px;padding:10px}',
- '#newListingForm .admin-form-grid{gap:16px}',
+ '#newListingForm .admin-form-grid{gap:16px;grid-template-columns:minmax(0,1fr)}',
+ '#newListingForm .admin-form-grid>label{grid-column:1/-1;width:100%;max-width:100%}',
+ '#newListingForm .admin-form-grid>label input,#newListingForm .admin-form-grid>label select{width:100%;box-sizing:border-box}',
+ '#newListingForm .bh-category-options{max-height:230px;overflow:auto}',
+ '#newListingForm .bh-category-picker{width:100%}',
  '#newListingForm .bh-card{border-radius:16px;border-color:#d5e5d8}',
  '#newListingForm .hero-actions{position:sticky;bottom:0;z-index:5;background:#fff;padding:12px 0;border-top:1px solid #d5e5d8}',
  '#adminExtraVenueRows{display:grid;gap:12px}',
@@ -62,7 +66,7 @@ const categoryInput=form.querySelector('[name="category"]');
 if(categoryInput){
  const wrapper=document.createElement('div');
  wrapper.className='bh-category-picker';
- wrapper.innerHTML='<div style="font-weight:600;margin-bottom:8px">Choose categories (multiple allowed)</div><div class="bh-category-options" style="display:flex;flex-wrap:wrap;gap:10px"></div><small>Selected categories are saved against this single activity.</small>';
+ wrapper.innerHTML='<div style="font-weight:600;margin-bottom:8px">Selected categories and search (multiple allowed)</div><div class="bh-category-options" style="display:flex;flex-wrap:wrap;gap:10px"></div><small>Selected categories are saved against this single activity.</small>';
  categoryInput.parentElement.appendChild(wrapper);
  categoryInput.type='hidden';
  const options=wrapper.querySelector('.bh-category-options');
@@ -83,16 +87,17 @@ if(categoryInput){
   incoming.forEach(value=>{const name=String(value||'').trim();if(!name)return;addName(name);selected.add(names.get(name.toLowerCase()));});
   render();sync();
  });
+ let searchTerm='';
  const render=()=>{
   options.replaceChildren();
-  [...names.values()].sort((a,b)=>a.localeCompare(b)).forEach(name=>{
+  [...names.values()].filter(name=>selected.has(name)||searchTerm.length>=2&&name.toLowerCase().includes(searchTerm)).sort((a,b)=>a.localeCompare(b)).slice(0,50).forEach(name=>{
    const label=document.createElement('label');label.style.cssText='display:inline-flex;align-items:center;gap:6px;border:1px solid #ced7c7;border-radius:18px;padding:7px 11px;cursor:pointer';
    const check=document.createElement('input');check.type='checkbox';check.checked=selected.has(name);check.addEventListener('change',()=>{if(check.checked)selected.add(name);else selected.delete(name);sync();});
    label.append(check,document.createTextNode(name));options.appendChild(label);
   });
  };
  render();sync();
- const search=document.createElement('input');search.type='search';search.placeholder='Search categories';search.setAttribute('aria-label','Search categories');wrapper.insertBefore(search,options);search.addEventListener('input',()=>{const term=search.value.trim().toLowerCase();[...options.children].forEach(label=>{label.hidden=!label.textContent.toLowerCase().includes(term);});});
+ const search=document.createElement('input');search.type='search';search.placeholder='Search categories';search.setAttribute('aria-label','Search categories');wrapper.insertBefore(search,options);search.addEventListener('input',()=>{searchTerm=search.value.trim().toLowerCase();render();});
  const custom=document.createElement('input');custom.type='text';custom.placeholder='Add another category and press Enter';custom.style.marginTop='10px';
  custom.addEventListener('keydown',event=>{if(event.key!=='Enter')return;event.preventDefault();const values=custom.value.split(',').map(x=>x.trim()).filter(Boolean);if(!values.length)return;values.forEach(name=>{addName(name);selected.add(names.get(name.toLowerCase()));});custom.value='';render();sync();search.dispatchEvent(new Event('input'));});
  wrapper.appendChild(custom);
@@ -121,6 +126,8 @@ townField?.addEventListener('change',suggestArea);
 townField?.addEventListener('blur',suggestArea);
 // Existing venues are searchable using the browser's built-in datalist.
 const venueSelect=document.getElementById('existingVenueSelect');
+if(venueSelect){const holder=venueSelect.closest('label');const venueField=form.elements.namedItem('venue_name');venueField?.closest('label')?.before(holder);}
+
 const venueName=form.elements.namedItem('venue_name');
 if(venueSelect){
  const venueSearch=document.createElement('input');venueSearch.type='search';venueSearch.placeholder='Filter venues by name, town or postcode';venueSearch.setAttribute('aria-label','Search existing venues');venueSelect.before(venueSearch);
@@ -710,7 +717,7 @@ const renderStep=()=>{
  if(websiteImport)websiteImport.hidden=step!==0;
  if(posterImport)posterImport.hidden=step!==0;
  if(!contactHeading.isConnected){const firstContact=labels.find(label=>label.querySelector('[name="booking_url"]'));if(firstContact)firstContact.before(contactHeading);}
- labels.forEach(label=>{const field=label.querySelector('[name]');const name=field?.name;label.hidden=step===7||(!current[1].includes(name)&&!(step===4&&label.querySelector('#existingVenueSelect')));label.style.display=label.hidden?'none':'';});
+ labels.forEach(label=>{const field=label.querySelector('[name]');const name=field?.name;label.hidden=step===7||(!current[1].includes(name)&&!(step===5&&label.querySelector('#existingVenueSelect')));label.style.display=label.hidden?'none':'';});
  review.hidden=step!==7;const extraSection=document.getElementById('adminAdditionalVenues');if(extraSection)extraSection.hidden=step!==5;if(scheduleSection)scheduleSection.hidden=step!==4;
  if(step===7){review.replaceChildren();labels.forEach(label=>{const el=label.querySelector('[name]');if(!el)return;const line=document.createElement('p');const strong=document.createElement('strong');strong.textContent=label.textContent.trim()+': ';line.append(strong,document.createTextNode(el.value||'—'));review.append(line);});}
  back.hidden=step===0;next.hidden=step===7;save.hidden=step!==7;
