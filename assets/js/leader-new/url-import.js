@@ -8,12 +8,25 @@ $('leaderListingSourcePreview')?.addEventListener('click',async()=>{
  const button=$('leaderListingSourcePreview'),message=$('leaderListingSourceMessage'),url=$('leaderListingSourceUrl').value.trim();
  if(!url){message.textContent='Paste a public website link first.';return;}
  button.disabled=true;message.textContent='Reading public page details…';
- try{const j=await preview('website',url);let count=0;
-  if(j.data.title&&!$('title').value.trim()){$('title').value=j.data.title;count++;}
-  if(j.data.description&&!$('descriptionEditor').textContent.trim()){$('descriptionEditor').textContent=j.data.description;$('description').value=j.data.description;count++;}
-  if(j.data.booking_url&&!$('bookingUrl').value.trim()){$('bookingUrl').value=j.data.booking_url;count++;}
+ try{const j=await preview('website',url);
+  const fields=[['title','title'],['description','description'],['booking_url','bookingUrl']].filter(([key])=>j.data?.[key]);
+  let review=$('leaderWebsiteReview');
+  if(!review){review=document.createElement('section');review.id='leaderWebsiteReview';review.style.cssText='margin:12px 0;padding:12px;border:1px solid #b7d5c5;border-radius:10px';button.after(review);}
+  review.replaceChildren();
+  const heading=document.createElement('h3');heading.textContent='Review website suggestions';review.append(heading);
+  const checks=[];
+  for(const [key,id] of fields){
+   const label=document.createElement('label');label.style.cssText='display:block;margin:10px 0';
+   const check=document.createElement('input');check.type='checkbox';check.checked=false;
+   const existing=key==='description'?$('descriptionEditor')?.textContent:$(id)?.value;
+   label.append(check,document.createTextNode(' '+key.replaceAll('_',' ')+': '+String(j.data[key]).slice(0,240)+(existing?' (existing value will be replaced)':'')));
+   review.append(label);checks.push({check,key,id});
+  }
+  const apply=document.createElement('button');apply.type='button';apply.className='button button-primary';apply.textContent='Apply selected fields';
+  apply.onclick=()=>{let count=0;for(const {check,key,id} of checks){if(!check.checked)continue;const value=j.data[key];if(key==='description'){$('descriptionEditor').textContent=value;$('description').value=value;$('descriptionEditor').dispatchEvent(new Event('input',{bubbles:true}));}else $(id).value=value;count++;}
+   message.textContent=count+' reviewed field(s) applied. Check before saving.';};
+  review.append(apply);message.textContent=fields.length+' website suggestions ready. Select only what you want to import.';
   if(!$('leaderScheduleUrl').value.trim())$('leaderScheduleUrl').value=url;
-  message.textContent=count+' details suggested. Review them before saving. No AI was used.';
  }catch(e){message.textContent=e.message;}finally{button.disabled=false;}
 });
 $('leaderSchedulePreview')?.addEventListener('click',async()=>{
