@@ -475,6 +475,16 @@ const previewImportedSessions=(entries,note='')=>{
   const location=document.createElement('select');location.style.width='100%';
   venueOptions().forEach(o=>location.add(new Option(o.label,o.value)));
   location.value=String(matchedVenueIndex);
+  if(event.venue_name&&matchedVenueIndex===0){
+   const primaryName=String(form.elements.namedItem('venue_name')?.value||'').trim().toLowerCase();
+   const incomingName=String(event.venue_name).trim().toLowerCase();
+   if(!primaryName||primaryName!==incomingName){
+    check.checked=false;
+    const warning=document.createElement('p');warning.style.cssText='font-size:13px;color:#9a4b12';
+    warning.textContent='Venue needs confirmation: '+event.venue_name+'. This class is unchecked until you choose or create the correct location.';
+    card.append(warning);
+   }
+  }
   venue.append(location);grid.append(venue);
   const day=document.createElement('label');day.textContent='Day';day.style.cssText='display:flex;flex-direction:column;gap:4px;font-size:13px';const daySelect=document.createElement('select');['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].forEach((name,i)=>daySelect.add(new Option(name,String(i+1))));daySelect.value=String(event.day_of_week||1);day.append(daySelect);grid.append(day);
   const startTime=field(grid,'Start time',event.start_time,'time');
