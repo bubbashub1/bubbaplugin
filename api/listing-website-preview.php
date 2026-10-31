@@ -4,6 +4,10 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 function fail($message,$code=422){http_response_code($code);echo json_encode(['ok'=>false,'message'=>$message]);exit;}
 if($_SERVER['REQUEST_METHOD']!=='POST') fail('POST required',405);
+if(strtolower((string)($_SERVER['HTTP_SEC_FETCH_SITE']??''))==='cross-site')fail('Cross-site requests are not permitted.',403);
+session_name('BUBBAHUB_ADMINSESSID');session_start();
+if(empty($_SESSION['bh_admin_authenticated']))fail('Administrator sign-in required.',401);
+session_write_close();
 $body=json_decode(file_get_contents('php://input'),true);
 $url=trim((string)($body['url']??''));
 if(!filter_var($url,FILTER_VALIDATE_URL)||!in_array(strtolower((string)parse_url($url,PHP_URL_SCHEME)),['https','http'],true))fail('Enter a valid public website URL.');
