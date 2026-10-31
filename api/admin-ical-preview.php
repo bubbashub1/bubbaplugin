@@ -22,6 +22,57 @@ curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>fals
 $body=curl_exec($ch);$code=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);
 if(!is_string($body)||strlen($body)>1048576||$code!==200)fail(422,'Could not retrieve the public calendar feed (HTTP '.$code.').');
 if(!str_contains($body,'BEGIN:VCALENDAR')){
+ $isTurtleTots=(bool)preg_match('/(^|\.)turtletots\.com$/i',$host);
+ if($isTurtleTots){
+  if(!class_exists('DOMDocument'))fail(422,'Turtle Tots timetable parsing requires the PHP DOM extension.');
+  $dom=new DOMDocument();$prev=libxml_use_internal_errors(true);$dom->loadHTML('<?xml encoding="utf-8" ?>'.$body);libxml_clear_errors();libxml_use_internal_errors($prev);
+  $xp=new DOMXPath($dom);$iframeUrl='';
+  foreach($xp->query('//iframe[@src]') as $frame){
+   $src=html_entity_decode(trim($frame->getAttribute('src')),ENT_QUOTES|ENT_HTML5,'UTF-8');
+   $parsed=parse_url($src);
+   if($parsed&&strtolower($parsed['scheme']??'')==='https'&&strtolower($parsed['host']??'')==='www.thinksmartsoftwareuk.com'&&($parsed['path']??'')==='/ocr/single_class_listings_view.php'){$iframeUrl=$src;break;}
+  }
+  if(!$iframeUrl)fail(422,'Turtle Tots booking timetable iframe was not found on this page.');
+  $iframeHost='www.thinksmartsoftwareuk.com';$iframeIps=gethostbynamel($iframeHost);
+  if(!$iframeIps)fail(422,'Booking timetable host could not be resolved.');
+  foreach($iframeIps as $ip)if(!filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE))fail(422,'Booking timetable host is not public.');
+  $iframeCurl=curl_init($iframeUrl);
+  curl_setopt_array($iframeCurl,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>12,CURLOPT_MAXREDIRS=>0,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_RESOLVE=>[$iframeHost.':443:'.$iframeIps[0]],CURLOPT_USERAGENT=>'BubbaHubCalendarImporter/1.0',CURLOPT_MAXFILESIZE=>1048576]);
+  $iframeBody=curl_exec($iframeCurl);$iframeCode=(int)curl_getinfo($iframeCurl,CURLINFO_HTTP_CODE);curl_close($iframeCurl);
+  if(!is_string($iframeBody)||strlen($iframeBody)>1048576||$iframeCode!==200)fail(422,'Embedded booking timetable could not be retrieved (HTTP '.$iframeCode.').');
+  $inner=new DOMDocument();$prev=libxml_use_internal_errors(true);$inner->loadHTML('<?xml encoding="utf-8" ?>'.$iframeBody);libxml_clear_errors();libxml_use_internal_errors($prev);
+  $ix=new DOMXPath($inner);$found=[];$day=0;$days=['monday'=>1,'tuesday'=>2,'wednesday'=>3,'thursday'=>4,'friday'=>5,'saturday'=>6,'sunday'=>7];
+  foreach($ix->query('//h2|//h3|//h4|//tr') as $node){
+   if($node->nodeName!=='tr'){
+    $heading=strtolower(trim($node->textContent));foreach($days as $word=>$number)if(preg_match('/\b'.preg_quote($word,'/').'\b/',$heading)){$day=$number;break;}
+    continue;
+   }
+   if(!$day)continue;
+   $cells=$ix->query('./td',$node);if($cells->length<7)continue;
+   $values=[];foreach($cells as $cell)$values[]=trim(preg_replace('/\s+/u',' ',html_entity_decode($cell->textContent,ENT_QUOTES|ENT_HTML5,'UTF-8')));
+   if(!preg_match('/\b(\d{1,2}):(\d{2})\s*(AM|PM)\b/i',$values[0]??'',$tm))continue;
+   $hour=(int)$tm[1];if($hour<1||$hour>12)continue;$hour=$hour%12+(strtoupper($tm[3])==='PM'?12:0);
+   $start=sprintf('%02d:%02d',$hour,(int)$tm[2]);$duration=0;
+   if(preg_match('/\b(\d{1,3})\s*minutes?\b/i',$values[2]??'',$dm))$duration=(int)$dm[1];
+   if($duration<1||$duration>240)continue;
+   $end=(new DateTimeImmutable('2000-01-01 '.$start.':00'))->modify('+'.$duration.' minutes')->format('H:i');
+   $parseDate=static function(string $value):string{
+    if(!preg_match('/\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/',$value,$m))return '';
+    return checkdate((int)$m[2],(int)$m[1],(int)$m[3])?sprintf('%04d-%02d-%02d',(int)$m[3],(int)$m[2],(int)$m[1]):'';
+   };
+   $from=$parseDate($values[5]??'');$to=$parseDate($values[7]??'');
+   if($from===''||$to===''||$to<$from)continue;
+   $title=trim($values[1]??'');if($title==='')continue;
+   $price='';if(preg_match('/£\s*(\d+(?:\.\d{1,2})?)/u',$values[4]??'',$pm))$price=$pm[1];
+   $booking=$iframeUrl;foreach($ix->query('./td//a[@href]',$node) as $anchor){$href=trim($anchor->getAttribute('href'));if(str_starts_with($href,'https://')){$booking=$href;break;}}
+   $waitlist=(bool)preg_match('/waitlist/i',$node->textContent);
+   $key=implode('|',[$day,$start,$title,$from,$to]);
+   $found[$key]=['title'=>$title,'class_name'=>$title,'day_of_week'=>$day,'start_time'=>$start,'end_time'=>$end,'start_date'=>$from,'end_date'=>$to,'frequency'=>'weekly','price'=>$price,'booking_url'=>$booking,'url'=>$url,'uid'=>$key,'availability'=>$waitlist?'waitlist':'bookable'];
+   if(count($found)>=150)break;
+  }
+  if(!$found)fail(422,'Embedded Turtle Tots timetable retrieved but no complete dated class rows were recognised.');
+  echo json_encode(['ok'=>true,'data'=>array_values($found),'skipped_recurring'=>0,'source'=>'turtle_tots_embedded','note'=>'Imported from embedded ThinkSmart timetable. Per-class prices used; waitlist classes flagged. Check venue and dates before adding.']);exit;
+ }
  $isBabySensory=(bool)preg_match('/(^|\.)babysensory\.com$/i',$host);
  if($isBabySensory){
   if(!class_exists('DOMDocument'))fail(422,'Baby Sensory timetable parsing is unavailable on this server.');
