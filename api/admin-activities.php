@@ -88,7 +88,7 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
   $db->beginTransaction();
   try{
    $q=$db->prepare("SELECT id FROM bh_venues WHERE activity_id=? ORDER BY id FOR UPDATE");$q->execute([$id]);$venueIds=array_map('intval',$q->fetchAll(PDO::FETCH_COLUMN));
-   if(count($venueIds)<2||!in_array($venueId,$venueIds,true)||!in_array($targetId,$venueIds,true)||$venueId===$venueIds[0])throw new RuntimeException('Invalid venue selection. The primary location cannot be removed.');
+   if(count($venueIds)<2||!in_array($venueId,$venueIds,true)||!in_array($targetId,$venueIds,true))throw new RuntimeException('Invalid venue selection. Keep at least one location.');
    $q=$db->prepare("SELECT COUNT(*) FROM bh_sessions WHERE venue_id=?");$q->execute([$venueId]);$moved=(int)$q->fetchColumn();
    $db->prepare("UPDATE bh_sessions SET venue_id=? WHERE venue_id=?")->execute([$targetId,$venueId]);
    $db->prepare("DELETE FROM bh_venues WHERE id=? AND activity_id=?")->execute([$venueId,$id]);

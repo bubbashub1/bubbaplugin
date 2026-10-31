@@ -251,13 +251,13 @@ const addVenue=(venue={})=>{
  [['venue_name','Venue name','text'],['town','Town','text'],['region','Region','text'],['postcode','Postcode','text'],['address','Full address','text'],['latitude','Latitude (optional)','number'],['longitude','Longitude (optional)','number'],['booking_url','Booking URL for this location (optional)','url']].forEach(([key,label,type])=>{
  const wrap=document.createElement('label');wrap.textContent=label;wrap.style.cssText='display:block;margin:8px 0';const input=document.createElement('input');input.type=type;input.dataset.vfield=key;input.value=venue[key]??'';input.style.width='100%';if(type==='number'){input.step='any';input.min=key==='latitude'?'-90':'-180';input.max=key==='latitude'?'90':'180';}wrap.append(input);row.append(wrap);
  });
- const remove=document.createElement('button');remove.type='button';remove.className='button button-soft';remove.textContent=Number(row.dataset.savedId)?'Remove saved location':'Remove unsaved location';remove.addEventListener('click',async()=>{
+ const remove=document.createElement('button');remove.type='button';remove.className='button button-soft';remove.textContent='Remove location';remove.addEventListener('click',async()=>{
  const savedId=Number(row.dataset.savedId);
- if(!savedId){row.remove();syncVenueSelectors();return;}
+ if(!savedId){if(!window.confirm('Remove this unsaved location from the listing?'))return;row.remove();syncVenueSelectors();return;}
  const options=(original?.venues||[]).filter(v=>Number(v.id)!==savedId);
  const selected=options.find(v=>String(v.venue_name||'').trim().toLowerCase()===String(venue.venue_name||'').trim().toLowerCase())||options[0];
  if(!selected){status.textContent='No location available to retain.';return;}
- const choice=window.prompt('Move any sessions to which saved location? Enter its ID:\\n'+options.map(v=>v.id+' — '+v.venue_name+' ('+v.postcode+')').join('\\n'),String(selected.id));
+ const choice=window.prompt('Sessions at this location will move to another location. Enter the destination ID:\\n'+options.map(v=>v.id+' — '+v.venue_name+' ('+v.postcode+')').join('\\n'),String(selected.id));
  if(choice===null)return;
  const targetId=Number(choice);
  if(!options.some(v=>Number(v.id)===targetId)){status.textContent='Choose one of the listed location IDs.';status.classList.add('is-error');return;}
