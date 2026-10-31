@@ -71,7 +71,8 @@ selectAll.addEventListener('change',()=>{rows.querySelectorAll('[data-select-id]
 document.getElementById('bulkClaim').addEventListener('click',async e=>{
  const button=e.currentTarget,ids=[...selected].filter(id=>all.some(a=>Number(a.id)===id&&a.status!=='archived'));
  if(!ids.length)return;
- button.disabled=true;
+ if(!window.confirm('ARE YOU SURE?\n\nCheck and send claim invitations for '+ids.length+' selected listing(s)?\n\nEligible contact emails will be sent after verification. This cannot be undone.'))return;
+ button.disabled=true;message.textContent='Checking claim invitation eligibility…';
  try{
   const check=await fetch('/api/admin-claim-invitations.php',{credentials:'same-origin',cache:'no-store'});
   const info=await check.json();if(!check.ok||!info.ok)throw Error(info.error||'Could not check claim invitation eligibility');
@@ -80,7 +81,7 @@ document.getElementById('bulkClaim').addEventListener('click',async e=>{
   const skipped=ids.length-eligible.length;
   if(!eligible.length)throw Error('No eligible listings selected. '+skipped+' skipped (already invited, claimed, missing email, or not in the invitation preview).');
   const summary=eligible.slice(0,8).map(x=>x.title+' — '+x.recipient).join('\\n');
-  if(!confirm('ARE YOU SURE?\\n\\nSend '+eligible.length+' individual claim invitations now?\\n'+skipped+' selected listings will be skipped.\\n\\n'+summary+(eligible.length>8?'\\n…and '+(eligible.length-8)+' more.':'')+'\\n\\nEmails will be sent immediately. This cannot be undone.'))return;
+  message.textContent='Confirmed: '+eligible.length+' eligible, '+skipped+' skipped. Sending…';
   let sent=0,failed=0;const errors=[];
   for(const item of eligible){
    message.textContent='Sending claim invitations: '+(sent+failed+1)+' of '+eligible.length+'…';
