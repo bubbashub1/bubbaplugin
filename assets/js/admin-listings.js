@@ -1,7 +1,7 @@
 (async function(){
 const rows=document.getElementById('listingRows'),search=document.getElementById('listingSearch'),filter=document.getElementById('listingStatus'),message=document.getElementById('listingMessage'),retry=document.getElementById('retryListings'),count=document.getElementById('listingCount');
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let all=[],csrf=""; const selected=new Set(); const selectedCount=document.getElementById("selectedCount"); const selectAll=document.getElementById("selectAllListings"); const bulkButtons=["bulkEdit","bulkAssign","bulkDelete","bulkRestore","bulkPublish","bulkDraft","bulkCategory","bulkTags"].map(id=>document.getElementById(id)); function syncSelection(){selectedCount.textContent=selected.size+" selected";bulkButtons.forEach(b=>b.disabled=!selected.size);const visible=[...rows.querySelectorAll("[data-select-id]")];selectAll.checked=visible.length>0&&visible.every(x=>x.checked);selectAll.indeterminate=visible.some(x=>x.checked)&&!selectAll.checked;}
+let all=[],csrf=""; const selected=new Set(); const selectedCount=document.getElementById("selectedCount"); const selectAll=document.getElementById("selectAllListings"); const bulkButtons=["bulkEdit","bulkAssign","bulkDelete","bulkRestore","bulkPublish","bulkDraft","bulkCategory","bulkTags","bulkClaim"].map(id=>document.getElementById(id)); function syncSelection(){selectedCount.textContent=selected.size+" selected";bulkButtons.forEach(b=>b.disabled=!selected.size);const visible=[...rows.querySelectorAll("[data-select-id]")];selectAll.checked=visible.length>0&&visible.every(x=>x.checked);selectAll.indeterminate=visible.some(x=>x.checked)&&!selectAll.checked;}
 function render(){
  const q=search.value.trim().toLowerCase(),status=filter.value;
  const isClosed=status==='archived';document.getElementById('bulkRestore').hidden=!isClosed;document.getElementById('bulkDelete').hidden=isClosed;document.getElementById('bulkEdit').hidden=isClosed;document.getElementById('bulkAssign').hidden=isClosed;['bulkPublish','bulkDraft','bulkCategory','bulkTags'].forEach(id=>document.getElementById(id).hidden=isClosed);const list=all.filter(a=>((status? (a.status==='publish'?'published':a.status)===status : a.status!=='archived'))&&[a.title,a.organisation_name,a.town,a.category,a.region].join(' ').toLowerCase().includes(q));
@@ -61,6 +61,31 @@ document.getElementById('bulkTags').addEventListener('click',()=>{const value=pr
 rows.addEventListener('click',e=>{const button=e.target.closest('[data-edit-category],[data-edit-tags]');if(!button)return;const id=Number(button.dataset.editCategory||button.dataset.editTags),a=all.find(x=>Number(x.id)===id);if(!a||a.status==='archived')return;const field=button.hasAttribute('data-edit-category')?'category':'tags';const value=prompt('Edit '+field+' for '+a.title+':',a[field]||'');if(value===null||(field==='category'&&!value.trim()))return;applyBulk({[field]:value.trim()},[id]);});
 rows.addEventListener('change',e=>{const el=e.target.closest('[data-select-id]');if(!el)return;const id=Number(el.dataset.selectId);if(el.checked)selected.add(id);else selected.delete(id);syncSelection();});
 selectAll.addEventListener('change',()=>{rows.querySelectorAll('[data-select-id]').forEach(el=>{el.checked=selectAll.checked;const id=Number(el.dataset.selectId);if(el.checked)selected.add(id);else selected.delete(id);});syncSelection();});
+document.getElementById('bulkClaim').addEventListener('click',async e=>{
+ const button=e.currentTarget,ids=[...selected].filter(id=>all.some(a=>Number(a.id)===id&&a.status!=='archived'));
+ if(!ids.length)return;
+ button.disabled=true;
+ try{
+  const check=await fetch('/api/admin-claim-invitations.php',{credentials:'same-origin',cache:'no-store'});
+  const info=await check.json();if(!check.ok||!info.ok)throw Error(info.error||'Could not check claim invitation eligibility');
+  const available=new Map((info.data||[]).map(x=>[Number(x.id),x]));
+  const eligible=ids.map(id=>available.get(id)).filter(x=>x&&x.recipient&&!['sent','approved','pending','sending'].includes(x.invitation_status));
+  const skipped=ids.length-eligible.length;
+  if(!eligible.length)throw Error('No eligible listings selected. '+skipped+' skipped (already invited, claimed, missing email, or not in the invitation preview).');
+  const summary=eligible.slice(0,8).map(x=>x.title+' — '+x.recipient).join('\\n');
+  if(!confirm('ARE YOU SURE?\\n\\nSend '+eligible.length+' individual claim invitations now?\\n'+skipped+' selected listings will be skipped.\\n\\n'+summary+(eligible.length>8?'\\n…and '+(eligible.length-8)+' more.':'')+'\\n\\nEmails will be sent immediately. This cannot be undone.'))return;
+  let sent=0,failed=0;const errors=[];
+  for(const item of eligible){
+   message.textContent='Sending claim invitations: '+(sent+failed+1)+' of '+eligible.length+'…';
+   try{
+    const response=await fetch('/api/admin-claim-invitations.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({activity_id:Number(item.id),csrf:info.csrf})});
+    const result=await response.json();if(!response.ok||!result.ok)throw Error(result.error||'Send failed');
+    sent++;
+   }catch(err){failed++;errors.push('#'+item.id+': '+err.message);}
+  }
+  message.textContent='Claim invitations: '+sent+' sent, '+failed+' failed, '+skipped+' skipped.'+(errors.length?' '+errors.slice(0,4).join('; '):'');
+ }catch(err){message.textContent=err.message||'Claim invitations unavailable.';}finally{button.disabled=!selected.size;}
+});
 document.getElementById('bulkEdit').addEventListener('click',()=>{const ids=[...selected];if(ids.length>10){message.textContent='Please edit at most 10 listings at once to avoid opening too many tabs.';return;}ids.forEach(id=>window.open('/admin/admin-activities-add-listing.html?id='+encodeURIComponent(id),'_blank','noopener'));message.textContent='Opened '+ids.length+' editors in separate tabs. Allow pop-ups if your browser blocked them.';});
 document.getElementById('bulkAssign').addEventListener('click',async()=>{try{const r=await fetch('/api/admin-activities.php?action=leaders',{credentials:'same-origin'}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load leaders');if(!d.data?.length)throw Error('No active leaders available');csrf=d.csrf;assigningIds=[...selected];document.getElementById('assignListingTitle').textContent='Assign '+assigningIds.length+' selected listings to one leader. Their organiser storefronts will change.';document.getElementById('assignLeaderSelect').innerHTML='<option value="">Choose a leader</option>'+d.data.map(o=>'<option value="'+escape(o.id)+'">'+escape(o.organisation_name+' — '+o.email)+'</option>').join('');document.getElementById('assignLeaderError').textContent='';dialog.showModal();}catch(err){message.textContent=err.message;}});
 document.getElementById('bulkDelete').addEventListener('click',async e=>{const ids=[...selected];if(!confirm('Close '+ids.length+' selected listings? They will disappear from the directory; session and venue records will be retained.'))return;const btn=e.currentTarget;btn.disabled=true;let done=0;try{for(const id of ids){await action({action:'delete',id});done++;selected.delete(id);}await load();message.textContent=done+' listing(s) closed.';}catch(err){await load();message.textContent=done+' closed before error: '+err.message;}finally{btn.disabled=false;syncSelection();}});
