@@ -692,3 +692,13 @@ body.bh-activity-v2 .activity-reference-schedule .session-list{border:0!importan
 body.bh-activity-v2 .activity-reference-schedule .activity-venue-toggle{width:100%;min-height:48px;border-radius:12px!important}
 body.bh-activity-v2 .activity-schedule-directions{display:inline-flex;align-items:center;gap:6px;margin:10px 0 8px;padding:8px 14px;border-radius:999px;background:#dcebe0;color:#07513e;font-weight:700;text-decoration:none;font-size:13px}
 body.bh-activity-v2 .listing-claim-wrap{margin:16px 0 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+
+/* Compact, consistently aligned six-column schedule */
+body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule .bh-session-head,
+body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule .bh-compact-session{grid-template-columns:minmax(0,2fr) minmax(0,.85fr) minmax(0,.8fr) minmax(0,.8fr) minmax(0,.75fr) 30px!important;gap:6px!important;align-items:center!important;font:600 13px/1.25 "Quicksand",sans-serif!important}
+body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule .bh-session-head{padding:7px 8px!important}
+body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule .bh-compact-session{padding:5px 8px!important;min-height:34px!important}
+body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule .bh-compact-session :is(strong,span){font-size:13px!important;line-height:1.25!important}
+body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule .bh-compact-session small{font-size:10px!important}
+body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule .venue-schedule{padding:6px!important;margin-bottom:7px!important}
+@media(max-width:520px){body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule .session-list{overflow-x:auto!important}body.bh-activity-v2 .activity-reference-exact .activity-reference-schedule :is(.bh-session-head,.bh-compact-session){min-width:460px!important}}
