@@ -24,9 +24,9 @@ $('leaderSchedulePreview')?.addEventListener('click',async()=>{
   message.textContent=events.length+' dated events found. CAUTION: this wizard stores weekly repeating sessions, not one-off dates. Converting will repeat each selected event every week. '+(j.note||'');
   const selections=[];
   for(const event of events){const label=document.createElement('label');label.style.cssText='display:flex;gap:10px;align-items:center;padding:8px 0';
-   const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=true;selections.push([checkbox,event]);
+   const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=false;selections.push([checkbox,event]);
    label.append(checkbox,document.createTextNode(event.date+' '+event.start+' '+event.day));results.append(label);}
-  if(events.length){const add=document.createElement('button');add.type='button';add.className='button button-primary';add.textContent='Convert selected dates to weekly sessions';
+  if(events.length){const caution=document.createElement('p');caution.textContent='Select only events that genuinely repeat every week. One-off events must not be converted to weekly classes.';results.prepend(caution);const add=document.createElement('button');add.type='button';add.className='button button-primary';add.textContent='Convert selected dates to weekly sessions';
    add.onclick=()=>{let count=0;const existing=new Set(window.BubbaNew.schedule().map(x=>x.day+'|'+x.start+'|'+x.end));
     for(const [checkbox,e] of selections){const key=e.day+'|'+e.start+'|'+e.end;if(checkbox.checked&&e.end&&e.end>e.start&&!existing.has(key)){window.BubbaNew.state.addRow(e);existing.add(key);count++;}}
     message.textContent=count+' weekly schedule rows added from dated events. These repeat weekly; the original event dates are not retained. Confirm this is appropriate before saving.';results.replaceChildren();};results.append(add);}
