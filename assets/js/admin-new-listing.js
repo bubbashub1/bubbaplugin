@@ -389,7 +389,19 @@ fetch('/api/admin-activities.php?action=registered_venues',{credentials:'same-or
  .then(r=>r.json()).then(payload=>{if(!payload.ok)throw Error(payload.error||'Venue list unavailable');registeredVenues=Array.isArray(payload.data)?payload.data:[];mainPicker.replaceChildren(new Option('Choose venue · town · postcode',''));registeredVenues.forEach(v=>mainPicker.add(new Option([v.venue_name,v.town,v.postcode].filter(Boolean).join(' · '),String(v.id))));renderRegistered();})
  .catch(error=>{pickerStatus.textContent='Registered venues unavailable: '+error.message;pickerAdd.disabled=true;});
 
-document.getElementById('adminAddVenue')?.addEventListener('click',()=>addVenue());
+const addVenueButton=document.getElementById('adminAddVenue');
+if(addVenueButton&&locationSection){
+ const topAction=document.createElement('button');topAction.type='button';topAction.className='button button-primary';topAction.id='adminAddVenueTop';topAction.textContent='+ Add another location';
+ topAction.style.cssText='margin:10px 0 16px;display:inline-flex';
+ const heading=locationSection.querySelector('h2');
+ if(heading)heading.after(topAction);else locationSection.prepend(topAction);
+ topAction.addEventListener('click',()=>{
+  addVenue();const last=extraVenueContainer?.lastElementChild;
+  if(last){last.scrollIntoView({behavior:'smooth',block:'center'});const name=last.querySelector('[name="venue_name"],input');if(name)name.focus({preventScroll:true});}
+ });
+ addVenueButton.textContent='+ Add another location';
+}
+addVenueButton?.addEventListener('click',()=>addVenue());
 form.elements.namedItem('venue_name')?.addEventListener('input',syncVenueSelectors);
 // Postcode geocoding: user may override the coordinates at any time.
 function addLocationLookup(container,field){if(!container)return;const postcode=field('postcode'),lat=field('latitude'),lon=field('longitude');if(!postcode||!lat||!lon)return;
