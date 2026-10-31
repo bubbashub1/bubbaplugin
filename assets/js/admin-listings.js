@@ -74,7 +74,7 @@ document.getElementById('bulkClaim').addEventListener('click',async e=>{
  if(!window.confirm('ARE YOU SURE?\n\nCheck and send claim invitations for '+ids.length+' selected listing(s)?\n\nEligible contact emails will be sent after verification. This cannot be undone.'))return;
  button.disabled=true;message.textContent='Checking claim invitation eligibility…';
  try{
-  const check=await fetch('/api/admin-claim-invitations.php',{credentials:'same-origin',cache:'no-store'});
+  const check=await fetch('/api/admin-claim-invitations.php'+(ids.length===1?'?activity_id='+encodeURIComponent(ids[0]):''),{credentials:'same-origin',cache:'no-store'});
   const info=await check.json();if(!check.ok||!info.ok)throw Error(info.error||'Could not check claim invitation eligibility');
   const available=new Map((info.data||[]).map(x=>[Number(x.id),x]));
   const eligible=ids.map(id=>available.get(id)).filter(x=>x&&x.recipient&&!['sent','approved','pending','sending'].includes(x.invitation_status));
