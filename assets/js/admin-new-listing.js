@@ -479,7 +479,7 @@ const previewImportedSessions=(entries,note='')=>{
    const primaryName=String(form.elements.namedItem('venue_name')?.value||'').trim().toLowerCase();
    const incomingName=String(event.venue_name).trim().toLowerCase();
    if(!primaryName||primaryName!==incomingName){
-    check.checked=false;
+    location.value='';check.checked=false;
     const warning=document.createElement('p');warning.style.cssText='font-size:13px;color:#9a4b12';
     warning.textContent='Venue needs confirmation: '+event.venue_name+'. This class is unchecked until you choose or create the correct location.';
     card.append(warning);
@@ -505,8 +505,8 @@ const previewImportedSessions=(entries,note='')=>{
  add.addEventListener('click',()=>{
   const selected=checks.filter(row=>row.check.checked);
   if(!selected.length){importMessage.textContent='Select at least one class to add.';return;}
-  const invalid=selected.find(row=>!row.title.value.trim()||/confirm/i.test(row.title.value.trim())||!row.startTime.value||!row.endTime.value||row.endTime.value<=row.startTime.value||(row.from.value&&row.to.value&&row.to.value<row.from.value)||(row.from.value&&row.daySelect.value&&new Date(row.from.value+'T12:00:00').getDay()!==Number(row.daySelect.value)%7));
-  if(invalid){invalid.check.closest('fieldset').style.borderColor='#b42318';importMessage.textContent='Class '+(checks.indexOf(invalid)+1)+' needs a class name, valid start/end times and valid dates. Correct the highlighted class and try again.';return;}
+  const invalid=selected.find(row=>!row.title.value.trim()||/confirm/i.test(row.title.value.trim())||!row.startTime.value||!row.endTime.value||row.endTime.value<=row.startTime.value||!row.location.value||(row.from.value&&row.to.value&&row.to.value<row.from.value)||(row.from.value&&row.daySelect.value&&new Date(row.from.value+'T12:00:00').getDay()!==Number(row.daySelect.value)%7));
+  if(invalid){invalid.check.closest('fieldset').style.borderColor='#b42318';importMessage.textContent='Class '+(checks.indexOf(invalid)+1)+' needs a class name, confirmed venue, valid start/end times and valid dates. Correct the highlighted class and try again.';return;}
   const known=new Set([...scheduleRows.children].map(row=>{
    const v={};row.querySelectorAll('[data-session-field]').forEach(el=>v[el.dataset.sessionField]=el.value);
    return [row.querySelector('[data-session-venue]')?.value||'0',v.start_date,v.end_date,v.start_time,v.day_of_week,String(v.class_name||'').trim().toLowerCase()].join('|');
