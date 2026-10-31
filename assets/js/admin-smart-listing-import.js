@@ -26,7 +26,7 @@
      const [name,value]=entries[Number(box.dataset.smartIndex)];const field=form.elements.namedItem(name);
      if(!field)return;
      if(name==='category'){field.dispatchEvent(new CustomEvent('bh:apply-categories',{detail:data.categories||[]}));}else{field.value=value;}field.dispatchEvent(new Event('input',{bubbles:true}));field.dispatchEvent(new Event('change',{bubbles:true}));applied++;
-     if(name==='description'){const editor=document.getElementById('adminDescriptionEditor');if(editor)editor.textContent=value;}
+     if(name==='description'){const editor=document.getElementById('adminDescriptionEditor');if(editor){editor.textContent=value;editor.dispatchEvent(new Event('input',{bubbles:true}));}}
     });
     status.textContent=applied+' fields applied. Review the listing before saving.';
    });
