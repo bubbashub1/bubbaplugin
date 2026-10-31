@@ -322,7 +322,7 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
    $found[$key]=['title'=>mb_substr($title,0,180),'day_of_week'=>(int)$dt->format('N'),'start_time'=>$start,'end_time'=>'','start_date'=>$dt->format('Y-m-d'),'end_date'=>$dt->format('Y-m-d'),'frequency'=>'once','url'=>$url,'uid'=>$key];
   }
  }
- if(!$found)fail(422,'Bookwhen loads this schedule dynamically. Automatic extraction from this public URL is not supported yet. Use Paste timetable below, or a public iCalendar feed.');
+ if(!$found)fail(422,'This public Bookwhen page did not expose verified sessions to the importer. Copy the visible timetable into Paste timetable below. A calendar feed is optional, not required.');
  echo json_encode(['ok'=>true,'data'=>array_slice(array_values($found),0,150),'skipped_recurring'=>0,'source'=>'bookwhen_public_page']);exit;
 }
 $lines=preg_split('/\r\n|\n|\r/',$body);$unfold=[];
