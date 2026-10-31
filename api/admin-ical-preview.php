@@ -22,6 +22,48 @@ curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>fals
 $body=curl_exec($ch);$code=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);
 if(!is_string($body)||strlen($body)>1048576||$code!==200)fail(422,'Could not retrieve the public calendar feed (HTTP '.$code.').');
 if(!str_contains($body,'BEGIN:VCALENDAR')){
+ $isBabySensory=(bool)preg_match('/(^|\.)babysensory\.com$/i',$host);
+ if($isBabySensory){
+  if(!class_exists('DOMDocument'))fail(422,'Baby Sensory timetable parsing is unavailable on this server.');
+  $dom=new DOMDocument();$prev=libxml_use_internal_errors(true);
+  $dom->loadHTML('<?xml encoding="utf-8" ?>'.$body);libxml_clear_errors();libxml_use_internal_errors($prev);
+  $xpath=new DOMXPath($dom);$found=[];
+  $days=['monday'=>1,'tuesday'=>2,'wednesday'=>3,'thursday'=>4,'friday'=>5,'saturday'=>6,'sunday'=>7];
+  foreach($xpath->query('//tr') as $tr){
+   $cells=$xpath->query('./td',$tr);
+   if($cells->length<4)continue;
+   $columns=[];
+   foreach($cells as $cell)$columns[]=trim(preg_replace('/\s+/u',' ',html_entity_decode($cell->textContent,ENT_QUOTES|ENT_HTML5,'UTF-8')));
+   $dayText=$columns[1]??'';$timeText=$columns[2]??'';$ageText=$columns[3]??'';
+   if(!preg_match('/\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b/i',$dayText,$dm))continue;
+   if(!preg_match('/\b([01]?\d|2[0-3]):([0-5]\d)\s*[-–]\s*([01]?\d|2[0-3]):([0-5]\d)\b/u',$timeText,$tm))continue;
+   $start=sprintf('%02d:%02d',(int)$tm[1],(int)$tm[2]);
+   $end=sprintf('%02d:%02d',(int)$tm[3],(int)$tm[4]);
+   if($end<=$start)continue;
+   $dates=[];
+   if(preg_match_all('/\b(\d{1,2})\s+([A-Za-z]{3,9})\s+(\d{2,4})\b/u',$dayText,$dateMatches,PREG_SET_ORDER)){
+    foreach($dateMatches as $dateMatch){
+     try{$year=(int)$dateMatch[3];if($year<100)$year+=2000;
+      $dt=DateTimeImmutable::createFromFormat('!j M Y',$dateMatch[1].' '.substr($dateMatch[2],0,3).' '.$year);
+      if($dt)$dates[]=$dt->format('Y-m-d');
+     }catch(Throwable $ignored){}
+    }
+   }
+   if(count($dates)!==2)continue;
+   $day=$days[strtolower($dm[1])];$venue=$columns[0]??'';
+   $venueName=trim(preg_split('/\b\d{1,4}\s+[A-Za-z]/u',$venue,2)[0]);
+   if($venueName==='')$venueName=$venue;
+   $title=trim($ageText)!==''?trim($ageText):'Baby Sensory class';
+   $frequency=$dates[0]===$dates[1]?'once':'weekly';
+   $key=implode('|',[$venue,$day,$start,$end,$dates[0],$dates[1],$title]);
+   $found[$key]=['title'=>$title,'day_of_week'=>$day,'start_time'=>$start,'end_time'=>$end,
+    'start_date'=>$dates[0],'end_date'=>$dates[1],'frequency'=>$frequency,
+    'venue_name'=>$venueName,'venue_address'=>$venue,'url'=>$url,'uid'=>$key];
+   if(count($found)>=150)break;
+  }
+  if(!$found)fail(422,'Baby Sensory timetable retrieved, but no complete dated timetable rows were recognised. No times were guessed.');
+  echo json_encode(['ok'=>true,'data'=>array_values($found),'skipped_recurring'=>0,'source'=>'baby_sensory_table','note'=>'Times, dates and venues extracted per timetable row. Check term breaks and preview before saving.']);exit;
+ }
  $isBookwhen=(bool)preg_match('/(^|\\.)bookwhen\\.com$/i',$host);
  $isBloom=(bool)preg_match('/(^|\\.)bloombabyclasses\\.com$/i',$host);
  if(!$isBookwhen&&!$isBloom){
