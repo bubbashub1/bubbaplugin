@@ -590,6 +590,46 @@ document.getElementById('adminBookwhenPastePreview')?.addEventListener('click',(
  let feedback=document.getElementById('adminPastePreviewMessage');
  if(!feedback){feedback=document.createElement('p');feedback.id='adminPastePreviewMessage';feedback.setAttribute('role','status');button.after(feedback);}
 
+ // Rendered-page reader fallback: copy visible text from a booking page into the
+ // existing Paste Timetable field. Reuse the existing editable preview/save pipeline.
+ // ThinkSmart cards contain labelled fields, not reliably parseable HTML tables.
+ const visible=field.value.replace(/\r/g,'').replace(/\u00a0/g,' ');
+ const labels=visible.split(/(?=\bTime\s*:?\s*\d{1,2}:\d{2}\s*(?:AM|PM)\b)/i);
+ if(labels.length>1){
+  const dayNumbers={monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6,sunday:7};
+  let day=0;const extracted=[],skipped=[];
+  const getDay=chunk=>{let found=0;for(const [name,number] of Object.entries(dayNumbers))if(new RegExp('\\b'+name+'\\b','i').test(chunk))found=number;return found;};
+  day=getDay(labels[0]);
+  const dateISO=(dd,mm,yyyy)=>{const d=new Date(Date.UTC(+yyyy,+mm-1,+dd));return d.getUTCFullYear()===+yyyy&&d.getUTCMonth()===+mm-1&&d.getUTCDate()===+dd?d.toISOString().slice(0,10):'';};
+  for(const chunk of labels.slice(1)){
+   const tm=chunk.match(/^\s*Time\s*:?\s*(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+   const title=chunk.match(/\bLesson\s+Format\s*:?\s*([\s\S]*?)\s+Duration\s*:?/i);
+   const duration=chunk.match(/\bDuration\s*:?\s*(\d{1,3})\s*(?:minutes?|mins?)\b/i);
+   const from=chunk.match(/\bNext\s+session\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\b/i);
+   const to=chunk.match(/\bLast\s+session\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\b/i);
+   if(!tm||!title||!duration||!from||!to||!day){skipped.push('Missing labelled class field or weekday');day=getDay(chunk)||day;continue;}
+   let hour=+tm[1];const minute=+tm[2],minutes=+duration[1];
+   if(hour<1||hour>12||minute>59||minutes<1||minutes>240){skipped.push('Invalid time or duration');continue;}
+   hour=hour%12+(tm[3].toLowerCase()==='pm'?12:0);
+   const start=String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0');
+   const endDate=new Date(Date.UTC(2000,0,1,hour,minute+minutes));
+   const end=String(endDate.getUTCHours()).padStart(2,'0')+':'+String(endDate.getUTCMinutes()).padStart(2,'0');
+   const startDate=dateISO(from[1],from[2],from[3]),endDateText=dateISO(to[1],to[2],to[3]);
+   if(!startDate||!endDateText||endDateText<startDate){skipped.push('Invalid class dates');continue;}
+   const name=title[1].replace(/\s+/g,' ').trim();
+   if(!name){skipped.push('Missing class name');continue;}
+   const price=chunk.match(/\bPrice\s+Per\s+Class\s*:?\s*£\s*(\d+(?:\.\d{1,2})?)/i);
+   const waitlist=/register\s+for\s+waitlist/i.test(chunk);
+   extracted.push({title:name,class_name:name,day_of_week:day,start_time:start,end_time:end,start_date:startDate,end_date:endDateText,frequency:'weekly',price:price?.[1]||'',availability:waitlist?'waitlist':'bookable'});
+   day=getDay(chunk)||day;
+  }
+  if(extracted.length){
+   const unique=[...new Map(extracted.map(x=>[[x.day_of_week,x.start_time,x.title,x.start_date,x.end_date].join('|'),x])).values()];
+   feedback.textContent=unique.length+' rendered-page class(es) recognised.'+(skipped.length?' '+skipped.length+' incomplete record(s) skipped.':'')+' Review all details before adding.';
+   previewImportedSessions(unique,'Read from pasted visible booking-page text. Check venues, dates, prices and booking status.');
+   return;
+  }
+ }
  // Accept ordinary one-session-per-line CSV and weekday-first timetable rows.
  const simpleSessions=[];
  const unrecognisedLines=[];
