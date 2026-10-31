@@ -4,9 +4,13 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 function fail($message,$code=422){http_response_code($code);echo json_encode(['ok'=>false,'message'=>$message]);exit;}
 if($_SERVER['REQUEST_METHOD']!=='POST') fail('POST required',405);
+if(strtolower((string)($_SERVER['HTTP_SEC_FETCH_SITE']??''))==='cross-site')fail('Cross-site requests are not permitted.',403);
+session_name('BUBBAHUB_ADMINSESSID');session_start();
+if(empty($_SESSION['bh_admin_authenticated']))fail('Administrator sign-in required.',401);
+session_write_close();
 $body=json_decode(file_get_contents('php://input'),true);
 $url=trim((string)($body['url']??''));
-if(!filter_var($url,FILTER_VALIDATE_URL)||!in_array(strtolower((string)parse_url($url,PHP_URL_SCHEME)),['https','http'],true))fail('Enter a valid public website URL.');
+if(!filter_var($url,FILTER_VALIDATE_URL)||strtolower((string)parse_url($url,PHP_URL_SCHEME))!=='https')fail('Enter a valid public website URL.');
 $host=(string)parse_url($url,PHP_URL_HOST);
 if(!$host||strlen($url)>1500||preg_match('/(^localhost$|\\.local$)/i',$host)||parse_url($url,PHP_URL_USER)||parse_url($url,PHP_URL_PASS))fail('Public website URLs only.');
 $ips=gethostbynamel($host);
@@ -131,4 +135,15 @@ $tagVocabulary=['baby massage','baby yoga','baby sensory','newborn','bonding','t
 $detected=[];foreach($tagVocabulary as $term){if(mb_strpos($search,$term)!==false)$detected[]=$term;}
 $tags=array_slice(array_values(array_unique(array_filter(array_map('trim',explode(',',$keywords))))),0,12);
 $tags=array_slice(array_values(array_unique(array_merge($detected,$tags))),0,12);
-echo json_encode(['ok'=>true,'title'=>$title,'description'=>$description,'about_description'=>$aboutDescription,'image_url'=>$imageUrl,'categories'=>$categories,'tags'=>$tags,'source'=>$url,'message'=>'Review and edit all suggested information before saving.'],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+
+// Conservative contact extraction from public links and visible page text.
+$contact=['email'=>'','phone'=>'','facebook_url'=>'','instagram_url'=>'','booking_url'=>''];
+foreach($xp->query('//a[@href]')?:[] as $a){
+ $href=trim((string)$a->getAttribute('href'));
+ if(stripos($href,'mailto:')===0&&!$contact['email']){ $email=rawurldecode(explode('?',substr($href,7))[0]);if(filter_var($email,FILTER_VALIDATE_EMAIL))$contact['email']=$email; }
+ if(stripos($href,'tel:')===0&&!$contact['phone'])$contact['phone']=mb_substr(trim(substr($href,4)),0,40);
+ if(preg_match('~^https://(?:www\\.)?facebook\\.com/[^/?#]+~i',$href)&&!$contact['facebook_url'])$contact['facebook_url']=$href;
+ if(preg_match('~^https://(?:www\\.)?instagram\\.com/[^/?#]+~i',$href)&&!$contact['instagram_url'])$contact['instagram_url']=$href;
+ if(preg_match('~^https://~i',$href)&&preg_match('/book|timetable|schedule|reserve/i',(string)$a->textContent.' '.$href)&&!$contact['booking_url'])$contact['booking_url']=$href;
+}
+echo json_encode(['ok'=>true,'contact'=>$contact,'title'=>$title,'description'=>$description,'about_description'=>$aboutDescription,'image_url'=>$imageUrl,'categories'=>$categories,'tags'=>$tags,'source'=>$url,'message'=>'Review and edit all suggested information before saving.'],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);

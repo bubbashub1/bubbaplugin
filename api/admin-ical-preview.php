@@ -170,7 +170,7 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
     'venue_name'=>$venueName,'venue_address'=>$venue,'url'=>$url,'uid'=>$key];
    if(count($found)>=150)break;
   }
-  if(!$found)fail(422,'Baby Sensory timetable retrieved, but no complete dated timetable rows were recognised. No times were guessed.');
+  if(!$found)fail(422,'Baby Sensory timetable loads class rows dynamically. No verified sessions were available in the public HTML. Open the timetable in your browser and paste the class rows, or provide a calendar feed. No times or venues were guessed.');
   echo json_encode(['ok'=>true,'data'=>array_values($found),'skipped_recurring'=>0,'source'=>'baby_sensory_table','note'=>'Times, dates and venues extracted per timetable row. Check term breaks and preview before saving.']);exit;
  }
  $isBookwhen=(bool)preg_match('/(^|\\.)bookwhen\\.com$/i',$host);
