@@ -29,6 +29,14 @@ $db = bh_mysql();
 $lock = $db->query("SELECT GET_LOCK('bh_claim_auto_invites',0)")->fetchColumn();
 if ((int)$lock !== 1) { echo "Worker already running\n"; exit; }
 try {
+  // Never assume an organiser is unclaimed when the ownership column is missing.
+  // Older live databases may not yet have the organiser ownership migration.
+  $ownerColumn=$db->query("SHOW COLUMNS FROM bh_organisers LIKE 'user_id'")->fetch(PDO::FETCH_ASSOC);
+  if(!$ownerColumn){
+    error_log('Claim auto worker paused: bh_organisers.user_id missing; run the organiser ownership schema migration before enabling invitations.');
+    echo "Claim auto invitations paused: organiser ownership schema needs migration; no emails sent.\\n";
+    exit(1);
+  }
   // Work through existing and new unclaimed listings, prioritising recently updated entries.\n  // Never email an organiser already attached to an account.
   // An existing invitation of any status permanently excludes automated re-sends.
   $sql = "SELECT a.id,a.title,a.contact_email
