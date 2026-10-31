@@ -444,7 +444,7 @@ const matchImportedVenue=(event)=>{
  const index=existing.findIndex(v=>name&&normal(v.venue_name)===normal(name)&&(!postcode||!postcodeKey(v.postcode)||postcodeKey(v.postcode)===postcode));
  if(index>=0)return index;
  const directoryMatch=findDirectoryVenue(name,event.postcode);
- addVenue({venue_name:name,postcode:event.postcode||'',town:directoryMatch?.town||'',region:directoryMatch?.region||'',address:directoryMatch?.address||'',latitude:directoryMatch?.latitude??'',longitude:directoryMatch?.longitude??'',booking_url:event.source_url||event.url||''});
+ addVenue({id:directoryMatch?.id||0,venue_name:directoryMatch?.name||name,postcode:event.postcode||'',town:directoryMatch?.town||'',region:directoryMatch?.region||'',address:directoryMatch?.address||'',latitude:directoryMatch?.latitude??'',longitude:directoryMatch?.longitude??'',booking_url:event.source_url||event.url||''});
  return existing.length;
 };
 const previewImportedSessions=(entries,note='')=>{
