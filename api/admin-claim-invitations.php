@@ -63,6 +63,10 @@ if(!empty($input['automatic']))respond(403,['ok'=>false,'error'=>'Automatic send
 $q=$db->prepare("SELECT a.id,a.title,a.contact_email AS email FROM bh_activities a WHERE a.id=? LIMIT 1");
 $q->execute([$id]);$a=$q->fetch(PDO::FETCH_ASSOC);
 if(!$a||!filter_var($a['email'],FILTER_VALIDATE_EMAIL))respond(422,['ok'=>false,'error'=>'Missing valid activity contact email']);
+$owner=$db->prepare('SELECT o.user_id FROM bh_activities a JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.id=? LIMIT 1');
+try{$owner->execute([$id]);$ownerId=$owner->fetchColumn();}catch(PDOException $e){respond(503,['ok'=>false,'error'=>'Cannot verify organiser ownership; check database schema before sending']);}
+if($ownerId===false)respond(409,['ok'=>false,'error'=>'Listing has no valid organiser']);
+if($ownerId!==null && (int)$ownerId>0)respond(409,['ok'=>false,'error'=>'Organiser already linked to an account']);
 $q=$db->prepare("SELECT COUNT(*) FROM bh_listing_claims WHERE activity_id=? AND status IN ('approved','pending')");
 $q->execute([$id]);if((int)$q->fetchColumn()>0)respond(409,['ok'=>false,'error'=>'Claim already pending or approved']);
 $q=$db->prepare("SELECT status,sent_at FROM bh_claim_invitations WHERE activity_id=? AND recipient=?");
@@ -80,7 +84,7 @@ $subject='Your activity is now on Bubba Hub – Claim your free listing!';
 $body="Hello,\n\nWe've added ". $a['title'] ." to Bubba Hub South West. Please review your listing and claim it for free.\n\nView listing: ".$origin."/activity.html?id=".$id."\nClaim listing: ".$url."\n\nWe would love to welcome you to the Bubba Hub community! Creating a Class Leader account and having a basic activity listing are both free. It is a lovely way to help more local families discover what you offer.\n\nOnce you have claimed your listing, you can keep your details, photos and timetable up to date. Ready to get started? Follow your claim link above. If you are new to Bubba Hub, you can create your free Class Leader account along the way.\n\nThanks,\nBubba Hub South West";
 $pilot=(($input['pilot_test']??false)===true);
 $pilotAllowed=$pilot && (string)$a['title']==='Bubba and Me Cranbrook' && strtolower(trim((string)$a['email']))==='contact@bubbahub.co.uk' && $origin==='https://bubbahub.co.uk';
-$normalAllowed=!$pilot && getenv('BH_CLAIM_INVITES_ENABLED')==='1' && (getenv('BH_CLAIM_INVITES_ALL_ENABLED')==='1' || ((string)$a['title']==='Bubba and Me Cranbrook' && strtolower(trim((string)$a['email']))==='contact@bubbahub.co.uk'));
+$normalAllowed=!$pilot; // Explicit authenticated admin action with CSRF and recipient confirmation; cron has separate controls.
 if(!$pilotAllowed && !$normalAllowed)respond(409,['ok'=>false,'error'=>'Sending is disabled. Only the confirmed Cranbrook pilot to contact@bubbahub.co.uk is available.']);
 require_once __DIR__.'/mailer.php';
 $safeTitle=htmlspecialchars((string)$a['title'],ENT_QUOTES,'UTF-8');
