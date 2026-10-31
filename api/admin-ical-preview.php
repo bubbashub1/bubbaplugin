@@ -79,6 +79,55 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
    $found[$key]=['title'=>$title,'class_name'=>$title,'day_of_week'=>$day,'start_time'=>$start,'end_time'=>$end,'start_date'=>$from,'end_date'=>$to,'frequency'=>'weekly','price'=>$price,'booking_url'=>$booking,'url'=>$url,'uid'=>$key,'availability'=>$waitlist?'waitlist':'bookable'];
    if(count($found)>=150)break;
   }
+  // ThinkSmart also renders responsive layouts as labelled DIVs, not table rows.
+  // Parse only complete, bounded class records with their own start, duration and two dates.
+  if(!$found){
+   $copy=new DOMDocument();$prev=libxml_use_internal_errors(true);$copy->loadHTML('<?xml encoding="utf-8" ?>'.$iframeBody);libxml_clear_errors();libxml_use_internal_errors($prev);
+   $cx=new DOMXPath($copy);
+   foreach($cx->query('//script|//style|//nav|//footer|//noscript') as $remove)$remove->parentNode?->removeChild($remove);
+   foreach($cx->query('//tr|//td|//th|//div|//p|//h1|//h2|//h3|//h4|//button|//li|//section|//article') as $element){
+    if($element->parentNode)$element->parentNode->insertBefore($copy->createTextNode("\n"),$element);
+   }
+   $flat=html_entity_decode($copy->textContent,ENT_QUOTES|ENT_HTML5,'UTF-8');
+   $flat=preg_replace('/[ \t]+/u',' ',$flat);
+   $chunks=preg_split('/(?=\bTime\s+\d{1,2}:\d{2}\s*(?:AM|PM)\b)/iu',$flat);
+   $currentDay=0;
+   foreach($chunks as $chunk){
+    $prefix=trim($chunk);
+    if(!preg_match('/^Time\s+(\d{1,2}):(\d{2})\s*(AM|PM)\b/iu',$prefix,$tm)){
+     foreach($days as $word=>$number)if(preg_match('/\b'.preg_quote($word,'/').'\b/i',$prefix))$currentDay=$number;
+     continue;
+    }
+    // The previous record can end with the next accordion day heading.
+    $record=$prefix;
+    $recordDay=$currentDay;
+    foreach($days as $word=>$number){
+     if(preg_match('/\b'.preg_quote($word,'/').'\b/i',$record,$dayMatch,PREG_OFFSET_CAPTURE)){
+      $position=$dayMatch[0][1];
+      if($position>25){$record=substr($record,0,$position);$currentDay=$number;}
+     }
+    }
+    if(!$recordDay)continue;
+    $hour=(int)$tm[1];if($hour<1||$hour>12)continue;
+    $hour=$hour%12+(strtoupper($tm[3])==='PM'?12:0);
+    $start=sprintf('%02d:%02d',$hour,(int)$tm[2]);
+    if(!preg_match('/\bLesson\s+Format\s+(.+?)\s+Duration\s+(\d{1,3})\s*minutes?\b/isu',$record,$details))continue;
+    $title=trim(preg_replace('/\s+/u',' ',$details[1]));$duration=(int)$details[2];
+    if($title===''||mb_strlen($title)>150||$duration<1||$duration>240)continue;
+    if(!preg_match('/\bNext\s+session\s+(\d{1,2})\/(\d{1,2})\/(\d{4})\b/iu',$record,$first))continue;
+    if(!preg_match('/\bLast\s+session\s+(\d{1,2})\/(\d{1,2})\/(\d{4})\b/iu',$record,$last))continue;
+    if(!checkdate((int)$first[2],(int)$first[1],(int)$first[3])||!checkdate((int)$last[2],(int)$last[1],(int)$last[3]))continue;
+    $from=sprintf('%04d-%02d-%02d',(int)$first[3],(int)$first[2],(int)$first[1]);
+    $to=sprintf('%04d-%02d-%02d',(int)$last[3],(int)$last[2],(int)$last[1]);
+    if($to<$from)continue;
+    $end=(new DateTimeImmutable('2000-01-01 '.$start.':00'))->modify('+'.$duration.' minutes')->format('H:i');
+    $price='';if(preg_match('/\bPrice\s+Per\s+Class\s+£\s*(\d+(?:\.\d{1,2})?)/iu',$record,$pm))$price=$pm[1];
+    $waitlist=(bool)preg_match('/Register\s+for\s+Waitlist/i',$record);
+    $key=implode('|',[$recordDay,$start,$title,$from,$to]);
+    $found[$key]=['title'=>$title,'class_name'=>$title,'day_of_week'=>$recordDay,'start_time'=>$start,'end_time'=>$end,'start_date'=>$from,'end_date'=>$to,'frequency'=>'weekly','price'=>$price,'booking_url'=>$iframeUrl,'url'=>$url,'uid'=>$key,'availability'=>$waitlist?'waitlist':'bookable'];
+    if(count($found)>=150)break;
+   }
+  }
   if(!$found)fail(422,'Embedded Turtle Tots timetable retrieved but no complete dated class rows were recognised.');
   echo json_encode(['ok'=>true,'data'=>array_values($found),'skipped_recurring'=>0,'source'=>'turtle_tots_embedded','note'=>'Imported from embedded ThinkSmart timetable. Per-class prices used; waitlist classes flagged. Check venue and dates before adding.']);exit;
  }
