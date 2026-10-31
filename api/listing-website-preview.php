@@ -131,4 +131,15 @@ $tagVocabulary=['baby massage','baby yoga','baby sensory','newborn','bonding','t
 $detected=[];foreach($tagVocabulary as $term){if(mb_strpos($search,$term)!==false)$detected[]=$term;}
 $tags=array_slice(array_values(array_unique(array_filter(array_map('trim',explode(',',$keywords))))),0,12);
 $tags=array_slice(array_values(array_unique(array_merge($detected,$tags))),0,12);
-echo json_encode(['ok'=>true,'title'=>$title,'description'=>$description,'about_description'=>$aboutDescription,'image_url'=>$imageUrl,'categories'=>$categories,'tags'=>$tags,'source'=>$url,'message'=>'Review and edit all suggested information before saving.'],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+
+// Conservative contact extraction from public links and visible page text.
+$contact=['email'=>'','phone'=>'','facebook_url'=>'','instagram_url'=>'','booking_url'=>''];
+foreach($xp->query('//a[@href]')?:[] as $a){
+ $href=trim((string)$a->getAttribute('href'));
+ if(stripos($href,'mailto:')===0&&!$contact['email']){ $email=rawurldecode(explode('?',substr($href,7))[0]);if(filter_var($email,FILTER_VALIDATE_EMAIL))$contact['email']=$email; }
+ if(stripos($href,'tel:')===0&&!$contact['phone'])$contact['phone']=mb_substr(trim(substr($href,4)),0,40);
+ if(preg_match('~^https://(?:www\\.)?facebook\\.com/[^/?#]+~i',$href)&&!$contact['facebook_url'])$contact['facebook_url']=$href;
+ if(preg_match('~^https://(?:www\\.)?instagram\\.com/[^/?#]+~i',$href)&&!$contact['instagram_url'])$contact['instagram_url']=$href;
+ if(preg_match('~^https://~i',$href)&&preg_match('/book|timetable|schedule|reserve/i',(string)$a->textContent.' '.$href)&&!$contact['booking_url'])$contact['booking_url']=$href;
+}
+echo json_encode(['ok'=>true,'contact'=>$contact,'title'=>$title,'description'=>$description,'about_description'=>$aboutDescription,'image_url'=>$imageUrl,'categories'=>$categories,'tags'=>$tags,'source'=>$url,'message'=>'Review and edit all suggested information before saving.'],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
