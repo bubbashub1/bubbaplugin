@@ -10,7 +10,7 @@ if(empty($_SESSION['bh_admin_authenticated']))fail('Administrator sign-in requir
 session_write_close();
 $body=json_decode(file_get_contents('php://input'),true);
 $url=trim((string)($body['url']??''));
-if(!filter_var($url,FILTER_VALIDATE_URL)||!in_array(strtolower((string)parse_url($url,PHP_URL_SCHEME)),['https','http'],true))fail('Enter a valid public website URL.');
+if(!filter_var($url,FILTER_VALIDATE_URL)||strtolower((string)parse_url($url,PHP_URL_SCHEME))!=='https')fail('Enter a valid public website URL.');
 $host=(string)parse_url($url,PHP_URL_HOST);
 if(!$host||strlen($url)>1500||preg_match('/(^localhost$|\\.local$)/i',$host)||parse_url($url,PHP_URL_USER)||parse_url($url,PHP_URL_PASS))fail('Public website URLs only.');
 $ips=gethostbynamel($host);
