@@ -272,6 +272,31 @@ const addVenue=(venue={})=>{
  row.addEventListener('input',syncVenueSelectors);extraVenueRows.append(row);addLocationLookup(row,key=>row.querySelector('[data-vfield="'+key+'"]'));syncVenueSelectors();
 };
 (original?.venues||[]).slice(1).forEach(addVenue);
+// Main venue is rendered separately from additional venues: give it the same removal control.
+if(original?.venues?.length>1){
+ const main=original.venues[0];
+ const mainEditor=document.querySelector('.bh-primary-venue');
+ if(mainEditor&&main?.id){
+  const removeMain=document.createElement('button');removeMain.type='button';removeMain.className='button button-soft bh-remove-main-location';
+  removeMain.textContent='Remove location';removeMain.style.cssText='margin:8px 0;padding:8px 12px;font-size:13px';
+  removeMain.addEventListener('click',async()=>{
+   const options=original.venues.filter(v=>Number(v.id)!==Number(main.id));
+   const choice=window.prompt('Move sessions from this location to which location? Enter its ID:\\n'+options.map(v=>v.id+' — '+v.venue_name).join('\\n'),String(options[0].id));
+   if(choice===null)return;
+   const target=options.find(v=>Number(v.id)===Number(choice));
+   if(!target){status.textContent='Choose a listed location ID.';return;}
+   if(!window.confirm('Remove '+(main.venue_name||'main location')+' from this listing and move its sessions to '+target.venue_name+'?'))return;
+   removeMain.disabled=true;
+   try{
+    const response=await fetch('/api/admin-activities.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'remove_saved_venue',id:original.id,venue_id:main.id,target_venue_id:target.id,csrf:listingCsrf})});
+    const result=await response.json();if(!response.ok||!result.ok)throw Error(result.error||'Could not remove location.');
+    location.reload();
+   }catch(error){status.textContent=error.message;status.classList.add('is-error');removeMain.disabled=false;}
+  });
+  mainEditor.append(removeMain);
+ }
+}
+
 if(original?.id){
  const duplicates=new Map();
  for(const venue of original.venues||[]){
