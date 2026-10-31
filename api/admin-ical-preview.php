@@ -42,28 +42,37 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
   if(!is_string($iframeBody)||strlen($iframeBody)>1048576||$iframeCode!==200)fail(422,'Embedded booking timetable could not be retrieved (HTTP '.$iframeCode.').');
   $inner=new DOMDocument();$prev=libxml_use_internal_errors(true);$inner->loadHTML('<?xml encoding="utf-8" ?>'.$iframeBody);libxml_clear_errors();libxml_use_internal_errors($prev);
   $ix=new DOMXPath($inner);$found=[];$day=0;$days=['monday'=>1,'tuesday'=>2,'wednesday'=>3,'thursday'=>4,'friday'=>5,'saturday'=>6,'sunday'=>7];
-  foreach($ix->query('//h2|//h3|//h4|//tr') as $node){
+  // ThinkSmart themes use accordion buttons/divs rather than consistent heading tags.
+  // Traverse text in document order so a day label applies to its following rows.
+  foreach($ix->query('//body//*[self::h1 or self::h2 or self::h3 or self::h4 or self::button or self::summary or self::a or self::div or self::span or self::tr]') as $node){
    if($node->nodeName!=='tr'){
-    $heading=strtolower(trim($node->textContent));foreach($days as $word=>$number)if(preg_match('/\b'.preg_quote($word,'/').'\b/',$heading)){$day=$number;break;}
+    $heading=strtolower(trim(preg_replace('/\s+/u',' ',$node->textContent)));
+    if(strlen($heading)>40)continue;
+    foreach($days as $word=>$number)if(preg_match('/^'.preg_quote($word,'/').'$/i',$heading)){$day=$number;break;}
     continue;
    }
-   if(!$day)continue;
-   $cells=$ix->query('./td',$node);if($cells->length<7)continue;
+   $cells=$ix->query('./td|./th',$node);if($cells->length<4)continue;
    $values=[];foreach($cells as $cell)$values[]=trim(preg_replace('/\s+/u',' ',html_entity_decode($cell->textContent,ENT_QUOTES|ENT_HTML5,'UTF-8')));
-   if(!preg_match('/\b(\d{1,2}):(\d{2})\s*(AM|PM)\b/i',$values[0]??'',$tm))continue;
+   $rowText=implode(' | ',$values);
+   foreach($days as $word=>$number)if(preg_match('/^\s*'.preg_quote($word,'/').'\s*$/i',$rowText)){$day=$number;continue 2;}
+   if(!$day)continue;
+   $timeIndex=-1;$tm=[];
+   foreach($values as $i=>$value)if(preg_match('/\b(\d{1,2}):(\d{2})\s*(AM|PM)\b/i',$value,$tm)){$timeIndex=$i;break;}
+   if($timeIndex<0)continue;
    $hour=(int)$tm[1];if($hour<1||$hour>12)continue;$hour=$hour%12+(strtoupper($tm[3])==='PM'?12:0);
    $start=sprintf('%02d:%02d',$hour,(int)$tm[2]);$duration=0;
-   if(preg_match('/\b(\d{1,3})\s*minutes?\b/i',$values[2]??'',$dm))$duration=(int)$dm[1];
+   foreach($values as $value)if(preg_match('/\b(\d{1,3})\s*(?:minutes?|mins?)\b/i',$value,$dm)){$duration=(int)$dm[1];break;}
    if($duration<1||$duration>240)continue;
    $end=(new DateTimeImmutable('2000-01-01 '.$start.':00'))->modify('+'.$duration.' minutes')->format('H:i');
-   $parseDate=static function(string $value):string{
-    if(!preg_match('/\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/',$value,$m))return '';
-    return checkdate((int)$m[2],(int)$m[1],(int)$m[3])?sprintf('%04d-%02d-%02d',(int)$m[3],(int)$m[2],(int)$m[1]):'';
-   };
-   $from=$parseDate($values[5]??'');$to=$parseDate($values[7]??'');
-   if($from===''||$to===''||$to<$from)continue;
-   $title=trim($values[1]??'');if($title==='')continue;
-   $price='';if(preg_match('/£\s*(\d+(?:\.\d{1,2})?)/u',$values[4]??'',$pm))$price=$pm[1];
+   $dates=[];
+   foreach($values as $value)if(preg_match_all('/\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/',$value,$matches,PREG_SET_ORDER))foreach($matches as $m){
+    if(checkdate((int)$m[2],(int)$m[1],(int)$m[3]))$dates[]=sprintf('%04d-%02d-%02d',(int)$m[3],(int)$m[2],(int)$m[1]);
+   }
+   if(count($dates)<2)continue;
+   $from=$dates[0];$to=$dates[count($dates)-1];if($to<$from)continue;
+   $title=trim($values[$timeIndex+1]??'');if($title===''||preg_match('/^\d+\s*minutes?$/i',$title))continue;
+   $price='';$prices=[];foreach($values as $value)if(preg_match('/£\s*(\d+(?:\.\d{1,2})?)/u',$value,$pm))$prices[]=$pm[1];
+   if(count($prices)>1)$price=$prices[1];elseif(count($prices)===1)$price=$prices[0];
    $booking=$iframeUrl;foreach($ix->query('./td//a[@href]',$node) as $anchor){$href=trim($anchor->getAttribute('href'));if(str_starts_with($href,'https://')){$booking=$href;break;}}
    $waitlist=(bool)preg_match('/waitlist/i',$node->textContent);
    $key=implode('|',[$day,$start,$title,$from,$to]);
