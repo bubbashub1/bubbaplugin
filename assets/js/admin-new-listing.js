@@ -597,9 +597,9 @@ importButton?.addEventListener('click',async()=>{
    importResults.replaceChildren();
    const help=document.createElement('div');help.style.cssText='padding:14px;border:1px solid #d5e5d8;border-radius:12px;background:#f8fbf8';
    const heading=document.createElement('strong');heading.textContent='No verified classes yet — your listing has not been changed.';help.append(heading);
-   const hint=document.createElement('p');hint.textContent='The booking page may use a dynamic timetable. Try its public iCalendar (.ics) link, or copy the visible timetable and paste it below. Never use a private calendar feed containing attendee details.';help.append(hint);
+   const hint=document.createElement('p');hint.textContent='This booking page may load its timetable dynamically. Copy the visible class timetable from the public booking page and paste it below. A public calendar feed can be used if one is explicitly provided, but it is not required.';help.append(hint);
    if(urls.some(value=>{try{return /(^|\\.)bookwhen\\.com$/i.test(new URL(value).hostname);}catch{return false;}})){
-    const specific=document.createElement('p');specific.textContent='Bookwhen: organisers can find their PUBLIC calendar feed in Settings → Schedule pages → Calendar feeds. OpenActive only covers events the organiser has opted in to publish.';help.append(specific);
+    const specific=document.createElement('p');specific.textContent='Bookwhen: use the normal public booking URL. If automatic reading finds no sessions, copy the public timetable and paste it below; you do not need an iCalendar feed.';help.append(specific);
    }
    const go=document.createElement('button');go.type='button';go.className='button button-soft';go.textContent='Paste visible timetable instead';go.addEventListener('click',()=>{const paste=document.getElementById('adminBookwhenText');if(paste){paste.closest('details')?.setAttribute('open','');paste.scrollIntoView({behavior:'smooth',block:'center'});paste.focus();}});help.append(go);
    importResults.append(help);
