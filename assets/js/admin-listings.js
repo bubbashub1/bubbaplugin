@@ -84,14 +84,14 @@ document.getElementById('bulkClaim').addEventListener('click',async e=>{
   message.textContent='Confirmed: '+eligible.length+' eligible, '+skipped+' skipped. Sending…';
   let sent=0,failed=0;const errors=[];
   for(const item of eligible){
-   message.textContent='Sending claim invitations: '+(sent+failed+1)+' of '+eligible.length+'…';
+   message.textContent='Submitting claim invitation: '+(sent+failed+1)+' of '+eligible.length+'…';
    try{
     const response=await fetch('/api/admin-claim-invitations.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({activity_id:Number(item.id),csrf:info.csrf})});
     const result=await response.json();if(!response.ok||!result.ok)throw Error(result.error||'Send failed');
     sent++;
    }catch(err){failed++;errors.push('#'+item.id+': '+err.message);}
   }
-  message.textContent='Claim invitations: '+sent+' sent, '+failed+' failed, '+skipped+' skipped.'+(errors.length?' '+errors.slice(0,4).join('; '):'');
+  message.textContent='Claim invitations: '+sent+' accepted by SMTP (delivery not confirmed), '+failed+' failed, '+skipped+' skipped.'+(errors.length?' '+errors.slice(0,4).join('; '):'');
   if(failed)window.alert('Claim invitation result: '+sent+' sent, '+failed+' failed, '+skipped+' skipped.\\n\\n'+errors.slice(0,6).join('\\n'));
  }catch(err){message.textContent=err.message||'Claim invitations unavailable.';window.alert('Claim invitations could not proceed: '+message.textContent);}finally{button.disabled=!selected.size;}
 });
