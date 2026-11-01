@@ -53,10 +53,12 @@
       const termSelect=termField.querySelector('#termTime');
       if(termSelect){
         termSelect.classList.add('bh-term-original-select');
+        termSelect.setAttribute('aria-hidden','true');
+        termSelect.tabIndex=-1;
         const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.id='bhTermTimeQuick';checkbox.checked=termSelect.value==='yes';
         const caption=termField.querySelector('.directory-filter-label');
         if(caption){caption.removeAttribute('for');caption.setAttribute('for','bhTermTimeQuick');}
-        termField.appendChild(checkbox);
+        termField.insertBefore(checkbox,termSelect);
         checkbox.addEventListener('change',()=>{termSelect.value=checkbox.checked?'yes':'';termSelect.dispatchEvent(new Event('change',{bubbles:true}));});
         termSelect.addEventListener('change',()=>{checkbox.checked=termSelect.value==='yes';});
       }
