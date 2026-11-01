@@ -151,3 +151,12 @@ body.bh-directory:not(.bh-calendar-page) .bh-approved-inline-sort label{font-siz
 body.bh-directory:not(.bh-calendar-page) .bh-approved-inline-sort select{width:auto!important;max-width:220px!important;min-width:175px!important;min-height:40px!important;border-radius:999px!important;padding:6px 12px!important}
 body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-bar+.bh-directory-view-actions{margin-top:16px!important}
 @media(max-width:600px){body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips{flex-wrap:wrap!important;overflow:visible!important}body.bh-directory:not(.bh-calendar-page) .bh-approved-inline-sort{flex:1 1 100%!important}}
+
+/* Four activity cards per row on wide desktop; preserve responsive layouts. */
+@media(min-width:1200px){
+body.bh-directory:not(.bh-calendar-page) main.app-shell #results.activity-grid:not([hidden]){
+display:grid!important;
+grid-template-columns:repeat(4,minmax(0,1fr))!important;
+gap:16px!important;
+}
+}
