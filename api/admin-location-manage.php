@@ -13,6 +13,29 @@ try{
  if(!is_array($data))reply(400,['ok'=>false,'error'=>'Invalid JSON']);
  if(!hash_equals($_SESSION['bh_venue_csrf'],(string)($data['csrf']??'')))reply(403,['ok'=>false,'error'=>'Invalid security token']);
  $action=(string)($data['action']??'');
+ if($action==='bulk_update'){
+  $ids=$data['ids']??null;$changes=$data['changes']??null;
+  if(!is_array($ids)||count($ids)<1||count($ids)>100||!is_array($changes)||count($changes)<1)reply(422,['ok'=>false,'error'=>'Select 1–100 venues and at least one field']);
+  $cleanIds=[];foreach($ids as $id){$v=filter_var($id,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);if(!$v)reply(422,['ok'=>false,'error'=>'Invalid venue ID']);$cleanIds[]=(int)$v;}
+  $cleanIds=array_values(array_unique($cleanIds));if(count($cleanIds)!==count($ids))reply(422,['ok'=>false,'error'=>'Duplicate venue IDs']);
+  $allowed=['town'=>120,'region'=>120,'postcode'=>20,'latitude'=>null,'longitude'=>null];$fields=[];$values=[];
+  foreach($changes as $key=>$value){
+   if(!array_key_exists($key,$allowed)||!is_scalar($value)&&$value!==null)reply(422,['ok'=>false,'error'=>'Unsupported field']);
+   if($key==='latitude'||$key==='longitude'){
+    if($value!==null&&$value!==''&&(!is_numeric($value)||($key==='latitude'&&abs((float)$value)>90)||($key==='longitude'&&abs((float)$value)>180)))reply(422,['ok'=>false,'error'=>'Invalid coordinates']);
+    $values[$key]=($value===null||$value==='')?null:(float)$value;
+   }else{$v=trim((string)$value);if(mb_strlen($v)>$allowed[$key])reply(422,['ok'=>false,'error'=>'Field too long: '.$key]);$values[$key]=$v;}
+   $fields[]=$key.'=?';
+  }
+  if(array_key_exists('latitude',$values)!==array_key_exists('longitude',$values))reply(422,['ok'=>false,'error'=>'Both coordinate fields must be supplied']);
+  if(array_key_exists('latitude',$values)&&(($values['latitude']===null)!==($values['longitude']===null)))reply(422,['ok'=>false,'error'=>'Both coordinates must be set or cleared together']);
+  $marks=implode(',',array_fill(0,count($cleanIds),'?'));$db->beginTransaction();
+  $q=$db->prepare("SELECT id FROM bh_venues WHERE id IN ($marks) FOR UPDATE");$q->execute($cleanIds);$found=array_map('intval',$q->fetchAll(PDO::FETCH_COLUMN));
+  if(count($found)!==count($cleanIds)){$db->rollBack();reply(409,['ok'=>false,'error'=>'One or more venues no longer exist; nothing changed']);}
+  $sql='UPDATE bh_venues SET '.implode(',',$fields).' WHERE id IN ('.$marks.')';
+  $q=$db->prepare($sql);$q->execute(array_merge(array_values($values),$cleanIds));$updated=$q->rowCount();$db->commit();
+  reply(200,['ok'=>true,'selected'=>count($cleanIds),'changed_rows'=>$updated]);
+ }
  if(in_array($action,['create','update'],true)){
   $fields=[];
   foreach(['venue_name'=>190,'address'=>1000,'town'=>120,'region'=>120,'postcode'=>20] as $key=>$max){
