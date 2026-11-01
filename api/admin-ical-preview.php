@@ -311,10 +311,13 @@ if(!str_contains($body,'BEGIN:VCALENDAR')){
    foreach(['data-date','data-start','data-start-time','datetime'] as $attr){if($node->hasAttribute($attr)){$date=trim($node->getAttribute($attr));break;}}
    if(!preg_match('/^\\d{4}-\\d{2}-\\d{2}/',$date))continue;
    $text=trim(preg_replace('/\\s+/u',' ',$node->textContent));
-   if(!preg_match('/\\b(\\d{1,2})(?::(\\d{2}))?\\s*(am|pm)\\b/i',$text,$tm))continue;
-   $hour=(int)$tm[1]%12+(strtolower($tm[3])==='pm'?12:0);
-   $start=sprintf('%02d:%02d',$hour,(int)($tm[2]??0));
-   $title=preg_replace('/\\b\\d{1,2}(?::\\d{2})?\\s*(?:am|pm)\\b/i','',$text,1);
+   // Accept both 12-hour and 24-hour times, but only beside a verified date attribute.
+   $clockPattern='/\\b(\\d{1,2})(?::(\\d{2}))?\\s*(am|pm)\\b|\\b([01]?\\d|2[0-3]):([0-5]\\d)\\b/i';
+   if(!preg_match($clockPattern,$text,$tm))continue;
+   if(!empty($tm[3])){$hour=(int)$tm[1]%12+(strtolower($tm[3])==='pm'?12:0);$minute=(int)($tm[2]??0);}
+   else{$hour=(int)$tm[4];$minute=(int)$tm[5];}
+   $start=sprintf('%02d:%02d',$hour,$minute);
+   $title=trim(preg_replace($clockPattern,'',$text,1));
    $title=trim($title);
    if($title==='')continue;
    try{$dt=new DateTimeImmutable(substr($date,0,10),new DateTimeZone('Europe/London'));}catch(Throwable $ignored){continue;}
