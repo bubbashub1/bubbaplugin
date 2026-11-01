@@ -1,0 +1,27 @@
+name: Bubba Hub 2.0 staging feature checks
+on:
+  pull_request:
+    paths:
+      - 'api/admin-ai-listing-suggest.php'
+      - 'api/lib/native-timetable.php'
+      - 'tests/native-timetable-test.php'
+      - '.github/workflows/bh2-feature-checks.yml'
+  workflow_dispatch:
+jobs:
+  php-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, curl
+          coverage: none
+      - name: Syntax validation
+        run: |
+          php -l api/admin-ai-listing-suggest.php
+          php -l api/lib/native-timetable.php
+          php -l tests/native-timetable-test.php
+      - name: Native timetable unit tests
+        run: php tests/native-timetable-test.php
