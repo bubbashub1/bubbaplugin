@@ -1,13 +1,16 @@
 /* Directory-only composition: reuse existing working filter controls, never clone IDs. */
 (function(){
   if(!document.body.classList.contains('bh-directory')||document.body.classList.contains('bh-calendar-page'))return;
+  let initializing=false;
   async function init(){
+    if(initializing||document.body.classList.contains('bh-approved-directory-ready'))return;
+    initializing=true;
     await Promise.allSettled([window.bhDirectoryHeroReady||Promise.resolve(),window.bhAdvancedFiltersReady||Promise.resolve()]);
     const banner=document.querySelector('.bh-directory-banner');
     const hero=document.querySelector('[data-bh-directory-hero]');
     const tabs=document.querySelector('.bh-directory-view-actions');
     const filters=document.getElementById('directoryFilters');
-    if(!banner||!hero||!tabs||!filters)return;
+    if(!banner||!hero||!tabs||!filters){initializing=false;return;}
     banner.insertAdjacentElement('afterend',hero);
     const prompt=hero.querySelector('#bhLocationPrompt');
     if(prompt)prompt.hidden=true;
