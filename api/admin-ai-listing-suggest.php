@@ -111,6 +111,13 @@ if(isset($_SESSION[$cacheKey]['name'],$_SESSION[$cacheKey]['until']) && $_SESSIO
             else {http_response_code(502);echo json_encode(['ok'=>false,'error'=>'No compatible Gemini text generation model is enabled for this key','error_code'=>'no_models']);exit;}
         }
         $_SESSION[$cacheKey]=['name'=>$model,'until'=>time()+3600];
+    } else {
+        // Do not silently use a model that may not exist for this key.
+        $reason=$listCode===401||$listCode===403?'authentication':($listCode===429?'quota':($listCode===0?'network_error':'discovery_failed'));
+        error_log('BH staging Gemini model discovery failed: http='.$listCode.' category='.$reason);
+        http_response_code(502);
+        echo json_encode(['ok'=>false,'error'=>'Gemini model discovery failed (HTTP '.$listCode.'). Check API key permissions, quota and server connectivity.','error_code'=>$reason]);
+        exit;
     }
 }
 $ch=curl_init('https://generativelanguage.googleapis.com/v1beta/models/'.rawurlencode($model).':generateContent');
@@ -130,7 +137,7 @@ if($response===false||$code!==200){
     } elseif($code===401||$code===403){
         $category='authentication';$message='Gemini rejected the API key or its permissions. Check Google AI Studio key restrictions.';
     } elseif($code===404){
-        $category='model_unavailable';$message='Gemini model is unavailable for this API key or endpoint.';
+        $category='model_unavailable';$message='Gemini returned 404 for model '.$model.'. Check the available models for this key.';
     } elseif($code===429){
         $category='quota';$message='Gemini rate or usage limit reached. Check your Google AI Studio quota.';
     } elseif($code>=500){
