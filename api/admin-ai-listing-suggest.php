@@ -7,7 +7,18 @@ require_once __DIR__.'/admin-session-guard.php';
 $host=(string)($_SERVER['HTTP_HOST']??'');
 if (!preg_match('/^staging\.bubbahub\.co\.uk(?::\d+)?$/i',$host)) {http_response_code(403);echo json_encode(['ok'=>false,'error'=>'staging_only']);exit;}
 if(empty($_SESSION['bh_ai_csrf'])) $_SESSION['bh_ai_csrf']=bin2hex(random_bytes(32));
-if($_SERVER['REQUEST_METHOD']==='GET'){echo json_encode(['ok'=>true,'csrf'=>$_SESSION['bh_ai_csrf']]);exit;}
+if($_SERVER['REQUEST_METHOD']==='GET'){
+    $key=(string)(getenv('BH_GEMINI_API_KEY')?:'');
+    if ($key==='') {
+        $privateConfig=dirname(__DIR__,2).'/bh-staging-secrets.php';
+        if (is_file($privateConfig)) {
+            require_once $privateConfig;
+            if (defined('BH_GEMINI_API_KEY')) $key=(string)constant('BH_GEMINI_API_KEY');
+        }
+    }
+    echo json_encode(['ok'=>true,'csrf'=>$_SESSION['bh_ai_csrf'],'ai_configured'=>$key!=='']);
+    exit;
+}
 if($_SERVER['REQUEST_METHOD']!=='POST'){http_response_code(405);echo json_encode(['ok'=>false,'error'=>'method_not_allowed']);exit;}
 $raw=file_get_contents('php://input');
 $input=json_decode($raw?:'',true);
