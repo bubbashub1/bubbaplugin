@@ -30,3 +30,10 @@ body.bh-admin-v2:has(.bh-new){background:#f7faf8;color:#163a32}
 .bh-new #newListingForm>*{max-width:100%;min-width:0;box-sizing:border-box}
 .bh-new #newListingForm .admin-form-grid{width:100%;min-width:0;grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:850px){.bh-new .admin-panel{grid-template-columns:minmax(0,1fr)!important}.bh-new .admin-panel>.bh-steps{grid-column:1;grid-row:1}.bh-new .admin-panel>#newListingForm{grid-column:1;grid-row:2}.bh-new #newListingForm .admin-form-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Live editor has an extra .bh-wizard-layout wrapper absent on staging. */
+.bh-new .admin-panel:has(>.bh-wizard-layout){display:block!important;width:100%!important;max-width:none!important}
+.bh-new .admin-panel>.bh-wizard-layout{display:grid!important;grid-template-columns:220px minmax(0,1fr)!important;grid-template-rows:auto!important;gap:26px!important;width:100%!important;min-width:0!important;align-items:start!important}
+.bh-new .admin-panel>.bh-wizard-layout>#adminListingSteps{grid-column:1!important;grid-row:1!important;min-width:0!important;width:100%!important;box-sizing:border-box}
+.bh-new .admin-panel>.bh-wizard-layout>#newListingForm{grid-column:2!important;grid-row:1!important;min-width:0!important;width:100%!important;max-width:none!important;justify-self:stretch!important;box-sizing:border-box}
+@media(max-width:850px){.bh-new .admin-panel>.bh-wizard-layout{grid-template-columns:minmax(0,1fr)!important;gap:14px!important}.bh-new .admin-panel>.bh-wizard-layout>#adminListingSteps{grid-column:1!important;grid-row:1!important}.bh-new .admin-panel>.bh-wizard-layout>#newListingForm{grid-column:1!important;grid-row:2!important}}
