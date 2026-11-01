@@ -13,6 +13,21 @@ try{
  if(!is_array($data))reply(400,['ok'=>false,'error'=>'Invalid JSON']);
  if(!hash_equals($_SESSION['bh_venue_csrf'],(string)($data['csrf']??'')))reply(403,['ok'=>false,'error'=>'Invalid security token']);
  $action=(string)($data['action']??'');
+ if($action==='bulk_delete_preview'||$action==='bulk_delete'){
+  $ids=$data['ids']??null;
+  if(!is_array($ids)||count($ids)<1||count($ids)>100)reply(422,['ok'=>false,'error'=>'Select 1–100 venues']);
+  $clean=[];foreach($ids as $id){$v=filter_var($id,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);if(!$v)reply(422,['ok'=>false,'error'=>'Invalid venue ID']);$clean[]=(int)$v;}
+  $clean=array_values(array_unique($clean));if(count($clean)!==count($ids))reply(422,['ok'=>false,'error'=>'Duplicate venue IDs']);
+  $marks=implode(',',array_fill(0,count($clean),'?'));$db->beginTransaction();
+  $q=$db->prepare("SELECT v.id,v.venue_name,v.activity_id,COUNT(s.venue_id) AS sessions FROM bh_venues v LEFT JOIN bh_sessions s ON s.venue_id=v.id WHERE v.id IN ($marks) GROUP BY v.id,v.venue_name,v.activity_id FOR UPDATE");
+  $q->execute($clean);$rows=$q->fetchAll(PDO::FETCH_ASSOC);
+  if(count($rows)!==count($clean)){$db->rollBack();reply(409,['ok'=>false,'error'=>'Selection changed: one or more venues no longer exist']);}
+  $eligible=[];$blocked=[];foreach($rows as $row){if((int)$row['sessions']>0)$blocked[]=['id'=>(int)$row['id'],'name'=>$row['venue_name'],'sessions'=>(int)$row['sessions']];else $eligible[]=['id'=>(int)$row['id'],'name'=>$row['venue_name']];}
+  if($action==='bulk_delete_preview'){$db->rollBack();reply(200,['ok'=>true,'eligible'=>$eligible,'blocked'=>$blocked]);}
+  if(($data['confirm']??'')!=='DELETE'){$db->rollBack();reply(422,['ok'=>false,'error'=>'Type DELETE to confirm']);}
+  if($blocked){$db->rollBack();reply(409,['ok'=>false,'error'=>'Some selected venues now have linked sessions. No venues deleted. Refresh preview and remap those sessions individually.','blocked'=>$blocked]);}
+  $q=$db->prepare("DELETE FROM bh_venues WHERE id IN ($marks)");$q->execute($clean);$deleted=$q->rowCount();$db->commit();reply(200,['ok'=>true,'deleted'=>$deleted]);
+ }
  if($action==='bulk_update'){
   $ids=$data['ids']??null;$changes=$data['changes']??null;
   if(!is_array($ids)||count($ids)<1||count($ids)>100||!is_array($changes)||count($changes)<1)reply(422,['ok'=>false,'error'=>'Select 1–100 venues and at least one field']);
