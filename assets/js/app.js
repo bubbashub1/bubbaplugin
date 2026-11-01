@@ -920,7 +920,7 @@ void bhHydrateSaved();
       if(hero){
         /* Keep page-specific hero styling attached to the loaded component, not the placeholder. */
         hero.classList.toggle("calendar-directory-hero",page==="calendar");
-        if(page!=="directory")hero.querySelectorAll(".bh-search-location-fields,.bh-search-location-actions,.bh-search-location-status").forEach(el=>el.remove());
+        if(page!=="directory")hero.querySelectorAll(".bh-search-location-fields,.bh-search-location-actions,.bh-search-location-status,.bh-location-prompt").forEach(el=>el.remove());
         if(page==="calendar"){
           const filters=hero.querySelector("#directoryFilters");
           if(filters){filters.id="calendarFilters";filters.classList.add("calendar-filters-panel");}

@@ -1042,6 +1042,19 @@ const bhInitDirectory=async()=>{
     $("bhPostcodeClear")?.addEventListener("click",()=>{homeLocation=null;if(postcodeInput)postcodeInput.value="";setPostcodeStatus("");const url=new URL(location.href);url.searchParams.delete("postcode");url.searchParams.delete("radius");url.searchParams.delete("nearby");history.replaceState(null,"",url);render()});
     if(params.get("postcode")){if(postcodeInput)postcodeInput.value=params.get("postcode");const r=Number(params.get("radius"));if([5,10,25,50,100].includes(r)){nearbyRadius=r;if(postcodeRadius)postcodeRadius.value=String(r)}void findPostcode(params.get("postcode"))}
     if ($("useHomeLocation")) $("useHomeLocation").onclick = loadHomeLocation;
+    // Ask once per browser session, without triggering browser permission until opted in.
+    const locationPrompt=$("bhLocationPrompt"),locationAllow=$("bhLocationPromptAllow"),locationDismiss=$("bhLocationPromptDismiss");
+    const locationPromptKey="bhDirectoryLocationPromptDismissed";
+    const dismissLocationPrompt=()=>{if(locationPrompt)locationPrompt.hidden=true;try{sessionStorage.setItem(locationPromptKey,"1")}catch(e){}};
+    if(locationPrompt&&navigator.geolocation&&!params.get("postcode")&&!params.get("nearby")){
+      let dismissed=false;try{dismissed=sessionStorage.getItem(locationPromptKey)==="1"}catch(e){}
+      if(!dismissed)locationPrompt.hidden=false;
+    }
+    locationDismiss?.addEventListener("click",dismissLocationPrompt);
+    locationAllow?.addEventListener("click",()=>{
+      dismissLocationPrompt();
+      $("bhUseMyLocation")?.click();
+    });
     if (params.get("nearby") === "1") void loadHomeLocation();
     if (params.get("nearby") === "browser") {
       if (!navigator.geolocation) setNearbyStatus("Location is not supported in this browser. Use the town filter instead.");
