@@ -4,7 +4,7 @@
   async function init(){
     await Promise.allSettled([window.bhDirectoryHeroReady||Promise.resolve(),window.bhAdvancedFiltersReady||Promise.resolve()]);
     const banner=document.querySelector('.bh-directory-banner');
-    const hero=document.querySelector('[data-bh-directory-hero-placeholder] .directory-hero-fullwidth');
+    const hero=document.querySelector('[data-bh-directory-hero]');
     const tabs=document.querySelector('.bh-directory-view-actions');
     const filters=document.getElementById('directoryFilters');
     if(!banner||!hero||!tabs||!filters)return;
@@ -42,6 +42,8 @@
     more.appendChild(filters);
     const advancedFields=document.getElementById('advancedFields');
     if(advancedFields)advancedFields.hidden=false;
+    const extra=filters.querySelector('.directory-filter-fields');
+    if(extra)extra.classList.add('bh-approved-extra-fields');
     bar.appendChild(more);
     tabs.insertAdjacentElement('afterend',bar);
     const search=hero.querySelector('.directory-hero-search');
@@ -53,6 +55,12 @@
     }
     chips.addEventListener('change',event=>{
       if(!event.target.matches('select,input'))return;
+      if(event.target.id==='ageRange'){
+        const preset={baby:[0,1],toddler:[1,3],preschool:[3,5],school:[5,9]};
+        const range=preset[event.target.value]||[0,9];
+        const min=document.getElementById('ageMin'),max=document.getElementById('ageMax');
+        if(min)min.value=range[0];if(max)max.value=range[1];
+      }
       const apply=document.getElementById('applyFilters');
       if(apply)apply.click();
     });
