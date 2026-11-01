@@ -49,7 +49,7 @@ try{
   if(!$source){$db->rollBack();reply(404,['ok'=>false,'error'=>'Venue not found']);}
   $q=$db->prepare('SELECT COUNT(*) FROM bh_sessions WHERE venue_id=?');$q->execute([$id]);$sessions=(int)$q->fetchColumn();
   $q=$db->prepare('SELECT title FROM bh_activities WHERE id=?');$q->execute([$source['activity_id']]);$activity=(string)($q->fetchColumn()?:'Unknown listing');
-  $q=$db->prepare('SELECT id,venue_name,town,postcode FROM bh_venues WHERE activity_id=? AND id<>? ORDER BY CASE WHEN LOWER(TRIM(venue_name))=LOWER(TRIM(?)) THEN 0 WHEN postcode=? AND postcode<>\'\' THEN 1 WHEN town=? AND town<>\'\' THEN 2 ELSE 3 END,venue_name LIMIT 20');
+  $q=$db->prepare("SELECT id,venue_name,town,postcode FROM bh_venues WHERE activity_id=? AND id<>? ORDER BY CASE WHEN LOWER(TRIM(venue_name))=LOWER(TRIM(?)) THEN 0 WHEN postcode=? AND postcode<>'' THEN 1 WHEN town=? AND town<>'' THEN 2 ELSE 3 END,venue_name LIMIT 20");
   $q->execute([$source['activity_id'],$id,$source['venue_name'],$source['postcode'],$source['town']]);$candidates=$q->fetchAll(PDO::FETCH_ASSOC);
   if($action==='delete_preview'){$db->rollBack();reply(200,['ok'=>true,'venue'=>$source,'listing'=>$activity,'sessions'=>$sessions,'candidates'=>$candidates]);}
   $target=filter_var($data['target_id']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
