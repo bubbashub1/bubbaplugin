@@ -1021,6 +1021,19 @@ const bhInitDirectory=async()=>{
 
     if ($("useHomeLocation")) $("useHomeLocation").onclick = loadHomeLocation;
     if (params.get("nearby") === "1") void loadHomeLocation();
+    if (params.get("nearby") === "browser") {
+      if (!navigator.geolocation) setNearbyStatus("Location is not supported in this browser. Use the town filter instead.");
+      else {
+        setNearbyStatus("Allow location access to see activities near you…");
+        navigator.geolocation.getCurrentPosition(position => {
+          homeLocation = {lat:position.coords.latitude,long:position.coords.longitude,town:"",postcode:""};
+          setNearbyStatus("Showing activities near your current location");
+          render();
+        }, error => {
+          setNearbyStatus(error.code===1?"Location permission denied. Use a town or region instead.":"Unable to find your location. Use a town or region instead.");
+        }, {enableHighAccuracy:false,timeout:12000,maximumAge:60000});
+      }
+    }
 
     if ($("applyFilters")) $("applyFilters").onclick = event => {
       event.preventDefault();
