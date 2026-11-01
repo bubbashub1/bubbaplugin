@@ -26,7 +26,7 @@ try {
         }
         $normaliseTitle = static function (string $title): string {
             $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            $title = str_replace(["’", "‘", "'", "â"], '', $title);
+            $title = str_replace(["’", "‘", "'"], '', $title);
             if (function_exists('iconv')) {
                 $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $title);
                 if ($ascii !== false) $title = $ascii;
