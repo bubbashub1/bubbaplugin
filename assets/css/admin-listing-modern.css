@@ -22,3 +22,11 @@ body.bh-admin-v2:has(.bh-new){background:#f7faf8;color:#163a32}
 .bh-new #newListingForm #bhAutoFillRun{background:#007656;color:white;border-radius:999px;padding:12px 22px}
 .bh-new #newListingForm #bhAutoFillUrl{width:100%}
 @media(max-width:850px){.bh-new .admin-panel{grid-template-columns:minmax(0,1fr)}.bh-new .bh-steps{position:static;flex-direction:row;overflow-x:auto;gap:5px;padding:10px!important}.bh-new .bh-step{flex:0 0 auto;width:auto;padding:9px!important;font-size:13px}.bh-new .bh-step span{height:27px;flex-basis:27px}.bh-new #newListingForm>.bh-card,.bh-new #adminListingIdentity{padding:17px!important}.bh-new .admin-subpage-head{padding:18px}}
+
+/* Layout correction: form must occupy the full second grid track, never intrinsic min-content width. */
+.bh-new .admin-panel{width:100%!important;max-width:none!important;box-sizing:border-box;grid-template-columns:220px minmax(0,1fr)!important;justify-items:stretch!important;align-items:start!important}
+.bh-new .admin-panel>.bh-steps{grid-column:1;grid-row:1;width:100%;min-width:0;box-sizing:border-box}
+.bh-new .admin-panel>#newListingForm{grid-column:2;grid-row:1;display:block!important;width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box;overflow-wrap:normal;word-break:normal}
+.bh-new #newListingForm>*{max-width:100%;min-width:0;box-sizing:border-box}
+.bh-new #newListingForm .admin-form-grid{width:100%;min-width:0;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:850px){.bh-new .admin-panel{grid-template-columns:minmax(0,1fr)!important}.bh-new .admin-panel>.bh-steps{grid-column:1;grid-row:1}.bh-new .admin-panel>#newListingForm{grid-column:1;grid-row:2}.bh-new #newListingForm .admin-form-grid{grid-template-columns:minmax(0,1fr)}}
