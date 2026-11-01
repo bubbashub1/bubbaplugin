@@ -1,3 +1,4 @@
+function bhActivityLink(activity){const slug=String(activity?.slug||'').trim();if(slug&&!/&(?:#\d+|[a-z]+);/i.test(slug))return '/activity/'+encodeURIComponent(slug);return '/activity.html?id='+encodeURIComponent(activity?.id||'');}
 /* Load the single shared Bubba Hub header on every public page. */
 (function(){
   if(document.querySelector('script[data-bh-header-loader], script[src*="assets/js/header.js"]'))return;
@@ -458,7 +459,7 @@ void bhHydrateSaved();
         const venue=Array.isArray(a.venues)&&a.venues[0]?a.venues[0]:{};
         const session=Array.isArray(venue.sessions)&&venue.sessions[0]?venue.sessions[0]:{};
         const when=[session.day,session.start&&session.end?(session.start+" – "+session.end):session.start].filter(Boolean).join(" · ");
-        return '<a class="home-mini-event" href="activity.html?slug='+encodeURIComponent(a.slug||"")+'&id='+encodeURIComponent(a.id)+'"><span class="home-mini-thumb"></span><div><b>'+esc(a.title||"Family activity")+'</b><small>'+esc([venue.town||venue.region,when].filter(Boolean).join(" · "))+'</small></div><em>♥</em></a>';
+        return '<a class="home-mini-event" href="'+bhActivityLink(a)+'"><span class="home-mini-thumb"></span><div><b>'+esc(a.title||"Family activity")+'</b><small>'+esc([venue.town||venue.region,when].filter(Boolean).join(" · "))+'</small></div><em>♥</em></a>';
       }).join("")+'<a class="button button-primary home-full-button" href="planner.html">View my planner →</a>';
     }catch(_){
       root.innerHTML='<div class="home-planner-empty"><h3>Your planner</h3><p>We could not load your planner just now. Your saved activities are still safe.</p><a class="button button-primary" href="planner.html">Open planner →</a></div>';
@@ -753,7 +754,7 @@ void bhHydrateSaved();
       selected.forEach((a,index)=>{
         const card=document.createElement("a");
         card.className="home-activity-card";
-        card.href="activity.html?slug="+encodeURIComponent(a.slug||"")+"&id="+encodeURIComponent(a.id);
+        card.href=bhActivityLink(a);
         const imageWrap=document.createElement("div");
         imageWrap.className="home-card-image";
         const img=document.createElement("img");
