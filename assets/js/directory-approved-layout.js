@@ -40,6 +40,8 @@
     summary.textContent='More options';
     more.appendChild(summary);
     more.appendChild(filters);
+    const advancedFields=document.getElementById('advancedFields');
+    if(advancedFields)advancedFields.hidden=false;
     bar.appendChild(more);
     tabs.insertAdjacentElement('afterend',bar);
     const search=hero.querySelector('.directory-hero-search');
