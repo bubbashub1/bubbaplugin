@@ -86,3 +86,26 @@ body.bh-directory:not(.bh-calendar-page) .bh-directory-banner .bh-location-promp
 body.bh-directory:not(.bh-calendar-page) .bh-directory-content-grid>.bh-directory-list-pane{width:100%!important}
 body.bh-directory:not(.bh-calendar-page) .bh-directory-content-grid #results{width:100%!important;max-width:none!important}
 @media(max-width:950px){body.bh-directory:not(.bh-calendar-page) .app-shell>.bh-directory-banner{min-height:360px!important;padding-bottom:155px!important}body.bh-directory:not(.bh-calendar-page) .bh-directory-banner>.bh-approved-search{bottom:-95px!important;width:calc(100% - 24px)!important}body.bh-directory:not(.bh-calendar-page) .bh-directory-banner>.bh-approved-search .directory-hero-search{border-radius:22px!important}body.bh-directory:not(.bh-calendar-page) .app-shell>.directory-layout{padding-top:116px!important}}
+
+/* One-container directory: remove inherited sidebar width and column offsets. */
+body.bh-directory:not(.bh-calendar-page) main.app-shell{display:flex!important;flex-direction:column!important;align-items:stretch!important;grid-template-columns:minmax(0,1fr)!important;gap:0!important;width:100%!important;max-width:1600px!important;margin:0 auto!important;padding:0 clamp(12px,2vw,32px)!important;box-sizing:border-box!important}
+body.bh-directory:not(.bh-calendar-page) main.app-shell>.bh-directory-banner{flex:0 0 auto!important;width:100%!important;max-width:none!important;align-self:stretch!important}
+body.bh-directory:not(.bh-calendar-page) main.app-shell>.directory-layout,
+body.bh-directory:not(.bh-calendar-page) main.app-shell>.directory-layout>.directory-results-column,
+body.bh-directory:not(.bh-calendar-page) main.app-shell .bh-directory-content-grid,
+body.bh-directory:not(.bh-calendar-page) main.app-shell .bh-directory-list-pane{display:block!important;flex:0 1 auto!important;grid-column:1/-1!important;grid-row:auto!important;float:none!important;clear:both!important;position:relative!important;inset:auto!important;transform:none!important;min-width:0!important;max-width:none!important;width:100%!important;margin:0!important;box-sizing:border-box!important}
+body.bh-directory:not(.bh-calendar-page) main.app-shell>.directory-layout{padding:56px 0 0!important}
+body.bh-directory:not(.bh-calendar-page) main.app-shell .directory-results-column{padding:0!important}
+body.bh-directory:not(.bh-calendar-page) main.app-shell .bh-directory-view-actions,
+body.bh-directory:not(.bh-calendar-page) main.app-shell .bh-approved-filter-bar,
+body.bh-directory:not(.bh-calendar-page) main.app-shell .bh-directory-sort,
+body.bh-directory:not(.bh-calendar-page) main.app-shell #results,
+body.bh-directory:not(.bh-calendar-page) main.app-shell #calendarView,
+body.bh-directory:not(.bh-calendar-page) main.app-shell #directoryEventsView,
+body.bh-directory:not(.bh-calendar-page) main.app-shell #mapView{width:100%!important;max-width:none!important;min-width:0!important;margin-left:0!important;margin-right:0!important;box-sizing:border-box!important}
+body.bh-directory:not(.bh-calendar-page) main.app-shell .bh-approved-filter-chips{display:flex!important;flex-wrap:wrap!important;gap:10px!important;justify-content:flex-start!important;align-items:center!important}
+body.bh-directory:not(.bh-calendar-page) main.app-shell .bh-approved-filter-chips>.bh-approved-chip{min-width:110px!important}
+body.bh-directory:not(.bh-calendar-page) main.app-shell .bh-directory-sort{justify-content:flex-end!important}
+body.bh-directory:not(.bh-calendar-page) main.app-shell #results.activity-grid:not([hidden]){display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:20px!important}
+@media(max-width:900px){body.bh-directory:not(.bh-calendar-page) main.app-shell #results.activity-grid:not([hidden]){grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:600px){body.bh-directory:not(.bh-calendar-page) main.app-shell #results.activity-grid:not([hidden]){grid-template-columns:minmax(0,1fr)!important}body.bh-directory:not(.bh-calendar-page) main.app-shell>.directory-layout{padding-top:110px!important}}
