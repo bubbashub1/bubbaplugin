@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     return null;
   };
   try{
-    a=await loadDirectActivity("slug",slug);
+    a=await loadDirectActivity(id?"slug":"pretty_slug",slug);
     if(!a&&id)a=await loadDirectActivity("id",id);
   }catch(error){}
   if(!a && slug && id){
@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   try{
     const cleanTitle=String(a.title||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/['’]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
     if(cleanTitle&&Number(a.id)>0){
-      const canonical='/activity/'+Number(a.id)+'/'+cleanTitle;
+      const canonical='/activity/'+cleanTitle;
       if(location.pathname!==canonical)history.replaceState(history.state,'',canonical);
       let link=document.querySelector('link[rel="canonical"]');
       if(!link){link=document.createElement('link');link.rel='canonical';document.head.append(link);}
