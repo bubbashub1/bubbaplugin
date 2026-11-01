@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  if(!form||!nav)return;
  const guide=document.createElement('aside');guide.className='bh-wizard-guide';
  guide.innerHTML='<strong>Listing studio</strong><p id="bhWizardProgress" role="status">Preparing your listing…</p><div class="bh-wizard-meter"><span></span></div><p class="bh-wizard-hint">Start with a website link to discover details, then review your booking sessions.</p><button type="button" class="button button-soft" id="bhWizardGoBookings">Review booking sessions</button>';
- nav.before(guide);
+ form.prepend(guide);
  const css=document.createElement('style');css.textContent='.bh-wizard-guide{border:1px solid #cfe2d3;background:linear-gradient(135deg,#f0f8f3,#fff9eb);padding:14px;border-radius:16px;margin-bottom:14px;color:#194b36}.bh-wizard-guide p{font-size:13px;margin:7px 0}.bh-wizard-meter{height:7px;background:#dbe8df;border-radius:20px;overflow:hidden}.bh-wizard-meter span{display:block;background:#167c66;height:100%;width:0;transition:width .2s}.bh-wizard-guide .button{margin-top:8px;width:100%;white-space:normal}.bh-wizard-layout{min-width:0}';document.head.append(css);
  const fields=['title','organisation_name','category','description','email','venue_name','town'];
  const update=()=>{
