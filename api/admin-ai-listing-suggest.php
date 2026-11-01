@@ -85,7 +85,7 @@ $_SESSION['bh_ai_last_request']=time();
 $payload=json_encode(['contents'=>[['parts'=>[['text'=>$prompt]]]],'generationConfig'=>['responseMimeType'=>'application/json','temperature'=>0.1]],JSON_THROW_ON_ERROR);
 // Discover models enabled for this API key; never expose the key or provider response.
 $model='gemini-2.5-flash';
-$cacheKey='bh_ai_model_'.hash('sha256',$key);
+$cacheKey='bh_ai_model_v2_'.hash('sha256',$key);
 if(isset($_SESSION[$cacheKey]['name'],$_SESSION[$cacheKey]['until']) && $_SESSION[$cacheKey]['until']>time()){
     $model=(string)$_SESSION[$cacheKey]['name'];
 } else {
@@ -101,7 +101,7 @@ if(isset($_SESSION[$cacheKey]['name'],$_SESSION[$cacheKey]['until']) && $_SESSIO
             $name=(string)($item['name']??'');
             if(preg_match('~^models/(gemini-[a-z0-9.-]+)$~',$name,$m))$names[]=$m[1];
         }
-        foreach(['gemini-2.5-flash','gemini-2.5-flash-lite','gemini-2.0-flash','gemini-2.0-flash-lite'] as $preferred){
+        foreach(['gemini-flash-latest','gemini-2.5-flash-lite','gemini-2.5-flash','gemini-2.0-flash','gemini-2.0-flash-lite'] as $preferred){
             if(in_array($preferred,$names,true)){$model=$preferred;break;}
         }
         if(!in_array($model,$names,true)){
