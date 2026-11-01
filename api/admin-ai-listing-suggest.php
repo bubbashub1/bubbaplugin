@@ -85,8 +85,31 @@ $_SESSION[$quotaKey]=$used+1;
 $payload=json_encode(['contents'=>[['parts'=>[['text'=>$prompt]]]],'generationConfig'=>['responseMimeType'=>'application/json','temperature'=>0.1]],JSON_THROW_ON_ERROR);
 $ch=curl_init('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent');
 curl_setopt_array($ch,[CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>$payload,CURLOPT_HTTPHEADER=>['Content-Type: application/json','x-goog-api-key: '.$key],CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>25,CURLOPT_CONNECTTIMEOUT=>5]);
-$response=curl_exec($ch);$code=curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);
-if($response===false||$code!==200){http_response_code(502);echo json_encode(['ok'=>false,'error'=>'AI provider unavailable']);exit;}
+$response=curl_exec($ch);$code=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);
+$curlError=$response===false?curl_errno($ch):0;
+curl_close($ch);
+if($response===false||$code!==200){
+    // Never expose provider response bodies: they may contain sensitive details.
+    $category='provider_error';
+    $message='Gemini could not complete the request. Please try again.';
+    if($response===false){
+        $category='network_error';
+        $message=$curlError===28?'Gemini connection timed out. Please try again.':'Server could not connect to Gemini. Check outbound HTTPS access.';
+    } elseif($code===400){
+        $category='bad_request';$message='Gemini rejected the request format or model settings.';
+    } elseif($code===401||$code===403){
+        $category='authentication';$message='Gemini rejected the API key or its permissions. Check Google AI Studio key restrictions.';
+    } elseif($code===404){
+        $category='model_unavailable';$message='Gemini model is unavailable for this API key or endpoint.';
+    } elseif($code===429){
+        $category='quota';$message='Gemini rate or usage limit reached. Check your Google AI Studio quota.';
+    } elseif($code>=500){
+        $category='provider_outage';$message='Gemini is temporarily unavailable. Try again shortly.';
+    }
+    error_log('BH staging Gemini request failed: category='.$category.' http='.$code.' curl_errno='.$curlError);
+    http_response_code(502);
+    echo json_encode(['ok'=>false,'error'=>$message,'error_code'=>$category]);exit;
+}
 $json=json_decode($response,true);$output=(string)($json['candidates'][0]['content']['parts'][0]['text']??'');$fields=json_decode($output,true);
 if(!is_array($fields)){http_response_code(502);echo json_encode(['ok'=>false,'error'=>'AI response could not be reviewed']);exit;}
 $allowed=['title','description','age_range','category','tags','website','contact_email','phone'];$clean=[];
