@@ -19,10 +19,11 @@ try{
   $clean=[];foreach($ids as $id){$v=filter_var($id,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);if(!$v)reply(422,['ok'=>false,'error'=>'Invalid venue ID']);$clean[]=(int)$v;}
   $clean=array_values(array_unique($clean));if(count($clean)!==count($ids))reply(422,['ok'=>false,'error'=>'Duplicate venue IDs']);
   $marks=implode(',',array_fill(0,count($clean),'?'));$db->beginTransaction();
-  $q=$db->prepare("SELECT v.id,v.venue_name,v.activity_id,COUNT(s.venue_id) AS sessions FROM bh_venues v LEFT JOIN bh_sessions s ON s.venue_id=v.id WHERE v.id IN ($marks) GROUP BY v.id,v.venue_name,v.activity_id FOR UPDATE");
+  $q=$db->prepare("SELECT id,venue_name,activity_id FROM bh_venues WHERE id IN ($marks) FOR UPDATE");
   $q->execute($clean);$rows=$q->fetchAll(PDO::FETCH_ASSOC);
   if(count($rows)!==count($clean)){$db->rollBack();reply(409,['ok'=>false,'error'=>'Selection changed: one or more venues no longer exist']);}
-  $eligible=[];$blocked=[];foreach($rows as $row){if((int)$row['sessions']>0)$blocked[]=['id'=>(int)$row['id'],'name'=>$row['venue_name'],'sessions'=>(int)$row['sessions']];else $eligible[]=['id'=>(int)$row['id'],'name'=>$row['venue_name']];}
+  $counts=$db->prepare("SELECT venue_id,COUNT(*) AS n FROM bh_sessions WHERE venue_id IN ($marks) GROUP BY venue_id");$counts->execute($clean);$sessionCounts=[];foreach($counts->fetchAll(PDO::FETCH_ASSOC) as $item)$sessionCounts[(int)$item['venue_id']]=(int)$item['n'];
+  $eligible=[];$blocked=[];foreach($rows as $row){$sessionCount=$sessionCounts[(int)$row['id']]??0;if($sessionCount>0)$blocked[]=['id'=>(int)$row['id'],'name'=>$row['venue_name'],'sessions'=>$sessionCount];else $eligible[]=['id'=>(int)$row['id'],'name'=>$row['venue_name']];}
   if($action==='bulk_delete_preview'){$db->rollBack();reply(200,['ok'=>true,'eligible'=>$eligible,'blocked'=>$blocked]);}
   if(($data['confirm']??'')!=='DELETE'){$db->rollBack();reply(422,['ok'=>false,'error'=>'Type DELETE to confirm']);}
   if($blocked){$db->rollBack();reply(409,['ok'=>false,'error'=>'Some selected venues now have linked sessions. No venues deleted. Refresh preview and remap those sessions individually.','blocked'=>$blocked]);}
