@@ -1,0 +1,26 @@
+/* Directory 2026 compact layout. Overrides legacy sticky sidebar rules without changing search APIs. */
+body.bh-directory:not(.bh-calendar-page) .app-shell{display:block!important;max-width:1536px!important;padding-top:0!important;margin:auto}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner{display:block!important;position:relative!important;min-height:215px!important;margin:0 0 12px!important;padding:24px clamp(20px,4vw,64px)!important;border-radius:0!important;background:linear-gradient(95deg,#e4f2e5,#fdf7e9 60%,#d5ebed)!important;text-align:center}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy{max-width:100%!important;text-align:center!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner h1{font-size:clamp(1.8rem,3.4vw,3rem)!important;color:#07543c!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner p{font-size:clamp(.9rem,1.4vw,1.12rem)!important}
+body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder]{grid-column:auto!important;position:static!important;width:100%!important;max-width:none!important;max-height:none!important;overflow:visible!important;padding:0 clamp(12px,3vw,48px)!important;margin:-80px auto 14px!important;z-index:2;position:relative!important}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-search{padding:12px!important;border-radius:28px!important;box-shadow:0 8px 28px #174e3b1b!important}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-search h2{display:none!important}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-search-fields{display:flex!important;flex-direction:row!important;align-items:center!important;flex-wrap:wrap!important;gap:8px!important}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-search-fields>label:first-child{flex:3 1 250px!important}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-search-fields>*{width:auto!important;flex:1 1 120px!important}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-search-fields button{background:#00613e!important;color:white!important;border-radius:999px!important}
+body.bh-directory:not(.bh-calendar-page) .directory-layout{grid-column:auto!important;display:block!important;width:100%!important;margin:0!important;padding:0 clamp(12px,3vw,48px)}
+body.bh-directory:not(.bh-calendar-page) .directory-results-column{width:100%!important;max-width:none!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px!important;padding:5px!important;background:#eaf4ed;border-radius:999px;margin:12px 0 22px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions button{border:0!important;background:transparent!important;border-radius:999px!important;padding:12px 6px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions button[aria-pressed=true]{background:#00613e!important;color:#fff!important}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-actions{display:none!important}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters{margin:8px 0!important}
+body.bh-directory:not(.bh-calendar-page) .directory-hero-expanded-filters #advancedFields:not([hidden]){background:transparent!important;border:0!important;padding:8px 0!important}
+body.bh-directory:not(.bh-calendar-page) .directory-filter-fields{display:flex!important;flex-wrap:wrap!important;gap:8px!important}
+body.bh-directory:not(.bh-calendar-page) .directory-filter-fields>*,body.bh-directory:not(.bh-calendar-page) .bh-advanced-filters :is(label,select,button){border-radius:999px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-sort{justify-content:flex-end!important}
+body.bh-directory:not(.bh-calendar-page) #results.activity-grid:not([hidden]){max-height:none!important;overflow:visible!important;scrollbar-gutter:auto!important}
+@media(max-width:760px){body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder]{margin:-20px auto 12px!important}body.bh-directory:not(.bh-calendar-page) .bh-directory-banner{min-height:160px!important;padding:20px 12px 36px!important}body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions{border-radius:16px!important;overflow-x:auto}body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions button{font-size:.7rem!important}body.bh-directory:not(.bh-calendar-page) .directory-hero-search-fields>label:first-child{flex-basis:100%!important}}
