@@ -174,6 +174,8 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
  if(!$blockCol){$db->exec("ALTER TABLE bh_activities ADD COLUMN block_length_weeks SMALLINT UNSIGNED NULL DEFAULT NULL");}
  $optional=['age_min_months'=>$ageMin,'age_max_months'=>$ageMax,'price_free'=>$free?1:0,'price_per_family'=>!$free&&$unit==='per_family'?1:0,'price_per_session'=>!$free&&$unit==='per_session'?1:0,'pricing_unit'=>$unit,'block_length_weeks'=>$blockWeeks];
  $cols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);
+ // Keep the public directory's is_free flag in sync with the admin Is free checkbox.
+ if(in_array('is_free',$cols,true))$optional['is_free']=$free?1:0;
  for($n=1;$n<=10;$n++){ $field='image_'.$n;if(in_array($field,$cols,true)){ $url=trim((string)($input[$field]??''));if($url!==''&&!filter_var($url,FILTER_VALIDATE_URL))bh_admin_response(422,['ok'=>false,'error'=>'Invalid image URL for image '.$n]);$optional[$field]=$url; }}
  for($n=1;$n<=10;$n++){ $url=trim((string)($input['image_'.$n]??''));if($url!==''&&(!filter_var($url,FILTER_VALIDATE_URL)||!in_array(strtolower((string)parse_url($url,PHP_URL_SCHEME)),['http','https'],true)||strlen($url)>2048))bh_admin_response(422,['ok'=>false,'error'=>'Image '.$n.' needs a valid HTTP(S) URL of at most 2048 characters.']);}
  $optional=array_intersect_key($optional,array_flip($cols));
