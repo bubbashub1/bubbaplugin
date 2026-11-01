@@ -48,6 +48,21 @@
         update();
       }
     });
+    const termField=chips.querySelector('[data-filter-key="term_time"]');
+    if(termField){
+      const termSelect=termField.querySelector('#termTime');
+      if(termSelect){
+        termSelect.classList.add('bh-term-original-select');
+        const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.id='bhTermTimeQuick';checkbox.checked=termSelect.value==='yes';
+        const caption=termField.querySelector('.directory-filter-label');
+        if(caption){caption.removeAttribute('for');caption.setAttribute('for','bhTermTimeQuick');}
+        termField.appendChild(checkbox);
+        checkbox.addEventListener('change',()=>{termSelect.value=checkbox.checked?'yes':'';termSelect.dispatchEvent(new Event('change',{bubbles:true}));});
+        termSelect.addEventListener('change',()=>{checkbox.checked=termSelect.value==='yes';});
+      }
+    }
+    const sort=document.querySelector('.bh-directory-sort');
+    if(sort){sort.classList.add('bh-approved-inline-sort');chips.appendChild(sort);}
     const more=document.createElement('details');
     more.className='bh-approved-more';
     const summary=document.createElement('summary');
@@ -58,8 +73,9 @@
     if(advancedFields)advancedFields.hidden=false;
     const extra=filters.querySelector('.directory-filter-fields');
     if(extra)extra.classList.add('bh-approved-extra-fields');
+    more.hidden=true;
     bar.appendChild(more);
-    tabs.insertAdjacentElement('afterend',bar);
+    tabs.insertAdjacentElement('beforebegin',bar);
     const search=hero.querySelector('.directory-hero-search');
     if(search){
       const fields=search.querySelector('.directory-hero-search-fields');
