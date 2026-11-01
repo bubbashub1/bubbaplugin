@@ -270,6 +270,7 @@ const bhInitDirectory=async()=>{
     let infiniteScrollObserver = null;
     let homeLocation = null;
     let homeLocationLoading = false;
+    let nearbyRadius=10;
     let lastFilteredList = [];
 
     const distanceMiles = (lat1, lon1, lat2, lon2) => {
@@ -284,7 +285,7 @@ const bhInitDirectory=async()=>{
     const nearestVenue = activity => {
       if (!homeLocation) return null;
       const venues = bhVenues(activity).filter(v =>
-        Number.isFinite(Number(v.lat)) && Number.isFinite(Number(v.long))
+        v.lat!=null && v.long!=null && String(v.lat).trim()!=='' && String(v.long).trim()!=='' && Number.isFinite(Number(v.lat)) && Number.isFinite(Number(v.long)) && !(Number(v.lat)===0&&Number(v.long)===0)
       );
       if (!venues.length) return null;
       return venues.reduce((best, venue) => {
@@ -786,6 +787,7 @@ const bhInitDirectory=async()=>{
       if (homeLocation) {
         list = list
           .map(activity => ({ activity, nearby: nearestVenue(activity) }))
+          .filter(item => item.nearby && item.nearby.miles <= nearbyRadius)
           .sort((a, b) => {
             if (a.nearby && b.nearby) return a.nearby.miles - b.nearby.miles;
             if (a.nearby) return -1;
@@ -801,7 +803,7 @@ const bhInitDirectory=async()=>{
       if (sortMode === "az") list.sort((a,b) => titleCompare(a,b));
       else if (sortMode === "za") list.sort((a,b) => titleCompare(b,a));
       else if (sortMode === "oldest") list.sort((a,b) => updatedValue(a)-updatedValue(b) || titleCompare(a,b));
-      else list.sort((a,b) => updatedValue(b)-updatedValue(a) || Number(b.id || 0)-Number(a.id || 0));
+      else if (!homeLocation) list.sort((a,b) => updatedValue(b)-updatedValue(a) || Number(b.id || 0)-Number(a.id || 0));
 
       if ($("count")) $("count").textContent =
         `${list.length} activit${list.length === 1 ? "y" : "ies"} found` +
@@ -1019,6 +1021,28 @@ const bhInitDirectory=async()=>{
 
     // Age is intentionally a simple dropdown rather than a slider.
 
+    const postcodeForm=$("bhPostcodeSearch"),postcodeInput=$("bhPostcodeInput"),postcodeRadius=$("bhPostcodeRadius"),postcodeStatus=$("bhPostcodeStatus");
+    const setPostcodeStatus=message=>{if(postcodeStatus)postcodeStatus.textContent=message;setNearbyStatus(message)};
+    const findPostcode=async value=>{
+      const postcode=String(value||"").trim().toUpperCase().replace(/\\s+/g," ");
+      if(!/^[A-Z]{1,2}\\d[A-Z\\d]?\\s*\\d[A-Z]{2}$/.test(postcode)){setPostcodeStatus("Enter a full UK postcode, e.g. TQ1 1AA.");return}
+      setPostcodeStatus("Finding nearby activities…");
+      try{
+        const response=await fetch("/api/geocode.php?q="+encodeURIComponent(postcode),{cache:"no-store"});
+        const data=await response.json(),point=data.results?.[0],lat=Number(point?.lat),long=Number(point?.lon);
+        if(!response.ok||!Number.isFinite(lat)||!Number.isFinite(long))throw Error(data.error||"Postcode not found");
+        homeLocation={lat,long,town:"",postcode};
+        nearbyRadius=Number(postcodeRadius?.value||10);
+        setPostcodeStatus("Within "+nearbyRadius+" miles of "+postcode);
+        const url=new URL(location.href);url.searchParams.set("postcode",postcode);url.searchParams.set("radius",String(nearbyRadius));url.searchParams.delete("nearby");history.replaceState(null,"",url);
+        if(sortControl)sortControl.value="updated";
+        render();
+      }catch(error){setPostcodeStatus(error.message||"Unable to look up postcode. Try again.")}
+    };
+    if(postcodeForm)postcodeForm.addEventListener("submit",event=>{event.preventDefault();void findPostcode(postcodeInput?.value)});
+    if(postcodeRadius)postcodeRadius.addEventListener("change",()=>{if(homeLocation){nearbyRadius=Number(postcodeRadius.value);const url=new URL(location.href);url.searchParams.set("radius",String(nearbyRadius));history.replaceState(null,"",url);render()}});
+    $("bhPostcodeClear")?.addEventListener("click",()=>{homeLocation=null;if(postcodeInput)postcodeInput.value="";setPostcodeStatus("");const url=new URL(location.href);url.searchParams.delete("postcode");url.searchParams.delete("radius");url.searchParams.delete("nearby");history.replaceState(null,"",url);render()});
+    if(params.get("postcode")){if(postcodeInput)postcodeInput.value=params.get("postcode");const r=Number(params.get("radius"));if([5,10,25,50,100].includes(r)){nearbyRadius=r;if(postcodeRadius)postcodeRadius.value=String(r)}void findPostcode(params.get("postcode"))}
     if ($("useHomeLocation")) $("useHomeLocation").onclick = loadHomeLocation;
     if (params.get("nearby") === "1") void loadHomeLocation();
     if (params.get("nearby") === "browser") {
