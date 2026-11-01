@@ -566,6 +566,7 @@ const bhInitDirectory=async()=>{
               <option value="am" ${calendarTimeFilter === "am" ? "selected" : ""}>AM · Before 12pm</option>
               <option value="pm" ${calendarTimeFilter === "pm" ? "selected" : ""}>PM · From 12pm</option>
             </select>
+            <button type="button" class="button button-soft" data-calendar-print aria-label="Print this calendar week">🖨 Print calendar</button>
             <button type="button" class="button button-soft" data-calendar-prev aria-label="Previous week">‹</button>
             <button type="button" class="button button-soft" data-calendar-today>Today</button>
             <button type="button" class="button button-soft" data-calendar-next aria-label="Next week">›</button>
@@ -592,6 +593,7 @@ const bhInitDirectory=async()=>{
         </div>
       `;
 
+      calendar.querySelector("[data-calendar-print]").onclick = () => window.print();
       calendar.querySelector("#directoryCalendarTime").onchange = event => {
         calendarTimeFilter = event.target.value;
         render();
