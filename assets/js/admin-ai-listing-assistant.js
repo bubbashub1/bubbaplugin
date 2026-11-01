@@ -4,19 +4,21 @@ document.addEventListener('DOMContentLoaded',()=>{
  const form=document.getElementById('newListingForm'),anchor=document.getElementById('bhAutoFillRun');
  if(!form||!anchor)return;
  const panel=document.createElement('details');panel.className='bh-card';panel.style.marginTop='14px';
- panel.innerHTML='<summary><strong>✨ AI Listing Assistant (staging preview)</strong></summary><p>Paste publicly available class details. AI suggests non-booking fields only; choose what to apply.</p><textarea id="bhAiPublicText" rows="6" style="width:100%" maxlength="10000" placeholder="Paste public class description or About Us text"></textarea><p><button type="button" class="button button-soft" id="bhAiSuggest">Suggest listing details</button></p><p id="bhAiStatus" role="status"></p><div id="bhAiSuggestions"></div>';
+ panel.innerHTML='<summary><strong>✨ AI Listing Assistant (staging preview)</strong></summary><p>Enter a public HTTPS website URL <em>or</em> paste class details. AI suggests non-booking fields only; choose what to apply.</p><label for="bhAiSourceUrl">Class website URL</label><input id="bhAiSourceUrl" type="url" inputmode="url" placeholder="https://example.co.uk/classes" style="width:100%;margin:8px 0 12px" maxlength="1500"><p>Or paste text below:</p><textarea id="bhAiPublicText" rows="6" style="width:100%" maxlength="10000" placeholder="Paste public class description or About Us text"></textarea><p><button type="button" class="button button-soft" id="bhAiSuggest">Suggest listing details</button></p><p id="bhAiStatus" role="status"></p><div id="bhAiSuggestions"></div>';
  anchor.insertAdjacentElement('afterend',panel);
  const status=panel.querySelector('#bhAiStatus'),results=panel.querySelector('#bhAiSuggestions'),button=panel.querySelector('#bhAiSuggest');
  const fields=['title','description','age_range','category','tags','website','contact_email','phone'];
  const fieldMap={contact_email:'email'};
  button.addEventListener('click',async()=>{
   const publicText=panel.querySelector('#bhAiPublicText').value.trim();
-  if(!publicText){status.textContent='Paste some public listing information first.';return;}
+  const sourceUrl=panel.querySelector('#bhAiSourceUrl').value.trim();
+  if(!publicText&&!sourceUrl){status.textContent='Enter a website URL or paste public listing text first.';return;}
+  if(publicText&&sourceUrl){status.textContent='Use a URL or pasted text, not both.';return;}
   button.disabled=true;status.textContent='Generating suggestions…';results.replaceChildren();
   try{
    const auth=await fetch('/api/admin-ai-listing-suggest.php',{credentials:'same-origin'});
    const token=await auth.json();if(!auth.ok||!token.ok)throw Error(token.error||'AI unavailable');
-   const response=await fetch('/api/admin-ai-listing-suggest.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-BH-AI-CSRF':token.csrf},body:JSON.stringify({public_text:publicText})});
+   const response=await fetch('/api/admin-ai-listing-suggest.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-BH-AI-CSRF':token.csrf},body:JSON.stringify({public_text:publicText,source_url:sourceUrl})});
    const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'AI unavailable');
    let count=0;
    for(const name of fields){

@@ -25,7 +25,39 @@ if ($raw===false || strlen($raw)>32768) {http_response_code(413);echo json_encod
 $input=json_decode($raw?:'',true);
 if(!is_array($input)||!hash_equals((string)($_SESSION['bh_ai_csrf']??''),(string)($_SERVER['HTTP_X_BH_AI_CSRF']??''))){http_response_code(403);echo json_encode(['ok'=>false,'error'=>'invalid_request']);exit;}
 $text=trim((string)($input['public_text']??''));
-if($text===''||mb_strlen($text)>10000){http_response_code(422);echo json_encode(['ok'=>false,'error'=>'Provide up to 10000 characters of public listing text']);exit;}
+$url=trim((string)($input['source_url']??''));
+if($url!=='' && $text!==''){http_response_code(422);echo json_encode(['ok'=>false,'error'=>'Use a URL or pasted text, not both']);exit;}
+if($url!==''){
+    // Public HTTPS only. Pin the validated public IPv4 address to prevent DNS rebinding/SSRF.
+    $parts=parse_url($url);
+    $hostname=is_array($parts)?strtolower((string)($parts['host']??'')):'';
+    if(strlen($url)>1500 || !is_array($parts) || ($parts['scheme']??'')!=='https'
+        || $hostname==='' || !preg_match('/^[a-z0-9.-]+$/',$hostname)
+        || !str_contains($hostname,'.') || isset($parts['user']) || isset($parts['pass'])
+        || isset($parts['port']) || isset($parts['fragment'])) {
+        http_response_code(422);echo json_encode(['ok'=>false,'error'=>'Enter a public HTTPS website URL']);exit;
+    }
+    $ips=gethostbynamel($hostname);
+    $validIps=array_values(array_filter(is_array($ips)?$ips:[],static fn($ip)=>filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4|FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE)!==false));
+    if(!$validIps || count($validIps)!==count($ips)){http_response_code(422);echo json_encode(['ok'=>false,'error'=>'Website address is not publicly accessible']);exit;}
+    $page=curl_init($url);
+    curl_setopt_array($page,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>false,
+        CURLOPT_CONNECTTIMEOUT=>4,CURLOPT_TIMEOUT=>12,CURLOPT_MAXREDIRS=>0,
+        CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_IPRESOLVE=>CURL_IPRESOLVE_V4,
+        CURLOPT_RESOLVE=>[$hostname.':443:'.$validIps[0]],
+        CURLOPT_USERAGENT=>'BubbaHubListingPreview/1.0',
+        CURLOPT_HTTPHEADER=>['Accept: text/html'],CURLOPT_ENCODING=>'',
+        CURLOPT_MAXFILESIZE=>524288]);
+    $html=curl_exec($page);$http=(int)curl_getinfo($page,CURLINFO_HTTP_CODE);
+    $type=(string)curl_getinfo($page,CURLINFO_CONTENT_TYPE);curl_close($page);
+    if(!is_string($html)||strlen($html)>524288||$http!==200||stripos($type,'text/html')===false){
+        http_response_code(422);echo json_encode(['ok'=>false,'error'=>'Could not read this public webpage. Try pasting its text instead.']);exit;
+    }
+    $html=preg_replace('~<(script|style|noscript|svg|iframe)\\b[^>]*>.*?</\\1>~is',' ',$html);
+    $text=trim(preg_replace('/\\s+/u',' ',html_entity_decode(strip_tags((string)$html),ENT_QUOTES|ENT_HTML5,'UTF-8')));
+    $text=mb_substr($text,0,10000);
+}
+if($text===''||mb_strlen($text)>10000){http_response_code(422);echo json_encode(['ok'=>false,'error'=>'Provide a public website URL or up to 10000 characters of listing text']);exit;}
 // Temporary staging safety budget: three requests per administrator per UTC month,
 // plus a short cooldown. Persistent account-level Free/Pro entitlements come later.
 $month=gmdate('Y-m');
