@@ -960,13 +960,10 @@ const bhInitDirectory=async()=>{
     const heroForm=$("directoryHeroSearch");
     heroForm?.addEventListener("submit",event=>{
       event.preventDefault();
-      render();
+      if($("bhPostcodeInput")?.value.trim()){void findPostcode($("bhPostcodeInput").value)}else render();
       if(currentView==="map")setTimeout(()=>map?.invalidateSize(),80);
     });
-    heroForm?.querySelector('button[type="submit"]')?.addEventListener("click",event=>{
-      event.preventDefault();
-      render();
-    });
+
     if ($("mainSearchButton")) $("mainSearchButton").addEventListener("click", render);
     if ($("search")) $("search").addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); render(); } });
 
@@ -1040,7 +1037,7 @@ const bhInitDirectory=async()=>{
       }catch(error){setPostcodeStatus(error.message||"Unable to look up postcode. Try again.")}
     };
     $("bhUseMyLocation")?.addEventListener("click",()=>{const button=$("bhUseMyLocation");if(!navigator.geolocation){setPostcodeStatus("Your browser does not support location access. Enter a postcode instead.");return}button.disabled=true;setPostcodeStatus("Allow location access to find nearby activities…");navigator.geolocation.getCurrentPosition(position=>{homeLocation={lat:position.coords.latitude,long:position.coords.longitude,town:"",postcode:""};nearbyRadius=Number(postcodeRadius?.value||10);if(postcodeInput)postcodeInput.value="";const url=new URL(location.href);url.searchParams.delete("postcode");url.searchParams.delete("nearby");url.searchParams.set("radius",String(nearbyRadius));history.replaceState(null,"",url);setPostcodeStatus("Showing activities within "+nearbyRadius+" miles of your location");button.disabled=false;render()},error=>{button.disabled=false;setPostcodeStatus(error.code===1?"Location permission declined. Enter a postcode or enable location in your browser.":"Could not determine your location. Try postcode search instead.")},{enableHighAccuracy:false,timeout:12000,maximumAge:60000})});
-    if(postcodeForm)postcodeForm.addEventListener("submit",event=>{event.preventDefault();void findPostcode(postcodeInput?.value)});
+
     if(postcodeRadius)postcodeRadius.addEventListener("change",()=>{if(homeLocation){nearbyRadius=Number(postcodeRadius.value);const url=new URL(location.href);url.searchParams.set("radius",String(nearbyRadius));history.replaceState(null,"",url);render()}});
     $("bhPostcodeClear")?.addEventListener("click",()=>{homeLocation=null;if(postcodeInput)postcodeInput.value="";setPostcodeStatus("");const url=new URL(location.href);url.searchParams.delete("postcode");url.searchParams.delete("radius");url.searchParams.delete("nearby");history.replaceState(null,"",url);render()});
     if(params.get("postcode")){if(postcodeInput)postcodeInput.value=params.get("postcode");const r=Number(params.get("radius"));if([5,10,25,50,100].includes(r)){nearbyRadius=r;if(postcodeRadius)postcodeRadius.value=String(r)}void findPostcode(params.get("postcode"))}

@@ -920,7 +920,7 @@ void bhHydrateSaved();
       if(hero){
         /* Keep page-specific hero styling attached to the loaded component, not the placeholder. */
         hero.classList.toggle("calendar-directory-hero",page==="calendar");
-        const postcodeSearch=hero.querySelector("#bhPostcodeSearch");if(postcodeSearch&&page!=="directory")postcodeSearch.remove();
+        if(page!=="directory")hero.querySelectorAll("#bhPostcodeInput,#bhPostcodeRadius,#bhUseMyLocation,#bhPostcodeClear,#bhPostcodeStatus").forEach(el=>el.closest("label")?.contains(el)?el.closest("label").remove():el.remove());
         if(page==="calendar"){
           const filters=hero.querySelector("#directoryFilters");
           if(filters){filters.id="calendarFilters";filters.classList.add("calendar-filters-panel");}
