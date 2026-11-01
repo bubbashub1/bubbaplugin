@@ -761,7 +761,7 @@ const bhInitDirectory=async()=>{
         const sessionMatch = !day || sessions.some(session => session.day === day);
         const price = Number(activity.price_value ?? sessions[0]?.price_value ?? 0);
         const priceMatch = !maxPrice || (maxPrice === "over30" ? price > 30 : price <= Number(maxPrice));
-        const freeMatch = !freeOnly || price === 0 || String(activity.price || "").toLowerCase().includes("free");
+        const freeMatch = !freeOnly || activity.is_free === true || activity.is_free === 1 || ["1", "true"].includes(String(activity.is_free ?? "").trim().toLowerCase());
         const duration = sessions.map(x => Number(x.duration_minutes || 0)).filter(Boolean);
         const durationMatch = !sessionLength || (sessionLength === "181" ? duration.some(x => x >= 181) : sessionLength === "60" ? duration.some(x => x <= 60) : sessionLength === "120" ? duration.some(x => x > 60 && x <= 120) : duration.some(x => x > 120 && x <= 180));
         const senValue = String(activity.sen_friendly ?? activity.sen_friendly_flag ?? "").toLowerCase();
