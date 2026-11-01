@@ -4,9 +4,11 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 require_once __DIR__.'/admin-session-guard.php';
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_encode(['ok'=>false,'error'=>'method_not_allowed']); exit; }
 $host=(string)($_SERVER['HTTP_HOST']??'');
 if (!preg_match('/^staging\.bubbahub\.co\.uk(?::\d+)?$/i',$host)) {http_response_code(403);echo json_encode(['ok'=>false,'error'=>'staging_only']);exit;}
+if(empty($_SESSION['bh_ai_csrf'])) $_SESSION['bh_ai_csrf']=bin2hex(random_bytes(32));
+if($_SERVER['REQUEST_METHOD']==='GET'){echo json_encode(['ok'=>true,'csrf'=>$_SESSION['bh_ai_csrf']]);exit;}
+if($_SERVER['REQUEST_METHOD']!=='POST'){http_response_code(405);echo json_encode(['ok'=>false,'error'=>'method_not_allowed']);exit;}
 $raw=file_get_contents('php://input');
 $input=json_decode($raw?:'',true);
 if(!is_array($input)||!hash_equals((string)($_SESSION['bh_ai_csrf']??''),(string)($_SERVER['HTTP_X_BH_AI_CSRF']??''))){http_response_code(403);echo json_encode(['ok'=>false,'error'=>'invalid_request']);exit;}
