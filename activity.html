@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const pathParts=location.pathname.split("/").filter(Boolean);
   const pathSlug=pathParts.length && !/activity\.html$/i.test(pathParts[pathParts.length-1]) ? pathParts[pathParts.length-1] : "";
   const slug=decodeURIComponent(params.get("slug")||pathSlug||"");
-  const id=params.get("id");
+  const id=params.get("id")||(location.pathname.match(/^\/activity\/(\d+)\//)?.[1]||"");
   let items=[];
   let a=null;
 
