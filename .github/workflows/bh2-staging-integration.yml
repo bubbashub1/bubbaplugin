@@ -1,0 +1,21 @@
+name: BH2 staging integration checks
+on:
+  pull_request:
+    branches: [staging-site]
+    paths:
+      - 'api/admin-ai-listing-suggest.php'
+      - 'api/lib/native-timetable.php'
+      - 'tests/native-timetable-test.php'
+      - '.github/workflows/bh2-staging-integration.yml'
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, curl
+      - run: php -l api/admin-ai-listing-suggest.php && php -l api/lib/native-timetable.php && php -l tests/native-timetable-test.php
+      - run: php tests/native-timetable-test.php
