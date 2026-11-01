@@ -117,7 +117,8 @@ if(id){status.textContent='Loading listing…';const r=await fetch('/api/admin-a
 
 const existing=Object.entries(presets).find(([,v])=>lo!==null&&lo!==undefined&&lo!==''&&Number(lo)===v[0]&&((hi===null||hi===undefined||hi==='')?v[1]===null:Number(hi)===v[1]));
 const savedLabels=String(original.age_range||'').split(',').map(s=>s.trim());const matches=Object.entries(presets).filter(([,v])=>savedLabels.includes(v[2])).map(([k])=>k);[...preset.options].forEach(o=>o.selected=matches.length?matches.includes(o.value):o.value===(existing?.[0]||''));
-if(original.price_free!==undefined)free.checked=String(original.price_free)==='1';
+if(original.price_free!==undefined&&original.price_free!==null)free.checked=['1','true'].includes(String(original.price_free).toLowerCase());
+else if(original.is_free!==undefined)free.checked=['1','true'].includes(String(original.is_free).toLowerCase());
 if(original.pricing_unit)unit.value=original.pricing_unit;
 else if(String(original.price_per_family)==='1')unit.value='per_family';
 else if(String(original.price_per_session)==='1')unit.value='per_session';
@@ -946,7 +947,7 @@ if(importedLocations.length&&!String(form.elements.namedItem('town')?.value||'')
  if(firstRow){firstRow.remove();scheduleRows.querySelectorAll('[data-session-venue]').forEach(select=>{const previous=Number(select.value);select.value=String(previous===1?0:previous>1?previous-1:0);});syncVenueSelectors();}
 }
 const requiredNames=['title','organisation_name','category',...(collectVenues().some(v=>v.venue_name)?[]:['venue_name','town'])];const missing=requiredNames.find(name=>!String(form.elements.namedItem(name)?.value||'').trim());if(missing){status.textContent='Please complete '+missing.replaceAll('_',' ')+' before saving.';status.classList.add('is-error');step=['title','organisation_name'].includes(missing)?0:missing==='category'?1:5;renderStep();return;}const body={...(original||{}),...Object.fromEntries(new FormData(form).entries())};delete body.age_preset;body.tags=String(form.elements.namedItem("tags")?.value||"").split(",").map(t=>t.trim()).filter(Boolean).slice(0,20).join(", ");
-body.price_free=free.checked?1:0;body.price_per_family=!free.checked&&unit.value==='per_family'?1:0;body.price_per_session=!free.checked&&unit.value==='per_session'?1:0;body.pricing_unit=unit.value;body.block_length_weeks=unit.value==='per_block'&&!free.checked?Number(blockWeeks.value):null;body.id=original?.id||null;// When the review is still open, transfer the selected classes before collecting
+body.price_free=free.checked?1:0;body.is_free=free.checked?1:0;body.price_per_family=!free.checked&&unit.value==='per_family'?1:0;body.price_per_session=!free.checked&&unit.value==='per_session'?1:0;body.pricing_unit=unit.value;body.block_length_weeks=unit.value==='per_block'&&!free.checked?Number(blockWeeks.value):null;body.id=original?.id||null;// When the review is still open, transfer the selected classes before collecting
 // the payload. The user should not have to click a second button to save them.
 if(importResults.querySelector('fieldset')){
  const accept=Array.from(importResults.querySelectorAll('button')).find(button=>button.textContent.trim()==='Add reviewed classes');
