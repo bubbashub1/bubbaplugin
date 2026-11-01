@@ -143,7 +143,8 @@ if($response===false||$code!==200){
     } elseif($code>=500){
         $category='provider_outage';$message='Gemini is temporarily unavailable. Try again shortly.';
     }
-    error_log('BH staging Gemini request failed: category='.$category.' http='.$code.' curl_errno='.$curlError);
+    if($category==='provider_error')$message='Gemini returned unexpected HTTP '.$code.' for model '.$model.'.';
+    error_log('BH staging Gemini request failed: category='.$category.' http='.$code.' model='.$model.' curl_errno='.$curlError);
     http_response_code(502);
     echo json_encode(['ok'=>false,'error'=>$message,'error_code'=>$category]);exit;
 }
