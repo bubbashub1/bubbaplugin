@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     a=bhActivityBySlug(slug,items)||bhActivity(id,items);
   }
   if(!a){state.innerHTML='<div class="admin-panel"><h2>Activity not found</h2><p>This activity may have been removed or the link is incorrect.</p><a class="button button-primary" href="directory.html">Find activities</a></div>';return}
-  // Canonical, stable ID-backed permalink; old query links remain compatible.
+  // Reuse the date from the activity already loaded, avoiding a second URL lookup.\n  window.__bhActivityUpdatedAt = a.updated_at || '';\n  window.dispatchEvent(new CustomEvent('bh:activity-loaded',{detail:{updated_at:a.updated_at||''}}));\n  // Canonical, stable ID-backed permalink; old query links remain compatible.
   try{
     const cleanTitle=String(a.title||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/['’]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
     if(cleanTitle&&Number(a.id)>0){
