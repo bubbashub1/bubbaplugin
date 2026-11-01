@@ -28,6 +28,16 @@
 .bh-activity-v2 .site-footer-grid{padding-top:32px!important;padding-bottom:24px!important;align-items:start}
 .bh-activity-v2 .site-footer-bottom{padding-top:14px!important;padding-bottom:14px!important}
 @media(max-width:680px){.bh-activity-v2 .site-footer-grid{padding-top:24px!important;gap:20px!important}.bh-activity-v2 .site-footer{margin-top:8px!important}}
+
+/* Activity action bar: one compact panel directly below organiser details. */
+body.bh-activity-v2 .bh-activity-bottom-panel{margin:16px 0 8px;padding:18px 20px;border:1px solid #d5e6dc;border-radius:18px;background:#f8fcf9}
+body.bh-activity-v2 .bh-activity-bottom-row{display:flex;justify-content:space-between;align-items:center;gap:12px 24px;flex-wrap:wrap}
+body.bh-activity-v2 .bh-activity-bottom-left,body.bh-activity-v2 .bh-activity-bottom-right{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+body.bh-activity-v2 .bh-activity-bottom-panel .listing-claim-wrap,body.bh-activity-v2 .bh-activity-bottom-panel .listing-bottom,body.bh-activity-v2 .bh-activity-bottom-panel #bh-feedback-actions{margin:0!important;padding:0!important;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+body.bh-activity-v2 .bh-activity-bottom-panel .button{margin:0!important}
+body.bh-activity-v2 .bh-activity-updated-note{font-size:13px;color:#587467;text-align:right;margin:12px 0 0;padding-top:10px;border-top:1px solid #dce9df}
+body.bh-activity-v2 .bh-activity-updated-note[hidden]{display:none}
+@media(max-width:720px){body.bh-activity-v2 .bh-activity-bottom-panel{padding:14px}body.bh-activity-v2 .bh-activity-bottom-row{align-items:stretch}body.bh-activity-v2 .bh-activity-bottom-left,body.bh-activity-v2 .bh-activity-bottom-right{width:100%}body.bh-activity-v2 .bh-activity-updated-note{text-align:left}}
 </style>
 </head>
 <body class="bh-activity-v2">
@@ -52,7 +62,7 @@
 </footer>
 
 
-<script src="/assets/js/activity-updated-footer.js" defer></script>
+
 <script src="/assets/js/listing-feedback.js" defer></script>
 <script src="/assets/js/activity-bottom-actions.js" defer></script>
 <script src="/assets/js/activity-badges.js"></script>
