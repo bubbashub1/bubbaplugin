@@ -83,7 +83,37 @@ $prompt='Extract factual information from the following PUBLIC class listing tex
 $_SESSION['bh_ai_last_request']=time();
 $_SESSION[$quotaKey]=$used+1;
 $payload=json_encode(['contents'=>[['parts'=>[['text'=>$prompt]]]],'generationConfig'=>['responseMimeType'=>'application/json','temperature'=>0.1]],JSON_THROW_ON_ERROR);
-$ch=curl_init('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent');
+// Discover models enabled for this API key; never expose the key or provider response.
+$model='gemini-2.5-flash';
+$cacheKey='bh_ai_model_'.hash('sha256',$key);
+if(isset($_SESSION[$cacheKey]['name'],$_SESSION[$cacheKey]['until']) && $_SESSION[$cacheKey]['until']>time()){
+    $model=(string)$_SESSION[$cacheKey]['name'];
+} else {
+    $list=curl_init('https://generativelanguage.googleapis.com/v1beta/models?pageSize=100');
+    curl_setopt_array($list,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>12,CURLOPT_CONNECTTIMEOUT=>4,
+        CURLOPT_HTTPHEADER=>['x-goog-api-key: '.$key],CURLOPT_FOLLOWLOCATION=>false]);
+    $listed=curl_exec($list);$listCode=(int)curl_getinfo($list,CURLINFO_HTTP_CODE);curl_close($list);
+    if(is_string($listed) && $listCode===200){
+        $available=json_decode($listed,true);
+        $names=[];
+        foreach(($available['models']??[]) as $item){
+            if(!is_array($item)||!in_array('generateContent',$item['supportedGenerationMethods']??[],true))continue;
+            $name=(string)($item['name']??'');
+            if(preg_match('~^models/(gemini-[a-z0-9.-]+)$~',$name,$m))$names[]=$m[1];
+        }
+        foreach(['gemini-2.5-flash','gemini-2.5-flash-lite','gemini-2.0-flash','gemini-2.0-flash-lite'] as $preferred){
+            if(in_array($preferred,$names,true)){$model=$preferred;break;}
+        }
+        if(!in_array($model,$names,true)){
+            $flash=array_values(array_filter($names,static fn($n)=>str_contains($n,'flash')&&!str_contains($n,'preview')&&!str_contains($n,'exp')));
+            if($flash)$model=$flash[0];
+            elseif($names)$model=$names[0];
+            else {http_response_code(502);echo json_encode(['ok'=>false,'error'=>'No compatible Gemini text generation model is enabled for this key','error_code'=>'no_models']);exit;}
+        }
+        $_SESSION[$cacheKey]=['name'=>$model,'until'=>time()+3600];
+    }
+}
+$ch=curl_init('https://generativelanguage.googleapis.com/v1beta/models/'.rawurlencode($model).':generateContent');
 curl_setopt_array($ch,[CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>$payload,CURLOPT_HTTPHEADER=>['Content-Type: application/json','x-goog-api-key: '.$key],CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>25,CURLOPT_CONNECTTIMEOUT=>5]);
 $response=curl_exec($ch);$code=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);
 $curlError=$response===false?curl_errno($ch):0;
