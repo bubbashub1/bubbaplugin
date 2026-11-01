@@ -33,6 +33,12 @@
         if(input)input.setAttribute('aria-label','Free only');
       }
       chips.appendChild(field);
+      const select=field.querySelector('select');
+      if(select){
+        const update=()=>field.classList.toggle('bh-has-value',Boolean(select.value));
+        select.addEventListener('change',update);
+        update();
+      }
     });
     const more=document.createElement('details');
     more.className='bh-approved-more';
