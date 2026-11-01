@@ -19,7 +19,7 @@ function bh_admin_sections() {
  'payments'=>['Payments','dashicons-money-alt',[
   ['Stripe dashboard','https://dashboard.stripe.com/'],['Forminator payments',admin_url('admin.php?page=forminator')],['Sponsorship form','/events/sponsor-bubba-hub/']]],
  'marketing'=>['Marketing','dashicons-megaphone',[
-  ['Forminator forms & submissions',admin_url('admin.php?page=forminator')],['WordPress posts',admin_url('edit.php')],['Sponsor management','/admin/admin-sponsors.html']]],
+  ['Email & notification tools','/admin/admin-email-tools.html'],['Forminator forms & submissions',admin_url('admin.php?page=forminator')],['WordPress posts',admin_url('edit.php')],['Sponsor management','/admin/admin-sponsors.html']]],
  'volunteers'=>['Volunteers','dashicons-heart',[
   ['WordPress users',admin_url('users.php')],['Regional activity directory','/directory']]],
  'website'=>['Website','dashicons-admin-site-alt3',[
