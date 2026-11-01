@@ -13,17 +13,23 @@
    row.append(left,right);panel.append(row);
    const date=document.createElement('p');date.id='bh-activity-updated-near-actions';date.className='bh-activity-updated-note';date.hidden=true;panel.append(date);
    back.before(panel);
+   const showDate=raw=>{
+    const m=String(raw||'').match(/^(\\d{4})-(\\d{2})-(\\d{2})/);
+    if(!m)return;
+    const d=new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));
+    if(Number.isNaN(d.getTime())||d.toISOString().slice(0,10)!==m[0])return;
+    date.textContent='Listing updated: '+new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(d);
+    date.hidden=false;
+   };
+   showDate(window.__bhActivityUpdatedAt);
+   window.addEventListener('bh:activity-loaded',event=>showDate(event.detail?.updated_at));
+   if(!date.hidden)return;
+   // Fallback for older cached activity scripts: look up the record by ID or public slug.
    const params=new URLSearchParams(location.search);
-   const path=location.pathname.match(/^\/activity\/(?:\d+\/)?([^/]+)\/?$/);
-   const id=params.get('id')||location.pathname.match(/^\/activity\/(\d+)\//)?.[1];
-   const slug=params.get('slug')||path?.[1];
-   if(id||slug){const url=new URL('/api/activities.php',location.origin);if(id)url.searchParams.set('id',id);else url.searchParams.set('pretty_slug',slug);
-    url.searchParams.set('per_page','1');
-    fetch(url,{credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(j=>{
-     const raw=String(j?.data?.[0]?.updated_at||'');const m=raw.match(/^(\d{4})-(\d{2})-(\d{2})/);if(!m)return;
-     const d=new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));if(d.toISOString().slice(0,10)!==m[0])return;
-     date.textContent='Listing updated: '+new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(d);date.hidden=false;
-    }).catch(()=>{});
+   const id=params.get('id')||location.pathname.match(/^\\/activity\\/(\\d+)\\//)?.[1];
+   const slug=params.get('slug')||location.pathname.match(/^\\/activity\\/([^/]+)\\/?$/)?.[1];
+   if(id||slug){const url=new URL('/api/activities.php',location.origin);url.searchParams.set(id?'id':'pretty_slug',id||slug);url.searchParams.set('per_page','1');
+    fetch(url,{credentials:'same-origin',cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>showDate(j?.data?.[0]?.updated_at)).catch(()=>{});
    }
   }
   const left=panel.querySelector('.bh-activity-bottom-left'),right=panel.querySelector('.bh-activity-bottom-right');
