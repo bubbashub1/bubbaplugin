@@ -1,0 +1,18 @@
+(()=>{const entries=[
+['Activity listings','/admin/admin-activities-listings.html','working','Search, edit and manage listings'],
+['Venue management','/admin/admin-activities-venues.html','working','Venue editing, merges and guarded bulk actions'],
+['Email Centre','/admin/admin-email-tools.html','working','Subscriber overview; sending controls not yet implemented'],
+['Claim invitations','/admin/admin-claim-invitations.html','working','Existing claim invitation management'],
+['Class leaders','/admin/admin-organisers-class-leaders.html','working','Leader directory and profiles'],
+['Events','/admin/admin-events.html','working','Event management'],
+['Main navigation','/admin/admin-navigation-main-menu.html','pending','Current page is a placeholder; menu editor not implemented'],
+['Footer navigation','/admin/admin-navigation-footer-menus.html','pending','Current page is a placeholder; footer editor not implemented'],
+['Menu visibility','/admin/admin-navigation-menu-visibility.html','pending','Current page is a placeholder; visibility controls not implemented'],
+['Advanced search filters','/admin/admin-search-advanced-filters.html','pending','Current page is a placeholder; filter controls not implemented'],
+['Accessibility search settings','/admin/admin-search-accessibility.html','pending','Current page is a placeholder; controls not implemented'],
+['Search behaviour','/admin/admin-search-search-behaviour.html','pending','Current page is a placeholder; search settings not implemented'],
+['Counties and regions','/admin/admin-regions-counties-regions.html','pending','Current page is a placeholder; use venue management for existing location records'],
+['Location mapping','/admin/admin-regions-location-mapping.html','pending','Current page is a placeholder; use venue management for location edits'],
+['Booking availability','/admin/admin-bookings-availability.html','pending','Current page is a placeholder; booking slot controls not implemented here'],
+['Booking settings','/admin/admin-bookings-booking-settings.html','pending','Current page is a placeholder; booking configuration not implemented here']
+];const $=id=>document.getElementById(id);function render(){const q=($('auditSearch').value||'').toLowerCase();const grid=$('auditGrid');grid.replaceChildren();for(const [name,url,status,detail] of entries.filter(x=>x.join(' ').toLowerCase().includes(q))){const card=document.createElement('article');card.className='audit-item';const badge=document.createElement('span');badge.className='audit-status '+(status==='working'?'working':'');badge.textContent=status==='working'?'Working entry point':'Needs implementation';const h=document.createElement('h3');h.textContent=name;const p=document.createElement('p');p.textContent=detail;const a=document.createElement('a');a.href=url;a.textContent='Open page →';card.append(badge,h,p,a);grid.append(card)}}document.addEventListener('DOMContentLoaded',async()=>{try{const r=await fetch('/admin-auth.php?action=check',{credentials:'same-origin',cache:'no-store'});if(r.status===401){location.href='/admin-login.html?next='+encodeURIComponent(location.pathname);return}if(!r.ok)throw Error('Access check failed');$('auditGate').hidden=true;$('auditContent').hidden=false;$('auditTotal').textContent=entries.length;$('auditWorking').textContent=entries.filter(x=>x[2]==='working').length;$('auditPending').textContent=entries.filter(x=>x[2]==='pending').length;$('auditSearch').addEventListener('input',render);render()}catch(e){$('auditGate').textContent='Admin verification unavailable. Please sign in and retry.'}})})();
