@@ -160,3 +160,19 @@ grid-template-columns:repeat(4,minmax(0,1fr))!important;
 gap:16px!important;
 }
 }
+
+/* Hero copy: centre the description within the illustration's readable area. */
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy{width:min(100%,860px)!important;max-width:860px!important;margin:0 auto!important;padding:18px 38px 26px!important;box-sizing:border-box!important;text-align:center!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy p{max-width:760px!important;margin:12px auto 0!important;padding:0 18px!important;line-height:1.6!important;text-align:center!important}
+/* Search controls: remove nested boxes and stop cramped postcode/radius overlap. */
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .directory-hero-search-fields{display:flex!important;align-items:center!important;gap:12px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-location-fields{display:flex!important;flex:0 1 325px!important;align-items:center!important;gap:8px!important;min-width:270px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-location-fields label{box-sizing:border-box!important;min-width:0!important;min-height:44px!important;margin:0!important;padding:0 8px!important;border:1px solid #d8e7df!important;border-radius:14px!important;background:#fff!important;box-shadow:none!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-location-fields input,
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-location-fields select{box-sizing:border-box!important;min-width:0!important;width:100%!important;max-width:100%!important;min-height:38px!important;padding:5px 6px!important;border:0!important;outline-offset:1px!important;background:transparent!important;box-shadow:none!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-postcode{flex:1 1 190px!important;min-width:155px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-radius{flex:0 0 110px!important;min-width:110px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-submit{min-width:180px!important;white-space:nowrap!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search #bhUseMyLocation{white-space:nowrap!important}
+@media(max-width:950px){body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-location-fields{flex:1 1 300px!important;min-width:0!important}}
+@media(max-width:600px){body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy{padding:12px 12px 20px!important}body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy p{padding:0 8px!important}body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-location-fields{flex:1 1 100%!important}}
