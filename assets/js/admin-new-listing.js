@@ -113,7 +113,7 @@ const syncBlockWeeks=()=>{const show=unit.value==='per_block'&&!free.checked;blo
 preset.addEventListener('change',applyPreset);
 free.addEventListener('change',()=>{price.disabled=free.checked;if(free.checked)price.value='0';});
 if(!id){syncBlockWeeks();[...preset.options].forEach(o=>o.selected=o.value==='0-12');applyPreset();}
-if(id){status.textContent='Loading listing…';const r=await fetch('/api/admin-activities.php?id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load listing.');original=d.data;listingCsrf=d.csrf||'';for(const el of form.elements){if(el.name&&Object.hasOwn(original,el.name))el.value=['title','organisation_name','venue_name','address','town','region','postcode','category','age_range','county'].includes(el.name)?decodePlainEntities(original[el.name]):(original[el.name]??'');}for(const input of gallery?.querySelectorAll('input')||[])input.dispatchEvent(new Event('input'));syncBlockWeeks();const lo=original.age_min_months,hi=original.age_max_months;
+if(id){status.textContent='Loading listing…';const r=await fetch('/api/admin-activities.php?id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load listing.');original=d.data;listingCsrf=d.csrf||'';for(const el of form.elements){if(el.name&&el.type!=='checkbox'&&el.type!=='radio'&&Object.hasOwn(original,el.name))el.value=['title','organisation_name','venue_name','address','town','region','postcode','category','age_range','county'].includes(el.name)?decodePlainEntities(original[el.name]):(original[el.name]??'');}for(const input of gallery?.querySelectorAll('input')||[])input.dispatchEvent(new Event('input'));syncBlockWeeks();const lo=original.age_min_months,hi=original.age_max_months;
 
 const existing=Object.entries(presets).find(([,v])=>lo!==null&&lo!==undefined&&lo!==''&&Number(lo)===v[0]&&((hi===null||hi===undefined||hi==='')?v[1]===null:Number(hi)===v[1]));
 const savedLabels=String(original.age_range||'').split(',').map(s=>s.trim());const matches=Object.entries(presets).filter(([,v])=>savedLabels.includes(v[2])).map(([k])=>k);[...preset.options].forEach(o=>o.selected=matches.length?matches.includes(o.value):o.value===(existing?.[0]||''));
@@ -123,6 +123,7 @@ if(original.pricing_unit)unit.value=original.pricing_unit;
 else if(String(original.price_per_family)==='1')unit.value='per_family';
 else if(String(original.price_per_session)==='1')unit.value='per_session';
 price.disabled=free.checked;
+free.dispatchEvent(new Event('change',{bubbles:true}));
 document.querySelector('h1').textContent='Edit listing';document.title='Edit listing · Admin · Bubba Hub';status.textContent='';}
 // Reuse existing category names, allowing multiple selections without duplicate listings.
 const tagField=form.elements.namedItem('tags');
