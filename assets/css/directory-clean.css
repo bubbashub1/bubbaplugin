@@ -176,3 +176,33 @@ body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-submit{m
 body.bh-directory:not(.bh-calendar-page) .bh-approved-search #bhUseMyLocation{white-space:nowrap!important}
 @media(max-width:950px){body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-location-fields{flex:1 1 300px!important;min-width:0!important}}
 @media(max-width:600px){body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy{padding:12px 12px 20px!important}body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy p{padding:0 8px!important}body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-location-fields{flex:1 1 100%!important}}
+
+/* Full-bleed coastal hero, independent of the directory's centred content container.
+   Use viewport width but preserve normal content gutters for tabs, filters and cards. */
+body.bh-directory:not(.bh-calendar-page) main.app-shell{
+  max-width:none!important;
+  width:100%!important;
+  min-width:0!important;
+}
+body.bh-directory:not(.bh-calendar-page) main.app-shell>.bh-directory-banner{
+  width:100vw!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin-left:calc(50% - 50vw)!important;
+  margin-right:calc(50% - 50vw)!important;
+  box-sizing:border-box!important;
+  border-radius:0!important;
+  background-position:center center!important;
+  background-size:cover!important;
+}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner>.bh-approved-search{
+  width:min(1200px,calc(100vw - 48px))!important;
+  max-width:none!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+}
+@media(max-width:600px){
+  body.bh-directory:not(.bh-calendar-page) .bh-directory-banner>.bh-approved-search{
+    width:calc(100vw - 24px)!important;
+  }
+}
