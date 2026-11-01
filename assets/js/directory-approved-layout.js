@@ -11,9 +11,8 @@
     const tabs=document.querySelector('.bh-directory-view-actions');
     const filters=document.getElementById('directoryFilters');
     if(!banner||!hero||!tabs||!filters){initializing=false;return;}
-    banner.insertAdjacentElement('afterend',hero);
-    const prompt=hero.querySelector('#bhLocationPrompt');
-    if(prompt)prompt.hidden=true;
+    banner.appendChild(hero);
+    hero.querySelectorAll('.bh-location-prompt,[data-bh-location-prompt]').forEach(el=>el.hidden=true);
     const form=hero.querySelector('.directory-hero-search');
     if(form){form.classList.add('bh-search-inline');}
     const postcode=hero.querySelector('#bhPostcodeInput');
