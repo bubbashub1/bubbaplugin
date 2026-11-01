@@ -23,7 +23,6 @@
    };
    showDate(window.__bhActivityUpdatedAt);
    window.addEventListener('bh:activity-loaded',event=>showDate(event.detail?.updated_at));
-   if(!date.hidden)return;
    // Fallback for older cached activity scripts: look up the record by ID or public slug.
    const params=new URLSearchParams(location.search);
    const id=params.get('id')||location.pathname.match(/^\/activity\/(\d+)\//)?.[1];
