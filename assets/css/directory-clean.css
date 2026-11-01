@@ -138,3 +138,16 @@ body.bh-directory:not(.bh-calendar-page) .bh-directory-sort select{width:min(290
 body.bh-directory:not(.bh-calendar-page) #results.activity-grid:not([hidden]){gap:18px!important}
 @media(max-width:950px){body.bh-directory:not(.bh-calendar-page) .bh-directory-banner>.bh-approved-search{bottom:-88px!important;width:calc(100% - 24px)!important}body.bh-directory:not(.bh-calendar-page) main.app-shell>.directory-layout{padding-top:110px!important}}
 @media(max-width:600px){body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy h1{font-size:1.65rem!important}body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy p{font-size:.85rem!important}body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions{overflow-x:auto!important;grid-template-columns:repeat(5,minmax(100px,1fr))!important}body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips{flex-wrap:nowrap!important;overflow-x:auto!important;padding:2px 0 8px!important}body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips>.bh-approved-chip{flex-shrink:0!important}body.bh-directory:not(.bh-calendar-page) .bh-directory-sort{justify-content:space-between!important}body.bh-directory:not(.bh-calendar-page) .bh-directory-sort select{min-width:0!important;width:58%!important}}
+
+/* Filter-first arrangement: Indeed-style toolbar above directory views. */
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-bar{margin:4px 0 18px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-bar .bh-approved-more{display:none!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips{display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:8px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips>[data-filter-key="term_time"]{display:inline-flex!important;gap:8px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips>[data-filter-key="term_time"] .bh-term-original-select{display:none!important}
+body.bh-directory:not(.bh-calendar-page) #bhTermTimeQuick{width:16px!important;height:16px!important;accent-color:#006344!important;margin:0!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips>.bh-approved-inline-sort{display:inline-flex!important;flex:0 1 auto!important;width:auto!important;max-width:none!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;margin:0!important;padding:0!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-inline-sort label{font-size:.86rem!important;font-weight:800!important;color:#07543c!important;white-space:nowrap!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-inline-sort select{width:auto!important;max-width:220px!important;min-width:175px!important;min-height:40px!important;border-radius:999px!important;padding:6px 12px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-bar+.bh-directory-view-actions{margin-top:16px!important}
+@media(max-width:600px){body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips{flex-wrap:wrap!important;overflow:visible!important}body.bh-directory:not(.bh-calendar-page) .bh-approved-inline-sort{flex:1 1 100%!important}}
