@@ -34,7 +34,7 @@ function bhExpandWeeklyOccurrences(array $session, string $from, string $to, arr
     for ($day = $first; $day <= $last; $day = $day->modify('+1 day')) {
         if ((int)$day->format('N') !== $weekday) continue;
         $date = $day->format('Y-m-d');
-        if ($boundsStart !== '' && $date < $boundsStart || $boundsEnd !== '' && $date > $boundsEnd) continue;
+        if (($boundsStart !== '' && $date < $boundsStart) || ($boundsEnd !== '' && $date > $boundsEnd)) continue;
         if ($termOnly) {
             $inTerm = false;
             foreach ($termWindows as $term) {
@@ -51,10 +51,12 @@ function bhExpandWeeklyOccurrences(array $session, string $from, string $to, arr
             $occDate = (string)($exception['replacement_date'] ?? '');
             $occStart = (string)($exception['replacement_start_time'] ?? '');
             $occEnd = (string)($exception['replacement_end_time'] ?? '');
-            if (!preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $occDate) || !preg_match('/^([01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?$/', $occStart) || !preg_match('/^([01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?$/', $occEnd) || $occEnd <= $occStart) {
+            if (!preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $occDate) || !DateTimeImmutable::createFromFormat('!Y-m-d', $occDate, $tz) || !preg_match('/^([01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?$/', $occStart) || !preg_match('/^([01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?$/', $occEnd) || $occEnd <= $occStart) {
                 throw new InvalidArgumentException('Invalid rescheduled occurrence');
             }
         }
+        // A moved occurrence belongs to its replacement day; do not leak outside the requested window.
+        if ($occDate < $from || $occDate > $to) continue;
         $starts = new DateTimeImmutable($occDate.' '.$occStart, $tz);
         $ends = new DateTimeImmutable($occDate.' '.$occEnd, $tz);
         // Reject nonexistent local wall times during the spring DST jump.
