@@ -7,7 +7,16 @@
       <label><span>⌖</span><select data-bh-hero-field="town" name="town"><option value="">Town</option></select></label>
       <label><span>♟</span><select data-bh-hero-field="category" name="category"><option value="">Category</option></select></label>
       <label><span>◷</span><select data-bh-hero-field="day" name="day"><option value="">Day</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select></label>
-      <label><span>⌖</span><input id="bhPostcodeInput" name="postcode" autocomplete="postal-code" placeholder="Postcode (e.g. EX1 1AA)" aria-label="Postcode" inputmode="text"></label><label><span>↔</span><select id="bhPostcodeRadius" name="radius" aria-label="Search radius"><option value="5">5 miles</option><option value="10" selected>10 miles</option><option value="25">25 miles</option><option value="50">50 miles</option><option value="100">100 miles</option></select></label><button class="button button-primary" type="submit">Search</button><button type="button" class="button button-soft" id="bhUseMyLocation">⌖ Use my location</button><button type="button" class="button button-soft" id="bhPostcodeClear">Clear location</button><span id="bhPostcodeStatus" role="status" aria-live="polite"></span>
+      <div class="bh-search-location-fields">
+        <label class="bh-search-postcode"><span aria-hidden="true">⌖</span><input id="bhPostcodeInput" name="postcode" autocomplete="postal-code" placeholder="Enter postcode" aria-label="UK postcode" inputmode="text"></label>
+        <label class="bh-search-radius"><span aria-hidden="true">↔</span><select id="bhPostcodeRadius" name="radius" aria-label="Search within distance"><option value="5">5 miles</option><option value="10" selected>10 miles</option><option value="25">25 miles</option><option value="50">50 miles</option><option value="100">100 miles</option></select></label>
+      </div>
+      <button class="button button-primary bh-search-submit" type="submit">Search activities</button>
+      <div class="bh-search-location-actions">
+        <button type="button" class="button button-soft" id="bhUseMyLocation">⌖ Use my location</button>
+        <button type="button" class="button button-soft" id="bhPostcodeClear">Clear location</button>
+      </div>
+      <span id="bhPostcodeStatus" class="bh-search-location-status" role="status" aria-live="polite"></span>
     </div>
     <div class="directory-hero-actions">
       <button type="button" class="home-advanced-link directory-search-advanced-link" data-bh-hero-filters>More search options →</button>
