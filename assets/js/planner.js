@@ -158,7 +158,7 @@ window.bhInitPlanner = async function(root=document){
     if(!sheet)return;
     const now=new Date();
     dateLabel.textContent="Printed "+now.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-    if(footer)footer.textContent="Printed "+now.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+    if(footer)footer.innerHTML='<img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub logo"><a href="https://bubbahub.co.uk/">bubbahub.co.uk</a><span>Printed '+now.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"})+'</span>';
     const hidden=new Set(localHidden());
     const entries=getEntries().filter(e=>e.day>0&&!hidden.has(String(e.day))).sort((a,b)=>a.date-b.date||String(a.session?.start_time||"").localeCompare(String(b.session?.start_time||"")));
     const townOf=e=>e.session?.venue?.town||e.activity?.town||e.activity?.location||"";
