@@ -1,14 +1,23 @@
 /* Directory-only composition: reuse existing working filter controls, never clone IDs. */
 (function(){
   if(!document.body.classList.contains('bh-directory')||document.body.classList.contains('bh-calendar-page'))return;
+  let initializing=false;
   async function init(){
+    if(initializing||document.body.classList.contains('bh-approved-directory-ready'))return;
+    initializing=true;
     await Promise.allSettled([window.bhDirectoryHeroReady||Promise.resolve(),window.bhAdvancedFiltersReady||Promise.resolve()]);
     const banner=document.querySelector('.bh-directory-banner');
     const hero=document.querySelector('[data-bh-directory-hero]');
     const tabs=document.querySelector('.bh-directory-view-actions');
     const filters=document.getElementById('directoryFilters');
-    if(!banner||!hero||!tabs||!filters)return;
+    if(!banner||!hero||!tabs||!filters){initializing=false;return;}
     banner.insertAdjacentElement('afterend',hero);
+    const prompt=hero.querySelector('#bhLocationPrompt');
+    if(prompt)prompt.hidden=true;
+    const form=hero.querySelector('.directory-hero-search');
+    if(form){form.classList.add('bh-search-inline');}
+    const postcode=hero.querySelector('#bhPostcodeInput');
+    if(postcode)postcode.placeholder='Town or postcode';
     hero.classList.add('bh-approved-search');
     const bar=document.createElement('section');
     bar.className='bh-approved-filter-bar';
@@ -72,6 +81,17 @@
     });
     document.body.classList.add('bh-approved-directory-ready');
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
-  else init();
+  const boot=()=>{
+    init();
+    if(!document.body.classList.contains('bh-approved-directory-ready')){
+      const observer=new MutationObserver(()=>{
+        if(document.body.classList.contains('bh-approved-directory-ready')){observer.disconnect();return;}
+        init();
+      });
+      observer.observe(document.querySelector('.app-shell')||document.body,{childList:true,subtree:true});
+      setTimeout(()=>observer.disconnect(),12000);
+    }
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
+  else boot();
 })();
