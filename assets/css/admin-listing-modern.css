@@ -1,0 +1,24 @@
+/* Bubba Hub modern listing editor — visual enhancement only */
+body.bh-admin-v2:has(.bh-new){background:#f7faf8;color:#163a32}
+.bh-new{max-width:1450px!important}
+.bh-new .admin-subpage-head{padding:22px 28px;border-radius:24px;background:linear-gradient(115deg,#fff 48%,#e7f7e9);border:1px solid #d9e9df;margin-bottom:22px}
+.bh-new .admin-subpage-head h1{color:#064b3b;font-size:clamp(25px,2.6vw,36px);letter-spacing:-.035em}
+.bh-new .admin-panel{display:grid!important;grid-template-columns:minmax(205px,260px) minmax(0,1fr);gap:26px;align-items:start;background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
+.bh-new .bh-steps{position:sticky;top:20px;display:flex;flex-direction:column;gap:8px;padding:20px 14px!important;border:1px solid #e0e9e7;border-radius:26px;background:#fff;box-shadow:0 8px 25px #153c2b0b}
+.bh-new .bh-step{display:flex!important;align-items:center;gap:12px;width:100%;padding:14px 12px!important;text-align:left;border:0!important;border-radius:14px!important;color:#1d3938;font-weight:700;background:transparent;box-shadow:none!important}
+.bh-new .bh-step span{display:grid;place-items:center;flex:0 0 32px;height:32px;border:2px solid #b9dcc4;border-radius:50%;background:#f5fbf7;color:#0b634b}
+.bh-new .bh-step.active{background:linear-gradient(110deg,#006d53,#008765)!important;color:#fff!important}
+.bh-new .bh-step.active span{background:#fff;color:#087357;border-color:#d8f4e1}
+.bh-new #newListingForm{min-width:0}
+.bh-new #newListingForm>.bh-card,.bh-new #adminListingIdentity,.bh-new #adminListingSchedule,.bh-new #adminAdditionalVenues{background:#fff!important;border:1px solid #dce9e4!important;border-radius:24px!important;box-shadow:0 7px 22px #153c2b0a;margin:0 0 20px!important;padding:24px!important}
+.bh-new #adminListingIdentity{background:linear-gradient(115deg,#fff,#f3fbf6)!important}
+.bh-new #newListingForm h2{font-size:clamp(21px,2vw,28px);color:#064c3a;letter-spacing:-.025em}
+.bh-new #newListingForm label{color:#163e38;font-weight:650}
+.bh-new #newListingForm input:not([type=checkbox]):not([type=radio]),.bh-new #newListingForm textarea,.bh-new #newListingForm select{background:#fff;border:1px solid #cbdcd6;border-radius:14px;min-height:48px;padding:12px 14px;box-shadow:none;transition:border-color .15s,box-shadow .15s}
+.bh-new #newListingForm input:focus,.bh-new #newListingForm textarea:focus,.bh-new #newListingForm select:focus{outline:2px solid #8bcfb0;outline-offset:1px}
+.bh-new #newListingForm .button-primary{background:#006f52;border-radius:999px;padding:12px 23px;font-weight:750}
+.bh-new #newListingForm .button-soft{border-radius:999px}
+.bh-new #newListingForm .hero-actions{position:sticky;bottom:0;z-index:5;background:#ffffffed;backdrop-filter:blur(10px);border:1px solid #dce9e4;border-radius:20px;padding:12px 16px;box-shadow:0 -6px 20px #153c2b10}
+.bh-new #newListingForm #bhAutoFillRun{background:#007656;color:white;border-radius:999px;padding:12px 22px}
+.bh-new #newListingForm #bhAutoFillUrl{width:100%}
+@media(max-width:850px){.bh-new .admin-panel{grid-template-columns:minmax(0,1fr)}.bh-new .bh-steps{position:static;flex-direction:row;overflow-x:auto;gap:5px;padding:10px!important}.bh-new .bh-step{flex:0 0 auto;width:auto;padding:9px!important;font-size:13px}.bh-new .bh-step span{height:27px;flex-basis:27px}.bh-new #newListingForm>.bh-card,.bh-new #adminListingIdentity{padding:17px!important}.bh-new .admin-subpage-head{padding:18px}}

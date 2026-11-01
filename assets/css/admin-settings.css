@@ -1,3 +1,4 @@
+@import url("/assets/css/admin-listing-modern.css");
 .admin-subpage-shell{max-width:1400px;margin:0 auto;padding:36px clamp(16px,4vw,50px) 70px}
 .admin-subpage-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:28px;padding:0 0 24px;border-bottom:1px solid var(--bh-line,#d8e6db)}
 .admin-subpage-head h1{margin:.15rem 0 .4rem}
