@@ -15,6 +15,41 @@ try {
     $search = trim((string)($_GET['search'] ?? ''));
     $slug = trim((string)($_GET['slug'] ?? ''));
     $activityId = isset($_GET['id']) && $_GET['id'] !== '' ? (int)$_GET['id'] : null;
+
+    // Resolve clean, title-based public permalinks without changing legacy stored slugs.
+    $prettySlug = trim((string)($_GET['pretty_slug'] ?? ''));
+    if ($prettySlug !== '') {
+        if (!preg_match('/^[a-z0-9-]{1,200}$/', $prettySlug)) {
+            http_response_code(400);
+            echo json_encode(['ok'=>false,'error'=>'Invalid activity URL']);
+            exit;
+        }
+        $normaliseTitle = static function (string $title): string {
+            $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $title = str_replace(["’", "‘", "'", "â"], '', $title);
+            if (function_exists('iconv')) {
+                $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $title);
+                if ($ascii !== false) $title = $ascii;
+            }
+            return trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($title)), '-');
+        };
+        $q = $db->query("SELECT id,title,slug FROM bh_activities WHERE LOWER(TRIM(COALESCE(status,''))) IN ('published','publish')");
+        $matches = [];
+        foreach ($q->fetchAll(PDO::FETCH_ASSOC) as $candidate) {
+            if ($normaliseTitle((string)$candidate['title']) === $prettySlug || (string)$candidate['slug'] === $prettySlug) {
+                $matches[] = (int)$candidate['id'];
+            }
+        }
+        // Never silently show the wrong activity if two titles have the same permalink.
+        if (count($matches) !== 1) {
+            http_response_code(count($matches) ? 409 : 404);
+            echo json_encode(['ok'=>false,'error'=>count($matches) ? 'Ambiguous activity URL' : 'Activity not found']);
+            exit;
+        }
+        $activityId = $matches[0];
+        $slug = '';
+    }
+
     $organiserSlug = trim((string)($_GET['organiser_slug'] ?? ''));
     $category = trim((string)($_GET['category'] ?? ''));
     $town = trim((string)($_GET['town'] ?? ''));
