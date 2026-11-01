@@ -3,9 +3,9 @@ declare(strict_types=1);
 /* Staging-first AI listing assistant. Public text only; no bookings or personal details. */
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
-require_once __DIR__.'/admin-session-guard.php';
 $host=(string)($_SERVER['HTTP_HOST']??'');
 if (!preg_match('/^staging\.bubbahub\.co\.uk(?::\d+)?$/i',$host)) {http_response_code(403);echo json_encode(['ok'=>false,'error'=>'staging_only']);exit;}
+require_once __DIR__.'/admin-session-guard.php';
 if(empty($_SESSION['bh_ai_csrf'])) $_SESSION['bh_ai_csrf']=bin2hex(random_bytes(32));
 if($_SERVER['REQUEST_METHOD']==='GET'){
     $key=(string)(getenv('BH_GEMINI_API_KEY')?:'');
@@ -20,7 +20,8 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
     exit;
 }
 if($_SERVER['REQUEST_METHOD']!=='POST'){http_response_code(405);echo json_encode(['ok'=>false,'error'=>'method_not_allowed']);exit;}
-$raw=file_get_contents('php://input');
+$raw=file_get_contents('php://input',false,null,0,32769);
+if ($raw===false || strlen($raw)>32768) {http_response_code(413);echo json_encode(['ok'=>false,'error'=>'Request too large']);exit;}
 $input=json_decode($raw?:'',true);
 if(!is_array($input)||!hash_equals((string)($_SESSION['bh_ai_csrf']??''),(string)($_SERVER['HTTP_X_BH_AI_CSRF']??''))){http_response_code(403);echo json_encode(['ok'=>false,'error'=>'invalid_request']);exit;}
 $text=trim((string)($input['public_text']??''));
@@ -58,4 +59,10 @@ $json=json_decode($response,true);$output=(string)($json['candidates'][0]['conte
 if(!is_array($fields)){http_response_code(502);echo json_encode(['ok'=>false,'error'=>'AI response could not be reviewed']);exit;}
 $allowed=['title','description','age_range','category','tags','website','contact_email','phone'];$clean=[];
 foreach($allowed as $field){$clean[$field]=mb_substr(is_scalar($fields[$field]??null)?(string)$fields[$field]:'',0,$field==='description'?3000:400);}
+// Never return unsafe schemes or AI-generated contact details without basic validation.
+foreach (['website'] as $urlField) {
+    if ($clean[$urlField]!=='' && (!filter_var($clean[$urlField],FILTER_VALIDATE_URL) || !in_array(strtolower((string)parse_url($clean[$urlField],PHP_URL_SCHEME)),['https','http'],true))) $clean[$urlField]='';
+}
+if ($clean['contact_email']!=='' && !filter_var($clean['contact_email'],FILTER_VALIDATE_EMAIL)) $clean['contact_email']='';
+if ($clean['phone']!=='' && !preg_match('/^[+()0-9 .-]{6,35}$/',$clean['phone'])) $clean['phone']='';
 echo json_encode(['ok'=>true,'suggestions'=>$clean,'requires_review'=>true]);
