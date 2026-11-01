@@ -31,7 +31,18 @@ function bhExpandWeeklyOccurrences(array $session, string $from, string $to, arr
     $boundsEnd = (string)($session['end_date'] ?? '');
     $termOnly = (bool)($session['term_time_only'] ?? false);
     $items = [];
-    for ($day = $first; $day <= $last; $day = $day->modify('+1 day')) {
+    // Include earlier original dates that may have been moved into this requested window.
+    // A reschedule is keyed by original occurrence date, never by its new date.
+    $scanStart = $first;
+    foreach ($exceptions as $original => $exception) {
+        if (!is_array($exception) || ($exception['exception_type'] ?? '') !== 'rescheduled') continue;
+        $replacement = (string)($exception['replacement_date'] ?? '');
+        if ($replacement < $from || $replacement > $to || !preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', (string)$original)) continue;
+        $originalDay = DateTimeImmutable::createFromFormat('!Y-m-d', (string)$original, $tz);
+        if ($originalDay && $originalDay->format('Y-m-d') === $original && $originalDay < $scanStart) $scanStart = $originalDay;
+    }
+    if ($first->diff($scanStart)->days > 366) throw new InvalidArgumentException('Reschedule lookback too long');
+    for ($day = $scanStart; $day <= $last; $day = $day->modify('+1 day')) { = $first; $day <= $last; $day = $day->modify('+1 day')) {
         if ((int)$day->format('N') !== $weekday) continue;
         $date = $day->format('Y-m-d');
         if (($boundsStart !== '' && $date < $boundsStart) || ($boundsEnd !== '' && $date > $boundsEnd)) continue;
