@@ -591,6 +591,7 @@ const bhInitDirectory=async()=>{
             </div>`;
           }).join("")}
         </div>
+        <div class="bh-calendar-print-footer"><img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub logo"><a href="https://bubbahub.co.uk/">bubbahub.co.uk</a></div>
       `;
 
       calendar.querySelector("[data-calendar-print]").onclick = () => window.print();
