@@ -14,6 +14,8 @@ $cancel=bhExpandWeeklyOccurrences($s,'2026-11-01','2026-11-16',[],['2026-11-09'=
 check(count($cancel)===2,'one-off cancellation');
 $move=bhExpandWeeklyOccurrences($s,'2026-11-01','2026-11-16',[],['2026-11-09'=>['exception_type'=>'rescheduled','replacement_date'=>'2026-11-10','replacement_start_time'=>'12:00:00','replacement_end_time'=>'13:00:00']]);
 check($move[1]['date']==='2026-11-10' && $move[1]['rescheduled'],'one-off reschedule');
+$outOfRange=bhExpandWeeklyOccurrences($s,'2026-11-01','2026-11-16',[],['2026-11-09'=>['exception_type'=>'rescheduled','replacement_date'=>'2026-12-01','replacement_start_time'=>'12:00:00','replacement_end_time'=>'13:00:00']]);
+check(count($outOfRange)===2,'rescheduled occurrence outside requested range omitted');
 check(bhOccurrencesClash($r[0],['starts_at'=>'2026-11-02T10:30:00+00:00','ends_at'=>'2026-11-02T11:30:00+00:00']),'overlap flagged');
 check(!bhOccurrencesClash($r[0],['starts_at'=>'2026-11-02T11:00:00+00:00','ends_at'=>'2026-11-02T12:00:00+00:00']),'back-to-back is not a clash');
 $sunday=$s;$sunday['day_of_week']=7;$sunday['start_time']='10:00:00';$sunday['end_time']='11:00:00';
