@@ -6,3 +6,23 @@
 .bh-near-me-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}.bh-near-me-controls label{display:flex;align-items:center;gap:8px;font-size:14px}.bh-near-me-controls select{border:1px solid #cbded2;border-radius:10px;padding:8px;background:white}.bh-near-me-controls #bhNearStatus{font-size:13px;color:#496a5c}.bh-near-me-controls [hidden]{display:none}
 
 .bh-bulk-select{display:inline-flex;align-items:center;gap:6px;margin:0 0 8px;font-size:13px;font-weight:600}.bh-bulk-select input{width:17px;height:17px;accent-color:#185d39}.bh-location-toolbar button{white-space:nowrap}#bhBulkDialog input[type=checkbox]{min-height:unset;width:18px;height:18px;vertical-align:middle}#bhBulkDialog label{display:flex;align-items:center;gap:9px}
+
+/* Venue management: clean record hierarchy and safer bulk actions. */
+.bh-location-item{align-items:center;gap:18px;padding:16px 18px}
+.bh-location-item>div:first-child{flex:1 1 330px;min-width:0}
+.bh-location-item>div:first-child>strong{display:block;font-size:15px;line-height:1.4;color:#164a35;overflow-wrap:anywhere}
+.bh-location-item .bh-bulk-select{display:flex;align-items:center;gap:9px;margin:0 0 9px;font-size:12px;line-height:1.3;color:#466c5b;font-weight:600}
+.bh-location-item .bh-bulk-select input{flex:none;margin:0;width:18px;height:18px}
+.bh-location-item p{margin:6px 0;line-height:1.45;overflow-wrap:anywhere}
+.bh-location-item small{display:block;line-height:1.45}
+.bh-location-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:7px;flex:0 1 auto}
+.bh-location-actions .button{font-size:12px;padding:9px 12px;min-height:38px}
+.bh-location-toolbar{gap:8px}
+.bh-location-toolbar>span{flex-basis:100%;order:5}
+.bh-bulk-delete-trigger{color:#9e3030!important;border-color:#eccaca!important;background:#fff4f4!important}
+.bh-bulk-delete-trigger:disabled{opacity:.5}
+#bhBulkDeleteDialog #bhBulkDeletePreview{max-height:220px;overflow:auto;padding:12px;border-radius:12px;background:#f4f8f5;font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+#bhBulkDeleteDialog #bhBulkDeletePreview p{margin:0 0 10px}
+#bhBulkDeleteDialog .button-danger{background:#a32929;color:white;border:0}
+#bhBulkDeleteDialog .button-danger:disabled{opacity:.5}
+@media(max-width:850px){.bh-location-item{align-items:flex-start;flex-direction:column}.bh-location-actions{justify-content:flex-start;width:100%}}
