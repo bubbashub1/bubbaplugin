@@ -109,3 +109,32 @@ body.bh-directory:not(.bh-calendar-page) main.app-shell .bh-directory-sort{justi
 body.bh-directory:not(.bh-calendar-page) main.app-shell #results.activity-grid:not([hidden]){display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:20px!important}
 @media(max-width:900px){body.bh-directory:not(.bh-calendar-page) main.app-shell #results.activity-grid:not([hidden]){grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:600px){body.bh-directory:not(.bh-calendar-page) main.app-shell #results.activity-grid:not([hidden]){grid-template-columns:minmax(0,1fr)!important}body.bh-directory:not(.bh-calendar-page) main.app-shell>.directory-layout{padding-top:110px!important}}
+
+/* Final visual polish: compact full-width search, Indeed-style filters and inline sort. */
+body.bh-directory:not(.bh-calendar-page) main.app-shell>.bh-directory-banner{min-height:275px!important;padding-top:26px!important;padding-bottom:88px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy{max-width:790px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy h1{font-size:clamp(2rem,3.2vw,3.1rem)!important;letter-spacing:-.025em!important;text-shadow:0 1px 10px #ffffff80!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy p{font-size:clamp(.95rem,1.25vw,1.1rem)!important;line-height:1.5!important;text-shadow:0 1px 8px #ffffffb0!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner>.bh-approved-search{bottom:-29px!important;width:min(1200px,calc(100% - 48px))!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .directory-hero-search{padding:7px 10px!important;border:1px solid #d5e7dc!important;box-shadow:0 8px 22px #1247341c!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .directory-hero-search-fields{gap:8px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .directory-hero-search-fields>label:first-child{min-height:42px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-location-fields{flex:0 1 270px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-submit{min-height:45px!important;min-width:180px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search #bhUseMyLocation{font-weight:700!important;font-size:.87rem!important}
+body.bh-directory:not(.bh-calendar-page) main.app-shell>.directory-layout{padding-top:53px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions{margin:0 0 18px!important;padding:5px!important;gap:4px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions button{padding:12px 8px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-bar{margin:0 0 16px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-bar h2{margin:0 0 12px!important;font-size:1.18rem!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips{gap:8px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips>.bh-approved-chip{min-width:0!important;min-height:40px!important;padding:6px 13px!important;border-radius:999px!important;box-shadow:0 1px 3px #0d4b3212!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips>.bh-approved-chip .directory-filter-label{font-size:.84rem!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-more{margin:10px 0 0!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-more>summary{font-size:.88rem!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-sort{display:flex!important;justify-content:flex-end!important;align-items:center!important;gap:12px!important;margin:16px 0 18px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-sort label{font-size:.9rem!important;white-space:nowrap!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-sort select{width:min(290px,100%)!important;max-width:290px!important;min-width:180px!important;min-height:42px!important;border-radius:999px!important}
+body.bh-directory:not(.bh-calendar-page) #results.activity-grid:not([hidden]){gap:18px!important}
+@media(max-width:950px){body.bh-directory:not(.bh-calendar-page) .bh-directory-banner>.bh-approved-search{bottom:-88px!important;width:calc(100% - 24px)!important}body.bh-directory:not(.bh-calendar-page) main.app-shell>.directory-layout{padding-top:110px!important}}
+@media(max-width:600px){body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy h1{font-size:1.65rem!important}body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy p{font-size:.85rem!important}body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions{overflow-x:auto!important;grid-template-columns:repeat(5,minmax(100px,1fr))!important}body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips{flex-wrap:nowrap!important;overflow-x:auto!important;padding:2px 0 8px!important}body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips>.bh-approved-chip{flex-shrink:0!important}body.bh-directory:not(.bh-calendar-page) .bh-directory-sort{justify-content:space-between!important}body.bh-directory:not(.bh-calendar-page) .bh-directory-sort select{min-width:0!important;width:58%!important}}
