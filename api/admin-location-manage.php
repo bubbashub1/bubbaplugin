@@ -53,7 +53,7 @@ try{
   $q->execute([$source['activity_id'],$id,$source['venue_name'],$source['postcode'],$source['town']]);$candidates=$q->fetchAll(PDO::FETCH_ASSOC);
   if($action==='delete_preview'){$db->rollBack();reply(200,['ok'=>true,'venue'=>$source,'listing'=>$activity,'sessions'=>$sessions,'candidates'=>$candidates]);}
   $target=filter_var($data['target_id']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
-  if(($data['confirm']??'')!=='DELETE'||($sessions>0&&!$target)){$db->rollBack();reply(422,['ok'=>false,'error'=>'Type DELETE and select a replacement when sessions are linked']);}
+  if(($data['confirm']??'')!=='DELETE'||!$target){$db->rollBack();reply(422,['ok'=>false,'error'=>'Type DELETE and select a replacement when sessions are linked']);}
   if($target){
    if($target===$id){$db->rollBack();reply(422,['ok'=>false,'error'=>'Choose a different venue']);}
    $q=$db->prepare('SELECT activity_id FROM bh_venues WHERE id=? FOR UPDATE');$q->execute([$target]);$targetActivity=$q->fetchColumn();
