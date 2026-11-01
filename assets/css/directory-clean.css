@@ -303,3 +303,18 @@ body.bh-directory:not(.bh-calendar-page) #bhTermTimeQuick{position:static!import
     font-size:inherit!important;line-height:inherit!important;margin:0!important;
   }
 }
+
+/* Branded footer on printed calendar and planner. */
+.bh-calendar-print-footer{display:none}
+@media print{
+  body.bh-directory:has(#calendarView:not([hidden])) #calendarView .bh-calendar-print-footer{
+    display:flex!important;visibility:visible!important;align-items:center!important;justify-content:center!important;
+    gap:5mm!important;margin-top:3mm!important;padding:2mm 0 0!important;border-top:1px solid #cbded4!important;
+    font-size:8pt!important;break-inside:avoid!important;
+  }
+  body.bh-directory:has(#calendarView:not([hidden])) #calendarView .bh-calendar-print-footer img,
+  body.bh-directory #plannerPrintFooter img{display:block!important;width:auto!important;height:9mm!important;max-width:35mm!important;object-fit:contain!important}
+  body.bh-directory:has(#calendarView:not([hidden])) #calendarView .bh-calendar-print-footer a,
+  body.bh-directory #plannerPrintFooter a{color:#07543c!important;text-decoration:none!important;font-weight:700!important}
+  body.bh-directory #plannerPrintFooter{display:flex!important;align-items:center!important;justify-content:center!important;gap:5mm!important}
+}
