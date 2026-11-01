@@ -11,6 +11,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+/* Compact activity footer: keep the updated date with the footer, not floating above it. */
+.bh-activity-v2 .site-footer{margin-top:24px}
+.bh-activity-v2 .site-footer-grid{gap:24px}
+.bh-activity-v2 .site-footer-bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 22px}
+.bh-activity-v2 .bh-listing-updated{font-size:13px;opacity:.86;margin-left:auto}
+@media(max-width:680px){.bh-activity-v2 .site-footer{margin-top:16px}.bh-activity-v2 .site-footer-bottom{justify-content:flex-start}.bh-activity-v2 .bh-listing-updated{margin-left:0}}
+</style>
 </head>
 <body class="bh-activity-v2">
 <div id="siteHeaderMount"></div>
@@ -58,7 +66,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const pathParts=location.pathname.split("/").filter(Boolean);
   const pathSlug=pathParts.length && !/activity\.html$/i.test(pathParts[pathParts.length-1]) ? pathParts[pathParts.length-1] : "";
   const slug=decodeURIComponent(params.get("slug")||pathSlug||"");
-  const id=params.get("id");
+  const id=params.get("id")||(location.pathname.match(/^\/activity\/(\d+)\//)?.[1]||"");
   let items=[];
   let a=null;
 
@@ -153,6 +161,17 @@ document.addEventListener("DOMContentLoaded",async()=>{
     a=bhActivityBySlug(slug,items)||bhActivity(id,items);
   }
   if(!a){state.innerHTML='<div class="admin-panel"><h2>Activity not found</h2><p>This activity may have been removed or the link is incorrect.</p><a class="button button-primary" href="directory.html">Find activities</a></div>';return}
+  // Canonical, stable ID-backed permalink; old query links remain compatible.
+  try{
+    const cleanTitle=String(a.title||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/['’]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+    if(cleanTitle&&Number(a.id)>0){
+      const canonical='/activity/'+Number(a.id)+'/'+cleanTitle;
+      if(location.pathname!==canonical)history.replaceState(history.state,'',canonical);
+      let link=document.querySelector('link[rel="canonical"]');
+      if(!link){link=document.createElement('link');link.rel='canonical';document.head.append(link);}
+      link.href=location.origin+canonical;
+    }
+  }catch(_){}
   const venues=bhVenues(a),sessions=bhSessions(a),images=Array.isArray(a.gallery)&&a.gallery.length?a.gallery:(a.image_url?[a.image_url]:[]);
   try{
     const key=(window.BH_KEYS&&BH_KEYS.recent)||"bhRecentlyViewed";

@@ -1,4 +1,4 @@
-function bhActivityLink(activity){const slug=String(activity?.slug||'').trim();if(slug&&!/&(?:#\d+|[a-z]+);/i.test(slug))return '/activity/'+encodeURIComponent(slug);return '/activity.html?id='+encodeURIComponent(activity?.id||'');}
+function bhActivityLink(activity){const title=String(activity?.title||activity?.slug||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/['’]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');const id=Number(activity?.id);if(Number.isSafeInteger(id)&&id>0&&title)return '/activity/'+id+'/'+title;return '/activity.html?id='+encodeURIComponent(activity?.id||'');}
 /* Load the single shared Bubba Hub header on every public page. */
 (function(){
   if(document.querySelector('script[data-bh-header-loader], script[src*="assets/js/header.js"]'))return;
