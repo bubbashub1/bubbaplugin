@@ -29,3 +29,12 @@ body.bh-directory:not(.bh-calendar-page) #results.activity-grid:not([hidden]){ma
 body.bh-directory:not(.bh-calendar-page) .bh-directory-banner{background-image:url('/images/logos/cheerful-coastal-hillside-banner-20261101-172123-9f2a0e.png')!important;background-size:cover!important;background-position:center center!important;min-height:250px!important}
 body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy{position:relative;z-index:1;max-width:850px!important;margin:auto!important;padding:8px 18px;border-radius:20px;background:rgba(255,255,255,.67)}
 @media(max-width:760px){body.bh-directory:not(.bh-calendar-page) .bh-directory-banner{min-height:185px!important;background-position:35% center!important}body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy{background:rgba(255,255,255,.82);padding:8px!important}}
+
+/* Full-width quick filters, including controls built by shared directory components. */
+body.bh-directory:not(.bh-calendar-page) #directoryFilters{position:static!important;display:block!important;width:100%!important;max-width:none!important;max-height:none!important;overflow:visible!important;margin:12px 0!important;padding:10px 0!important;background:transparent!important;box-shadow:none!important;border:0!important;transform:none!important}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-filter-fields,body.bh-directory:not(.bh-calendar-page) #directoryFilters .bh-advanced-filters{display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important;width:100%!important}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters :is(select,input:not([type=checkbox]),button){min-height:38px!important;max-width:230px!important;width:auto!important;border-radius:999px!important;padding:7px 13px!important;font-size:.86rem!important}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters :is(label,.filter-field){width:auto!important;max-width:260px!important;flex:0 1 auto!important}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters #advancedFields[hidden]{display:block!important}
+body.bh-directory:not(.bh-calendar-page) #directoryFilters .directory-more-search-panel:not([hidden]){background:transparent!important;border:0!important;padding:0!important}
+body.bh-directory:not(.bh-calendar-page) .directory-content-grid,body.bh-directory:not(.bh-calendar-page) .bh-directory-content-grid{width:100%!important;max-width:none!important}
