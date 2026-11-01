@@ -14,7 +14,7 @@
    const date=document.createElement('p');date.id='bh-activity-updated-near-actions';date.className='bh-activity-updated-note';date.hidden=true;panel.append(date);
    back.before(panel);
    const showDate=raw=>{
-    const m=String(raw||'').match(/^(\\d{4})-(\\d{2})-(\\d{2})/);
+    const m=String(raw||'').match(/^(\d{4})-(\d{2})-(\d{2})/);
     if(!m)return;
     const d=new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));
     if(Number.isNaN(d.getTime())||d.toISOString().slice(0,10)!==m[0])return;
@@ -26,8 +26,8 @@
    if(!date.hidden)return;
    // Fallback for older cached activity scripts: look up the record by ID or public slug.
    const params=new URLSearchParams(location.search);
-   const id=params.get('id')||location.pathname.match(/^\\/activity\\/(\\d+)\\//)?.[1];
-   const slug=params.get('slug')||location.pathname.match(/^\\/activity\\/([^/]+)\\/?$/)?.[1];
+   const id=params.get('id')||location.pathname.match(/^\/activity\/(\d+)\//)?.[1];
+   const slug=params.get('slug')||location.pathname.match(/^\/activity\/([^/]+)\/?$/)?.[1];
    if(id||slug){const url=new URL('/api/activities.php',location.origin);url.searchParams.set(id?'id':'pretty_slug',id||slug);url.searchParams.set('per_page','1');
     fetch(url,{credentials:'same-origin',cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>showDate(j?.data?.[0]?.updated_at)).catch(()=>{});
    }
