@@ -206,3 +206,50 @@ body.bh-directory:not(.bh-calendar-page) .bh-directory-banner>.bh-approved-searc
     width:calc(100vw - 24px)!important;
   }
 }
+
+/* Term Time is checkbox-only; disable the invisible native select overlay. */
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips>[data-filter-key="term_time"]{position:relative!important;display:inline-flex!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips>[data-filter-key="term_time"] select.bh-term-original-select,
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips>[data-filter-key="term_time"]:focus-within select.bh-term-original-select{display:none!important;visibility:hidden!important;pointer-events:none!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips>[data-filter-key="term_time"]::after{display:none!important;content:none!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips>[data-filter-key="term_time"] .directory-filter-label{pointer-events:auto!important;cursor:pointer!important}
+body.bh-directory:not(.bh-calendar-page) #bhTermTimeQuick{position:static!important;display:inline-block!important;opacity:1!important;visibility:visible!important;flex:0 0 16px!important;width:16px!important;height:16px!important;cursor:pointer!important}
+/* Directory's embedded planner must be visible to print even though other views are hidden. */
+@media print{
+  body.bh-directory .site-header,body.bh-directory .site-footer,
+  body.bh-directory .bh-directory-banner,body.bh-directory .bh-approved-filter-bar,
+  body.bh-directory .bh-directory-view-actions,body.bh-directory .bh-directory-sort,
+  body.bh-directory .directory-results-column>:not(#directoryPlannerView){display:none!important}
+  body.bh-directory main.app-shell,body.bh-directory .directory-layout,
+  body.bh-directory .directory-results-column,body.bh-directory #directoryPlannerView,
+  body.bh-directory .bh-directory-native-planner{display:block!important;position:static!important;width:100%!important;max-width:none!important;min-height:0!important;margin:0!important;padding:0!important;overflow:visible!important;visibility:visible!important}
+  body.bh-directory #directoryPlannerView[hidden]{display:block!important}
+  body.bh-directory #directoryPlannerView>:not(.bh-directory-native-planner),
+  body.bh-directory .bh-directory-native-planner>:not(.planner-print-sheet){display:none!important}
+  body.bh-directory #plannerPrintSheet{display:block!important;position:static!important;visibility:visible!important;width:100%!important;margin:0!important;padding:0!important}
+  body.bh-directory #plannerPrintCalendar{display:block!important}
+  body.bh-directory .planner-print-week{display:grid!important}
+  body.bh-directory .planner-print-week-day{break-inside:avoid!important}
+}
+
+/* Print the currently selected directory calendar week, not the planner or site chrome. */
+@media print{
+  @page{size:A4 landscape;margin:9mm}
+  body.bh-directory:has(#calendarView:not([hidden])) header,
+  body.bh-directory:has(#calendarView:not([hidden])) footer,
+  body.bh-directory:has(#calendarView:not([hidden])) .bh-directory-banner,
+  body.bh-directory:has(#calendarView:not([hidden])) .bh-approved-filter-bar,
+  body.bh-directory:has(#calendarView:not([hidden])) .bh-directory-view-actions,
+  body.bh-directory:has(#calendarView:not([hidden])) .bh-directory-content-grid,
+  body.bh-directory:has(#calendarView:not([hidden])) #directoryPlannerView,
+  body.bh-directory:has(#calendarView:not([hidden])) #directoryEventsView,
+  body.bh-directory:has(#calendarView:not([hidden])) .planner-print-sheet{display:none!important}
+  body.bh-directory:has(#calendarView:not([hidden])) main.app-shell,
+  body.bh-directory:has(#calendarView:not([hidden])) .directory-layout,
+  body.bh-directory:has(#calendarView:not([hidden])) .directory-results-column,
+  body.bh-directory:has(#calendarView:not([hidden])) #calendarView{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;overflow:visible!important;position:static!important}
+  body.bh-directory:has(#calendarView:not([hidden])) #calendarView .directory-calendar-actions{display:none!important}
+  body.bh-directory:has(#calendarView:not([hidden])) #calendarView .directory-calendar-week-grid{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:3mm!important}
+  body.bh-directory:has(#calendarView:not([hidden])) #calendarView .directory-calendar-day{min-width:0!important;overflow:visible!important;break-inside:avoid!important}
+  body.bh-directory:has(#calendarView:not([hidden])) #calendarView .directory-calendar-event{break-inside:avoid!important;overflow-wrap:anywhere!important}
+}
