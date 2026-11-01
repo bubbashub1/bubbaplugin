@@ -42,7 +42,7 @@ function bhExpandWeeklyOccurrences(array $session, string $from, string $to, arr
         if ($originalDay && $originalDay->format('Y-m-d') === $original && $originalDay < $scanStart) $scanStart = $originalDay;
     }
     if ($first->diff($scanStart)->days > 366) throw new InvalidArgumentException('Reschedule lookback too long');
-    for ($day = $scanStart; $day <= $last; $day = $day->modify('+1 day')) { = $first; $day <= $last; $day = $day->modify('+1 day')) {
+    for ($day = $scanStart; $day <= $last; $day = $day->modify('+1 day')) {
         if ((int)$day->format('N') !== $weekday) continue;
         $date = $day->format('Y-m-d');
         if (($boundsStart !== '' && $date < $boundsStart) || ($boundsEnd !== '' && $date > $boundsEnd)) continue;
