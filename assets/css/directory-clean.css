@@ -201,3 +201,25 @@ body.bh-directory:not(.bh-calendar-page) #bhTermTimeQuick{position:static!import
   body.bh-directory .planner-print-week{display:grid!important}
   body.bh-directory .planner-print-week-day{break-inside:avoid!important}
 }
+
+/* Print the currently selected directory calendar week, not the planner or site chrome. */
+@media print{
+  @page{size:A4 landscape;margin:9mm}
+  body.bh-directory:has(#calendarView:not([hidden])) header,
+  body.bh-directory:has(#calendarView:not([hidden])) footer,
+  body.bh-directory:has(#calendarView:not([hidden])) .bh-directory-banner,
+  body.bh-directory:has(#calendarView:not([hidden])) .bh-approved-filter-bar,
+  body.bh-directory:has(#calendarView:not([hidden])) .bh-directory-view-actions,
+  body.bh-directory:has(#calendarView:not([hidden])) .bh-directory-content-grid,
+  body.bh-directory:has(#calendarView:not([hidden])) #directoryPlannerView,
+  body.bh-directory:has(#calendarView:not([hidden])) #directoryEventsView,
+  body.bh-directory:has(#calendarView:not([hidden])) .planner-print-sheet{display:none!important}
+  body.bh-directory:has(#calendarView:not([hidden])) main.app-shell,
+  body.bh-directory:has(#calendarView:not([hidden])) .directory-layout,
+  body.bh-directory:has(#calendarView:not([hidden])) .directory-results-column,
+  body.bh-directory:has(#calendarView:not([hidden])) #calendarView{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;overflow:visible!important;position:static!important}
+  body.bh-directory:has(#calendarView:not([hidden])) #calendarView .directory-calendar-actions{display:none!important}
+  body.bh-directory:has(#calendarView:not([hidden])) #calendarView .directory-calendar-week-grid{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:3mm!important}
+  body.bh-directory:has(#calendarView:not([hidden])) #calendarView .directory-calendar-day{min-width:0!important;overflow:visible!important;break-inside:avoid!important}
+  body.bh-directory:has(#calendarView:not([hidden])) #calendarView .directory-calendar-event{break-inside:avoid!important;overflow-wrap:anywhere!important}
+}
