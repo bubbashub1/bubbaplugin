@@ -31,7 +31,10 @@
 .bh-wizard-layout #adminListingSteps .bh-step{width:100%;display:flex;align-items:center;text-align:left;gap:10px;white-space:normal;padding:12px;border-radius:12px}
 .bh-wizard-layout #newListingForm{min-width:0;width:100%;max-width:none;display:block;grid-column:2;justify-self:stretch}
 .bh-wizard-layout{width:100%;min-width:0}
-.bh-wizard-layout #adminListingSteps{grid-column:1;grid-row:1;align-self:start}
+.bh-wizard-layout #adminListingSteps{grid-column:1;grid-row:1 / span 2;align-self:start}
+.bh-wizard-layout #newListingForm{grid-row:2;align-self:start}
+.bh-wizard-layout{row-gap:12px}
+@media(max-width:760px){.bh-wizard-layout #newListingForm,.bh-wizard-layout #adminListingSteps{grid-row:auto}}
 .bh-wizard-layout #newListingForm .bh-card,.bh-wizard-layout #newListingForm .admin-form-grid{width:100%;min-width:0;max-width:none;box-sizing:border-box}
 .bh-wizard-layout #newListingForm .admin-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
 .bh-wizard-layout #newListingForm .admin-form-grid>label{min-width:0;width:100%;box-sizing:border-box}
