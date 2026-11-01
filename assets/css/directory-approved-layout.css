@@ -1,0 +1,49 @@
+/* Approved directory mockup: image, search, tabs, quick filters, results. */
+body.bh-directory:not(.bh-calendar-page) .app-shell{display:block!important;max-width:1600px!important;padding-top:0!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner{display:flex!important;align-items:flex-start!important;justify-content:center!important;min-height:265px!important;margin:0!important;padding:22px 24px 75px!important;border-radius:0!important;background:#e5f3eb url('/images/logos/cheerful-coastal-hillside-banner-20261101-172123-9f2a0e.png') center/cover no-repeat!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy{max-width:950px!important;background:transparent!important;padding:0!important;margin:0 auto!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner-copy .bh-directory-banner-kicker{display:none!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner h1{font-size:clamp(2rem,3.5vw,3.5rem)!important;line-height:1.2!important;font-weight:800!important;color:#07543c!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-banner p{font-size:clamp(.9rem,1.45vw,1.18rem)!important;color:#143c32!important}
+body.bh-directory:not(.bh-calendar-page) [data-bh-directory-hero-placeholder]{display:none!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search{position:relative!important;z-index:3!important;display:block!important;max-width:1150px!important;width:calc(100% - 48px)!important;margin:-65px auto 20px!important;padding:0!important;background:none!important;background-image:none!important;border:0!important;box-shadow:none!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .directory-hero-search{border-radius:999px!important;padding:8px 12px!important;background:#fff!important;border:1px solid #d9e6df!important;box-shadow:0 6px 22px #174e3b26!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .directory-hero-search h2{display:none!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .directory-hero-search-fields{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;gap:8px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .directory-hero-search-fields>label:first-child{flex:1 1 auto!important;min-width:180px!important;border:0!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-approved-duplicate{display:none!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-location-fields{display:flex!important;flex:0 1 210px!important;gap:5px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-postcode{display:flex!important;min-width:0!important;flex:1!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-radius{display:flex!important;flex:0 0 100px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-location-actions{display:flex!important;flex:0 0 auto!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search #bhPostcodeClear{display:none!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search #bhUseMyLocation{display:inline-flex!important;border:0!important;background:transparent!important;color:#07543c!important;padding:8px!important;white-space:nowrap!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-submit{flex:0 0 auto!important;min-width:155px!important;border-radius:999px!important;background:#006344!important;color:white!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-search .directory-hero-actions,body.bh-directory:not(.bh-calendar-page) .bh-approved-search .directory-popular{display:none!important}
+body.bh-directory:not(.bh-calendar-page) .directory-layout{padding:0 clamp(16px,3vw,48px)!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;margin:14px 0 22px!important;border-radius:999px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-bar{width:100%;margin:16px 0 22px}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-bar h2{font-size:1.25rem;color:#07543c;margin:0 0 12px;font-weight:800}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-chip{display:inline-flex!important;align-items:center!important;gap:6px!important;min-width:0!important;max-width:none!important;width:auto!important;padding:6px 10px!important;margin:0!important;background:#fff!important;border:1px solid #d4e3db!important;border-radius:999px!important;box-shadow:0 2px 6px #123d3014!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-chip .directory-filter-label{font-size:.85rem!important;color:#07543c!important;font-weight:800!important;margin:0!important;white-space:nowrap!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-chip select{min-width:20px!important;width:28px!important;max-width:35px!important;height:30px!important;padding:0!important;border:0!important;background:transparent!important;color:transparent!important;cursor:pointer!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-chip select:focus{color:#07543c!important;width:auto!important;max-width:190px!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-chip:has(select:not([value=""])) select{color:#07543c}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-chip[data-filter-key="free"]{font-size:.85rem!important;color:#07543c!important;font-weight:800!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-more{margin-top:12px}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-more>summary{cursor:pointer;font-weight:700;color:#07543c}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-more #directoryFilters{position:static!important;display:block!important;max-height:none!important;width:100%!important;margin:10px 0!important;padding:12px!important;overflow:visible!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-more #advancedFields[hidden]{display:none!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-more #advancedFields:not([hidden]){display:block!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-more .directory-more-search-toggle{display:none!important}
+body.bh-directory:not(.bh-calendar-page) .bh-directory-sort{display:flex!important;justify-content:flex-end!important;margin:0 0 18px!important}
+body.bh-directory:not(.bh-calendar-page) #results.activity-grid:not([hidden]){max-height:none!important;overflow:visible!important}
+@media(max-width:800px){body.bh-directory:not(.bh-calendar-page) .bh-directory-banner{min-height:205px!important;padding:18px 14px 65px!important}body.bh-directory:not(.bh-calendar-page) .bh-approved-search{width:calc(100% - 24px)!important;margin:-50px auto 14px!important}body.bh-directory:not(.bh-calendar-page) .bh-approved-search .directory-hero-search{border-radius:24px!important}body.bh-directory:not(.bh-calendar-page) .bh-approved-search .directory-hero-search-fields{flex-wrap:wrap!important}body.bh-directory:not(.bh-calendar-page) .bh-approved-search .directory-hero-search-fields>label:first-child{flex:1 1 100%!important}body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-location-fields{flex:1 1 150px!important}body.bh-directory:not(.bh-calendar-page) .bh-approved-search .bh-search-submit{flex:1 1 100%!important}body.bh-directory:not(.bh-calendar-page) .bh-directory-view-actions{border-radius:16px!important}body.bh-directory:not(.bh-calendar-page) .bh-approved-filter-chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px}body.bh-directory:not(.bh-calendar-page) .bh-approved-chip{flex-shrink:0}}
+
+/* Selection feedback and readable native dropdowns. */
+body.bh-directory:not(.bh-calendar-page) .bh-approved-chip.bh-has-value{background:#e7f3e9!important;border-color:#a7cfb5!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-chip.bh-has-value select{width:auto!important;max-width:165px!important;color:#07543c!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-chip select option{color:#143c32!important;background:#fff!important}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-chip:focus-within{outline:2px solid #16836b;outline-offset:2px}
+body.bh-directory:not(.bh-calendar-page) .bh-approved-more #directoryFilters .bh-approved-extra-fields:empty{display:none!important}
