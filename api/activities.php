@@ -434,6 +434,43 @@ try {
         }));
     }
 
+    // Expose future single-date cancellations without removing the recurring timetable.
+    // Consumers can suppress a particular occurrence by matching session id and date.
+    try {
+    if ($activities) {
+        $exceptionTable = $db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_schedule_exceptions'")->fetchColumn();
+        if ($exceptionTable) {
+            $sessionIds = [];
+            foreach ($activities as $activity) {
+                foreach ($activity['sessions'] as $session) {
+                    if (!empty($session['id'])) $sessionIds[(int)$session['id']] = true;
+                }
+            }
+            $exceptionsBySession = [];
+            if ($sessionIds) {
+                $placeholders = implode(',', array_fill(0, count($sessionIds), '?'));
+                $exceptionStmt = $db->prepare("SELECT session_id,exception_date,reason FROM bh_schedule_exceptions WHERE session_id IN ($placeholders) AND exception_date>=CURRENT_DATE ORDER BY exception_date");
+                $exceptionStmt->execute(array_keys($sessionIds));
+                foreach ($exceptionStmt->fetchAll(PDO::FETCH_ASSOC) as $exception) {
+                    $exceptionsBySession[(int)$exception['session_id']][] = [
+                        'date' => $exception['exception_date'],
+                        'reason' => $exception['reason'],
+                    ];
+                }
+            }
+            foreach ($activities as &$activity) {
+                foreach ($activity['sessions'] as &$session) {
+                    $session['cancelled_dates'] = $exceptionsBySession[(int)($session['id'] ?? 0)] ?? [];
+                }
+                unset($session);
+            }
+            unset($activity);
+        }
+    }
+    } catch (Throwable $exceptionError) {
+        error_log('BH public cancellation metadata unavailable: '.$exceptionError->getMessage());
+    }
+
     $total = count($activities);
     $paged = array_slice($activities, $offset, $perPage);
 
