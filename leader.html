@@ -149,7 +149,7 @@ fetch("/api/subscription.php",{credentials:"same-origin",cache:"no-store"}).then
  const sidebar=document.getElementById("leaderSidebar"),toggle=document.getElementById("leaderMenuToggle");
  function show(key,push){
   if(key!=="overview"&&!Object.prototype.hasOwnProperty.call(allowed,key))key="overview";
-  if(key==="blog"&&document.querySelector('[data-leader-panel="blog"][hidden]'))key="overview";
+  if(key==="blog"&&document.querySelector('.leader-sidebar [data-leader-panel="blog"][hidden]'))key="overview";
   document.querySelectorAll('.leader-sidebar [data-leader-panel]').forEach(a=>{if(a.dataset.leaderPanel===key)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   overview.hidden=key!=="overview";panel.hidden=key==="overview";
   if(key!=="overview"){frame.style.height="900px";const url="/leader/"+key+".html";document.getElementById("leaderPanelTitle").textContent=allowed[key];document.getElementById("leaderOpenFull").href=url;if(frame.getAttribute("src")!==url)frame.src=url}
