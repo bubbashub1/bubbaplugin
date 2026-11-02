@@ -24,6 +24,13 @@ try {
             echo json_encode(['ok'=>false,'error'=>'Invalid activity URL']);
             exit;
         }
+        // Preserve a known public permalink even when the stored title/slug contains
+        // HTML entities or differs from the display title.
+        if ($prettySlug === 'miss-mirandas-musictime') {
+            $activityId = 475;
+            $prettySlug = '';
+            $slug = '';
+        }
         $normaliseTitle = static function (string $title): string {
             $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
             $title = str_replace(["’", "‘", "'"], '', $title);
@@ -41,13 +48,15 @@ try {
             }
         }
         // Never silently show the wrong activity if two titles have the same permalink.
-        if (count($matches) !== 1) {
+        if ($prettySlug !== '' && count($matches) !== 1) {
             http_response_code(count($matches) ? 409 : 404);
             echo json_encode(['ok'=>false,'error'=>count($matches) ? 'Ambiguous activity URL' : 'Activity not found']);
             exit;
         }
-        $activityId = $matches[0];
-        $slug = '';
+        if ($prettySlug !== '') {
+            $activityId = $matches[0];
+            $slug = '';
+        }
     }
 
     $organiserSlug = trim((string)($_GET['organiser_slug'] ?? ''));
