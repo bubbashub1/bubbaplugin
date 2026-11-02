@@ -310,6 +310,15 @@ if($action==='delete_schedule_session'){
  $sessionId=(int)($b['session_id']??0);
  if($sessionId<=0)lp(422,['ok'=>false,'error'=>'invalid_session_id']);
  lpEnsureScheduleExceptions($db);
+ // A recurring session may have reservations; never silently orphan them.
+ $bookingTables=['bh_bookings','bh_reservations','bh_class_bookings'];
+ foreach($bookingTables as $table){
+  $exists=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?");$exists->execute([$table]);if(!$exists->fetchColumn())continue;
+  $cols=$db->prepare("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?");$cols->execute([$table]);$names=$cols->fetchAll(PDO::FETCH_COLUMN);
+  if(!in_array('session_id',$names,true))continue;
+  $count=$db->prepare("SELECT COUNT(*) FROM `".$table."` WHERE session_id=?");$count->execute([$sessionId]);
+  if((int)$count->fetchColumn()>0)lp(409,['ok'=>false,'error'=>'session_has_bookings','message'=>'This session has booking records. Resolve the bookings before deleting the recurring session.']);
+ }
  $db->beginTransaction();try{
   $q=$db->prepare("SELECT s.id FROM bh_sessions s JOIN bh_venues v ON v.id=s.venue_id JOIN bh_activities a ON a.id=v.activity_id WHERE s.id=? AND a.organiser_id=? FOR UPDATE");$q->execute([$sessionId,$oid]);
   if(!$q->fetchColumn()){$db->rollBack();lp(404,['ok'=>false,'error'=>'session_not_found']);}
