@@ -23,7 +23,7 @@
 <p>Choose an available table from the saved Bubba &amp; Me Expo layout. Grey tables have already been selected. Your table is reserved when the application is successfully submitted.</p>
 <div id="expoTableGrid" role="group" aria-label="Preferred exhibitor table" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:10px"></div>
 <p id="expoTableSelection" role="status" aria-live="polite">No preferred table selected.</p>
-<input type="hidden" name="preferred_table" id="expoPreferredTable">
+<input type="hidden" name="preferred_table" id="expoPreferredTable"><label for="expoTableFallback" style="display:block;margin-top:12px">Selected table * <select id="expoTableFallback" aria-describedby="expoTableSelection"><option value="">Choose an available table</option></select></label>
 <p style="font-size:.9rem">Green = available · Orange = selected · Grey = unavailable.</p>
 </fieldset>
 <fieldset style="margin-top:18px;border:1px solid #d1e4d4;border-radius:14px;padding:16px"><legend>Stall and facilities</legend>
@@ -59,6 +59,7 @@
  if(!grid||!selected||!status)return;
  grid.style.cssText='display:block;overflow-x:auto;max-width:100%';
  status.textContent='Loading the available tables…';
+ const fallback=document.getElementById('expoTableFallback');
  const svgNS='http://www.w3.org/2000/svg';
  try{
   const res=await fetch('/api/expo-floor-plan-selection.php',{cache:'no-store'});
@@ -68,15 +69,17 @@
   const title=document.createElementNS(svgNS,'text');title.setAttribute('x','600');title.setAttribute('y','40');title.setAttribute('text-anchor','middle');title.setAttribute('font-size','26');title.setAttribute('fill','#174c44');title.textContent='Bubba & Me Expo — select your table';svg.append(title);
   const buttons=[];
   for(const table of data.tables){
+   if(table.available){const option=document.createElement('option');option.value=String(table.id);option.textContent='Table '+table.label;fallback.append(option);}
    const g=document.createElementNS(svgNS,'g');g.setAttribute('role','button');g.setAttribute('tabindex',table.available?'0':'-1');g.setAttribute('aria-disabled',String(!table.available));g.setAttribute('aria-label','Table '+table.label+(table.available?', available':', reserved'));
    const vertical=Number(table.angle)===90,w=vertical?75:185,h=vertical?185:75,cx=Number(table.x)+w/2,cy=Number(table.y)+h/2;
    const rect=document.createElementNS(svgNS,'rect');rect.setAttribute('x',table.x);rect.setAttribute('y',table.y);rect.setAttribute('width',w);rect.setAttribute('height',h);rect.setAttribute('rx','8');rect.setAttribute('stroke','#608b7b');rect.setAttribute('stroke-width','3');
    const label=document.createElementNS(svgNS,'text');label.setAttribute('x',cx);label.setAttribute('y',cy+7);label.setAttribute('text-anchor','middle');label.setAttribute('font-size','21');label.setAttribute('font-weight','bold');if(vertical)label.setAttribute('transform','rotate(-90 '+cx+' '+cy+')');label.textContent=table.label;
    g.append(rect,label);svg.append(g);buttons.push({table,g,rect});
-   function choose(){if(!table.available)return;selected.value=String(table.id);status.textContent='Selected table '+table.label+' — reserved when your application is accepted by the server.';for(const item of buttons){item.rect.setAttribute('fill',!item.table.available?'#b9bdc1':item.table.id===table.id?'#ffbb79':'#d7f0df');item.g.setAttribute('aria-pressed',String(item.table.id===table.id));}}
+   function choose(){if(!table.available)return;selected.value=String(table.id);fallback.value=selected.value;status.textContent='Selected table '+table.label+' — reserved when your application is accepted by the server.';for(const item of buttons){item.rect.setAttribute('fill',!item.table.available?'#b9bdc1':item.table.id===table.id?'#ffbb79':'#d7f0df');item.g.setAttribute('aria-pressed',String(item.table.id===table.id));}}
    if(table.available){g.style.cursor='pointer';g.addEventListener('click',choose);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose();}});}
    rect.setAttribute('fill',table.available?'#d7f0df':'#b9bdc1');
   }
+  fallback.addEventListener('change',()=>{const match=data.tables.find(t=>t.available&&String(t.id)===fallback.value);if(match){const entry=buttons.find(x=>x.table.id===match.id);entry?.g.dispatchEvent(new Event('click'));}else{selected.value='';status.textContent='Please choose an available table.';}});
   grid.replaceChildren(svg);status.textContent='Green = available · Grey = already selected · Orange = your selection.';
  }catch(e){grid.replaceChildren();selected.value='';status.textContent='Table selection is temporarily unavailable. Please try again later.';}
 })();</script><script>
@@ -109,6 +112,8 @@
   if(!csrfToken||!turnstileToken)return;
   updateInsuranceMinimum();
   if(!form.reportValidity())return;
+  const tableField=document.getElementById('expoPreferredTable');
+  if(!/^[1-9][0-9]*$/.test(tableField.value)){status.textContent='Please choose an available table before submitting.';document.getElementById('expoTableFallback')?.focus();return;}
   const data=new FormData(form),body={};
   for(const [key,value] of data.entries()){if(key==='insurance_expiry_uk')continue;
    if(key==='participation'){(body.participation??=[]).push(value);continue;}
@@ -124,7 +129,7 @@
    if(!response.ok||!result.ok)throw new Error((result.error||'submission_failed')+(result.field?' in '+result.field:'')+' (HTTP '+response.status+')');
    status.textContent='Application received. Reference #'+result.application_id+'. Your application is pending review.';
    status.scrollIntoView({behavior:'smooth',block:'center'});
-   form.reset();insuranceExpiry.value='';insuranceExpiryUK.value='';
+   form.reset();document.getElementById('expoPreferredTable').value='';document.getElementById('expoTableFallback').value='';insuranceExpiry.value='';insuranceExpiryUK.value='';
   }catch(error){if(String(error.message||'').includes('invalid_csrf')){try{const refreshed=await fetch('/api/expo-exhibitors.php',{credentials:'same-origin',cache:'no-store'});const fresh=await refreshed.json();if(refreshed.ok&&fresh.csrf_token)csrfToken=fresh.csrf_token;}catch(_){}}status.textContent='Application not confirmed: '+(error.message||'network_error')+(String(error.message||'').includes('invalid_csrf')?'. Security token refreshed; please complete verification and submit again.':'. Please check with Bubba Hub before trying again.');status.scrollIntoView({behavior:'smooth',block:'center'});}
   finally{turnstileToken="";if(window.turnstile)window.turnstile.reset();button.disabled=true;}
  };
