@@ -36,7 +36,7 @@ function addClass(){
   let index=0;
   const show=()=>{steps.forEach((step,i)=>{step.hidden=i!==index;step.querySelectorAll("input,select,textarea").forEach(input=>{input.disabled=i!==index})});prev.hidden=index===0;next.hidden=index===steps.length-1;save.hidden=index!==steps.length-1;form.querySelector("[data-wizard-progress]").textContent="Step "+(index+1)+" of "+steps.length; if(index===3){const fd=new FormData(form);const title=form.querySelector("[name=title]").value;const venue=form.querySelector("[name=venue_name]").value;form.querySelector("[data-wizard-review]").textContent="Activity: "+title+" · Venue: "+venue+" · Review your entries using Back before saving.";}message.textContent="";};
   const valid=()=>{for(const field of steps[index].querySelectorAll("input,select,textarea")){if(!field.checkValidity()){field.reportValidity();return false}}return true};
-  next.onclick=()=>{if(!valid())return;index++;show()};
+  next.onclick=()=>{if(!valid())return;if(index===2&&!existingVenueSelect?.value){const name=String(form.querySelector("[name=venue_name]")?.value||"").trim().toLocaleLowerCase();const town=String(form.querySelector("[name=town]")?.value||"").trim().toLocaleLowerCase();const duplicate=allVenues().find(v=>String(v.venue_name||"").trim().toLocaleLowerCase()===name&&String(v.town||"").trim().toLocaleLowerCase()===town);if(duplicate){message.textContent="This venue already exists in your classes. Choose it from the existing venue dropdown to avoid duplicates.";existingVenueSelect?.focus();return}}index++;show()};
   prev.onclick=()=>{index--;show()};
   form.querySelector("[data-close]").onclick=()=>overlay.remove();
   overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.remove()});
