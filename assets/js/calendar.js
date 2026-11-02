@@ -160,7 +160,7 @@ document.addEventListener("DOMContentLoaded",()=>{(async()=>{
   const dateKey=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
   const events=d=>filteredItems().flatMap(a=>sessions(a)
     .filter(s=>Number(s.day_of_week)===((d.getDay()+6)%7+1)||norm(s.day)===norm(d.toLocaleDateString("en-GB",{weekday:"long"})))
-    .filter(s=>!state.filters.day||norm(s.day)===norm(state.filters.day))
+    .filter(s=>!state.filters.day||norm(s.day)===norm(state.filters.day)||norm(["","monday","tuesday","wednesday","thursday","friday","saturday","sunday"][Number(s.day_of_week)]||"")===norm(state.filters.day))
     .filter(s=>!s.start_date||dateKey(d)>=s.start_date)
     .filter(s=>!s.end_date||dateKey(d)<=s.end_date)
     .filter(s=>!(Array.isArray(s.cancelled_dates)&&s.cancelled_dates.some(c=>(typeof c==="string"?c:c.date)===dateKey(d))))
