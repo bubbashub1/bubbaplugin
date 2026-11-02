@@ -298,6 +298,10 @@ if($action==='save_schedule_session'){
    if(!$venueId&&$source&&(int)$source['activity_id']===$cid)$venueId=(int)$source['venue_id'];
    if(!$venueId){$q=$db->prepare("SELECT id FROM bh_venues WHERE activity_id=? ORDER BY id LIMIT 1");$q->execute([$cid]);$venueId=(int)$q->fetchColumn();}
    $q=$db->prepare("SELECT id FROM bh_venues WHERE id=? AND activity_id=?");$q->execute([$venueId,$cid]);if(!$q->fetchColumn())throw new RuntimeException('A selected class needs a registered venue.');
+   // Avoid duplicate sessions and overlapping timetable slots at the selected venue.
+   $conflict=$db->prepare("SELECT id FROM bh_sessions WHERE venue_id=? AND day_of_week=? AND start_time < ? AND COALESCE(end_time,start_time) > ? AND id<>? LIMIT 1");
+   $conflict->execute([$venueId,$day,$end,$start,($source&&(int)$source['activity_id']===$cid)?$sessionId:0]);
+   if($conflict->fetchColumn())throw new RuntimeException('A session already overlaps this time at the selected venue.');
    if($source&&(int)$source['activity_id']===$cid){
     $q=$db->prepare("UPDATE bh_sessions SET venue_id=?,day_of_week=?,start_time=?,end_time=?,term_time_only=? WHERE id=?");
     $q->execute([$venueId,$day,$start,$end,(int)!empty($b['term_time_only']),$sessionId]);$updated++;
