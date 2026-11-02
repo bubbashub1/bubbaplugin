@@ -159,6 +159,30 @@ fetch("/api/subscription.php",{credentials:"same-origin",cache:"no-store"}).then
  }
  document.addEventListener("click",function(e){const a=e.target.closest("[data-leader-panel]");if(!a||!a.dataset.leaderPanel)return;if(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey||a.target==="_blank")return;e.preventDefault();show(a.dataset.leaderPanel,true)});
  toggle.addEventListener("click",()=>{const open=sidebar.classList.toggle("is-open");toggle.setAttribute("aria-expanded",String(open))});
+ frame.addEventListener("load",function(){
+  try{
+   const doc=frame.contentDocument;
+   if(!doc||!doc.body)return;
+   doc.body.classList.add("leader-embedded-mode");
+   const style=doc.createElement("style");
+   style.textContent="body.leader-embedded-mode>.site-header,body.leader-embedded-mode>.site-footer,body.leader-embedded-mode .bh-leader-tabs,body.leader-embedded-mode .bh-leader-hero{display:none!important}body.leader-embedded-mode{background:#fff!important}body.leader-embedded-mode .bh-leader-page{max-width:none!important;width:100%!important;margin:0!important;padding:8px!important}body.leader-embedded-mode .app-shell{min-height:0!important}";
+   doc.head.appendChild(style);
+   const resize=()=>{if(doc.documentElement)frame.style.height=Math.max(500,doc.documentElement.scrollHeight+28)+"px"};
+   if(frame._leaderObserver)frame._leaderObserver.disconnect();
+   if(typeof ResizeObserver!=="undefined"){frame._leaderObserver=new ResizeObserver(resize);frame._leaderObserver.observe(doc.body)}
+   resize();
+   doc.addEventListener("click",function(event){
+    const link=event.target.closest("a[href]");
+    if(!link||event.defaultPrevented||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey||link.target==="_blank")return;
+    const url=new URL(link.href,location.origin);
+    if(url.origin!==location.origin)return;
+    const match=url.pathname.match(/^\\/leader\\/([a-z-]+)\\.html$/);
+    if(match&&Object.prototype.hasOwnProperty.call(allowed,match[1])){event.preventDefault();show(match[1],true)}
+    else if(url.pathname==="/leader/"||url.pathname==="/leader.html"){event.preventDefault();show("overview",true)}
+    else {event.preventDefault();window.location.assign(url.href)}
+   });
+  }catch(err){document.querySelector(".leader-panel-help").textContent="This section cannot be embedded in your browser. Use Open full page instead."}
+ });
  window.addEventListener("popstate",()=>show(new URLSearchParams(location.search).get("section")||"overview",false));
  show(new URLSearchParams(location.search).get("section")||"overview",false);
 })();
