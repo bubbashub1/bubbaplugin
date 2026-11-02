@@ -17,6 +17,9 @@ require_once __DIR__.'/db.php';
 require_once __DIR__.'/mailer.php';
 if(session_status()!==PHP_SESSION_ACTIVE){session_name('BUBBAHUBSESSID');session_start();}
 function lp(int $s,array $d): void{http_response_code($s);echo json_encode($d,JSON_UNESCAPED_SLASHES);exit;}
+function lpEnsureScheduleExceptions(PDO $db): void{
+ $db->exec("CREATE TABLE IF NOT EXISTS bh_schedule_exceptions (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,session_id BIGINT UNSIGNED NOT NULL,exception_date DATE NOT NULL,reason VARCHAR(240) NOT NULL DEFAULT '',created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,UNIQUE KEY unique_session_date(session_id,exception_date),KEY idx_exception_date(exception_date)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
 function lpEnsureExpertise(PDO $db): void{
  try{$db->exec("CREATE TABLE IF NOT EXISTS bh_leader_expertise (organiser_id BIGINT UNSIGNED NOT NULL, topic_key VARCHAR(80) NOT NULL, enabled TINYINT(1) NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, PRIMARY KEY (organiser_id,topic_key), INDEX idx_leader_expertise_topic (topic_key)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");}catch(Throwable $ignored){}
 }
@@ -88,6 +91,7 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
  foreach($classes as &$c){$c['venues']=[];try{$v=$db->prepare("SELECT * FROM bh_venues WHERE activity_id=? ORDER BY id");$v->execute([(int)$c['id']]);$c['venues']=$v->fetchAll();}catch(Throwable $ignored){}
   foreach($c['venues'] as &$venue){$venue['sessions']=[];try{$s=$db->prepare("SELECT * FROM bh_sessions WHERE venue_id=? ORDER BY day_of_week,start_time");$s->execute([(int)$venue['id']]);$venue['sessions']=$s->fetchAll();}catch(Throwable $ignored){}}
  }unset($c,$venue);
+ $scheduleExceptions=[];try{lpEnsureScheduleExceptions($db);$eq=$db->prepare("SELECT e.id,e.session_id,e.exception_date,e.reason FROM bh_schedule_exceptions e JOIN bh_sessions s ON s.id=e.session_id JOIN bh_venues v ON v.id=s.venue_id JOIN bh_activities a ON a.id=v.activity_id WHERE a.organiser_id=? AND e.exception_date>=CURRENT_DATE ORDER BY e.exception_date,e.id");$eq->execute([$oid]);$scheduleExceptions=$eq->fetchAll(PDO::FETCH_ASSOC);}catch(Throwable $e){error_log('BH schedule exceptions: '.$e->getMessage());}
  $bookings=[];try{$bookingCheck=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('bh_booking_reservations','bh_booking_slots','bh_users')");if((int)$bookingCheck->fetchColumn()===3){$r=$db->prepare("SELECT br.id,br.status,br.quantity,br.created_at,bs.starts_at,bs.ends_at,bs.activity_id,bs.venue_id,a.title,v.venue_name,u.email FROM bh_booking_reservations br JOIN bh_booking_slots bs ON bs.id=br.slot_id JOIN bh_activities a ON a.id=bs.activity_id JOIN bh_venues v ON v.id=bs.venue_id JOIN bh_users u ON u.id=br.user_id WHERE a.organiser_id=? ORDER BY bs.starts_at DESC,br.id DESC");$r->execute([$oid]);$bookings=$r->fetchAll();}}catch(Throwable $ignored){}
  $faqs=[];try{$f=$db->prepare("SELECT * FROM bh_leader_faqs WHERE organiser_id=? AND status<>'archived' ORDER BY sort_order,id");$f->execute([$oid]);$faqs=$f->fetchAll();}catch(Throwable $ignored){}
  $expertise=[];try{$e=$db->prepare("SELECT topic_key FROM bh_leader_expertise WHERE organiser_id=? AND enabled=1 ORDER BY topic_key");$e->execute([$oid]);$expertise=$e->fetchAll(PDO::FETCH_COLUMN);}catch(Throwable $ignored){}
@@ -106,7 +110,7 @@ if(!$tagOptions){
  }catch(Throwable $ignored){}
 }
 sort($tagOptions,SORT_NATURAL|SORT_FLAG_CASE);
-lp(200,['ok'=>true,'organisation'=>$org,'classes'=>$classes,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions,'category_options'=>$categoryOptions,'tag_options'=>$tagOptions,'venues'=>$venues,'max_images'=>$imageLimit,'is_pro'=>$isPro,'faq_limit'=>$faqLimit]);
+lp(200,['ok'=>true,'organisation'=>$org,'classes'=>$classes,'schedule_exceptions'=>$scheduleExceptions,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions,'category_options'=>$categoryOptions,'tag_options'=>$tagOptions,'venues'=>$venues,'max_images'=>$imageLimit,'is_pro'=>$isPro,'faq_limit'=>$faqLimit]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')lp(405,['ok'=>false,'error'=>'method_not_allowed']);
 if($_SERVER['REQUEST_METHOD']==='POST' && !empty($_FILES['image']) && ($_POST['action']??'')==='upload_activity_image'){
@@ -280,6 +284,23 @@ if($countyExists){$q=$db->prepare("INSERT INTO bh_activities (title,slug,descrip
   if($leaderEmail!==''){try{$safeTitle=htmlspecialchars($title,ENT_QUOTES,'UTF-8');$safeOrg=htmlspecialchars((string)($org['organisation_name']??''),ENT_QUOTES,'UTF-8');$html='<div style="font-family:Arial,sans-serif;line-height:1.6;color:#26352b;max-width:640px;margin:0 auto"><h1 style="color:#617261">Welcome to Bubba Hub</h1><p>Hi'.($safeOrg!==''?' '.$safeOrg:'').',</p><p>Thanks for adding <strong>'.$safeTitle.'</strong> to Bubba Hub.</p><p>'.$submissionMessage.'</p><p>The Bubba Hub team</p></div>';$plain="Welcome to Bubba Hub\n\nThanks for adding {$title} to Bubba Hub.\n\n{$submissionMessage}\n\nThe Bubba Hub team";bh_send_smtp_mail($leaderEmail,'Welcome to Bubba Hub – your listing has been submitted',$html,$plain);}catch(Throwable $ignored){}}
   lp(201,['ok'=>true,'id'=>$activityId,'status'=>$submissionStatus,'auto_approved'=>$autoApproved,'message'=>$submissionMessage]);
  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+}
+if($action==='save_schedule_exception'||$action==='delete_schedule_exception'){
+ $sessionId=(int)($b['session_id']??0);
+ $date=trim((string)($b['exception_date']??''));
+ $parsed=DateTimeImmutable::createFromFormat('!Y-m-d',$date);
+ if($sessionId<=0||!$parsed||$parsed->format('Y-m-d')!==$date||$date<date('Y-m-d'))lp(422,['ok'=>false,'error'=>'invalid_exception_date']);
+ $q=$db->prepare("SELECT s.id,s.day_of_week FROM bh_sessions s JOIN bh_venues v ON v.id=s.venue_id JOIN bh_activities a ON a.id=v.activity_id WHERE s.id=? AND a.organiser_id=?");
+ $q->execute([$sessionId,$oid]);$session=$q->fetch(PDO::FETCH_ASSOC);
+ if(!$session)lp(404,['ok'=>false,'error'=>'session_not_found']);
+ if((int)$parsed->format('N')!==(int)$session['day_of_week'])lp(422,['ok'=>false,'error'=>'date_does_not_match_session_day']);
+ lpEnsureScheduleExceptions($db);
+ if($action==='delete_schedule_exception'){
+  $q=$db->prepare("DELETE FROM bh_schedule_exceptions WHERE session_id=? AND exception_date=?");$q->execute([$sessionId,$date]);lp(200,['ok'=>true,'deleted'=>$q->rowCount()]);
+ }
+ $reason=trim((string)($b['reason']??''));if(mb_strlen($reason)>240)lp(422,['ok'=>false,'error'=>'reason_too_long']);
+ $q=$db->prepare("INSERT INTO bh_schedule_exceptions(session_id,exception_date,reason) VALUES(?,?,?) ON DUPLICATE KEY UPDATE reason=VALUES(reason)");
+ $q->execute([$sessionId,$date,$reason]);lp(200,['ok'=>true]);
 }
 if($action==='delete_schedule_session'){
  $sessionId=(int)($b['session_id']??0);
