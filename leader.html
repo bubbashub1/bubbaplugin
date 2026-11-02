@@ -152,13 +152,14 @@ fetch("/api/subscription.php",{credentials:"same-origin",cache:"no-store"}).then
   if(key==="blog"&&document.querySelector('.leader-sidebar [data-leader-panel="blog"][hidden]'))key="overview";
   document.querySelectorAll('.leader-sidebar [data-leader-panel]').forEach(a=>{if(a.dataset.leaderPanel===key)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   overview.hidden=key!=="overview";panel.hidden=key==="overview";
-  if(key!=="overview"){frame.style.height="900px";const url="/leader/"+key+".html";document.getElementById("leaderPanelTitle").textContent=allowed[key];document.getElementById("leaderOpenFull").href=url;if(frame.getAttribute("src")!==url)frame.src=url}
+  if(key!=="overview"){frame.style.height="900px";frame.setAttribute("title",allowed[key]+" — Leader portal section");const url="/leader/"+key+".html";document.getElementById("leaderPanelTitle").textContent=allowed[key];document.getElementById("leaderOpenFull").href=url;if(frame.getAttribute("src")!==url)frame.src=url}
   else frame.removeAttribute("src");
   if(push)history.pushState({leaderPanel:key},"",key==="overview"?"/leader/":"/leader/?section="+encodeURIComponent(key));
   sidebar.classList.remove("is-open");toggle.setAttribute("aria-expanded","false");
  }
  document.addEventListener("click",function(e){const a=e.target.closest("[data-leader-panel]");if(!a||!a.dataset.leaderPanel)return;if(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey||a.target==="_blank")return;e.preventDefault();show(a.dataset.leaderPanel,true)});
  toggle.addEventListener("click",()=>{const open=sidebar.classList.toggle("is-open");toggle.setAttribute("aria-expanded",String(open))});
+ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&sidebar.classList.contains("is-open")){sidebar.classList.remove("is-open");toggle.setAttribute("aria-expanded","false");toggle.focus()}});
  frame.addEventListener("load",function(){
   try{
    const doc=frame.contentDocument;
