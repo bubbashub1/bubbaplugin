@@ -7512,3 +7512,40 @@ button.bh-header-signout:disabled{opacity:.65;cursor:wait}
 body:not(.bh-admin):not(.bh-leader) .site-header{border-bottom:2px solid var(--bh-green);box-shadow:0 5px 16px rgba(18,62,43,.1)}
 body:not(.bh-admin):not(.bh-leader) .site-header .main-nav a:focus-visible{outline:3px solid var(--bh-teal-dark);outline-offset:2px}
 .bh-directory :is(.activity-card,.event-card){border-color:var(--bh-border);box-shadow:var(--bh-shadow)}
+
+/* Site-wide full-bleed main navigation: retain readable content gutters. */
+@media (min-width: 901px) {
+  body:not(.bh-admin) > .site-header {
+    box-sizing: border-box!important;
+    width: 100%!important;
+    max-width: none!important;
+    margin: 0!important;
+    border-radius: 0!important;
+    padding-inline: clamp(20px, 3vw, 56px)!important;
+  }
+  body:not(.bh-admin) > .site-header .main-nav {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: space-evenly;
+  }
+}
+
+/* The shared injected header uses .bh-header-inner, not .site-header. */
+@media (min-width: 901px) {
+  body:not(.bh-admin) .bh-site-header {
+    width: 100%!important;
+    max-width: none!important;
+    margin-inline: 0!important;
+    border-radius: 0!important;
+  }
+  body:not(.bh-admin) .bh-site-header .bh-header-inner {
+    width: 100%!important;
+    max-width: none!important;
+    margin-inline: 0!important;
+    padding-inline: clamp(20px, 3vw, 56px)!important;
+  }
+  body:not(.bh-admin) .bh-site-header .bh-header-top-row {
+    width: 100%;
+    gap: clamp(12px, 2vw, 36px);
+  }
+}

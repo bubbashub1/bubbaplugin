@@ -73,6 +73,14 @@ try {
     try { $featuredCheck=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='featured'"); $featuredColumn=((int)$featuredCheck->fetchColumn())>0; } catch (Throwable $ignored) {}
 
     $featuredSelect = $featuredColumn ? 'a.featured' : '0 AS featured';
+    // Free Only must use the explicit is_free flag, not a zero price.
+    $freeColumn = false;
+    try {
+        $freeCheck = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='is_free'");
+        $freeCheck->execute();
+        $freeColumn = ((int)$freeCheck->fetchColumn()) > 0;
+    } catch (Throwable $ignored) {}
+    $freeSelect = $freeColumn ? 'a.is_free AS is_free' : '0 AS is_free';
 
     $accessibilityColumn = false;
     try {
@@ -187,6 +195,7 @@ try {
             $accessibilitySelect,
             $countySelect,
             a.price_from,
+            $freeSelect,
             a.booking_url
             $contactSelect
             $infoSelect,
@@ -233,6 +242,7 @@ try {
                 'accessibility' => $row['accessibility'] ? (json_decode($row['accessibility'], true) ?: []) : [],
                 'county' => $row['county'],
                 'price_from' => $row['price_from'] !== null ? (float)$row['price_from'] : null,
+                'is_free' => (int)$row['is_free'] === 1,
                 'booking_url' => $row['booking_url'],
                 'website' => $row['website'],
                 'facebook_url' => $row['facebook_url'],
