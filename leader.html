@@ -152,7 +152,7 @@ fetch("/api/subscription.php",{credentials:"same-origin",cache:"no-store"}).then
   if(key==="blog"&&document.querySelector('[data-leader-panel="blog"][hidden]'))key="overview";
   document.querySelectorAll('.leader-sidebar [data-leader-panel]').forEach(a=>{if(a.dataset.leaderPanel===key)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   overview.hidden=key!=="overview";panel.hidden=key==="overview";
-  if(key!=="overview"){const url="/leader/"+key+".html";document.getElementById("leaderPanelTitle").textContent=allowed[key];document.getElementById("leaderOpenFull").href=url;if(frame.getAttribute("src")!==url)frame.src=url}
+  if(key!=="overview"){frame.style.height="900px";const url="/leader/"+key+".html";document.getElementById("leaderPanelTitle").textContent=allowed[key];document.getElementById("leaderOpenFull").href=url;if(frame.getAttribute("src")!==url)frame.src=url}
   else frame.removeAttribute("src");
   if(push)history.pushState({leaderPanel:key},"",key==="overview"?"/leader/":"/leader/?section="+encodeURIComponent(key));
   sidebar.classList.remove("is-open");toggle.setAttribute("aria-expanded","false");
@@ -176,10 +176,10 @@ fetch("/api/subscription.php",{credentials:"same-origin",cache:"no-store"}).then
     if(!link||event.defaultPrevented||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey||link.target==="_blank")return;
     const url=new URL(link.href,location.origin);
     if(url.origin!==location.origin)return;
-    const match=url.pathname.match(/^\\/leader\\/([a-z-]+)\\.html$/);
+    const match=url.pathname.match(/^\/leader\/([a-z-]+)\.html$/);
     if(match&&Object.prototype.hasOwnProperty.call(allowed,match[1])){event.preventDefault();show(match[1],true)}
     else if(url.pathname==="/leader/"||url.pathname==="/leader.html"){event.preventDefault();show("overview",true)}
-    else {event.preventDefault();window.location.assign(url.href)}
+    else if(link.hasAttribute("download")||url.hash&&url.pathname===frame.contentWindow.location.pathname){return}else {event.preventDefault();window.location.assign(url.href)}
    });
   }catch(err){document.querySelector(".leader-panel-help").textContent="This section cannot be embedded in your browser. Use Open full page instead."}
  });
