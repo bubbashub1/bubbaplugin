@@ -78,7 +78,33 @@
 .bh-leader-v2 .leader-health-progress{height:8px;background:#e5eee7;border-radius:99px;overflow:hidden}
 .bh-leader-v2 .leader-health-progress #healthBar{display:block;min-height:8px;border-radius:99px}
 @media(max-width:700px){.bh-leader-v2 .leader-overview-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.bh-leader-v2 .leader-overview-stat{padding:13px}}
-</style></head>
+</style><style>
+/* Leader workspace refinement: restrained surfaces, consistent typography and spacing. */
+.bh-leader-v2{background:#f7faf8;color:#173d35}
+.bh-leader-v2 .leader-workspace{gap:20px}
+.bh-leader-v2 .leader-sidebar{background:#fff;border:1px solid #e1e9e4;border-radius:18px;box-shadow:none}
+.bh-leader-v2 .leader-sidebar .leader-nav-group h2{font-size:.69rem;letter-spacing:.09em;text-transform:uppercase;color:#72867c;font-weight:700}
+.bh-leader-v2 .leader-sidebar [data-leader-panel]{border-radius:10px;font-weight:650;transition:background .15s ease,color .15s ease}
+.bh-leader-v2 .leader-sidebar [data-leader-panel]:hover{background:#f0f6f2}
+.bh-leader-v2 .leader-sidebar [data-leader-panel][aria-current="page"]{background:#e7f2eb;color:#174e3b}
+.bh-leader-v2 .leader-sidebar [data-leader-panel]:focus-visible,.bh-leader-v2 .leader-workspace a:focus-visible,.bh-leader-v2 .leader-workspace button:focus-visible{outline:3px solid #2c8490;outline-offset:2px}
+.bh-leader-v2 .leader-panel,.bh-leader-v2 .leader-native-content{min-width:0}
+.bh-leader-v2 #leaderPanel{background:#fff;border:1px solid #e1e9e4;border-radius:18px;box-shadow:none}
+.bh-leader-v2 #leaderPanelTitle{font-size:clamp(1.4rem,2.2vw,1.9rem);font-weight:700;letter-spacing:-.03em}
+.bh-leader-v2 #leaderNativeContent :is(h1,h2,h3){font-weight:700;letter-spacing:-.025em;line-height:1.25}
+.bh-leader-v2 #leaderNativeContent :is(.admin-panel,.bh-leader-panel,.bh-leader-stat-card,.empty-state){box-shadow:none;border-radius:14px}
+.bh-leader-v2 #leaderNativeContent :is(input,select,textarea){border-radius:10px}
+.bh-leader-v2 #leaderNativeContent :is(.button,button){font-weight:700}
+.bh-leader-v2 #leaderNativeContent .inbox{width:100%;max-width:none;padding:0;margin:0}
+.bh-leader-v2 #leaderNativeContent .inbox-hero{margin:0 0 16px;padding:0;background:none;border:0;box-shadow:none}
+.bh-leader-v2 #leaderNativeContent .inbox-hero :is(h1,.eyebrow,.back-link){display:none}
+.bh-leader-v2 #leaderNativeContent .inbox-hero .intro{margin:0;color:#587267;font-size:.95rem;line-height:1.5}
+.bh-leader-v2 #leaderNativeContent .message-list .empty-state{background:#f7faf8;border:1px solid #e1e9e4;padding:24px}
+.bh-leader-v2 #leaderNativeContent .message-list .empty-state h2{font-size:1.4rem;margin:6px 0}
+.bh-leader-v2 #leaderNativeContent .message-list .empty-state a[href="/leader/"]{display:none}
+@media(max-width:767px){.bh-leader-v2 .leader-workspace{gap:12px}.bh-leader-v2 #leaderPanel{border-radius:14px}.bh-leader-v2 #leaderNativeContent .message-list .empty-state{padding:18px}}
+</style>
+</head>
 <body class="bh-leader-v2" data-leader-page="dashboard">
 <header class="site-header">
   <a class="brand" href="/index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a>
