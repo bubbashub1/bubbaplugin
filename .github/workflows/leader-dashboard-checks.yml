@@ -49,6 +49,12 @@ jobs:
               assert f'id="{field}"' in html, f'Missing dashboard field {field}'
               assert field in portal, f'No data binding for dashboard field {field}'
           assert 'renderDashboard()' in portal, 'Dashboard rendering not found'
+          for panel in required - {'overview'}:
+              path = Path('leader') / (panel + '.html')
+              assert path.is_file(), f'Missing leader panel page: {path}'
+          assert 'leader-pro-nav.js' in html, 'Pro entitlement navigation guard missing'
+          assert 'leader-portal.js' in html, 'Leader portal data loader missing'
+
           assert 'data-pro-only hidden' in html
           assert 'url.pathname.match(/^\\/leader\\/([a-z-]+)\\.html$/)' in html
           for script in p.scripts:
