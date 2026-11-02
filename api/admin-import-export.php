@@ -246,6 +246,8 @@ foreach($rows as $idx=>$row){
       $existing=$matched;
     }
     if($existing&&$mode==='skip'){$skipped++;continue;}
+    // Preserve venue identity for repairing an unlinked activity even when venue fields are not selected for updates.
+    $repairVenueName=$venue;$repairVenueTown=$town;
     // Select canonical fields while preserving their accepted CSV aliases.
     $selectedRaw=trim((string)($_POST['update_fields']??''));
     if($existing && array_key_exists('update_fields',$_POST)){
@@ -281,6 +283,8 @@ foreach($rows as $idx=>$row){
         foreach(($groups[$selected]??[$selected]) as $alias)$allowed[clean_header($alias)]=true;
       }
       foreach(array_keys($row) as $column)if(!isset($allowed[$column]))unset($row[$column]);
+      // Identity values are only used for missing-venue creation; they do not opt into venue updates.
+      $venueRepairName=$repairVenueName;$venueRepairTown=$repairVenueTown;
       // Recalculate all derived values from the filtered row.
       $title=firstv($row,$groups['title']);$category=firstv($row,$groups['category']);
       $org=firstv($row,$groups['organisation_name']);$venue=firstv($row,$groups['venue_name']);
@@ -377,7 +381,7 @@ foreach($rows as $idx=>$row){
       $venueAliases=['venue_name'=>['venue_name','venue'],'address'=>['address','venue_address'],'town'=>['town','city'],'region'=>['region'],'postcode'=>['postcode'],'latitude'=>['latitude','lat'],'longitude'=>['longitude','lng','lon']];
       $sets=[];$args=[];foreach($venueAliases as $col=>$names){foreach($names as $name){if(array_key_exists($name,$row)&&trim((string)$row[$name])!==''){$sets[]="$col=?";$args[]=$venueValues[$col];break;}}}
       if($sets && $sharedCount===0){$args[]=$vid;$db->prepare("UPDATE bh_venues SET ".implode(',',$sets)." WHERE id=?")->execute($args);}
-    }else{if(trim((string)$venue)==='' || trim((string)$town)==='')throw new RuntimeException('Cannot create venue: venue name and town are required.');$q=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes,leader_id) VALUES (?,?,?,?,?,?,?,?,?,NULL)");$q->execute([$id,$venue,$address,$town,$region,$postcode,$lat,$lng,'']);$vid=(int)$db->lastInsertId();}
+    }else{if($existing){$venue=$venue!==''?$venue:$repairVenueName;$town=$town!==''?$town:$repairVenueTown;}if(trim((string)$venue)==='' || trim((string)$town)==='')throw new RuntimeException('Cannot create venue: venue name and town are required.');$q=$db->prepare("INSERT INTO bh_venues (activity_id,venue_name,address,town,region,postcode,latitude,longitude,notes,leader_id) VALUES (?,?,?,?,?,?,?,?,?,NULL)");$q->execute([$id,$venue,$address,$town,$region,$postcode,$lat,$lng,'']);$vid=(int)$db->lastInsertId();}
     $sessionCols=table_columns($db,'bh_sessions');
     $hasSessionActivityId=in_array('activity_id',$sessionCols,true);
     if(!$existing || (isset($row['sessions']) && trim((string)$row['sessions'])!=='' && ($_POST['replace_sessions']??'')==='1')){
