@@ -302,8 +302,13 @@ if($action==='save_schedule_session'){
     $q=$db->prepare("UPDATE bh_sessions SET venue_id=?,day_of_week=?,start_time=?,end_time=?,term_time_only=? WHERE id=?");
     $q->execute([$venueId,$day,$start,$end,(int)!empty($b['term_time_only']),$sessionId]);$updated++;
    }else{
-    $q=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,term_time_only) VALUES (?,?,?,?,?)");
-    $q->execute([$venueId,$day,$start,$end,(int)!empty($b['term_time_only'])]);$created++;
+    if($source){
+     $q=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date) SELECT ?,?,?,?,duration_minutes,price,?,frequency,start_date,end_date FROM bh_sessions WHERE id=?");
+     $q->execute([$venueId,$day,$start,$end,(int)!empty($b['term_time_only']),$sessionId]);
+    }else{
+     $q=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,term_time_only,frequency) VALUES (?,?,?,?,?,'weekly')");
+     $q->execute([$venueId,$day,$start,$end,(int)!empty($b['term_time_only'])]);
+    }$created++;
    }
   }
   $db->commit();lp(200,['ok'=>true,'created'=>$created,'updated'=>$updated]);
