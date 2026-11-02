@@ -311,13 +311,26 @@ if($action==='delete_schedule_session'){
  if($sessionId<=0)lp(422,['ok'=>false,'error'=>'invalid_session_id']);
  lpEnsureScheduleExceptions($db);
  // A recurring session may have reservations; never silently orphan them.
- $bookingTables=['bh_bookings','bh_reservations','bh_class_bookings'];
+ $bookingTables=['bh_bookings','bh_reservations','bh_class_bookings','bh_booking_reservations'];
  foreach($bookingTables as $table){
   $exists=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?");$exists->execute([$table]);if(!$exists->fetchColumn())continue;
   $cols=$db->prepare("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?");$cols->execute([$table]);$names=$cols->fetchAll(PDO::FETCH_COLUMN);
   if(!in_array('session_id',$names,true))continue;
   $count=$db->prepare("SELECT COUNT(*) FROM `".$table."` WHERE session_id=?");$count->execute([$sessionId]);
   if((int)$count->fetchColumn()>0)lp(409,['ok'=>false,'error'=>'session_has_bookings','message'=>'This session has booking records. Resolve the bookings before deleting the recurring session.']);
+ }
+ // Booking slots are date-specific but can reference the same activity and venue.
+ // A linked session must not be deleted while upcoming reservations at that
+ // venue overlap its weekday and time window.
+ $tables=$db->query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('bh_booking_reservations','bh_booking_slots')")->fetchAll(PDO::FETCH_COLUMN);
+ if(count($tables)===2){
+  $q=$db->prepare("SELECT s.venue_id,s.day_of_week,s.start_time,s.end_time FROM bh_sessions s JOIN bh_venues v ON v.id=s.venue_id JOIN bh_activities a ON a.id=v.activity_id WHERE s.id=? AND a.organiser_id=?");
+  $q->execute([$sessionId,$oid]);$session=$q->fetch(PDO::FETCH_ASSOC);
+  if($session){
+   $q=$db->prepare("SELECT COUNT(*) FROM bh_booking_reservations br JOIN bh_booking_slots bs ON bs.id=br.slot_id WHERE bs.venue_id=? AND bs.starts_at>=NOW() AND WEEKDAY(bs.starts_at)+1=? AND TIME(bs.starts_at)<? AND TIME(bs.ends_at)>? AND br.status NOT IN ('cancelled','canceled','refunded')");
+   $q->execute([(int)$session['venue_id'],(int)$session['day_of_week'],$session['end_time']?:$session['start_time'],$session['start_time']]);
+   if((int)$q->fetchColumn()>0)lp(409,['ok'=>false,'error'=>'session_has_upcoming_reservations','message'=>'Upcoming bookings overlap this session. Resolve those reservations before deleting it.']);
+  }
  }
  $db->beginTransaction();try{
   $q=$db->prepare("SELECT s.id FROM bh_sessions s JOIN bh_venues v ON v.id=s.venue_id JOIN bh_activities a ON a.id=v.activity_id WHERE s.id=? AND a.organiser_id=? FOR UPDATE");$q->execute([$sessionId,$oid]);
