@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded",async()=>{
+window.bhInitLeaderSection=async function(){
 const $=id=>document.getElementById(id);
 const api="api/leader-portal.php";
 const esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':'&quot;',"'":"&#39;"}[m])));
@@ -65,4 +65,5 @@ $("profileForm")?.addEventListener("submit",async e=>{e.preventDefault();const f
 $("publicProfileForm")?.addEventListener("submit",async e=>{e.preventDefault();const f=e.currentTarget,m=$("publicProfileMessage");try{await post({action:"save_profile_public",about_content:f.about_content.value,logo_url:f.logo_url.value,facebook_url:f.facebook_url.value,instagram_url:f.instagram_url.value,tiktok_url:f.tiktok_url.value});m.textContent="Public organiser profile saved."}catch(err){m.textContent=err.message}});$("termsForm")?.addEventListener("submit",async e=>{e.preventDefault();const f=e.currentTarget,m=$("termsMessage");try{await post({action:"save_terms",terms_content:f.terms_content.value});m.textContent="Terms & Conditions saved."}catch(err){m.textContent=err.message}});
 $("passwordForm")?.addEventListener("submit",async e=>{e.preventDefault();const f=e.currentTarget,m=$("passwordMessage");try{await post({action:"change_password",current_password:f.current_password.value,new_password:f.new_password.value,confirm_password:f.confirm_password.value});f.reset();m.textContent="Password changed successfully."}catch(err){m.textContent=err.message}});
 try{await refresh()}catch(e){if(msg)msg.textContent=e.message;["classList","venueList","scheduleList","bookingList","faqList"].forEach(id=>{if($(id))$(id).innerHTML="<div class='booking-empty'>"+esc(e.message)+"</div>"})}
-});
+};
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>window.bhInitLeaderSection());else window.bhInitLeaderSection();
