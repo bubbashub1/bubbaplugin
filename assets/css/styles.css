@@ -7529,3 +7529,23 @@ body:not(.bh-admin):not(.bh-leader) .site-header .main-nav a:focus-visible{outli
     justify-content: space-evenly;
   }
 }
+
+/* The shared injected header uses .bh-header-inner, not .site-header. */
+@media (min-width: 901px) {
+  body:not(.bh-admin) .bh-site-header {
+    width: 100%!important;
+    max-width: none!important;
+    margin-inline: 0!important;
+    border-radius: 0!important;
+  }
+  body:not(.bh-admin) .bh-site-header .bh-header-inner {
+    width: 100%!important;
+    max-width: none!important;
+    margin-inline: 0!important;
+    padding-inline: clamp(20px, 3vw, 56px)!important;
+  }
+  body:not(.bh-admin) .bh-site-header .bh-header-top-row {
+    width: 100%;
+    gap: clamp(12px, 2vw, 36px);
+  }
+}
