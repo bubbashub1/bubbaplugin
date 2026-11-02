@@ -421,6 +421,7 @@ try {
 
     // Expose future single-date cancellations without removing the recurring timetable.
     // Consumers can suppress a particular occurrence by matching session id and date.
+    try {
     if ($activities) {
         $exceptionTable = $db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_schedule_exceptions'")->fetchColumn();
         if ($exceptionTable) {
@@ -450,6 +451,9 @@ try {
             }
             unset($activity);
         }
+    }
+    } catch (Throwable $exceptionError) {
+        error_log('BH public cancellation metadata unavailable: '.$exceptionError->getMessage());
     }
 
     $total = count($activities);
