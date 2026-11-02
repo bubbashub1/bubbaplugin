@@ -1,0 +1,66 @@
+name: Leader dashboard smoke checks
+on:
+  pull_request:
+    paths:
+      - 'leader.html'
+      - '.github/workflows/leader-dashboard-checks.yml'
+  workflow_dispatch:
+jobs:
+  leader-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check dashboard structure and inline JavaScript
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import re, subprocess, tempfile
+          html = Path("leader.html").read_text()
+          class Inspector(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.ids = []
+                  self.panels = []
+                  self.scripts = []
+                  self.inscript = False
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if 'id' in attrs: self.ids.append(attrs['id'])
+                  if attrs.get('data-leader-panel'): self.panels.append(attrs['data-leader-panel'])
+                  if tag == 'script': self.inscript = 'src' not in attrs
+              def handle_data(self, data):
+                  if self.inscript: self.scripts.append(data)
+              def handle_endtag(self, tag):
+                  if tag == 'script': self.inscript = False
+          p=Inspector(); p.feed(html)
+          assert len(p.ids)==len(set(p.ids)), 'Duplicate HTML IDs'
+          required={'overview','new','classes','schedule','venues','bookings','messages','profile','specialisms','faqs','statistics','payments','blog','support'}
+          assert required.issubset(p.panels), f'Missing panels: {required-set(p.panels)}'
+          assert 'aria-controls="leaderSidebar"' in html
+          assert 'id="leaderFrame"' in html
+          assert '/images/logos/34013-20261020-162201-5c57b4.png' in html
+          portal = Path("assets/js/leader-portal.js").read_text()
+          for field in ('statActivities','statVenues','statSessions','statBookings','healthBar','healthPercent','healthMessage','healthChecks','leaderAlerts'):
+              assert f'id="{field}"' in html, f'Missing dashboard field {field}'
+              assert field in portal, f'No data binding for dashboard field {field}'
+          assert 'renderDashboard()' in portal, 'Dashboard rendering not found'
+          for panel in required - {'overview'}:
+              path = Path('leader') / (panel + '.html')
+              assert path.is_file(), f'Missing leader panel page: {path}'
+          assert 'leader-pro-nav.js' in html, 'Pro entitlement navigation guard missing'
+          assert 'leader-portal.js' in html, 'Leader portal data loader missing'
+
+          assert 'data-pro-only hidden' in html
+          assert 'url.pathname.match(/^\\/leader\\/([a-z-]+)\\.html$/)' in html
+          for script in p.scripts:
+              if not script.strip(): continue
+              with tempfile.NamedTemporaryFile(suffix='.js',mode='w') as file:
+                  file.write(script); file.flush()
+                  subprocess.run(['node','--check',file.name],check=True)
+          print('Leader dashboard static smoke checks passed')
+          PY
