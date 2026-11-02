@@ -55,9 +55,9 @@ function scheduleEditor(){
  form.dataset.ready="yes";
  function open(id){
   form.reset();form.elements.session_id.value=id||0;
-  const entry=allVenues().flatMap(v=>(v.sessions||[]).map(x=>({...x,classId:v.activityId}))).find(x=>String(x.id)===String(id));
+  const entry=allVenues().flatMap(v=>(v.sessions||[]).map(x=>({...x,classId:v.activityId,venueId:v.id}))).find(x=>String(x.id)===String(id));
   if(entry){for(const k of ["day_of_week","start_time","end_time"])form.elements[k].value=String(entry[k]||"").slice(0,k==="day_of_week"?20:5);form.elements.term_time_only.checked=!!Number(entry.term_time_only)}
-  $("scheduleClassChoices").innerHTML=(data.classes||[]).map(c=>"<label style='display:block;padding:6px'><input type='checkbox' name='class_choice' value='"+Number(c.id)+"' "+(entry&&Number(entry.classId)===Number(c.id)?"checked":"")+"> "+esc(c.title)+"</label>").join("");
+  $("scheduleClassChoices").innerHTML=(data.classes||[]).map(c=>"<label style='display:block;padding:6px'><input type='checkbox' name='class_choice' value='"+Number(c.id)+"' "+(entry&&Number(entry.classId)===Number(c.id)?"checked":"")+"> "+esc(c.title)+"</label><select data-venue-class="+Number(c.id)+">"+(c.venues||[]).map(v=>"<option value="+Number(v.id)+">"+esc(v.venue_name)+"</option>").join("")+"</select>").join("");
   $("scheduleEditorTitle").textContent=entry?"Edit session":"Add session";panel.hidden=false;
  }
  $("scheduleAddSession").addEventListener("click",()=>open(0));
@@ -66,11 +66,11 @@ function scheduleEditor(){
  form.addEventListener("submit",async e=>{
   e.preventDefault();
   const ids=Array.from(form.querySelectorAll("[name=class_choice]:checked"),x=>Number(x.value));
-  const status=$("scheduleEditorMessage");
+  const status=$("scheduleEditorMessage");const venue_ids={};for(const id of ids){const select=form.querySelector("[data-venue-class="+id+"]");if(!select||!select.value){status.textContent="Selected class has no venue.";return}venue_ids[id]=Number(select.value)}
   if(!ids.length){status.textContent="Select a class.";return}
   const button=form.querySelector("[type=submit]");button.disabled=true;
   try{
-   await post({action:"save_schedule_session",session_id:Number(form.elements.session_id.value),class_ids:ids,day_of_week:form.elements.day_of_week.value,start_time:form.elements.start_time.value,end_time:form.elements.end_time.value,term_time_only:form.elements.term_time_only.checked});
+   await post({action:"save_schedule_session",session_id:Number(form.elements.session_id.value),class_ids:ids,venue_ids,day_of_week:form.elements.day_of_week.value,start_time:form.elements.start_time.value,end_time:form.elements.end_time.value,term_time_only:form.elements.term_time_only.checked});
    panel.hidden=true;await refresh();
   }catch(error){status.textContent=error.message}finally{button.disabled=false}
  });
