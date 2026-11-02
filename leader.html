@@ -104,6 +104,22 @@
 .bh-leader-v2 #leaderNativeContent .message-list .empty-state a[href="/leader/"]{display:none}
 @media(max-width:767px){.bh-leader-v2 .leader-workspace{gap:12px}.bh-leader-v2 #leaderPanel{border-radius:14px}.bh-leader-v2 #leaderNativeContent .message-list .empty-state{padding:18px}}
 </style>
+<style>
+/* Compact, single-level class management panel. */
+.bh-leader-v2 #leaderNativeContent .leader-class-embedded{border:0;background:transparent;box-shadow:none;padding:0;margin:0}
+.bh-leader-v2 #leaderNativeContent .leader-class-embedded-heading{margin:0 0 18px}
+.bh-leader-v2 #leaderNativeContent .leader-class-embedded-heading h2{font-size:clamp(1.45rem,2.5vw,1.85rem);margin:4px 0 6px}
+.bh-leader-v2 #leaderNativeContent .leader-class-embedded-heading p{margin:0;color:#61756c}
+.bh-leader-v2 .leader-class-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 18px}
+.bh-leader-v2 .leader-class-toolbar label{font-size:.9rem;font-weight:700}
+.bh-leader-v2 .leader-class-toolbar input{flex:1 1 260px;max-width:480px;padding:11px 14px;border:1px solid #d4e2da;background:#fff}
+.bh-leader-v2 .leader-class-toolbar #classSearchCount{font-size:.83rem;color:#61756c}
+.bh-leader-v2 .leader-class-card{border:1px solid #e1e9e4;background:#fff;padding:16px 18px;border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.bh-leader-v2 .leader-class-card h3{margin:4px 0 6px;font-size:1.1rem}
+.bh-leader-v2 .leader-class-card p{margin:0 0 6px}
+.bh-leader-v2 .leader-class-card .leader-class-actions{flex-shrink:0}
+@media(max-width:640px){.bh-leader-v2 .leader-class-card{align-items:flex-start;flex-direction:column}.bh-leader-v2 .leader-class-toolbar input{flex-basis:100%}}
+</style>
 </head>
 <body class="bh-leader-v2" data-leader-page="dashboard">
 <header class="site-header">
@@ -212,6 +228,7 @@ fetch("/api/subscription.php",{credentials:"same-origin",cache:"no-store"}).then
    main.querySelectorAll("a").forEach(a=>{if(/leader dashboard/i.test(a.textContent||"")&&new URL(a.href,location.origin).pathname.match(/^\/leader\/?(?:index\.html)?$/))a.remove()});
    const base=new URL(url,location.origin);
    main.querySelectorAll("[href],[src],[action]").forEach(el=>{for(const attr of ["href","src","action"]){const val=el.getAttribute(attr);if(val&&!val.startsWith("#")&&!/^(?:[a-z]+:|\/)/i.test(val))el.setAttribute(attr,new URL(val,new URL("../",base)).pathname)}});
+   if(key==="classes"){const classPanel=main.querySelector(".leader-class-section");if(classPanel){classPanel.classList.add("leader-class-embedded");const wrapper=doc.createElement("div");wrapper.className="leader-class-embedded-heading";const head=classPanel.querySelector(".admin-panel-head");if(head){wrapper.append(...Array.from(head.childNodes));head.replaceWith(wrapper)}}}
    native.replaceChildren(...Array.from(main.childNodes).map(node=>document.importNode(node,true)));
    document.body.dataset.leaderPage=key;
    if(key==="messages"&&typeof window.bhInitLeaderMessages==="function")await window.bhInitLeaderMessages();
