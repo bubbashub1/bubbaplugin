@@ -141,7 +141,7 @@
 
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/leader-demo.js"></script>
-<script src="/assets/js/leader-portal.js"></script>
+<script src="/assets/js/leader-portal.js"></script><script src="/assets/js/leader-messages.js"></script>
 
 <script>
 fetch("/api/subscription.php",{credentials:"same-origin",cache:"no-store"}).then(r=>r.json()).then(d=>{
@@ -188,7 +188,8 @@ fetch("/api/subscription.php",{credentials:"same-origin",cache:"no-store"}).then
    main.querySelectorAll("[href],[src],[action]").forEach(el=>{for(const attr of ["href","src","action"]){const val=el.getAttribute(attr);if(val&&!val.startsWith("#")&&!/^(?:[a-z]+:|\/)/i.test(val))el.setAttribute(attr,new URL(val,new URL("../",base)).pathname)}});
    native.replaceChildren(...Array.from(main.childNodes).map(node=>document.importNode(node,true)));
    document.body.dataset.leaderPage=key;
-   if(typeof window.bhInitLeaderSection==="function")await window.bhInitLeaderSection();
+   if(key==="messages"&&typeof window.bhInitLeaderMessages==="function")await window.bhInitLeaderMessages();
+   else if(typeof window.bhInitLeaderSection==="function")await window.bhInitLeaderSection();
    else throw Error("Leader section initializer unavailable");
   }catch(error){if(current!==requestId)return;native.textContent="Unable to load this section: "+error.message+". Use Open full page."}
  }
