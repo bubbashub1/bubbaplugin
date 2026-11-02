@@ -380,6 +380,15 @@ if($action==='save_schedule_session'){
   $db->commit();lp(200,['ok'=>true,'created'=>$created,'updated'=>$updated]);
  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();lp(422,['ok'=>false,'error'=>'schedule_save_failed','message'=>$e->getMessage()]);}
 }
+if($action==='set_class_publication'){
+ $id=(int)($b['id']??0);$target=(string)($b['status']??'');
+ if($id<=0||!in_array($target,['draft','published'],true))lp(422,['ok'=>false,'error'=>'invalid_publication_status']);
+ $q=$db->prepare("SELECT status FROM bh_activities WHERE id=? AND organiser_id=? LIMIT 1");$q->execute([$id,$oid]);$current=$q->fetchColumn();
+ if($current===false)lp(404,['ok'=>false,'error'=>'class_not_found']);
+ if($target==='published'&&!in_array($current,['draft','published'],true))lp(409,['ok'=>false,'error'=>'publication_requires_review','message'=>'This listing cannot be republished from its current status. Contact support.']);
+ $q=$db->prepare("UPDATE bh_activities SET status=? WHERE id=? AND organiser_id=?");$q->execute([$target,$id,$oid]);
+ lp(200,['ok'=>true,'status'=>$target]);
+}
 if($action==='save_class'){
  $id=(int)($b['id']??0);$title=trim((string)($b['title']??''));$description=trim((string)($b['description']??''));$category=trim((string)($b['category']??''));$age=trim((string)($b['age_range']??''));$accessibility=is_array($b['accessibility']??null)?array_values(array_filter(array_map('strval',$b['accessibility']))):[];$accessibilityJson=json_encode($accessibility,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);$price=($b['price_from']??'')===''?null:(float)$b['price_from'];$url=trim((string)($b['booking_url']??''));if($title==='')lp(422,['ok'=>false,'error'=>'title_required']);$q=$db->prepare("UPDATE bh_activities SET title=?,description=?,category=?,age_range=?,accessibility=?,price_from=?,booking_url=? WHERE id=? AND organiser_id=?");$q->execute([$title,$description,$category,$age,$accessibilityJson,$price,$url,$id,$oid]);if(!$q->rowCount())lp(404,['ok'=>false,'error'=>'class_not_found']);lp(200,['ok'=>true]);
 }
