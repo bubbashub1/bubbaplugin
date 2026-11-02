@@ -281,6 +281,34 @@ if($countyExists){$q=$db->prepare("INSERT INTO bh_activities (title,slug,descrip
   lp(201,['ok'=>true,'id'=>$activityId,'status'=>$submissionStatus,'auto_approved'=>$autoApproved,'message'=>$submissionMessage]);
  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
 }
+if($action==='save_schedule_session'){
+ $sessionId=(int)($b['session_id']??0);
+ $classIds=array_values(array_unique(array_filter(array_map('intval',(array)($b['class_ids']??[])))));
+ $day=trim((string)($b['day_of_week']??''));$start=trim((string)($b['start_time']??''));$end=trim((string)($b['end_time']??''));
+ if(!in_array($day,['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],true)||!preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]$/',$start)||!preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]$/',$end)||$end<=$start||!$classIds)lp(422,['ok'=>false,'error'=>'invalid_session_fields']);
+ $owned=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND organiser_id=? AND status<>'archived'");
+ foreach($classIds as $cid){$owned->execute([$cid,$oid]);if(!$owned->fetchColumn())lp(403,['ok'=>false,'error'=>'class_not_assigned']);}
+ $source=null;
+ if($sessionId){$q=$db->prepare("SELECT s.*,v.activity_id FROM bh_sessions s JOIN bh_venues v ON v.id=s.venue_id JOIN bh_activities a ON a.id=v.activity_id WHERE s.id=? AND a.organiser_id=?");$q->execute([$sessionId,$oid]);$source=$q->fetch(PDO::FETCH_ASSOC);if(!$source)lp(404,['ok'=>false,'error'=>'session_not_found']);}
+ $db->beginTransaction();
+ try{
+  $created=0;$updated=0;
+  foreach($classIds as $cid){
+   $venueId=(int)($b['venue_ids'][$cid]??0);
+   if(!$venueId&&$source&&(int)$source['activity_id']===$cid)$venueId=(int)$source['venue_id'];
+   if(!$venueId){$q=$db->prepare("SELECT id FROM bh_venues WHERE activity_id=? ORDER BY id LIMIT 1");$q->execute([$cid]);$venueId=(int)$q->fetchColumn();}
+   $q=$db->prepare("SELECT id FROM bh_venues WHERE id=? AND activity_id=?");$q->execute([$venueId,$cid]);if(!$q->fetchColumn())throw new RuntimeException('A selected class needs a registered venue.');
+   if($source&&(int)$source['activity_id']===$cid){
+    $q=$db->prepare("UPDATE bh_sessions SET venue_id=?,day_of_week=?,start_time=?,end_time=?,term_time_only=? WHERE id=?");
+    $q->execute([$venueId,$day,$start,$end,(int)!empty($b['term_time_only']),$sessionId]);$updated++;
+   }else{
+    $q=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,term_time_only) VALUES (?,?,?,?,?)");
+    $q->execute([$venueId,$day,$start,$end,(int)!empty($b['term_time_only'])]);$created++;
+   }
+  }
+  $db->commit();lp(200,['ok'=>true,'created'=>$created,'updated'=>$updated]);
+ }catch(Throwable $e){if($db->inTransaction())$db->rollBack();lp(422,['ok'=>false,'error'=>'schedule_save_failed','message'=>$e->getMessage()]);}
+}
 if($action==='save_class'){
  $id=(int)($b['id']??0);$title=trim((string)($b['title']??''));$description=trim((string)($b['description']??''));$category=trim((string)($b['category']??''));$age=trim((string)($b['age_range']??''));$accessibility=is_array($b['accessibility']??null)?array_values(array_filter(array_map('strval',$b['accessibility']))):[];$accessibilityJson=json_encode($accessibility,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);$price=($b['price_from']??'')===''?null:(float)$b['price_from'];$url=trim((string)($b['booking_url']??''));if($title==='')lp(422,['ok'=>false,'error'=>'title_required']);$q=$db->prepare("UPDATE bh_activities SET title=?,description=?,category=?,age_range=?,accessibility=?,price_from=?,booking_url=? WHERE id=? AND organiser_id=?");$q->execute([$title,$description,$category,$age,$accessibilityJson,$price,$url,$id,$oid]);if(!$q->rowCount())lp(404,['ok'=>false,'error'=>'class_not_found']);lp(200,['ok'=>true]);
 }
