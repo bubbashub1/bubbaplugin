@@ -58,6 +58,7 @@ function scheduleEditor(){
   const entry=allVenues().flatMap(v=>(v.sessions||[]).map(x=>({...x,classId:v.activityId,venueId:v.id}))).find(x=>String(x.id)===String(id));
   if(entry){for(const k of ["day_of_week","start_time","end_time"])form.elements[k].value=String(entry[k]||"").slice(0,k==="day_of_week"?20:5);form.elements.term_time_only.checked=!!Number(entry.term_time_only)}
   $("scheduleClassChoices").innerHTML=(data.classes||[]).map(c=>"<label style='display:block;padding:6px'><input type='checkbox' name='class_choice' value='"+Number(c.id)+"' "+(entry&&Number(entry.classId)===Number(c.id)?"checked":"")+"> "+esc(c.title)+"</label><select data-venue-class="+Number(c.id)+">"+(c.venues||[]).map(v=>"<option value="+Number(v.id)+">"+esc(v.venue_name)+"</option>").join("")+"</select>").join("");
+  if(entry){const venueSelect=$("scheduleClassChoices").querySelector("[data-venue-class="+Number(entry.classId)+"]");if(venueSelect)venueSelect.value=String(entry.venueId)}
   $("scheduleEditorTitle").textContent=entry?"Edit session":"Add session";panel.hidden=false;
  }
  $("scheduleAddSession").addEventListener("click",()=>open(0));
