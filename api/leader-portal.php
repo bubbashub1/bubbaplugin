@@ -281,6 +281,14 @@ if($countyExists){$q=$db->prepare("INSERT INTO bh_activities (title,slug,descrip
   lp(201,['ok'=>true,'id'=>$activityId,'status'=>$submissionStatus,'auto_approved'=>$autoApproved,'message'=>$submissionMessage]);
  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
 }
+if($action==='delete_schedule_session'){
+ $sessionId=(int)($b['session_id']??0);
+ if($sessionId<=0)lp(422,['ok'=>false,'error'=>'invalid_session_id']);
+ $q=$db->prepare("DELETE s FROM bh_sessions s JOIN bh_venues v ON v.id=s.venue_id JOIN bh_activities a ON a.id=v.activity_id WHERE s.id=? AND a.organiser_id=?");
+ $q->execute([$sessionId,$oid]);
+ if(!$q->rowCount())lp(404,['ok'=>false,'error'=>'session_not_found']);
+ lp(200,['ok'=>true,'deleted'=>1]);
+}
 if($action==='save_schedule_session'){
  $sessionId=(int)($b['session_id']??0);
  $classIds=array_values(array_unique(array_filter(array_map('intval',(array)($b['class_ids']??[])))));
