@@ -284,8 +284,8 @@ if($countyExists){$q=$db->prepare("INSERT INTO bh_activities (title,slug,descrip
 if($action==='save_schedule_session'){
  $sessionId=(int)($b['session_id']??0);
  $classIds=array_values(array_unique(array_filter(array_map('intval',(array)($b['class_ids']??[])))));
- $day=trim((string)($b['day_of_week']??''));$start=trim((string)($b['start_time']??''));$end=trim((string)($b['end_time']??''));
- if(!in_array($day,['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],true)||!preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]$/',$start)||!preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]$/',$end)||$end<=$start||!$classIds)lp(422,['ok'=>false,'error'=>'invalid_session_fields']);
+ $day=(int)($b['day_of_week']??0);$start=trim((string)($b['start_time']??''));$end=trim((string)($b['end_time']??''));
+ if(($day<1||$day>7)||!preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]$/',$start)||!preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]$/',$end)||$end<=$start||!$classIds)lp(422,['ok'=>false,'error'=>'invalid_session_fields']);
  $owned=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND organiser_id=? AND status<>'archived'");
  foreach($classIds as $cid){$owned->execute([$cid,$oid]);if(!$owned->fetchColumn())lp(403,['ok'=>false,'error'=>'class_not_assigned']);}
  $source=null;
