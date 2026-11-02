@@ -44,6 +44,11 @@ jobs:
           assert 'aria-controls="leaderSidebar"' in html
           assert 'id="leaderFrame"' in html
           assert '/images/logos/34013-20261020-162201-5c57b4.png' in html
+          portal = Path("assets/js/leader-portal.js").read_text()
+          for field in ('statActivities','statVenues','statSessions','statBookings','healthBar','healthPercent','healthMessage','healthChecks','leaderAlerts'):
+              assert f'id="{field}"' in html, f'Missing dashboard field {field}'
+              assert field in portal, f'No data binding for dashboard field {field}'
+          assert 'renderDashboard()' in portal, 'Dashboard rendering not found'
           assert 'data-pro-only hidden' in html
           assert 'url.pathname.match(/^\\/leader\\/([a-z-]+)\\.html$/)' in html
           for script in p.scripts:
