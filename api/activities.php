@@ -25,7 +25,12 @@ try {
             exit;
         }
         $normaliseTitle = static function (string $title): string {
-            $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            // Some imported titles are double-encoded (e.g. &amp;#8217;).
+            for ($i = 0; $i < 3; $i++) {
+                $decoded = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                if ($decoded === $title) break;
+                $title = $decoded;
+            }
             $title = str_replace(["’", "‘", "'"], '', $title);
             if (function_exists('iconv')) {
                 $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $title);
@@ -36,7 +41,7 @@ try {
         $q = $db->query("SELECT id,title,slug FROM bh_activities WHERE LOWER(TRIM(COALESCE(status,''))) IN ('published','publish')");
         $matches = [];
         foreach ($q->fetchAll(PDO::FETCH_ASSOC) as $candidate) {
-            if ($normaliseTitle((string)$candidate['title']) === $prettySlug || (string)$candidate['slug'] === $prettySlug) {
+            if ($normaliseTitle((string)$candidate['title']) === $prettySlug || $normaliseTitle((string)$candidate['slug']) === $prettySlug || (string)$candidate['slug'] === $prettySlug) {
                 $matches[] = (int)$candidate['id'];
             }
         }
