@@ -309,10 +309,10 @@ if($action==='save_schedule_exception'||$action==='delete_schedule_exception'){
 if($action==='delete_schedule_session'){
  $sessionId=(int)($b['session_id']??0);
  if($sessionId<=0)lp(422,['ok'=>false,'error'=>'invalid_session_id']);
+ lpEnsureScheduleExceptions($db);
  $db->beginTransaction();try{
   $q=$db->prepare("SELECT s.id FROM bh_sessions s JOIN bh_venues v ON v.id=s.venue_id JOIN bh_activities a ON a.id=v.activity_id WHERE s.id=? AND a.organiser_id=? FOR UPDATE");$q->execute([$sessionId,$oid]);
   if(!$q->fetchColumn()){$db->rollBack();lp(404,['ok'=>false,'error'=>'session_not_found']);}
-  lpEnsureScheduleExceptions($db);
   $q=$db->prepare("DELETE FROM bh_schedule_exceptions WHERE session_id=?");$q->execute([$sessionId]);
   $q=$db->prepare("DELETE FROM bh_sessions WHERE id=?");$q->execute([$sessionId]);$db->commit();lp(200,['ok'=>true,'deleted'=>1]);
  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
@@ -326,6 +326,7 @@ if($action==='save_schedule_session'){
  foreach($classIds as $cid){$owned->execute([$cid,$oid]);if(!$owned->fetchColumn())lp(403,['ok'=>false,'error'=>'class_not_assigned']);}
  $source=null;
  if($sessionId){$q=$db->prepare("SELECT s.*,v.activity_id FROM bh_sessions s JOIN bh_venues v ON v.id=s.venue_id JOIN bh_activities a ON a.id=v.activity_id WHERE s.id=? AND a.organiser_id=?");$q->execute([$sessionId,$oid]);$source=$q->fetch(PDO::FETCH_ASSOC);if(!$source)lp(404,['ok'=>false,'error'=>'session_not_found']);}
+ lpEnsureScheduleExceptions($db);
  $db->beginTransaction();
  try{
   $created=0;$updated=0;
@@ -339,7 +340,6 @@ if($action==='save_schedule_session'){
    $conflict->execute([$venueId,$day,$end,$start,($source&&(int)$source['activity_id']===$cid)?$sessionId:0]);
    if($conflict->fetchColumn())throw new RuntimeException('A session already overlaps this time at the selected venue.');
    if($source&&(int)$source['activity_id']===$cid){
-    lpEnsureScheduleExceptions($db);
     $q=$db->prepare("SELECT COUNT(*) FROM bh_schedule_exceptions WHERE session_id=? AND exception_date>=CURRENT_DATE AND DAYOFWEEK(exception_date)<>?");
     $q->execute([$sessionId,($day%7)+1]);
     if((int)$q->fetchColumn()>0)throw new RuntimeException('Restore future cancelled dates before changing this session weekday.');
