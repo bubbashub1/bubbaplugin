@@ -31,7 +31,7 @@ function setup(){
  select.addEventListener('change',()=>{mode=select.value;refresh();});
  target.addEventListener('input',()=>{if(mode==='businesses')void renderBusinesses();if(mode==='events')filterEvents();});
  document.querySelector('.directory-hero-search')?.addEventListener('submit',()=>{if(mode==='businesses')void renderBusinesses();if(mode==='events')filterEvents();});
- const observer=new MutationObserver(()=>{if(mode==='businesses'){pane.hidden=false;if(list)list.hidden=true;if($('mapView'))$('mapView').hidden=true;}});
+ const observer=new MutationObserver(()=>{if(mode==='businesses'){if(pane.hidden)pane.hidden=false;if(list&&!list.hidden)list.hidden=true;if($('mapView')&&!$('mapView').hidden)$('mapView').hidden=true;}});
  observer.observe(document.querySelector('.bh-directory-content-grid')||document.body,{attributes:true,subtree:true,attributeFilter:['hidden']});
  const initial=new URLSearchParams(location.search).get('type');
  if(['activities','events','businesses'].includes(initial)){mode=initial;select.value=mode;refresh();}
