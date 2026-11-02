@@ -179,8 +179,9 @@ fetch("/api/subscription.php",{credentials:"same-origin",cache:"no-store"}).then
    if(!doc||!doc.body)return;
    if(doc.location.pathname!==new URL(frame.src,location.origin).pathname){window.location.assign(doc.location.href);return}
    doc.body.classList.add("leader-embedded-mode");
+   doc.documentElement.classList.add("leader-embedded-mode");
    const style=doc.createElement("style");
-   style.textContent="body.leader-embedded-mode>.site-header,body.leader-embedded-mode>.site-footer,body.leader-embedded-mode .bh-leader-tabs,body.leader-embedded-mode .bh-leader-hero{display:none!important}body.leader-embedded-mode{background:#fff!important}body.leader-embedded-mode .bh-leader-page{max-width:none!important;width:100%!important;margin:0!important;padding:8px!important}body.leader-embedded-mode .app-shell{min-height:0!important}";
+   style.textContent="html.leader-embedded-mode .site-header,html.leader-embedded-mode .site-footer,html.leader-embedded-mode .bh-leader-tabs,html.leader-embedded-mode .bh-leader-hero,body.leader-embedded-mode .site-header,body.leader-embedded-mode .site-footer,body.leader-embedded-mode .bh-leader-tabs,body.leader-embedded-mode .bh-leader-hero{display:none!important}body.leader-embedded-mode{background:#fff!important}body.leader-embedded-mode .bh-leader-page{max-width:none!important;width:100%!important;margin:0!important;padding:8px!important}body.leader-embedded-mode .app-shell{min-height:0!important}";
    doc.head.appendChild(style);
    const resize=()=>{if(doc.documentElement)frame.style.height=Math.max(500,doc.documentElement.scrollHeight+28)+"px"};
    if(frame._leaderObserver)frame._leaderObserver.disconnect();
