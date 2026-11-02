@@ -1,8 +1,9 @@
 function bhActivityLink(activity){
   // Decode HTML entities before slugging; otherwise &#8217; becomes 8217 in URLs.
   const decode=document.createElement('textarea');
-  decode.innerHTML=String(activity?.title||activity?.slug||'');
-  const title=decode.value.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/['’‘]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  let rawTitle=String(activity?.title||activity?.slug||'');
+  for(let i=0;i<3;i++){decode.innerHTML=rawTitle;const next=decode.value;if(next===rawTitle)break;rawTitle=next;}
+  const title=rawTitle.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/['’‘]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   const id=Number(activity?.id);
   if(Number.isSafeInteger(id)&&id>0&&title)return '/activity/'+title;
   return '/activity.html?id='+encodeURIComponent(activity?.id||'');
