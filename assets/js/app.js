@@ -1,4 +1,13 @@
-function bhActivityLink(activity){const title=String(activity?.title||activity?.slug||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/['’]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');const id=Number(activity?.id);if(Number.isSafeInteger(id)&&id>0&&title)return '/activity/'+title;return '/activity.html?id='+encodeURIComponent(activity?.id||'');}
+function bhActivityLink(activity){
+  // Decode HTML entities before slugging; otherwise &#8217; becomes 8217 in URLs.
+  const decode=document.createElement('textarea');
+  let rawTitle=String(activity?.title||activity?.slug||'');
+  for(let i=0;i<3;i++){decode.innerHTML=rawTitle;const next=decode.value;if(next===rawTitle)break;rawTitle=next;}
+  const title=rawTitle.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/['’‘]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const id=Number(activity?.id);
+  if(Number.isSafeInteger(id)&&id>0&&title)return '/activity/'+title;
+  return '/activity.html?id='+encodeURIComponent(activity?.id||'');
+}
 /* Load the single shared Bubba Hub header on every public page. */
 (function(){
   if(document.querySelector('script[data-bh-header-loader], script[src*="assets/js/header.js"]'))return;
