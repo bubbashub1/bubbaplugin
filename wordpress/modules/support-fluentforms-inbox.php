@@ -78,6 +78,7 @@ function bh_support_enquiries_page(): void {
         if ($entry_id && in_array($status, $allowed, true) && $configured
             && get_option('bh_support_status_schema_version') === '2'
             && $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', bh_support_status_table())) === bh_support_status_table()
+            && $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', bh_support_history_table())) === bh_support_history_table()
             && $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $submissions_table)) === $submissions_table) {
             $form_id = (int) $wpdb->get_var($wpdb->prepare("SELECT form_id FROM `$submissions_table` WHERE id = %d", $entry_id));
             if (in_array($form_id, $configured, true)) {
@@ -92,12 +93,16 @@ function bh_support_enquiries_page(): void {
                         'updated_at' => current_time('mysql', true), 'updated_by' => get_current_user_id(),
                     ], ['%d', '%d', '%s', '%s', '%d']);
                     if ($saved !== false) {
-                        $wpdb->insert(bh_support_history_table(), [
+                        $logged = $wpdb->insert(bh_support_history_table(), [
                             'entry_id' => $entry_id, 'form_id' => $form_id,
                             'old_status' => $previous, 'new_status' => $status,
                             'changed_at' => current_time('mysql', true), 'changed_by' => get_current_user_id(),
                         ], ['%d', '%d', '%s', '%s', '%d']);
-                        echo '<div class="notice notice-success"><p>' . esc_html__('Enquiry status updated.', 'bubbahub') . '</p></div>';
+                        if ($logged === false) {
+                            echo '<div class="notice notice-error"><p>' . esc_html__('Status saved, but the activity history could not be recorded. Please contact an administrator.', 'bubbahub') . '</p></div>';
+                        } else {
+                            echo '<div class="notice notice-success"><p>' . esc_html__('Enquiry status updated.', 'bubbahub') . '</p></div>';
+                        }
                     }
                 }
             }
