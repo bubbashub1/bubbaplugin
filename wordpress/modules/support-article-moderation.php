@@ -31,6 +31,8 @@ function bh_support_render_article_review(): void {
             $notice = __('This article is no longer pending review.', 'bubbahub');
         } elseif (!in_array($action, ['publish', 'draft'], true)) {
             $notice = __('Unknown review action.', 'bubbahub');
+        } elseif ($action === 'publish' && !has_term('', 'bh_support_topic', $id)) {
+            $notice = __('Assign at least one Support Topic before approving this article.', 'bubbahub');
         } elseif ($action === 'publish' && !current_user_can('publish_posts')) {
             $notice = __('You cannot publish posts.', 'bubbahub');
         } else {
@@ -55,13 +57,16 @@ function bh_support_render_article_review(): void {
             $query->the_post();
             $id = get_the_ID();
             echo '<tr><td><strong>' . esc_html(get_the_title()) . '</strong><br><small>' . esc_html(wp_trim_words(wp_strip_all_tags(get_the_content()), 24)) . '</small></td>';
+            $topics = get_the_terms($id, 'bh_support_topic');
+            $topic_names = (!is_wp_error($topics) && $topics) ? implode(', ', wp_list_pluck($topics, 'name')) : __('No Support Topic assigned', 'bubbahub');
+            echo '<p><small>' . esc_html($topic_names) . '</small></p></td>';
             echo '<td>' . esc_html(get_the_date()) . '</td><td>';
             echo '<a class="button" href="' . esc_url(get_edit_post_link($id)) . '">' . esc_html__('Edit & review', 'bubbahub') . '</a> ';
             foreach (['publish' => __('Approve', 'bubbahub'), 'draft' => __('Return to draft', 'bubbahub')] as $action => $label) {
                 echo '<form method="post" style="display:inline-block;margin:0 4px 4px 0">';
                 wp_nonce_field('bh_support_review_article');
                 echo '<input type="hidden" name="bh_support_post_id" value="' . esc_attr((string) $id) . '">';
-                echo '<button class="button ' . ($action === 'publish' ? 'button-primary' : '') . '" name="bh_support_review_action" value="' . esc_attr($action) . '">' . esc_html($label) . '</button></form>';
+                echo '<button class="button ' . ($action === 'publish' ? 'button-primary' : '') . '" ' . ($action === 'publish' && (!$topics || is_wp_error($topics)) ? 'disabled ' : '') . 'name="bh_support_review_action" value="' . esc_attr($action) . '">' . esc_html($label) . '</button></form>';
             }
             echo '</td></tr>';
         }
