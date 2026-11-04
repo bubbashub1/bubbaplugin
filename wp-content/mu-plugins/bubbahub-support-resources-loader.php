@@ -19,6 +19,8 @@ add_action('plugins_loaded', static function (): void {
             require_once $file;
             $articles = dirname($file) . '/support-articles.php';
             if (is_readable($articles)) require_once $articles;
+            $hub = dirname($file) . '/support-hub.php';
+            if (is_readable($hub)) require_once $hub;
             return;
         }
     }
