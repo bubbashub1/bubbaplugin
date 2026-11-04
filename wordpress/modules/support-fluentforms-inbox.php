@@ -1,6 +1,6 @@
 <?php
 /**
- * Read-only Fluent Forms Free enquiry inbox.
+ * Fluent Forms Free enquiry inbox with separate workflow status tracking.
  * Uses Fluent Forms' own submissions table; does not duplicate private answers.
  */
 defined('ABSPATH') || exit;
@@ -57,6 +57,7 @@ function bh_support_enquiries_page(): void {
         $configured = array_values(array_filter(array_map('absint', (array) get_option('bh_support_fluent_form_ids', []))));
         $submissions_table = $wpdb->prefix . 'fluentform_submissions';
         if ($entry_id && in_array($status, $allowed, true) && $configured
+            && get_option('bh_support_status_schema_version') === '1'
             && $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', bh_support_status_table())) === bh_support_status_table()
             && $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $submissions_table)) === $submissions_table) {
             $form_id = (int) $wpdb->get_var($wpdb->prepare("SELECT form_id FROM `$submissions_table` WHERE id = %d", $entry_id));
