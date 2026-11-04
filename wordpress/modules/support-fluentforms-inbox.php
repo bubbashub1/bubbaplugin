@@ -33,7 +33,7 @@ add_action('admin_init', static function (): void {
 });
 
 add_action('admin_menu', static function (): void {
-    add_submenu_page('tools.php', __('Bubba Hub Enquiries', 'bubbahub'), __('Bubba Hub Enquiries', 'bubbahub'),
+    add_submenu_page('bh-support-dashboard', __('Bubba Hub Enquiries', 'bubbahub'), __('Bubba Hub Enquiries', 'bubbahub'),
         'manage_options', 'bh-support-enquiries', 'bh_support_enquiries_page');
 });
 
@@ -57,6 +57,7 @@ function bh_support_enquiries_page(): void {
         $configured = array_values(array_filter(array_map('absint', (array) get_option('bh_support_fluent_form_ids', []))));
         $submissions_table = $wpdb->prefix . 'fluentform_submissions';
         if ($entry_id && in_array($status, $allowed, true) && $configured
+            && $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', bh_support_status_table())) === bh_support_status_table()
             && $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $submissions_table)) === $submissions_table) {
             $form_id = (int) $wpdb->get_var($wpdb->prepare("SELECT form_id FROM `$submissions_table` WHERE id = %d", $entry_id));
             if (in_array($form_id, $configured, true)) {
@@ -108,6 +109,10 @@ function bh_support_enquiries_page(): void {
     echo '<table class="widefat striped"><thead><tr><th>' . esc_html__('Entry', 'bubbahub') . '</th><th>' . esc_html__('Form', 'bubbahub') . '</th><th>' . esc_html__('Submitted', 'bubbahub') . '</th><th>' . esc_html__('Fluent Forms status', 'bubbahub') . '</th><th>' . esc_html__('Support workflow', 'bubbahub') . '</th></tr></thead><tbody>';
     foreach ((array) $rows as $entry) {
         echo '<tr><td>#' . esc_html((string) $entry->id) . '</td><td>#' . esc_html((string) $entry->form_id) . '</td><td>' . esc_html((string) $entry->created_at) . '</td><td>' . esc_html((string) $entry->status) . '</td><td>';
+        if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $status_table)) !== $status_table) {
+            echo esc_html__('Workflow table unavailable', 'bubbahub') . '</td></tr>';
+            continue;
+        }
         echo '<form method="post">';
         wp_nonce_field('bh_support_change_status');
         echo '<input type="hidden" name="bh_support_entry_id" value="' . esc_attr((string) $entry->id) . '">';
@@ -123,7 +128,7 @@ function bh_support_enquiries_page(): void {
     if ($pages > 1) {
         echo '<p>';
         for ($i = 1; $i <= min($pages, 100); $i++) {
-            echo '<a class="button" href="' . esc_url(add_query_arg(['page' => 'bh-support-enquiries', 'paged' => $i], admin_url('tools.php'))) . '">' . esc_html((string) $i) . '</a> ';
+            echo '<a class="button" href="' . esc_url(add_query_arg(['page' => 'bh-support-enquiries', 'paged' => $i], admin_url('admin.php'))) . '">' . esc_html((string) $i) . '</a> ';
         }
         echo '</p>';
     }
