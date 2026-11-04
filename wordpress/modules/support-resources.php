@@ -82,7 +82,7 @@ add_shortcode('bh_support_resources', static function ($atts): string {
 });
 
 add_action('wp_enqueue_scripts', static function (): void {
-    if (!is_singular() || !has_shortcode((string) get_post_field('post_content', get_queried_object_id()), 'bh_support_resources')) {
+    if (!is_singular() || !array_filter(['bh_support_resources', 'bh_support_articles', 'bh_support_hub'], static function ($tag): bool { return has_shortcode((string) get_post_field('post_content', get_queried_object_id()), $tag); })) {
         return;
     }
     wp_register_style('bh-support-resources', false, [], '1.0.0');
