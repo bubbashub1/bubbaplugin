@@ -160,7 +160,7 @@ function bh_support_enquiries_page(): void {
     }
     echo '<table class="widefat striped"><thead><tr><th>' . esc_html__('Entry', 'bubbahub') . '</th><th>' . esc_html__('Form', 'bubbahub') . '</th><th>' . esc_html__('Submitted', 'bubbahub') . '</th><th>' . esc_html__('Fluent Forms status', 'bubbahub') . '</th><th>' . esc_html__('Support workflow', 'bubbahub') . '</th></tr></thead><tbody>';
     foreach ((array) $rows as $entry) {
-        echo '<tr><td>#' . esc_html((string) $entry->id) . '</td><td>#' . esc_html((string) $entry->form_id) . '</td><td>' . esc_html((string) $entry->created_at) . '</td><td>' . esc_html((string) $entry->status) . '</td><td>';
+        echo '<tr><td><a href="' . esc_url(add_query_arg(['page' => 'bh-support-enquiries', 'bh_history_entry' => (int) $entry->id], admin_url('admin.php'))) . '">#' . esc_html((string) $entry->id) . '</a></td><td>#' . esc_html((string) $entry->form_id) . '</td><td>' . esc_html((string) $entry->created_at) . '</td><td>' . esc_html((string) $entry->status) . '</td><td>';
         if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $status_table)) !== $status_table) {
             echo esc_html__('Workflow table unavailable', 'bubbahub') . '</td></tr>';
             continue;
@@ -183,6 +183,28 @@ function bh_support_enquiries_page(): void {
             echo '<a class="button" href="' . esc_url(add_query_arg(['page' => 'bh-support-enquiries', 'paged' => $i, 'bh_workflow' => $filter], admin_url('admin.php'))) . '">' . esc_html((string) $i) . '</a> ';
         }
         echo '</p>';
+    }
+    $history_entry = isset($_GET['bh_history_entry']) ? absint($_GET['bh_history_entry']) : 0;
+    if ($history_entry && get_option('bh_support_status_schema_version') === '2') {
+        $entry_form = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT form_id FROM `$table` WHERE id = %d", $history_entry
+        ));
+        if (in_array($entry_form, $ids, true)) {
+            $history_table = bh_support_history_table();
+            $events = $wpdb->get_results($wpdb->prepare(
+                "SELECT old_status, new_status, changed_at, changed_by FROM `$history_table`
+                 WHERE entry_id = %d AND form_id = %d ORDER BY id DESC LIMIT 50",
+                $history_entry, $entry_form
+            ));
+            echo '<h2>' . esc_html(sprintf(__('Activity history for enquiry #%d', 'bubbahub'), $history_entry)) . '</h2>';
+            echo '<table class="widefat striped"><thead><tr><th>' . esc_html__('When (UTC)', 'bubbahub') . '</th><th>' . esc_html__('Changed by', 'bubbahub') . '</th><th>' . esc_html__('Change', 'bubbahub') . '</th></tr></thead><tbody>';
+            foreach ((array) $events as $event) {
+                $staff = get_userdata((int) $event->changed_by);
+                echo '<tr><td>' . esc_html($event->changed_at) . '</td><td>' . esc_html($staff ? $staff->display_name : __('Former user', 'bubbahub')) . '</td><td>' . esc_html($event->old_status . ' → ' . $event->new_status) . '</td></tr>';
+            }
+            if (!$events) echo '<tr><td colspan="3">' . esc_html__('No status changes recorded yet.', 'bubbahub') . '</td></tr>';
+            echo '</tbody></table>';
+        }
     }
     echo '<p><a class="button" href="' . esc_url(admin_url('admin.php?page=fluent_forms')) . '">' . esc_html__('Open Fluent Forms', 'bubbahub') . '</a></p></div>';
 }
