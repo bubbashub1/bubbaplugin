@@ -79,7 +79,7 @@ function bh_support_dashboard_render(): void {
         [
             'label' => __('Pending leader articles', 'bubbahub'),
             'number' => $pending,
-            'url' => admin_url('edit.php?page=bh-support-article-review'),
+            'url' => admin_url('admin.php?page=bh-support-article-review'),
             'action' => __('Review articles', 'bubbahub'),
         ],
         [
