@@ -57,3 +57,10 @@ Staging checks: test fresh installation, status changes, cross-form entry reject
 The optional `support-admin-dashboard.php` module registers **BH Support** in the WordPress admin menu for administrators. It shows published resource count, pending leader article count, configured Fluent Forms support enquiry count, and workflow status totals. Quick links lead to the relevant WordPress and Fluent Forms screens. No private form answers are rendered.
 
 Staging validation: verify that the dashboard counts match the source screens, the Fluent Forms unavailable/empty states render correctly, links resolve, and the admin menu is hidden from users without `manage_options`. Review layout on mobile. Do not merge until plugin load paths and PHP syntax are validated.
+
+## Integration hardening
+- The shared resource stylesheet is loaded for any singular page containing `[bh_support_resources]`, `[bh_support_articles]` or `[bh_support_hub]`.
+- The dashboard treats entries without a workflow row (or explicitly marked New) as New, avoiding double-counting.
+- The MU loader checks additional plugin layouts and supports the `bh_support_resources_module_paths` filter, which accepts an array of absolute paths to `support-resources.php`. Its sibling modules must be deployed in the same directory.
+
+**Not yet validated:** actual staging deployment location, PHP syntax/lint, Fluent Forms schema compatibility, shortcode routes, and permission tests. Do not merge solely on these code commits.
