@@ -7,13 +7,18 @@ defined('ABSPATH') || exit;
 
 
 // Workflow metadata is separate from Fluent Forms responses and stores no family message content.
+function bh_support_history_table(): string {
+    global $wpdb;
+    return $wpdb->prefix . 'bh_support_enquiry_history';
+}
+
 function bh_support_status_table(): string {
     global $wpdb;
     return $wpdb->prefix . 'bh_support_enquiry_status';
 }
 
 add_action('admin_init', static function (): void {
-    if (!current_user_can('manage_options') || get_option('bh_support_status_schema_version') === '1') return;
+    if (!current_user_can('manage_options') || get_option('bh_support_status_schema_version') === '2') return;
     global $wpdb;
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     $table = bh_support_status_table();
@@ -27,8 +32,22 @@ add_action('admin_init', static function (): void {
         PRIMARY KEY  (entry_id),
         KEY form_id (form_id)
     ) $charset;");
-    if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table)) === $table) {
-        update_option('bh_support_status_schema_version', '1', false);
+    $history = bh_support_history_table();
+    dbDelta("CREATE TABLE $history (
+        id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        entry_id bigint(20) unsigned NOT NULL,
+        form_id bigint(20) unsigned NOT NULL,
+        old_status varchar(20) NOT NULL,
+        new_status varchar(20) NOT NULL,
+        changed_at datetime NOT NULL,
+        changed_by bigint(20) unsigned NOT NULL,
+        PRIMARY KEY  (id),
+        KEY entry_id (entry_id),
+        KEY form_id (form_id)
+    ) $charset;");
+    if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table)) === $table
+        && $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $history)) === $history) {
+        update_option('bh_support_status_schema_version', '2', false);
     }
 });
 
@@ -57,16 +76,30 @@ function bh_support_enquiries_page(): void {
         $configured = array_values(array_filter(array_map('absint', (array) get_option('bh_support_fluent_form_ids', []))));
         $submissions_table = $wpdb->prefix . 'fluentform_submissions';
         if ($entry_id && in_array($status, $allowed, true) && $configured
-            && get_option('bh_support_status_schema_version') === '1'
+            && get_option('bh_support_status_schema_version') === '2'
             && $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', bh_support_status_table())) === bh_support_status_table()
             && $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $submissions_table)) === $submissions_table) {
             $form_id = (int) $wpdb->get_var($wpdb->prepare("SELECT form_id FROM `$submissions_table` WHERE id = %d", $entry_id));
             if (in_array($form_id, $configured, true)) {
-                $wpdb->replace(bh_support_status_table(), [
-                    'entry_id' => $entry_id, 'form_id' => $form_id, 'status' => $status,
-                    'updated_at' => current_time('mysql', true), 'updated_by' => get_current_user_id(),
-                ], ['%d', '%d', '%s', '%s', '%d']);
-                echo '<div class="notice notice-success"><p>' . esc_html__('Enquiry status updated.', 'bubbahub') . '</p></div>';
+                $previous = $wpdb->get_var($wpdb->prepare(
+                    'SELECT status FROM `' . bh_support_status_table() . '` WHERE entry_id = %d AND form_id = %d',
+                    $entry_id, $form_id
+                ));
+                $previous = $previous ?: 'new';
+                if ($previous !== $status) {
+                    $saved = $wpdb->replace(bh_support_status_table(), [
+                        'entry_id' => $entry_id, 'form_id' => $form_id, 'status' => $status,
+                        'updated_at' => current_time('mysql', true), 'updated_by' => get_current_user_id(),
+                    ], ['%d', '%d', '%s', '%s', '%d']);
+                    if ($saved !== false) {
+                        $wpdb->insert(bh_support_history_table(), [
+                            'entry_id' => $entry_id, 'form_id' => $form_id,
+                            'old_status' => $previous, 'new_status' => $status,
+                            'changed_at' => current_time('mysql', true), 'changed_by' => get_current_user_id(),
+                        ], ['%d', '%d', '%s', '%s', '%d']);
+                        echo '<div class="notice notice-success"><p>' . esc_html__('Enquiry status updated.', 'bubbahub') . '</p></div>';
+                    }
+                }
             }
         }
     }
