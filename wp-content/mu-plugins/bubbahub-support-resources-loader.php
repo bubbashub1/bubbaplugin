@@ -23,6 +23,8 @@ add_action('plugins_loaded', static function (): void {
             if (is_readable($hub)) require_once $hub;
             $moderation = dirname($file) . '/support-article-moderation.php';
             if (is_readable($moderation)) require_once $moderation;
+            $inbox = dirname($file) . '/support-fluentforms-inbox.php';
+            if (is_readable($inbox)) require_once $inbox;
             return;
         }
     }
