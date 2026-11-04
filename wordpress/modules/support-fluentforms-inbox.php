@@ -90,14 +90,31 @@ function bh_support_enquiries_page(): void {
         return;
     }
     $page = isset($_GET['paged']) ? max(1, absint($_GET['paged'])) : 1;
+    $filter = isset($_GET['bh_workflow']) && is_string($_GET['bh_workflow']) ? sanitize_key(wp_unslash($_GET['bh_workflow'])) : '';
+    if (!in_array($filter, ['', 'new', 'in_progress', 'resolved'], true)) $filter = '';
     $offset = ($page - 1) * 20;
     $placeholders = implode(',', array_fill(0, count($ids), '%d'));
     $where = "form_id IN ($placeholders)";
-    $count = (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM `$table` WHERE $where", ...$ids));
+    $status_table = bh_support_status_table();
+    $has_workflow = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $status_table)) === $status_table;
+    $join = $has_workflow ? " LEFT JOIN `$status_table` w ON w.entry_id = s.id AND w.form_id = s.form_id" : '';
+    $where = 's.' . $where;
+    if ($filter !== '' && $has_workflow) {
+        $where .= $filter === 'new' ? " AND (w.status IS NULL OR w.status = 'new')" : " AND w.status = '" . esc_sql($filter) . "'";
+    }
+    $count = (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM `$table` s $join WHERE $where", ...$ids));
     $rows = $wpdb->get_results($wpdb->prepare(
-        "SELECT id, form_id, status, created_at FROM `$table` WHERE $where ORDER BY id DESC LIMIT %d OFFSET %d",
+        "SELECT s.id, s.form_id, s.status, s.created_at FROM `$table` s $join WHERE $where ORDER BY s.id DESC LIMIT %d OFFSET %d",
         ...array_merge($ids, [20, $offset])
     ));
+    echo '<form method="get" style="margin:18px 0">';
+    echo '<input type="hidden" name="page" value="bh-support-enquiries">';
+    echo '<label for="bh-workflow-filter">' . esc_html__('Show', 'bubbahub') . '</label> ';
+    echo '<select id="bh-workflow-filter" name="bh_workflow">';
+    foreach (['' => __('All enquiries', 'bubbahub'), 'new' => __('New', 'bubbahub'), 'in_progress' => __('In Progress', 'bubbahub'), 'resolved' => __('Resolved', 'bubbahub')] as $value => $label) {
+        echo '<option value="' . esc_attr($value) . '" ' . selected($filter, $value, false) . '>' . esc_html($label) . '</option>';
+    }
+    echo '</select> <button class="button">' . esc_html__('Filter', 'bubbahub') . '</button></form>';
     echo '<p><strong>' . esc_html(sprintf(_n('%d enquiry', '%d enquiries', $count, 'bubbahub'), $count)) . '</strong></p>';
     $status_table = bh_support_status_table();
     $status_map = [];
@@ -129,7 +146,7 @@ function bh_support_enquiries_page(): void {
     if ($pages > 1) {
         echo '<p>';
         for ($i = 1; $i <= min($pages, 100); $i++) {
-            echo '<a class="button" href="' . esc_url(add_query_arg(['page' => 'bh-support-enquiries', 'paged' => $i], admin_url('admin.php'))) . '">' . esc_html((string) $i) . '</a> ';
+            echo '<a class="button" href="' . esc_url(add_query_arg(['page' => 'bh-support-enquiries', 'paged' => $i, 'bh_workflow' => $filter], admin_url('admin.php'))) . '">' . esc_html((string) $i) . '</a> ';
         }
         echo '</p>';
     }
