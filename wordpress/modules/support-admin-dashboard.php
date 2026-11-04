@@ -61,8 +61,10 @@ function bh_support_dashboard_render(): void {
             foreach ((array) $rows as $row) {
                 if (isset($counts[$row->status])) {
                     $qty = (int) $row->qty;
-                    $counts[$row->status] += $qty;
-                    $counts['new'] -= $qty;
+                    if ($row->status !== 'new') {
+                        $counts[$row->status] += $qty;
+                        $counts['new'] -= $qty;
+                    }
                 }
             }
         }
