@@ -25,6 +25,8 @@ add_action('plugins_loaded', static function (): void {
             if (is_readable($moderation)) require_once $moderation;
             $inbox = dirname($file) . '/support-fluentforms-inbox.php';
             if (is_readable($inbox)) require_once $inbox;
+            $dashboard = dirname($file) . '/support-admin-dashboard.php';
+            if (is_readable($dashboard)) require_once $dashboard;
             return;
         }
     }
