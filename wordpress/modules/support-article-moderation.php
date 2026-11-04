@@ -7,7 +7,7 @@ defined('ABSPATH') || exit;
 
 add_action('admin_menu', static function (): void {
     add_submenu_page(
-        'edit.php', __('Support Article Review', 'bubbahub'),
+        'bh-support-dashboard', __('Support Article Review', 'bubbahub'),
         __('Support Article Review', 'bubbahub'),
         'edit_others_posts', 'bh-support-article-review', 'bh_support_render_article_review'
     );
@@ -73,7 +73,7 @@ function bh_support_render_article_review(): void {
     if ($query->max_num_pages > 1) {
         echo '<div class="tablenav"><div class="tablenav-pages">';
         for ($i = 1; $i <= $query->max_num_pages; $i++) {
-            echo '<a class="button" ' . ($i === $page ? 'aria-current="page" ' : '') . 'href="' . esc_url(add_query_arg(['page' => 'bh-support-article-review', 'paged' => $i], admin_url('edit.php'))) . '">' . esc_html((string) $i) . '</a> ';
+            echo '<a class="button" ' . ($i === $page ? 'aria-current="page" ' : '') . 'href="' . esc_url(add_query_arg(['page' => 'bh-support-article-review', 'paged' => $i], admin_url('admin.php'))) . '">' . esc_html((string) $i) . '</a> ';
         }
         echo '</div></div>';
     }
