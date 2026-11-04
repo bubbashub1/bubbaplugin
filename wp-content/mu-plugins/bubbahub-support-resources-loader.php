@@ -21,6 +21,8 @@ add_action('plugins_loaded', static function (): void {
             if (is_readable($articles)) require_once $articles;
             $hub = dirname($file) . '/support-hub.php';
             if (is_readable($hub)) require_once $hub;
+            $moderation = dirname($file) . '/support-article-moderation.php';
+            if (is_readable($moderation)) require_once $moderation;
             return;
         }
     }
