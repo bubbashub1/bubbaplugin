@@ -77,3 +77,8 @@ Before staging rollout, verify the admin menu loads without PHP errors, its link
 - Leader articles cannot be approved from the review queue unless a Support Topic is assigned. The queue displays assigned topics and disables Approve for unclassified posts. Server-side approval also enforces the rule.
 - Enquiry workflow updates require the installed status schema version marker. If installation failed, an update cannot silently create an invalid workflow record.
 - Staging tests: attempt approval with no topic (must fail), assign topic and approve (must succeed), attempt an unauthorised approval (must fail), and simulate a missing workflow table (must not update a status).
+
+## Enquiry queue filters
+The admin inbox now offers All, New, In Progress and Resolved filters. Filtering is applied at the database query level and pagination retains the selected workflow. An entry with no workflow record counts as New. If the workflow table is unavailable, the filter is reset to All to avoid invalid queries. No private response data is included.
+
+Staging checks: create dummy entries for each state; compare filtered counts and pagination against the dashboard; confirm form IDs are restricted to the configured forms. Verify PHP syntax and SQL compatibility before deploying.
