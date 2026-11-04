@@ -42,3 +42,8 @@ Create a WordPress page containing `[bh_support_hub]`. This renders both the res
 - Confirm an article without a Support Topic does not appear in the article library.
 - Confirm a reviewed article appears only after it is published and assigned a Support Topic.
 - Confirm the combined homepage renders correctly and its website-help link resolves.
+
+## Fluent Forms Free integration
+The optional module `support-fluentforms-inbox.php` adds **Tools > Bubba Hub Enquiries** for WordPress administrators. Enter existing Fluent Forms IDs as a comma-separated list. The view queries only the submission ID, form ID, status and date from the plugin's own table. It does not copy or expose submitted answers in the overview, nor does it modify Fluent Forms entries.
+
+Staging checks: verify the installed Fluent Forms version defines `FLUENTFORM` and uses the expected submissions table and column names; confirm only administrators can access the page; test with an enquiry form containing dummy (non-sensitive) information. The Fluent Forms status column is native submission status, not a custom support workflow. Do not advertise New/In Progress/Resolved or replies until implemented and tested.
