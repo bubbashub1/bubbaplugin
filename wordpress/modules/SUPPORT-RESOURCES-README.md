@@ -25,3 +25,20 @@ Remove the MU loader to disable registration and shortcode. Existing WordPress r
 - Theme templates for archive and single resource pages are not yet customized.
 - No migration of existing static support pages is included.
 - The draft PR requires staging checks before merge.
+
+## Support & Guidance homepage
+Create a WordPress page containing `[bh_support_hub]`. This renders both the resources and articles libraries plus a website-help link. The website-help destination must be verified against the final WordPress routes.
+
+## Articles and moderation
+- `[bh_support_articles]` displays published WordPress posts assigned a Support Topic.
+- The existing Leader Pro endpoint submits WordPress posts with `pending` status and the `_bh_leader_organiser_id` metadata.
+- The new **Posts > Support Article Review** admin submenu lists pending posts with that metadata.
+- Approve publishes a post; Return to draft makes it a draft. The administrator should assign a Support Topic before approval for it to appear in the public article library.
+- The existing leader endpoint still relies on legacy session authentication. This PR does not claim to replace it with FluentAuth.
+
+## Extra staging checks
+- Confirm review menu is available only to authorised editors/admins.
+- Confirm nonces and post-level permissions prevent unauthorised review.
+- Confirm an article without a Support Topic does not appear in the article library.
+- Confirm a reviewed article appears only after it is published and assigned a Support Topic.
+- Confirm the combined homepage renders correctly and its website-help link resolves.
