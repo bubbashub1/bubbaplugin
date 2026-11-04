@@ -72,3 +72,8 @@ Staging validation: verify that the dashboard counts match the source screens, t
 - Dashboard buttons link to these submenu slugs using `admin.php?page=...`.
 
 Before staging rollout, verify the admin menu loads without PHP errors, its links resolve, and all three pages deny unauthorised access. The change is committed to the feature branch only.
+
+## Approval and schema safeguards
+- Leader articles cannot be approved from the review queue unless a Support Topic is assigned. The queue displays assigned topics and disables Approve for unclassified posts. Server-side approval also enforces the rule.
+- Enquiry workflow updates require the installed status schema version marker. If installation failed, an update cannot silently create an invalid workflow record.
+- Staging tests: attempt approval with no topic (must fail), assign topic and approve (must succeed), attempt an unauthorised approval (must fail), and simulate a missing workflow table (must not update a status).
