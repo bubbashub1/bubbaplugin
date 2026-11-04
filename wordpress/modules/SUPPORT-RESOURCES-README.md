@@ -82,3 +82,8 @@ Before staging rollout, verify the admin menu loads without PHP errors, its link
 The admin inbox now offers All, New, In Progress and Resolved filters. Filtering is applied at the database query level and pagination retains the selected workflow. An entry with no workflow record counts as New. If the workflow table is unavailable, the filter is reset to All to avoid invalid queries. No private response data is included.
 
 Staging checks: create dummy entries for each state; compare filtered counts and pagination against the dashboard; confirm form IDs are restricted to the configured forms. Verify PHP syntax and SQL compatibility before deploying.
+
+## Enquiry activity history
+Schema version 2 adds `{$wpdb->prefix}bh_support_enquiry_history` to store status transitions (entry ID, form ID, old/new status, UTC timestamp, staff WordPress user ID). No names, email addresses, questions or submitted responses are copied. The admin-only inbox links enquiry numbers to a recent status-change history, limited to 50 entries per enquiry. Only entries belonging to configured support forms are eligible.
+
+Staging checks: upgrade from schema v1, confirm both tables exist before updating statuses, verify history captures actual changes but not no-op saves, and confirm unauthorised staff cannot view the history. Existing status changes from before this update cannot be reconstructed. If history insert fails, status may already have changed; audit this before production deployment.
