@@ -47,3 +47,8 @@ Create a WordPress page containing `[bh_support_hub]`. This renders both the res
 The optional module `support-fluentforms-inbox.php` adds **Tools > Bubba Hub Enquiries** for WordPress administrators. Enter existing Fluent Forms IDs as a comma-separated list. The view queries only the submission ID, form ID, status and date from the plugin's own table. It does not copy or expose submitted answers in the overview, nor does it modify Fluent Forms entries.
 
 Staging checks: verify the installed Fluent Forms version defines `FLUENTFORM` and uses the expected submissions table and column names; confirm only administrators can access the page; test with an enquiry form containing dummy (non-sensitive) information. The Fluent Forms status column is native submission status, not a custom support workflow. Do not advertise New/In Progress/Resolved or replies until implemented and tested.
+
+## Enquiry workflow status (additional module update)
+The admin-only enquiry overview now supports **New**, **In Progress**, and **Resolved**. A small `wp_prefix_bh_support_enquiry_status` table (actual prefix from `$wpdb->prefix`) stores entry ID, form ID, status, last update time and administrator ID. It does not store answers, names, emails or messages. The schema is created on the first authorised admin request. Updates use an admin nonce and verify that the entry belongs to a configured support form. The workflow does not send notifications or reply to users.
+
+Staging checks: test fresh installation, status changes, cross-form entry rejection, non-admin access, plugin deactivation, and whether the status table is successfully created with the site's actual WordPress prefix. This implementation is not yet tested against the installed Fluent Forms version.
