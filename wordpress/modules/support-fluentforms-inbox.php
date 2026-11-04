@@ -97,6 +97,7 @@ function bh_support_enquiries_page(): void {
     $where = "form_id IN ($placeholders)";
     $status_table = bh_support_status_table();
     $has_workflow = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $status_table)) === $status_table;
+    if (!$has_workflow) $filter = '';
     $join = $has_workflow ? " LEFT JOIN `$status_table` w ON w.entry_id = s.id AND w.form_id = s.form_id" : '';
     $where = 's.' . $where;
     if ($filter !== '' && $has_workflow) {
