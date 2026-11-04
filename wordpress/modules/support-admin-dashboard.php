@@ -85,7 +85,7 @@ function bh_support_dashboard_render(): void {
         [
             'label' => __('Support enquiries', 'bubbahub'),
             'number' => $total,
-            'url' => admin_url('tools.php?page=bh-support-enquiries'),
+            'url' => admin_url('admin.php?page=bh-support-enquiries'),
             'action' => __('Open enquiry inbox', 'bubbahub'),
         ],
     ];
