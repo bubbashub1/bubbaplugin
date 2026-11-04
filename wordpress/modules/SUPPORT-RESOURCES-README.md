@@ -52,3 +52,8 @@ Staging checks: verify the installed Fluent Forms version defines `FLUENTFORM` a
 The admin-only enquiry overview now supports **New**, **In Progress**, and **Resolved**. A small `wp_prefix_bh_support_enquiry_status` table (actual prefix from `$wpdb->prefix`) stores entry ID, form ID, status, last update time and administrator ID. It does not store answers, names, emails or messages. The schema is created on the first authorised admin request. Updates use an admin nonce and verify that the entry belongs to a configured support form. The workflow does not send notifications or reply to users.
 
 Staging checks: test fresh installation, status changes, cross-form entry rejection, non-admin access, plugin deactivation, and whether the status table is successfully created with the site's actual WordPress prefix. This implementation is not yet tested against the installed Fluent Forms version.
+
+## Unified WordPress admin dashboard
+The optional `support-admin-dashboard.php` module registers **BH Support** in the WordPress admin menu for administrators. It shows published resource count, pending leader article count, configured Fluent Forms support enquiry count, and workflow status totals. Quick links lead to the relevant WordPress and Fluent Forms screens. No private form answers are rendered.
+
+Staging validation: verify that the dashboard counts match the source screens, the Fluent Forms unavailable/empty states render correctly, links resolve, and the admin menu is hidden from users without `manage_options`. Review layout on mobile. Do not merge until plugin load paths and PHP syntax are validated.
