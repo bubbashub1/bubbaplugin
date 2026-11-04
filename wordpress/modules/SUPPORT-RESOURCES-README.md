@@ -64,3 +64,11 @@ Staging validation: verify that the dashboard counts match the source screens, t
 - The MU loader checks additional plugin layouts and supports the `bh_support_resources_module_paths` filter, which accepts an array of absolute paths to `support-resources.php`. Its sibling modules must be deployed in the same directory.
 
 **Not yet validated:** actual staging deployment location, PHP syntax/lint, Fluent Forms schema compatibility, shortcode routes, and permission tests. Do not merge solely on these code commits.
+
+## Consolidated admin navigation
+- **BH Support** is the top-level dashboard.
+- **BH Support > Bubba Hub Enquiries** provides Fluent Forms configuration and workflow statuses.
+- **BH Support > Support Article Review** provides the pending leader article moderation queue.
+- Dashboard buttons link to these submenu slugs using `admin.php?page=...`.
+
+Before staging rollout, verify the admin menu loads without PHP errors, its links resolve, and all three pages deny unauthorised access. The change is committed to the feature branch only.
