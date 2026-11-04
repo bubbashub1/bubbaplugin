@@ -152,7 +152,8 @@ function bh_support_enquiries_page(): void {
     echo '<p><strong>' . esc_html(sprintf(_n('%d enquiry', '%d enquiries', $count, 'bubbahub'), $count)) . '</strong></p>';
     $status_table = bh_support_status_table();
     $status_map = [];
-    if ($rows && $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $status_table)) === $status_table) {
+    $status_table_exists = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $status_table)) === $status_table;
+    if ($rows && $status_table_exists) {
         $entry_ids = array_map(static function ($row) { return (int) $row->id; }, $rows);
         $keys = implode(',', array_fill(0, count($entry_ids), '%d'));
         $states = $wpdb->get_results($wpdb->prepare("SELECT entry_id, status FROM `$status_table` WHERE entry_id IN ($keys)", ...$entry_ids));
@@ -161,7 +162,7 @@ function bh_support_enquiries_page(): void {
     echo '<table class="widefat striped"><thead><tr><th>' . esc_html__('Entry', 'bubbahub') . '</th><th>' . esc_html__('Form', 'bubbahub') . '</th><th>' . esc_html__('Submitted', 'bubbahub') . '</th><th>' . esc_html__('Fluent Forms status', 'bubbahub') . '</th><th>' . esc_html__('Support workflow', 'bubbahub') . '</th></tr></thead><tbody>';
     foreach ((array) $rows as $entry) {
         echo '<tr><td><a href="' . esc_url(add_query_arg(['page' => 'bh-support-enquiries', 'bh_history_entry' => (int) $entry->id], admin_url('admin.php'))) . '">#' . esc_html((string) $entry->id) . '</a></td><td>#' . esc_html((string) $entry->form_id) . '</td><td>' . esc_html((string) $entry->created_at) . '</td><td>' . esc_html((string) $entry->status) . '</td><td>';
-        if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $status_table)) !== $status_table) {
+        if (!$status_table_exists) {
             echo esc_html__('Workflow table unavailable', 'bubbahub') . '</td></tr>';
             continue;
         }
