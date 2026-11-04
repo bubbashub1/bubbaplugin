@@ -17,6 +17,8 @@ add_action('plugins_loaded', static function (): void {
     foreach ($candidates as $file) {
         if (is_readable($file)) {
             require_once $file;
+            $articles = dirname($file) . '/support-articles.php';
+            if (is_readable($articles)) require_once $articles;
             return;
         }
     }
