@@ -220,6 +220,7 @@ if($action==='save_account'){
  $columns=$db->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers'")->fetchAll(PDO::FETCH_COLUMN);
  $updates=['organisation_name'=>$businessName,'phone'=>$phone,'website'=>$website];
  if(in_array('email',$columns,true))$updates['email']=$email;
+ if($name!==''&&!array_intersect(['contact_name','name','display_name'],$columns))lp(503,['ok'=>false,'error'=>'contact_name_schema_missing','message'=>'The database needs the organiser contact-name update before this field can be saved. Please contact Bubba Hub support.']);
  $contactCol=null;foreach(['contact_name','name','display_name'] as $candidate){if(in_array($candidate,$columns,true)){$contactCol=$candidate;break;}}
  if($contactCol!==null)$updates[$contactCol]=$name;
  $db->beginTransaction();
