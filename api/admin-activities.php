@@ -86,11 +86,12 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
     $clean[]=['id'=>(int)($row['id']??0),'venue_id'=>$venueIds[$venueIndex],'day'=>$day,'start'=>$start,'end'=>$end!==''?$end:null,'duration'=>$duration,'price'=>$price===null?null:(float)$price,'term'=>!empty($row['term_time_only'])?1:0,'frequency'=>$frequency,'start_date'=>$startDate!==''?$startDate:null,'end_date'=>$endDate!==''?$endDate:null,'class_name'=>mb_substr(trim((string)($row['class_name']??'')),0,160)];
    }
    $existingQuery=$db->prepare("SELECT s.id FROM bh_sessions s INNER JOIN bh_venues v ON v.id=s.venue_id WHERE v.activity_id=? FOR UPDATE");$existingQuery->execute([$activityId]);$existingIds=array_map('intval',$existingQuery->fetchAll(PDO::FETCH_COLUMN));
-   $keptIds=[];
+   $keptIds=[];$seenSubmittedIds=[];
    foreach($clean as $index=>$session){
     $submittedId=(int)$session['id'];
     $values=[$session['venue_id'],$session['day'],$session['start'],$session['end'],$session['duration'],$session['price'],$session['term'],$session['frequency'],$session['start_date'],$session['end_date']];
     if($submittedId>0){
+     if(isset($seenSubmittedIds[$submittedId]))throw new RuntimeException('A saved session was submitted more than once. Refresh and try again.');$seenSubmittedIds[$submittedId]=true;
      if(!in_array($submittedId,$existingIds,true))throw new RuntimeException('A session no longer belongs to this activity. Refresh and try again.');
      $set="venue_id=?,day_of_week=?,start_time=?,end_time=?,duration_minutes=?,price=?,term_time_only=?,frequency=?,start_date=?,end_date=?";
      if($nameColumn){$set.=",`".$nameColumn."`=?";$values[]=$session['class_name'];}
