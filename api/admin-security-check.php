@@ -38,6 +38,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 if (empty($_SESSION['bh_admin_authenticated'])) {
     bh_security_reply(401, ['ok' => false, 'error' => 'admin_login_required']);
 }
+$lastActivity = (int)($_SESSION['bh_admin_last_activity'] ?? 0);
+if ($lastActivity < 1 || time() - $lastActivity > 1800) {
+    unset($_SESSION['bh_admin_authenticated'], $_SESSION['bh_admin_username'], $_SESSION['bh_admin_last_activity']);
+    session_regenerate_id(true);
+    bh_security_reply(401, ['ok' => false, 'error' => 'admin_session_expired']);
+}
+$_SESSION['bh_admin_last_activity'] = time();
 
 $checks = [];
 $add = static function (string $id, string $title, string $status, string $detail, string $severity = 'normal') use (&$checks): void {
