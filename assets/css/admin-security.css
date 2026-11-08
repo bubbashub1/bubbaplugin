@@ -18,3 +18,20 @@
 .bh-security-note{margin-top:20px;padding:18px 20px;border-left:4px solid #3c8e96;background:#f2f7f5;border-radius:0 14px 14px 0}
 .bh-security-note p{margin:6px 0 0;color:#52665a;line-height:1.55}
 @media(max-width:760px){.bh-security-summary{align-items:flex-start;flex-direction:column;padding:20px}.bh-security-summary-meta{width:100%;justify-content:space-between}.bh-security-check{grid-template-columns:1fr;gap:7px}.bh-security-status{justify-self:start}.bh-security-summary-meta .button{width:100%}}
+
+.bh-security-review{padding:18px;border:1px solid #e1eae2;border-radius:15px;background:#fff;display:grid;gap:14px}
+.bh-security-review-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.bh-security-review-heading h3{margin:0 0 5px;color:#174e3b;font-size:1.02rem}
+.bh-security-review-heading p{margin:0;color:#617261;line-height:1.5;font-size:.92rem}
+.bh-security-severity{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;font-size:.72rem;font-weight:850;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.bh-security-severity.critical{background:#fce8e6;color:#982c25}
+.bh-security-severity.high{background:#fff0dc;color:#865100}
+.bh-security-severity.medium{background:#eaf1f6;color:#36566c}
+.bh-security-severity.low{background:#edf3ed;color:#49634c}
+.bh-security-review-fields{display:grid;grid-template-columns:minmax(150px,.6fr) minmax(0,1.6fr);gap:14px}
+.bh-security-review-fields label{display:grid;gap:6px;font-size:.83rem;font-weight:750;color:#416651}
+.bh-security-review-fields select,.bh-security-review-fields textarea{box-sizing:border-box;width:100%;border:1px solid #cbdacf;border-radius:10px;padding:10px 12px;font:inherit;color:#263d31;background:#fff}
+.bh-security-review-fields textarea{resize:vertical;min-height:64px}
+.bh-security-review-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#6b7d70;font-size:.78rem}
+.bh-security-review-footer button{flex:0 0 auto}
+@media(max-width:650px){.bh-security-review-heading{flex-direction:column}.bh-security-review-fields{grid-template-columns:1fr}.bh-security-review-footer{align-items:flex-start;flex-direction:column}.bh-security-review-footer button{width:100%}}
