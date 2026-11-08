@@ -36,6 +36,14 @@ $accessibilityOptions=[
 $ageRangeOptions=['0-3'=>'0–3 years','1-3'=>'1–3 years','2-4'=>'2–4 years','3-5'=>'3–5 years','3-6'=>'3–6 years','5-plus'=>'5+ years','0-5'=>'0–5 years','all'=>'All ages'];
 if(empty($_SESSION['bh_user_id'])&&!$adminOnly) lp(401,['ok'=>false,'error'=>'login_required']);
 $userId=(int)($_SESSION['bh_user_id']??0); $db=bh_mysql();
+function lpEnsureOrganiserContactName(PDO $db): void{
+ try{
+  $check=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME='contact_name'");
+  $check->execute();
+  if(!(int)$check->fetchColumn())$db->exec("ALTER TABLE bh_organisers ADD COLUMN contact_name VARCHAR(160) NULL");
+ }catch(Throwable $e){error_log('BH organiser contact-name schema check failed: '.$e->getMessage());}
+}
+lpEnsureOrganiserContactName($db);
 $roleStmt=$db->prepare("SELECT * FROM bh_users WHERE id=? LIMIT 1");$roleStmt->execute([$userId]);$roleUser=$roleStmt->fetch();
 if(!$adminOnly && (!$roleUser || $roleUser['status']!=='active' || ($roleUser['role']??'')!=='leader')) lp(403,['ok'=>false,'error'=>'leader_role_required','message'=>'A class leader account is required.']);
 if($adminOnly){if($_SERVER['REQUEST_METHOD']==='GET')lp(200,['ok'=>true,'admin_mode'=>true,'organisation'=>null,'classes'=>[],'bookings'=>[],'faqs'=>[],'expertise_topics'=>$expertiseTopics,'expertise'=>[],'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions]);lp(403,['ok'=>false,'error'=>'admin_read_only','message'=>'Admin access can view the leader area, but leader account changes require a linked class leader account.']);}
