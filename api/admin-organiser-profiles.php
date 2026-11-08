@@ -6,7 +6,7 @@ function org_reply(int $code,array $data):never{http_response_code($code);echo j
 if(empty($_SESSION['bh_admin_authenticated']))org_reply(401,['ok'=>false,'error'=>'admin_login_required']);
 $_SESSION['bh_org_profile_csrf']??=bin2hex(random_bytes(32));
 try{
- require __DIR__.'/db.php';$db=bh_mysql();$cols=$db->query("SHOW COLUMNS FROM bh_organisers")->fetchAll(PDO::FETCH_COLUMN);
+ require __DIR__.'/db.php';$db=bh_mysql();$contactExists=(int)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME='contact_name'")->fetchColumn();if(!$contactExists)$db->exec("ALTER TABLE bh_organisers ADD COLUMN contact_name VARCHAR(160) NULL AFTER organisation_name");$cols=$db->query("SHOW COLUMNS FROM bh_organisers")->fetchAll(PDO::FETCH_COLUMN);
  $editable=['organisation_name','contact_name','email','phone','website','description','about_content','logo_url','facebook_url','instagram_url','tiktok_url'];
  if(($_SERVER['REQUEST_METHOD']??'GET')==='GET'){
   $action=(string)($_GET['action']??'list');
@@ -29,7 +29,7 @@ try{
  foreach(['website','logo_url','facebook_url','instagram_url','tiktok_url'] as $c)if(($data[$c]??'')!==''&&(!filter_var($data[$c],FILTER_VALIDATE_URL)||!in_array(strtolower((string)parse_url($data[$c],PHP_URL_SCHEME)),['http','https'],true)))org_reply(422,['ok'=>false,'error'=>'Enter a valid web URL for '.$c.'.']);
  $login=strtolower(trim((string)($b['login_email']??'')));if($login!==''&&(!filter_var($login,FILTER_VALIDATE_EMAIL)||strlen($login)>190))org_reply(422,['ok'=>false,'error'=>'Enter a valid leader login email.']);
  $s=$db->prepare('SELECT * FROM bh_organisers WHERE id=?');$s->execute([$id]);$old=$s->fetch(PDO::FETCH_ASSOC);if(!$old)org_reply(404,['ok'=>false,'error'=>'organiser_not_found']);
- $uid=(int)($old['user_id']??0);if($login!==''){$d=$db->prepare('SELECT id FROM bh_users WHERE LOWER(email)=LOWER(?) AND id<>? LIMIT 1');$d->execute([$login,$uid]);if($d->fetchColumn())org_reply(409,['ok'=>false,'error'=>'login_email_in_use']);}
+ $uid=(int)($old['user_id']??0);if(!$uid&&!empty($old['email'])){$find=$db->prepare("SELECT id FROM bh_users WHERE LOWER(email)=LOWER(?) AND role IN ('leader','organiser') LIMIT 1");$find->execute([$old['email']]);$uid=(int)($find->fetchColumn()?:0);}if($login!==''){$d=$db->prepare('SELECT id FROM bh_users WHERE LOWER(email)=LOWER(?) AND id<>? LIMIT 1');$d->execute([$login,$uid]);if($d->fetchColumn())org_reply(409,['ok'=>false,'error'=>'login_email_in_use']);}
  $data['organisation_name']=$name;$db->beginTransaction();try{$sets=[];$vals=[];foreach($data as $c=>$v)if(in_array($c,$cols,true)){$sets[]='`'.$c.'`=?';$vals[]=$v;}$vals[]=$id;$db->prepare('UPDATE bh_organisers SET '.implode(',',$sets).' WHERE id=?')->execute($vals);if($login!==''){if($uid)$db->prepare('UPDATE bh_users SET email=? WHERE id=?')->execute([$login,$uid]);elseif(!empty($old['email']))$db->prepare("UPDATE bh_users SET email=? WHERE LOWER(email)=LOWER(?) AND role IN ('leader','organiser')")->execute([$login,$old['email']]);if(in_array('email',$cols,true)&&empty($data['email']))$db->prepare('UPDATE bh_organisers SET email=? WHERE id=?')->execute([$login,$id]);}$db->commit();}catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
  org_reply(200,['ok'=>true,'message'=>'Organiser profile updated.']);
 }catch(Throwable $e){error_log('Admin organiser profile editor: '.$e->getMessage());org_reply(500,['ok'=>false,'error'=>'organiser_profile_save_failed']);}
