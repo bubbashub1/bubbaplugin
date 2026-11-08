@@ -36,6 +36,13 @@ $accessibilityOptions=[
 $ageRangeOptions=['0-3'=>'0–3 years','1-3'=>'1–3 years','2-4'=>'2–4 years','3-5'=>'3–5 years','3-6'=>'3–6 years','5-plus'=>'5+ years','0-5'=>'0–5 years','all'=>'All ages'];
 if(empty($_SESSION['bh_user_id'])&&!$adminOnly) lp(401,['ok'=>false,'error'=>'login_required']);
 $userId=(int)($_SESSION['bh_user_id']??0); $db=bh_mysql();
+function lpEnsureOrganiserContactName(PDO $db): void{
+ try{
+  $check=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME='contact_name'");
+  $check->execute();
+  if(!(int)$check->fetchColumn())$db->exec("ALTER TABLE bh_organisers ADD COLUMN contact_name VARCHAR(160) NULL");
+ }catch(Throwable $e){error_log('BH organiser contact-name schema check failed: '.$e->getMessage());}
+}
 $roleStmt=$db->prepare("SELECT * FROM bh_users WHERE id=? LIMIT 1");$roleStmt->execute([$userId]);$roleUser=$roleStmt->fetch();
 if(!$adminOnly && (!$roleUser || $roleUser['status']!=='active' || ($roleUser['role']??'')!=='leader')) lp(403,['ok'=>false,'error'=>'leader_role_required','message'=>'A class leader account is required.']);
 if($adminOnly){if($_SERVER['REQUEST_METHOD']==='GET')lp(200,['ok'=>true,'admin_mode'=>true,'organisation'=>null,'classes'=>[],'bookings'=>[],'faqs'=>[],'expertise_topics'=>$expertiseTopics,'expertise'=>[],'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions]);lp(403,['ok'=>false,'error'=>'admin_read_only','message'=>'Admin access can view the leader area, but leader account changes require a linked class leader account.']);}
@@ -45,6 +52,7 @@ $org=null;
 if($hasOrgUserId){$o=$db->prepare("SELECT * FROM bh_organisers WHERE user_id=? LIMIT 1");$o->execute([$userId]);$org=$o->fetch();}
 else{try{$u=$db->prepare("SELECT email FROM bh_users WHERE id=? LIMIT 1");$u->execute([$userId]);$user=$u->fetch();if($user&&!empty($user['email'])){$o=$db->prepare("SELECT * FROM bh_organisers WHERE email=? LIMIT 1");$o->execute([$user['email']]);$org=$o->fetch();}}catch(Throwable $ignored){}}
 if(!$org)lp(403,['ok'=>false,'error'=>'organiser_required','message'=>'Your account is not linked to a class leader organisation yet.']);
+lpEnsureOrganiserContactName($db);
 $oid=(int)$org['id'];$isPro=false;$imageLimit=10;foreach(['plan','membership_plan','membership_tier','subscription_plan','tier'] as $pcn){if(array_key_exists($pcn,$org)){ $pv=strtolower(trim((string)$org[$pcn]));$isPro=in_array($pv,['pro','premium','ultimate'],true);break;}}try{$t=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_user_subscriptions'");if((int)$t->fetchColumn()){$p=$db->prepare("SELECT COUNT(*) FROM bh_user_subscriptions WHERE user_id=? AND plan='leader_pro' AND status IN ('active','trialing') AND (expires_at IS NULL OR expires_at>UTC_TIMESTAMP())");$p->execute([$userId]);if((int)$p->fetchColumn()>0)$isPro=true;}}catch(Throwable $ignored){error_log('Leader portal subscription lookup: '.$ignored->getMessage());}
 try{$promo=$db->prepare("SELECT active FROM bh_admin_leader_promotions WHERE leader_user_id=? LIMIT 1");$promo->execute([$userId]);if((int)$promo->fetchColumn()===1)$isPro=true;}catch(Throwable $ignored){}
 $imageLimit=$isPro?12:3;$faqLimit=$isPro?null:5;
@@ -106,7 +114,7 @@ if(!$tagOptions){
  }catch(Throwable $ignored){}
 }
 sort($tagOptions,SORT_NATURAL|SORT_FLAG_CASE);
-lp(200,['ok'=>true,'organisation'=>$org,'classes'=>$classes,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions,'category_options'=>$categoryOptions,'tag_options'=>$tagOptions,'venues'=>$venues,'max_images'=>$imageLimit,'is_pro'=>$isPro,'faq_limit'=>$faqLimit]);
+lp(200,['ok'=>true,'organisation'=>array_merge($org,['login_email'=>$leaderEmail]),'classes'=>$classes,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions,'category_options'=>$categoryOptions,'tag_options'=>$tagOptions,'venues'=>$venues,'max_images'=>$imageLimit,'is_pro'=>$isPro,'faq_limit'=>$faqLimit]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')lp(405,['ok'=>false,'error'=>'method_not_allowed']);
 if($_SERVER['REQUEST_METHOD']==='POST' && !empty($_FILES['image']) && ($_POST['action']??'')==='upload_activity_image'){
@@ -202,10 +210,27 @@ if($action==='save_terms'){
 }
 if($action==='save_account'){
  $businessName=trim((string)($b['business_name']??''));$name=trim((string)($b['name']??''));$email=strtolower(trim((string)($b['email']??'')));$phone=trim((string)($b['phone']??''));$website=trim((string)($b['website']??''));
- if($businessName==='')lp(422,['ok'=>false,'error'=>'business_name_required']);if(!filter_var($email,FILTER_VALIDATE_EMAIL))lp(422,['ok'=>false,'error'=>'invalid_email']);
- $u=$db->prepare("UPDATE bh_users SET email=? WHERE id=?");$u->execute([$email,$userId]);try{$db->prepare("UPDATE bh_organisers SET organisation_name=?,phone=?,website=? WHERE id=?")->execute([$businessName,$phone,$website,$oid]);}catch(Throwable $ignored){}
- if($name!==''){foreach(['name','display_name','contact_name'] as $col){try{$db->prepare("UPDATE bh_organisers SET $col=? WHERE id=?")->execute([$name,$oid]);break;}catch(Throwable $ignored){}}}
- lp(200,['ok'=>true,'message'=>'Account details saved.']);
+ if($businessName==='')lp(422,['ok'=>false,'error'=>'business_name_required','message'=>'Enter your class, business or organisation name.']);
+ $length=static fn(string $value): int=>function_exists('mb_strlen')?mb_strlen($value):strlen($value);
+ if($length($businessName)>190||$length($name)>160||$length($phone)>60||$length($website)>255)lp(422,['ok'=>false,'error'=>'profile_field_too_long','message'=>'One or more profile fields are too long.']);
+ if(!filter_var($email,FILTER_VALIDATE_EMAIL)||strlen($email)>190)lp(422,['ok'=>false,'error'=>'invalid_email','message'=>'Enter a valid email address.']);
+ if($website!==''&&(!filter_var($website,FILTER_VALIDATE_URL)||!in_array(strtolower((string)parse_url($website,PHP_URL_SCHEME)),['http','https'],true)))lp(422,['ok'=>false,'error'=>'invalid_website','message'=>'Enter a valid website address beginning with https:// or http://.']);
+ $dupe=$db->prepare("SELECT id FROM bh_users WHERE LOWER(email)=LOWER(?) AND id<>? LIMIT 1");$dupe->execute([$email,$userId]);
+ if($dupe->fetchColumn())lp(409,['ok'=>false,'error'=>'email_in_use','message'=>'That email address is already used by another Bubba Hub account.']);
+ $columns=$db->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers'")->fetchAll(PDO::FETCH_COLUMN);
+ $updates=['organisation_name'=>$businessName,'phone'=>$phone,'website'=>$website];
+ if(in_array('email',$columns,true))$updates['email']=$email;
+ if($name!==''&&!array_intersect(['contact_name','name','display_name'],$columns))lp(503,['ok'=>false,'error'=>'contact_name_schema_missing','message'=>'The database needs the organiser contact-name update before this field can be saved. Please contact Bubba Hub support.']);
+ $contactCol=null;foreach(['contact_name','name','display_name'] as $candidate){if(in_array($candidate,$columns,true)){$contactCol=$candidate;break;}}
+ if($contactCol!==null)$updates[$contactCol]=$name;
+ $db->beginTransaction();
+ try{
+  $sets=[];$values=[];foreach($updates as $column=>$value){if(in_array($column,$columns,true)){$sets[]="`".$column."`=?";$values[]=$value;}}
+  if($sets){$values[]=$oid;$db->prepare("UPDATE bh_organisers SET ".implode(',',$sets)." WHERE id=?")->execute($values);}
+  $db->prepare("UPDATE bh_users SET email=? WHERE id=?")->execute([$email,$userId]);
+  $db->commit();
+ }catch(Throwable $e){if($db->inTransaction())$db->rollBack();error_log('BH organiser profile save failed: '.$e->getMessage());lp(500,['ok'=>false,'error'=>'profile_save_failed','message'=>'Your profile could not be saved. Please try again.']);}
+ lp(200,['ok'=>true,'message'=>'Organiser profile details saved.']);
 }
 if($action==='change_password'){
  $current=(string)($b['current_password']??'');$new=(string)($b['new_password']??'');$confirm=(string)($b['confirm_password']??'');

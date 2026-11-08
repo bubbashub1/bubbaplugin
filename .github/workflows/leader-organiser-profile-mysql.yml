@@ -1,0 +1,51 @@
+name: Leader organiser profile MySQL check
+on:
+  pull_request:
+    paths:
+      - 'api/leader-portal.php'
+      - 'database/schema.sql'
+      - 'tests/organiser-profile-db-test.php'
+      - '.github/workflows/leader-organiser-profile-mysql.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'api/leader-portal.php'
+      - 'database/schema.sql'
+      - 'tests/organiser-profile-db-test.php'
+      - '.github/workflows/leader-organiser-profile-mysql.yml'
+  workflow_dispatch:
+
+jobs:
+  organiser-profile-mysql:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test-root-password
+          MYSQL_DATABASE: bubbahub_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -ptest-root-password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP with MySQL PDO
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql
+      - name: Check PHP syntax
+        run: php -l tests/organiser-profile-db-test.php
+      - name: Test organiser profile database migration and updates
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_NAME: bubbahub_test
+          DB_USER: root
+          DB_PASSWORD: test-root-password
+        run: php tests/organiser-profile-db-test.php
