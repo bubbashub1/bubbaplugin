@@ -202,10 +202,25 @@ if($action==='save_terms'){
 }
 if($action==='save_account'){
  $businessName=trim((string)($b['business_name']??''));$name=trim((string)($b['name']??''));$email=strtolower(trim((string)($b['email']??'')));$phone=trim((string)($b['phone']??''));$website=trim((string)($b['website']??''));
- if($businessName==='')lp(422,['ok'=>false,'error'=>'business_name_required']);if(!filter_var($email,FILTER_VALIDATE_EMAIL))lp(422,['ok'=>false,'error'=>'invalid_email']);
- $u=$db->prepare("UPDATE bh_users SET email=? WHERE id=?");$u->execute([$email,$userId]);try{$db->prepare("UPDATE bh_organisers SET organisation_name=?,phone=?,website=? WHERE id=?")->execute([$businessName,$phone,$website,$oid]);}catch(Throwable $ignored){}
- if($name!==''){foreach(['name','display_name','contact_name'] as $col){try{$db->prepare("UPDATE bh_organisers SET $col=? WHERE id=?")->execute([$name,$oid]);break;}catch(Throwable $ignored){}}}
- lp(200,['ok'=>true,'message'=>'Account details saved.']);
+ if($businessName==='')lp(422,['ok'=>false,'error'=>'business_name_required','message'=>'Enter your class, business or organisation name.']);
+ if(mb_strlen($businessName)>190||mb_strlen($name)>160||mb_strlen($phone)>60||mb_strlen($website)>500)lp(422,['ok'=>false,'error'=>'profile_field_too_long','message'=>'One or more profile fields are too long.']);
+ if(!filter_var($email,FILTER_VALIDATE_EMAIL)||strlen($email)>190)lp(422,['ok'=>false,'error'=>'invalid_email','message'=>'Enter a valid email address.']);
+ if($website!==''&&(!filter_var($website,FILTER_VALIDATE_URL)||!in_array(strtolower((string)parse_url($website,PHP_URL_SCHEME)),['http','https'],true)))lp(422,['ok'=>false,'error'=>'invalid_website','message'=>'Enter a valid website address beginning with https:// or http://.']);
+ $dupe=$db->prepare("SELECT id FROM bh_users WHERE LOWER(email)=LOWER(?) AND id<>? LIMIT 1");$dupe->execute([$email,$userId]);
+ if($dupe->fetchColumn())lp(409,['ok'=>false,'error'=>'email_in_use','message'=>'That email address is already used by another Bubba Hub account.']);
+ $columns=$db->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers'")->fetchAll(PDO::FETCH_COLUMN);
+ $updates=['organisation_name'=>$businessName,'phone'=>$phone,'website'=>$website];
+ if(in_array('email',$columns,true))$updates['email']=$email;
+ $contactCol=null;foreach(['contact_name','name','display_name'] as $candidate){if(in_array($candidate,$columns,true)){$contactCol=$candidate;break;}}
+ if($contactCol!==null)$updates[$contactCol]=$name;
+ $db->beginTransaction();
+ try{
+  $sets=[];$values=[];foreach($updates as $column=>$value){if(in_array($column,$columns,true)){$sets[]="`".$column."`=?";$values[]=$value;}}
+  if($sets){$values[]=$oid;$db->prepare("UPDATE bh_organisers SET ".implode(',',$sets)." WHERE id=?")->execute($values);}
+  $db->prepare("UPDATE bh_users SET email=? WHERE id=?")->execute([$email,$userId]);
+  $db->commit();
+ }catch(Throwable $e){if($db->inTransaction())$db->rollBack();error_log('BH organiser profile save failed: '.$e->getMessage());lp(500,['ok'=>false,'error'=>'profile_save_failed','message'=>'Your profile could not be saved. Please try again.']);}
+ lp(200,['ok'=>true,'message'=>'Organiser profile details saved.']);
 }
 if($action==='change_password'){
  $current=(string)($b['current_password']??'');$new=(string)($b['new_password']??'');$confirm=(string)($b['confirm_password']??'');
