@@ -1,0 +1,20 @@
+.bh-security-page{max-width:1240px}
+.bh-security-summary{display:flex;justify-content:space-between;align-items:center;gap:20px;margin:0 0 22px;padding:24px 28px;border:1px solid #d8e6db;border-radius:20px;background:linear-gradient(120deg,#f1f8f1,#f2f8f8)}
+.bh-security-summary>div:first-child{display:grid;gap:5px}
+.bh-security-kicker{font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#416651}
+.bh-security-summary strong{font-size:clamp(1.7rem,3vw,2.4rem);line-height:1.15;color:#144400}
+.bh-security-summary small,.bh-security-summary-meta>span{color:#617261}
+.bh-security-summary-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.bh-security-check-list{display:grid;gap:10px}
+.bh-security-check{display:grid;grid-template-columns: minmax(180px, .7fr) minmax(0,1.6fr) auto;align-items:center;gap:16px;padding:15px 16px;border:1px solid #e1eae2;border-radius:14px;background:#fff}
+.bh-security-check h3{margin:0;color:#174e3b;font-size:1rem}
+.bh-security-check p{margin:0;color:#617261;line-height:1.5;font-size:.92rem}
+.bh-security-status{display:inline-flex;align-items:center;justify-content:center;min-width:94px;padding:7px 10px;border-radius:999px;font-size:.76rem;font-weight:800;white-space:nowrap}
+.bh-security-status.pass{background:#e6f4e8;color:#21643b}
+.bh-security-status.fail{background:#fce8e6;color:#9b2923}
+.bh-security-status.warning{background:#fff2d9;color:#805400}
+.bh-security-status.review{background:#edf0f3;color:#4d5b66}
+.bh-security-error{margin:0 0 18px;padding:14px 16px;border-radius:12px;background:#fff0ee;color:#922d25}
+.bh-security-note{margin-top:20px;padding:18px 20px;border-left:4px solid #3c8e96;background:#f2f7f5;border-radius:0 14px 14px 0}
+.bh-security-note p{margin:6px 0 0;color:#52665a;line-height:1.55}
+@media(max-width:760px){.bh-security-summary{align-items:flex-start;flex-direction:column;padding:20px}.bh-security-summary-meta{width:100%;justify-content:space-between}.bh-security-check{grid-template-columns:1fr;gap:7px}.bh-security-status{justify-self:start}.bh-security-summary-meta .button{width:100%}}
