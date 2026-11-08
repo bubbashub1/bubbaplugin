@@ -1,0 +1,32 @@
+name: Security dashboard PHP lint
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'api/admin-security-check.php'
+      - '.github/workflows/security-dashboard-php-lint.yml'
+  push:
+    branches: [feature/admin-security-dashboard]
+    paths:
+      - 'api/admin-security-check.php'
+      - '.github/workflows/security-dashboard-php-lint.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  php-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: Lint security endpoints
+        run: |
+          php -l api/admin-security-check.php
+          php -l api/admin-security-reviews.php
