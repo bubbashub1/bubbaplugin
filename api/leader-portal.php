@@ -106,7 +106,7 @@ if(!$tagOptions){
  }catch(Throwable $ignored){}
 }
 sort($tagOptions,SORT_NATURAL|SORT_FLAG_CASE);
-lp(200,['ok'=>true,'organisation'=>$org,'classes'=>$classes,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions,'category_options'=>$categoryOptions,'tag_options'=>$tagOptions,'venues'=>$venues,'max_images'=>$imageLimit,'is_pro'=>$isPro,'faq_limit'=>$faqLimit]);
+lp(200,['ok'=>true,'organisation'=>array_merge($org,['login_email'=>$leaderEmail]),'classes'=>$classes,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions,'category_options'=>$categoryOptions,'tag_options'=>$tagOptions,'venues'=>$venues,'max_images'=>$imageLimit,'is_pro'=>$isPro,'faq_limit'=>$faqLimit]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')lp(405,['ok'=>false,'error'=>'method_not_allowed']);
 if($_SERVER['REQUEST_METHOD']==='POST' && !empty($_FILES['image']) && ($_POST['action']??'')==='upload_activity_image'){
@@ -203,7 +203,8 @@ if($action==='save_terms'){
 if($action==='save_account'){
  $businessName=trim((string)($b['business_name']??''));$name=trim((string)($b['name']??''));$email=strtolower(trim((string)($b['email']??'')));$phone=trim((string)($b['phone']??''));$website=trim((string)($b['website']??''));
  if($businessName==='')lp(422,['ok'=>false,'error'=>'business_name_required','message'=>'Enter your class, business or organisation name.']);
- if(mb_strlen($businessName)>190||mb_strlen($name)>160||mb_strlen($phone)>60||mb_strlen($website)>500)lp(422,['ok'=>false,'error'=>'profile_field_too_long','message'=>'One or more profile fields are too long.']);
+ $length=static fn(string $value): int=>function_exists('mb_strlen')?mb_strlen($value):strlen($value);
+ if($length($businessName)>190||$length($name)>160||$length($phone)>60||$length($website)>500)lp(422,['ok'=>false,'error'=>'profile_field_too_long','message'=>'One or more profile fields are too long.']);
  if(!filter_var($email,FILTER_VALIDATE_EMAIL)||strlen($email)>190)lp(422,['ok'=>false,'error'=>'invalid_email','message'=>'Enter a valid email address.']);
  if($website!==''&&(!filter_var($website,FILTER_VALIDATE_URL)||!in_array(strtolower((string)parse_url($website,PHP_URL_SCHEME)),['http','https'],true)))lp(422,['ok'=>false,'error'=>'invalid_website','message'=>'Enter a valid website address beginning with https:// or http://.']);
  $dupe=$db->prepare("SELECT id FROM bh_users WHERE LOWER(email)=LOWER(?) AND id<>? LIMIT 1");$dupe->execute([$email,$userId]);
