@@ -96,25 +96,46 @@ function bh_read_wp_constant(string $name): string {
  * ---------------------------------------------------------------------- */
 
 function bh_rate_limit(PDO $db, string $bucket, int $max, int $windowSeconds): void {
-    static $ready = false;
+    $key = hash('sha256', $bucket);
+    // Serialize requests for the same bucket so simultaneous attempts cannot all
+    // pass the count check before any of them insert their attempt row.
+    $lockName = 'bh_rl_' . substr($key, 0, 50);
+    $locked = false;
     try {
-        if (!$ready) {
-            $db->exec("CREATE TABLE IF NOT EXISTS bh_rate_limits (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,bucket CHAR(64) NOT NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY(id),KEY idx_bucket_time(bucket,created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-            $ready = true;
+        $lock = $db->prepare('SELECT GET_LOCK(?, 3)');
+        $lock->execute([$lockName]);
+        $locked = (int)$lock->fetchColumn() === 1;
+        if (!$locked) {
+            throw new RuntimeException('Could not acquire authentication rate-limit lock.');
         }
-        $key = hash('sha256', $bucket);
+
         $q = $db->prepare("SELECT COUNT(*) FROM bh_rate_limits WHERE bucket=? AND created_at > (NOW() - INTERVAL " . (int)$windowSeconds . " SECOND)");
         $q->execute([$key]);
         if ((int)$q->fetchColumn() >= $max) {
+            $db->prepare('SELECT RELEASE_LOCK(?)')->execute([$lockName]);
+            $locked = false;
             header('Retry-After: ' . $windowSeconds);
             bh_auth_response(429, ['ok'=>false,'error'=>'rate_limited','message'=>'Too many attempts. Please wait a little while and try again.']);
         }
+
         $db->prepare("INSERT INTO bh_rate_limits (bucket) VALUES (?)")->execute([$key]);
         if (random_int(1, 100) === 1) {
             $db->exec("DELETE FROM bh_rate_limits WHERE created_at < (NOW() - INTERVAL 1 DAY)");
         }
-    } catch (PDOException $e) {
+    } catch (Throwable $e) {
         error_log('Bubba Hub rate limiter unavailable: ' . $e->getMessage());
+        if ($locked) {
+            try { $db->prepare('SELECT RELEASE_LOCK(?)')->execute([$lockName]); } catch (Throwable $ignored) {}
+        }
+        bh_auth_response(503, ['ok'=>false,'error'=>'authentication_temporarily_unavailable','message'=>'Sign-in is temporarily unavailable. Please try again shortly.']);
+    }
+    if ($locked) {
+        try {
+            $db->prepare('SELECT RELEASE_LOCK(?)')->execute([$lockName]);
+        } catch (Throwable $e) {
+            error_log('Bubba Hub rate limiter lock release failed: ' . $e->getMessage());
+            bh_auth_response(503, ['ok'=>false,'error'=>'authentication_temporarily_unavailable','message'=>'Sign-in is temporarily unavailable. Please try again shortly.']);
+        }
     }
 }
 
