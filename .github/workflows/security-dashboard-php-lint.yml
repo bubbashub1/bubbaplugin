@@ -26,5 +26,7 @@ jobs:
         with:
           php-version: '8.3'
           coverage: none
-      - name: Lint security endpoint
-        run: php -l api/admin-security-check.php
+      - name: Lint security endpoints
+        run: |
+          php -l api/admin-security-check.php
+          php -l api/admin-security-reviews.php
