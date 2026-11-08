@@ -60,7 +60,7 @@ jobs:
             echo "::error::EWEBALL_SSH_KNOWN_HOSTS secret is required; refusing an unverified SSH connection."
             exit 1
           fi
-          printf '%s\\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/ssh/known_hosts"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/ssh/known_hosts"
           chmod 600 "$RUNNER_TEMP/ssh/known_hosts"
           ssh-keygen -lf "$RUNNER_TEMP/ssh/known_hosts" >/dev/null
 
