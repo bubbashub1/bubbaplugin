@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><base href="/"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Timetable editor · Admin · Bubba Hub</title>
+<link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/admin-settings.css"><link rel="stylesheet" href="/assets/css/admin-support-v2.css">
+<style>
+.bh-timetable-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end}.bh-session-row{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:12px;padding:16px;margin:12px 0;border:1px solid #d8e6db;border-radius:16px;background:#fff}.bh-session-row label{display:flex;flex-direction:column;gap:5px}.bh-session-row input,.bh-session-row select{width:100%;min-width:0;box-sizing:border-box}.bh-session-row .bh-session-wide{grid-column:span 2}.bh-session-row .bh-session-actions{display:flex;align-items:end;gap:8px;flex-wrap:wrap}.bh-timetable-notice{padding:14px;border-radius:12px;background:#f2f8f3;margin:14px 0}.bh-timetable-muted{color:#596b60}.bh-timetable-empty{padding:22px;border:1px dashed #b9cdbd;border-radius:14px;text-align:center}@media(max-width:760px){.bh-timetable-tools{grid-template-columns:1fr}.bh-session-row{grid-template-columns:repeat(2,minmax(0,1fr))}.bh-session-row .bh-session-wide{grid-column:1/-1}}@media(max-width:460px){.bh-session-row{grid-template-columns:1fr}}
+</style></head>
+<body class="bh-admin-v2">
+<header class="site-header"><a class="brand" href="/index.html"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav"><a href="/directory.html">Find activities</a><a href="/my-hub.html">My Hub</a><a href="/leader.html">Class Leaders</a><a href="/admin/">Admin</a></nav><a class="button button-soft" href="/account.html">My account</a></header>
+<main class="admin-subpage-shell"><div class="admin-back"><a href="/admin/admin-activities.html">← Activities &amp; listings</a></div>
+<div class="admin-subpage-head"><div><span class="eyebrow">Directory management</span><h1>Timetable editor</h1><p>Edit class times and recurring schedules without opening the full activity listing form.</p></div><button class="button button-soft" type="button" data-admin-logout>Sign out of admin</button></div>
+<section class="admin-panel"><div class="admin-panel-head"><div><h2>Choose an activity</h2><p>Existing activity and venue records are used. Changes here only affect the selected activity’s sessions.</p></div></div>
+<div class="bh-timetable-tools"><label>Search or select activity<input id="bhActivitySearch" type="search" placeholder="Search title, organiser or town"></label><label>Activity<select id="bhActivitySelect"><option value="">Loading activities…</option></select></label></div>
+<div id="bhActivityInfo" class="bh-timetable-notice" hidden></div>
+<div id="bhSessionArea" hidden><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin:22px 0 12px"><div><h2 style="margin:0">Sessions &amp; times</h2><p class="bh-timetable-muted" style="margin:5px 0">Keep the existing session rows to preserve links to any bookings.</p></div><button type="button" class="button button-soft" id="bhAddSession">+ Add session</button></div>
+<div id="bhSessionRows"></div>
+<div class="bh-timetable-notice"><strong>Important for booked classes</strong><p style="margin:6px 0 0">Existing session IDs are preserved when edited. A session linked to bookings cannot be removed here. Use the cancellation process for booked sessions; do not delete the timetable row.</p></div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px"><button type="button" class="button button-primary" id="bhSaveTimetable">Save timetable</button><button type="button" class="button button-soft" id="bhReloadTimetable">Discard changes &amp; reload</button><a class="button button-soft" id="bhOpenListing" href="#">Open full listing editor</a></div>
+<p id="bhTimetableStatus" role="status" aria-live="polite"></p></div>
+<div id="bhTimetableEmpty" class="bh-timetable-empty">Choose an activity to view and edit its timetable.</div>
+</section></main><footer class="site-footer"><div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div></footer>
+<script src="/assets/js/admin-settings.js"></script><script src="/assets/js/admin-timetable-editor.js" defer></script>
+</body></html>
