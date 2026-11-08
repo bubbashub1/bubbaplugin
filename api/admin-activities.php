@@ -33,7 +33,7 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
   $q=$db->query("SELECT o.id,o.organisation_name,u.email FROM bh_organisers o JOIN bh_users u ON ".$join." WHERE u.role='leader' AND u.status='active'".$organiserStatusFilter." ORDER BY o.organisation_name,o.id");
   bh_admin_response(200,['ok'=>true,'data'=>$q->fetchAll(),'csrf'=>$_SESSION['bh_listing_csrf']]);
  }
- $venueBookingColumn=false;try{$venueBookingColumn=(bool)$db->query("SHOW COLUMNS FROM bh_venues LIKE 'booking_url'")->fetch();if(!$venueBookingColumn&&$_SERVER['REQUEST_METHOD']==='POST'){$db->exec("ALTER TABLE bh_venues ADD COLUMN booking_url VARCHAR(2048) NULL DEFAULT NULL");$venueBookingColumn=true;}}catch(Throwable $ignored){}
+ $venueBookingColumn=false;try{$venueBookingColumn=(bool)$db->query("SHOW COLUMNS FROM bh_venues LIKE 'booking_url'")->fetch();}catch(Throwable $ignored){}
  $accessibilityColumn=false;
  try{$ac=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='accessibility'");$accessibilityColumn=((int)$ac->fetchColumn())>0;}catch(Throwable $ignored){}
  if($_SERVER['REQUEST_METHOD']==='GET'){
@@ -154,6 +154,9 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
   }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
  }
 
+ if(!$venueBookingColumn){
+  bh_admin_response(503,['ok'=>false,'error'=>'Venue booking URL field is not installed yet. Apply database migration 010 and try again.']);
+ }
  $activityCountyColumn=false;
  try{$cc=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='county'");$activityCountyColumn=((int)$cc->fetchColumn())>0;}catch(Throwable $ignored){}// Decode HTML entities in plain-text listing fields, not rich HTML or URLs.
  $decodePlain=static fn($value)=>trim(html_entity_decode((string)$value,ENT_QUOTES|ENT_HTML5,'UTF-8'));
