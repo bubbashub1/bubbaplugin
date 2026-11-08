@@ -7,6 +7,24 @@ session_name('BUBBAHUB_ADMINSESSID');
 session_start();
 function bh_admin_response(int $status,array $data): never{http_response_code($status);echo json_encode($data,JSON_UNESCAPED_SLASHES);exit;}
 if(empty($_SESSION['bh_admin_authenticated']))bh_admin_response(401,['ok'=>false,'error'=>'Admin login required.']);
+// Cookie-authenticated mutations must originate from this HTTPS site.
+if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
+ $requestHost=strtolower((string)($_SERVER['HTTP_HOST']??''));
+ $origin=(string)($_SERVER['HTTP_ORIGIN']??'');
+ $referer=(string)($_SERVER['HTTP_REFERER']??'');
+ $source=$origin!==''?$origin:$referer;
+ $sourceParts=$source!==''?parse_url($source):false;
+ $sourceHost=is_array($sourceParts)?strtolower((string)($sourceParts['host']??'')):'';
+ $sourceScheme=is_array($sourceParts)?strtolower((string)($sourceParts['scheme']??'')):'';
+ $requestParts=$requestHost!==''?parse_url('https://'.$requestHost):false;
+ $expectedHost=is_array($requestParts)?strtolower((string)($requestParts['host']??'')):'';
+ $expectedPort=is_array($requestParts)?(int)($requestParts['port']??443):443;
+ $sourcePort=is_array($sourceParts)?(int)($sourceParts['port']??443):0;
+ $fetchSite=strtolower((string)($_SERVER['HTTP_SEC_FETCH_SITE']??''));
+ if($sourceHost===''||$expectedHost===''||$sourceScheme!=='https'||$sourceHost!==$expectedHost||$sourcePort!==$expectedPort||$fetchSite==='cross-site'){
+  bh_admin_response(403,['ok'=>false,'error'=>'This request could not be verified. Refresh the page and try again.']);
+ }
+}
 try{require __DIR__.'/db.php';$db=bh_mysql();
  $_SESSION['bh_listing_csrf']??=bin2hex(random_bytes(32));
  // Activity-specific social URLs: preserve independently of shared organiser details.
