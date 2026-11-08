@@ -24,18 +24,24 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Reject deployment requests sent by a different website.
+// Deployment is a privileged mutation: require an explicit same-origin HTTPS source.
 $origin = (string)($_SERVER['HTTP_ORIGIN'] ?? '');
-if ($origin !== '') {
-    $originHost = parse_url($origin, PHP_URL_HOST);
-    $requestHost = explode(':', (string)($_SERVER['HTTP_HOST'] ?? ''))[0];
-    $originScheme = parse_url($origin, PHP_URL_SCHEME);
-    $expectedScheme = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') ? 'https' : 'http';
-    if (!$originHost || strcasecmp($originHost, $requestHost) !== 0 || $originScheme !== $expectedScheme) {
-        http_response_code(403);
-        echo json_encode(['ok' => false, 'error' => 'Invalid deployment request origin']);
-        exit;
-    }
+$referer = (string)($_SERVER['HTTP_REFERER'] ?? '');
+$source = $origin !== '' ? $origin : $referer;
+$sourceParts = $source !== '' ? parse_url($source) : false;
+$requestHost = strtolower((string)($_SERVER['HTTP_HOST'] ?? ''));
+$sourceHost = is_array($sourceParts) ? strtolower((string)($sourceParts['host'] ?? '')) : '';
+$sourceScheme = is_array($sourceParts) ? strtolower((string)($sourceParts['scheme'] ?? '')) : '';
+$requestParts = $requestHost !== '' ? parse_url('https://' . $requestHost) : false;
+$expectedHost = is_array($requestParts) ? strtolower((string)($requestParts['host'] ?? '')) : '';
+$expectedPort = is_array($requestParts) ? (int)($requestParts['port'] ?? 443) : 443;
+$sourcePort = is_array($sourceParts) ? (int)($sourceParts['port'] ?? 443) : 0;
+$fetchSite = strtolower((string)($_SERVER['HTTP_SEC_FETCH_SITE'] ?? ''));
+if ($sourceHost === '' || $expectedHost === '' || $sourceScheme !== 'https'
+    || $sourceHost !== $expectedHost || $sourcePort !== $expectedPort || $fetchSite === 'cross-site') {
+    http_response_code(403);
+    echo json_encode(['ok' => false, 'error' => 'This deployment request could not be verified. Refresh the admin page and try again.']);
+    exit;
 }
 
 if (empty($_SESSION['bh_admin_authenticated'])) {
@@ -43,6 +49,16 @@ if (empty($_SESSION['bh_admin_authenticated'])) {
     echo json_encode(['ok' => false, 'error' => 'Admin login required']);
     exit;
 }
+
+// Expire privileged deployment access after 30 minutes of inactivity.
+$lastActivity = (int)($_SESSION['bh_admin_last_activity'] ?? 0);
+if ($lastActivity < 1 || (time() - $lastActivity) > 1800) {
+    unset($_SESSION['bh_admin_authenticated'], $_SESSION['bh_admin_username'], $_SESSION['bh_admin_last_activity']);
+    http_response_code(401);
+    echo json_encode(['ok' => false, 'error' => 'Admin session expired. Please sign in again.']);
+    exit;
+}
+$_SESSION['bh_admin_last_activity'] = time();
 
 $configCandidates = array_filter([
     dirname($_SERVER['DOCUMENT_ROOT'] ?? '') . '/github-deploy-config.php',
