@@ -697,7 +697,7 @@ try {
         $organisation = trim((string)($body['organisation_name'] ?? ''));
         $phone = trim((string)($body['phone'] ?? ''));
         $website = trim((string)($body['website'] ?? ''));
-        if ($organisation === '') $organisation = 'New Bubba Hub Leader';
+        if ($organisation === '' || strcasecmp($organisation, 'New Bubba Hub Leader') === 0) bh_auth_response(422, ['ok'=>false,'error'=>'organisation_required','message'=>'Please enter your actual class, business or organisation name.']);
         $terms = !empty($body['terms']);
 
         if (mb_strlen($organisation) > 190) bh_auth_response(422, ['ok'=>false,'error'=>'organisation_invalid','message'=>'Please check your class or business name.']);
