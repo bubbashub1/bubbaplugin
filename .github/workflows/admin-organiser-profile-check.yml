@@ -1,0 +1,39 @@
+name: Admin organiser profile checks
+on:
+  pull_request:
+    paths:
+      - 'api/admin-organiser-profiles.php'
+      - 'admin/admin-organisers-organiser-profiles.html'
+      - 'assets/js/admin-organiser-profiles.js'
+      - '.github/workflows/admin-organiser-profile-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'api/admin-organiser-profiles.php'
+      - 'admin/admin-organisers-organiser-profiles.html'
+      - 'assets/js/admin-organiser-profiles.js'
+      - '.github/workflows/admin-organiser-profile-check.yml'
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo_mysql
+      - name: Check PHP syntax
+        run: php -l api/admin-organiser-profiles.php
+      - name: Check editor page structure
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          page = Path('admin/admin-organisers-organiser-profiles.html').read_text()
+          for required in ('<title>', '</title>', 'orgProfileForm', 'admin-organiser-profiles.js'):
+              assert required in page, f'Missing {required}'
+          assert page.index('<title>') < page.index('</title>'), 'Invalid title markup'
+          print('Admin organiser editor page structure passed')
+          PY
+      - name: Check JavaScript syntax
+        run: node --check assets/js/admin-organiser-profiles.js
