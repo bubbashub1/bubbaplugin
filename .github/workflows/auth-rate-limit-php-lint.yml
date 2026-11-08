@@ -1,0 +1,31 @@
+name: Authentication rate-limit PHP lint
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'api/auth.php'
+      - 'database/migrations/007_auth_rate_limit_storage.sql'
+      - '.github/workflows/auth-rate-limit-php-lint.yml'
+  push:
+    branches: [security/fail-closed-auth-rate-limit]
+    paths:
+      - 'api/auth.php'
+      - 'database/migrations/007_auth_rate_limit_storage.sql'
+      - '.github/workflows/auth-rate-limit-php-lint.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  php-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: Check authentication PHP syntax
+        run: php -l api/auth.php
