@@ -1,0 +1,33 @@
+name: Admin sessions overview checks
+on:
+  pull_request:
+    paths:
+      - 'admin/admin-activities-sessions-times.html'
+      - 'assets/js/admin-sessions-overview.js'
+      - '.github/workflows/admin-sessions-overview-check.yml'
+  push:
+    branches:
+      - 'admin/session-timetable-overview-20261108'
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check JavaScript syntax
+        run: node --check assets/js/admin-sessions-overview.js
+      - name: Check page wiring and read-only API usage
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          page = Path('admin/admin-activities-sessions-times.html').read_text()
+          script = Path('assets/js/admin-sessions-overview.js').read_text()
+          assert '/assets/js/admin-sessions-overview.js' in page
+          assert 'id="sessionSearch"' in page and 'id="sessionFilter"' in page
+          assert "fetch('/api/admin-activities.php'" in script
+          assert 'method:' not in script and 'POST' not in script
+          assert 'admin-activities-add-listing.html?id=' in script
+          print('Sessions overview wiring and read-only behaviour passed.')
+          PY
