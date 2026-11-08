@@ -26,7 +26,7 @@ if(empty($_SESSION['bh_admin_authenticated'])){
   echo json_encode(['ok'=>false,'error'=>'Admin login required.']); exit;
 }
 try { require __DIR__.'/db.php'; $db=bh_mysql(); } catch (Throwable $e) { http_response_code(500); header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok'=>false,'error'=>'CSV database connection failed. Check server PHP logs.']); exit; }
-try{$q=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='featured'");if((int)$q->fetchColumn()===0)$db->exec("ALTER TABLE bh_activities ADD COLUMN featured TINYINT(1) NOT NULL DEFAULT 0 AFTER status");}catch(Throwable $ignored){}
+// The bh_activities.featured column is installed by database/migrations/008_add_activity_featured.sql.
 
 function csv_row(array $row): void {
   echo implode(',',array_map(static function($v){
