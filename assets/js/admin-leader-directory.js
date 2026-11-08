@@ -83,7 +83,7 @@ rows.addEventListener('click',async event=>{
   if(!orgs.length){const note=document.createElement('p');note.textContent='No linked organiser found. This account may need an organiser profile linked before it can use the leader portal.';detailContent.append(note);return;}
   for(const org of orgs){
    const section=document.createElement('section'),heading=document.createElement('h3');heading.textContent=org.name||'Organiser #'+org.id;section.append(heading);
-   const link=document.createElement('a');link.href='/admin/admin-activities-listings.html';link.textContent='Manage activity listings →';section.append(link);
+   const profileLink=document.createElement('a');profileLink.href='/admin/admin-organisers-organiser-profiles.html?id='+encodeURIComponent(org.id)+'&return=class-leaders&leaderId='+encodeURIComponent(data.leader.id);profileLink.textContent='Edit organiser profile →';profileLink.className='button button-soft';profileLink.style.cssText='display:inline-block;margin:8px 10px 8px 0';section.append(profileLink);const link=document.createElement('a');link.href='/admin/admin-activities-listings.html';link.textContent='Manage activity listings →';section.append(link);
    const list=document.createElement('ul');for(const activity of org.activities||[]){const li=document.createElement('li');li.textContent=activity.title+' ('+activity.status+')';list.append(li);}
    if(!list.children.length){const note=document.createElement('p');note.textContent='No activities linked.';section.append(note);}else section.append(list);
    detailContent.append(section);
