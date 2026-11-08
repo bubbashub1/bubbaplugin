@@ -56,6 +56,44 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
  }
  if($_SERVER['REQUEST_METHOD']!=='POST')bh_admin_response(405,['ok'=>false,'error'=>'GET or POST required.']);
  $input=json_decode((string)file_get_contents('php://input'),true);if(!is_array($input))bh_admin_response(400,['ok'=>false,'error'=>'Invalid JSON.']);
+ if(($input['action']??'')==='save_sessions'){
+  if(!hash_equals($_SESSION['bh_listing_csrf'],(string)($input['csrf']??'')))bh_admin_response(403,['ok'=>false,'error'=>'Refresh the timetable editor and try again.']);
+  $activityId=(int)($input['id']??0);$submitted=(array)($input['sessions']??[]);
+  if($activityId<1)bh_admin_response(422,['ok'=>false,'error'=>'Choose an activity before saving its timetable.']);
+  if(count($submitted)>300)bh_admin_response(422,['ok'=>false,'error'=>'A timetable can contain up to 300 session rows.']);
+  $db->beginTransaction();
+  try{
+   $lock=$db->prepare("SELECT id FROM bh_activities WHERE id=? FOR UPDATE");$lock->execute([$activityId]);
+   if(!$lock->fetch())throw new RuntimeException('Activity not found.');
+   $venueQuery=$db->prepare("SELECT id FROM bh_venues WHERE activity_id=? ORDER BY id FOR UPDATE");$venueQuery->execute([$activityId]);$venueIds=array_map('intval',$venueQuery->fetchAll(PDO::FETCH_COLUMN));
+   if(!$venueIds)throw new RuntimeException('This activity has no saved venue. Add a venue before adding sessions.');
+   $sessionColumns=$db->query("SHOW COLUMNS FROM bh_sessions")->fetchAll(PDO::FETCH_COLUMN);
+   $nameColumn=in_array('class_name',$sessionColumns,true)?'class_name':(in_array('title',$sessionColumns,true)?'title':null);
+   $clean=[];
+   foreach($submitted as $index=>$row){
+    if(!is_array($row))throw new RuntimeException('Session row '.($index+1).' is invalid.');
+    $day=(int)($row['day_of_week']??0);$start=trim((string)($row['start_time']??''));$end=trim((string)($row['end_time']??''));
+    if($day<1||$day>7||!preg_match('/^([01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?$/',$start))throw new RuntimeException('Session '.($index+1).' needs a valid weekday and start time.');
+    if($end!==''&&(!preg_match('/^([01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?$/',$end)||substr($end,0,5)<=substr($start,0,5)))throw new RuntimeException('Session '.($index+1).' must finish after it starts.');
+    $venueIndex=(int)($row['venue_index']??0);if(!array_key_exists($venueIndex,$venueIds))throw new RuntimeException('Session '.($index+1).' is assigned to an invalid venue.');
+    $frequency=trim((string)($row['frequency']??'weekly'));if(!in_array($frequency,['weekly','fortnightly','monthly','one_off'],true))throw new RuntimeException('Session '.($index+1).' has an unsupported repeat pattern.');
+    $startDate=trim((string)($row['start_date']??''));$endDate=trim((string)($row['end_date']??''));
+    foreach(['start'=>$startDate,'end'=>$endDate] as $label=>$date){if($date!==''&&!preg_match('/^\\d{4}-\\d{2}-\\d{2}$/',$date))throw new RuntimeException('Session '.($index+1).' has an invalid '.$label.' date.');}
+    if($startDate!==''&&$endDate!==''&&$endDate<$startDate)throw new RuntimeException('Session '.($index+1).' ends before it starts.');
+    $price=($row['price']??'')===''?null:$row['price'];if($price!==null&&(!is_numeric($price)||(float)$price<0))throw new RuntimeException('Session '.($index+1).' has an invalid price.');
+    $duration=null;if($end!==''){$duration=(int)((strtotime($end)-strtotime($start))/60);}
+    $clean[]=['venue_id'=>$venueIds[$venueIndex],'day'=>$day,'start'=>$start,'end'=>$end!==''?$end:null,'duration'=>$duration,'price'=>$price===null?null:(float)$price,'term'=>!empty($row['term_time_only'])?1:0,'frequency'=>$frequency,'start_date'=>$startDate!==''?$startDate:null,'end_date'=>$endDate!==''?$endDate:null,'class_name'=>mb_substr(trim((string)($row['class_name']??'')),0,160)];
+   }
+   $delete=$db->prepare("DELETE FROM bh_sessions WHERE venue_id=?");foreach($venueIds as $venueId)$delete->execute([$venueId]);
+   if($nameColumn){
+    $insert=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date,`".$nameColumn."`) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
+   }else{
+    $insert=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date) VALUES (?,?,?,?,?,?,?,?,?,?)");
+   }
+   foreach($clean as $session){$values=[$session['venue_id'],$session['day'],$session['start'],$session['end'],$session['duration'],$session['price'],$session['term'],$session['frequency'],$session['start_date'],$session['end_date']];if($nameColumn)$values[]=$session['class_name'];$insert->execute($values);}
+   $db->commit();bh_admin_response(200,['ok'=>true,'id'=>$activityId,'sessions_saved'=>count($clean)]);
+  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();if($e instanceof RuntimeException)bh_admin_response(422,['ok'=>false,'error'=>$e->getMessage()]);throw $e;}
+ }
  if(($input['action']??'')==='bulk_update'){
   if(!hash_equals($_SESSION['bh_listing_csrf'],(string)($input['csrf']??'')))bh_admin_response(403,['ok'=>false,'error'=>'Please refresh the page.']);
   $ids=array_values(array_unique(array_map('intval',(array)($input['ids']??[]))));
