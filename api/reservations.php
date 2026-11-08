@@ -9,6 +9,20 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
  exit;
 }
 
+// Reservation submissions include family and child information. Require an
+// HTTPS same-origin browser request to prevent cross-site form submissions.
+$requestHost=strtolower((string)parse_url('https://'.($_SERVER['HTTP_HOST']??''),PHP_URL_HOST));
+$requestSource=(string)($_SERVER['HTTP_ORIGIN']??'');
+if($requestSource==='')$requestSource=(string)($_SERVER['HTTP_REFERER']??'');
+$sourceHost=strtolower((string)parse_url($requestSource,PHP_URL_HOST));
+$sourceScheme=strtolower((string)parse_url($requestSource,PHP_URL_SCHEME));
+$fetchSite=strtolower((string)($_SERVER['HTTP_SEC_FETCH_SITE']??''));
+if($requestHost===''||$sourceHost!==$requestHost||$sourceScheme!=='https'||($fetchSite!==''&&!in_array($fetchSite,['same-origin','none'],true))){
+ http_response_code(403);
+ echo json_encode(['ok'=>false,'error'=>'cross_origin_request_blocked','message'=>'Please reload the booking page and try again.']);
+ exit;
+}
+
 $name=trim((string)($_POST['name']??''));
 $email=trim((string)($_POST['email']??''));
 $phone=trim((string)($_POST['phone']??''));
