@@ -68,6 +68,7 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
    $venueQuery=$db->prepare("SELECT id FROM bh_venues WHERE activity_id=? ORDER BY id FOR UPDATE");$venueQuery->execute([$activityId]);$venueIds=array_map('intval',$venueQuery->fetchAll(PDO::FETCH_COLUMN));
    if(!$venueIds)throw new RuntimeException('This activity has no saved venue. Add a venue before adding sessions.');
    $sessionColumns=$db->query("SHOW COLUMNS FROM bh_sessions")->fetchAll(PDO::FETCH_COLUMN);
+   if(!in_array('class_name',$sessionColumns,true)&&!in_array('title',$sessionColumns,true)){$db->exec("ALTER TABLE bh_sessions ADD COLUMN class_name VARCHAR(160) NULL DEFAULT NULL");$sessionColumns[]='class_name';}
    $nameColumn=in_array('class_name',$sessionColumns,true)?'class_name':(in_array('title',$sessionColumns,true)?'title':null);
    $clean=[];
    foreach($submitted as $index=>$row){
@@ -76,7 +77,7 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
     if($day<1||$day>7||!preg_match('/^([01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?$/',$start))throw new RuntimeException('Session '.($index+1).' needs a valid weekday and start time.');
     if($end!==''&&(!preg_match('/^([01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?$/',$end)||substr($end,0,5)<=substr($start,0,5)))throw new RuntimeException('Session '.($index+1).' must finish after it starts.');
     $venueIndex=(int)($row['venue_index']??0);if(!array_key_exists($venueIndex,$venueIds))throw new RuntimeException('Session '.($index+1).' is assigned to an invalid venue.');
-    $frequency=trim((string)($row['frequency']??'weekly'));if(!in_array($frequency,['weekly','fortnightly','monthly','one_off'],true))throw new RuntimeException('Session '.($index+1).' has an unsupported repeat pattern.');
+    $frequency=trim((string)($row['frequency']??'weekly'));if(!in_array($frequency,['weekly','seven_weeks','fortnightly','monthly','once'],true))throw new RuntimeException('Session '.($index+1).' has an unsupported repeat pattern.');
     $startDate=trim((string)($row['start_date']??''));$endDate=trim((string)($row['end_date']??''));
     foreach(['start'=>$startDate,'end'=>$endDate] as $label=>$date){if($date!==''&&!preg_match('/^\\d{4}-\\d{2}-\\d{2}$/',$date))throw new RuntimeException('Session '.($index+1).' has an invalid '.$label.' date.');}
     if($startDate!==''&&$endDate!==''&&$endDate<$startDate)throw new RuntimeException('Session '.($index+1).' ends before it starts.');
