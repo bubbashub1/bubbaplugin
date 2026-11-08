@@ -84,14 +84,29 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
     $duration=null;if($end!==''){$duration=(int)((strtotime($end)-strtotime($start))/60);}
     $clean[]=['venue_id'=>$venueIds[$venueIndex],'day'=>$day,'start'=>$start,'end'=>$end!==''?$end:null,'duration'=>$duration,'price'=>$price===null?null:(float)$price,'term'=>!empty($row['term_time_only'])?1:0,'frequency'=>$frequency,'start_date'=>$startDate!==''?$startDate:null,'end_date'=>$endDate!==''?$endDate:null,'class_name'=>mb_substr(trim((string)($row['class_name']??'')),0,160)];
    }
-   $delete=$db->prepare("DELETE FROM bh_sessions WHERE venue_id=?");foreach($venueIds as $venueId)$delete->execute([$venueId]);
-   if($nameColumn){
-    $insert=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date,`".$nameColumn."`) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
-   }else{
-    $insert=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date) VALUES (?,?,?,?,?,?,?,?,?,?)");
+   $existingQuery=$db->prepare("SELECT s.id FROM bh_sessions s INNER JOIN bh_venues v ON v.id=s.venue_id WHERE v.activity_id=? FOR UPDATE");$existingQuery->execute([$activityId]);$existingIds=array_map('intval',$existingQuery->fetchAll(PDO::FETCH_COLUMN));
+   $keptIds=[];
+   foreach($clean as $index=>$session){
+    $submittedId=(int)($submitted[$index]['id']??0);
+    $values=[$session['venue_id'],$session['day'],$session['start'],$session['end'],$session['duration'],$session['price'],$session['term'],$session['frequency'],$session['start_date'],$session['end_date']];
+    if($submittedId>0){
+     if(!in_array($submittedId,$existingIds,true))throw new RuntimeException('A session no longer belongs to this activity. Refresh and try again.');
+     $set="venue_id=?,day_of_week=?,start_time=?,end_time=?,duration_minutes=?,price=?,term_time_only=?,frequency=?,start_date=?,end_date=?";
+     if($nameColumn){$set.=",`".$nameColumn."`=?";$values[]=$session['class_name'];}
+     $values[]=$submittedId;$db->prepare("UPDATE bh_sessions SET ".$set." WHERE id=?")->execute($values);$keptIds[]=$submittedId;
+    }else{
+     if($nameColumn){$insert=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date,`".$nameColumn."`) VALUES (?,?,?,?,?,?,?,?,?,?,?)");$insert->execute([...$values,$session['class_name']]);}
+     else{$insert=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date) VALUES (?,?,?,?,?,?,?,?,?,?)");$insert->execute($values);}
+     $keptIds[]=(int)$db->lastInsertId();
+    }
    }
-   foreach($clean as $session){$values=[$session['venue_id'],$session['day'],$session['start'],$session['end'],$session['duration'],$session['price'],$session['term'],$session['frequency'],$session['start_date'],$session['end_date']];if($nameColumn)$values[]=$session['class_name'];$insert->execute($values);}
-   $db->commit();bh_admin_response(200,['ok'=>true,'id'=>$activityId,'sessions_saved'=>count($clean)]);
+   $removedIds=array_values(array_diff($existingIds,$keptIds));
+   if($removedIds){
+    $bookingCheck=$db->prepare("SELECT COUNT(*) FROM bh_bookings WHERE session_id=?");
+    $deleteSession=$db->prepare("DELETE FROM bh_sessions WHERE id=?");
+    foreach($removedIds as $removedId){$bookingCheck->execute([$removedId]);if((int)$bookingCheck->fetchColumn()>0)throw new RuntimeException('A removed session has bookings attached. Keep the session and use the cancellation workflow instead; booking-linked session records cannot be deleted.');$deleteSession->execute([$removedId]);}
+   }
+   $db->commit();bh_admin_response(200,['ok'=>true,'id'=>$activityId,'sessions_saved'=>count($clean),'sessions_removed'=>count($removedIds)]);
   }catch(Throwable $e){if($db->inTransaction())$db->rollBack();if($e instanceof RuntimeException)bh_admin_response(422,['ok'=>false,'error'=>$e->getMessage()]);throw $e;}
  }
  if(($input['action']??'')==='bulk_update'){
