@@ -1,0 +1,43 @@
+name: Admin navigation and audit checks
+on:
+  pull_request:
+    paths:
+      - 'assets/js/admin-settings.js'
+      - 'assets/js/admin-settings-audit.js'
+      - 'admin/admin-settings-audit.html'
+      - 'admin/admin-email-tools.html'
+      - '.github/workflows/admin-navigation-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/js/admin-settings.js'
+      - 'assets/js/admin-settings-audit.js'
+      - 'admin/admin-settings-audit.html'
+      - 'admin/admin-email-tools.html'
+      - '.github/workflows/admin-navigation-check.yml'
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: |
+          node --check assets/js/admin-settings.js
+          node --check assets/js/admin-settings-audit.js
+      - name: Check admin navigation and audit content
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          settings = Path('assets/js/admin-settings.js').read_text()
+          audit = Path('assets/js/admin-settings-audit.js').read_text()
+          page = Path('admin/admin-settings-audit.html').read_text()
+          email = Path('admin/admin-email-tools.html').read_text()
+          assert '/wp-admin/' not in settings
+          assert '/wp-admin/' not in email
+          assert 'Forminator' not in settings
+          assert 'Forminator' not in email
+          assert 'auditPartial' in audit and 'auditPartial' in page
+          assert 'Limited / read-only' in audit
+          assert audit.count("['") >= 20, 'Expected a broad admin inventory'
+          print('Admin navigation and audit checks passed')
+          PY
