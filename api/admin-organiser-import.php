@@ -21,6 +21,28 @@ if (empty($_SESSION['bh_admin_authenticated'])) {
     bh_bulk_response(401, ['ok'=>false,'error'=>'Admin login required.']);
 }
 
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+    bh_bulk_response(405, ['ok'=>false,'error'=>'POST required.']);
+}
+
+// CSV imports create accounts and listings; require a verified same-origin HTTPS request.
+$requestHost = strtolower((string)($_SERVER['HTTP_HOST'] ?? ''));
+$origin = (string)($_SERVER['HTTP_ORIGIN'] ?? '');
+$referer = (string)($_SERVER['HTTP_REFERER'] ?? '');
+$source = $origin !== '' ? $origin : $referer;
+$sourceParts = $source !== '' ? parse_url($source) : false;
+$sourceHost = is_array($sourceParts) ? strtolower((string)($sourceParts['host'] ?? '')) : '';
+$sourceScheme = is_array($sourceParts) ? strtolower((string)($sourceParts['scheme'] ?? '')) : '';
+$requestParts = $requestHost !== '' ? parse_url('https://' . $requestHost) : false;
+$expectedHost = is_array($requestParts) ? strtolower((string)($requestParts['host'] ?? '')) : '';
+$expectedPort = is_array($requestParts) ? (int)($requestParts['port'] ?? 443) : 443;
+$sourcePort = is_array($sourceParts) ? (int)($sourceParts['port'] ?? 443) : 0;
+$fetchSite = strtolower((string)($_SERVER['HTTP_SEC_FETCH_SITE'] ?? ''));
+if ($sourceHost === '' || $expectedHost === '' || $sourceScheme !== 'https'
+    || $sourceHost !== $expectedHost || $sourcePort !== $expectedPort || $fetchSite === 'cross-site') {
+    bh_bulk_response(403, ['ok'=>false,'error'=>'This import request could not be verified. Refresh the page and try again.']);
+}
+
 require __DIR__.'/db.php';
 $db = bh_mysql();
 
@@ -74,10 +96,6 @@ function bh_send_welcome(string $email,string $firstName,string $organisation,st
     try{$mail=new PHPMailer\PHPMailer\PHPMailer(true);$mail->isSMTP();$mail->Host=$host;$mail->Port=$port;$mail->SMTPAuth=true;$mail->Username=$username;$mail->Password=$password;$mail->SMTPSecure=($secure==='tls'||$secure==='starttls')?PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS:PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;$mail->CharSet='UTF-8';$mail->setFrom($from,$fromName);$mail->addAddress($email);$mail->isHTML(true);$mail->Subject='Welcome to Bubba Hub — your leader account is ready 💚';
     $mail->Body='<div style="margin:0;background:#f4f7f3;padding:32px 12px;font-family:Arial,Helvetica,sans-serif;color:#33483a"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;margin:0 auto;background:#fff;border-radius:18px;overflow:hidden"><tr><td style="background:#d8e6db;padding:24px;text-align:center"><img src="https://bubbahub.co.uk/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub" width="190" style="display:block;width:190px;max-width:100%;height:auto;margin:0 auto 10px"><div style="font-size:12px;color:#416651;font-weight:bold">YOUR FAMILY HUB FOR FINDING, PLANNING &amp; BOOKING FAMILY ACTIVITIES</div></td></tr><tr><td style="padding:34px 34px 12px"><div style="font-size:12px;letter-spacing:1.5px;font-weight:bold;color:#3c8e96">WELCOME TO BUBBA HUB</div><h1 style="margin:8px 0 14px;font-size:30px;line-height:1.2;color:#416651">Your leader account is ready 💚</h1><p style="font-size:16px;line-height:1.7;margin:0 0 14px">'.$hello.'</p><p style="font-size:16px;line-height:1.7;margin:0 0 18px">The Bubba Hub team has created a leader account for <strong>'.$so.'</strong>'.($sl!==''?' and added <strong>'.$sl.'</strong> to your account.':'').'</p></td></tr><tr><td style="padding:0 34px 28px"><div style="background:#f0f5f0;border:1px solid #d8e6db;border-radius:14px;padding:22px;text-align:center"><div style="font-size:13px;color:#617261;font-weight:bold;text-transform:uppercase;letter-spacing:1px">Your one-time sign-in code</div><div style="font-size:34px;line-height:1.2;letter-spacing:8px;font-weight:bold;color:#144400;margin:12px 0">'.$code.'</div><div style="font-size:13px;color:#617261">Use this code once when activating your account. It expires in 7 days.</div></div></td></tr><tr><td style="padding:0 34px 28px;text-align:center"><a href="'.$url.'" style="display:inline-block;background:#416651;color:#fff;text-decoration:none;font-weight:bold;font-size:16px;padding:15px 26px;border-radius:10px">SIGN IN &amp; CREATE YOUR PASSWORD</a><p style="font-size:13px;line-height:1.6;color:#617261;margin:14px 0 0">You will create your own password during your first sign-in.</p></td></tr><tr><td style="padding:0 34px 30px"><h2 style="font-size:20px;color:#416651;margin:0 0 14px">What is waiting for you?</h2><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td width="50%" valign="top" style="padding:0 8px 12px 0"><strong style="color:#144400">📍 Add activities</strong><div style="font-size:14px;line-height:1.6;margin-top:4px">Manage your listings, locations, ages, prices and booking information.</div></td><td width="50%" valign="top" style="padding:0 0 12px 8px"><strong style="color:#144400">👨‍👩‍👧 Reach families</strong><div style="font-size:14px;line-height:1.6;margin-top:4px">Help local families discover what you offer.</div></td></tr><tr><td width="50%" valign="top" style="padding:0 8px 0 0"><strong style="color:#144400">📅 Keep it up to date</strong><div style="font-size:14px;line-height:1.6;margin-top:4px">Update your activities whenever details change.</div></td><td width="50%" valign="top" style="padding:0 0 0 8px"><strong style="color:#144400">⭐ Build your presence</strong><div style="font-size:14px;line-height:1.6;margin-top:4px">Give families a clear place to discover your organisation.</div></td></tr></table></td></tr><tr><td style="background:#416651;padding:24px 34px;color:#fff"><div style="font-size:16px;font-weight:bold;margin-bottom:6px">A little security note</div><div style="font-size:13px;line-height:1.6">Your code is for you only. It can be used once and expires after 7 days. If you were not expecting this email, please contact the Bubba Hub team.</div></td></tr><tr><td style="padding:22px 34px;text-align:center;font-size:12px;line-height:1.6;color:#617261">Bubba Hub<br>Your Family Hub for Finding, Planning &amp; Booking Family Activities<br><span style="color:#9fb7a5">You are receiving this because a Bubba Hub leader account was created for you.</span></td></tr></table></div>';
     $mail->AltBody="Welcome to Bubba Hub — your leader account is ready 💚\n\n{$hello}\n\nYour one-time sign-in code is: {$code}\n\nUse it once at: https://bubbahub.co.uk/activate.html?token=".rawurlencode($token)."\n\nYou will create your own password during first sign-in. The code expires in 7 days.\n\nThe Bubba Hub Team";$mail->send();return true;}catch(Throwable $e){error_log('Bubba Hub leader welcome failed: '.$e->getMessage());return false;}
-}
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    bh_bulk_response(405, ['ok'=>false,'error'=>'POST required.']);
 }
 
 $action = (string)($_POST['action'] ?? 'preview');
