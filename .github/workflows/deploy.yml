@@ -50,10 +50,19 @@ jobs:
           chmod 600 "$RUNNER_TEMP/eweball_deploy_key"
           ssh-keygen -y -f "$RUNNER_TEMP/eweball_deploy_key" >/dev/null
 
-      - name: Prepare SSH connection
+      - name: Prepare pinned SSH host key
+        env:
+          SSH_KNOWN_HOSTS: ${{ secrets.EWEBALL_SSH_KNOWN_HOSTS }}
         run: |
+          set -euo pipefail
           mkdir -p "$RUNNER_TEMP/ssh"
-          : > "$RUNNER_TEMP/ssh/known_hosts"
+          if [ -z "$SSH_KNOWN_HOSTS" ]; then
+            echo "::error::EWEBALL_SSH_KNOWN_HOSTS secret is required; refusing an unverified SSH connection."
+            exit 1
+          fi
+          printf '%s\\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/ssh/known_hosts"
+          chmod 600 "$RUNNER_TEMP/ssh/known_hosts"
+          ssh-keygen -lf "$RUNNER_TEMP/ssh/known_hosts" >/dev/null
 
       - name: Check eWebAll SSH connection
         env:
@@ -65,7 +74,7 @@ jobs:
           ssh -p "$SSH_PORT" \
             -i "$RUNNER_TEMP/eweball_deploy_key" \
             -o IdentitiesOnly=yes \
-            -o StrictHostKeyChecking=no \
+            -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
             "$SSH_USERNAME@$SSH_HOST" '
               echo "=== CURRENT USER ==="
@@ -140,7 +149,7 @@ jobs:
             -P "$SSH_PORT" \
             -i "$RUNNER_TEMP/eweball_deploy_key" \
             -o IdentitiesOnly=yes \
-            -o StrictHostKeyChecking=no \
+            -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
             "$DEPLOY_ARCHIVE" \
             "$SSH_USERNAME@$SSH_HOST:/tmp/bubbaplugin-deploy.tar.gz"
@@ -150,7 +159,7 @@ jobs:
             -p "$SSH_PORT" \
             -i "$RUNNER_TEMP/eweball_deploy_key" \
             -o IdentitiesOnly=yes \
-            -o StrictHostKeyChecking=no \
+            -o StrictHostKeyChecking=yes \
             -o ServerAliveInterval=15 \
             -o ServerAliveCountMax=4 \
             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
@@ -162,7 +171,7 @@ jobs:
             -p "$SSH_PORT" \
             -i "$RUNNER_TEMP/eweball_deploy_key" \
             -o IdentitiesOnly=yes \
-            -o StrictHostKeyChecking=no \
+            -o StrictHostKeyChecking=yes \
             -o ServerAliveInterval=15 \
             -o ServerAliveCountMax=4 \
             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
@@ -180,7 +189,7 @@ jobs:
           REMOTE_PATH: ${{ secrets.EWEBALL_REMOTE_PATH }}
         run: |
           set -euo pipefail
-          ssh -p "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no "$SSH_USERNAME@$SSH_HOST" "cd \"$REMOTE_PATH\" && php scripts/migrate-claim-invitations.php"
+          ssh -p "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" "$SSH_USERNAME@$SSH_HOST" "cd \"$REMOTE_PATH\" && php scripts/migrate-claim-invitations.php"
 
       - name: Verify production pages and assets
         run: |
