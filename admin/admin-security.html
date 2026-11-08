@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<base href="/">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Security checks · Admin · Bubba Hub</title>
+<link rel="stylesheet" href="/assets/css/styles.css">
+<link rel="stylesheet" href="/assets/css/admin-settings.css">
+<link rel="stylesheet" href="/assets/css/admin-security.css">
+</head>
+<body class="bh-admin-v2">
+<header class="site-header">
+<a class="brand" href="/index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a>
+<nav class="main-nav" aria-label="Main navigation"><a href="/directory.html">Find activities</a><a href="/my-hub.html">My Hub</a><a href="/leader.html">Class Leaders</a><a href="/admin/">Admin</a></nav>
+<a class="button button-soft" href="/account.html">My account</a>
+</header>
+<main class="admin-subpage-shell bh-security-page">
+<div class="admin-back"><a href="/admin/">← Admin dashboard</a></div>
+<div class="admin-subpage-head">
+<div><span class="eyebrow">Admin · System protection</span><h1>Security checks</h1><p>A central place to check Bubba Hub's security foundations, track outstanding reviews and identify what needs attention.</p></div>
+<div class="admin-setting-actions"><button class="button button-soft" type="button" data-admin-logout>Sign out of admin</button></div>
+</div>
+<section class="bh-security-summary" aria-live="polite">
+<div><span class="bh-security-kicker">Automated checks</span><strong id="bhSecurityScore">Checking…</strong><small id="bhSecuritySummary">Verifying server configuration</small></div>
+<div class="bh-security-summary-meta"><span id="bhSecurityUpdated">Not checked yet</span><button class="button button-primary" id="bhSecurityRefresh" type="button">Run checks again</button></div>
+</section>
+<div id="bhSecurityError" class="bh-security-error" role="alert" hidden></div>
+<section class="admin-panel">
+<div class="admin-panel-head"><div><span class="eyebrow">Live server checks</span><h2>Automated checks</h2><p>Read-only checks run against this server when you open this page. No settings are changed.</p></div></div>
+<div id="bhSecurityAutomated" class="bh-security-check-list"><p>Checking server…</p></div>
+</section>
+<section class="admin-panel">
+<div class="admin-panel-head"><div><span class="eyebrow">Security review plan</span><h2>Items requiring review</h2><p>These areas need a code/configuration audit. They are deliberately not marked as passed just because the dashboard cannot test them automatically.</p></div></div>
+<div id="bhSecurityManual" class="bh-security-check-list"><p>Loading review list…</p></div>
+</section>
+<section class="bh-security-note"><strong>Important</strong><p>This dashboard is a first-pass security checklist, not a penetration test, vulnerability scan or security certification. A green automated check only confirms the specific test shown. Review items must be investigated and verified before being marked complete.</p></section>
+</main>
+<footer class="site-footer"><div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div></footer>
+<script src="/assets/js/admin-security.js" defer></script>
+</body>
+</html>
