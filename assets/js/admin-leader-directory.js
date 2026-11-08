@@ -16,15 +16,15 @@ async function load(){
    for(const value of [user.id,user.email,user.status||'Unknown (needs review)',user.email_verified?'Verified':'Not verified',user.account_type||'Free']){
     const td=document.createElement('td');td.textContent=String(value??'');td.style.padding='10px 8px';td.style.borderBottom='1px solid #d8e6db';tr.append(td);
    }
-   const cell=document.createElement('td');cell.style.cssText='display:flex;gap:6px;flex-wrap:wrap;padding:8px';
-   const view=document.createElement('button');view.type='button';view.className='button button-soft';view.textContent='View listings';view.dataset.leaderId=String(user.id);cell.append(view);
+   const cell=document.createElement('td');cell.className='leader-actions-cell';
+   const view=document.createElement('a');view.href='#leaderDetailsPanel';view.className='leader-table-link';view.textContent='View listings';view.dataset.leaderId=String(user.id);cell.append(view);
    for(const [action,label] of [['edit_profile','Edit profile'],['edit','Edit status'],[user.status==='active'?'deactivate':'restore',user.status==='active'?'Deactivate':'Reactivate'],[user.account_type==='Pro (complimentary)'?'revoke_promotion':'promote',user.account_type==='Pro (complimentary)'?'Remove Pro grant':'Promote to Pro']]){
-    const button=document.createElement('button');button.type='button';button.className='button button-soft';button.textContent=label;button.dataset.action=action;button.dataset.id=String(user.id);button.dataset.email=user.email;button.dataset.status=user.status;cell.append(button);
+    const button=document.createElement('a');button.href='#';button.className='leader-table-link';button.textContent=label;button.dataset.action=action;button.dataset.id=String(user.id);button.dataset.email=user.email;button.dataset.status=user.status;cell.append(button);
    }
    if(user.status==='inactive'){
-    const del=document.createElement('button');del.type='button';del.className='button button-soft';del.textContent='Permanently Delete';del.dataset.action='permanent_delete';del.dataset.id=String(user.id);del.dataset.email=user.email;del.style.color='#a32121';cell.append(del);
+    const del=document.createElement('a');del.href='#';del.className='leader-table-link leader-table-link-danger';del.textContent='Permanently delete';del.dataset.action='permanent_delete';del.dataset.id=String(user.id);del.dataset.email=user.email;cell.append(del);
    }
-   if(!user.status){const note=document.createElement('span');note.textContent='Status missing — use Edit to set inactive before deletion';note.style.cssText='font-size:12px;color:#805000';cell.append(note);}
+   if(!user.status){const note=document.createElement('span');note.textContent='Status missing — set inactive before deletion';note.style.cssText='font-size:12px;color:#805000';cell.append(note);}
    tr.append(cell);rows.append(tr);
   }
   status.textContent=total+' leader account(s) found · Page '+page+(data.users.length?'':' · No results');
@@ -35,12 +35,11 @@ form.addEventListener('submit',event=>{event.preventDefault();page=1;load()});
 prev.addEventListener('click',()=>{if(page>1){page--;load()}});
 next.addEventListener('click',()=>{if(page*size<total){page++;load()}});
 const panel=document.getElementById('leaderDetailsPanel'),detailStatus=document.getElementById('leaderDetailsStatus'),detailContent=document.getElementById('leaderDetailsContent');
-rows.closest('table')?.querySelector('thead tr')?.append(Object.assign(document.createElement('th'),{textContent:'Actions'}));
+rows.closest('table')?.classList.add('leader-directory-table');rows.closest('table')?.querySelector('thead tr')?.append(Object.assign(document.createElement('th'),{textContent:'Actions',scope:'col'}));
 async function runAction(button){
  const report=message=>{const el=document.getElementById('leaderActionStatus');if(el){el.hidden=false;el.textContent=message;}else status.textContent=message;};
  const action=button.dataset.action,id=Number(button.dataset.id),email=button.dataset.email;
  if(action==='edit_profile'){
-  button.disabled=true;
   try{
    const response=await fetch('/api/admin-leader-details.php?id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
    if(response.status===401){location.href='/admin-login.html?next='+encodeURIComponent(location.pathname);return;}
@@ -50,7 +49,7 @@ async function runAction(button){
    const view=rows.querySelector('[data-leader-id="'+id+'"]');if(view)view.click();
    if(!orgs.length){const el=document.getElementById('leaderActionStatus');if(el){el.hidden=false;el.textContent='No organiser profile is linked to '+email+'. Open View listings to review the account.';}}
   }catch(error){const el=document.getElementById('leaderActionStatus');if(el){el.hidden=false;el.textContent='Could not open organiser profile: '+error.message;}}
-  finally{button.disabled=false;}
+  finally{}
   return;
  }
  let requestedStatus,confirmation;
@@ -61,17 +60,16 @@ async function runAction(button){
  if(action==='edit'){requestedStatus=prompt('Account status: active, inactive, or suspended',button.dataset.status);if(requestedStatus===null)return;requestedStatus=requestedStatus.trim().toLowerCase();if(!['active','inactive','suspended'].includes(requestedStatus)){alert('Invalid status');return;}}
  if(!confirm('Confirm '+button.textContent+' for '+email+'?'))return;
  report('Updating '+email+'…');
- button.disabled=true;
  try{
   const response=await fetch('/api/admin-leader-actions.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,action,status:requestedStatus,confirmation})});
   const raw=await response.text();let data;try{data=JSON.parse(raw);}catch(_){throw Error('Server returned HTTP '+response.status+' instead of JSON');}
   if(!response.ok||!data.ok)throw Error(({linked_records_prevent_delete:'Deletion blocked: linked records must be reviewed first',linked_organiser_prevents_delete:'Deletion blocked: linked organiser must be reassigned or reviewed',foreign_key_review_required:'Deletion blocked: database relationships require review',deactivate_first:'Deactivate this account before deleting it'})[data.error]||data.error||'Action failed');
   await load();report('✓ '+email+' updated. '+(data.details?.new_status?'Status: '+data.details.new_status:'Action: '+action));
- }catch(error){report('Unable to update '+email+': '+error.message);button.disabled=false;}
+ }catch(error){report('Unable to update '+email+': '+error.message);}
 }
 rows.addEventListener('click',async event=>{
- const actionButton=event.target.closest('button[data-action]');if(actionButton){await runAction(actionButton);return;}
- const button=event.target.closest('[data-leader-id]');if(!button||!panel)return;
+ const actionButton=event.target.closest('a[data-action]');if(actionButton){event.preventDefault();await runAction(actionButton);return;}
+ const button=event.target.closest('[data-leader-id]');if(!button||!panel)return;event.preventDefault();
  panel.hidden=false;detailStatus.textContent='Loading leader details…';detailContent.replaceChildren();
  try{
   const response=await fetch('/api/admin-leader-details.php?id='+encodeURIComponent(button.dataset.leaderId),{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
@@ -80,8 +78,8 @@ rows.addEventListener('click',async event=>{
   const orgs=data.organisers||[];detailStatus.textContent=data.leader.email+' · '+orgs.length+' linked organiser(s)';
   const controls=document.createElement('div');controls.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin:12px 0';
   for(const [action,label] of [['edit','Edit status'],['deactivate','Deactivate'],['restore','Reactivate'],['promote','Promote to Pro'],['revoke_promotion','Remove complimentary Pro']]){
-   const btn=document.createElement('button');btn.type='button';btn.className='button button-soft';btn.textContent=label;
-   btn.addEventListener('click',async()=>{
+   const btn=document.createElement('a');btn.href='#';btn.className='leader-table-link';btn.textContent=label;
+   btn.addEventListener('click',async(event)=>{event.preventDefault();
     let requestedStatus;
     if(action==='edit'){requestedStatus=prompt('Account status: active, inactive, or suspended',data.leader.status);if(requestedStatus===null)return;requestedStatus=requestedStatus.trim().toLowerCase();if(!['active','inactive','suspended'].includes(requestedStatus)){alert('Invalid account status');return;}}
     if(!confirm('Confirm '+label+' for '+data.leader.email+'?'))return;
@@ -93,11 +91,11 @@ rows.addEventListener('click',async event=>{
     }catch(err){alert('Action failed: '+err.message);}finally{btn.disabled=false;}
    });controls.append(btn);
   }
-  detailContent.append(controls);
+  controls.className='leader-detail-actions';detailContent.append(controls);
   if(!orgs.length){const note=document.createElement('p');note.textContent='No linked organiser found. This account may need an organiser profile linked before it can use the leader portal.';detailContent.append(note);return;}
   for(const org of orgs){
    const section=document.createElement('section'),heading=document.createElement('h3');heading.textContent=org.name||'Organiser #'+org.id;section.append(heading);
-   const profileLink=document.createElement('a');profileLink.href='/admin/admin-organisers-organiser-profiles.html?id='+encodeURIComponent(org.id)+'&return=class-leaders&leaderId='+encodeURIComponent(data.leader.id);profileLink.textContent='Edit organiser profile →';profileLink.className='button button-soft';profileLink.style.cssText='display:inline-block;margin:8px 10px 8px 0';section.append(profileLink);const link=document.createElement('a');link.href='/admin/admin-activities-listings.html';link.textContent='Manage activity listings →';section.append(link);
+   const profileLink=document.createElement('a');profileLink.href='/admin/admin-organisers-organiser-profiles.html?id='+encodeURIComponent(org.id)+'&return=class-leaders&leaderId='+encodeURIComponent(data.leader.id);profileLink.textContent='Edit organiser profile →';profileLink.className='leader-table-link';section.append(profileLink);const link=document.createElement('a');link.href='/admin/admin-activities-listings.html';link.textContent='Manage activity listings →';section.append(link);
    const list=document.createElement('ul');for(const activity of org.activities||[]){const li=document.createElement('li');li.textContent=activity.title+' ('+activity.status+')';list.append(li);}
    if(!list.children.length){const note=document.createElement('p');note.textContent='No activities linked.';section.append(note);}else section.append(list);
    detailContent.append(section);
