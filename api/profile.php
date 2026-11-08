@@ -9,7 +9,12 @@ try{
  if(session_status()!==PHP_SESSION_ACTIVE){session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);session_start();}
  if(empty($_SESSION['bh_user_id']))bh_profile_response(401,['ok'=>false,'message'=>'Please sign in to manage your profile.']);
  $db=bh_mysql();
- foreach(['ALTER TABLE bh_users ADD COLUMN first_name VARCHAR(80) NULL','ALTER TABLE bh_users ADD COLUMN last_name VARCHAR(80) NULL','ALTER TABLE bh_users ADD COLUMN phone VARCHAR(40) NULL','ALTER TABLE bh_users ADD COLUMN date_of_birth DATE NULL'] as $sql){try{$db->exec($sql);}catch(Throwable $ignored){}}
+ $profileColumns=$db->query("SHOW COLUMNS FROM bh_users")->fetchAll(PDO::FETCH_COLUMN);
+ foreach(['first_name','last_name','phone','date_of_birth'] as $requiredProfileColumn){
+  if(!in_array($requiredProfileColumn,$profileColumns,true)){
+   bh_profile_response(503,['ok'=>false,'message'=>'Profile fields are being prepared. Please contact support if this continues.']);
+  }
+ }
  if(!isset($_SESSION['bh_csrf']))$_SESSION['bh_csrf']=bin2hex(random_bytes(24));
  $db->exec("CREATE TABLE IF NOT EXISTS bh_user_addresses (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,user_id BIGINT UNSIGNED NOT NULL,address_type VARCHAR(30) NOT NULL DEFAULT 'home',address_line1 VARCHAR(160) NULL,address_line2 VARCHAR(160) NULL,city VARCHAR(100) NULL,county VARCHAR(100) NULL,postcode VARCHAR(20) NULL,country VARCHAR(80) NOT NULL DEFAULT 'United Kingdom',latitude DECIMAL(10,7) NULL,longitude DECIMAL(10,7) NULL,created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY(id),UNIQUE KEY uq_user_address_type(user_id,address_type),KEY idx_user_id(user_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
  // Existing installations may have an older/incomplete address table. Add missing columns safely.
