@@ -18,7 +18,7 @@ async function load(){
    }
    const cell=document.createElement('td');cell.style.cssText='display:flex;gap:6px;flex-wrap:wrap;padding:8px';
    const view=document.createElement('button');view.type='button';view.className='button button-soft';view.textContent='View listings';view.dataset.leaderId=String(user.id);cell.append(view);
-   for(const [action,label] of [['edit','Edit'],[user.status==='active'?'deactivate':'restore',user.status==='active'?'Deactivate':'Reactivate'],[user.account_type==='Pro (complimentary)'?'revoke_promotion':'promote',user.account_type==='Pro (complimentary)'?'Remove Pro grant':'Promote to Pro']]){
+   for(const [action,label] of [['edit_profile','Edit profile'],['edit','Edit status'],[user.status==='active'?'deactivate':'restore',user.status==='active'?'Deactivate':'Reactivate'],[user.account_type==='Pro (complimentary)'?'revoke_promotion':'promote',user.account_type==='Pro (complimentary)'?'Remove Pro grant':'Promote to Pro']]){
     const button=document.createElement('button');button.type='button';button.className='button button-soft';button.textContent=label;button.dataset.action=action;button.dataset.id=String(user.id);button.dataset.email=user.email;button.dataset.status=user.status;cell.append(button);
    }
    if(user.status==='inactive'){
@@ -39,6 +39,20 @@ rows.closest('table')?.querySelector('thead tr')?.append(Object.assign(document.
 async function runAction(button){
  const report=message=>{const el=document.getElementById('leaderActionStatus');if(el){el.hidden=false;el.textContent=message;}else status.textContent=message;};
  const action=button.dataset.action,id=Number(button.dataset.id),email=button.dataset.email;
+ if(action==='edit_profile'){
+  button.disabled=true;
+  try{
+   const response=await fetch('/api/admin-leader-details.php?id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
+   if(response.status===401){location.href='/admin-login.html?next='+encodeURIComponent(location.pathname);return;}
+   const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'Unable to load linked organiser');
+   const orgs=data.organisers||[];
+   if(orgs.length===1){location.href='/admin/admin-organisers-organiser-profiles.html?id='+encodeURIComponent(orgs[0].id)+'&return=class-leaders&leaderId='+encodeURIComponent(id);return;}
+   const view=rows.querySelector('[data-leader-id="'+id+'"]');if(view)view.click();
+   if(!orgs.length){const el=document.getElementById('leaderActionStatus');if(el){el.hidden=false;el.textContent='No organiser profile is linked to '+email+'. Open View listings to review the account.';}}
+  }catch(error){const el=document.getElementById('leaderActionStatus');if(el){el.hidden=false;el.textContent='Could not open organiser profile: '+error.message;}}
+  finally{button.disabled=false;}
+  return;
+ }
  let requestedStatus,confirmation;
  if(action==='permanent_delete'){
   confirmation=prompt('PERMANENT DELETE: This cannot be undone. Type the leader email exactly to confirm. Accounts with linked records cannot be deleted.\n\n'+email);
