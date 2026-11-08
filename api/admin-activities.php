@@ -83,12 +83,12 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
     if($startDate!==''&&$endDate!==''&&$endDate<$startDate)throw new RuntimeException('Session '.($index+1).' ends before it starts.');
     $price=($row['price']??'')===''?null:$row['price'];if($price!==null&&(!is_numeric($price)||(float)$price<0))throw new RuntimeException('Session '.($index+1).' has an invalid price.');
     $duration=null;if($end!==''){$duration=(int)((strtotime($end)-strtotime($start))/60);}
-    $clean[]=['venue_id'=>$venueIds[$venueIndex],'day'=>$day,'start'=>$start,'end'=>$end!==''?$end:null,'duration'=>$duration,'price'=>$price===null?null:(float)$price,'term'=>!empty($row['term_time_only'])?1:0,'frequency'=>$frequency,'start_date'=>$startDate!==''?$startDate:null,'end_date'=>$endDate!==''?$endDate:null,'class_name'=>mb_substr(trim((string)($row['class_name']??'')),0,160)];
+    $clean[]=['id'=>(int)($row['id']??0),'venue_id'=>$venueIds[$venueIndex],'day'=>$day,'start'=>$start,'end'=>$end!==''?$end:null,'duration'=>$duration,'price'=>$price===null?null:(float)$price,'term'=>!empty($row['term_time_only'])?1:0,'frequency'=>$frequency,'start_date'=>$startDate!==''?$startDate:null,'end_date'=>$endDate!==''?$endDate:null,'class_name'=>mb_substr(trim((string)($row['class_name']??'')),0,160)];
    }
    $existingQuery=$db->prepare("SELECT s.id FROM bh_sessions s INNER JOIN bh_venues v ON v.id=s.venue_id WHERE v.activity_id=? FOR UPDATE");$existingQuery->execute([$activityId]);$existingIds=array_map('intval',$existingQuery->fetchAll(PDO::FETCH_COLUMN));
    $keptIds=[];
    foreach($clean as $index=>$session){
-    $submittedId=(int)($submitted[$index]['id']??0);
+    $submittedId=(int)$session['id'];
     $values=[$session['venue_id'],$session['day'],$session['start'],$session['end'],$session['duration'],$session['price'],$session['term'],$session['frequency'],$session['start_date'],$session['end_date']];
     if($submittedId>0){
      if(!in_array($submittedId,$existingIds,true))throw new RuntimeException('A session no longer belongs to this activity. Refresh and try again.');
