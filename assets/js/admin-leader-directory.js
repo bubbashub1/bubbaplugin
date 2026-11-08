@@ -14,7 +14,7 @@ async function load(){
   for(const user of data.users||[]){
    const tr=document.createElement('tr');
    for(const value of [user.id,user.email,user.status||'Unknown (needs review)',user.email_verified?'Verified':'Not verified',user.account_type||'Free']){
-    const td=document.createElement('td');td.textContent=String(value??'');td.style.padding='10px 8px';td.style.borderBottom='1px solid #d8e6db';tr.append(td);
+    const td=document.createElement('td');td.textContent=String(value??'');tr.append(td);
    }
    const cell=document.createElement('td');cell.className='leader-actions-cell';
    const view=document.createElement('a');view.href='#leaderDetailsPanel';view.className='leader-table-link';view.textContent='View listings';view.dataset.leaderId=String(user.id);cell.append(view);
