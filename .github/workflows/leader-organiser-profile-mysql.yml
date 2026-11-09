@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - 'api/leader-portal.php'
+      - 'api/admin-approval-centre.php'
+      - 'api/admin-duplicate-review.php'
       - 'database/schema.sql'
       - 'tests/organiser-profile-db-test.php'
       - '.github/workflows/leader-organiser-profile-mysql.yml'
@@ -40,7 +42,11 @@ jobs:
           php-version: '8.2'
           extensions: pdo_mysql
       - name: Check PHP syntax
-        run: php -l tests/organiser-profile-db-test.php
+        run: |
+          php -l api/leader-portal.php
+          php -l api/admin-approval-centre.php
+          php -l api/admin-duplicate-review.php
+          php -l tests/organiser-profile-db-test.php
       - name: Test organiser profile database migration and updates
         env:
           DB_HOST: 127.0.0.1
