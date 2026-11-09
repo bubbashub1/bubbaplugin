@@ -825,7 +825,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     if(!footer||!banner)return;
     const name=banner.querySelector(".activity-organiser-copy strong")?.textContent?.trim()||"Activity organiser";
     const profile=banner.querySelector(".activity-organiser-link");
-    const initials=name.split(/\\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join("").toUpperCase()||"BH";
+    const initials=name.split(" ").filter(Boolean).slice(0,2).map(part=>part[0]).join("").toUpperCase()||"BH";
     const profileRow=document.createElement("div");
     profileRow.className="bh-organiser-profile-row";
     const avatar=document.createElement("span");
