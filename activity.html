@@ -667,11 +667,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
     overlay.querySelector(".booking-modal-close").onclick=close;
     overlay.addEventListener("click",e=>{if(e.target===overlay)close()});
     const form=overlay.querySelector("#reserveForm"), childSelect=overlay.querySelector("#reservationChild"), childHelp=overlay.querySelector("#reservationChildHelp"), consentStatus=overlay.querySelector("#reservationConsentStatus"), submit=form.querySelector("button[type=submit]");
-    let savedConsent=null, children=[], bookingCsrf="";
-    try{savedConsent=JSON.parse(localStorage.getItem("bhConsentProfiles")||"null")}catch{}
-    const consentReady=!!(savedConsent&&savedConsent.consent_to_share_with_organiser&&savedConsent.consent_given_at&&savedConsent.consent_version);
-    if(consentReady) consentStatus.textContent="✓ Consent profile ready. It will be attached to this reservation request as a dated snapshot.";
-    else consentStatus.innerHTML='⚠️ A saved consent profile is required. <a href="consent.html" target="_blank" rel="noopener"><strong>Complete consent first</strong></a>.';
+    let savedConsent=null, consentProfiles=[], children=[], bookingCsrf="";
+    consentStatus.textContent="Checking your saved family consent profile…";
     const applyChild=child=>{
       if(!child)return;
       form.elements.child_name.value=child.name||"";
@@ -682,48 +679,52 @@ document.addEventListener("DOMContentLoaded",async()=>{
         if(before)age--;
         form.elements.child_age.value=age>=0?String(age):"";
       }
-      if(savedConsent && child.name && String(savedConsent.child_name||"").trim().toLowerCase()===String(child.name).trim().toLowerCase()){
-        consentStatus.textContent="✓ Consent profile matches "+child.name+". A dated consent snapshot will be attached.";
-      }else if(savedConsent){
-        consentStatus.textContent="✓ Consent profile saved. Check that it applies to the selected child before sending.";
-      }
+      savedConsent=consentProfiles.find(p=>String(p.child_id||"")===String(child.id))||null;
+      consentStatus.textContent=savedConsent?"✓ A saved consent profile matches "+child.name+". The server will verify it again when you submit.":'⚠️ No saved consent profile for '+child.name+'. <a href="consent.html" target="_blank" rel="noopener"><strong>Complete consent first</strong></a>.';
     };
     (async()=>{
       try{
         const res=await fetch("/api/my-hub.php?view=family",{credentials:"same-origin",headers:{Accept:"application/json"}});
-        if(res.ok){
-          const data=await res.json();
-          if(data?.ok&&Array.isArray(data.children)){
-            bookingCsrf=String(data.csrf||"");
-            children=data.children;
-            children.forEach(child=>{const o=document.createElement("option");o.value=String(child.id);o.textContent=child.name+(child.date_of_birth?" · "+child.date_of_birth:"");o.dataset.child=JSON.stringify(child);childSelect.appendChild(o)});
-            if(children.length){childHelp.textContent="Choose a child from your My Hub profile. Their saved details will be added to the reservation request."}
-            const savedName=String(savedConsent?.child_name||"").trim().toLowerCase();
-            const match=children.find(x=>String(x.name||"").trim().toLowerCase()===savedName);
-            if(match){childSelect.value=String(match.id);applyChild(match)}
-          }
+        if(!res.ok){consentStatus.textContent="Please sign in to your family account before making a booking.";return}
+        const data=await res.json();
+        if(data?.ok&&Array.isArray(data.children)){
+          bookingCsrf=String(data.csrf||"");
+          children=data.children;
+          children.forEach(child=>{const o=document.createElement("option");o.value=String(child.id);o.textContent=child.name+(child.date_of_birth?" · "+child.date_of_birth:"");o.dataset.child=JSON.stringify(child);childSelect.appendChild(o)});
+          if(children.length){childHelp.textContent="Choose a child from your My Hub profile. Their saved details will be added to the reservation request."}
         }
-      }catch{}
+        const consentRes=await fetch("/api/consent-profile.php",{credentials:"same-origin",headers:{Accept:"application/json"},cache:"no-store"});
+        const consentData=await consentRes.json().catch(()=>({}));
+        if(consentRes.ok&&consentData.ok)consentProfiles=consentData.profiles||[];
+        const firstProfile=consentProfiles.find(p=>p.child_id&&children.some(ch=>String(ch.id)===String(p.child_id)));
+        if(firstProfile){const child=children.find(ch=>String(ch.id)===String(firstProfile.child_id));childSelect.value=String(child.id);applyChild(child)}
+        else consentStatus.innerHTML='⚠️ A saved consent profile is required for the selected child. <a href="consent.html" target="_blank" rel="noopener"><strong>Complete consent first</strong></a>.';
+      }catch{consentStatus.textContent="Could not check your saved consent profile. Please refresh and try again."}
     })();
     childSelect.addEventListener("change",()=>{
       const id=childSelect.value;
-      if(id==="manual"){form.elements.child_name.value="";form.elements.child_age.value="";childHelp.textContent="Enter the child details below. Your saved consent profile must still match the child you are reserving for.";return}
+      if(id==="manual"){savedConsent=null;form.elements.child_name.value="";form.elements.child_age.value="";childHelp.textContent="Enter the child details below. A matching manual consent profile must already be saved.";consentStatus.textContent="A saved manual consent profile must match the child's name.";return}
       const child=children.find(x=>String(x.id)===String(id)); if(child)applyChild(child);
     });
     form.addEventListener("submit",async e=>{
       e.preventDefault();
       const status=form.querySelector(".booking-form-status");
-      if(!consentReady){status.textContent="Please complete and save your consent profile before sending a reservation request.";return}
       const selectedId=childSelect.value;
       const selected=selectedId&&selectedId!=="manual"?children.find(x=>String(x.id)===String(selectedId)):null;
+      const typedChildName=form.elements.child_name.value.trim();
+      savedConsent=selected
+        ? consentProfiles.find(p=>String(p.child_id||"")===String(selected.id))||null
+        : consentProfiles.find(p=>!p.child_id&&String(p.child_name||"").trim().toLowerCase()===typedChildName.toLowerCase())||null;
+      if(!savedConsent||!Number(savedConsent.consent_to_share_with_organiser)||!savedConsent.consent_given_at){
+        status.textContent="Please save current booking consent for this child in your family account before sending a reservation request.";return
+      }
       if(selected && String(savedConsent.child_name||"").trim().toLowerCase()!==String(selected.name||"").trim().toLowerCase()){
         status.textContent="Your saved consent profile is for a different child. Please update consent before sending this request.";return
       }
       status.textContent="Sending…";submit.disabled=true;
       if(!bookingCsrf){status.textContent="Please sign in to your family account before booking. Your bookings are kept in My Hub.";submit.disabled=false;return}
       if(!slot||!slot.id){status.textContent="Please choose one of the dated sessions above before booking.";submit.disabled=false;return}
-      const consentSnapshot={...savedConsent,selected_child_id:selected?.id||"",selected_child_name:selected?.name||form.elements.child_name.value.trim(),reservation_created_at:new Date().toISOString()};
-      const payload={slot_id:Number(slot.id),child_id:selected?.id?Number(selected.id):0,parent_name:form.elements.name.value.trim(),parent_email:form.elements.email.value.trim(),parent_phone:form.elements.phone.value.trim(),child_name:form.elements.child_name.value.trim(),child_age:form.elements.child_age.value.trim(),quantity:Number(form.elements.quantity.value||1),message:form.elements.message.value.trim(),consent_snapshot:consentSnapshot,csrf:bookingCsrf};
+      const payload={slot_id:Number(slot.id),child_id:selected?.id?Number(selected.id):0,parent_name:form.elements.name.value.trim(),parent_email:form.elements.email.value.trim(),parent_phone:form.elements.phone.value.trim(),child_name:typedChildName,child_age:form.elements.child_age.value.trim(),quantity:Number(form.elements.quantity.value||1),message:form.elements.message.value.trim(),csrf:bookingCsrf};
       try{
         const res=await fetch("/api/booking-requests.php",{method:"POST",body:JSON.stringify(payload),credentials:"same-origin",headers:{"Content-Type":"application/json",Accept:"application/json"}});
         const data=await res.json();if(!res.ok||!data.ok)throw new Error(data.message||data.error||"Could not create booking");
