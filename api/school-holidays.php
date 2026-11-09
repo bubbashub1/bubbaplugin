@@ -82,7 +82,6 @@ $db->exec("UPDATE bh_school_holidays SET recurrence_type='fixed_date' WHERE is_r
  if($recurrenceType!=='none'&&$recurrenceType!=='fixed_date'){
   $dt=new DateTimeImmutable($start);$month=(int)$dt->format('n');$day=(int)$dt->format('j');$weekday=(int)$dt->format('N');
   $expectedMonth=$recurrenceType==='last_monday_august'?8:5;
-  $first=new DateTimeImmutable($dt->format('Y').'-'.sprintf('%02d',$expectedMonth).'-01');
   if($month!==$expectedMonth||$weekday!==1)bhHolidayReply(422,['ok'=>false,'error'=>'start_date_must_match_repeat_pattern']);
   if($recurrenceType==='first_monday_may'&&$day>7)bhHolidayReply(422,['ok'=>false,'error'=>'start_date_must_match_repeat_pattern']);
   if($recurrenceType!=='first_monday_may'&&$day<25)bhHolidayReply(422,['ok'=>false,'error'=>'start_date_must_match_repeat_pattern']);
