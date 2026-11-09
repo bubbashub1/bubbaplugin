@@ -531,7 +531,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       if(raw.includes("cornwall"))return "Cornwall";
       if(raw.includes("plymouth"))return "Plymouth";
       if(raw.includes("torbay"))return "Torbay";
-      if(raw.includes("devon")||raw.includes("exeter")||raw.includes("south hams")||raw.includes("teignbridge")||raw.includes("north devon")||raw.includes("mid devon")||raw.includes("east devon")||raw.includes("west devon")||raw.includes("bradworthy")||/\\bex\\d{1,2}/i.test(raw))return "Devon";
+      if(raw.includes("devon")||raw.includes("exeter")||raw.includes("south hams")||raw.includes("teignbridge")||raw.includes("north devon")||raw.includes("mid devon")||raw.includes("east devon")||raw.includes("west devon")||raw.includes("bradworthy")||/\bex\d{1,2}/i.test(raw))return "Devon";
       return "";
     };
     const loadHolidayDates=async month=>{
