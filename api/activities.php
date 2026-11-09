@@ -387,7 +387,8 @@ try {
     }
 
     // Native Bubba Hub bookable sessions. Only future, open Bubba slots are public.
-    if ($activities) {
+    $hasBookingSlots = (bool)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_booking_slots'")->fetchColumn();
+    if ($activities && $hasBookingSlots) {
         $ids = array_keys($activities);
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
         $slotQ = $db->prepare("SELECT s.id,s.activity_id,s.starts_at,s.ends_at,s.capacity,s.seats_remaining,s.price,s.status,v.venue_name
