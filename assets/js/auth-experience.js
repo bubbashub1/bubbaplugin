@@ -146,7 +146,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const requestedMode = params.get("mode");
   const shouldOpen = params.has("context") || params.has("mode") || params.has("next") || params.has("event");
   if (shouldOpen) {
-    const requestedNext = params.get("next") || "";\n    const role = requestedContext === "leader" || requestedNext.startsWith("/leader/") || requestedNext.startsWith("/claim-invitation.html") ? "leader" : requestedContext === "volunteer" || requestedNext.startsWith("/team-hub/") ? "volunteer" : "family";
+    const requestedNext = params.get("next") || "";
+    const role = requestedContext === "leader" || requestedNext.startsWith("/leader/") || requestedNext.startsWith("/claim-invitation.html") ? "leader" : requestedContext === "volunteer" || requestedNext.startsWith("/team-hub/") ? "volunteer" : "family";
     openModal(role, null);
   }
 
