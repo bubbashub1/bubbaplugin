@@ -521,11 +521,47 @@ document.addEventListener("DOMContentLoaded",async()=>{
     };
     const dateKey=date=>[date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");
     const sameDay=(a,b)=>dateKey(a)===dateKey(b);
+    const holidayCache=new Map();
+    const areaForSession=session=>{
+      const raw=String(a.county||a.region||session.venue_region||session.venue?.region||"").trim().toLowerCase();
+      if(raw.includes("cornwall"))return "Cornwall";
+      if(raw.includes("plymouth"))return "Plymouth";
+      if(raw.includes("torbay"))return "Torbay";
+      if(raw.includes("devon")||raw.includes("exeter")||raw.includes("south hams")||raw.includes("teignbridge")||raw.includes("north devon")||raw.includes("mid devon")||raw.includes("east devon")||raw.includes("west devon"))return "Devon";
+      return "";
+    };
+    const loadHolidayDates=async month=>{
+      const from=dateKey(new Date(month.getFullYear(),month.getMonth(),1));
+      const to=dateKey(new Date(month.getFullYear(),month.getMonth()+1,0));
+      const areas=[...new Set(calendarSessions.map(areaForSession).filter(Boolean))];
+      await Promise.all(areas.map(async area=>{
+        const key=area+"|"+from;
+        if(holidayCache.has(key))return;
+        try{
+          const response=await fetch("/api/school-holidays.php?area="+encodeURIComponent(area)+"&from="+from+"&to="+to,{cache:"no-store"});
+          const payload=await response.json();
+          const dates=new Set();
+          if(response.ok&&payload.ok)(payload.holidays||[]).forEach(period=>{
+            const start=parseDate(period.start_date),end=parseDate(period.end_date);
+            if(!start||!end)return;
+            for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1))dates.add(dateKey(d));
+          });
+          holidayCache.set(key,dates);
+        }catch(error){holidayCache.set(key,new Set());}
+      }));
+    };
+    const isHoliday=(session,date)=>{
+      const area=areaForSession(session);
+      if(!area)return false;
+      const key=area+"|"+dateKey(new Date(date.getFullYear(),date.getMonth(),1));
+      return holidayCache.get(key)?.has(dateKey(date))||false;
+    };
     const occurs=(session,date)=>{
       const start=parseDate(session.start_date),end=parseDate(session.end_date),once=String(session.frequency||"").toLowerCase()==="once";
       if(start&&date<start)return false;
       if(end&&date>end)return false;
       if(once)return !!start&&sameDay(start,date);
+      if(session.term_time&&!isHoliday(session,date)){}else if(session.term_time&&isHoliday(session,date))return false;
       const weekday=dayNumber(session);
       return !!weekday&&((date.getDay()||7)===weekday);
     };
@@ -537,7 +573,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
     shownMonth=new Date(selectedDate.getFullYear(),selectedDate.getMonth(),1);
     mount.innerHTML='<div class="bh-session-calendar" aria-label="Session calendar"><div class="bh-calendar-toolbar"><button type="button" class="bh-calendar-nav" data-step="-1" aria-label="Previous month">‹</button><strong class="bh-calendar-month" aria-live="polite"></strong><button type="button" class="bh-calendar-nav" data-step="1" aria-label="Next month">›</button></div><div class="bh-calendar-weekdays">'+dayNames.map(d=>'<span>'+d.slice(0,2)+'</span>').join("")+'</div><div class="bh-calendar-days" role="grid"></div><div class="bh-calendar-selected"><strong class="bh-calendar-selected-date"></strong><div class="bh-calendar-session-list" aria-live="polite"></div></div></div>';
     const monthLabel=mount.querySelector(".bh-calendar-month"),daysGrid=mount.querySelector(".bh-calendar-days"),selectedLabel=mount.querySelector(".bh-calendar-selected-date"),sessionList=mount.querySelector(".bh-calendar-session-list");
-    const render=()=>{
+    const render=async()=>{
+      await loadHolidayDates(shownMonth);
       monthLabel.textContent=shownMonth.toLocaleDateString("en-GB",{month:"long",year:"numeric"});
       daysGrid.replaceChildren();
       const offset=(new Date(shownMonth.getFullYear(),shownMonth.getMonth(),1).getDay()+6)%7;
@@ -559,7 +596,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       selectedLabel.textContent=selectedDate.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"});
       sessionList.replaceChildren();
       const matches=calendarSessions.filter(s=>occurs(s,selectedDate)).sort((a,b)=>String(a.start||"").localeCompare(String(b.start||"")));
-      if(!matches.length){const empty=document.createElement("p");empty.className="bh-calendar-empty";empty.textContent="No sessions listed for this date. Choose a date with a dot to see available sessions.";sessionList.append(empty);return}
+      if(!matches.length){const empty=document.createElement("p");empty.className="bh-calendar-empty";empty.textContent=calendarSessions.some(s=>s.term_time&&isHoliday(s,selectedDate))?"School holiday dates are saved for this area, so term-time-only sessions are not shown.":"No sessions listed for this date. Choose a date with a dot to see available sessions.";sessionList.append(empty);return}
       matches.forEach(session=>{
         const card=document.createElement("article");card.className="bh-calendar-session";
         const heading=document.createElement("div");heading.className="bh-calendar-session-copy";
