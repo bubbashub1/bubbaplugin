@@ -336,9 +336,6 @@ function bh_ensure_reset_table(PDO $db): void {
  */
 function bh_social_login(PDO $db, string $provider, string $providerId, string $email, string $displayName, string $ctx, bool $emailTrusted, string $organisation='', bool $termsAccepted=false): array {
     bh_ensure_social_table($db);
-    if ($ctx === 'leader' && (!$emailTrusted || !$termsAccepted || trim($organisation) === '' || mb_strlen(trim($organisation)) > 190)) {
-        bh_auth_response(422, ['ok'=>false,'error'=>'leader_registration_details_required','message'=>'To create a class leader account with Google, choose Create account, enter your class or organisation name and agree to the organiser terms.']);
-    }
     if ($ctx === 'leader') bh_ensure_email_verification_schema($db);
 
     $stmt = $db->prepare("SELECT u.id,u.email,u.role,u.status,u.email_verified_at FROM bh_social_accounts s JOIN bh_users u ON u.id=s.user_id WHERE s.provider=? AND s.provider_user_id=? LIMIT 1");
@@ -378,6 +375,9 @@ function bh_social_login(PDO $db, string $provider, string $providerId, string $
         return [$user, false];
     }
 
+    if ($ctx === 'leader' && (!$emailTrusted || !$termsAccepted || trim($organisation) === '' || mb_strlen(trim($organisation)) > 190)) {
+        bh_auth_response(422, ['ok'=>false,'error'=>'leader_registration_details_required','message'=>'To create a class leader account with Google, choose Create account, enter your class or organisation name and agree to the organiser terms.']);
+    }
     $role = $ctx === 'leader' ? 'leader' : 'family';
     try {
         $db->beginTransaction();
