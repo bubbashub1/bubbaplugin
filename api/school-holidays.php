@@ -16,14 +16,19 @@ if($action==='admin'||$method==='POST'){
   if(!$secure||!$source||parse_url($source,PHP_URL_SCHEME)!=='https'||strtolower((string)parse_url($source,PHP_URL_HOST))!==$host)bhHolidayReply(403,['ok'=>false,'error'=>'invalid_origin']);
   $token=(string)($_SERVER['HTTP_X_CSRF_TOKEN']??'');if(empty($_SESSION['bh_school_holidays_csrf'])||!hash_equals((string)$_SESSION['bh_school_holidays_csrf'],$token))bhHolidayReply(403,['ok'=>false,'error'=>'invalid_csrf']);
  }
-}
+ if($method==='GET'&&$action==='admin'){
+  if(empty($_SESSION['bh_school_holidays_csrf']))$_SESSION['bh_school_holidays_csrf']=bin2hex(random_bytes(32));
+  $adminCsrfToken=(string)$_SESSION['bh_school_holidays_csrf'];
+ }
+ }
+ // Release the admin session lock once authentication and CSRF checks are complete.
+ if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 try{
  require_once __DIR__.'/db.php';$db=bh_mysql();
  $db->exec("CREATE TABLE IF NOT EXISTS bh_school_holidays (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,area VARCHAR(40) NOT NULL,holiday_name VARCHAR(100) NOT NULL,start_date DATE NOT NULL,end_date DATE NOT NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,KEY idx_bh_school_holidays_area_dates(area,start_date,end_date)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
  if($method==='GET'&&$action==='admin'){
-  if(empty($_SESSION['bh_school_holidays_csrf']))$_SESSION['bh_school_holidays_csrf']=bin2hex(random_bytes(32));
-  $rows=$db->query('SELECT id,area,holiday_name,start_date,end_date FROM bh_school_holidays ORDER BY start_date,area,holiday_name')->fetchAll(PDO::FETCH_ASSOC);
-  bhHolidayReply(200,['ok'=>true,'csrf_token'=>$_SESSION['bh_school_holidays_csrf'],'areas'=>$areas,'holidays'=>$rows]);
+   $rows=$db->query('SELECT id,area,holiday_name,start_date,end_date FROM bh_school_holidays ORDER BY start_date,area,holiday_name')->fetchAll(PDO::FETCH_ASSOC);
+  bhHolidayReply(200,['ok'=>true,'csrf_token'=>$adminCsrfToken,'areas'=>$areas,'holidays'=>$rows]);
  }
  if($method==='GET'){
   $area=trim((string)($_GET['area']??''));$from=(string)($_GET['from']??'');$to=(string)($_GET['to']??'');
