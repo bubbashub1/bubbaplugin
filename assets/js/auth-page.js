@@ -59,7 +59,7 @@ const renderGoogle=async()=>{
             throw Error(d.message||"Google sign-in could not be completed.");
           }
           if(d.csrf)csrf=d.csrf;
-          location.replace(context==="leader"?(next.startsWith("/leader/")?next:"/leader/"):(next&&!next.startsWith("/leader/")?next:"/account.html"));
+          const signedInAs=d.user?.role==="leader"?"leader":"family";location.replace(signedInAs==="leader"?(next.startsWith("/leader/")||next.startsWith("/claim-invitation.html")?next:"/leader/"):(next&&!next.startsWith("/leader/")?next:"/account.html"));
         }catch(e){await renderGoogle();message(e.message||"Please try again.",true);}
       }
     });
