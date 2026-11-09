@@ -8,8 +8,10 @@ This checklist is for the native Bubba Hub authentication system in `bubbaplugin
 - [ ] Add `https://bubbahub.co.uk` to **Authorised JavaScript origins**.
 - [ ] The current Google Identity Services button/ID-token flow posts credentials to Bubba Hub; it does not require a Google redirect callback URI.
 - [ ] Copy the **Client ID** only. Never put a client secret in browser code or commit it to Git.
-- [ ] Add the client ID to the private server-side `api/config.php` under `google.client_id`, e.g. `'google' => ['client_id' => 'YOUR-WEB-CLIENT-ID']`.
-- [ ] Keep `api/config.php` private and outside version control. The existing `BH_GOOGLE_CLIENT_ID` constant in `wp-config.php` remains an override.
+- [ ] Set `BH_GOOGLE_CLIENT_ID` in the existing live `public_html/wp-config.php` to the Google Web Client ID. This is the preferred configuration for the current Bubba Hub installation.
+- [ ] The native auth endpoint reads this constant directly from `wp-config.php`; no duplicate setting or new `api/config.php` is required when the constant is present.
+- [ ] If a private `api/config.php` already exists for other native API settings, leave it unchanged. The `wp-config.php` constant takes precedence for Google login.
+- [ ] Never commit credentials or a client secret to Git.
 - [ ] Check the Google OAuth consent screen app name, support email, authorised domains and test-user/publishing status.
 
 ## 2. Pre-release code checks
