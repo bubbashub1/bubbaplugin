@@ -92,36 +92,57 @@ function bh_read_wp_constant(string $name): string {
 }
 
 /* -------------------------------------------------------------------------
- * Rate limiting (DB backed, fails open if the table cannot be created)
+ * Rate limiting (atomic DB counters; fail closed if unavailable)
  * ---------------------------------------------------------------------- */
 
 function bh_rate_limit(PDO $db, string $bucket, int $max, int $windowSeconds): void {
     static $ready = false;
     try {
+        $windowSeconds = max(1, min(86400, $windowSeconds));
         if (!$ready) {
-            $db->exec("CREATE TABLE IF NOT EXISTS bh_rate_limits (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,bucket CHAR(64) NOT NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY(id),KEY idx_bucket_time(bucket,created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            $db->exec("CREATE TABLE IF NOT EXISTS bh_rate_limit_counters (
+                bucket CHAR(64) NOT NULL,
+                window_seconds INT UNSIGNED NOT NULL,
+                window_key BIGINT NOT NULL,
+                attempts INT UNSIGNED NOT NULL DEFAULT 0,
+                updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (bucket, window_seconds, window_key),
+                KEY idx_rate_counter_updated (updated_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
             $ready = true;
         }
+
         $key = hash('sha256', $bucket);
-        $q = $db->prepare("SELECT COUNT(*) FROM bh_rate_limits WHERE bucket=? AND created_at > (NOW() - INTERVAL " . (int)$windowSeconds . " SECOND)");
-        $q->execute([$key]);
-        if ((int)$q->fetchColumn() >= $max) {
-            header('Retry-After: ' . $windowSeconds);
+        $windowKey = intdiv(time(), $windowSeconds);
+        // One atomic upsert prevents concurrent requests bypassing a count-then-insert check.
+        $upsert = $db->prepare("INSERT INTO bh_rate_limit_counters (bucket, window_seconds, window_key, attempts)
+            VALUES (?, ?, ?, 1)
+            ON DUPLICATE KEY UPDATE attempts = attempts + 1");
+        $upsert->execute([$key, $windowSeconds, $windowKey]);
+
+        $q = $db->prepare("SELECT attempts FROM bh_rate_limit_counters WHERE bucket=? AND window_seconds=? AND window_key=? LIMIT 1");
+        $q->execute([$key, $windowSeconds, $windowKey]);
+        if ((int)$q->fetchColumn() > $max) {
+            header('Retry-After: ' . max(1, (($windowKey + 1) * $windowSeconds) - time()));
             bh_auth_response(429, ['ok'=>false,'error'=>'rate_limited','message'=>'Too many attempts. Please wait a little while and try again.']);
         }
-        $db->prepare("INSERT INTO bh_rate_limits (bucket) VALUES (?)")->execute([$key]);
+
         if (random_int(1, 100) === 1) {
-            $db->exec("DELETE FROM bh_rate_limits WHERE created_at < (NOW() - INTERVAL 1 DAY)");
+            $db->exec("DELETE FROM bh_rate_limit_counters WHERE updated_at < (NOW() - INTERVAL 2 DAY)");
         }
     } catch (PDOException $e) {
-        error_log('Bubba Hub rate limiter unavailable: ' . $e->getMessage());
+        error_log('Bubba Hub rate limiter unavailable; request blocked: ' . $e->getMessage());
+        header('Retry-After: 60');
+        bh_auth_response(503, ['ok'=>false,'error'=>'rate_limiter_unavailable','message'=>'Sign-in is temporarily unavailable. Please try again in a minute.']);
     }
 }
 
 function bh_rate_clear(PDO $db, string $bucket): void {
     try {
-        $db->prepare("DELETE FROM bh_rate_limits WHERE bucket=?")->execute([hash('sha256', $bucket)]);
-    } catch (PDOException $e) {}
+        $db->prepare("DELETE FROM bh_rate_limit_counters WHERE bucket=?")->execute([hash('sha256', $bucket)]);
+    } catch (PDOException $e) {
+        error_log('Bubba Hub rate limiter reset failed: ' . $e->getMessage());
+    }
 }
 
 /* -------------------------------------------------------------------------
