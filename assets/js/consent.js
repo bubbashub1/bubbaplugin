@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded",()=>{
  }
  async function load(){
    try{
+     childSelect.replaceChildren(new Option("Manual child details",""));
      const childRes=await fetch("/api/my-hub.php?view=family",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});
      if(childRes.ok){
        const childData=await childRes.json();
