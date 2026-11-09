@@ -243,10 +243,25 @@ document.addEventListener("DOMContentLoaded",async()=>{
     lead.className="activity-concept-lead";
     const supporting=document.createElement("div");
     supporting.className="activity-concept-support";
+
+    // Categories sit above the two-column content, not inside the description card.
+    const categoryTags=about?.querySelector(".activity-keyword-tags");
+    if(categoryTags){
+      const categorySection=document.createElement("section");
+      categorySection.className="activity-category-strip";
+      categorySection.setAttribute("aria-label","Activity categories");
+      categorySection.append(categoryTags);
+      layout.before(categorySection);
+    }
+
+    // Left column: description first, then the venue map and directions.
     if(about)lead.append(about);
-    if(location)supporting.append(location);
-    // Keep the timetable alongside its map and directions, rather than beneath long descriptions.
+    // Right column: timetable first, followed immediately by the organiser banner.
+    const organiserBanner=location?.querySelector(".activity-reference-organiser");
+    if(organiserBanner)organiserBanner.remove();
     if(schedule)supporting.append(schedule);
+    if(organiserBanner)supporting.append(organiserBanner);
+    if(location)lead.append(location);
     if(useful)supporting.append(useful);
     if(side){side.classList.add("activity-concept-extras");supporting.append(side);}
     details.append(lead,supporting);
