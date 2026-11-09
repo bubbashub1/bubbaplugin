@@ -2,7 +2,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   "use strict";
   const $ = id => document.getElementById(id);
   const list = $("slotList"), activity = $("bookingActivity"), message = $("bookingMessage");
+  const modeEls = [...document.querySelectorAll('input[name="mode"]')];
+  const external = $("externalPanel"), bubba = $("bubbaPanel"), url = $("bookingUrl");
+  let localSettings = {};
+  try { localSettings = JSON.parse(localStorage.getItem("bhBookingManager") || "{}"); } catch {}
   let csrf = "";
+  const renderMode = () => {
+    const mode = modeEls.find(x => x.checked)?.value || localSettings.mode || "bubba";
+    if (external) external.hidden = mode !== "external";
+    if (bubba) bubba.hidden = mode === "external";
+  };
+  modeEls.forEach(x => x.addEventListener("change", renderMode));
+  if (url) url.value = localSettings.url || "";
+  renderMode();
   const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   async function api(method="GET", body=null) {
     const response = await fetch("/api/booking-requests.php?view=manager", {
@@ -58,7 +70,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       await load();
     } catch(e) { message.textContent=e.message; }
   });
-  $("saveBooking").addEventListener("click",()=>{message.textContent="Your bookable sessions are saved directly to Bubba Hub."});
-  $("refreshExternal")?.addEventListener("click",()=>{message.textContent="External booking URL refresh is not part of this native booking prototype yet."});
+  $("saveBooking").addEventListener("click",()=>{
+    localSettings.mode = modeEls.find(x=>x.checked)?.value || "bubba";
+    localSettings.url = url?.value.trim() || "";
+    localStorage.setItem("bhBookingManager",JSON.stringify(localSettings));
+    message.textContent = localSettings.mode === "external"
+      ? "External booking preference saved on this device. Server-side URL syncing is a later step."
+      : "Your Bubba Hub bookable sessions are saved directly to the database.";
+  });
+  $("refreshExternal")?.addEventListener("click",()=>{
+    localSettings.url = url?.value.trim() || "";
+    localStorage.setItem("bhBookingManager",JSON.stringify(localSettings));
+    message.textContent = "External schedule refresh is not part of this native booking prototype yet. Families should use your booking website link.";
+  });
   await load();
 });
