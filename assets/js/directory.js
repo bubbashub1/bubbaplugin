@@ -524,6 +524,7 @@ const bhInitDirectory=async()=>{
 
     let calendarTimeFilter = "all";
     const renderCalendar = async list => {
+      const renderToken = calendarRenderToken;
       const calendar = $("calendarView");
       if (!calendar) return;
 
@@ -555,6 +556,8 @@ const bhInitDirectory=async()=>{
         return date;
       });
       const holidayDates = await loadSchoolHolidayDates(displayedList, days[0], days[6]);
+      // Ignore stale responses when a user changes weeks or filters before this request completes.
+      if (renderToken !== calendarRenderToken || currentView !== "calendar") return;
       const events = buildCalendarEvents(displayedList, days[0], days[6], holidayDates);
       const filteredEvents = Object.fromEntries(Object.entries(events).map(([day, entries]) => [day, entries.filter(event => {
         if (calendarTimeFilter === "all") return true;
