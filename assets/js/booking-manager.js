@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (bubba) bubba.hidden = mode === "external";
   };
   modeEls.forEach(x => x.addEventListener("change", renderMode));
+  if (localSettings.mode) modeEls.forEach(x => { x.checked = x.value === localSettings.mode; });
   if (url) url.value = localSettings.url || "";
   renderMode();
   const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
