@@ -80,3 +80,39 @@ jobs:
           print(f"Extracted {len(parser.scripts)} inline script(s)")
           PY
           for script in /tmp/activity-inline-*.js; do node --check "$script"; done
+
+  migration:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: test-root-password
+          MARIADB_DATABASE: bubbahub_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mariadb-admin ping -h 127.0.0.1 -ptest-root-password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install MariaDB client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mariadb-client
+      - name: Create disposable existing-schema fixture
+        run: mariadb -h127.0.0.1 -uroot -ptest-root-password bubbahub_test < tests/booking-migration-fixture.sql
+      - name: Apply booking migration twice
+        run: |
+          mariadb -h127.0.0.1 -uroot -ptest-root-password bubbahub_test < database/booking_integration_v0_2.sql
+          mariadb -h127.0.0.1 -uroot -ptest-root-password bubbahub_test < database/booking_integration_v0_2.sql
+      - name: Verify migration columns, index, organiser backfill and seat counts
+        run: |
+          columns=$(mariadb -N -h127.0.0.1 -uroot -ptest-root-password bubbahub_test -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_booking_reservations' AND COLUMN_NAME IN ('public_reference','organiser_id','parent_name','parent_email','parent_phone','child_id','child_name','child_age','message')")
+          index=$(mariadb -N -h127.0.0.1 -uroot -ptest-root-password bubbahub_test -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_booking_reservations' AND INDEX_NAME='uq_reservation_public_reference'")
+          state=$(mariadb -N -h127.0.0.1 -uroot -ptest-root-password bubbahub_test -e "SELECT CONCAT(br.organiser_id,':',s.seats_remaining,':',s.status) FROM bh_booking_reservations br JOIN bh_booking_slots s ON s.id=br.slot_id WHERE br.id=1")
+          test "$columns" = "9"
+          test "$index" = "1"
+          test "$state" = "42:2:open"
