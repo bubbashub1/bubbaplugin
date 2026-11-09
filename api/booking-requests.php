@@ -30,6 +30,21 @@ function br_organiser_id(PDO $db, int $userId, string $email): int {
 function br_status_for_ui(string $status): string {
     return $status === 'reserved' ? 'pending' : $status;
 }
+function br_sync_slot_capacity(PDO $db, int $slotId): void {
+    $q = $db->prepare("SELECT capacity FROM bh_booking_slots WHERE id=? FOR UPDATE");
+    $q->execute([$slotId]);
+    $capacity = $q->fetchColumn();
+    if ($capacity === false) return;
+    if ($capacity === null) {
+        $db->prepare("UPDATE bh_booking_slots SET seats_remaining=NULL WHERE id=?")->execute([$slotId]);
+        return;
+    }
+    $usedQ = $db->prepare("SELECT COALESCE(SUM(quantity),0) FROM bh_booking_reservations WHERE slot_id=? AND status IN ('reserved','confirmed','attended')");
+    $usedQ->execute([$slotId]);
+    $remaining = max(0, (int)$capacity - (int)$usedQ->fetchColumn());
+    $status = $remaining < 1 ? 'full' : 'open';
+    $db->prepare("UPDATE bh_booking_slots SET seats_remaining=?,status=? WHERE id=? AND status<>'cancelled'")->execute([$remaining,$status,$slotId]);
+}
 
 try {
     require_once __DIR__ . '/db.php';
@@ -160,6 +175,9 @@ try {
         $u = $db->prepare("UPDATE bh_booking_reservations SET status=? WHERE id=? AND organiser_id=? AND status IN ('reserved','confirmed')");
         $u->execute([$newStatus,$requestId,$organiserId]);
         if ($u->rowCount() !== 1) br_json(404, ['ok'=>false,'error'=>'booking_not_found_or_unchanged']);
+        $slotQ = $db->prepare("SELECT slot_id FROM bh_booking_reservations WHERE id=? AND organiser_id=?");
+        $slotQ->execute([$requestId,$organiserId]);
+        br_sync_slot_capacity($db,(int)$slotQ->fetchColumn());
         br_json(200, ['ok'=>true,'status'=>br_status_for_ui($newStatus)]);
     }
 
@@ -258,6 +276,7 @@ try {
         }
         $snapshotInsert = $db->prepare("INSERT INTO bh_booking_consent_snapshots (user_id,reservation_id,consent_profile_id,consent_version,child_name,consent_json,consent_given_at) VALUES (?,?,?,?,?,?,?)");
         $snapshotInsert->execute([$userId,$reservationId,(int)$profile['id'],(string)$profile['consent_version'],$childName,json_encode($snapshot,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),(string)$profile['consent_given_at']]);
+        br_sync_slot_capacity($db,$slotId);
         $db->commit();
     } catch (Throwable $e) {
         if ($db->inTransaction()) $db->rollBack();
