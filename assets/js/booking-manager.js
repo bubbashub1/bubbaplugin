@@ -1,18 +1,64 @@
-document.addEventListener("DOMContentLoaded",()=>{
- const KEY="bhBookingManager";let state={mode:"bubba",url:"",slots:[],lastChecked:null,nextCheck:null,requests:[]};
- try{state={...state,...JSON.parse(localStorage.getItem(KEY)||"{}")}}catch{}
- const $=id=>document.getElementById(id),modeEls=[...document.querySelectorAll('input[name="mode"]')],url=$("bookingUrl"),external=$("externalPanel"),bubba=$("bubbaPanel"),slots=$("slotList"),requests=$("requestList"),msg=$("bookingMessage");
- modeEls.forEach(x=>x.checked=x.value===state.mode);url.value=state.url||"";
- function save(){localStorage.setItem(KEY,JSON.stringify(state));}
- function renderMode(){const ext=state.mode==="external";external.style.display=ext?"block":"none";bubba.style.display=ext?"none":"block";modeEls.forEach(x=>x.checked=x.value===state.mode)}
- function renderMeta(){ $("lastChecked").textContent=state.lastChecked?new Date(state.lastChecked).toLocaleString("en-GB"):"Not checked yet"; $("nextCheck").textContent=state.nextCheck?new Date(state.nextCheck).toLocaleDateString("en-GB"):"After saving the URL")}
- function renderSlots(){if(!state.slots.length){slots.innerHTML='<div class="booking-empty">No sessions yet. Add the first bookable session.</div>';return}slots.innerHTML=state.slots.map((s,i)=>'<div class="leader-booking-slot"><div><strong>'+escapeHtml(s.date||"")+'</strong><span>'+escapeHtml(s.time||"")+(s.end?" – "+escapeHtml(s.end):"")+(s.price?" · £"+escapeHtml(s.price):"")+'</span></div><div><span>'+escapeHtml(String(s.capacity||0))+' places</span><button class="button button-soft" data-remove="'+i+'" type="button">Remove</button></div></div>').join("");slots.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{state.slots.splice(Number(b.dataset.remove),1);save();renderSlots()})}
- function renderRequests(){const rs=Array.isArray(state.requests)?state.requests:[];$("requestCount").textContent=rs.filter(x=>x.status==="new").length+" new";requests.innerHTML=rs.length?rs.map((r,i)=>'<article class="booking-request"><div><span class="eyebrow">'+escapeHtml(r.status||"new")+'</span><h3>'+escapeHtml(r.name||"Family")+'</h3><p><strong>'+escapeHtml(r.activity||"Activity")+'</strong>'+(r.date?" · "+escapeHtml(r.date):"")+(r.time?" · "+escapeHtml(r.time):"")+'</p><p>'+escapeHtml(r.email||"")+(r.phone?" · "+escapeHtml(r.phone):"")+'</p></div><select data-status="'+i+'"><option value="new">New</option><option value="contacted">Contacted</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option></select></article>').join(""):'<div class="booking-empty">No reservation requests yet.</div>';requests.querySelectorAll("[data-status]").forEach(s=>{s.value=rs[Number(s.dataset.status)].status||"new";s.onchange=()=>{rs[Number(s.dataset.status)].status=s.value;state.requests=rs;save();renderRequests()}})}
- function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]))}
- modeEls.forEach(x=>x.onchange=()=>{state.mode=x.value;renderMode()});
- url.oninput=()=>state.url=url.value.trim();
- $("saveBooking").onclick=()=>{state.url=url.value.trim();if(state.url&&!state.nextCheck){state.nextCheck=new Date(Date.now()+42*864e5).toISOString()}save();renderMeta();msg.textContent="Booking settings saved on this device for now. MySQL syncing will be connected next."};
- $("refreshExternal").onclick=()=>{state.url=url.value.trim();state.lastChecked=new Date().toISOString();state.nextCheck=new Date(Date.now()+42*864e5).toISOString();save();renderMeta();msg.textContent="Refresh requested. The live importer will check the booking source when the server API is connected."};
- $("addSlot").onclick=()=>{const date=prompt("Session date (e.g. 26 October 2026)");if(!date)return;const time=prompt("Start time (e.g. 10:00)");if(!time)return;const end=prompt("End time (optional)");const price=prompt("Price (optional, numbers only)");const capacity=prompt("Number of places");state.slots.push({date,time,end,price,capacity:Math.max(1,Number(capacity)||1)});save();renderSlots()};
- renderMode();renderMeta();renderSlots();renderRequests();
+document.addEventListener("DOMContentLoaded", async () => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const list = $("slotList"), activity = $("bookingActivity"), message = $("bookingMessage");
+  let csrf = "";
+  const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  async function api(method="GET", body=null) {
+    const response = await fetch("/api/booking-requests.php?view=manager", {
+      method, credentials:"same-origin", cache:"no-store",
+      headers: body ? {"Content-Type":"application/json","Accept":"application/json"} : {"Accept":"application/json"},
+      body: body ? JSON.stringify({...body,csrf}) : undefined
+    });
+    const data = await response.json().catch(()=>({}));
+    if(!response.ok || !data.ok) throw new Error(data.message || data.error || "Booking manager unavailable.");
+    if(data.csrf) csrf=data.csrf;
+    return data;
+  }
+  async function load() {
+    try {
+      const data=await api();
+      activity.replaceChildren(new Option("Choose a class",""));
+      (data.classes||[]).forEach(c=>activity.add(new Option(c.title,String(c.id))));
+      const rows=data.slots||[];
+      list.replaceChildren();
+      if(!rows.length){list.textContent="No bookable sessions yet. Add your first session below.";return;}
+      rows.forEach(s=>{
+        const card=document.createElement("article");card.className="leader-booking-slot";
+        const info=document.createElement("div");
+        const title=document.createElement("strong");title.textContent=s.title;
+        const meta=document.createElement("span");meta.textContent=new Date(String(s.starts_at).replace(" ","T")).toLocaleString("en-GB")+" · "+(s.venue_name||"Venue to confirm")+" · "+s.capacity+" places · "+(s.price===null?"Free / not set":"£"+s.price);
+        info.append(title,meta);
+        const actions=document.createElement("div");
+        const state=document.createElement("span");state.textContent=s.status;
+        const remove=document.createElement("button");remove.type="button";remove.className="button button-soft";remove.textContent="Close session";
+        remove.addEventListener("click",async()=>{if(!confirm("Close this session? Existing bookings must be dealt with first."))return;remove.disabled=true;try{await api("POST",{action:"delete_slot",slot_id:s.id});message.textContent="Session closed.";await load()}catch(e){message.textContent=e.message;remove.disabled=false}});
+        actions.append(state,remove);card.append(info,actions);list.append(card);
+      });
+      message.textContent="Booking sessions are connected to the database.";
+    } catch(e) {
+      list.textContent=e.message;
+      message.textContent=e.message;
+    }
+  }
+  $("addSlot").addEventListener("click",async()=>{
+    const activityId=Number(activity.value);
+    if(!activityId){message.textContent="Choose a class first.";activity.focus();return;}
+    const date=prompt("Session date (YYYY-MM-DD)");
+    if(!date)return;
+    const time=prompt("Start time (24-hour HH:MM)");
+    if(!time)return;
+    const end=prompt("End time (YYYY-MM-DD HH:MM) — leave blank if not known")||"";
+    const capacity=Number(prompt("Number of places available","10"));
+    const price=prompt("Price per place (numbers only; leave blank if free or not set)","")||"";
+    const startsAt=date+" "+time;
+    try {
+      await api("POST",{action:"create_slot",activity_id:activityId,starts_at:startsAt,ends_at:end,capacity,price});
+      message.textContent="Session added.";
+      await load();
+    } catch(e) { message.textContent=e.message; }
+  });
+  $("saveBooking").addEventListener("click",()=>{message.textContent="Your bookable sessions are saved directly to Bubba Hub."});
+  $("refreshExternal")?.addEventListener("click",()=>{message.textContent="External booking URL refresh is not part of this native booking prototype yet."});
+  await load();
 });
