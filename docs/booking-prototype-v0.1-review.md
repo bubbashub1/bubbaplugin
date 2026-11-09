@@ -55,9 +55,10 @@ The old `bh_booking_requests` table is not part of the new design and its protot
 ## Test status
 
 - Code/schema review: **in progress**.
-- PHP lint: **NOT RUN**.
-- JavaScript syntax/browser checks: **NOT RUN**.
-- Disposable database migration test: **NOT RUN**.
+- Existing leader organiser-profile MySQL regression workflow: **PASSED** on the integration branch.
+- PHP syntax checks: **PASSED** in GitHub Actions on the current integration branch.
+- JavaScript syntax checks, including inline activity page scripts: **PASSED** in GitHub Actions on the current integration branch.
+- Disposable MariaDB migration repeat-run and seat-count test: **IN PROGRESS** in GitHub Actions. An initial run hit a CI client TLS setting; the workflow was corrected and rerun.
 - Role and ownership tests: **NOT RUN**.
 - Consent validation/tampering tests: **NOT RUN**.
 - Capacity/concurrency tests: **NOT RUN**.
