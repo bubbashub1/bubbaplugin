@@ -1,1 +1,65 @@
-<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="../"><title>My Venues · Bubba Hub</title><link rel="stylesheet" href="assets/css/styles.css"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/subpages-v2.css"></head><body class="bh-subpage-v2" data-leader-page="venues"><header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main menu"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">My Account</a></nav><a class="button button-soft" href="account.html">My account</a></header><main class="app-shell bh-leader-page"><section class="page-heading bh-leader-hero"><div><span class="eyebrow">Leader portal</span><h1>My Venues</h1><p>Keep the locations used by your classes accurate and family-friendly.</p></div><a class="button button-soft" href="leader.html">Dashboard</a></section><nav class="bh-leader-tabs" aria-label="Leader portal sections"><a href="leader.html">Dashboard</a><a href="leader/classes.html">Classes</a><a href="leader/venues.html">Venues</a><a href="leader/schedule.html">Schedule</a><a href="leader/bookings.html">Bookings</a><a href="leader/statistics.html">Statistics</a><a href="leader/payments.html">Payments</a><a href="leader/faqs.html">FAQs</a><a href="leader/blog.html">Blog</a><a href="leader/profile.html">Profile</a><a href="leader/messages.html">My Messages</a><a href="leader/specialisms.html">My Specialisms</a><a href="leader/support.html">Support</a></nav><section class="admin-panel"><div class="admin-panel-head"><div><span class="eyebrow">Locations</span><h2>Your venues</h2><p>Edit addresses and map details for your class locations.</p></div></div><div id="venueList" class="bh-leader-manage-list"></div></section><p id="portalMessage" class="deployment-note" role="status">Loading your venues…</p></main><footer class="site-footer"><div class="site-footer-grid"><div class="site-footer-brand"><a href="index.html" class="site-footer-logo" aria-label="Bubba Hub home"><img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><div class="site-footer-brand-copy"><a href="index.html" class="site-footer-title">Bubba Hub</a><p>Find, plan &amp; book family activities across Devon &amp; Cornwall.</p></div></div><div class="site-footer-column"><h2>Main menu</h2><nav class="site-footer-links"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">Account</a></nav></div><div class="site-footer-column"><h2>Leader portal</h2><nav class="site-footer-links"><a href="leader.html">Dashboard</a><a href="leader/classes.html">Classes</a><a href="leader/venues.html">Venues</a><a href="leader/schedule.html">Schedule</a><a href="leader/bookings.html">Bookings</a><a href="leader/profile.html">Profile</a><a href="leader/support.html">Support</a></nav></div><div class="site-footer-column"><h2>Legal &amp; contact</h2><nav class="site-footer-links"><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Conditions</a><a href="mailto:contact@bubbahub.co.uk">Contact Bubba Hub</a></nav></div></div><div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div></footer><script src="assets/js/app.js"></script><script src="assets/js/leader-demo.js"></script><script src="assets/js/leader-portal.js"></script></body></html>
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<base href="../">
+<title>My Venues · Bubba Hub</title>
+<link rel="stylesheet" href="assets/css/styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/subpages-v2.css">
+<style>
+.bh-venues-intro{color:#617261;margin:.35rem 0 0;max-width:720px}
+.bh-venues-summary{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 18px}
+.bh-venues-summary span{display:inline-flex;gap:6px;align-items:center;background:#edf5ef;border:1px solid #d8e6db;border-radius:999px;padding:8px 13px;font-size:.9rem;font-weight:700;color:#315a3c}
+.bh-venue-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.bh-venue-card{background:#fff;border:1px solid #dce8de;border-radius:17px;padding:19px;min-width:0}
+.bh-venue-card h3{margin:4px 0 6px;font-size:1.15rem;color:#174b2b}
+.bh-venue-address{margin:0 0 14px;color:#5c6d60;line-height:1.5}
+.bh-venue-activity-list{border-top:1px solid #e6eee7;padding-top:12px;display:grid;gap:9px}
+.bh-venue-activity{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.bh-venue-activity a{font-weight:700;color:#245b37;text-decoration:none}
+.bh-venue-activity a:hover{text-decoration:underline}
+.bh-venue-activity small{display:block;color:#6a786d;margin-top:2px}
+.bh-venue-map-link{display:inline-block;margin-top:12px;font-size:.88rem;font-weight:700;color:#356b79}
+.bh-venues-empty{padding:22px;border:1px dashed #cbd9ce;border-radius:15px;color:#5b6d60;background:#f8fbf8}
+@media(max-width:760px){.bh-venue-list{grid-template-columns:1fr}}
+</style>
+</head>
+<body class="bh-subpage-v2 bh-leader-v2" data-leader-page="venues">
+<header class="site-header">
+<a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a>
+<nav class="main-nav" aria-label="Main menu"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">My Account</a></nav>
+<a class="button button-soft" href="account.html">My account</a>
+</header>
+<main class="app-shell bh-leader-page">
+<section class="page-heading bh-leader-hero">
+<div><span class="eyebrow">Leader portal</span><h1>My Venues</h1><p class="bh-venues-intro">A read-only overview of the places used by your classes, with the activities linked to each location.</p></div>
+<a class="button button-soft" href="leader.html">← Dashboard</a>
+</section>
+<nav class="bh-leader-tabs" aria-label="Leader portal sections">
+<a href="leader.html">Dashboard</a><a href="leader/classes.html">Classes</a><a href="leader/venues.html" aria-current="page">Venues</a><a href="leader/schedule.html">Schedule</a><a href="leader/bookings.html">Bookings</a><a href="leader/statistics.html">Statistics</a><a href="leader/payments.html">Payments</a><a href="leader/faqs.html">FAQs</a><a href="leader/profile.html">Profile</a><a href="leader/messages.html">My Messages</a><a href="leader/specialisms.html">My Specialisms</a><a href="leader/support.html">Support</a>
+</nav>
+<section class="admin-panel">
+<div class="admin-panel-head"><div><span class="eyebrow">Your locations</span><h2>Venues used by your classes</h2><p>Venue details are managed by the Bubba Hub team. Contact support if an address or location needs changing.</p></div></div>
+<div id="venueSummary" class="bh-venues-summary" hidden></div>
+<div id="venueList" class="bh-venue-list" aria-live="polite"></div>
+</section>
+<p id="portalMessage" class="deployment-note" role="status" aria-live="polite">Loading your venues…</p>
+</main>
+<footer class="site-footer">
+<div class="site-footer-grid">
+<div class="site-footer-brand"><a href="index.html" class="site-footer-logo" aria-label="Bubba Hub home"><img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><div class="site-footer-brand-copy"><a href="index.html" class="site-footer-title">Bubba Hub</a><p>Find, plan &amp; book family activities across Devon &amp; Cornwall.</p></div></div>
+<div class="site-footer-column"><h2>Main menu</h2><nav class="site-footer-links"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">Account</a></nav></div>
+<div class="site-footer-column"><h2>Leader portal</h2><nav class="site-footer-links"><a href="leader.html">Dashboard</a><a href="leader/classes.html">Classes</a><a href="leader/venues.html">My Venues</a><a href="leader/schedule.html">Schedule</a><a href="leader/bookings.html">Bookings</a><a href="leader/profile.html">Profile</a><a href="leader/support.html">Support</a></nav></div>
+<div class="site-footer-column"><h2>Legal &amp; contact</h2><nav class="site-footer-links"><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Conditions</a><a href="mailto:contact@bubbahub.co.uk">Contact Bubba Hub</a></nav></div>
+</div>
+<div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div>
+</footer>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/leader-demo.js"></script>
+<script src="assets/js/leader-portal.js"></script>
+</body>
+</html>
