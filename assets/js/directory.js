@@ -466,7 +466,8 @@ const bhInitDirectory=async()=>{
     };
 
     const schoolHolidayCache = new Map();
-    const activityIsTermTime = activity => bhSessions(activity).some(s => !!s.term_time);
+    const termTimeOnly = session => [true,1,"1","true","yes","y","term time","term-time","term time only"].includes(typeof session.term_time==="string"?session.term_time.trim().toLowerCase():session.term_time);
+    const activityIsTermTime = activity => bhSessions(activity).some(termTimeOnly);
     const countyForActivity = activity => {
       const raw=String(activity.county||activity.region||"").trim().toLowerCase();
       if(raw.includes("cornwall"))return "Cornwall";
