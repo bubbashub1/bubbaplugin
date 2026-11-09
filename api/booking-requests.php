@@ -283,7 +283,6 @@ try {
         'emergency_contact_name'=>$profile['emergency_contact_name'],
         'emergency_contact_phone'=>$profile['emergency_contact_phone'],
         'photo_activity'=>(bool)$profile['photo_activity'],
-        'photo_bubbahub'=>(bool)$profile['photo_bubbahub'],
         'photo_organiser_marketing'=>(bool)$profile['photo_organiser_marketing'],
         'consent_to_share_with_organiser'=>true,
         'consent_version'=>(string)$profile['consent_version'],
