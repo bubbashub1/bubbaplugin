@@ -117,6 +117,16 @@ sort($tagOptions,SORT_NATURAL|SORT_FLAG_CASE);
 lp(200,['ok'=>true,'organisation'=>array_merge($org,['login_email'=>$leaderEmail]),'classes'=>$classes,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions,'category_options'=>$categoryOptions,'tag_options'=>$tagOptions,'venues'=>$venues,'max_images'=>$imageLimit,'is_pro'=>$isPro,'faq_limit'=>$faqLimit]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')lp(405,['ok'=>false,'error'=>'method_not_allowed']);
+// All leader-portal changes and uploads must originate from the secure Bubba Hub site.
+// This protects JSON requests and multipart uploads without changing existing forms.
+$origin=(string)($_SERVER['HTTP_ORIGIN']??'');
+$originScheme=strtolower((string)parse_url($origin,PHP_URL_SCHEME));
+$originHost=strtolower((string)parse_url($origin,PHP_URL_HOST));
+$requestHost=strtolower((string)parse_url('https://'.(string)($_SERVER['HTTP_HOST']??''),PHP_URL_HOST));
+$originPort=parse_url($origin,PHP_URL_PORT);
+if($origin===''||$originScheme!=='https'||$originHost===''||$requestHost===''||$originHost!==$requestHost||($originPort!==null&&$originPort!==443)){
+ lp(403,['ok'=>false,'error'=>'origin_forbidden','message'=>'For your security, refresh the page and try again.']);
+}
 if($_SERVER['REQUEST_METHOD']==='POST' && !empty($_FILES['image']) && ($_POST['action']??'')==='upload_activity_image'){
  $activityId=(int)($_POST['activity_id']??0); if($activityId<1)lp(422,['ok'=>false,'error'=>'activity_required','message'=>'Activity is required.']);
  $own=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND organiser_id=? LIMIT 1");$own->execute([$activityId,$oid]);if(!$own->fetch())lp(404,['ok'=>false,'error'=>'activity_not_found','message'=>'Class not found.']);
