@@ -75,7 +75,7 @@ try {
 
     require_once __DIR__ . '/mailer.php';
 
-    if (!bh_send_smtp_mail((string)$activity['email'], $mailSubject, nl2br(htmlspecialchars($body, ENT_QUOTES, 'UTF-8')), $body, $email)) {
+    if (!bh_send_smtp_mail((string)$activity['destination_email'], $mailSubject, nl2br(htmlspecialchars($body, ENT_QUOTES, 'UTF-8')), $body, $email)) {
         http_response_code(500);
         echo json_encode(['ok' => false, 'error' => 'We could not send your message right now. Please try again later.']);
         exit;
