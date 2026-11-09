@@ -14,6 +14,20 @@ function br_csrf(): string {
     if (!isset($_SESSION['bh_csrf'])) $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
     return (string)$_SESSION['bh_csrf'];
 }
+function br_organiser_id(PDO $db, int $userId, string $email): int {
+    $hasUserId = false;
+    $check = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME='user_id'");
+    $check->execute();
+    $hasUserId = (int)$check->fetchColumn() > 0;
+    if ($hasUserId) {
+        $q = $db->prepare("SELECT id FROM bh_organisers WHERE user_id=? LIMIT 1");
+        $q->execute([$userId]);
+    } else {
+        $q = $db->prepare("SELECT id FROM bh_organisers WHERE LOWER(email)=? LIMIT 1");
+        $q->execute([strtolower($email)]);
+    }
+    return (int)$q->fetchColumn();
+}
 
 try {
     require_once __DIR__ . '/db.php';
@@ -37,9 +51,7 @@ try {
 
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         if ($role === 'leader') {
-            $orgQ = $db->prepare("SELECT id FROM bh_organisers WHERE user_id=? OR email=? ORDER BY (user_id=?) DESC LIMIT 1");
-            $orgQ->execute([$userId, strtolower((string)$user['email']), $userId]);
-            $organiserId = (int)$orgQ->fetchColumn();
+            $organiserId = br_organiser_id($db, $userId, (string)$user['email']);
             if ($organiserId < 1) br_json(403, ['ok'=>false,'error'=>'organiser_required']);
             $q = $db->prepare("SELECT r.id,r.public_reference,r.status,r.quantity,r.parent_name,r.parent_email,r.parent_phone,r.child_name,r.child_age,r.message,r.requested_at,s.starts_at,s.ends_at,a.title,v.venue_name
                 FROM bh_booking_requests r
@@ -68,9 +80,7 @@ try {
         $requestId = (int)($body['request_id'] ?? 0);
         $newStatus = (string)($body['status'] ?? '');
         if ($requestId < 1 || !in_array($newStatus, ['confirmed','cancelled','attended'], true)) br_json(422, ['ok'=>false,'error'=>'invalid_booking_update']);
-        $orgQ = $db->prepare("SELECT id FROM bh_organisers WHERE user_id=? OR email=? ORDER BY (user_id=?) DESC LIMIT 1");
-        $orgQ->execute([$userId, strtolower((string)$user['email']), $userId]);
-        $organiserId = (int)$orgQ->fetchColumn();
+        $organiserId = br_organiser_id($db, $userId, (string)$user['email']);
         $u = $db->prepare("UPDATE bh_booking_requests SET status=? WHERE id=? AND organiser_id=? AND status IN ('pending','confirmed')");
         $u->execute([$newStatus,$requestId,$organiserId]);
         if ($u->rowCount() !== 1) br_json(404, ['ok'=>false,'error'=>'booking_not_found_or_unchanged']);
