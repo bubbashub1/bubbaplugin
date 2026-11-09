@@ -36,6 +36,22 @@ CREATE TABLE IF NOT EXISTS bh_activities (
  INDEX idx_activity_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS bh_duplicate_review_requests (
+ id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ activity_id BIGINT UNSIGNED NOT NULL,
+ organiser_id BIGINT UNSIGNED NOT NULL,
+ submitted_by_user_id BIGINT UNSIGNED NOT NULL,
+ matched_activity_ids_json TEXT NOT NULL,
+ status VARCHAR(20) NOT NULL DEFAULT 'pending',
+ review_reason TEXT NULL,
+ reviewed_by_session_hash CHAR(64) NULL,
+ reviewed_at DATETIME NULL,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ UNIQUE KEY unique_activity_review (activity_id),
+ INDEX duplicate_review_status (status,created_at),
+ INDEX duplicate_review_organiser (organiser_id,created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS bh_venues (
  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
  activity_id BIGINT UNSIGNED NOT NULL,
