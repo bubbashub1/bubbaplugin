@@ -454,7 +454,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
       // Keep it in the right column; the footer contains contact links only.
       if(organiserCard)organiserCard.classList.add('activity-contact-organiser');
       // Keep organiser contact actions inside column 2, directly beneath the schedule and organiser profile.
-      supporting.append(footer);
+      const contactColumn=layout.querySelector('.activity-concept-support');
+      if(contactColumn)contactColumn.append(footer);
+      else layout.append(footer);
     }
   }
   const claimWrap=document.querySelector(".listing-claim-wrap");
