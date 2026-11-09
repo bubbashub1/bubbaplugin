@@ -84,6 +84,9 @@ async function bhActivities(){
         price:s.price!==null&&s.price!==undefined?"£"+Number(s.price).toFixed(2):"",
         price_value:s.price,
         term_time:s.term_time_only?"Term time":"",
+        venue_region:venues.find(v=>String(v.id)===venueId)?.region||"",
+        venue_town:venues.find(v=>String(v.id)===venueId)?.town||"",
+        venue_postcode:venues.find(v=>String(v.id)===venueId)?.postcode||"",
         frequency:s.frequency||"",
         start_date:s.start_date||"",
         end_date:s.end_date||""
