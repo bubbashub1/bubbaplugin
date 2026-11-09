@@ -80,13 +80,15 @@ try {
             $organiserId = br_organiser_id($db, $userId, (string)$user['email']);
             if ($organiserId < 1) br_json(403, ['ok'=>false,'error'=>'organiser_required']);
             if (($_GET['view'] ?? '') === 'manager') {
-                $classesQ = $db->prepare("SELECT id,title FROM bh_activities WHERE organiser_id=? AND status<>'archived' ORDER BY title");
+                $classesQ = $db->prepare("SELECT id,title,booking_url FROM bh_activities WHERE organiser_id=? AND status<>'archived' ORDER BY title");
                 $classesQ->execute([$organiserId]);
+                $venuesQ = $db->prepare("SELECT v.id,v.activity_id,v.venue_name,v.town,v.address FROM bh_venues v JOIN bh_activities a ON a.id=v.activity_id WHERE a.organiser_id=? ORDER BY a.title,v.venue_name");
+                $venuesQ->execute([$organiserId]);
                 $slotsQ = $db->prepare("SELECT s.id,s.activity_id,s.venue_id,s.starts_at,s.ends_at,s.capacity,s.price,s.status,a.title,v.venue_name
                     FROM bh_booking_slots s JOIN bh_activities a ON a.id=s.activity_id LEFT JOIN bh_venues v ON v.id=s.venue_id
                     WHERE a.organiser_id=? AND s.booking_mode='bubba' ORDER BY s.starts_at ASC");
                 $slotsQ->execute([$organiserId]);
-                br_json(200, ['ok'=>true,'role'=>'leader','csrf'=>br_csrf(),'classes'=>$classesQ->fetchAll(PDO::FETCH_ASSOC),'slots'=>$slotsQ->fetchAll(PDO::FETCH_ASSOC)]);
+                br_json(200, ['ok'=>true,'role'=>'leader','csrf'=>br_csrf(),'classes'=>$classesQ->fetchAll(PDO::FETCH_ASSOC),'venues'=>$venuesQ->fetchAll(PDO::FETCH_ASSOC),'slots'=>$slotsQ->fetchAll(PDO::FETCH_ASSOC)]);
             }
             $q = $db->prepare("SELECT r.id,r.public_reference,r.status,r.quantity,r.parent_name,r.parent_email,r.parent_phone,r.child_name,r.child_age,r.message,r.created_at AS requested_at,s.starts_at,s.ends_at,a.title,v.venue_name,cs.consent_json
                 FROM bh_booking_reservations r
@@ -116,6 +118,31 @@ try {
     $body = json_decode((string)file_get_contents('php://input'), true);
     if (!is_array($body)) br_json(400, ['ok'=>false,'error'=>'invalid_json']);
     if (!hash_equals(br_csrf(), (string)($body['csrf'] ?? ''))) br_json(403, ['ok'=>false,'error'=>'csrf_invalid']);
+
+    if (($body['action'] ?? '') === 'save_booking_settings') {
+        if ($role !== 'leader') br_json(403, ['ok'=>false,'error'=>'leader_account_required']);
+        $organiserId = br_organiser_id($db, $userId, (string)$user['email']);
+        $activityId = (int)($body['activity_id'] ?? 0);
+        $mode = (string)($body['mode'] ?? 'bubba');
+        $bookingUrl = trim((string)($body['booking_url'] ?? ''));
+        if ($activityId < 1 || !in_array($mode,['bubba','external'],true)) br_json(422, ['ok'=>false,'error'=>'invalid_booking_settings']);
+        if ($mode === 'external') {
+            $parts = parse_url($bookingUrl);
+            if (!filter_var($bookingUrl,FILTER_VALIDATE_URL) || !is_array($parts) || !in_array(strtolower((string)($parts['scheme'] ?? '')),['https','http'],true) || empty($parts['host']) || mb_strlen($bookingUrl)>500) {
+                br_json(422, ['ok'=>false,'error'=>'invalid_booking_url','message'=>'Enter a valid http or https booking website address.']);
+            }
+        } else {
+            $bookingUrl = '';
+        }
+        $save = $db->prepare("UPDATE bh_activities SET booking_url=NULLIF(?, '') WHERE id=? AND organiser_id=? AND status<>'archived'");
+        $save->execute([$bookingUrl,$activityId,$organiserId]);
+        if ($save->rowCount() < 1) {
+            $check = $db->prepare("SELECT id FROM bh_activities WHERE id=? AND organiser_id=? AND status<>'archived'");
+            $check->execute([$activityId,$organiserId]);
+            if (!$check->fetchColumn()) br_json(404, ['ok'=>false,'error'=>'activity_not_found']);
+        }
+        br_json(200, ['ok'=>true,'mode'=>$mode,'booking_url'=>$bookingUrl]);
+    }
 
     if (($body['action'] ?? '') === 'create_slot') {
         if ($role !== 'leader') br_json(403, ['ok'=>false,'error'=>'leader_account_required']);
