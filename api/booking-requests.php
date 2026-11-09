@@ -242,6 +242,8 @@ try {
     $childName = trim((string)($body['child_name'] ?? ''));
     $childAge = trim((string)($body['child_age'] ?? ''));
     $message = trim((string)($body['message'] ?? ''));
+    $bookingConsentConfirmed = !empty($body['booking_consent_confirmed']);
+    if (!$bookingConsentConfirmed) br_json(422, ['ok'=>false,'error'=>'booking_consent_required','message'=>'Please confirm that the saved consent information may be shared with the organiser for this booking.']);
     if ($slotId < 1 || $quantity < 1 || $quantity > 10 || $parentName === '' || $childName === '' || mb_strlen($parentName)>190 || mb_strlen($childName)>120 || mb_strlen($parentPhone)>80 || mb_strlen($childAge)>30 || mb_strlen($message)>4000) {
         br_json(422, ['ok'=>false,'error'=>'required_fields_missing','message'=>'Please check the parent, child and number of places details.']);
     }
@@ -285,8 +287,11 @@ try {
         'photo_organiser_marketing'=>(bool)$profile['photo_organiser_marketing'],
         'consent_to_share_with_organiser'=>true,
         'consent_version'=>(string)$profile['consent_version'],
-        'consent_given_at'=>(string)$profile['consent_given_at']
+        'profile_consent_given_at'=>(string)$profile['consent_given_at'],
+        'booking_consent_confirmed'=>true,
+        'booking_consent_confirmed_at'=>date('Y-m-d H:i:s')
     ];
+    $bookingConsentAt = date('Y-m-d H:i:s');
 
     $db->beginTransaction();
     try {
@@ -325,7 +330,7 @@ try {
             $reservationId = (int)$db->lastInsertId();
         }
         $snapshotInsert = $db->prepare("INSERT INTO bh_booking_consent_snapshots (user_id,reservation_id,consent_profile_id,consent_version,child_name,consent_json,consent_given_at) VALUES (?,?,?,?,?,?,?)");
-        $snapshotInsert->execute([$userId,$reservationId,(int)$profile['id'],(string)$profile['consent_version'],$childName,json_encode($snapshot,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),(string)$profile['consent_given_at']]);
+        $snapshotInsert->execute([$userId,$reservationId,(int)$profile['id'],(string)$profile['consent_version'],$childName,json_encode($snapshot,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),$bookingConsentAt]);
         br_sync_slot_capacity($db,$slotId);
         $db->commit();
     } catch (Throwable $e) {
