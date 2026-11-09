@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS bh_booking_requests (
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   UNIQUE KEY uq_booking_request_reference (public_reference),
-  UNIQUE KEY uq_booking_request_slot_user (slot_id,user_id),
+  KEY idx_booking_request_slot_user (slot_id,user_id),
   KEY idx_booking_request_organiser_status (organiser_id,status,requested_at),
   KEY idx_booking_request_user (user_id,requested_at),
   KEY idx_booking_request_slot_status (slot_id,status)
