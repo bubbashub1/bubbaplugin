@@ -1,79 +1,67 @@
-# Booking prototype v0.1 – integration review
+# Booking prototype – integration review and current status
 
 Date: 2026-11-09  
 Repository: `bubbashub1/bubbaplugin`  
-Review branch: `prototype/native-family-bookings-v0.1`  
+Branch: `prototype/native-family-bookings-v0.1`  
 Target: `main`
 
-## Decision
+## Current decision
 
-**Do not merge or deploy this prototype to production yet.** The branch is based on current `main` and is mergeable at GitHub level, but that is not evidence of application correctness. No PHP runtime, database integration, concurrency, or browser end-to-end test results were available during this review.
+**NOT READY TO MERGE OR DEPLOY.** The first integration pass now uses the existing reservation model and server-side consent profiles. The work remains on the development branch. No live deployment, live database migration or live data change has been performed.
 
-## Changes made during this review
+## Changes made in the integration pass
 
-1. `account/bookings.html` no longer renders hard-coded demonstration bookings. It loads `assets/js/booking-requests.js` so the family page reads the signed-in family's saved bookings.
-2. `activity.html` now routes the general “Reserve a place” action to the first available dated slot instead of opening a booking modal with no slot ID.
-3. `api/booking-requests.php` now counts `attended` requests when checking duplicate family bookings and slot capacity. Marking a request attended must not silently free capacity or permit a second request for the same session.
+1. Added `database/booking_integration_v0_2.sql` to extend existing `bh_booking_reservations` fields and backfill organiser ownership. It does not create a second reservation table or recreate `bh_booking_slots`.
+2. Added `api/consent-profile.php` for authenticated family accounts to read and save consent profiles against `bh_consent_profiles`.
+3. Updated `assets/js/consent.js` to save consent to the authenticated account rather than treating localStorage as the authoritative record.
+4. Reworked `api/booking-requests.php` to read and write `bh_booking_reservations`, create server-generated consent snapshots in `bh_booking_consent_snapshots`, and enforce capacity against canonical reservation rows.
+5. Updated the activity booking form to load the family's server-side consent profile and send no browser-supplied consent JSON.
+6. Updated the dedicated leader booking API and existing leader portal query to read canonical reservations. Venue joins in the existing leader query are now optional.
+7. Capacity is synchronised after a booking is made or a leader changes its status. Cancelled reservations release places; attended reservations continue to count.
 
-## Blocking integration findings
+## Canonical booking model
 
-### 1. Two booking record models are now competing
+- `bh_booking_slots`: dated sessions and capacity.
+- `bh_booking_reservations`: one reservation record per family account and slot. Existing status values are retained: `reserved` (awaiting organiser action), `confirmed`, `cancelled`, `attended`.
+- `bh_consent_profiles`: current family-owned consent profile.
+- `bh_booking_consent_snapshots`: dated snapshot linked by `reservation_id`.
 
-The prototype writes to `bh_booking_requests`. The existing application already has `bh_booking_reservations`, and the current My Hub API and leader portal read from `bh_booking_reservations`. As a result, bookings created by this prototype will not automatically appear in the existing My Hub booking summary or existing leader portal booking summary.
+The old `bh_booking_requests` table is not part of the new design and its prototype migration has been removed. Do not import the old v0.1 SQL file.
 
-**Required:** choose one canonical reservation record. Prefer extending and reusing `bh_booking_reservations` (with a safe additive migration for parent/child snapshots, public reference, message and request metadata) and use `bh_booking_consent_snapshots` for the consent record. Update the My Hub and leader portal queries to expose the same canonical records. Do not leave two independently writable reservation systems.
+## Security and data handling
 
-### 2. Consent is not verified server-side
+- Booking endpoints require an active signed-in family or leader account and use the existing session/CSRF pattern.
+- Leader reads and updates are scoped to the organiser linked to the signed-in account.
+- Child records are checked against the signed-in family account.
+- Consent is read from the server-side profile and must match the selected child; browser-supplied consent JSON is ignored.
+- The booking snapshot is generated server-side from the saved profile and stored separately from the reservation.
+- No payment capture, refunds, waitlists, automated email or recurring-slot generation is included.
 
-The activity page sends a consent object from browser local storage. The API currently checks only that a few keys exist and stores the client-supplied object. A browser can alter this payload, so those checks do not prove that the family has a current consent profile or that the selected child matches it.
+## Remaining work before merge
 
-**Required:** load the authoritative consent profile from `bh_consent_profiles` for the authenticated family and selected child, verify the required consent flags and timestamp on the server, and create a minimal server-generated snapshot containing only the information the family has consented to share. Never accept the browser's consent JSON as authoritative.
+1. Review the latest complete diff and synchronise the branch with current `main`.
+2. Replace the booking manager's prompt-based slot creation with a validated form and venue selector.
+3. Confirm the family booking page, existing My Hub summary, dedicated leader booking page and existing leader portal all display the same reservation consistently.
+4. Review what consent snapshot fields the organiser should see, and expose only the minimum necessary information.
+5. Confirm the legacy organiser account link fallback against actual schema and linked accounts.
+6. Review slot closure/cancellation and reservation status transitions.
+7. Validate SQL migration on a disposable copy, including repeat-run and partially installed schema.
+8. Run PHP lint on all changed PHP files and JavaScript syntax checks.
+9. Run role, ownership, consent tampering, capacity/concurrency and full end-to-end tests.
+10. Complete staging verification before merge or production deployment.
 
-### 3. Existing family and leader booking surfaces need one source of truth
+## Test status
 
-The new dedicated pages use `booking-requests.js`, while existing My Hub and leader portal summaries query `bh_booking_reservations`. The dedicated leader page can display prototype requests, but that does not make the existing portal data consistent.
-
-**Required:** after selecting the canonical reservation model, update both existing summaries and the dedicated booking pages to use the same API/data model. Confirm organiser ownership is enforced on every leader read and write.
-
-### 4. External booking settings are only local browser preferences
-
-`booking-manager.js` saves the selected mode and URL in `localStorage`. It does not persist the URL or mode to the server, and “Refresh now” does not refresh an external timetable. Do not present these controls as a working cross-device organiser setting or live sync.
-
-**Required:** either remove/label this as a local prototype control, or persist the mode and one booking URL against the activity/organiser and implement a separately reviewed, safe refresh workflow.
-
-### 5. Booking manager needs stronger input and workflow validation
-
-The current manager uses sequential browser prompts and does not provide venue selection. The API validates activity ownership and optional venue ownership, but the manager does not pass a venue ID. Capacity is counted from request rows rather than maintaining the existing reservation model.
-
-**Required:** replace prompts with a validated form, include venue selection, validate price/capacity/date/time strictly on the server, and keep capacity consistent with the canonical reservation rows.
-
-## Additional review notes
-
-- The existing `bh_booking_slots` table is already present in `database/schema.sql`; the prototype SQL repeats it with `CREATE TABLE IF NOT EXISTS`. This is non-destructive but should be removed from the new migration to avoid implying a new table is needed.
-- `br_organiser_id()` uses `user_id` whenever that column exists and does not fall back to email when the column exists but the leader row has a NULL/unlinked `user_id`. Check legacy organiser linkage before relying on it.
-- Slot locking with InnoDB and a transactional capacity check is a good starting point, provided the canonical reservation writes all use the same slot lock and table.
-- The API should keep generic client errors and private server logs; do not expose SQL or exception details.
-- Confirm session cookie settings and CSRF token lifecycle against the existing auth session on the actual hosting configuration.
-- Review retention and access to child/consent data before any real family data is collected.
-- Do not enable payment capture in this prototype. Payments, refunds, waitlists, email notifications and recurring slot generation remain out of scope.
-
-## Required test plan before merge
-
-1. PHP lint for every changed PHP file.
-2. Database migration test against a disposable copy of the current schema, including repeat-run and partially-installed-schema cases.
-3. Family access: anonymous, inactive, family, leader and admin roles.
-4. Ownership: family can only read own bookings/children; leader can only read/update bookings for their own organiser; another leader receives no access.
-5. Consent: missing, revoked, stale, wrong-child and valid consent profiles; tampered client payload must not bypass server checks.
-6. Capacity: final place, over-capacity request, simultaneous requests, duplicate family request, cancellation and attended status.
-7. Slot lifecycle: past, closed, cancelled, full, unpublished activity, venue mismatch and session closure with active requests.
-8. End-to-end browser journey: activity page → dated slot → family request → family My Hub → leader booking list → leader confirms/cancels/marks attended.
-9. Regression: existing recurring calendar, Add to Planner, enquiries, login modal, show-password, account registration, leader portal and admin tools.
-10. Staging verification before any production merge/deployment.
-
-## Existing work already on main
-
-The sign-in modal/security work (PR #816) and compact calendar/enquiry work (PRs #814 and #815) are already merged into `main`. Do not re-copy these features from the prototype branch.
+- Code/schema review: **in progress**.
+- PHP lint: **NOT RUN**.
+- JavaScript syntax/browser checks: **NOT RUN**.
+- Disposable database migration test: **NOT RUN**.
+- Role and ownership tests: **NOT RUN**.
+- Consent validation/tampering tests: **NOT RUN**.
+- Capacity/concurrency tests: **NOT RUN**.
+- End-to-end browser test: **NOT RUN**.
+- Staging verification: **NOT RUN** (staging environment has not yet been confirmed restored).
 
 ## Release status
 
-**Review fixes committed to the prototype branch only. PR remains draft. No merge to `main`, production deployment, database migration or live data change was performed.**
+**NOT READY.** Continue on the prototype branch. Do not merge to `main`, import SQL into production, or deploy until the remaining work and tests are complete and the user has approved the release.
