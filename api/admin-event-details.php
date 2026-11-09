@@ -5,6 +5,7 @@ header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 function out(int $code,array $data):never{http_response_code($code);echo json_encode($data);exit;}
 require_once __DIR__ . '/admin-session-guard.php';
+$secure = !empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off';
 $method=$_SERVER['REQUEST_METHOD']??'GET';
 if(!in_array($method,['GET','POST'],true))out(405,['ok'=>false,'error'=>'method_not_allowed']);
 if($method==='POST'){
