@@ -864,7 +864,7 @@ const bhInitDirectory=async()=>{
         const firstSession = sessions[0];
         const price = activity.price || (firstSession?.price || "Price on request");
 
-        return `<article class="activity-card" data-activity-id="${escapeHtml(activity.id)}">
+        return `<article class="activity-card" data-activity-id="${escapeHtml(activity.id)}" data-activity-url="${escapeHtml(bhActivityUrl(activity))}" tabindex="0" role="group" aria-label="Activity: ${escapeHtml(activity.title)}. Press Enter to open.">
           <div class="activity-image">${activity.image_url
             ? `<img src="${escapeHtml(activity.image_url)}" alt="${escapeHtml(activity.title)}" loading="lazy">`
             : `<img src="/wp-content/uploads/logo/placeholder.jpeg" alt="" aria-hidden="true" loading="lazy">`}</div>
@@ -928,19 +928,19 @@ const bhInitDirectory=async()=>{
         if (map) setTimeout(() => map.invalidateSize(), 0);
       }
 
-      document.querySelectorAll(".activity-card[data-activity-id]").forEach(card => {
+      document.querySelectorAll(".activity-card[data-activity-id][data-activity-url]").forEach(card => {
+        const openActivity = () => {
+          const url = card.dataset.activityUrl;
+          if (url) window.location.assign(url);
+        };
         card.addEventListener("click", event => {
-          if (event.target.closest("a, button")) return;
-          const activityId = String(card.dataset.activityId || "");
-          const marker = markers.find(item => String(item._bhActivityId) === activityId);
-          if (!marker || !map) return;
-
-          map.setView(marker.getLatLng(), Math.max(map.getZoom(), 14), { animate: true });
-          marker.openPopup();
-
-          if (window.innerWidth > 900) {
-            document.querySelector("#mapView")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-          }
+          if (event.target.closest("a, button, input, select, textarea, label")) return;
+          openActivity();
+        });
+        card.addEventListener("keydown", event => {
+          if (event.target !== card || (event.key !== "Enter" && event.key !== " ")) return;
+          event.preventDefault();
+          openActivity();
         });
       });
 
