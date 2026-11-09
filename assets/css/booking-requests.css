@@ -9,3 +9,10 @@
 .bh-booking-request-card small{color:#66756a}
 .bh-booking-request-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
 .bh-booking-request-actions select{padding:10px;border:1px solid #cbd8cd;border-radius:9px;font:inherit}
+
+.booking-slot-form{display:grid;gap:14px;padding:16px 0;border-bottom:1px solid #e5ebe5;margin-bottom:16px}
+.booking-slot-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.booking-slot-form .booking-field{display:grid;gap:6px}
+.booking-slot-form input,.booking-slot-form select{width:100%;min-height:44px;border:1px solid #cbd8cf;border-radius:10px;padding:10px 12px;font:inherit;background:#fff}
+.booking-slot-form button{justify-self:start}
+@media(max-width:640px){.booking-slot-form-grid{grid-template-columns:1fr}}
