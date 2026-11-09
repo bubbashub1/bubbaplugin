@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="/assets/css/styles.css">
 <link rel="stylesheet" href="/assets/css/activity-v2.css">
 <link rel="stylesheet" href="/assets/css/activity-reference-exact.css?v=20261031schedule">
+<link rel="stylesheet" href="/assets/css/activity-detail-refresh.css?v=20261109">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
@@ -810,5 +811,50 @@ document.addEventListener("DOMContentLoaded",async()=>{
   }catch(error){}
 })();
 </script>
+
+<script id="bh-activity-organiser-card-integration">
+/* Consolidate the organiser identity and contact actions into one profile card. */
+(function(){
+  const root=document.getElementById("activityState");
+  if(!root)return;
+  let integrated=false;
+  const integrate=()=>{
+    if(integrated||!root.classList.contains("activity-concept-two"))return;
+    const footer=root.querySelector(".activity-contact-footer");
+    const banner=root.querySelector(".activity-reference-organiser");
+    if(!footer||!banner)return;
+    const name=banner.querySelector(".activity-organiser-copy strong")?.textContent?.trim()||"Activity organiser";
+    const profile=banner.querySelector(".activity-organiser-link");
+    const initials=name.split(" ").filter(Boolean).slice(0,2).map(part=>part[0]).join("").toUpperCase()||"BH";
+    const profileRow=document.createElement("div");
+    profileRow.className="bh-organiser-profile-row";
+    const avatar=document.createElement("span");
+    avatar.className="bh-organiser-avatar";
+    avatar.setAttribute("aria-hidden","true");
+    avatar.textContent=initials;
+    const copy=document.createElement("div");
+    copy.className="bh-organiser-copy";
+    const title=document.createElement("strong");
+    title.textContent=name;
+    copy.append(title);
+    if(profile){
+      const link=document.createElement("a");
+      link.href=profile.href;
+      link.textContent="View organiser profile →";
+      copy.append(link);
+    }
+    profileRow.append(avatar,copy);
+    const actions=footer.querySelector(".activity-contact-buttons");
+    footer.replaceChildren(profileRow,...(actions?[actions]:[]));
+    banner.remove();
+    integrated=true;
+    observer.disconnect();
+  };
+  const observer=new MutationObserver(integrate);
+  observer.observe(root,{childList:true,subtree:true});
+  integrate();
+})();
+</script>
+
 </body>
 </html>
