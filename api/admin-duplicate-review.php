@@ -30,7 +30,7 @@ try{
  $activityUpdate=$db->prepare("UPDATE bh_activities SET status=? WHERE id=? AND status='pending'");
  $activityUpdate->execute([$activityStatus,(int)$item['activity_id']]);
  if($activityUpdate->rowCount()!==1){$db->rollBack();duplicate_review_reply(409,['ok'=>false,'error'=>'activity_no_longer_pending']);}
- $db->prepare("UPDATE bh_duplicate_review_requests SET status=?,review_reason=?,reviewed_at=UTC_TIMESTAMP() WHERE id=? AND status='pending'")->execute([$decision==='approve'?'approved':'rejected',$reason!==''?$reason:null,$id]);
+ $db->prepare("UPDATE bh_duplicate_review_requests SET status=?,review_reason=?,reviewed_by_session_hash=?,reviewed_at=UTC_TIMESTAMP() WHERE id=? AND status='pending'")->execute([$decision==='approve'?'approved':'rejected',$reason!==''?$reason:null,hash('sha256',session_id()),$id]);
  $db->commit();
  $notificationSent=false;
  if($decision==='reject'){
