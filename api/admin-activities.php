@@ -2,6 +2,7 @@
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8'); header('Cache-Control: no-store');
 require_once __DIR__ . '/admin-session-guard.php';
+function bh_admin_response(int $status,array $data): never { http_response_code($status); echo json_encode($data,JSON_UNESCAPED_SLASHES); exit; }
 try{require __DIR__.'/db.php';$db=bh_mysql();
  $_SESSION['bh_listing_csrf']??=bin2hex(random_bytes(32));
  // Activity-specific social URLs: preserve independently of shared organiser details.
