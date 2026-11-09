@@ -138,14 +138,18 @@ if ($a === 'login') {
     $eu = (string)($c['admin_username'] ?? '');
     $ep = (string)($c['admin_password'] ?? '');
     $bucket = admin_login_bucket($u);
+    $ipBucket = admin_login_bucket('');
     admin_login_enforce_limit($bucket);
+    admin_login_enforce_limit($ipBucket);
 
     if ($eu === '' || $ep === '' || !hash_equals($eu, $u) || !hash_equals($ep, $p)) {
         admin_login_record_failure($bucket);
+        admin_login_record_failure($ipBucket);
         respond(401, ['ok'=>false, 'error'=>'Invalid username or password.']);
     }
 
     admin_login_clear_failures($bucket);
+    admin_login_clear_failures($ipBucket);
     session_regenerate_id(true);
     $_SESSION['bh_admin_authenticated'] = true;
     $_SESSION['bh_admin_username'] = $eu;
