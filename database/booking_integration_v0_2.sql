@@ -21,6 +21,25 @@ JOIN bh_activities a ON a.id = bs.activity_id
 SET br.organiser_id = a.organiser_id
 WHERE br.organiser_id IS NULL;
 
+-- Recalculate remaining places from the canonical reservation rows.
+UPDATE bh_booking_slots s
+LEFT JOIN (
+  SELECT slot_id, SUM(quantity) AS booked
+  FROM bh_booking_reservations
+  WHERE status IN ('reserved','confirmed','attended')
+  GROUP BY slot_id
+) r ON r.slot_id = s.id
+SET
+  s.seats_remaining = CASE
+    WHEN s.capacity IS NULL THEN NULL
+    ELSE GREATEST(s.capacity - COALESCE(r.booked,0),0)
+  END,
+  s.status = CASE
+    WHEN s.status IN ('open','full') AND s.capacity IS NOT NULL AND s.capacity - COALESCE(r.booked,0) <= 0 THEN 'full'
+    WHEN s.status = 'full' AND (s.capacity IS NULL OR s.capacity - COALESCE(r.booked,0) > 0) THEN 'open'
+    ELSE s.status
+  END;
+
 -- The existing reservation status enum is retained:
 -- reserved = family request awaiting organiser action
 -- confirmed = organiser accepted
