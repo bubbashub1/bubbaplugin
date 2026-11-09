@@ -1,0 +1,53 @@
+name: Admin dashboard navigation checks
+on:
+  pull_request:
+    paths:
+      - 'admin.html'
+      - '.github/workflows/admin-dashboard-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'admin.html'
+      - '.github/workflows/admin-dashboard-check.yml'
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check dashboard groups and preserved destinations
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          page = Path('admin.html').read_text()
+          for heading in (
+              'Activities & directory',
+              'Organisers, families & bookings',
+              'Communications & content',
+              'System & security',
+              'Google Sheets review tools',
+          ):
+              assert heading in page, f'Missing dashboard section: {heading}'
+          links = (
+              '/admin/admin-listing-check.html',
+              '/admin/admin-activities.html',
+              '/admin/admin-import-export.html',
+              '/admin/admin-search.html',
+              '/admin/admin-regions.html',
+              '/admin/admin-organisers.html',
+              '/admin/admin-users.html',
+              '/admin/admin-bookings.html',
+              '/admin/admin-notifications.html',
+              '/admin/admin-content.html',
+              '/admin/admin-system.html',
+              '/api/sheets-sync-live-update-preview.php',
+              '/api/sheets-sync-live-bulk-review.php',
+              '/api/sheets-sync-live-baseline-review.php',
+          )
+          for link in links:
+              assert link in page, f'Existing admin destination was lost: {link}'
+          drawer = page.index('Deployment &amp; testing tools')
+          sheets = page.index('Google Sheets review tools')
+          closing = page.index('</details>', drawer)
+          assert drawer < sheets < closing, 'Sheets review tools must stay inside the collapsed maintenance drawer'
+          print('Admin dashboard navigation checks passed')
+          PY
