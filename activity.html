@@ -417,11 +417,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
       const links=document.createElement("div");links.className="activity-contact-buttons";
       const validWeb=value=>{try{const url=new URL(String(value||""));return ["https:","http:"].includes(url.protocol)?url.href:null;}catch(e){return null;}};
       const contactOptions=[
-        ["Website",a.website||a.website_url||a.organiser_website,"web"],
-        ["Facebook",a.facebook||a.facebook_url||a.social_facebook,"web"],
-        ["Instagram",a.instagram||a.instagram_url||a.social_instagram,"web"],
-        ["Email",a.email||a.contact_email||a.organiser_email,"email"],
-        ["Phone",a.phone||a.contact_phone||a.organiser_phone,"phone"]
+        ["🌐 Website",a.website||a.website_url||a.organiser_website,"web"],
+        ["📘 Facebook",a.facebook||a.facebook_url||a.social_facebook,"web"],
+        ["✉️ Email",a.email||a.contact_email||a.organiser_email,"email"]
       ];
       contactOptions.forEach(([label,value,kind])=>{
         const raw=String(value||"").trim();
@@ -435,7 +433,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
         }
         if(!url)return;
         const link=document.createElement("a");
-        link.href=url;link.className="activity-contact-link";link.textContent=label;
+        link.href=url;link.className="activity-contact-link";link.textContent=label;link.setAttribute("aria-label",label.replace(/^\S+\s/,""));
         if(kind==="web"){link.target="_blank";link.rel="noopener noreferrer";}
         links.append(link);
       });
