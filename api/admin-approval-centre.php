@@ -18,7 +18,8 @@ try{
  $_SESSION['bh_approval_csrf']??=bin2hex(random_bytes(32));
  $queues=[
   ['key'=>'leaders','label'=>'Leader registrations','description'=>'Pending class leader accounts awaiting review.','url'=>'/admin/admin-organisers-class-leaders.html','count'=>0,'items'=>[]],
-  ['key'=>'listings','label'=>'Draft activity listings','description'=>'Draft activities that need an editorial review before publication.','url'=>'/admin/admin-activities-listings.html','count'=>0,'items'=>[]]
+  ['key'=>'listings','label'=>'Draft activity listings','description'=>'Draft activities that need an editorial review before publication.','url'=>'/admin/admin-activities-listings.html','count'=>0,'items'=>[]],
+  ['key'=>'duplicate_reviews','label'=>'Possible duplicate submissions','description'=>'Leader submissions held back because the title and venue match an existing listing.','url'=>'/admin/admin-activities-listings.html','count'=>0,'items'=>[]]
  ];
  $q=$db->query("SELECT COUNT(*) FROM bh_users WHERE role='leader' AND status='pending'");
  $queues[0]['count']=(int)$q->fetchColumn();
@@ -28,6 +29,16 @@ try{
  $queues[1]['count']=(int)$q->fetchColumn();
  $q=$db->query("SELECT id,title,status FROM bh_activities WHERE status='draft' ORDER BY updated_at DESC,id DESC LIMIT 50");
  foreach($q->fetchAll(PDO::FETCH_ASSOC) as $a){$queues[1]['items'][]=['id'=>(int)$a['id'],'title'=>$a['title'],'status'=>'draft','url'=>'/admin/admin-activities-listings.html'];}
+ $duplicateTable=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_duplicate_review_requests'");
+ $duplicateTable->execute();
+ if((int)$duplicateTable->fetchColumn()>0){
+  $q=$db->query("SELECT COUNT(*) FROM bh_duplicate_review_requests WHERE status='pending'");
+  $queues[2]['count']=(int)$q->fetchColumn();
+  $q=$db->query("SELECT r.id,r.activity_id,a.title,r.status,r.matched_activity_ids_json FROM bh_duplicate_review_requests r JOIN bh_activities a ON a.id=r.activity_id WHERE r.status='pending' ORDER BY r.created_at ASC LIMIT 50");
+  foreach($q->fetchAll(PDO::FETCH_ASSOC) as $r){
+   $queues[2]['items'][]=['id'=>(int)$r['id'],'activity_id'=>(int)$r['activity_id'],'title'=>(string)$r['title'],'status'=>'pending duplicate review','matched_activity_ids'=>json_decode((string)$r['matched_activity_ids_json'],true)?:[],'url'=>'/admin/admin-activities-listings.html'];
+  }
+ }
  $history=[];
  $exists=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_admin_approval_reviews'");
  if((int)$exists->fetchColumn()>0){
