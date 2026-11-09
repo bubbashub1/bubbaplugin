@@ -334,44 +334,70 @@ function bh_ensure_reset_table(PDO $db): void {
  * (Google's email_verified). Only then may we attach the social identity to an
  * existing password account with the same email.
  */
-function bh_social_login(PDO $db, string $provider, string $providerId, string $email, string $displayName, string $ctx, bool $emailTrusted): array {
-    bh_ensure_social_table($db); // DDL first: it would implicitly commit a transaction.
+function bh_social_login(PDO $db, string $provider, string $providerId, string $email, string $displayName, string $ctx, bool $emailTrusted, string $organisation='', bool $termsAccepted=false): array {
+    bh_ensure_social_table($db);
+    if ($ctx === 'leader' && (!$emailTrusted || !$termsAccepted || trim($organisation) === '' || mb_strlen(trim($organisation)) > 190)) {
+        bh_auth_response(422, ['ok'=>false,'error'=>'leader_registration_details_required','message'=>'To create a class leader account with Google, choose Create account, enter your class or organisation name and agree to the organiser terms.']);
+    }
+    if ($ctx === 'leader') bh_ensure_email_verification_schema($db);
 
-    $stmt = $db->prepare("SELECT u.id,u.email,u.role,u.status FROM bh_social_accounts s JOIN bh_users u ON u.id=s.user_id WHERE s.provider=? AND s.provider_user_id=? LIMIT 1");
+    $stmt = $db->prepare("SELECT u.id,u.email,u.role,u.status,u.email_verified_at FROM bh_social_accounts s JOIN bh_users u ON u.id=s.user_id WHERE s.provider=? AND s.provider_user_id=? LIMIT 1");
     $stmt->execute([$provider, $providerId]);
-    $user = $stmt->fetch();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($user) {
         bh_check_account_context($user, $ctx);
+        if ($ctx === 'leader' && empty($user['email_verified_at'])) {
+            $db->prepare("UPDATE bh_users SET email_verified_at=NOW() WHERE id=?")->execute([(int)$user['id']]);
+        }
         return [$user, false];
     }
 
-    $stmt = $db->prepare("SELECT id,email,role,status FROM bh_users WHERE email=? LIMIT 1");
+    $stmt = $db->prepare("SELECT id,email,role,status,email_verified_at FROM bh_users WHERE email=? LIMIT 1");
     $stmt->execute([$email]);
-    $user = $stmt->fetch();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($user) {
         bh_check_account_context($user, $ctx);
         if (!$emailTrusted) {
             bh_auth_response(409, ['ok'=>false,'error'=>'email_exists','message'=>'An account already exists for this email. Please sign in with your email and password.']);
         }
-        $db->prepare("INSERT INTO bh_social_accounts (user_id,provider,provider_user_id,email) VALUES (?,?,?,?)")
-           ->execute([(int)$user['id'], $provider, $providerId, $email]);
+        try {
+            $db->beginTransaction();
+            if ($ctx === 'leader' && empty($user['email_verified_at'])) {
+                $db->prepare("UPDATE bh_users SET email_verified_at=NOW() WHERE id=?")->execute([(int)$user['id']]);
+            }
+            $db->prepare("INSERT INTO bh_social_accounts (user_id,provider,provider_user_id,email) VALUES (?,?,?,?)")
+               ->execute([(int)$user['id'], $provider, $providerId, $email]);
+            $db->commit();
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) $db->rollBack();
+            if ($e instanceof PDOException && (string)$e->getCode() === '23000') {
+                bh_auth_response(409, ['ok'=>false,'error'=>'social_account_already_linked','message'=>'This Google account is already linked to another Bubba Hub account. Please sign in with your existing method or contact support.']);
+            }
+            throw $e;
+        }
         return [$user, false];
     }
 
     $role = $ctx === 'leader' ? 'leader' : 'family';
     try {
         $db->beginTransaction();
-        $db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,?,'active')")
-           ->execute([$email, password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT), $role]);
-        $userId = (int)$db->lastInsertId();
         if ($ctx === 'leader') {
-            bh_create_leader_organiser($db, $userId, $email, $displayName !== '' ? $displayName : 'New organiser');
+            $db->prepare("INSERT INTO bh_users (email,password_hash,role,status,email_verified_at) VALUES (?,?,?,'active',NOW())")
+               ->execute([$email, password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT), $role]);
+        } else {
+            $db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,?,'active')")
+               ->execute([$email, password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT), $role]);
         }
+        $userId = (int)$db->lastInsertId();
+        if ($ctx === 'leader') bh_create_leader_organiser($db, $userId, $email, trim($organisation));
         $db->prepare("INSERT INTO bh_social_accounts (user_id,provider,provider_user_id,email) VALUES (?,?,?,?)")
            ->execute([$userId, $provider, $providerId, $email]);
         $db->commit();
     } catch (Throwable $e) {
         if ($db->inTransaction()) $db->rollBack();
+        if ($e instanceof PDOException && (string)$e->getCode() === '23000') {
+            bh_auth_response(409, ['ok'=>false,'error'=>'account_already_exists','message'=>'An account with this email or Google identity already exists. Please sign in instead.']);
+        }
         throw $e;
     }
     return [['id'=>$userId,'email'=>$email,'role'=>$role,'status'=>'active'], true];
@@ -441,6 +467,16 @@ try {
 
     if (!isset($_SESSION['bh_csrf'])) {
         $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
+    }
+
+    /* ---------------- Google nonce (GET) ---------------- */
+    if ($action === 'google_nonce' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        $nonce = bin2hex(random_bytes(32));
+        $_SESSION['bh_google_nonce'] = $nonce;
+        $_SESSION['bh_google_nonce_expires'] = time() + 300;
+        header('Content-Type: application/json; charset=utf-8');
+        header('Cache-Control: no-store, private');
+        bh_auth_response(200, ['ok'=>true,'nonce'=>$nonce,'csrf'=>$_SESSION['bh_csrf']]);
     }
 
     /* ---------------- me (GET) ---------------- */
