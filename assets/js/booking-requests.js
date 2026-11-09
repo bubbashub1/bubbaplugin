@@ -100,6 +100,8 @@
       } else {
         data.bookings.forEach(b => list.append(bookingCard(b, leader)));
       }
+      const requestCount = $("requestCount");
+      if (requestCount) requestCount.textContent = data.bookings.length + (data.bookings.length === 1 ? " request" : " requests");
       if (message) message.textContent = data.bookings.length + (leader ? " booking request(s) for your organisation." : " booking(s) on your family account.");
       window.BHBookingRequests = {
         create: async (payload) => {
