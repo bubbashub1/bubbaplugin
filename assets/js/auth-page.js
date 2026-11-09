@@ -19,47 +19,66 @@ if(verifyButton)verifyButton.addEventListener("click",async()=>{
  finally{verifyButton.disabled=false;}
 });
 
-if(google){
-  google.classList.add("social-signin-host");
-  const loadGoogle=async()=>{
-    const fallbackText="Continue with Google";
-    try{
-      google.disabled=true;
-      google.setAttribute("aria-busy","true");
-      google.innerHTML='<span class="google-mark" aria-hidden="true">G</span><span>Connecting to Google…</span>';
-      const started=Date.now();
-      while((!window.BUBBAHUB_GOOGLE_CLIENT_ID||!window.google?.accounts?.id)&&Date.now()-started<12000){
-        await new Promise(r=>setTimeout(r,150));
-      }
-      if(!window.BUBBAHUB_GOOGLE_CLIENT_ID)throw Error("Google sign-in is not configured yet.");
-      if(!window.google?.accounts?.id)throw Error("Google sign-in could not be loaded. Please check your connection and try again.");
-      window.google.accounts.id.initialize({client_id:window.BUBBAHUB_GOOGLE_CLIENT_ID,callback:async response=>{
-        try{
-          const r=await fetch("/api/auth.php?action=google",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({credential:response.credential,csrf,context:"family"})});
-          const d=await readJson(r);
-          if(!r.ok||!d.ok)throw Error(d.message||"Google sign-in could not be completed.");
-          location.href=next||"account.html";
-        }catch(e){message(e.message||"Please try again.",true);google.disabled=false}
-      }});
-      google.textContent="";
-      google.className="social-signin-host";
-      google.disabled=false;
-      google.removeAttribute("aria-busy");
-      window.google.accounts.id.renderButton(google,{type:"standard",theme:"outline",size:"large",text:"continue_with",shape:"rectangular",width:400});
-    }catch(e){
-      google.disabled=false;
-      google.removeAttribute("aria-busy");
-      google.className="google-signin-button";
-      google.innerHTML='<span class="google-mark" aria-hidden="true">G</span><span>'+fallbackText+'</span>';
-      google.onclick=async()=>{
-        message("Trying Google sign-in again…");
-        google.disabled=true;
-        await loadGoogle();
-      };
-      message(e.message||"Google sign-in could not be loaded. Please try again.",true);
+let googleRenderSequence=0;
+const renderGoogle=async()=>{
+  const wrap=document.getElementById("googleSignInWrap");
+  if(!google||!wrap)return;
+  const context=accountType?.value==="leader"?"leader":accountType?.value==="family"?"family":"volunteer";
+  wrap.hidden=context==="volunteer";
+  if(context==="volunteer")return;
+  const sequence=++googleRenderSequence;
+  google.innerHTML='<span class="auth-google-loading">Preparing Google sign-in…</span>';
+  try{
+    const nonceResponse=await fetch("/api/auth.php?action=google_nonce",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});
+    const nonceData=await readJson(nonceResponse);
+    if(!nonceResponse.ok||!nonceData.ok||!nonceData.nonce)throw Error(nonceData.message||"Google sign-in is not available right now.");
+    csrf=nonceData.csrf||csrf;
+    const started=Date.now();
+    while(!window.BUBBAHUB_GOOGLE_CLIENT_ID||!window.google?.accounts?.id){
+      if(Date.now()-started>12000)throw Error("Google sign-in could not be loaded. Please check your connection and try again.");
+      await new Promise(resolve=>setTimeout(resolve,150));
     }
-  };
-  loadGoogle();
+    if(sequence!==googleRenderSequence)return;
+    google.innerHTML="";
+    window.google.accounts.id.initialize({
+      client_id:window.BUBBAHUB_GOOGLE_CLIENT_ID,
+      nonce:nonceData.nonce,
+      callback:async response=>{
+        try{
+          const payload={
+            credential:response.credential,
+            csrf,
+            context,
+            organisation_name:String(form.elements.organisation_name?.value||"").trim(),
+            terms:!!document.getElementById("terms")?.checked
+          };
+          const r=await fetch("/api/auth.php?action=google",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(payload)});
+          const d=await readJson(r);
+          if(!r.ok||!d.ok){
+            if(context==="leader"&&d.error==="leader_registration_details_required")setMode("register");
+            throw Error(d.message||"Google sign-in could not be completed.");
+          }
+          if(d.csrf)csrf=d.csrf;
+          location.replace(context==="leader"?(next.startsWith("/leader/")?next:"/leader/"):(next&&!next.startsWith("/leader/")?next:"/account.html"));
+        }catch(e){await renderGoogle();message(e.message||"Please try again.",true);}
+      }
+    });
+    window.google.accounts.id.renderButton(google,{type:"standard",theme:"outline",size:"large",text:"continue_with",shape:"rectangular",width:Math.min(400,Math.max(220,google.clientWidth||400))});
+  }catch(e){
+    if(sequence!==googleRenderSequence)return;
+    google.innerHTML="";
+    const retry=document.createElement("button");
+    retry.type="button";
+    retry.className="google-signin-button";
+    retry.textContent="Continue with Google";
+    retry.addEventListener("click",()=>renderGoogle());
+    google.appendChild(retry);
+    message(e.message||"Google sign-in could not be loaded. Please try again.",true);
+  }
+};
+if(google){
+  renderGoogle();
+  accountType?.addEventListener("change",()=>renderGoogle());
 }
 
 
