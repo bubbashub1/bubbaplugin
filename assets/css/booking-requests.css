@@ -1,0 +1,11 @@
+/* Native booking request prototype */
+.bh-booking-request-card{padding:18px 0;border-bottom:1px solid #e3ebe4}
+.bh-booking-request-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.bh-booking-request-top h3{margin:0}
+.bh-booking-status{display:inline-flex;padding:5px 10px;border-radius:999px;background:#edf3ee;color:#416651;font-size:.82rem;font-weight:700;text-transform:capitalize}
+.bh-booking-status-confirmed{background:#e4f2e7;color:#245b37}
+.bh-booking-status-cancelled{background:#f8e9e7;color:#8b3328}
+.bh-booking-request-card p{margin:8px 0}
+.bh-booking-request-card small{color:#66756a}
+.bh-booking-request-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.bh-booking-request-actions select{padding:10px;border:1px solid #cbd8cd;border-radius:9px;font:inherit}
