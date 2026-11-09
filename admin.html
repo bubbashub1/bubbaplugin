@@ -61,7 +61,103 @@
 @media(max-width:520px){
  #adminContent .admin-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-</style></style></head>
+</style></style><style id="bh-admin-nav-colour-layout">
+/* Two-column admin sections with colour-coded panels and vertically stacked links. */
+#adminContent .bh-admin-nav{
+ display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ align-items:start;
+ gap:16px;
+ margin:18px 0 30px;
+}
+#adminContent .bh-admin-nav-group{
+ min-width:0;
+ border:1px solid var(--nav-border,#dce9df);
+ border-left:5px solid var(--nav-accent,#5b9672);
+ border-radius:14px;
+ background:var(--nav-bg,#f5faf5);
+ overflow:hidden;
+}
+#adminContent .bh-admin-nav-group>summary{
+ display:flex;
+ align-items:center;
+ gap:10px;
+ min-height:58px;
+ padding:14px 16px;
+ background:var(--nav-head,#eaf4e9);
+ color:#244b38;
+}
+#adminContent .bh-admin-nav-group>summary:after{
+ content:"+";
+ margin-left:auto;
+ font-size:1.25rem;
+ font-weight:700;
+ color:var(--nav-accent,#397454);
+}
+#adminContent .bh-admin-nav-group[open]>summary:after{content:"−"}
+#adminContent .bh-admin-nav-title{font-size:1rem;font-weight:800}
+#adminContent .bh-admin-nav-count{
+ margin-left:auto;
+ padding:3px 8px;
+ border-radius:999px;
+ background:rgba(255,255,255,.72);
+ color:#52675a;
+ font-size:.75rem;
+ white-space:nowrap;
+}
+#adminContent .bh-admin-nav-group[open] .bh-admin-nav-count{margin-left:0}
+#adminContent .bh-admin-nav-links{
+ display:flex;
+ flex-direction:column;
+ flex-wrap:nowrap;
+ gap:0;
+ padding:7px 14px 12px;
+ border-top:1px solid rgba(50,80,55,.1);
+}
+#adminContent .bh-admin-nav-links a{
+ display:flex;
+ align-items:center;
+ width:100%;
+ min-height:42px;
+ box-sizing:border-box;
+ padding:9px 10px;
+ border:0;
+ border-bottom:1px solid rgba(50,80,55,.1);
+ border-radius:0;
+ background:transparent;
+ color:#244b38;
+ font-size:.9rem;
+ font-weight:650;
+ text-decoration:none;
+}
+#adminContent .bh-admin-nav-links a:last-child{border-bottom:0}
+#adminContent .bh-admin-nav-links a:hover,
+#adminContent .bh-admin-nav-links a:focus-visible{
+ background:rgba(255,255,255,.72);
+ text-decoration:underline;
+ outline-offset:2px;
+}
+#adminContent .bh-admin-nav-group:nth-child(1){--nav-bg:#f3faf3;--nav-head:#e2f1e3;--nav-border:#cfe5d0;--nav-accent:#438354}
+#adminContent .bh-admin-nav-group:nth-child(2){--nav-bg:#f1f7fd;--nav-head:#dfedfb;--nav-border:#cbdff2;--nav-accent:#4b80b4}
+#adminContent .bh-admin-nav-group:nth-child(3){--nav-bg:#f6f2fc;--nav-head:#ebe2f8;--nav-border:#ded0f0;--nav-accent:#8664b2}
+#adminContent .bh-admin-nav-group:nth-child(4){--nav-bg:#fff7f0;--nav-head:#ffead9;--nav-border:#f3d8c1;--nav-accent:#c47a42}
+#adminContent .bh-admin-nav-group:nth-child(5){--nav-bg:#fffbed;--nav-head:#fff2c9;--nav-border:#f0e2b5;--nav-accent:#b18a2d}
+#adminContent .bh-admin-nav-group:nth-child(6){--nav-bg:#f3f5f7;--nav-head:#e5eaee;--nav-border:#d4dde3;--nav-accent:#718391}
+#adminContent .bh-admin-nav-group:nth-child(1) .bh-admin-nav-links{background:#f8fcf8}
+#adminContent .bh-admin-nav-group:nth-child(2) .bh-admin-nav-links{background:#f7faff}
+#adminContent .bh-admin-nav-group:nth-child(3) .bh-admin-nav-links{background:#faf8fd}
+#adminContent .bh-admin-nav-group:nth-child(4) .bh-admin-nav-links{background:#fffbf7}
+#adminContent .bh-admin-nav-group:nth-child(5) .bh-admin-nav-links{background:#fffdf5}
+#adminContent .bh-admin-nav-group:nth-child(6) .bh-admin-nav-links{background:#f8f9fa}
+@media(max-width:760px){
+ #adminContent .bh-admin-nav{grid-template-columns:1fr;gap:12px}
+}
+@media(max-width:520px){
+ #adminContent .bh-admin-nav-group>summary{padding:13px 14px}
+ #adminContent .bh-admin-nav-links{padding:6px 10px 10px}
+ #adminContent .bh-admin-nav-links a{min-height:44px;padding:10px}
+}
+</style></head>
 <body class="bh-admin-v2">
 <header class="site-header"><a class="brand" href="/index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main menu">
     <a href="/directory.html">Find activities</a>
