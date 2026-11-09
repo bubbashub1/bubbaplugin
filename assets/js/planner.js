@@ -131,6 +131,8 @@ window.bhInitPlanner = async function(root=document){
   function timeMinutes(v){const m=String(v||"").match(/^(\d{1,2}):(\d{2})/);return m?Number(m[1])*60+Number(m[2]):null}
   function occurrenceAllowed(session,date){
     const iso=isoDate(date),from=String(session?.start_date||""),to=String(session?.end_date||"");
+    // A one-off session belongs to its exact saved date, never every matching weekday.
+    if(String(session?.frequency||"").toLowerCase()==="once")return !!from&&iso===from;
     return (!from||iso>=from)&&(!to||iso<=to);
   }
   function timeRange(session){
