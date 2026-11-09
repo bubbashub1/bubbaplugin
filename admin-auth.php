@@ -82,6 +82,7 @@ if ($a === 'login') {
     session_regenerate_id(true);
     $_SESSION['bh_admin_authenticated'] = true;
     $_SESSION['bh_admin_username'] = $eu;
+    $_SESSION['bh_admin_created_at'] = time();
     $_SESSION['bh_admin_last_activity'] = time();
     session_write_close();
     respond(200, ['ok'=>true]);
@@ -101,13 +102,25 @@ if ($a === 'logout') {
     }
     // Admin authentication is separate from the family account. Remove only
     // the admin flag so My Hub/family session remains signed in.
-    unset($_SESSION['bh_admin_authenticated'], $_SESSION['bh_admin_username'], $_SESSION['bh_admin_last_activity'], $_SESSION['bh_admin_csrf'], $_SESSION['bh_live_baseline_csrf']);
+    unset($_SESSION['bh_admin_authenticated'], $_SESSION['bh_admin_username'], $_SESSION['bh_admin_last_activity'], $_SESSION['bh_admin_created_at'], $_SESSION['bh_admin_csrf'], $_SESSION['bh_live_baseline_csrf']);
     respond(200, ['ok'=>true]);
 }
 
 if (empty($_SESSION['bh_admin_authenticated'])) {
     respond(401, ['ok'=>false, 'error'=>'Admin login required.']);
 }
+
+// Central admin session policy: 30 minutes idle, 8 hours maximum per login.
+$now = time();
+$lastActivity = (int)($_SESSION['bh_admin_last_activity'] ?? 0);
+$createdAt = (int)($_SESSION['bh_admin_created_at'] ?? 0);
+if ($lastActivity < 1 || $createdAt < 1 || ($now - $lastActivity) > 1800 || ($now - $createdAt) > 28800) {
+    unset($_SESSION['bh_admin_authenticated'], $_SESSION['bh_admin_username'],
+        $_SESSION['bh_admin_last_activity'], $_SESSION['bh_admin_created_at'],
+        $_SESSION['bh_admin_csrf'], $_SESSION['bh_live_baseline_csrf']);
+    respond(401, ['ok'=>false, 'error'=>'admin_session_expired']);
+}
+$_SESSION['bh_admin_last_activity'] = $now;
 
 respond(200, ['ok'=>true]);
 ?>
