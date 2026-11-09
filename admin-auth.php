@@ -47,6 +47,7 @@ function admin_login_rate_state(string $bucket): array {
         error_log('Bubba Hub admin login limiter could not open its state file.');
         respond(503, ['ok'=>false, 'error'=>'Admin sign-in is temporarily unavailable. Please try again shortly.']);
     }
+    @chmod($path, 0600);
     if (!flock($handle, LOCK_EX)) {
         fclose($handle);
         error_log('Bubba Hub admin login limiter could not lock its state file.');
@@ -73,8 +74,13 @@ function admin_login_record_failure(string $bucket): void {
 }
 
 function admin_login_clear_failures(string $bucket): void {
-    $path = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'bh-admin-login-' . $bucket . '.json';
-    if (is_file($path)) @unlink($path);
+    [$handle, $state] = admin_login_rate_state($bucket);
+    rewind($handle);
+    ftruncate($handle, 0);
+    fwrite($handle, json_encode(['attempts'=>0, 'started'=>time()]));
+    fflush($handle);
+    flock($handle, LOCK_UN);
+    fclose($handle);
 }
 
 function admin_login_enforce_limit(string $bucket): void {
