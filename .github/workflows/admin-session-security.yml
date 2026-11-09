@@ -14,6 +14,10 @@ on:
       - 'api/admin-ical-preview.php'
       - 'api/admin-demo-activities.php'
       - 'api/expo-admin-visitors.php'
+      - 'api/admin-test-users.php'
+      - 'api/admin-organiser-import.php'
+      - 'api/admin-listing-check.php'
+      - 'api/admin-import-export.php'
       - 'api/admin-approval-centre.php'
       - 'api/admin-approval-review.php'
       - 'api/admin-approval-publish.php'
@@ -42,6 +46,10 @@ jobs:
           php -l api/admin-ical-preview.php
           php -l api/admin-demo-activities.php
           php -l api/expo-admin-visitors.php
+          php -l api/admin-test-users.php
+          php -l api/admin-organiser-import.php
+          php -l api/admin-listing-check.php
+          php -l api/admin-import-export.php
           php -l api/admin-approval-centre.php
           php -l api/admin-approval-review.php
           php -l api/admin-approval-publish.php
