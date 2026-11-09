@@ -8,6 +8,11 @@ on:
       - 'api/admin-activities.php'
       - 'api/admin-volunteer-assignments.php'
       - 'api/admin-volunteers.php'
+      - 'api/admin-leader-details.php'
+      - 'api/admin-organiser-profiles.php'
+      - 'api/admin-listing-url-preview.php'
+      - 'api/admin-ical-preview.php'
+      - 'api/admin-demo-activities.php'
       - '.github/workflows/admin-session-security.yml'
   workflow_dispatch:
 jobs:
@@ -26,3 +31,8 @@ jobs:
           php -l api/admin-activities.php
           php -l api/admin-volunteer-assignments.php
           php -l api/admin-volunteers.php
+          php -l api/admin-leader-details.php
+          php -l api/admin-organiser-profiles.php
+          php -l api/admin-listing-url-preview.php
+          php -l api/admin-ical-preview.php
+          php -l api/admin-demo-activities.php
