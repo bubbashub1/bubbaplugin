@@ -104,16 +104,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mariadb-client
       - name: Create disposable existing-schema fixture
-        run: mariadb -h127.0.0.1 -uroot -ptest-root-password bubbahub_test < tests/booking-migration-fixture.sql
+        run: mariadb --skip-ssl -h127.0.0.1 -uroot -ptest-root-password bubbahub_test < tests/booking-migration-fixture.sql
       - name: Apply booking migration twice
         run: |
-          mariadb -h127.0.0.1 -uroot -ptest-root-password bubbahub_test < database/booking_integration_v0_2.sql
-          mariadb -h127.0.0.1 -uroot -ptest-root-password bubbahub_test < database/booking_integration_v0_2.sql
+          mariadb --skip-ssl -h127.0.0.1 -uroot -ptest-root-password bubbahub_test < database/booking_integration_v0_2.sql
+          mariadb --skip-ssl -h127.0.0.1 -uroot -ptest-root-password bubbahub_test < database/booking_integration_v0_2.sql
       - name: Verify migration columns, index, organiser backfill and seat counts
         run: |
-          columns=$(mariadb -N -h127.0.0.1 -uroot -ptest-root-password bubbahub_test -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_booking_reservations' AND COLUMN_NAME IN ('public_reference','organiser_id','parent_name','parent_email','parent_phone','child_id','child_name','child_age','message')")
-          index=$(mariadb -N -h127.0.0.1 -uroot -ptest-root-password bubbahub_test -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_booking_reservations' AND INDEX_NAME='uq_reservation_public_reference'")
-          state=$(mariadb -N -h127.0.0.1 -uroot -ptest-root-password bubbahub_test -e "SELECT CONCAT(br.organiser_id,':',s.seats_remaining,':',s.status) FROM bh_booking_reservations br JOIN bh_booking_slots s ON s.id=br.slot_id WHERE br.id=1")
+          columns=$(mariadb --skip-ssl -N -h127.0.0.1 -uroot -ptest-root-password bubbahub_test -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_booking_reservations' AND COLUMN_NAME IN ('public_reference','organiser_id','parent_name','parent_email','parent_phone','child_id','child_name','child_age','message')")
+          index=$(mariadb --skip-ssl -N -h127.0.0.1 -uroot -ptest-root-password bubbahub_test -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_booking_reservations' AND INDEX_NAME='uq_reservation_public_reference'")
+          state=$(mariadb --skip-ssl -N -h127.0.0.1 -uroot -ptest-root-password bubbahub_test -e "SELECT CONCAT(br.organiser_id,':',s.seats_remaining,':',s.status) FROM bh_booking_reservations br JOIN bh_booking_slots s ON s.id=br.slot_id WHERE br.id=1")
           test "$columns" = "9"
           test "$index" = "1"
           test "$state" = "42:2:open"
