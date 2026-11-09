@@ -43,7 +43,7 @@ function br_sync_slot_capacity(PDO $db, int $slotId): void {
     $usedQ->execute([$slotId]);
     $remaining = max(0, (int)$capacity - (int)$usedQ->fetchColumn());
     $status = $remaining < 1 ? 'full' : 'open';
-    $db->prepare("UPDATE bh_booking_slots SET seats_remaining=?,status=? WHERE id=? AND status<>'cancelled'")->execute([$remaining,$status,$slotId]);
+    $db->prepare("UPDATE bh_booking_slots SET seats_remaining=?,status=IF(status IN ('open','full'),?,status) WHERE id=?")->execute([$remaining,$status,$slotId]);
 }
 
 try {
@@ -155,13 +155,20 @@ try {
         if ($role !== 'leader') br_json(403, ['ok'=>false,'error'=>'leader_account_required']);
         $organiserId = br_organiser_id($db, $userId, (string)$user['email']);
         $slotId = (int)($body['slot_id'] ?? 0);
-        $check = $db->prepare("SELECT s.id FROM bh_booking_slots s JOIN bh_activities a ON a.id=s.activity_id WHERE s.id=? AND a.organiser_id=? AND s.booking_mode='bubba' LIMIT 1");
-        $check->execute([$slotId,$organiserId]);
-        if (!$check->fetchColumn()) br_json(404, ['ok'=>false,'error'=>'slot_not_found']);
-        $active = $db->prepare("SELECT COUNT(*) FROM bh_booking_reservations WHERE slot_id=? AND status IN ('reserved','confirmed')");
-        $active->execute([$slotId]);
-        if ((int)$active->fetchColumn() > 0) br_json(409, ['ok'=>false,'error'=>'slot_has_active_bookings','message'=>'Cancel or complete existing bookings before closing this session.']);
-        $db->prepare("UPDATE bh_booking_slots SET status='cancelled' WHERE id=?")->execute([$slotId]);
+        $db->beginTransaction();
+        try {
+            $check = $db->prepare("SELECT s.id FROM bh_booking_slots s JOIN bh_activities a ON a.id=s.activity_id WHERE s.id=? AND a.organiser_id=? AND s.booking_mode='bubba' FOR UPDATE");
+            $check->execute([$slotId,$organiserId]);
+            if (!$check->fetchColumn()) { $db->rollBack(); br_json(404, ['ok'=>false,'error'=>'slot_not_found']); }
+            $active = $db->prepare("SELECT COUNT(*) FROM bh_booking_reservations WHERE slot_id=? AND status IN ('reserved','confirmed')");
+            $active->execute([$slotId]);
+            if ((int)$active->fetchColumn() > 0) { $db->rollBack(); br_json(409, ['ok'=>false,'error'=>'slot_has_active_bookings','message'=>'Cancel or complete existing bookings before closing this session.']); }
+            $db->prepare("UPDATE bh_booking_slots SET status='cancelled' WHERE id=?")->execute([$slotId]);
+            $db->commit();
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) $db->rollBack();
+            throw $e;
+        }
         br_json(200, ['ok'=>true]);
     }
 
@@ -172,12 +179,21 @@ try {
         $newStatus = $requestedStatus === 'pending' ? 'reserved' : $requestedStatus;
         if ($requestId < 1 || !in_array($newStatus, ['confirmed','cancelled','attended'], true)) br_json(422, ['ok'=>false,'error'=>'invalid_booking_update']);
         $organiserId = br_organiser_id($db, $userId, (string)$user['email']);
-        $u = $db->prepare("UPDATE bh_booking_reservations SET status=? WHERE id=? AND organiser_id=? AND status IN ('reserved','confirmed')");
-        $u->execute([$newStatus,$requestId,$organiserId]);
-        if ($u->rowCount() !== 1) br_json(404, ['ok'=>false,'error'=>'booking_not_found_or_unchanged']);
-        $slotQ = $db->prepare("SELECT slot_id FROM bh_booking_reservations WHERE id=? AND organiser_id=?");
-        $slotQ->execute([$requestId,$organiserId]);
-        br_sync_slot_capacity($db,(int)$slotQ->fetchColumn());
+        $db->beginTransaction();
+        try {
+            $slotQ = $db->prepare("SELECT slot_id FROM bh_booking_reservations WHERE id=? AND organiser_id=? FOR UPDATE");
+            $slotQ->execute([$requestId,$organiserId]);
+            $slotId = (int)$slotQ->fetchColumn();
+            if ($slotId < 1) { $db->rollBack(); br_json(404, ['ok'=>false,'error'=>'booking_not_found']); }
+            $u = $db->prepare("UPDATE bh_booking_reservations SET status=? WHERE id=? AND organiser_id=? AND status IN ('reserved','confirmed')");
+            $u->execute([$newStatus,$requestId,$organiserId]);
+            if ($u->rowCount() !== 1) { $db->rollBack(); br_json(404, ['ok'=>false,'error'=>'booking_not_found_or_unchanged']); }
+            br_sync_slot_capacity($db,$slotId);
+            $db->commit();
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) $db->rollBack();
+            throw $e;
+        }
         br_json(200, ['ok'=>true,'status'=>br_status_for_ui($newStatus)]);
     }
 
