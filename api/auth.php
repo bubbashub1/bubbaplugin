@@ -338,7 +338,8 @@ function bh_social_login(PDO $db, string $provider, string $providerId, string $
     bh_ensure_social_table($db);
     if ($ctx === 'leader') bh_ensure_email_verification_schema($db);
 
-    $stmt = $db->prepare("SELECT u.id,u.email,u.role,u.status,u.email_verified_at FROM bh_social_accounts s JOIN bh_users u ON u.id=s.user_id WHERE s.provider=? AND s.provider_user_id=? LIMIT 1");
+    $verificationSelect = $ctx === 'leader' ? 'u.email_verified_at' : 'NULL AS email_verified_at';
+    $stmt = $db->prepare("SELECT u.id,u.email,u.role,u.status,".$verificationSelect." FROM bh_social_accounts s JOIN bh_users u ON u.id=s.user_id WHERE s.provider=? AND s.provider_user_id=? LIMIT 1");
     $stmt->execute([$provider, $providerId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($user) {
@@ -349,7 +350,8 @@ function bh_social_login(PDO $db, string $provider, string $providerId, string $
         return [$user, false];
     }
 
-    $stmt = $db->prepare("SELECT id,email,role,status,email_verified_at FROM bh_users WHERE email=? LIMIT 1");
+    $verificationSelect = $ctx === 'leader' ? 'email_verified_at' : 'NULL AS email_verified_at';
+    $stmt = $db->prepare("SELECT id,email,role,status,".$verificationSelect." FROM bh_users WHERE email=? LIMIT 1");
     $stmt->execute([$email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($user) {
