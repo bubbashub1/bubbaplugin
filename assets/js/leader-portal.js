@@ -6,7 +6,7 @@ let data=null;
 const page=document.body.dataset.leaderPage||"dashboard";
 const msg=$("portalMessage");
 function set(id,v){if($(id))$(id).textContent=v}
-function allVenues(){return(data?.classes||[]).flatMap(c=>(c.venues||[]).map(v=>({...v,classTitle:c.title,activityId:c.id,status:c.status})))}
+function allVenues(){return(data?.classes||[]).flatMap(c=>(c.venues||[]).map(v=>({...v,classTitle:c.title,activityId:c.id,activitySlug:c.slug||"",status:c.status})))}
 function allSessions(){return allVenues().flatMap(v=>(v.sessions||[]).map(s=>({...s,venue_name:v.venue_name,classTitle:v.classTitle})))}
 function health(){const classes=data?.classes||[];if(!classes.length)return{percent:0,checks:[],message:"Add your first class to start building your Bubba Hub profile."};let total=classes.length*5,done=0,checks=[];classes.forEach(c=>{const image=!!c.image_path,desc=!!String(c.description||"").trim(),age=!!String(c.age_range||"").trim(),price=c.price_from!==null&&c.price_from!==""&&c.price_from!==undefined,booking=!!String(c.booking_url||"").trim();done+=image+desc+age+price+booking});const percent=Math.round(done/total*100);if(classes.some(c=>!String(c.description||"").trim()))checks.push("Add a description to any class that is missing one.");if(classes.some(c=>!String(c.age_range||"").trim()))checks.push("Add an age range so families know who the class is for.");if(classes.some(c=>!String(c.booking_url||"").trim()))checks.push("Add a booking link where families can reserve a place.");if(classes.some(c=>!c.image_path))checks.push("Add a class image to make your listing stand out.");return{percent,checks,message:percent>=90?"Your listings are looking great. Keep your timetable and booking details up to date.":"A few details are missing. Completing them helps families find the right information quickly."}}
 async function load(){try{const r=await fetch(api,{credentials:"same-origin",headers:{Accept:"application/json"}});const raw=await r.text();let j;try{j=JSON.parse(raw)}catch(e){throw Error("Leader portal API returned an invalid response ("+r.status+"). Please check the server/API deployment.")}if(!r.ok||!j.ok)throw Error(j.error==="login_required"?"Please sign in as a class leader to use this portal.":j.message||j.error||"Could not load your portal.");data=j;return j}catch(liveError){if(window.BH_DEMO_MODE&&typeof window.bhLoadDemoLeader==="function"){data=await window.bhLoadDemoLeader();return data}throw liveError}}
@@ -57,7 +57,7 @@ function renderVenues(){
   const group=grouped.get(key);
   group.venueIds.push(v.id);
   group.sessionCount+=(v.sessions||[]).length;
-  group.activities.set(String(v.activityId),{id:v.activityId,title:v.classTitle,status:v.status,slug:v.slug||""});
+  group.activities.set(String(v.activityId),{id:v.activityId,title:v.classTitle,status:v.status,slug:v.activitySlug||""});
  });
  const items=[...grouped.values()].sort((a,b)=>String(a.venue_name||"").localeCompare(String(b.venue_name||"")));
  const activityCount=new Set(items.flatMap(v=>[...v.activities.keys()])).size;
