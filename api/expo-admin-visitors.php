@@ -4,14 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 function send(int $code,array $data): never {http_response_code($code);echo json_encode($data);exit;}
 if(($_SERVER['REQUEST_METHOD']??'')!=='GET')send(405,['ok'=>false]);
-ini_set('session.use_strict_mode','1');
-session_name('BUBBAHUB_ADMINSESSID');
-session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
-session_start();
-if(empty($_SESSION['bh_admin_authenticated']))send(401,['ok'=>false,'error'=>'admin_login_required']);
-$last=(int)($_SESSION['bh_admin_last_activity']??0);
-if($last>0 && time()-$last>1800){unset($_SESSION['bh_admin_authenticated'],$_SESSION['bh_admin_last_activity'],$_SESSION['bh_admin_csrf']);send(401,['ok'=>false,'error'=>'admin_session_expired']);}
-$_SESSION['bh_admin_last_activity']=time();
+require_once __DIR__ . '/admin-session-guard.php';
 try {
  require_once __DIR__.'/db.php';
  $db=bh_mysql();
