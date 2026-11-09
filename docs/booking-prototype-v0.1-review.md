@@ -18,6 +18,8 @@ Target: `main`
 5. Updated the activity booking form to load the family's server-side consent profile and send no browser-supplied consent JSON.
 6. Updated the dedicated leader booking API and existing leader portal query to read canonical reservations. Venue joins in the existing leader query are now optional.
 7. Capacity is synchronised after a booking is made or a leader changes its status. Cancelled reservations release places; attended reservations continue to count.
+8. Booking Manager now has a visual session form with date, start/end time, capacity, price and optional venue selection. Booking mode and external URL are saved against the selected activity; external timetable importing is not claimed or enabled.
+9. A separate booking-time confirmation checkbox is required and timestamped in the server-generated consent snapshot.
 
 ## Canonical booking model
 
@@ -39,12 +41,12 @@ The old `bh_booking_requests` table is not part of the new design and its protot
 
 ## Remaining work before merge
 
-1. Review the latest complete diff and synchronise the branch with current `main`.
-2. Replace the booking manager's prompt-based slot creation with a validated form and venue selector.
+1. Confirm the branch remains synchronised with `main` and review the latest complete diff.
+2. Confirm the new visual booking form and venue selector work correctly with real organiser-linked venues.
 3. Confirm the family booking page, existing My Hub summary, dedicated leader booking page and existing leader portal all display the same reservation consistently.
-4. Review what consent snapshot fields the organiser should see, and expose only the minimum necessary information.
+4. Review consent snapshot access and retention, and confirm only the minimum necessary information is visible to the correct organiser.
 5. Confirm the legacy organiser account link fallback against actual schema and linked accounts.
-6. Review slot closure/cancellation and reservation status transitions.
+6. Review slot closure/cancellation and reservation status transitions, including reopening a slot after cancellation.
 7. Validate SQL migration on a disposable copy, including repeat-run and partially installed schema.
 8. Run PHP lint on all changed PHP files and JavaScript syntax checks.
 9. Run role, ownership, consent tampering, capacity/concurrency and full end-to-end tests.
