@@ -15,18 +15,20 @@ function br_csrf(): string {
     return (string)$_SESSION['bh_csrf'];
 }
 function br_organiser_id(PDO $db, int $userId, string $email): int {
-    $hasUserId = false;
     $check = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME='user_id'");
     $check->execute();
-    $hasUserId = (int)$check->fetchColumn() > 0;
-    if ($hasUserId) {
+    if ((int)$check->fetchColumn() > 0) {
         $q = $db->prepare("SELECT id FROM bh_organisers WHERE user_id=? LIMIT 1");
         $q->execute([$userId]);
-    } else {
-        $q = $db->prepare("SELECT id FROM bh_organisers WHERE LOWER(email)=? LIMIT 1");
-        $q->execute([strtolower($email)]);
+        $id = (int)$q->fetchColumn();
+        if ($id > 0) return $id;
     }
+    $q = $db->prepare("SELECT id FROM bh_organisers WHERE LOWER(email)=? LIMIT 1");
+    $q->execute([strtolower(trim($email))]);
     return (int)$q->fetchColumn();
+}
+function br_status_for_ui(string $status): string {
+    return $status === 'reserved' ? 'pending' : $status;
 }
 
 try {
@@ -47,13 +49,22 @@ try {
     $userQ->execute([$userId]);
     $user = $userQ->fetch(PDO::FETCH_ASSOC);
     if (!$user || ($user['status'] ?? '') !== 'active') br_json(403, ['ok'=>false,'error'=>'account_not_active']);
-    $role = (string)($user['role'] ?? '');
 
+    $requiredTables = $db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('bh_booking_reservations','bh_booking_slots','bh_booking_consent_snapshots','bh_consent_profiles')");
+    if ((int)$requiredTables->fetchColumn() !== 4) {
+        br_json(503, ['ok'=>false,'error'=>'booking_schema_not_ready','message'=>'The booking database update must be installed before bookings can be enabled.']);
+    }
+    $requiredColumns = $db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_booking_reservations' AND COLUMN_NAME IN ('public_reference','organiser_id','parent_name','parent_email','parent_phone','child_id','child_name','child_age','message')");
+    if ((int)$requiredColumns->fetchColumn() !== 9) {
+        br_json(503, ['ok'=>false,'error'=>'booking_schema_update_required','message'=>'The booking database update must be installed before bookings can be enabled.']);
+    }
+
+    $role = (string)($user['role'] ?? '');
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         if ($role === 'leader') {
             $organiserId = br_organiser_id($db, $userId, (string)$user['email']);
+            if ($organiserId < 1) br_json(403, ['ok'=>false,'error'=>'organiser_required']);
             if (($_GET['view'] ?? '') === 'manager') {
-                if ($organiserId < 1) br_json(403, ['ok'=>false,'error'=>'organiser_required']);
                 $classesQ = $db->prepare("SELECT id,title FROM bh_activities WHERE organiser_id=? AND status<>'archived' ORDER BY title");
                 $classesQ->execute([$organiserId]);
                 $slotsQ = $db->prepare("SELECT s.id,s.activity_id,s.venue_id,s.starts_at,s.ends_at,s.capacity,s.price,s.status,a.title,v.venue_name
@@ -62,22 +73,28 @@ try {
                 $slotsQ->execute([$organiserId]);
                 br_json(200, ['ok'=>true,'role'=>'leader','csrf'=>br_csrf(),'classes'=>$classesQ->fetchAll(PDO::FETCH_ASSOC),'slots'=>$slotsQ->fetchAll(PDO::FETCH_ASSOC)]);
             }
-            if ($organiserId < 1) br_json(403, ['ok'=>false,'error'=>'organiser_required']);
-            $q = $db->prepare("SELECT r.id,r.public_reference,r.status,r.quantity,r.parent_name,r.parent_email,r.parent_phone,r.child_name,r.child_age,r.message,r.requested_at,s.starts_at,s.ends_at,a.title,v.venue_name
-                FROM bh_booking_requests r
+            $q = $db->prepare("SELECT r.id,r.public_reference,r.status,r.quantity,r.parent_name,r.parent_email,r.parent_phone,r.child_name,r.child_age,r.message,r.created_at AS requested_at,s.starts_at,s.ends_at,a.title,v.venue_name,cs.consent_json
+                FROM bh_booking_reservations r
                 JOIN bh_booking_slots s ON s.id=r.slot_id
-                JOIN bh_activities a ON a.id=r.activity_id
+                JOIN bh_activities a ON a.id=s.activity_id
                 LEFT JOIN bh_venues v ON v.id=s.venue_id
-                WHERE r.organiser_id=? ORDER BY s.starts_at ASC,r.requested_at DESC");
+                LEFT JOIN bh_booking_consent_snapshots cs ON cs.id=(SELECT MAX(cs2.id) FROM bh_booking_consent_snapshots cs2 WHERE cs2.reservation_id=r.id)
+                WHERE r.organiser_id=? ORDER BY s.starts_at ASC,r.id DESC");
             $q->execute([$organiserId]);
-            br_json(200, ['ok'=>true,'role'=>'leader','csrf'=>br_csrf(),'bookings'=>$q->fetchAll(PDO::FETCH_ASSOC)]);
+            $rows = $q->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($rows as &$row) $row['status'] = br_status_for_ui((string)$row['status']);
+            unset($row);
+            br_json(200, ['ok'=>true,'role'=>'leader','csrf'=>br_csrf(),'bookings'=>$rows]);
         }
         if ($role !== 'family') br_json(403, ['ok'=>false,'error'=>'family_account_required']);
-        $q = $db->prepare("SELECT r.id,r.public_reference,r.status,r.quantity,r.child_name,r.requested_at,s.starts_at,s.ends_at,a.title,v.venue_name
-            FROM bh_booking_requests r JOIN bh_booking_slots s ON s.id=r.slot_id JOIN bh_activities a ON a.id=r.activity_id
-            LEFT JOIN bh_venues v ON v.id=s.venue_id WHERE r.user_id=? ORDER BY s.starts_at ASC");
+        $q = $db->prepare("SELECT r.id,r.public_reference,r.status,r.quantity,r.child_name,r.created_at AS requested_at,s.starts_at,s.ends_at,a.title,v.venue_name
+            FROM bh_booking_reservations r JOIN bh_booking_slots s ON s.id=r.slot_id JOIN bh_activities a ON a.id=s.activity_id
+            LEFT JOIN bh_venues v ON v.id=s.venue_id WHERE r.user_id=? ORDER BY s.starts_at ASC,r.id DESC");
         $q->execute([$userId]);
-        br_json(200, ['ok'=>true,'role'=>'family','csrf'=>br_csrf(),'bookings'=>$q->fetchAll(PDO::FETCH_ASSOC)]);
+        $rows = $q->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as &$row) $row['status'] = br_status_for_ui((string)$row['status']);
+        unset($row);
+        br_json(200, ['ok'=>true,'role'=>'family','csrf'=>br_csrf(),'bookings'=>$rows]);
     }
 
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') br_json(405, ['ok'=>false,'error'=>'method_not_allowed']);
@@ -92,11 +109,13 @@ try {
         $venueId = (int)($body['venue_id'] ?? 0);
         $startsAt = trim((string)($body['starts_at'] ?? ''));
         $endsAt = trim((string)($body['ends_at'] ?? ''));
-        $capacity = max(1, min(500, (int)($body['capacity'] ?? 1)));
-        $price = isset($body['price']) && $body['price'] !== '' ? (float)$body['price'] : null;
-        $date = DateTime::createFromFormat('Y-m-d H:i', $startsAt);
-        if ($organiserId < 1 || $activityId < 1 || !$date || $date->format('Y-m-d H:i') !== $startsAt || $date->getTimestamp() <= time() || ($price !== null && $price < 0)) {
-            br_json(422, ['ok'=>false,'error'=>'invalid_slot_details']);
+        $capacityRaw = $body['capacity'] ?? null;
+        $capacity = filter_var($capacityRaw, FILTER_VALIDATE_INT);
+        $priceRaw = $body['price'] ?? '';
+        $price = $priceRaw === '' || $priceRaw === null ? null : filter_var($priceRaw, FILTER_VALIDATE_FLOAT);
+        $date = DateTime::createFromFormat('!Y-m-d H:i', $startsAt);
+        if ($organiserId < 1 || $activityId < 1 || !$date || $date->format('Y-m-d H:i') !== $startsAt || $date->getTimestamp() <= time() || $capacity === false || $capacity < 1 || $capacity > 500 || ($priceRaw !== '' && $price === false) || ($price !== null && ($price < 0 || $price > 99999))) {
+            br_json(422, ['ok'=>false,'error'=>'invalid_slot_details','message'=>'Check the date, time, capacity and price and try again.']);
         }
         $owns = $db->prepare("SELECT id FROM bh_activities WHERE id=? AND organiser_id=? AND status<>'archived' LIMIT 1");
         $owns->execute([$activityId,$organiserId]);
@@ -108,14 +127,15 @@ try {
         }
         $endValue = null;
         if ($endsAt !== '') {
-            $endDate = DateTime::createFromFormat('Y-m-d H:i', $endsAt);
-            if (!$endDate || $endDate <= $date) br_json(422, ['ok'=>false,'error'=>'invalid_slot_end']);
+            $endDate = DateTime::createFromFormat('!Y-m-d H:i', $endsAt);
+            if (!$endDate || $endDate->format('Y-m-d H:i') !== $endsAt || $endDate <= $date) br_json(422, ['ok'=>false,'error'=>'invalid_slot_end']);
             $endValue = $endDate->format('Y-m-d H:i:s');
         }
         $ins = $db->prepare("INSERT INTO bh_booking_slots (activity_id,venue_id,starts_at,ends_at,capacity,seats_remaining,price,booking_mode,status) VALUES (?,?,?,?,?,?,?,'bubba','open')");
         $ins->execute([$activityId,$venueId ?: null,$date->format('Y-m-d H:i:s'),$endValue,$capacity,$capacity,$price]);
         br_json(201, ['ok'=>true,'slot_id'=>(int)$db->lastInsertId()]);
     }
+
     if (($body['action'] ?? '') === 'delete_slot') {
         if ($role !== 'leader') br_json(403, ['ok'=>false,'error'=>'leader_account_required']);
         $organiserId = br_organiser_id($db, $userId, (string)$user['email']);
@@ -123,9 +143,9 @@ try {
         $check = $db->prepare("SELECT s.id FROM bh_booking_slots s JOIN bh_activities a ON a.id=s.activity_id WHERE s.id=? AND a.organiser_id=? AND s.booking_mode='bubba' LIMIT 1");
         $check->execute([$slotId,$organiserId]);
         if (!$check->fetchColumn()) br_json(404, ['ok'=>false,'error'=>'slot_not_found']);
-        $active = $db->prepare("SELECT COUNT(*) FROM bh_booking_requests WHERE slot_id=? AND status IN ('pending','confirmed')");
+        $active = $db->prepare("SELECT COUNT(*) FROM bh_booking_reservations WHERE slot_id=? AND status IN ('reserved','confirmed')");
         $active->execute([$slotId]);
-        if ((int)$active->fetchColumn() > 0) br_json(409, ['ok'=>false,'error'=>'slot_has_active_bookings','message'=>'Cancel or complete existing bookings before removing this session.']);
+        if ((int)$active->fetchColumn() > 0) br_json(409, ['ok'=>false,'error'=>'slot_has_active_bookings','message'=>'Cancel or complete existing bookings before closing this session.']);
         $db->prepare("UPDATE bh_booking_slots SET status='cancelled' WHERE id=?")->execute([$slotId]);
         br_json(200, ['ok'=>true]);
     }
@@ -133,29 +153,32 @@ try {
     if (($body['action'] ?? '') === 'update_status') {
         if ($role !== 'leader') br_json(403, ['ok'=>false,'error'=>'leader_account_required']);
         $requestId = (int)($body['request_id'] ?? 0);
-        $newStatus = (string)($body['status'] ?? '');
+        $requestedStatus = (string)($body['status'] ?? '');
+        $newStatus = $requestedStatus === 'pending' ? 'reserved' : $requestedStatus;
         if ($requestId < 1 || !in_array($newStatus, ['confirmed','cancelled','attended'], true)) br_json(422, ['ok'=>false,'error'=>'invalid_booking_update']);
         $organiserId = br_organiser_id($db, $userId, (string)$user['email']);
-        $u = $db->prepare("UPDATE bh_booking_requests SET status=? WHERE id=? AND organiser_id=? AND status IN ('pending','confirmed')");
+        $u = $db->prepare("UPDATE bh_booking_reservations SET status=? WHERE id=? AND organiser_id=? AND status IN ('reserved','confirmed')");
         $u->execute([$newStatus,$requestId,$organiserId]);
         if ($u->rowCount() !== 1) br_json(404, ['ok'=>false,'error'=>'booking_not_found_or_unchanged']);
-        br_json(200, ['ok'=>true,'status'=>$newStatus]);
+        br_json(200, ['ok'=>true,'status'=>br_status_for_ui($newStatus)]);
     }
 
     if ($role !== 'family') br_json(403, ['ok'=>false,'error'=>'family_account_required']);
     $slotId = (int)($body['slot_id'] ?? 0);
     $childId = (int)($body['child_id'] ?? 0);
-    $quantity = max(1, min(10, (int)($body['quantity'] ?? 1)));
+    $quantityRaw = filter_var($body['quantity'] ?? 1, FILTER_VALIDATE_INT);
+    $quantity = $quantityRaw === false ? 0 : $quantityRaw;
     $parentName = trim((string)($body['parent_name'] ?? ''));
-    $parentEmail = strtolower(trim((string)($body['parent_email'] ?? $user['email'])));
+    $parentEmail = strtolower(trim((string)$user['email']));
     $parentPhone = trim((string)($body['parent_phone'] ?? ''));
     $childName = trim((string)($body['child_name'] ?? ''));
     $childAge = trim((string)($body['child_age'] ?? ''));
     $message = trim((string)($body['message'] ?? ''));
-    $consent = $body['consent_snapshot'] ?? null;
-    if ($slotId < 1 || $parentName === '' || !filter_var($parentEmail,FILTER_VALIDATE_EMAIL) || $childName === '' || !is_array($consent) || empty($consent['consent_to_share_with_organiser']) || empty($consent['consent_given_at']) || empty($consent['consent_version'])) {
-        br_json(422, ['ok'=>false,'error'=>'required_fields_missing','message'=>'Please complete the parent, child and booking consent details.']);
+    if ($slotId < 1 || $quantity < 1 || $quantity > 10 || $parentName === '' || $childName === '' || mb_strlen($parentName)>190 || mb_strlen($childName)>120 || mb_strlen($parentPhone)>80 || mb_strlen($childAge)>30 || mb_strlen($message)>4000) {
+        br_json(422, ['ok'=>false,'error'=>'required_fields_missing','message'=>'Please check the parent, child and number of places details.']);
     }
+
+    $child = null;
     if ($childId > 0) {
         $childQ = $db->prepare("SELECT id,name,date_of_birth FROM bh_children WHERE id=? AND user_id=? LIMIT 1");
         $childQ->execute([$childId,$userId]);
@@ -163,6 +186,39 @@ try {
         if (!$child) br_json(403, ['ok'=>false,'error'=>'child_profile_not_owned']);
         if (mb_strtolower(trim((string)$child['name'])) !== mb_strtolower($childName)) br_json(422, ['ok'=>false,'error'=>'child_name_mismatch']);
     }
+
+    // Consent is read from the authenticated family's saved server-side profile.
+    // No browser-supplied consent JSON is accepted as evidence.
+    if ($childId > 0) {
+        $consentQ = $db->prepare("SELECT * FROM bh_consent_profiles WHERE user_id=? AND child_id=? AND consent_to_share_with_organiser=1 AND consent_given_at IS NOT NULL ORDER BY updated_at DESC,id DESC LIMIT 1");
+        $consentQ->execute([$userId,$childId]);
+    } else {
+        $consentQ = $db->prepare("SELECT * FROM bh_consent_profiles WHERE user_id=? AND child_id IS NULL AND LOWER(child_name)=LOWER(?) AND consent_to_share_with_organiser=1 AND consent_given_at IS NOT NULL ORDER BY updated_at DESC,id DESC LIMIT 1");
+        $consentQ->execute([$userId,$childName]);
+    }
+    $profile = $consentQ->fetch(PDO::FETCH_ASSOC);
+    if (!$profile) br_json(422, ['ok'=>false,'error'=>'booking_consent_required','message'=>'Please save current booking consent for this child in your family account before requesting a place.']);
+    if (mb_strtolower(trim((string)$profile['child_name'])) !== mb_strtolower($childName)) br_json(422, ['ok'=>false,'error'=>'consent_child_mismatch','message'=>'The saved consent profile does not match the selected child.']);
+
+    $snapshot = [
+        'child_name'=>(string)$profile['child_name'],
+        'date_of_birth'=>$profile['date_of_birth'],
+        'gender'=>$profile['gender'],
+        'additional_needs'=>$profile['additional_needs'],
+        'allergies'=>$profile['allergies'],
+        'medical_conditions'=>$profile['medical_conditions'],
+        'medications'=>$profile['medications'],
+        'dietary_requirements'=>$profile['dietary_requirements'],
+        'emergency_information'=>$profile['emergency_information'],
+        'emergency_contact_name'=>$profile['emergency_contact_name'],
+        'emergency_contact_phone'=>$profile['emergency_contact_phone'],
+        'photo_activity'=>(bool)$profile['photo_activity'],
+        'photo_bubbahub'=>(bool)$profile['photo_bubbahub'],
+        'photo_organiser_marketing'=>(bool)$profile['photo_organiser_marketing'],
+        'consent_to_share_with_organiser'=>true,
+        'consent_version'=>(string)$profile['consent_version'],
+        'consent_given_at'=>(string)$profile['consent_given_at']
+    ];
 
     $db->beginTransaction();
     try {
@@ -177,31 +233,39 @@ try {
         if (strtotime((string)$slot['starts_at']) <= time()) {
             $db->rollBack(); br_json(409, ['ok'=>false,'error'=>'slot_in_past']);
         }
-        $dup = $db->prepare("SELECT id FROM bh_booking_requests WHERE slot_id=? AND user_id=? AND status IN ('pending','confirmed','attended') LIMIT 1");
-        $dup->execute([$slotId,$userId]);
-        if ($dup->fetchColumn()) {
-            $db->rollBack(); br_json(409, ['ok'=>false,'error'=>'already_booked','message'=>'Your family already has a request for this session.']);
+
+        $existingQ = $db->prepare("SELECT id,status FROM bh_booking_reservations WHERE slot_id=? AND user_id=? FOR UPDATE");
+        $existingQ->execute([$slotId,$userId]);
+        $existing = $existingQ->fetch(PDO::FETCH_ASSOC);
+        if ($existing && $existing['status'] !== 'cancelled') {
+            $db->rollBack(); br_json(409, ['ok'=>false,'error'=>'already_booked','message'=>'Your family already has a booking for this session.']);
         }
-        if ($slot['capacity'] !== null) {
-            $count = $db->prepare("SELECT COALESCE(SUM(quantity),0) FROM bh_booking_requests WHERE slot_id=? AND status IN ('pending','confirmed','attended')");
-            $count->execute([$slotId]);
-            if ((int)$count->fetchColumn() + $quantity > (int)$slot['capacity']) {
-                $db->rollBack(); br_json(409, ['ok'=>false,'error'=>'not_enough_places','message'=>'There are not enough places remaining for this request.']);
-            }
+        $count = $db->prepare("SELECT COALESCE(SUM(quantity),0) FROM bh_booking_reservations WHERE slot_id=? AND status IN ('reserved','confirmed','attended')");
+        $count->execute([$slotId]);
+        if ($slot['capacity'] !== null && (int)$count->fetchColumn() + $quantity > (int)$slot['capacity']) {
+            $db->rollBack(); br_json(409, ['ok'=>false,'error'=>'not_enough_places','message'=>'There are not enough places remaining for this request.']);
         }
+
         $reference = strtoupper(bin2hex(random_bytes(6)));
-        $insert = $db->prepare("INSERT INTO bh_booking_requests (public_reference,slot_id,activity_id,organiser_id,user_id,parent_name,parent_email,parent_phone,child_id,child_name,child_age,quantity,message,consent_snapshot)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-        $insert->execute([$reference,$slotId,(int)$slot['activity_id'],(int)$slot['organiser_id'],$userId,$parentName,$parentEmail,$parentPhone?:null,$childId?:null,$childName,$childAge?:null,$quantity,$message?:null,json_encode($consent,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)]);
-        $requestId = (int)$db->lastInsertId();
+        if ($existing) {
+            $reservationId = (int)$existing['id'];
+            $save = $db->prepare("UPDATE bh_booking_reservations SET status='reserved',quantity=?,public_reference=?,organiser_id=?,parent_name=?,parent_email=?,parent_phone=?,child_id=?,child_name=?,child_age=?,message=? WHERE id=? AND user_id=?");
+            $save->execute([$quantity,$reference,(int)$slot['organiser_id'],$parentName,$parentEmail,$parentPhone ?: null,$childId ?: null,$childName,$childAge ?: null,$message ?: null,$reservationId,$userId]);
+        } else {
+            $save = $db->prepare("INSERT INTO bh_booking_reservations (slot_id,user_id,status,quantity,public_reference,organiser_id,parent_name,parent_email,parent_phone,child_id,child_name,child_age,message) VALUES (?,?, 'reserved', ?,?,?,?,?,?,?,?,?,?)");
+            $save->execute([$slotId,$userId,$quantity,$reference,(int)$slot['organiser_id'],$parentName,$parentEmail,$parentPhone ?: null,$childId ?: null,$childName,$childAge ?: null,$message ?: null]);
+            $reservationId = (int)$db->lastInsertId();
+        }
+        $snapshotInsert = $db->prepare("INSERT INTO bh_booking_consent_snapshots (user_id,reservation_id,consent_profile_id,consent_version,child_name,consent_json,consent_given_at) VALUES (?,?,?,?,?,?,?)");
+        $snapshotInsert->execute([$userId,$reservationId,(int)$profile['id'],(string)$profile['consent_version'],$childName,json_encode($snapshot,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),(string)$profile['consent_given_at']]);
         $db->commit();
     } catch (Throwable $e) {
         if ($db->inTransaction()) $db->rollBack();
         if ($e instanceof PDOException && (string)$e->getCode() === '23000') br_json(409, ['ok'=>false,'error'=>'already_booked']);
         throw $e;
     }
-    br_json(201, ['ok'=>true,'booking_id'=>$requestId,'reference'=>$reference,'status'=>'pending','activity'=>$slot['title'],'starts_at'=>$slot['starts_at']]);
+    br_json(201, ['ok'=>true,'booking_id'=>$reservationId,'reference'=>$reference,'status'=>'pending','activity'=>$slot['title'],'starts_at'=>$slot['starts_at']]);
 } catch (Throwable $e) {
-    error_log('Bubba Hub booking requests: '.$e->getMessage());
+    error_log('Bubba Hub booking service: '.$e->getMessage());
     br_json(500, ['ok'=>false,'error'=>'booking_service_unavailable','message'=>'The booking service is temporarily unavailable.']);
 }
