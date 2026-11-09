@@ -47,5 +47,15 @@ try{
    $history[]=['id'=>(int)$entry['id'],'type'=>$entry['item_type'],'item_id'=>(int)$entry['item_id'],'decision'=>$entry['decision'],'note'=>$entry['note'],'created_at'=>$entry['created_at']];
   }
  }
+ $duplicateHistoryTable=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_duplicate_review_requests'");
+ $duplicateHistoryTable->execute();
+ if((int)$duplicateHistoryTable->fetchColumn()>0){
+  $stmt=$db->query("SELECT r.activity_id,r.status,r.review_reason,r.reviewed_at,a.title FROM bh_duplicate_review_requests r JOIN bh_activities a ON a.id=r.activity_id WHERE r.status IN ('approved','rejected') ORDER BY r.reviewed_at DESC LIMIT 50");
+  foreach($stmt->fetchAll(PDO::FETCH_ASSOC) as $entry){
+   $history[]=['id'=>(int)$entry['activity_id'],'type'=>'duplicate_review','item_id'=>(int)$entry['activity_id'],'decision'=>(string)$entry['status'],'note'=>(string)($entry['review_reason']??''),'created_at'=>(string)($entry['reviewed_at']??'')];
+  }
+  usort($history,static fn($a,$b)=>strcmp((string)$b['created_at'],(string)$a['created_at']));
+  $history=array_slice($history,0,100);
+ }
  approval_reply(200,['ok'=>true,'read_only'=>false,'review_only'=>true,'csrf'=>$_SESSION['bh_approval_csrf'],'queues'=>$queues,'history'=>$history,'note'=>'Counts reflect database status, not a formal submission workflow.']);
 }catch(Throwable $e){error_log('Admin approval centre: '.$e->getMessage());approval_reply(500,['ok'=>false,'error'=>'approval_centre_unavailable']);}
