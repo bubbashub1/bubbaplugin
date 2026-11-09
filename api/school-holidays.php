@@ -25,27 +25,42 @@ if($action==='admin'||$method==='POST'){
  if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 try{
  require_once __DIR__.'/db.php';$db=bh_mysql();
- $db->exec("CREATE TABLE IF NOT EXISTS bh_school_holidays (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,area VARCHAR(40) NOT NULL,holiday_name VARCHAR(100) NOT NULL,start_date DATE NOT NULL,end_date DATE NOT NULL,is_recurring TINYINT(1) NOT NULL DEFAULT 0,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,KEY idx_bh_school_holidays_area_dates(area,start_date,end_date)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+ $db->exec("CREATE TABLE IF NOT EXISTS bh_school_holidays (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,area VARCHAR(40) NOT NULL,holiday_name VARCHAR(100) NOT NULL,start_date DATE NOT NULL,end_date DATE NOT NULL,is_recurring TINYINT(1) NOT NULL DEFAULT 0,recurrence_type VARCHAR(32) NOT NULL DEFAULT 'none',created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,KEY idx_bh_school_holidays_area_dates(area,start_date,end_date)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 // Add the recurrence flag safely to existing installations.
 $columns=$db->query('SHOW COLUMNS FROM bh_school_holidays')->fetchAll(PDO::FETCH_COLUMN);
 if(!in_array('is_recurring',$columns,true))$db->exec('ALTER TABLE bh_school_holidays ADD COLUMN is_recurring TINYINT(1) NOT NULL DEFAULT 0 AFTER end_date');
+if(!in_array('recurrence_type',$columns,true))$db->exec("ALTER TABLE bh_school_holidays ADD COLUMN recurrence_type VARCHAR(32) NOT NULL DEFAULT 'none' AFTER is_recurring");
+$db->exec("UPDATE bh_school_holidays SET recurrence_type='fixed_date' WHERE is_recurring=1 AND recurrence_type='none'");
  if($method==='GET'&&$action==='admin'){
-   $rows=$db->query('SELECT id,area,holiday_name,start_date,end_date,is_recurring FROM bh_school_holidays ORDER BY start_date,area,holiday_name')->fetchAll(PDO::FETCH_ASSOC);
+   $rows=$db->query('SELECT id,area,holiday_name,start_date,end_date,is_recurring,recurrence_type FROM bh_school_holidays ORDER BY start_date,area,holiday_name')->fetchAll(PDO::FETCH_ASSOC);
   bhHolidayReply(200,['ok'=>true,'csrf_token'=>$adminCsrfToken,'areas'=>$areas,'holidays'=>$rows]);
  }
  if($method==='GET'){
   $area=trim((string)($_GET['area']??''));$from=(string)($_GET['from']??'');$to=(string)($_GET['to']??'');
   if(!in_array($area,$areas,true)||!preg_match('/^\d{4}-\d{2}-\d{2}$/',$from)||!preg_match('/^\d{4}-\d{2}-\d{2}$/',$to)||$to<$from)bhHolidayReply(422,['ok'=>false,'error'=>'invalid_date_range']);
-  $q=$db->prepare('SELECT id,area,holiday_name,start_date,end_date,is_recurring FROM bh_school_holidays WHERE area=? ORDER BY start_date');$q->execute([$area]);$all=$q->fetchAll(PDO::FETCH_ASSOC);$matches=[];$fromDate=new DateTimeImmutable($from);$toDate=new DateTimeImmutable($to);
+  $q=$db->prepare('SELECT id,area,holiday_name,start_date,end_date,is_recurring,recurrence_type FROM bh_school_holidays WHERE area=? ORDER BY start_date');$q->execute([$area]);$all=$q->fetchAll(PDO::FETCH_ASSOC);$matches=[];$fromDate=new DateTimeImmutable($from);$toDate=new DateTimeImmutable($to);
   foreach($all as $holiday){
    if(empty($holiday['is_recurring'])){if($holiday['start_date']<=$to&&$holiday['end_date']>=$from)$matches[]=$holiday;continue;}
-   $startParts=explode('-',substr((string)$holiday['start_date'],5));$endParts=explode('-',substr((string)$holiday['end_date'],5));$startMonth=(int)$startParts[0];$startDay=(int)$startParts[1];$endMonth=(int)$endParts[0];$endDay=(int)$endParts[1];
+   $rule=(string)($holiday['recurrence_type']??'fixed_date');
+   $originalStart=new DateTimeImmutable((string)$holiday['start_date']);
+   $originalEnd=new DateTimeImmutable((string)$holiday['end_date']);
+   $duration=(int)$originalStart->diff($originalEnd)->format('%a');
+   $startParts=explode('-',substr((string)$holiday['start_date'],5));$endParts=explode('-',substr((string)$holiday['end_date'],5));$startMonth=(int)$startParts[0];$startDay=(int)$startParts[1];
    for($year=(int)$fromDate->format('Y')-1;$year<=(int)$toDate->format('Y');$year++){
-    if(!checkdate($startMonth,$startDay,$year))continue;
-    $occurrenceStart=sprintf('%04d-%02d-%02d',$year,$startMonth,$startDay);
-    $endYear=($endMonth<$startMonth||($endMonth===$startMonth&&$endDay<$startDay))?$year+1:$year;
-    if(!checkdate($endMonth,$endDay,$endYear))continue;
-    $occurrenceEnd=sprintf('%04d-%02d-%02d',$endYear,$endMonth,$endDay);
+    if($rule==='fixed_date'){
+     if(!checkdate($startMonth,$startDay,$year))continue;
+     $occurrenceStart=sprintf('%04d-%02d-%02d',$year,$startMonth,$startDay);
+    }else{
+     $month=5;$weekday=1;$ordinal=1;
+     if($rule==='last_monday_may'){$ordinal=-1;}
+     elseif($rule==='last_monday_august'){$month=8;$ordinal=-1;}
+     elseif($rule!=='first_monday_may')continue;
+     $first=new DateTimeImmutable(sprintf('%04d-%02d-01',$year,$month));
+     if($ordinal===1){$offset=(($weekday-(int)$first->format('N')+7)%7);$target=$first->modify('+'.$offset.' days');}
+     else{$last=$first->modify('last day of this month');$offset=(((int)$last->format('N')-$weekday+7)%7);$target=$last->modify('-'.$offset.' days');}
+     $occurrenceStart=$target->format('Y-m-d');
+    }
+    $occurrenceEnd=(new DateTimeImmutable($occurrenceStart))->modify('+'.$duration.' days')->format('Y-m-d');
     if($occurrenceStart<=$to&&$occurrenceEnd>=$from){$copy=$holiday;$copy['start_date']=$occurrenceStart;$copy['end_date']=$occurrenceEnd;$copy['occurrence_year']=$year;$matches[]=$copy;}
    }
   }
@@ -60,20 +75,27 @@ if(!in_array('is_recurring',$columns,true))$db->exec('ALTER TABLE bh_school_holi
  if($action!=='save')bhHolidayReply(422,['ok'=>false,'error'=>'invalid_action']);
  $ids=$input['ids']??[];if(!is_array($ids))$ids=[];$ids=array_values(array_unique(array_filter(array_map(static fn($v)=>filter_var($v,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]),$ids))));
  $legacyId=filter_var($input['id']??0,FILTER_VALIDATE_INT,['options'=>['min_range'=>0]]);if(!$ids&&$legacyId>0)$ids=[$legacyId];
- $recurring=!empty($input['recurring'])?1:0;$selected=$input['areas']??[];$name=trim((string)($input['holiday_name']??''));$start=(string)($input['start_date']??'');$end=(string)($input['end_date']??'');
+ $recurrenceType=(string)($input['recurrence_type']??(!empty($input['recurring'])?'fixed_date':'none'));$allowedRecurrence=['none','fixed_date','first_monday_may','last_monday_may','last_monday_august'];if(!in_array($recurrenceType,$allowedRecurrence,true))bhHolidayReply(422,['ok'=>false,'error'=>'invalid_recurrence_type']);$recurring=$recurrenceType==='none'?0:1;$selected=$input['areas']??[];$name=trim((string)($input['holiday_name']??''));$start=(string)($input['start_date']??'');$end=(string)($input['end_date']??'');
  if(!is_array($selected))$selected=[$selected];$selected=array_values(array_unique(array_filter(array_map(static fn($v)=>trim((string)$v),$selected),static fn($v)=>$v!=='')));
  $validDate=static function(string $v):bool{$d=DateTimeImmutable::createFromFormat('!Y-m-d',$v,new DateTimeZone('Europe/London'));return $d instanceof DateTimeImmutable&&$d->format('Y-m-d')===$v;};
  if($legacyId===false||count($ids)>20||!$selected||count(array_diff($selected,$areas))>0||$name===''||mb_strlen($name)>100||!$validDate($start)||!$validDate($end)||$end<$start)bhHolidayReply(422,['ok'=>false,'error'=>'check_area_name_and_dates']);
+ if($recurrenceType!=='none'&&$recurrenceType!=='fixed_date'){
+  $dt=new DateTimeImmutable($start);$month=(int)$dt->format('n');$day=(int)$dt->format('j');$weekday=(int)$dt->format('N');
+  $expectedMonth=$recurrenceType==='last_monday_august'?8:5;
+  if($month!==$expectedMonth||$weekday!==1)bhHolidayReply(422,['ok'=>false,'error'=>'start_date_must_match_repeat_pattern']);
+  if($recurrenceType==='first_monday_may'&&$day>7)bhHolidayReply(422,['ok'=>false,'error'=>'start_date_must_match_repeat_pattern']);
+  if($recurrenceType!=='first_monday_may'&&$day<25)bhHolidayReply(422,['ok'=>false,'error'=>'start_date_must_match_repeat_pattern']);
+ }
  try{
   $db->beginTransaction();$existing=[];
   if($ids){$marks=implode(',',array_fill(0,count($ids),'?'));$q=$db->prepare("SELECT id,area FROM bh_school_holidays WHERE id IN ($marks) FOR UPDATE");$q->execute($ids);$existing=$q->fetchAll(PDO::FETCH_ASSOC);if(count($existing)!==count($ids)){ $db->rollBack();bhHolidayReply(404,['ok'=>false,'error'=>'holiday_not_found']); }}
   $byArea=[];foreach($existing as $row)$byArea[$row['area']] = (int)$row['id'];
-  $update=$db->prepare('UPDATE bh_school_holidays SET holiday_name=?,start_date=?,end_date=?,is_recurring=? WHERE id=?');
-  $insert=$db->prepare('INSERT INTO bh_school_holidays(area,holiday_name,start_date,end_date,is_recurring) VALUES(?,?,?,?,?)');
-  $savedIds=[];foreach($selected as $area){if(isset($byArea[$area])){$update->execute([$name,$start,$end,$recurring,$byArea[$area]]);$savedIds[]=$byArea[$area];}else{$insert->execute([$area,$name,$start,$end,$recurring]);$savedIds[]=(int)$db->lastInsertId();}}
+  $update=$db->prepare('UPDATE bh_school_holidays SET holiday_name=?,start_date=?,end_date=?,is_recurring=?,recurrence_type=? WHERE id=?');
+  $insert=$db->prepare('INSERT INTO bh_school_holidays(area,holiday_name,start_date,end_date,is_recurring,recurrence_type) VALUES(?,?,?,?,?,?)');
+  $savedIds=[];foreach($selected as $area){if(isset($byArea[$area])){$update->execute([$name,$start,$end,$recurring,$recurrenceType,$byArea[$area]]);$savedIds[]=$byArea[$area];}else{$insert->execute([$area,$name,$start,$end,$recurring,$recurrenceType]);$savedIds[]=(int)$db->lastInsertId();}}
   $removeIds=[];foreach($existing as $row)if(!in_array($row['area'],$selected,true))$removeIds[]=(int)$row['id'];
   if($removeIds){$marks=implode(',',array_fill(0,count($removeIds),'?'));$delete=$db->prepare("DELETE FROM bh_school_holidays WHERE id IN ($marks)");$delete->execute($removeIds);}
   $db->commit();
-  $placeholders=implode(',',array_fill(0,count($savedIds),'?'));$q=$db->prepare("SELECT id,area,holiday_name,start_date,end_date,is_recurring FROM bh_school_holidays WHERE id IN ($placeholders) ORDER BY start_date,area");$q->execute($savedIds);bhHolidayReply(200,['ok'=>true,'holidays'=>$q->fetchAll(PDO::FETCH_ASSOC)]);
+  $placeholders=implode(',',array_fill(0,count($savedIds),'?'));$q=$db->prepare("SELECT id,area,holiday_name,start_date,end_date,is_recurring,recurrence_type FROM bh_school_holidays WHERE id IN ($placeholders) ORDER BY start_date,area");$q->execute($savedIds);bhHolidayReply(200,['ok'=>true,'holidays'=>$q->fetchAll(PDO::FETCH_ASSOC)]);
  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
 }catch(Throwable $e){error_log('school_holidays_api: '.get_class($e));bhHolidayReply(503,['ok'=>false,'error'=>'school_holidays_unavailable']);}
