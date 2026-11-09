@@ -922,10 +922,11 @@ try {
 
     /* ---------------- google ---------------- */
     if ($action === 'google') {
-        if ($authContext === 'leader') bh_auth_response(403,['ok'=>false,'error'=>'leader_social_disabled','message'=>'Leader accounts must register and sign in with email and password.']);
-        bh_rate_limit($db, "social-ip:$ip", 30, 900);
+        if (!in_array($authContext, ['family','leader'], true)) {
+            bh_auth_response(403,['ok'=>false,'error'=>'google_context_not_supported','message'=>'Google sign-in is available for Family and Class Leader accounts only.']);
+        }
+        bh_rate_limit($db, "social-ip:$ip", 20, 900);
 
-        // Expects the Google Identity Services JS callback: POST {credential: response.credential, context, csrf}.
         $credential = trim((string)($body['credential'] ?? ''));
         if ($credential === '' || strlen($credential) > 4096) {
             bh_auth_response(422, ['ok'=>false,'error'=>'google_credential_required','message'=>'Google sign-in could not be started.']);
@@ -934,24 +935,39 @@ try {
         if ($clientId === '') {
             bh_auth_response(503, ['ok'=>false,'error'=>'google_not_configured','message'=>'Google sign-in is not configured yet.']);
         }
+        $expectedNonce = (string)($_SESSION['bh_google_nonce'] ?? '');
+        $nonceExpiry = (int)($_SESSION['bh_google_nonce_expires'] ?? 0);
+        if ($expectedNonce === '' || $nonceExpiry < time()) {
+            unset($_SESSION['bh_google_nonce'], $_SESSION['bh_google_nonce_expires']);
+            bh_auth_response(403, ['ok'=>false,'error'=>'google_nonce_expired','message'=>'Please refresh the page and try Google sign-in again.']);
+        }
 
         $google = bh_http_get_json('https://oauth2.googleapis.com/tokeninfo?id_token=' . rawurlencode($credential));
+        $now = time();
         $issuerOk = is_array($google) && in_array((string)($google['iss'] ?? ''), ['https://accounts.google.com','accounts.google.com'], true);
+        $issuedAt = (int)($google['iat'] ?? 0);
+        $expiresAt = (int)($google['exp'] ?? 0);
+        $audienceOk = is_array($google)
+            && hash_equals($clientId, (string)($google['aud'] ?? ''))
+            && (empty($google['azp']) || hash_equals($clientId, (string)$google['azp']));
         if (!is_array($google) || !empty($google['error']) || !empty($google['error_description'])
-            || !hash_equals($clientId, (string)($google['aud'] ?? ''))
-            || !$issuerOk
-            || (int)($google['exp'] ?? 0) < time()) {
-            bh_auth_response(401, ['ok'=>false,'error'=>'google_invalid_token','message'=>'Google could not verify this sign-in. Please try again.']);
+            || !$audienceOk || !$issuerOk || $issuedAt < ($now - 600) || $issuedAt > ($now + 60)
+            || $expiresAt <= $now || $expiresAt > ($now + 3600)
+            || !hash_equals($expectedNonce, (string)($google['nonce'] ?? ''))) {
+            bh_auth_response(401,['ok'=>false,'error'=>'google_invalid_token','message'=>'Google could not verify this sign-in. Please try again.']);
         }
+        unset($_SESSION['bh_google_nonce'], $_SESSION['bh_google_nonce_expires']);
 
         $email = bh_clean_email($google['email'] ?? '');
         $googleId = trim((string)($google['sub'] ?? ''));
         $emailVerified = filter_var($google['email_verified'] ?? false, FILTER_VALIDATE_BOOLEAN);
-        if ($email === '' || $googleId === '' || !$emailVerified) {
+        if ($email === '' || $googleId === '' || strlen($googleId) > 191 || !$emailVerified) {
             bh_auth_response(401, ['ok'=>false,'error'=>'google_unverified_email','message'=>'Google did not provide a verified email address.']);
         }
 
-        [$user, $isNew] = bh_social_login($db, 'google', $googleId, $email, (string)($google['name'] ?? ''), $authContext, true);
+        $organisation = trim((string)($body['organisation_name'] ?? ''));
+        $termsAccepted = !empty($body['terms']);
+        [$user, $isNew] = bh_social_login($db, 'google', $googleId, $email, (string)($google['name'] ?? ''), $authContext, true, $organisation, $termsAccepted);
         bh_login_session((int)$user['id'], $authContext);
         bh_social_response($user, $isNew, $authContext, 'google', (string)($google['given_name'] ?? ''));
     }
