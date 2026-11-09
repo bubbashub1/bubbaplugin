@@ -750,3 +750,17 @@ body.bh-activity-v2 .activity-reference-exact .activity-concept-support>.activit
   body.bh-activity-v2 .activity-reference-exact .activity-category-strip{margin:10px 0 12px!important;padding:11px!important}
   body.bh-activity-v2 .activity-reference-exact .activity-concept-content{grid-template-columns:minmax(0,1fr)!important}
 }
+
+
+/* Desktop content balance: 60% description/map and 40% schedule/organiser. */
+@media(min-width:761px){
+ body.bh-activity-v2 .activity-reference-exact .activity-concept-content{
+  grid-template-columns:minmax(0,3fr) minmax(0,2fr)!important;
+  column-gap:18px!important;
+ }
+}
+@media(max-width:760px){
+ body.bh-activity-v2 .activity-reference-exact .activity-concept-content{
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+}
