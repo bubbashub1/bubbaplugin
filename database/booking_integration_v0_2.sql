@@ -33,10 +33,10 @@ SET @idx_exists = (
   SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
   WHERE TABLE_SCHEMA = DATABASE()
     AND TABLE_NAME = 'bh_booking_reservations'
-    AND INDEX_NAME = 'idx_reservation_reference'
+    AND INDEX_NAME = 'uq_reservation_public_reference'
 );
 SET @sql = IF(@idx_exists = 0,
-  'CREATE INDEX idx_reservation_reference ON bh_booking_reservations (public_reference)',
+  'CREATE UNIQUE INDEX uq_reservation_public_reference ON bh_booking_reservations (public_reference)',
   'SELECT 1'
 );
 PREPARE stmt FROM @sql;
