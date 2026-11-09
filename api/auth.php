@@ -981,6 +981,20 @@ try {
             bh_auth_response(401, ['ok'=>false,'error'=>'google_unverified_email','message'=>'Google did not provide a verified email address.']);
         }
 
+        // Returning Google users should not have to choose Family or Class Leader.
+        // Resolve the role only from an existing Google link or Google's verified email;
+        // new accounts still use the role explicitly selected in the registration flow.
+        $linked = $db->prepare("SELECT u.role FROM bh_social_accounts s JOIN bh_users u ON u.id=s.user_id WHERE s.provider='google' AND s.provider_user_id=? LIMIT 1");
+        $linked->execute([$googleId]);
+        $knownRole = (string)($linked->fetchColumn() ?: '');
+        if (!in_array($knownRole, ['family','leader'], true)) {
+            $existing = $db->prepare("SELECT role FROM bh_users WHERE email=? LIMIT 1");
+            $existing->execute([$email]);
+            $emailRole = (string)($existing->fetchColumn() ?: '');
+            if (in_array($emailRole, ['family','leader'], true)) $knownRole = $emailRole;
+        }
+        if (in_array($knownRole, ['family','leader'], true)) $authContext = $knownRole;
+
         $organisation = trim((string)($body['organisation_name'] ?? ''));
         $termsAccepted = !empty($body['terms']);
         [$user, $isNew] = bh_social_login($db, 'google', $googleId, $email, (string)($google['name'] ?? ''), $authContext, true, $organisation, $termsAccepted, (string)($google['given_name'] ?? ''), (string)($google['family_name'] ?? ''));
