@@ -85,6 +85,7 @@ async function submit(){
   const potential=Array.isArray(duplicateCheck.potential)?duplicateCheck.potential:[];
   if(exact.length&&!duplicateOverride){
    Q("duplicateReviewRequest").hidden=false;Q("potentialDuplicateNotice").hidden=true;
+   const matchList=Q("duplicateMatchList");if(matchList){matchList.replaceChildren();for(const match of exact){const item=document.createElement("li");item.textContent=match.title+" — "+[match.venue_name,match.town].filter(Boolean).join(", ");matchList.append(item);}}
    say("An activity with this title and venue is already listed. Review the existing listing or request a team review.");
    Q("submitListing").disabled=false;Q("duplicateReviewRequest").scrollIntoView({behavior:"smooth",block:"center"});return;
   }
