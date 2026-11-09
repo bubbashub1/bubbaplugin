@@ -65,7 +65,7 @@ try {
     if ($childName === '' || mb_strlen($childName) > 120) cp_json(422, ['ok'=>false,'error'=>'child_name_required']);
     if ($dob !== '') {
         $date = DateTime::createFromFormat('Y-m-d', $dob);
-        if (!$date || $date->format('Y-m-d') !== $dob) cp_json(422, ['ok'=>false,'error'=>'invalid_date_of_birth']);
+        if (!$date || $date->format('Y-m-d') !== $dob || $date > new DateTime('today')) cp_json(422, ['ok'=>false,'error'=>'invalid_date_of_birth']);
     }
     $shareConsent = !empty($body['consent_to_share_with_organiser']) ? 1 : 0;
 
