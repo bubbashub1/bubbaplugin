@@ -28,7 +28,7 @@ try{
  $q=$db->query("SELECT COUNT(*) FROM bh_activities WHERE status='draft'");
  $queues[1]['count']=(int)$q->fetchColumn();
  $q=$db->query("SELECT id,title,status FROM bh_activities WHERE status='draft' ORDER BY updated_at DESC,id DESC LIMIT 50");
- foreach($q->fetchAll(PDO::FETCH_ASSOC) as $a){$queues[1]['items'][]=['id'=>(int)$a['id'],'title'=>$a['title'],'status'=>'draft','url'=>'/admin/admin-activities-add-listing.html?id='.(int)$r['activity_id']];}
+ foreach($q->fetchAll(PDO::FETCH_ASSOC) as $a){$queues[1]['items'][]=['id'=>(int)$a['id'],'title'=>$a['title'],'status'=>'draft','url'=>'/admin/admin-activities-listings.html'];}
  $duplicateTable=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_duplicate_review_requests'");
  $duplicateTable->execute();
  if((int)$duplicateTable->fetchColumn()>0){
@@ -36,7 +36,7 @@ try{
   $queues[2]['count']=(int)$q->fetchColumn();
   $q=$db->query("SELECT r.id,r.activity_id,a.title,r.status,r.matched_activity_ids_json FROM bh_duplicate_review_requests r JOIN bh_activities a ON a.id=r.activity_id WHERE r.status='pending' ORDER BY r.created_at ASC LIMIT 50");
   foreach($q->fetchAll(PDO::FETCH_ASSOC) as $r){
-   $queues[2]['items'][]=['id'=>(int)$r['id'],'activity_id'=>(int)$r['activity_id'],'title'=>(string)$r['title'],'status'=>'pending duplicate review','matched_activity_ids'=>json_decode((string)$r['matched_activity_ids_json'],true)?:[],'url'=>'/admin/admin-activities-listings.html'];
+   $queues[2]['items'][]=['id'=>(int)$r['id'],'activity_id'=>(int)$r['activity_id'],'title'=>(string)$r['title'],'status'=>'pending duplicate review','matched_activity_ids'=>json_decode((string)$r['matched_activity_ids_json'],true)?:[],'url'=>'/admin/admin-activities-add-listing.html?id='.(int)$r['activity_id']];
   }
  }
  $history=[];
