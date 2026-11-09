@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       location:[...new Set(normalizedVenues.map(v=>v.town).filter(Boolean))].join(", ")||normalizedVenues[0]?.name||"",organiser_id:raw.organiser?.id||"",
       organiser_name:raw.organiser?.name||"",organiser:raw.organiser?.name||"",organiser_website:raw.organiser?.website||"",
       organiser_email:raw.organiser?.email||"",organiser_phone:raw.organiser?.phone||"",organiser_slug:raw.organiser?.slug||"",
-      venues:normalizedVenues,booking_mode:raw.booking_url?"external":"reserve",booking_slots:[],booking_url:raw.booking_url||""
+      venues:normalizedVenues,booking_mode:raw.booking_url?"external":"reserve",booking_slots:Array.isArray(raw.booking_slots)?raw.booking_slots:[],booking_url:raw.booking_url||""
     };
   };
   const loadDirectActivity=async(type,value)=>{
