@@ -522,6 +522,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const dateKey=date=>[date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");
     const sameDay=(a,b)=>dateKey(a)===dateKey(b);
     const holidayCache=new Map();
+    const isTermTimeOnly=session=>[true,1,"1","true","yes","y","term time","term-time","term time only"].includes(typeof session.term_time==="string"?session.term_time.trim().toLowerCase():session.term_time);
     const areaForSession=session=>{
       const raw=String(a.county||a.region||session.venue_region||session.venue?.region||"").trim().toLowerCase();
       if(raw.includes("cornwall"))return "Cornwall";
@@ -560,7 +561,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       const start=parseDate(session.start_date),end=parseDate(session.end_date),once=String(session.frequency||"").toLowerCase()==="once";
       if(start&&date<start)return false;
       if(end&&date>end)return false;
-      if(session.term_time&&isHoliday(session,date))return false;
+      if(isTermTimeOnly(session)&&isHoliday(session,date))return false;
       if(once)return !!start&&sameDay(start,date);
       const weekday=dayNumber(session);
       return !!weekday&&((date.getDay()||7)===weekday);
@@ -596,7 +597,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       selectedLabel.textContent=selectedDate.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"});
       sessionList.replaceChildren();
       const matches=calendarSessions.filter(s=>occurs(s,selectedDate)).sort((a,b)=>String(a.start||"").localeCompare(String(b.start||"")));
-      if(!matches.length){const empty=document.createElement("p");empty.className="bh-calendar-empty";empty.textContent=calendarSessions.some(s=>s.term_time&&isHoliday(s,selectedDate))?"School holiday dates are saved for this area, so term-time-only sessions are not shown.":"No sessions listed for this date. Choose a date with a dot to see available sessions.";sessionList.append(empty);return}
+      if(!matches.length){const empty=document.createElement("p");empty.className="bh-calendar-empty";empty.textContent=calendarSessions.some(s=>isTermTimeOnly(s)&&isHoliday(s,selectedDate))?"School holiday dates are saved for this area, so term-time-only sessions are not shown.":"No sessions listed for this date. Choose a date with a dot to see available sessions.";sessionList.append(empty);return}
       matches.forEach(session=>{
         const card=document.createElement("article");card.className="bh-calendar-session";
         const heading=document.createElement("div");heading.className="bh-calendar-session-copy";
