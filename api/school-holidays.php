@@ -40,20 +40,23 @@ try{
  if((int)($_SERVER['CONTENT_LENGTH']??0)>4096)bhHolidayReply(413,['ok'=>false,'error'=>'request_too_large']);
  $input=json_decode((string)file_get_contents('php://input'),true);if(!is_array($input))bhHolidayReply(400,['ok'=>false,'error'=>'invalid_json']);
  $action=(string)($input['action']??'');
- if($action==='delete'){$id=filter_var($input['id']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);if(!$id)bhHolidayReply(422,['ok'=>false,'error'=>'invalid_id']);$q=$db->prepare('DELETE FROM bh_school_holidays WHERE id=?');$q->execute([$id]);if(!$q->rowCount())bhHolidayReply(404,['ok'=>false,'error'=>'holiday_not_found']);bhHolidayReply(200,['ok'=>true,'deleted_id'=>$id]);}
+ if($action==='delete'){$ids=$input['ids']??[];if(!is_array($ids)&&isset($input['id']))$ids=[$input['id']];$ids=array_values(array_unique(array_filter(array_map(static fn($v)=>filter_var($v,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]),$ids))));if(!$ids)bhHolidayReply(422,['ok'=>false,'error'=>'invalid_id']);$marks=implode(',',array_fill(0,count($ids),'?'));$q=$db->prepare("DELETE FROM bh_school_holidays WHERE id IN ($marks)");$q->execute($ids);if(!$q->rowCount())bhHolidayReply(404,['ok'=>false,'error'=>'holiday_not_found']);bhHolidayReply(200,['ok'=>true,'deleted_ids'=>$ids]);}
  if($action!=='save')bhHolidayReply(422,['ok'=>false,'error'=>'invalid_action']);
- $id=filter_var($input['id']??0,FILTER_VALIDATE_INT,['options'=>['min_range'=>0]]);$selected=$input['areas']??[];$name=trim((string)($input['holiday_name']??''));$start=(string)($input['start_date']??'');$end=(string)($input['end_date']??'');
+ $ids=$input['ids']??[];if(!is_array($ids))$ids=[];$ids=array_values(array_unique(array_filter(array_map(static fn($v)=>filter_var($v,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]),$ids))));
+ $legacyId=filter_var($input['id']??0,FILTER_VALIDATE_INT,['options'=>['min_range'=>0]]);if(!$ids&&$legacyId>0)$ids=[$legacyId];
+ $selected=$input['areas']??[];$name=trim((string)($input['holiday_name']??''));$start=(string)($input['start_date']??'');$end=(string)($input['end_date']??'');
  if(!is_array($selected))$selected=[$selected];$selected=array_values(array_unique(array_filter(array_map(static fn($v)=>trim((string)$v),$selected),static fn($v)=>$v!=='')));
  $validDate=static function(string $v):bool{$d=DateTimeImmutable::createFromFormat('!Y-m-d',$v,new DateTimeZone('Europe/London'));return $d instanceof DateTimeImmutable&&$d->format('Y-m-d')===$v;};
- if($id===false||!$selected||count(array_diff($selected,$areas))>0||$name===''||mb_strlen($name)>100||!$validDate($start)||!$validDate($end)||$end<$start)bhHolidayReply(422,['ok'=>false,'error'=>'check_area_name_and_dates']);
+ if($legacyId===false||count($ids)>20||!$selected||count(array_diff($selected,$areas))>0||$name===''||mb_strlen($name)>100||!$validDate($start)||!$validDate($end)||$end<$start)bhHolidayReply(422,['ok'=>false,'error'=>'check_area_name_and_dates']);
  try{
-  $db->beginTransaction();$savedIds=[];
-  if($id>0){
-   $check=$db->prepare('SELECT id FROM bh_school_holidays WHERE id=?');$check->execute([$id]);if(!$check->fetchColumn())bhHolidayReply(404,['ok'=>false,'error'=>'holiday_not_found']);
-   $update=$db->prepare('UPDATE bh_school_holidays SET area=?,holiday_name=?,start_date=?,end_date=? WHERE id=?');$update->execute([$selected[0],$name,$start,$end,$id]);$savedIds[]=$id;$selected=array_slice($selected,1);
-  }
+  $db->beginTransaction();$existing=[];
+  if($ids){$marks=implode(',',array_fill(0,count($ids),'?'));$q=$db->prepare("SELECT id,area FROM bh_school_holidays WHERE id IN ($marks) FOR UPDATE");$q->execute($ids);$existing=$q->fetchAll(PDO::FETCH_ASSOC);if(count($existing)!==count($ids)){ $db->rollBack();bhHolidayReply(404,['ok'=>false,'error'=>'holiday_not_found']); }}
+  $byArea=[];foreach($existing as $row)$byArea[$row['area']] = (int)$row['id'];
+  $update=$db->prepare('UPDATE bh_school_holidays SET holiday_name=?,start_date=?,end_date=? WHERE id=?');
   $insert=$db->prepare('INSERT INTO bh_school_holidays(area,holiday_name,start_date,end_date) VALUES(?,?,?,?)');
-  foreach($selected as $area){$insert->execute([$area,$name,$start,$end]);$savedIds[]=(int)$db->lastInsertId();}
+  $savedIds=[];foreach($selected as $area){if(isset($byArea[$area])){$update->execute([$name,$start,$end,$byArea[$area]]);$savedIds[]=$byArea[$area];}else{$insert->execute([$area,$name,$start,$end]);$savedIds[]=(int)$db->lastInsertId();}}
+  $removeIds=[];foreach($existing as $row)if(!in_array($row['area'],$selected,true))$removeIds[]=(int)$row['id'];
+  if($removeIds){$marks=implode(',',array_fill(0,count($removeIds),'?'));$delete=$db->prepare("DELETE FROM bh_school_holidays WHERE id IN ($marks)");$delete->execute($removeIds);}
   $db->commit();
   $placeholders=implode(',',array_fill(0,count($savedIds),'?'));$q=$db->prepare("SELECT id,area,holiday_name,start_date,end_date FROM bh_school_holidays WHERE id IN ($placeholders) ORDER BY start_date,area");$q->execute($savedIds);bhHolidayReply(200,['ok'=>true,'holidays'=>$q->fetchAll(PDO::FETCH_ASSOC)]);
  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
