@@ -167,3 +167,14 @@ body.bh-activity-v2 .activity-contact-footer .activity-contact-buttons .activity
   outline:3px solid #5eead4!important;
   outline-offset:3px!important;
 }
+
+/* Consistent formal SVG marks for organiser contact actions. */
+body.bh-activity-v2 .activity-contact-footer .activity-contact-link svg{
+  display:block!important;width:18px!important;height:18px!important;flex:0 0 18px!important;
+  fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;
+  stroke-linecap:round!important;stroke-linejoin:round!important;
+}
+body.bh-activity-v2 .activity-contact-footer .activity-contact-link svg .brand-fill{
+  fill:currentColor!important;stroke:none!important;
+}
+body.bh-activity-v2 .activity-contact-footer .activity-contact-link span{display:inline!important}
