@@ -13,6 +13,11 @@ on:
       - 'api/admin-listing-url-preview.php'
       - 'api/admin-ical-preview.php'
       - 'api/admin-demo-activities.php'
+      - 'api/expo-admin-visitors.php'
+      - 'api/admin-approval-centre.php'
+      - 'api/admin-approval-review.php'
+      - 'api/admin-approval-publish.php'
+      - 'api/admin-leader-actions.php'
       - '.github/workflows/admin-session-security.yml'
   workflow_dispatch:
 jobs:
@@ -36,3 +41,8 @@ jobs:
           php -l api/admin-listing-url-preview.php
           php -l api/admin-ical-preview.php
           php -l api/admin-demo-activities.php
+          php -l api/expo-admin-visitors.php
+          php -l api/admin-approval-centre.php
+          php -l api/admin-approval-review.php
+          php -l api/admin-approval-publish.php
+          php -l api/admin-leader-actions.php
