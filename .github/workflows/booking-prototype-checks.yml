@@ -1,4 +1,4 @@
-name: Booking prototype syntax checks
+name: Booking prototype checks
 
 on:
   pull_request:
@@ -12,6 +12,7 @@ on:
       - 'assets/js/consent.js'
       - 'activity.html'
       - 'database/booking_integration_v0_2.sql'
+      - 'tests/booking-migration-fixture.sql'
       - '.github/workflows/booking-prototype-checks.yml'
   push:
     branches:
@@ -92,7 +93,7 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mariadb-admin ping -h 127.0.0.1 -ptest-root-password"
+          --health-cmd="mariadb-admin ping -h 127.0.0.1 -u root -ptest-root-password"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
