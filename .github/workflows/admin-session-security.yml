@@ -4,6 +4,10 @@ on:
     paths:
       - 'admin-auth.php'
       - 'api/admin-session-guard.php'
+      - 'api/admin-event-details.php'
+      - 'api/admin-activities.php'
+      - 'api/admin-volunteer-assignments.php'
+      - 'api/admin-volunteers.php'
       - '.github/workflows/admin-session-security.yml'
   workflow_dispatch:
 jobs:
@@ -18,3 +22,7 @@ jobs:
         run: |
           php -l admin-auth.php
           php -l api/admin-session-guard.php
+          php -l api/admin-event-details.php
+          php -l api/admin-activities.php
+          php -l api/admin-volunteer-assignments.php
+          php -l api/admin-volunteers.php
