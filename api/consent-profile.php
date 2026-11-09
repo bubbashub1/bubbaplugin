@@ -67,9 +67,7 @@ try {
         $date = DateTime::createFromFormat('Y-m-d', $dob);
         if (!$date || $date->format('Y-m-d') !== $dob) cp_json(422, ['ok'=>false,'error'=>'invalid_date_of_birth']);
     }
-    if (empty($body['consent_to_share_with_organiser'])) {
-        cp_json(422, ['ok'=>false,'error'=>'booking_consent_required','message'=>'Please confirm permission to share relevant information with activity organisers.']);
-    }
+    $shareConsent = !empty($body['consent_to_share_with_organiser']) ? 1 : 0;
 
     $textFields = ['gender','additional_needs','allergies','medical_conditions','medications','dietary_requirements','emergency_information','emergency_contact_name','emergency_contact_phone'];
     $values = [];
@@ -86,19 +84,19 @@ try {
     $childId > 0 ? $find->execute([$userId,$childId]) : $find->execute([$userId,$childName]);
     $profileId = (int)($find->fetchColumn() ?: 0);
     $version = '1.1';
-    $givenAt = date('Y-m-d H:i:s');
+    $givenAt = $shareConsent ? date('Y-m-d H:i:s') : null;
     if ($profileId > 0) {
-        $sql = "UPDATE bh_consent_profiles SET child_id=?,child_name=?,date_of_birth=?,gender=?,additional_needs=?,allergies=?,medical_conditions=?,medications=?,dietary_requirements=?,emergency_information=?,emergency_contact_name=?,emergency_contact_phone=?,photo_activity=?,photo_bubbahub=?,photo_organiser_marketing=?,support_prefill_enabled=?,support_prefill_topics=?,consent_to_share_with_organiser=1,consent_version=?,consent_given_at=? WHERE id=? AND user_id=?";
-        $params = [$childId ?: null,$childName,$dob ?: null,$values['gender'],$values['additional_needs'],$values['allergies'],$values['medical_conditions'],$values['medications'],$values['dietary_requirements'],$values['emergency_information'],$values['emergency_contact_name'],$values['emergency_contact_phone'],$values['photo_activity'],$values['photo_bubbahub'],$values['photo_organiser_marketing'],$values['support_prefill_enabled'],$values['support_prefill_topics'],$version,$givenAt,$profileId,$userId];
+        $sql = "UPDATE bh_consent_profiles SET child_id=?,child_name=?,date_of_birth=?,gender=?,additional_needs=?,allergies=?,medical_conditions=?,medications=?,dietary_requirements=?,emergency_information=?,emergency_contact_name=?,emergency_contact_phone=?,photo_activity=?,photo_bubbahub=?,photo_organiser_marketing=?,support_prefill_enabled=?,support_prefill_topics=?,consent_to_share_with_organiser=?,consent_version=?,consent_given_at=? WHERE id=? AND user_id=?";
+        $params = [$childId ?: null,$childName,$dob ?: null,$values['gender'],$values['additional_needs'],$values['allergies'],$values['medical_conditions'],$values['medications'],$values['dietary_requirements'],$values['emergency_information'],$values['emergency_contact_name'],$values['emergency_contact_phone'],$values['photo_activity'],$values['photo_bubbahub'],$values['photo_organiser_marketing'],$values['support_prefill_enabled'],$values['support_prefill_topics'],$shareConsent,$version,$givenAt,$profileId,$userId];
         $db->prepare($sql)->execute($params);
     } else {
-        $sql = "INSERT INTO bh_consent_profiles (user_id,child_id,child_name,date_of_birth,gender,additional_needs,allergies,medical_conditions,medications,dietary_requirements,emergency_information,emergency_contact_name,emergency_contact_phone,photo_activity,photo_bubbahub,photo_organiser_marketing,support_prefill_enabled,support_prefill_topics,consent_to_share_with_organiser,consent_version,consent_given_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1,?,?)";
-        $params = [$userId,$childId ?: null,$childName,$dob ?: null,$values['gender'],$values['additional_needs'],$values['allergies'],$values['medical_conditions'],$values['medications'],$values['dietary_requirements'],$values['emergency_information'],$values['emergency_contact_name'],$values['emergency_contact_phone'],$values['photo_activity'],$values['photo_bubbahub'],$values['photo_organiser_marketing'],$values['support_prefill_enabled'],$values['support_prefill_topics'],$version,$givenAt];
+        $sql = "INSERT INTO bh_consent_profiles (user_id,child_id,child_name,date_of_birth,gender,additional_needs,allergies,medical_conditions,medications,dietary_requirements,emergency_information,emergency_contact_name,emergency_contact_phone,photo_activity,photo_bubbahub,photo_organiser_marketing,support_prefill_enabled,support_prefill_topics,consent_to_share_with_organiser,consent_version,consent_given_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        $params = [$userId,$childId ?: null,$childName,$dob ?: null,$values['gender'],$values['additional_needs'],$values['allergies'],$values['medical_conditions'],$values['medications'],$values['dietary_requirements'],$values['emergency_information'],$values['emergency_contact_name'],$values['emergency_contact_phone'],$values['photo_activity'],$values['photo_bubbahub'],$values['photo_organiser_marketing'],$values['support_prefill_enabled'],$values['support_prefill_topics'],$shareConsent,$version,$givenAt];
         $db->prepare($sql)->execute($params);
         $profileId = (int)$db->lastInsertId();
     }
 
-    cp_json(200, ['ok'=>true,'profile_id'=>$profileId,'child_id'=>$childId,'consent_version'=>$version,'consent_given_at'=>$givenAt,'csrf'=>$_SESSION['bh_csrf']]);
+    cp_json(200, ['ok'=>true,'profile_id'=>$profileId,'child_id'=>$childId,'consent_version'=>$version,'consent_given_at'=>$givenAt,'consent_to_share_with_organiser'=>(bool)$shareConsent,'csrf'=>$_SESSION['bh_csrf']]);
 } catch (Throwable $e) {
     error_log('Bubba Hub consent profile API: '.$e->getMessage());
     cp_json(500, ['ok'=>false,'error'=>'consent_profile_unavailable','message'=>'The consent profile could not be saved right now.']);
