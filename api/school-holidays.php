@@ -42,10 +42,19 @@ try{
  $action=(string)($input['action']??'');
  if($action==='delete'){$id=filter_var($input['id']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);if(!$id)bhHolidayReply(422,['ok'=>false,'error'=>'invalid_id']);$q=$db->prepare('DELETE FROM bh_school_holidays WHERE id=?');$q->execute([$id]);if(!$q->rowCount())bhHolidayReply(404,['ok'=>false,'error'=>'holiday_not_found']);bhHolidayReply(200,['ok'=>true,'deleted_id'=>$id]);}
  if($action!=='save')bhHolidayReply(422,['ok'=>false,'error'=>'invalid_action']);
- $id=filter_var($input['id']??0,FILTER_VALIDATE_INT,['options'=>['min_range'=>0]]);$area=trim((string)($input['area']??''));$name=trim((string)($input['holiday_name']??''));$start=(string)($input['start_date']??'');$end=(string)($input['end_date']??'');
+ $id=filter_var($input['id']??0,FILTER_VALIDATE_INT,['options'=>['min_range'=>0]]);$selected=$input['areas']??[];$name=trim((string)($input['holiday_name']??''));$start=(string)($input['start_date']??'');$end=(string)($input['end_date']??'');
+ if(!is_array($selected))$selected=[$selected];$selected=array_values(array_unique(array_filter(array_map(static fn($v)=>trim((string)$v),$selected),static fn($v)=>$v!=='')));
  $validDate=static function(string $v):bool{$d=DateTimeImmutable::createFromFormat('!Y-m-d',$v,new DateTimeZone('Europe/London'));return $d instanceof DateTimeImmutable&&$d->format('Y-m-d')===$v;};
- if($id===false||!in_array($area,$areas,true)||$name===''||mb_strlen($name)>100||!$validDate($start)||!$validDate($end)||$end<$start)bhHolidayReply(422,['ok'=>false,'error'=>'check_area_name_and_dates']);
- if($id>0){$q=$db->prepare('UPDATE bh_school_holidays SET area=?,holiday_name=?,start_date=?,end_date=? WHERE id=?');$q->execute([$area,$name,$start,$end,$id]);if(!$q->rowCount()){$check=$db->prepare('SELECT id FROM bh_school_holidays WHERE id=?');$check->execute([$id]);if(!$check->fetchColumn())bhHolidayReply(404,['ok'=>false,'error'=>'holiday_not_found']);}}
- else{$q=$db->prepare('INSERT INTO bh_school_holidays(area,holiday_name,start_date,end_date) VALUES(?,?,?,?)');$q->execute([$area,$name,$start,$end]);$id=(int)$db->lastInsertId();}
- $q=$db->prepare('SELECT id,area,holiday_name,start_date,end_date FROM bh_school_holidays WHERE id=?');$q->execute([$id]);bhHolidayReply(200,['ok'=>true,'holiday'=>$q->fetch(PDO::FETCH_ASSOC)]);
+ if($id===false||!$selected||count(array_diff($selected,$areas))>0||$name===''||mb_strlen($name)>100||!$validDate($start)||!$validDate($end)||$end<$start)bhHolidayReply(422,['ok'=>false,'error'=>'check_area_name_and_dates']);
+ try{
+  $db->beginTransaction();$savedIds=[];
+  if($id>0){
+   $check=$db->prepare('SELECT id FROM bh_school_holidays WHERE id=?');$check->execute([$id]);if(!$check->fetchColumn())bhHolidayReply(404,['ok'=>false,'error'=>'holiday_not_found']);
+   $update=$db->prepare('UPDATE bh_school_holidays SET area=?,holiday_name=?,start_date=?,end_date=? WHERE id=?');$update->execute([$selected[0],$name,$start,$end,$id]);$savedIds[]=$id;$selected=array_slice($selected,1);
+  }
+  $insert=$db->prepare('INSERT INTO bh_school_holidays(area,holiday_name,start_date,end_date) VALUES(?,?,?,?)');
+  foreach($selected as $area){$insert->execute([$area,$name,$start,$end]);$savedIds[]=(int)$db->lastInsertId();}
+  $db->commit();
+  $placeholders=implode(',',array_fill(0,count($savedIds),'?'));$q=$db->prepare("SELECT id,area,holiday_name,start_date,end_date FROM bh_school_holidays WHERE id IN ($placeholders) ORDER BY start_date,area");$q->execute($savedIds);bhHolidayReply(200,['ok'=>true,'holidays'=>$q->fetchAll(PDO::FETCH_ASSOC)]);
+ }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
 }catch(Throwable $e){error_log('school_holidays_api: '.get_class($e));bhHolidayReply(503,['ok'=>false,'error'=>'school_holidays_unavailable']);}
