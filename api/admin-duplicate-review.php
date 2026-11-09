@@ -26,7 +26,7 @@ try{
  $q=$db->prepare("SELECT r.id,r.activity_id,r.status,a.title,a.organiser_id FROM bh_duplicate_review_requests r JOIN bh_activities a ON a.id=r.activity_id WHERE r.id=? FOR UPDATE");
  $q->execute([$id]);$item=$q->fetch(PDO::FETCH_ASSOC);
  if(!$item||$item['status']!=='pending'){$db->rollBack();duplicate_review_reply(409,['ok'=>false,'error'=>'review_no_longer_pending']);}
- $activityStatus=$decision==='approve'?'published':'rejected';
+ $activityStatus=$decision==='approve'?'published':'archived';
  $activityUpdate=$db->prepare("UPDATE bh_activities SET status=? WHERE id=? AND status='pending'");
  $activityUpdate->execute([$activityStatus,(int)$item['activity_id']]);
  if($activityUpdate->rowCount()!==1){$db->rollBack();duplicate_review_reply(409,['ok'=>false,'error'=>'activity_no_longer_pending']);}
