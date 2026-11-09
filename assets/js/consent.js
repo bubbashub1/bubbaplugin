@@ -34,7 +34,9 @@ document.addEventListener("DOMContentLoaded",()=>{
        const profile=profiles[0]||null;
        const child=profile?.child_id?children.find(c=>String(c.id)===String(profile.child_id)):null;
        applyProfile(profile,child);
-       status.textContent=profile?"Your saved consent profile has been loaded from your family account.":"Choose a child and complete the form, then save it to your family account.";
+       status.textContent=profile
+         ?(Number(profile.consent_to_share_with_organiser)?"Your saved consent profile has booking-sharing permission switched on.":"Your saved consent profile is saved, but booking-sharing permission is switched off.")
+         :"Choose a child and complete the form, then save it to your family account.";
      }else if(res.status===401){
        status.textContent="Please sign in to save a private consent profile to your family account.";
      }else{
