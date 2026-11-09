@@ -338,6 +338,7 @@ if($action==='create_listing'){
  matched_activity_ids_json TEXT NOT NULL,
  status VARCHAR(20) NOT NULL DEFAULT 'pending',
  review_reason TEXT NULL,
+ reviewed_by_session_hash CHAR(64) NULL,
  reviewed_at DATETIME NULL,
  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
  UNIQUE KEY unique_activity_review (activity_id),
