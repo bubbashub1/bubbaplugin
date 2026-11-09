@@ -1,0 +1,65 @@
+name: Native Google auth checks
+
+on:
+  pull_request:
+    paths:
+      - 'api/auth.php'
+      - 'assets/js/auth-page.js'
+      - 'auth.html'
+      - '.github/workflows/native-google-auth-checks.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'api/auth.php'
+      - 'assets/js/auth-page.js'
+      - 'auth.html'
+      - '.github/workflows/native-google-auth-checks.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  syntax-and-wiring:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo_mysql
+          coverage: none
+
+      - name: Check native authentication PHP syntax
+        run: php -l api/auth.php
+
+      - name: Check authentication JavaScript syntax
+        run: node --check assets/js/auth-page.js
+
+      - name: Check Google sign-in wiring
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          auth = Path('api/auth.php').read_text()
+          page = Path('auth.html').read_text()
+          script = Path('assets/js/auth-page.js').read_text()
+
+          checks = {
+              'five-minute nonce endpoint': "action === 'google_nonce'" in auth and 'time() + 300' in auth,
+              'nonce checked against Google token': "['nonce']" in auth and 'google_nonce_expires' in auth,
+              'Family and Leader only': "['family','leader']" in auth,
+              'verified Google email required': "email_verified" in auth,
+              'Google button exists': 'id="googleSignIn"' in page,
+              'Google config and GIS scripts load': 'api/google-config.php' in page and 'accounts.google.com/gsi/client' in page,
+              'browser sends nonce and selected account context': 'nonceData.nonce' in script and 'context,' in script,
+              'volunteer Google button is hidden': 'wrap.hidden=context==="volunteer"' in script,
+          }
+
+          for label, passed in checks.items():
+              print(f"{'PASS' if passed else 'FAIL'}: {label}")
+          if not all(checks.values()):
+              raise SystemExit(1)
+          PY
