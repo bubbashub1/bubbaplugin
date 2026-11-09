@@ -124,3 +124,46 @@ body.bh-activity-v2 .bh-calendar-day:focus-visible{outline:2px solid #0d9488!imp
  body.bh-activity-v2 .activity-contact-link{flex:1 1 auto!important}
  body.bh-activity-v2 .activity-reference-contact .listing-map{height:210px!important;min-height:210px!important;max-height:210px!important}
 }
+
+
+/* Organiser contact actions: force visible labels and high-contrast buttons
+   over legacy/global anchor and button rules. */
+body.bh-activity-v2 .activity-contact-footer .activity-contact-buttons .activity-contact-link{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  min-width:112px!important;
+  min-height:42px!important;
+  padding:10px 16px!important;
+  border:1px solid #0f766e!important;
+  border-radius:999px!important;
+  background:#0f766e!important;
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  font-family:inherit!important;
+  font-size:13px!important;
+  font-weight:800!important;
+  line-height:1.2!important;
+  letter-spacing:normal!important;
+  text-indent:0!important;
+  text-transform:none!important;
+  text-decoration:none!important;
+  white-space:nowrap!important;
+  opacity:1!important;
+  visibility:visible!important;
+  overflow:visible!important;
+  box-shadow:0 3px 10px rgba(15,118,110,.16)!important;
+}
+body.bh-activity-v2 .activity-contact-footer .activity-contact-buttons .activity-contact-link:hover{
+  background:#115e59!important;
+  border-color:#115e59!important;
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  transform:translateY(-1px);
+  box-shadow:0 5px 14px rgba(15,118,110,.24)!important;
+}
+body.bh-activity-v2 .activity-contact-footer .activity-contact-buttons .activity-contact-link:focus-visible{
+  outline:3px solid #5eead4!important;
+  outline-offset:3px!important;
+}
