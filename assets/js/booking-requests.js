@@ -37,6 +37,30 @@
     card.append(ref);
     if (leader) {
       if (b.message) card.append(node("p", "Family message: " + b.message));
+      if (b.consent_json) {
+        try {
+          const consent = typeof b.consent_json === "string" ? JSON.parse(b.consent_json) : b.consent_json;
+          const shared = [
+            ["Additional needs",consent.additional_needs],
+            ["Allergies",consent.allergies],
+            ["Medical conditions",consent.medical_conditions],
+            ["Medication",consent.medications],
+            ["Dietary requirements",consent.dietary_requirements],
+            ["Emergency information",consent.emergency_information],
+            ["Emergency contact",consent.emergency_contact_name],
+            ["Emergency phone",consent.emergency_contact_phone]
+          ].filter(([,value])=>String(value||"").trim());
+          if (shared.length || consent.photo_activity || consent.photo_organiser_marketing) {
+            const details = document.createElement("details");
+            const summary = node("summary","Information shared with permission");
+            const list = document.createElement("ul");
+            shared.forEach(([label,value])=>list.append(node("li",label+": "+value)));
+            if(consent.photo_activity)list.append(node("li","Activity photo permission: yes"));
+            if(consent.photo_organiser_marketing)list.append(node("li","Organiser marketing photo permission: yes"));
+            details.append(summary,list);card.append(details);
+          }
+        } catch {}
+      }
       const actions = node("div", null, "bh-booking-request-actions");
       const select = document.createElement("select");
       select.setAttribute("aria-label", "Update booking status");
