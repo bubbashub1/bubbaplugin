@@ -48,6 +48,42 @@
 @media(max-width:900px){.bh-auth-v2 .auth-layout{grid-template-columns:1fr}.bh-auth-v2 .auth-benefits{margin-top:0}}
 @media(max-width:520px){.bh-auth-v2 .auth-card,.bh-auth-v2 .auth-benefits{padding:20px 16px;border-radius:18px}.bh-auth-v2 .auth-name-grid{grid-template-columns:1fr}.bh-auth-v2 .auth-hero h1{font-size:clamp(26px,7vw,36px)}}
 </style>
+
+<style>
+/* Clear account choice + focused sign-in dialog */
+.bh-auth-v2 .auth-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;max-width:1120px;margin:26px auto 30px}
+.bh-auth-v2 .auth-choice{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:12px;padding:clamp(22px,3vw,34px);background:#fff;border:1px solid #d5e4d9;border-radius:22px;box-shadow:0 10px 28px rgba(18,69,47,.06);color:#183b2c;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s}
+.bh-auth-v2 .auth-choice:hover{transform:translateY(-3px);border-color:#43866a;box-shadow:0 14px 32px rgba(18,69,47,.12)}
+.bh-auth-v2 .auth-choice:focus-visible,.bh-auth-v2 .auth-modal-close:focus-visible{outline:3px solid #8dc8a8;outline-offset:3px}
+.bh-auth-v2 .auth-choice-icon{font-size:34px;line-height:1}
+.bh-auth-v2 .auth-choice h2{margin:0;font:700 clamp(22px,2.5vw,28px) Quicksand,sans-serif}
+.bh-auth-v2 .auth-choice p{margin:0;line-height:1.55;color:#52695b}
+.bh-auth-v2 .auth-choice-cta{margin-top:5px;font-weight:700;color:#07553f}
+.bh-auth-v2 .auth-choice-leader{background:#f0f7f2}
+.bh-auth-v2 .auth-choice-foot{max-width:1120px;margin:-10px auto 28px;text-align:center;color:#52695b}
+.bh-auth-v2 .auth-choice-foot button{border:0;background:none;color:#07553f;text-decoration:underline;font:inherit;font-weight:700;cursor:pointer}
+.bh-auth-v2 .auth-layout{display:block;max-width:1120px!important;margin:0 auto}
+.bh-auth-v2 .auth-layout>.auth-card{display:none}
+.bh-auth-v2 .auth-layout>.auth-benefits{margin:0}
+.bh-auth-v2 .auth-modal-backdrop{position:fixed;inset:0;z-index:9998;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(10,35,25,.62);backdrop-filter:blur(4px);overflow-y:auto}
+.bh-auth-v2 .auth-modal-backdrop.is-open{display:flex}
+.bh-auth-v2 .auth-modal{position:relative;width:min(100%,520px);max-height:min(92vh,850px);overflow-y:auto;background:#fff;border-radius:24px;box-shadow:0 24px 80px rgba(0,0,0,.28);padding:clamp(20px,4vw,34px)}
+.bh-auth-v2 .auth-modal-close{position:absolute;right:15px;top:12px;width:40px;height:40px;border:0;border-radius:50%;background:#edf4ef;color:#244b37;font-size:25px;cursor:pointer}
+.bh-auth-v2 .auth-modal-heading{padding-right:40px;margin-bottom:18px}
+.bh-auth-v2 .auth-modal-heading h2{margin:0 0 5px;font:700 25px Quicksand,sans-serif;color:#16452f}
+.bh-auth-v2 .auth-modal-heading p{margin:0;color:#627368}
+.bh-auth-v2 .auth-modal .auth-card{display:block;border:0;box-shadow:none;padding:0;border-radius:0}
+.bh-auth-v2 .auth-modal #accountTypeWrap{display:none!important}
+.bh-auth-v2 .auth-modal .auth-role-switch{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:5px;background:#edf4ef;border-radius:14px;margin:0 0 18px}
+.bh-auth-v2 .auth-modal .auth-role-switch button{min-height:43px;border:0;border-radius:10px;background:transparent;color:#315541;font:700 14px inherit;cursor:pointer}
+.bh-auth-v2 .auth-modal .auth-role-switch button[aria-pressed=true]{background:#07553f;color:#fff;box-shadow:0 3px 8px rgba(7,85,63,.16)}
+.bh-auth-v2 .auth-modal .auth-tabs{margin-bottom:18px}
+.bh-auth-v2 .auth-modal .auth-note{margin-top:18px}
+.bh-auth-v2.auth-modal-open{overflow:hidden}
+@media(max-width:650px){.bh-auth-v2 .auth-choice-grid{grid-template-columns:1fr;gap:13px;margin:18px auto}.bh-auth-v2 .auth-choice{padding:21px;border-radius:18px}.bh-auth-v2 .auth-modal-backdrop{padding:8px;align-items:flex-start}.bh-auth-v2 .auth-modal{margin:auto 0;max-height:96vh;border-radius:19px;padding:22px 17px}.bh-auth-v2 .auth-modal-heading h2{font-size:22px}}
+</style>
+<script src="assets/js/auth-experience.js" defer></script>
+
 </head><body class="bh-auth-v2">
 <header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="directory.html">Find activities</a><a href="events.html">Events</a><a href="venues.html">Venues</a><a href="planner.html">My planner</a><a href="/calendar.html">Calendar</a><a href="my-hub.html">My Hub</a><a href="leader.html">For class leaders</a><a href="admin.html">Admin</a></nav><a class="button button-soft" href="account.html">My account</a></header>
 <main class="app-shell auth-page">
