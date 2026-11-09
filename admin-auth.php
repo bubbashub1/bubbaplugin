@@ -32,6 +32,63 @@ function respond(int $s, array $d): void {
     exit;
 }
 
+// Admin login throttling without a database dependency. Only a one-way hash of
+// the client IP and submitted username is used as the temporary file name.
+function admin_login_bucket(string $username): string {
+    $ip = (string)($_SERVER['REMOTE_ADDR'] ?? '');
+    if (!filter_var($ip, FILTER_VALIDATE_IP)) $ip = 'unknown';
+    return hash('sha256', "bubbahub-admin-login\0" . $ip . "\0" . strtolower(trim($username)));
+}
+
+function admin_login_rate_state(string $bucket): array {
+    $path = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'bh-admin-login-' . $bucket . '.json';
+    $handle = @fopen($path, 'c+');
+    if (!$handle) {
+        error_log('Bubba Hub admin login limiter could not open its state file.');
+        respond(503, ['ok'=>false, 'error'=>'Admin sign-in is temporarily unavailable. Please try again shortly.']);
+    }
+    if (!flock($handle, LOCK_EX)) {
+        fclose($handle);
+        error_log('Bubba Hub admin login limiter could not lock its state file.');
+        respond(503, ['ok'=>false, 'error'=>'Admin sign-in is temporarily unavailable. Please try again shortly.']);
+    }
+    rewind($handle);
+    $raw = stream_get_contents($handle);
+    $state = is_string($raw) ? json_decode($raw, true) : null;
+    if (!is_array($state) || (int)($state['started'] ?? 0) < time() - 900) {
+        $state = ['attempts'=>0, 'started'=>time()];
+    }
+    return [$handle, $state];
+}
+
+function admin_login_record_failure(string $bucket): void {
+    [$handle, $state] = admin_login_rate_state($bucket);
+    $state['attempts'] = (int)$state['attempts'] + 1;
+    rewind($handle);
+    ftruncate($handle, 0);
+    fwrite($handle, json_encode($state));
+    fflush($handle);
+    flock($handle, LOCK_UN);
+    fclose($handle);
+}
+
+function admin_login_clear_failures(string $bucket): void {
+    $path = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'bh-admin-login-' . $bucket . '.json';
+    if (is_file($path)) @unlink($path);
+}
+
+function admin_login_enforce_limit(string $bucket): void {
+    [$handle, $state] = admin_login_rate_state($bucket);
+    $blocked = (int)$state['attempts'] >= 5;
+    $retry = max(1, 900 - (time() - (int)$state['started']));
+    flock($handle, LOCK_UN);
+    fclose($handle);
+    if ($blocked) {
+        header('Retry-After: ' . $retry);
+        respond(429, ['ok'=>false, 'error'=>'Too many sign-in attempts. Please wait 15 minutes before trying again.']);
+    }
+}
+
 // Root deployment: resolve the server-only configuration without exposing it to the browser.
 $configCandidates = array_filter([
     dirname(__DIR__) . '/github-deploy-config.php',
@@ -74,11 +131,15 @@ if ($a === 'login') {
     $p = is_array($i) ? (string)($i['password'] ?? '') : '';
     $eu = (string)($c['admin_username'] ?? '');
     $ep = (string)($c['admin_password'] ?? '');
+    $bucket = admin_login_bucket($u);
+    admin_login_enforce_limit($bucket);
 
     if ($eu === '' || $ep === '' || !hash_equals($eu, $u) || !hash_equals($ep, $p)) {
+        admin_login_record_failure($bucket);
         respond(401, ['ok'=>false, 'error'=>'Invalid username or password.']);
     }
 
+    admin_login_clear_failures($bucket);
     session_regenerate_id(true);
     $_SESSION['bh_admin_authenticated'] = true;
     $_SESSION['bh_admin_username'] = $eu;
