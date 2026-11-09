@@ -442,7 +442,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
       footer.append(links);
       footer.classList.toggle("activity-contacts-empty",!links.querySelector("a"));
       const organiserCard=layout.querySelector('.activity-reference-organiser');
-      if(organiserCard){organiserCard.classList.add('activity-contact-organiser');footer.insertBefore(organiserCard,links);}
+      // The organiser banner now belongs directly beneath the schedule card.
+      // Keep it in the right column; the footer contains contact links only.
+      if(organiserCard)organiserCard.classList.add('activity-contact-organiser');
       layout.after(footer);
     }
   }
