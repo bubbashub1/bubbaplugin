@@ -91,7 +91,7 @@ $db->exec("UPDATE bh_school_holidays SET recurrence_type='fixed_date' WHERE is_r
  if(!is_array($selected))$selected=[$selected];$selected=array_values(array_unique(array_filter(array_map(static fn($v)=>trim((string)$v),$selected),static fn($v)=>$v!=='')));
  $validDate=static function(string $v):bool{$d=DateTimeImmutable::createFromFormat('!Y-m-d',$v,new DateTimeZone('Europe/London'));return $d instanceof DateTimeImmutable&&$d->format('Y-m-d')===$v;};
  if($legacyId===false||count($ids)>20||!$selected||count(array_diff($selected,$areas))>0||$name===''||mb_strlen($name)>100||!$validDate($start)||!$validDate($end)||$end<$start)bhHolidayReply(422,['ok'=>false,'error'=>'check_area_name_and_dates']);
- if($recurrenceType!=='none'&&$recurrenceType!=='fixed_date'){
+ if(in_array($recurrenceType,['first_monday_may','last_monday_may','last_monday_august'],true)){
   $dt=new DateTimeImmutable($start);$month=(int)$dt->format('n');$day=(int)$dt->format('j');$weekday=(int)$dt->format('N');
   $expectedMonth=$recurrenceType==='last_monday_august'?8:5;
   if($month!==$expectedMonth||$weekday!==1)bhHolidayReply(422,['ok'=>false,'error'=>'start_date_must_match_repeat_pattern']);
