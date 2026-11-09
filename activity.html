@@ -680,7 +680,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
         form.elements.child_age.value=age>=0?String(age):"";
       }
       savedConsent=consentProfiles.find(p=>String(p.child_id||"")===String(child.id))||null;
-      consentStatus.textContent=savedConsent?"✓ A saved consent profile matches "+child.name+". The server will verify it again when you submit.":'⚠️ No saved consent profile for '+child.name+'. <a href="consent.html" target="_blank" rel="noopener"><strong>Complete consent first</strong></a>.';
+      consentStatus.textContent=savedConsent&&Number(savedConsent.consent_to_share_with_organiser)?"✓ A current consent profile matches "+child.name+". The server will verify it again when you submit.":'⚠️ No current booking consent for '+child.name+'. <a href="consent.html" target="_blank" rel="noopener"><strong>Complete consent first</strong></a>.';
     };
     (async()=>{
       try{
