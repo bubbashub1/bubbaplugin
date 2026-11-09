@@ -17,8 +17,8 @@ This checklist is for the native Bubba Hub authentication system in `bubbaplugin
 ## 2. Pre-release code checks
 
 - [x] Rebuild the release branch from the latest `main` and carry forward the current native authentication changes.
-- [ ] Run `php -l api/auth.php` on a PHP 8-compatible runner/server. `api/google-config.php` is unchanged because the live endpoint already returns the configured client ID.
-- [ ] Run `node --check assets/js/auth-page.js`.
+- [x] Run `php -l api/auth.php` on the GitHub Actions PHP 8.2 runner (passed). `api/google-config.php` is unchanged because the live endpoint already returns the configured client ID.
+- [x] Run `node --check assets/js/auth-page.js` (passed).
 - [ ] Confirm `api/config.php` is not committed and no credentials are in Git.
 - [ ] Confirm `auth.html` loads `api/google-config.php` and Google Identity Services over HTTPS.
 
