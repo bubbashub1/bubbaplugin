@@ -637,12 +637,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
     document.head.append(style);
     const initialiseCalendar=async()=>{
       // Load holiday periods for each month before choosing the first available date.
-      for(let offset=0;offset<84;){
-        const month=new Date(today.getFullYear(),today.getMonth()+Math.floor(offset/28),1);
-        await loadHolidayDates(month);
-        const nextMonth=new Date(month.getFullYear(),month.getMonth()+1,1);
-        offset=Math.max(offset+28,Math.round((nextMonth-today)/86400000));
-        if(offset>=84)break;
+      const horizon=new Date(today);horizon.setDate(today.getDate()+83);
+      for(let month=new Date(today.getFullYear(),today.getMonth(),1);month<=horizon;month.setMonth(month.getMonth()+1)){
+        await loadHolidayDates(new Date(month));
       }
       const firstAvailable=Array.from({length:84},(_,i)=>{const date=new Date(today);date.setDate(today.getDate()+i);return date;}).find(date=>calendarSessions.some(session=>occurs(session,date)));
       selectedDate=firstAvailable||today;
