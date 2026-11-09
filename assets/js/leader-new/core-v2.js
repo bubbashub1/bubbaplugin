@@ -107,7 +107,7 @@ async function init(){
  Q("sectionBack").onclick=()=>closeSection(false);Q("saveProgress").onclick=()=>{syncDescription();saveDraft();say("Progress saved",true);setTimeout(()=>say(""),1800)};Q("sectionSave").onclick=()=>{if(valid(state.current))closeSection(true)};Q("prevStep").onclick=()=>openSection(Math.max(1,state.current-1));Q("nextStep").onclick=()=>{if(valid(state.current))openSection(Math.min(7,state.current+1))};
  document.querySelector(".bh-form").addEventListener("input",()=>saveDraft());
  document.querySelector(".bh-form").addEventListener("submit",e=>{e.preventDefault();submit()});
- await loadMeta();state.inits.forEach(fn=>fn());if(state.ageUpdate)state.ageUpdate();if(state.addRow)state.addRow();loadDraft();renderOverview();
+ await loadMeta();state.inits.forEach(fn=>fn());if(state.ageUpdate)state.ageUpdate();if(state.addRow)state.addRow();loadDraft();if(Q("duplicateReviewOverride"))Q("duplicateReviewOverride").checked=false;if(Q("potentialDuplicateConfirmed"))Q("potentialDuplicateConfirmed").checked=false;renderOverview();
 }
 window.BubbaNew={Q,API,uniq,vals,esc,age,state,register,say,addOpt,post,schedule,saveDraft,loadDraft,renderOverview,openSection,closeSection,valid,submit};
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
