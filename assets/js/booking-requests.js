@@ -40,13 +40,14 @@
       const actions = node("div", null, "bh-booking-request-actions");
       const select = document.createElement("select");
       select.setAttribute("aria-label", "Update booking status");
-      [["pending","Pending"],["confirmed","Confirmed"],["cancelled","Cancelled"],["attended","Attended"]].forEach(([v,l]) => {
+      [["pending","Pending (awaiting review)"],["confirmed","Confirmed"],["cancelled","Cancelled"],["attended","Attended"]].forEach(([v,l]) => {
         const o = document.createElement("option"); o.value = v; o.textContent = l; select.append(o);
       });
       select.value = b.status || "pending";
       const save = node("button", "Update status", "button button-soft");
       save.type = "button";
       save.addEventListener("click", async () => {
+        if(select.value === "pending"){save.textContent="Choose a new status";return}
         save.disabled = true;
         try {
           await request(endpoint, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({action:"update_status",request_id:b.id,status:select.value,csrf})});
