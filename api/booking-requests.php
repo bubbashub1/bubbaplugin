@@ -206,12 +206,19 @@ try {
         $newStatus = $requestedStatus === 'pending' ? 'reserved' : $requestedStatus;
         if ($requestId < 1 || !in_array($newStatus, ['confirmed','cancelled','attended'], true)) br_json(422, ['ok'=>false,'error'=>'invalid_booking_update']);
         $organiserId = br_organiser_id($db, $userId, (string)$user['email']);
+        $lookup = $db->prepare("SELECT slot_id FROM bh_booking_reservations WHERE id=? AND organiser_id=? LIMIT 1");
+        $lookup->execute([$requestId,$organiserId]);
+        $slotId = (int)$lookup->fetchColumn();
+        if ($slotId < 1) br_json(404, ['ok'=>false,'error'=>'booking_not_found']);
         $db->beginTransaction();
         try {
-            $slotQ = $db->prepare("SELECT slot_id FROM bh_booking_reservations WHERE id=? AND organiser_id=? FOR UPDATE");
-            $slotQ->execute([$requestId,$organiserId]);
-            $slotId = (int)$slotQ->fetchColumn();
-            if ($slotId < 1) { $db->rollBack(); br_json(404, ['ok'=>false,'error'=>'booking_not_found']); }
+            // Lock the slot first, matching the family booking transaction's lock order.
+            $lockSlot = $db->prepare("SELECT id FROM bh_booking_slots WHERE id=? FOR UPDATE");
+            $lockSlot->execute([$slotId]);
+            if (!$lockSlot->fetchColumn()) { $db->rollBack(); br_json(404, ['ok'=>false,'error'=>'slot_not_found']); }
+            $lockReservation = $db->prepare("SELECT id FROM bh_booking_reservations WHERE id=? AND organiser_id=? FOR UPDATE");
+            $lockReservation->execute([$requestId,$organiserId]);
+            if (!$lockReservation->fetchColumn()) { $db->rollBack(); br_json(404, ['ok'=>false,'error'=>'booking_not_found']); }
             $u = $db->prepare("UPDATE bh_booking_reservations SET status=? WHERE id=? AND organiser_id=? AND status IN ('reserved','confirmed')");
             $u->execute([$newStatus,$requestId,$organiserId]);
             if ($u->rowCount() !== 1) { $db->rollBack(); br_json(404, ['ok'=>false,'error'=>'booking_not_found_or_unchanged']); }
