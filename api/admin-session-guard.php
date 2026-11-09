@@ -17,12 +17,17 @@ if (empty($_SESSION['bh_admin_authenticated'])) {
     echo json_encode(['ok'=>false,'error'=>'admin_login_required']);
     exit;
 }
+$now = time();
 $last = (int)($_SESSION['bh_admin_last_activity'] ?? 0);
-if ($last === 0 || time() - $last > 1800) {
-    $_SESSION = [];
+$created = (int)($_SESSION['bh_admin_created_at'] ?? 0);
+if ($last < 1 || $created < 1 || ($now - $last) > 1800 || ($now - $created) > 28800) {
+    // Clear only admin authentication; preserve any separate family session data.
+    unset($_SESSION['bh_admin_authenticated'], $_SESSION['bh_admin_username'],
+        $_SESSION['bh_admin_last_activity'], $_SESSION['bh_admin_created_at'],
+        $_SESSION['bh_admin_csrf'], $_SESSION['bh_live_baseline_csrf']);
     session_regenerate_id(true);
     http_response_code(401);
     echo json_encode(['ok'=>false,'error'=>'admin_session_expired']);
     exit;
 }
-$_SESSION['bh_admin_last_activity'] = time();
+$_SESSION['bh_admin_last_activity'] = $now;
