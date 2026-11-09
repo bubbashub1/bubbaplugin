@@ -269,6 +269,12 @@ try {
     $profile = $consentQ->fetch(PDO::FETCH_ASSOC);
     if (!$profile) br_json(422, ['ok'=>false,'error'=>'booking_consent_required','message'=>'Please save current booking consent for this child in your family account before requesting a place.']);
     if (mb_strtolower(trim((string)$profile['child_name'])) !== mb_strtolower($childName)) br_json(422, ['ok'=>false,'error'=>'consent_child_mismatch','message'=>'The saved consent profile does not match the selected child.']);
+    if (!empty($profile['date_of_birth'])) {
+        $birthDate = DateTimeImmutable::createFromFormat('!Y-m-d',(string)$profile['date_of_birth']);
+        if ($birthDate && $birthDate <= new DateTimeImmutable('today')) {
+            $childAge = (string)$birthDate->diff(new DateTimeImmutable('today'))->y;
+        }
+    }
 
     $snapshot = [
         'child_name'=>(string)$profile['child_name'],
