@@ -51,7 +51,6 @@ document.addEventListener("DOMContentLoaded",()=>{
  form.addEventListener("submit",async e=>{
    e.preventDefault();
    if(!csrf){status.textContent="Please sign in to your family account before saving this consent profile.";return}
-   if(!form.querySelector('[name="consent_to_share_with_organiser"]').checked){status.textContent="Please confirm the booking-sharing permission.";return}
    const data={child_id:Number(childSelect?.value||0)};
    form.querySelectorAll("input,textarea").forEach(el=>{
      if(el.name==="support_prefill_topics")return;
@@ -65,7 +64,9 @@ document.addEventListener("DOMContentLoaded",()=>{
      const result=await res.json().catch(()=>({}));
      if(!res.ok||!result.ok)throw new Error(result.message||result.error||"Could not save your consent profile.");
      csrf=result.csrf||csrf;
-     status.textContent="Consent profile saved securely to your family account. It will be checked again when you make a booking.";
+     status.textContent=result.consent_to_share_with_organiser
+       ?"Consent profile saved securely. Booking-sharing permission is on and will be checked again when you book."
+       :"Consent profile saved securely. Booking-sharing permission is off, so this profile cannot be shared for bookings until you opt in.";
      await load();
    }catch(err){status.textContent=err.message||"Could not save your consent profile."}
    finally{button.disabled=false}
