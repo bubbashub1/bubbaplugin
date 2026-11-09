@@ -724,7 +724,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       status.textContent="Sending…";submit.disabled=true;
       if(!bookingCsrf){status.textContent="Please sign in to your family account before booking. Your bookings are kept in My Hub.";submit.disabled=false;return}
       if(!slot||!slot.id){status.textContent="Please choose one of the dated sessions above before booking.";submit.disabled=false;return}
-      const payload={slot_id:Number(slot.id),child_id:selected?.id?Number(selected.id):0,parent_name:form.elements.name.value.trim(),parent_email:form.elements.email.value.trim(),parent_phone:form.elements.phone.value.trim(),child_name:typedChildName,child_age:form.elements.child_age.value.trim(),quantity:Number(form.elements.quantity.value||1),message:form.elements.message.value.trim(),csrf:bookingCsrf};
+      const payload={slot_id:Number(slot.id),child_id:selected?.id?Number(selected.id):0,parent_name:form.elements.name.value.trim(),parent_email:form.elements.email.value.trim(),parent_phone:form.elements.phone.value.trim(),child_name:typedChildName,child_age:form.elements.child_age.value.trim(),quantity:Number(form.elements.quantity.value||1),message:form.elements.message.value.trim(),booking_consent_confirmed:!!form.elements.consent.checked,csrf:bookingCsrf};
       try{
         const res=await fetch("/api/booking-requests.php",{method:"POST",body:JSON.stringify(payload),credentials:"same-origin",headers:{"Content-Type":"application/json",Accept:"application/json"}});
         const data=await res.json();if(!res.ok||!data.ok)throw new Error(data.message||data.error||"Could not create booking");
