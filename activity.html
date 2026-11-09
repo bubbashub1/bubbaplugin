@@ -689,6 +689,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
         const data=await res.json();
         if(data?.ok&&Array.isArray(data.children)){
           bookingCsrf=String(data.csrf||"");
+          if(data.user?.email){form.elements.email.value=String(data.user.email);form.elements.email.readOnly=true;}
           children=data.children;
           children.forEach(child=>{const o=document.createElement("option");o.value=String(child.id);o.textContent=child.name+(child.date_of_birth?" · "+child.date_of_birth:"");o.dataset.child=JSON.stringify(child);childSelect.appendChild(o)});
           if(children.length){childHelp.textContent="Choose a child from your My Hub profile. Their saved details will be added to the reservation request."}
