@@ -17,7 +17,7 @@
 <p class="booking-note">If the schedule cannot be refreshed, the last cached dates stay visible and families are told to check your booking website for the latest details.</p>
 </section>
 <section class="admin-panel" id="bubbaPanel"><div class="admin-panel-head"><div><span class="eyebrow">Bubba Hub bookings</span><h2>Your bookable sessions</h2><p>Add the dates, times and places you want families to request.</p></div><button class="button button-primary" id="addSlot" type="button">+ Add session</button></div>
-<div id="slotList"></div></section>
+<label class="booking-field"><span>Class</span><select id="bookingActivity"><option value="">Loading your classes…</option></select></label><div id="slotList"></div></section>
 <section class="admin-panel"><div class="admin-panel-head"><div><span class="eyebrow">Reservation requests</span><h2>Requests from families</h2><p>Requests submitted through Bubba Hub can be tracked here.</p></div><span class="status" id="requestCount">0 new</span></div><div id="requestList" class="booking-request-list"><div class="booking-empty">No reservation requests yet.</div></div></section>
 <div class="booking-manager-actions"><button class="button button-primary" id="saveBooking" type="button">Save booking settings</button><span id="bookingMessage" class="deployment-note" role="status"></span></div>
 </main>
