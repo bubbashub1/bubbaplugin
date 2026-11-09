@@ -58,7 +58,7 @@ The old `bh_booking_requests` table is not part of the new design and its protot
 - Existing leader organiser-profile MySQL regression workflow: **PASSED** on the integration branch.
 - PHP syntax checks: **PASSED** in GitHub Actions on the current integration branch.
 - JavaScript syntax checks, including inline activity page scripts: **PASSED** in GitHub Actions on the current integration branch.
-- Disposable MariaDB migration repeat-run and seat-count test: **IN PROGRESS** in GitHub Actions. An initial run hit a CI client TLS setting; the workflow was corrected and rerun.
+- Disposable MariaDB migration repeat-run, column/index, organiser backfill and seat-count test: **PASSED** in GitHub Actions on commit `541575abd516131e87633c8da24ba114db32549b`. The test uses a disposable fixture matching the existing table structure; it is not a substitute for testing against a restored staging database.
 - Role and ownership tests: **NOT RUN**.
 - Consent validation/tampering tests: **NOT RUN**.
 - Capacity/concurrency tests: **NOT RUN**.
