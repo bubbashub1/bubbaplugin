@@ -177,13 +177,13 @@ try {
         if (strtotime((string)$slot['starts_at']) <= time()) {
             $db->rollBack(); br_json(409, ['ok'=>false,'error'=>'slot_in_past']);
         }
-        $dup = $db->prepare("SELECT id FROM bh_booking_requests WHERE slot_id=? AND user_id=? AND status IN ('pending','confirmed') LIMIT 1");
+        $dup = $db->prepare("SELECT id FROM bh_booking_requests WHERE slot_id=? AND user_id=? AND status IN ('pending','confirmed','attended') LIMIT 1");
         $dup->execute([$slotId,$userId]);
         if ($dup->fetchColumn()) {
             $db->rollBack(); br_json(409, ['ok'=>false,'error'=>'already_booked','message'=>'Your family already has a request for this session.']);
         }
         if ($slot['capacity'] !== null) {
-            $count = $db->prepare("SELECT COALESCE(SUM(quantity),0) FROM bh_booking_requests WHERE slot_id=? AND status IN ('pending','confirmed')");
+            $count = $db->prepare("SELECT COALESCE(SUM(quantity),0) FROM bh_booking_requests WHERE slot_id=? AND status IN ('pending','confirmed','attended')");
             $count->execute([$slotId]);
             if ((int)$count->fetchColumn() + $quantity > (int)$slot['capacity']) {
                 $db->rollBack(); br_json(409, ['ok'=>false,'error'=>'not_enough_places','message'=>'There are not enough places remaining for this request.']);
