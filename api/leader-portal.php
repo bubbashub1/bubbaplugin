@@ -17,6 +17,27 @@ require_once __DIR__.'/db.php';
 require_once __DIR__.'/mailer.php';
 if(session_status()!==PHP_SESSION_ACTIVE){session_name('BUBBAHUBSESSID');session_start();}
 function lp(int $s,array $d): void{http_response_code($s);echo json_encode($d,JSON_UNESCAPED_SLASHES);exit;}
+function lpDuplicateNormalise(string $value): string {
+ $value=function_exists('mb_strtolower')?mb_strtolower(trim($value),'UTF-8'):strtolower(trim($value));
+ return preg_replace('/\\s+/u',' ',$value)??$value;
+}
+function lpFindListingDuplicates(PDO $db,string $title,int $venueId,string $venueName,string $town,string $postcode): array {
+ if($venueId>0){
+  $v=$db->prepare("SELECT venue_name,town,postcode FROM bh_venues WHERE id=? LIMIT 1");$v->execute([$venueId]);$selected=$v->fetch(PDO::FETCH_ASSOC);
+  if($selected){$venueName=(string)$selected['venue_name'];$town=(string)$selected['town'];$postcode=(string)$selected['postcode'];}
+ }
+ $q=$db->prepare("SELECT a.id,a.title,v.venue_name,v.town,v.postcode FROM bh_activities a LEFT JOIN bh_venues v ON v.activity_id=a.id WHERE LOWER(TRIM(a.title))=LOWER(TRIM(?)) AND a.status<>'archived' ORDER BY a.id DESC");
+ $q->execute([$title]);$exact=[];$potential=[];
+ $wantedName=lpDuplicateNormalise($venueName);$wantedTown=lpDuplicateNormalise($town);$wantedPost=strtoupper(preg_replace('/\\s+/','',trim($postcode)));
+ foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){
+  $sameName=$wantedName!==''&&$wantedName===lpDuplicateNormalise((string)$row['venue_name']);
+  $rowPost=strtoupper(preg_replace('/\\s+/','',trim((string)$row['postcode'])));
+  $samePlace=$wantedPost!==''&&$rowPost!==''?$wantedPost===$rowPost:($wantedTown!==''&&$wantedTown===lpDuplicateNormalise((string)$row['town']));
+  $item=['id'=>(int)$row['id'],'title'=>(string)$row['title'],'venue_name'=>(string)$row['venue_name'],'town'=>(string)$row['town'],'postcode'=>(string)$row['postcode']];
+  if($sameName&&$samePlace)$exact[]=$item;else $potential[]=$item;
+ }
+ return ['exact'=>$exact,'potential'=>$potential];
+}
 function lpEnsureExpertise(PDO $db): void{
  try{$db->exec("CREATE TABLE IF NOT EXISTS bh_leader_expertise (organiser_id BIGINT UNSIGNED NOT NULL, topic_key VARCHAR(80) NOT NULL, enabled TINYINT(1) NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, PRIMARY KEY (organiser_id,topic_key), INDEX idx_leader_expertise_topic (topic_key)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");}catch(Throwable $ignored){}
 }
@@ -192,6 +213,17 @@ if($photos)$db->prepare("UPDATE bh_activities SET image_path=? WHERE id=?")->exe
 }
 
 $b=json_decode(file_get_contents('php://input'),true);if(!is_array($b))lp(400,['ok'=>false,'error'=>'invalid_json']);$action=$b['action']??'';
+if($action==='check_listing_duplicates'){
+ $title=trim((string)($b['title']??''));$venueId=(int)($b['existing_venue_id']??0);$venueName=trim((string)($b['venue_name']??''));$town=trim((string)($b['town']??''));$postcode=trim((string)($b['postcode']??''));
+ $duplicateMatches=lpFindListingDuplicates($db,$title,$existingVenueId,$venueName,$town,$postcode);
+ $duplicateOverride=!empty($b['duplicate_review_override']);
+ if($duplicateMatches['exact']&&!$duplicateOverride)lp(409,['ok'=>false,'error'=>'exact_duplicate','message'=>'An activity with this title and venue already exists. If you believe this is a different class, request a team review.','duplicates'=>$duplicateMatches['exact']]);
+ if($duplicateMatches['exact']&&$duplicateOverride){$submissionStatus='pending';$submissionMessage='Your listing has been sent to the Bubba Hub team for a duplicate review. It will not appear in the directory unless approved.';}
+ if($title==='')lp(422,['ok'=>false,'error'=>'title_required']);
+ if($venueId<1&&$venueName==='')lp(422,['ok'=>false,'error'=>'venue_required']);
+ $matches=lpFindListingDuplicates($db,$title,$venueId,$venueName,$town,$postcode);
+ lp(200,['ok'=>true,'exact'=>$matches['exact'],'potential'=>$matches['potential']]);
+}
 if($action==='save_listing_photos'){$activityId=(int)($b['activity_id']??0);$photos=is_array($b['photos']??null)?array_values(array_unique(array_filter(array_map('trim',$b['photos'])))):[];if(count($photos)>$imageLimit)lp(422,['ok'=>false,'error'=>'too_many_photos','message'=>'Your plan allows up to '.$imageLimit.' photos.']);$own=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND organiser_id=? LIMIT 1");$own->execute([$activityId,$oid]);if(!$own->fetch())lp(404,['ok'=>false,'error'=>'activity_not_found']);$q=$db->prepare("UPDATE bh_activities SET gallery_images=? WHERE id=?");$q->execute([json_encode($photos,JSON_UNESCAPED_SLASHES),$activityId]);if($photos)$db->prepare("UPDATE bh_activities SET image_path=? WHERE id=?")->execute([$photos[0],$activityId]);lp(200,['ok'=>true,'photos'=>$photos]);}
 
 if($action==='save_profile_public'){
@@ -288,6 +320,7 @@ if($action==='tag_suggestions'){
  sort($suggestions,SORT_NATURAL|SORT_FLAG_CASE);lp(200,['ok'=>true,'suggestions'=>array_slice($suggestions,0,12)]);
 }
 if($action==='create_listing'){
+
  // Trust only persisted email verification, never a client-provided status.
  $autoApproved=!empty($roleUser['email_verified_at']);
  $submissionStatus=$autoApproved?'published':'pending';
