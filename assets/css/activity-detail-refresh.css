@@ -1,0 +1,126 @@
+/* Bubba Hub activity detail refresh — native activity.html presentation layer */
+body.bh-activity-v2{background:#f4f8f7!important;color:#243b38!important}
+body.bh-activity-v2 .app-shell{max-width:1220px!important;padding:26px clamp(14px,2vw,26px) 36px!important}
+body.bh-activity-v2 .listing-page{color:#243b38!important}
+body.bh-activity-v2 .listing-page .listing-card,
+body.bh-activity-v2 .activity-concept-content .activity-reference-about,
+body.bh-activity-v2 .activity-concept-content .activity-reference-schedule,
+body.bh-activity-v2 .activity-concept-content .activity-reference-contact,
+body.bh-activity-v2 .activity-concept-content .activity-useful-info,
+body.bh-activity-v2 .activity-contact-footer{
+  background:#fff!important;border:1px solid #e0ebe8!important;border-radius:16px!important;
+  box-shadow:0 8px 30px rgba(0,0,0,.04)!important;color:#243b38!important;
+}
+body.bh-activity-v2 .activity-concept-two .activity-concept-content{
+  grid-template-columns:minmax(0,1.45fr) minmax(315px,.82fr)!important;gap:22px!important;
+}
+body.bh-activity-v2 .activity-concept-two .activity-concept-lead,
+body.bh-activity-v2 .activity-concept-two .activity-concept-support{gap:18px!important}
+body.bh-activity-v2 .activity-concept-two .activity-concept-content :is(.activity-reference-about,.activity-reference-schedule,.activity-reference-contact,.activity-useful-info){
+  padding:22px!important;border-radius:16px!important;
+}
+body.bh-activity-v2 .activity-concept-two .activity-reference-about,
+body.bh-activity-v2 .activity-concept-two .activity-reference-schedule,
+body.bh-activity-v2 .activity-concept-two .activity-reference-contact,
+body.bh-activity-v2 .activity-concept-two .activity-useful-info{background:#fff!important}
+body.bh-activity-v2 :is(.activity-reference-about,.activity-reference-schedule,.activity-reference-contact,.activity-useful-info) h2,
+body.bh-activity-v2 .activity-contact-footer h2{color:#115e59!important}
+body.bh-activity-v2 .activity-category-strip .activity-keyword-tags>span{
+  background:#e8f5f1!important;color:#0f766e!important;border:1px solid #d4ebe3!important;border-radius:999px!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero{
+  background:#fff!important;border:1px solid #e0ebe8!important;border-radius:18px!important;
+  box-shadow:0 8px 30px rgba(0,0,0,.04)!important;padding:18px!important;gap:22px!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-gallery{
+  border-radius:14px!important;overflow:hidden!important;height:260px!important;max-height:260px!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-summary h1{
+  color:#115e59!important;font-size:clamp(1.8rem,3vw,2.65rem)!important;line-height:1.12!important;
+}
+body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .activity-hero-intro{
+  color:#61756f!important;display:block!important;-webkit-line-clamp:unset!important;max-width:58ch!important;
+}
+body.bh-activity-v2 .activity-quick-strip{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(135px,1fr))!important;gap:9px!important;margin:14px 0 20px!important}
+body.bh-activity-v2 .activity-quick-strip>span{
+  background:#fff!important;border:1px solid #e0ebe8!important;border-radius:12px!important;
+  padding:10px 12px!important;color:#243b38!important;min-height:54px!important;
+}
+body.bh-activity-v2 .activity-quick-strip>span strong{color:#718580!important;font-size:11px!important}
+body.bh-activity-v2 .activity-contact-footer{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;gap:18px!important;
+  flex-wrap:wrap!important;margin:20px 0 8px!important;padding:20px 22px!important;
+}
+body.bh-activity-v2 .activity-contact-footer>h2{display:none!important}
+body.bh-activity-v2 .bh-organiser-profile-row{display:flex!important;align-items:center!important;gap:13px!important;min-width:220px!important;flex:1 1 280px!important}
+body.bh-activity-v2 .bh-organiser-avatar{
+  width:52px!important;height:52px!important;flex:0 0 52px!important;border-radius:50%!important;
+  display:grid!important;place-items:center!important;background:#e5f4ef!important;color:#0f766e!important;
+  font-size:18px!important;font-weight:800!important;border:1px solid #d4ebe3!important;
+}
+body.bh-activity-v2 .bh-organiser-copy strong{display:block!important;color:#173f39!important;font-size:15px!important;line-height:1.35!important}
+body.bh-activity-v2 .bh-organiser-copy a{display:inline-block!important;margin-top:3px!important;color:#0f766e!important;font-size:12px!important;font-weight:700!important}
+body.bh-activity-v2 .activity-contact-buttons{display:flex!important;align-items:center!important;justify-content:flex-end!important;flex-wrap:wrap!important;gap:8px!important;margin:0!important}
+body.bh-activity-v2 .activity-contact-link{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;
+  min-height:38px!important;padding:8px 14px!important;border:1px solid #d7e7e2!important;border-radius:999px!important;
+  background:#fff!important;color:#0f766e!important;font-size:12px!important;font-weight:700!important;text-decoration:none!important;
+}
+body.bh-activity-v2 .activity-contact-link:hover{background:#edf7f4!important;border-color:#0d9488!important}
+body.bh-activity-v2 .activity-reference-contact .listing-map{
+  position:relative!important;isolation:isolate!important;height:245px!important;min-height:245px!important;
+  max-height:245px!important;border-radius:14px!important;overflow:hidden!important;border:1px solid #e0ebe8!important;
+}
+body.bh-activity-v2 .activity-reference-contact .activity-map-directions{
+  position:absolute!important;z-index:1000!important;right:12px!important;bottom:12px!important;left:auto!important;top:auto!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  padding:9px 14px!important;border-radius:999px!important;background:#fff!important;color:#0f766e!important;
+  border:1px solid #dcebe6!important;box-shadow:0 5px 18px rgba(0,0,0,.12)!important;
+  font-size:12px!important;font-weight:800!important;text-decoration:none!important;
+}
+body.bh-activity-v2 .activity-reference-contact .activity-map-directions:hover{background:#0f766e!important;color:#fff!important}
+body.bh-activity-v2 .bh-session-calendar{max-width:none!important;margin:0!important}
+body.bh-activity-v2 .bh-calendar-toolbar{margin-bottom:9px!important}
+body.bh-activity-v2 .bh-calendar-toolbar strong{font-size:15px!important;color:#115e59!important}
+body.bh-activity-v2 .bh-calendar-nav{width:30px!important;height:30px!important;border:1px solid #e0ebe8!important;border-radius:9px!important;background:#fff!important;color:#0f766e!important}
+body.bh-activity-v2 .bh-calendar-weekdays,
+body.bh-activity-v2 .bh-calendar-days{gap:4px!important}
+body.bh-activity-v2 .bh-calendar-weekdays span{font-size:10px!important;color:#718580!important}
+body.bh-activity-v2 .bh-calendar-day{height:35px!important;border:1px solid transparent!important;border-radius:9px!important;background:#f7faf9!important;color:#304b45!important;font-size:12px!important}
+body.bh-activity-v2 .bh-calendar-day.has-sessions{background:#e5f5f0!important;border-color:#c9e8de!important;color:#0f766e!important}
+body.bh-activity-v2 .bh-calendar-day.is-selected{background:#0f766e!important;border-color:#0f766e!important;color:#fff!important}
+body.bh-activity-v2 .bh-calendar-day.is-today:not(.is-selected){box-shadow:inset 0 0 0 1px #0d9488!important}
+body.bh-activity-v2 .bh-calendar-selected{margin-top:12px!important;padding-top:11px!important;border-top:1px solid #e0ebe8!important}
+body.bh-activity-v2 .bh-calendar-selected-date{font-size:12px!important;color:#115e59!important;font-weight:800!important}
+body.bh-activity-v2 .bh-calendar-session{padding:12px!important;border:1px solid #e0ebe8!important;border-radius:12px!important;background:#f9fcfb!important;gap:8px!important}
+body.bh-activity-v2 .bh-calendar-session-copy strong{font-size:14px!important;color:#173f39!important}
+body.bh-activity-v2 .bh-calendar-session-copy span,
+body.bh-activity-v2 .bh-calendar-detail-copy{font-size:12px!important;color:#718580!important}
+body.bh-activity-v2 .bh-calendar-session-actions{justify-content:flex-start!important}
+body.bh-activity-v2 .bh-calendar-enquire,
+body.bh-activity-v2 .bh-calendar-add{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  min-height:34px!important;padding:7px 13px!important;border-radius:999px!important;font-size:12px!important;font-weight:800!important;
+}
+body.bh-activity-v2 .bh-calendar-enquire{background:#0f766e!important;border:1px solid #0f766e!important;color:#fff!important}
+body.bh-activity-v2 .bh-calendar-add{background:#fff!important;border:1px solid #0f766e!important;color:#0f766e!important}
+body.bh-activity-v2 .activity-venue-toggle{border-radius:10px!important;color:#115e59!important}
+body.bh-activity-v2 .activity-schedule-directions{color:#0f766e!important}
+body.bh-activity-v2 .activity-concept-extras .contact-card{display:none!important}
+body.bh-activity-v2 .activity-concept-extras .booking-card{border-radius:16px!important}
+body.bh-activity-v2 .activity-contact-footer .activity-contact-link:focus-visible,
+body.bh-activity-v2 .bh-calendar-day:focus-visible{outline:2px solid #0d9488!important;outline-offset:2px!important}
+@media(max-width:850px){
+ body.bh-activity-v2 .activity-concept-two .activity-concept-content{grid-template-columns:1fr!important}
+ body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero{grid-template-columns:1fr!important}
+ body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-gallery{height:230px!important;max-height:230px!important}
+ body.bh-activity-v2 .activity-contact-footer{align-items:flex-start!important}
+ body.bh-activity-v2 .activity-contact-buttons{justify-content:flex-start!important;width:100%!important}
+}
+@media(max-width:520px){
+ body.bh-activity-v2 .app-shell{padding:16px 12px 28px!important}
+ body.bh-activity-v2 .activity-concept-two .activity-concept-content :is(.activity-reference-about,.activity-reference-schedule,.activity-reference-contact,.activity-useful-info){padding:16px!important}
+ body.bh-activity-v2 .activity-contact-footer{padding:16px!important}
+ body.bh-activity-v2 .activity-contact-link{flex:1 1 auto!important}
+ body.bh-activity-v2 .activity-reference-contact .listing-map{height:210px!important;min-height:210px!important;max-height:210px!important}
+}
