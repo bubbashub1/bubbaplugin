@@ -51,7 +51,7 @@ $db->exec("UPDATE bh_school_holidays SET recurrence_type='fixed_date' WHERE is_r
      if(!checkdate($startMonth,$startDay,$year))continue;
      $occurrenceStart=sprintf('%04d-%02d-%02d',$year,$startMonth,$startDay);
     }else{
-     if($rule==='school_half_term'){
+     if(in_array($rule,['school_half_term','school_summer_holidays'],true)){
       // Repeat the starting date in the same weekday position within its month.
       // If that fifth weekday does not exist in a particular year, use the month's last occurrence.
       $weekday=(int)$originalStart->format('N');
@@ -87,7 +87,7 @@ $db->exec("UPDATE bh_school_holidays SET recurrence_type='fixed_date' WHERE is_r
  if($action!=='save')bhHolidayReply(422,['ok'=>false,'error'=>'invalid_action']);
  $ids=$input['ids']??[];if(!is_array($ids))$ids=[];$ids=array_values(array_unique(array_filter(array_map(static fn($v)=>filter_var($v,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]),$ids))));
  $legacyId=filter_var($input['id']??0,FILTER_VALIDATE_INT,['options'=>['min_range'=>0]]);if(!$ids&&$legacyId>0)$ids=[$legacyId];
- $recurrenceType=(string)($input['recurrence_type']??(!empty($input['recurring'])?'fixed_date':'none'));$allowedRecurrence=['none','fixed_date','first_monday_may','last_monday_may','last_monday_august','school_half_term'];if(!in_array($recurrenceType,$allowedRecurrence,true))bhHolidayReply(422,['ok'=>false,'error'=>'invalid_recurrence_type']);$recurring=$recurrenceType==='none'?0:1;$selected=$input['areas']??[];$name=trim((string)($input['holiday_name']??''));$start=(string)($input['start_date']??'');$end=(string)($input['end_date']??'');
+ $recurrenceType=(string)($input['recurrence_type']??(!empty($input['recurring'])?'fixed_date':'none'));$allowedRecurrence=['none','fixed_date','first_monday_may','last_monday_may','last_monday_august','school_half_term','school_summer_holidays'];if(!in_array($recurrenceType,$allowedRecurrence,true))bhHolidayReply(422,['ok'=>false,'error'=>'invalid_recurrence_type']);$recurring=$recurrenceType==='none'?0:1;$selected=$input['areas']??[];$name=trim((string)($input['holiday_name']??''));$start=(string)($input['start_date']??'');$end=(string)($input['end_date']??'');
  if(!is_array($selected))$selected=[$selected];$selected=array_values(array_unique(array_filter(array_map(static fn($v)=>trim((string)$v),$selected),static fn($v)=>$v!=='')));
  $validDate=static function(string $v):bool{$d=DateTimeImmutable::createFromFormat('!Y-m-d',$v,new DateTimeZone('Europe/London'));return $d instanceof DateTimeImmutable&&$d->format('Y-m-d')===$v;};
  if($legacyId===false||count($ids)>20||!$selected||count(array_diff($selected,$areas))>0||$name===''||mb_strlen($name)>100||!$validDate($start)||!$validDate($end)||$end<$start)bhHolidayReply(422,['ok'=>false,'error'=>'check_area_name_and_dates']);
