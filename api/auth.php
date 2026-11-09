@@ -334,7 +334,7 @@ function bh_ensure_reset_table(PDO $db): void {
  * (Google's email_verified). Only then may we attach the social identity to an
  * existing password account with the same email.
  */
-function bh_social_login(PDO $db, string $provider, string $providerId, string $email, string $displayName, string $ctx, bool $emailTrusted, string $organisation='', bool $termsAccepted=false): array {
+function bh_social_login(PDO $db, string $provider, string $providerId, string $email, string $displayName, string $ctx, bool $emailTrusted, string $organisation='', bool $termsAccepted=false, string $firstName='', string $lastName=''): array {
     bh_ensure_social_table($db);
     if ($ctx === 'leader') bh_ensure_email_verification_schema($db);
 
@@ -387,8 +387,19 @@ function bh_social_login(PDO $db, string $provider, string $providerId, string $
             $db->prepare("INSERT INTO bh_users (email,password_hash,role,status,email_verified_at) VALUES (?,?,?,'active',NOW())")
                ->execute([$email, password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT), $role]);
         } else {
-            $db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,?,'active')")
-               ->execute([$email, password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT), $role]);
+            // Match native family registration by saving Google profile names when
+            // the optional name columns exist on this installation.
+            $columns = ['email','password_hash','role','status'];
+            $values = [$email, password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT), $role, 'active'];
+            $userColumns = [];
+            try {
+                $q = $db->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_users'");
+                $userColumns = array_map('strval', $q->fetchAll(PDO::FETCH_COLUMN));
+            } catch (Throwable $ignored) {}
+            if (in_array('first_name', $userColumns, true)) { $columns[]='first_name'; $values[]=$firstName !== '' ? mb_substr($firstName,0,100) : null; }
+            if (in_array('last_name', $userColumns, true)) { $columns[]='last_name'; $values[]=$lastName !== '' ? mb_substr($lastName,0,100) : null; }
+            $sql = "INSERT INTO bh_users (".implode(',', $columns).") VALUES (".implode(',', array_fill(0,count($columns),'?')).")";
+            $db->prepare($sql)->execute($values);
         }
         $userId = (int)$db->lastInsertId();
         if ($ctx === 'leader') bh_create_leader_organiser($db, $userId, $email, trim($organisation));
@@ -969,7 +980,7 @@ try {
 
         $organisation = trim((string)($body['organisation_name'] ?? ''));
         $termsAccepted = !empty($body['terms']);
-        [$user, $isNew] = bh_social_login($db, 'google', $googleId, $email, (string)($google['name'] ?? ''), $authContext, true, $organisation, $termsAccepted);
+        [$user, $isNew] = bh_social_login($db, 'google', $googleId, $email, (string)($google['name'] ?? ''), $authContext, true, $organisation, $termsAccepted, (string)($google['given_name'] ?? ''), (string)($google['family_name'] ?? ''));
         bh_login_session((int)$user['id'], $authContext);
         bh_social_response($user, $isNew, $authContext, 'google', (string)($google['given_name'] ?? ''));
     }
