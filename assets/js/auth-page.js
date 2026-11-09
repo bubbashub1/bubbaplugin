@@ -55,7 +55,7 @@ const renderGoogle=async()=>{
           const r=await fetch("/api/auth.php?action=google",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(payload)});
           const d=await readJson(r);
           if(!r.ok||!d.ok){
-            if(context==="leader"&&d.error==="leader_registration_details_required")setMode("register");
+            if((context==="leader"&&d.error==="leader_registration_details_required")||(context==="family"&&d.error==="social_registration_terms_required"))setMode("register");
             throw Error(d.message||"Google sign-in could not be completed.");
           }
           if(d.csrf)csrf=d.csrf;
