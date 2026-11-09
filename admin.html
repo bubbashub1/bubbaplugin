@@ -36,7 +36,32 @@
 #adminContent .bh-admin-nav-links a{display:inline-flex;align-items:center;min-height:38px;padding:8px 12px;border-radius:8px;background:#f4f8f3;color:#20563b;text-decoration:none;font-size:.9rem;font-weight:650}
 #adminContent .bh-admin-nav-links a:hover,#adminContent .bh-admin-nav-links a:focus-visible{background:#e5f0e5;text-decoration:underline;outline-offset:2px}
 @media(max-width:600px){#adminContent .bh-admin-nav-group>summary{padding:13px 14px}#adminContent .bh-admin-nav-links{display:grid;grid-template-columns:1fr;padding:0 12px 13px}#adminContent .bh-admin-nav-links a{width:100%;box-sizing:border-box}}
-</style></head>
+
+<style id="bh-admin-dashboard-refresh">
+/* Compact, task-first admin home. Preserve auth, stats IDs and existing tools. */
+.bh-admin-v2 .app-shell>.page-heading{
+ min-height:0!important;display:flex!important;align-items:center!important;
+ padding:24px 28px!important;border-radius:18px!important;
+ background:#f1f7ef!important;background-image:none!important;
+ border:1px solid #dce9dc!important;box-shadow:none!important;
+}
+.bh-admin-v2 .app-shell>.page-heading h1{font-size:clamp(1.8rem,3vw,2.5rem)!important;margin:.2rem 0!important}
+.bh-admin-v2 .app-shell>.page-heading p{margin:.4rem 0 0!important;max-width:620px}
+#adminContent .admin-stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0 18px}
+#adminContent .admin-stats article{border-radius:12px;padding:13px 16px;box-shadow:none}
+#adminContent .bh-admin-nav{gap:8px;margin:16px 0 28px}
+#adminContent .bh-admin-nav-group{border-radius:12px}
+#adminContent .bh-admin-nav-group>summary{min-height:50px;padding:11px 16px}
+#adminContent .bh-admin-nav-links{padding:10px 14px 14px;gap:7px}
+#adminContent .bh-admin-nav-links a{background:#f7faf6;border:1px solid #e6eee5}
+#adminContent .admin-tools-drawer{margin:16px 0 22px}
+@media(max-width:850px){
+ .bh-admin-v2 .app-shell>.page-heading{padding:20px!important}
+}
+@media(max-width:520px){
+ #adminContent .admin-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style></style></head>
 <body class="bh-admin-v2">
 <header class="site-header"><a class="brand" href="/index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main menu">
     <a href="/directory.html">Find activities</a>
@@ -57,18 +82,25 @@
 <div id="testUserList" class="test-user-list"><p>Loading test accounts…</p></div>
 </section>
 <section class="admin-panel" id="directoryTestPanel"><div class="admin-panel-head"><div><span class="eyebrow">Directory testing</span><h2>Make sure the directory has 3 listings</h2><p>Creates safe internal test listings only when fewer than 3 published activities exist.</p></div><button class="button button-primary" id="ensureThreeActivities" type="button">Create missing test listings</button></div><p class="library-message" id="directoryTestMessage" role="status"></p></section></div></details>
+
 <nav class="bh-admin-nav" aria-label="Admin sections">
-<details class="bh-admin-nav-group" id="eventsManagement"><summary><span class="bh-admin-nav-title">Events &amp; Expo</span><span class="bh-admin-nav-count">6 areas</span></summary><div class="bh-admin-nav-links">
-<a href="/admin/admin-events.html">Events</a><a href="/admin/expo-visitors.html">Expo visitor dashboard</a><a href="/admin/expo-exhibitor-approvals.html">Exhibitor applications</a><a href="/admin/expo-raffle-prizes.html">Expo raffle prizes</a><a href="/admin/expo-prize-donations.html">Incoming prize donations</a><a href="/admin/admin-sponsors.html">Sponsorships</a>
+<details class="bh-admin-nav-group"><summary><span class="bh-admin-nav-title">Activities &amp; listings</span><span class="bh-admin-nav-count">10 areas</span></summary><div class="bh-admin-nav-links">
+<a href="/admin/admin-activities.html">Manage activity listings, sessions &amp; venues</a><a href="/admin/admin-school-holidays.html">School holidays &amp; bank holidays</a><a href="/admin/admin-listing-check.html">Check listings and discover activities</a><a href="/admin/admin-import-export.html">CSV and Google Sheets import/export</a><a href="/admin/admin-search.html">Directory search &amp; filters</a><a href="/admin/admin-regions.html">Regions, counties &amp; towns</a><a href="/admin/admin-organisers.html">Organisers &amp; class leaders</a><a href="/api/sheets-sync-live-update-preview.php">Preview Google Sheets updates</a><a href="/api/sheets-sync-live-bulk-review.php">Review multiple Sheets changes</a><a href="/api/sheets-sync-live-baseline-review.php">Review Google Sheets baseline</a>
 </div></details>
-<details class="bh-admin-nav-group"><summary><span class="bh-admin-nav-title">Activities &amp; Directory</span><span class="bh-admin-nav-count">9 areas</span></summary><div class="bh-admin-nav-links">
-<a href="/admin/admin-activities.html">Activities, sessions &amp; venues</a><a href="/admin/admin-school-holidays.html">School holiday dates</a><a href="/admin/admin-listing-check.html">Listing check</a><a href="/admin/admin-import-export.html">CSV import &amp; export</a><a href="/admin/admin-search.html">Search &amp; filters</a><a href="/admin/admin-regions.html">Regions &amp; towns</a><a href="/admin/admin-organisers.html">Organisers</a><a href="/api/sheets-sync-live-update-preview.php">Sheet update preview</a><a href="/api/sheets-sync-live-bulk-review.php">Bulk Sheets baseline review</a><a href="/api/sheets-sync-live-baseline-review.php">Google Sheets baseline approval</a>
+<details class="bh-admin-nav-group"><summary><span class="bh-admin-nav-title">Families &amp; class leaders</span><span class="bh-admin-nav-count">3 areas</span></summary><div class="bh-admin-nav-links">
+<a href="/admin/admin-users.html">Family &amp; leader accounts</a><a href="/admin/admin-activities.html">Leader listing claims</a><a href="/admin/admin-notifications.html">Email &amp; notifications</a>
 </div></details>
-<details class="bh-admin-nav-group"><summary><span class="bh-admin-nav-title">Families, Leaders &amp; Bookings</span><span class="bh-admin-nav-count">3 areas</span></summary><div class="bh-admin-nav-links">
-<a href="/admin/admin-users.html">Users &amp; families</a><a href="/admin/admin-bookings.html">Bookings</a><a href="/admin/admin-notifications.html">Notifications</a>
+<details class="bh-admin-nav-group"><summary><span class="bh-admin-nav-title">Bookings &amp; reservations</span><span class="bh-admin-nav-count">1 area</span></summary><div class="bh-admin-nav-links">
+<a href="/admin/admin-bookings.html">Bookings, availability &amp; booking settings</a>
 </div></details>
-<details class="bh-admin-nav-group"><summary><span class="bh-admin-nav-title">Site content &amp; settings</span><span class="bh-admin-nav-count">3 areas</span></summary><div class="bh-admin-nav-links">
-<a href="/admin/admin-content.html">Content &amp; media</a><a href="/admin/admin-navigation.html">Navigation &amp; menus</a><a href="/admin/admin-system.html">System &amp; deployment</a>
+<details class="bh-admin-nav-group"><summary><span class="bh-admin-nav-title">Events &amp; Expo</span><span class="bh-admin-nav-count">6 areas</span></summary><div class="bh-admin-nav-links">
+<a href="/admin/admin-events.html">Manage events</a><a href="/admin/expo-visitors.html">Expo visitors &amp; check-in</a><a href="/admin/expo-exhibitor-approvals.html">Exhibitor applications</a><a href="/admin/expo-raffle-prizes.html">Raffle prizes</a><a href="/admin/expo-prize-donations.html">Prize donations</a><a href="/admin/admin-sponsors.html">Sponsors &amp; sponsorships</a>
+</div></details>
+<details class="bh-admin-nav-group"><summary><span class="bh-admin-nav-title">Website &amp; content</span><span class="bh-admin-nav-count">3 areas</span></summary><div class="bh-admin-nav-links">
+<a href="/library/">Image library</a><a href="/index.html">Public website</a><a href="/admin/admin-navigation.html">Main menu &amp; footer navigation</a>
+</div></details>
+<details class="bh-admin-nav-group"><summary><span class="bh-admin-nav-title">Settings &amp; technical tools</span><span class="bh-admin-nav-count">2 areas</span></summary><div class="bh-admin-nav-links">
+<a href="/admin/admin-system.html">System settings &amp; admin tools</a><a href="#deployLatest">Deployment &amp; testing tools</a>
 </div></details>
 </nav>
 </div>
