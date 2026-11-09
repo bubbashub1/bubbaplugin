@@ -467,19 +467,27 @@ const bhInitDirectory=async()=>{
 
     const schoolHolidayCache = new Map();
     const activityIsTermTime = activity => bhSessions(activity).some(s => !!s.term_time);
-    const countyForActivity = activity => activity.county || "";
+    const countyForActivity = activity => {
+      const raw=String(activity.county||activity.region||"").trim().toLowerCase();
+      if(raw.includes("cornwall"))return "Cornwall";
+      if(raw.includes("plymouth"))return "Plymouth";
+      if(raw.includes("torbay"))return "Torbay";
+      if(raw.includes("devon")||raw.includes("exeter")||raw.includes("south hams")||raw.includes("teignbridge"))return "Devon";
+      return "";
+    };
     const getSchoolHolidayStatus = async county => {
       if (!county) return false;
-      if (schoolHolidayCache.has(county)) return schoolHolidayCache.get(county);
+      const today=new Date(),pad=n=>String(n).padStart(2,"0"),date=today.getFullYear()+"-"+pad(today.getMonth()+1)+"-"+pad(today.getDate());
+      const cacheKey=county+"|"+date;
+      if (schoolHolidayCache.has(cacheKey)) return schoolHolidayCache.get(cacheKey);
       try {
-        const response = await fetch("/api/school-holidays.php?county="+encodeURIComponent(county), {cache:"no-store"});
+        const response = await fetch("/api/school-holidays.php?area="+encodeURIComponent(county)+"&from="+date+"&to="+date, {cache:"no-store"});
         const payload = await response.json();
-        const holiday = !!(response.ok && payload.ok && payload.is_school_holiday);
-        schoolHolidayCache.set(county, holiday);
+        const holiday = !!(response.ok && payload.ok && (payload.holidays||[]).length);
+        schoolHolidayCache.set(cacheKey, holiday);
         return holiday;
       } catch (e) {
-        // If the external holiday source is unavailable, do not hide activities.
-        schoolHolidayCache.set(county, false);
+        schoolHolidayCache.set(cacheKey, false);
         return false;
       }
     };
