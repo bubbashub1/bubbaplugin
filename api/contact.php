@@ -41,8 +41,12 @@ if ($activityId < 1 || !isset($subjects[$subjectKey]) || $name === '' || !filter
 
 try {
     $db = bh_mysql();
+    $activityColumns = $db->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities'")->fetchAll(PDO::FETCH_COLUMN);
+    $contactEmailSelect = in_array('contact_email', $activityColumns, true)
+        ? "COALESCE(NULLIF(TRIM(o.email), ''), NULLIF(TRIM(a.contact_email), ''))"
+        : "NULLIF(TRIM(o.email), '')";
     $stmt = $db->prepare(
-        "SELECT a.title, a.organiser_id, o.organisation_name, o.email
+        "SELECT a.title, a.organiser_id, o.organisation_name, {$contactEmailSelect} AS destination_email
          FROM bh_activities a
          INNER JOIN bh_organisers o ON o.id = a.organiser_id
          WHERE a.id = ? AND a.status = 'published' AND o.status = 'published'
@@ -51,7 +55,7 @@ try {
     $stmt->execute([$activityId]);
     $activity = $stmt->fetch();
 
-    if (!$activity || !filter_var((string)$activity['email'], FILTER_VALIDATE_EMAIL)) {
+    if (!$activity || !filter_var((string)$activity['destination_email'], FILTER_VALIDATE_EMAIL)) {
         http_response_code(404);
         echo json_encode(['ok' => false, 'error' => 'The organiser cannot receive messages for this activity right now.']);
         exit;
