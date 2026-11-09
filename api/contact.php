@@ -17,6 +17,7 @@ $subjectKey = trim((string)($_POST['subject'] ?? ''));
 $name = trim((string)($_POST['name'] ?? ''));
 $email = trim((string)($_POST['email'] ?? ''));
 $message = trim((string)($_POST['message'] ?? ''));
+$sessionDetails = trim((string)($_POST['session_details'] ?? ''));
 $honeypot = trim((string)($_POST['website'] ?? ''));
 
 if ($honeypot !== '') {
@@ -32,7 +33,7 @@ $subjects = [
     'other' => 'Other',
 ];
 
-if ($activityId < 1 || !isset($subjects[$subjectKey]) || $name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $message === '') {
+if ($activityId < 1 || !isset($subjects[$subjectKey]) || $name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $message === '' || mb_strlen($sessionDetails) > 600) {
     http_response_code(422);
     echo json_encode(['ok' => false, 'error' => 'Please complete all required fields.']);
     exit;
@@ -62,8 +63,9 @@ try {
 
     $body = "New Bubba Hub enquiry\n\n"
         . "Activity: {$activityTitle}\n"
-        . "Subject: {$subject}\n\n"
-        . "From: {$name}\n"
+        . "Subject: {$subject}\n"
+        . ($sessionDetails !== '' ? "Lesson/session: {$sessionDetails}\n" : "")
+        . "\nFrom: {$name}\n"
         . "Email: {$email}\n\n"
         . "Message:\n{$message}\n";
 
@@ -79,7 +81,7 @@ try {
         $db->exec("CREATE TABLE IF NOT EXISTS bh_leader_messages (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,organiser_id BIGINT UNSIGNED NOT NULL,sender_user_id BIGINT UNSIGNED NOT NULL DEFAULT 0,subject VARCHAR(180) NOT NULL,body TEXT NOT NULL,category VARCHAR(30) NOT NULL DEFAULT 'help',reply TEXT NULL,replied_at DATETIME NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,INDEX idx_leader_messages_organiser(organiser_id,created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
         try{$db->exec("ALTER TABLE bh_leader_messages ADD COLUMN sender_email VARCHAR(190) NULL");}catch(Throwable $ignored){}
         $q=$db->prepare("INSERT INTO bh_leader_messages(organiser_id,sender_user_id,sender_email,subject,body,category) VALUES(?,0,?,?,?,?)");
-        $q->execute([(int)$activity['organiser_id'],$email,mb_substr($subject.' – '.$activityTitle,0,180),"From: ".$name."\n\n".$message,$subjectKey==='booking'?'booking':'help']);
+        $q->execute([(int)$activity['organiser_id'],$email,mb_substr($subject.' – '.$activityTitle,0,180),($sessionDetails!==''?"Lesson/session: ".$sessionDetails."\n\n":"")."From: ".$name."\n\n".$message,$subjectKey==='booking'?'booking':'help']);
     } catch(Throwable $logError) { error_log('Could not save leader inbox copy: '.$logError->getMessage()); }
     echo json_encode(['ok' => true]);
 } catch (Throwable $e) {
