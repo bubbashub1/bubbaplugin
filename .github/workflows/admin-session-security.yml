@@ -1,0 +1,20 @@
+name: Admin session PHP check
+on:
+  pull_request:
+    paths:
+      - 'admin-auth.php'
+      - 'api/admin-session-guard.php'
+      - '.github/workflows/admin-session-security.yml'
+  workflow_dispatch:
+jobs:
+  admin-session-php:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - name: Check admin session PHP syntax
+        run: |
+          php -l admin-auth.php
+          php -l api/admin-session-guard.php
