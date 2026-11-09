@@ -25,7 +25,22 @@ function bh_read_wp_constant(string $name): string {
     return '';
 }
 
-$clientId = bh_read_wp_constant('BH_GOOGLE_CLIENT_ID');
+// Prefer the native Bubba Hub API config. The wp-config constant remains
+// supported as a deployment override for existing installations.
+$clientId = '';
+$appConfigFile = __DIR__ . '/config.php';
+if (is_file($appConfigFile)) {
+    try {
+        $appConfig = require $appConfigFile;
+        if (is_array($appConfig)) {
+            $clientId = trim((string)($appConfig['google']['client_id'] ?? ''));
+        }
+    } catch (Throwable $e) {
+        error_log('Bubba Hub Google config could not be loaded: ' . $e->getMessage());
+    }
+}
+$wpClientId = bh_read_wp_constant('BH_GOOGLE_CLIENT_ID');
+if ($wpClientId !== '') $clientId = $wpClientId;
 $facebookAppId = bh_read_wp_constant('BH_FACEBOOK_APP_ID');
 
 echo 'window.BUBBAHUB_GOOGLE_CLIENT_ID=' . json_encode($clientId, JSON_UNESCAPED_SLASHES) . ';';
