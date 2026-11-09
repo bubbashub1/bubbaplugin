@@ -453,7 +453,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
       // The organiser banner now belongs directly beneath the schedule card.
       // Keep it in the right column; the footer contains contact links only.
       if(organiserCard)organiserCard.classList.add('activity-contact-organiser');
-      layout.after(footer);
+      // Keep organiser contact actions inside column 2, directly beneath the schedule and organiser profile.
+      supporting.append(footer);
     }
   }
   const claimWrap=document.querySelector(".listing-claim-wrap");
