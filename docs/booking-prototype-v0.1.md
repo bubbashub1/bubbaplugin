@@ -1,24 +1,33 @@
-# Native family bookings v0.1
+# Native family bookings – prototype implementation notes
 
-This is a staging-only prototype. It does not collect payments.
+## Scope
+A first native Bubba Hub booking workflow: organisers create dated bookable slots, families request places, and leaders manage requests. This prototype does not collect payments.
 
-## Install
+## Current integration design
+The booking flow uses the existing shared database model:
+- `bh_booking_slots` for dated sessions.
+- `bh_booking_reservations` for family reservations.
+- `bh_consent_profiles` for the family's current saved consent.
+- `bh_booking_consent_snapshots` for the consent state attached to a particular reservation.
+
+There must not be a second writable `bh_booking_requests` table.
+
+## Staging database instructions
 1. Back up the staging database.
-2. Import `database/booking_requests_v0_1.sql`.
-3. Deploy the branch to staging only.
-4. Test with one test family account and one test leader account.
+2. Confirm the existing schema includes `bh_booking_slots`, `bh_booking_reservations`, `bh_consent_profiles` and `bh_booking_consent_snapshots`.
+3. Import `database/booking_integration_v0_2.sql` into STAGING only.
+4. Confirm the migration completes and can be run a second time without damaging data.
+5. Deploy the matching feature branch to staging only after the SQL migration succeeds.
+6. Use test family and leader accounts to complete the full journey.
 
-## Behaviour
-- Family bookings require an active family account and a valid session CSRF token.
-- A booking is tied to a real `bh_booking_slots` row; the slot must be future-dated, open and in Bubba Hub mode.
-- Capacity is checked inside a transaction while the slot row is locked.
-- Duplicate active requests by the same family for the same slot are rejected.
-- Parent, child and consent details are snapshotted on the private booking record.
-- Leaders can view only requests for their own organiser and change pending/confirmed requests to confirmed, cancelled or attended.
-- Families can view only their own requests.
-- No payment is taken. New requests start as `pending`.
+Do not import the removed `booking_requests_v0_1.sql`. Do not run this migration on production without separate approval.
 
-## Deliberate limits
-- This v0.1 API is not yet wired into the public activity booking modal or leader dashboard.
-- It does not send confirmation emails, offer a waitlist, or process refunds.
-- Do not run on live until UI integration, security review and staging tests are complete.
+## Status mapping
+The existing reservation enum is preserved:
+- `reserved`: new family request awaiting leader review (shown as Pending in the UI).
+- `confirmed`: leader confirmed the place.
+- `cancelled`: reservation cancelled.
+- `attended`: family attended; it continues to count against capacity.
+
+## Not included
+Payments, refunds, waitlists, automated booking emails, recurring slot generation, and automatic external timetable imports.
