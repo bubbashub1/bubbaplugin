@@ -1,0 +1,82 @@
+name: Booking prototype syntax checks
+
+on:
+  pull_request:
+    paths:
+      - 'api/booking-requests.php'
+      - 'api/consent-profile.php'
+      - 'api/activities.php'
+      - 'api/leader-portal.php'
+      - 'assets/js/booking-manager.js'
+      - 'assets/js/booking-requests.js'
+      - 'assets/js/consent.js'
+      - 'activity.html'
+      - 'database/booking_integration_v0_2.sql'
+      - '.github/workflows/booking-prototype-checks.yml'
+  push:
+    branches:
+      - 'prototype/native-family-bookings-v0.1'
+    paths:
+      - 'api/booking-requests.php'
+      - 'api/consent-profile.php'
+      - 'api/activities.php'
+      - 'api/leader-portal.php'
+      - 'assets/js/booking-manager.js'
+      - 'assets/js/booking-requests.js'
+      - 'assets/js/consent.js'
+      - 'activity.html'
+      - 'database/booking_integration_v0_2.sql'
+      - '.github/workflows/booking-prototype-checks.yml'
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql
+      - name: Check changed booking PHP files
+        run: |
+          php -l api/booking-requests.php
+          php -l api/consent-profile.php
+          php -l api/activities.php
+          php -l api/leader-portal.php
+      - name: Check external JavaScript files
+        run: |
+          node --check assets/js/booking-manager.js
+          node --check assets/js/booking-requests.js
+          node --check assets/js/consent.js
+      - name: Extract and check inline activity page JavaScript
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class Scripts(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.active = False
+                  self.scripts = []
+              def handle_starttag(self, tag, attrs):
+                  if tag == "script" and not dict(attrs).get("src"):
+                      self.active = True
+                      self.scripts.append("")
+              def handle_endtag(self, tag):
+                  if tag == "script":
+                      self.active = False
+              def handle_data(self, data):
+                  if self.active:
+                      self.scripts[-1] += data
+
+          parser = Scripts()
+          parser.feed(Path("activity.html").read_text(encoding="utf-8"))
+          if not parser.scripts:
+              raise SystemExit("No inline activity page scripts were found")
+          for index, script in enumerate(parser.scripts):
+              Path(f"/tmp/activity-inline-{index}.js").write_text(script, encoding="utf-8")
+          print(f"Extracted {len(parser.scripts)} inline script(s)")
+          PY
+          for script in /tmp/activity-inline-*.js; do node --check "$script"; done
