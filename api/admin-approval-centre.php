@@ -28,7 +28,7 @@ try{
  $q=$db->query("SELECT COUNT(*) FROM bh_activities WHERE status='draft'");
  $queues[1]['count']=(int)$q->fetchColumn();
  $q=$db->query("SELECT id,title,status FROM bh_activities WHERE status='draft' ORDER BY updated_at DESC,id DESC LIMIT 50");
- foreach($q->fetchAll(PDO::FETCH_ASSOC) as $a){$queues[1]['items'][]=['id'=>(int)$a['id'],'title'=>$a['title'],'status'=>'draft','url'=>'/admin/admin-activities-listings.html'];}
+ foreach($q->fetchAll(PDO::FETCH_ASSOC) as $a){$queues[1]['items'][]=['id'=>(int)$a['id'],'title'=>$a['title'],'status'=>'draft','url'=>'/admin/admin-activities-add-listing.html?id='.(int)$r['activity_id']];}
  $duplicateTable=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_duplicate_review_requests'");
  $duplicateTable->execute();
  if((int)$duplicateTable->fetchColumn()>0){
