@@ -380,6 +380,9 @@ function bh_social_login(PDO $db, string $provider, string $providerId, string $
     if ($ctx === 'leader' && (!$emailTrusted || !$termsAccepted || trim($organisation) === '' || mb_strlen(trim($organisation)) > 190)) {
         bh_auth_response(422, ['ok'=>false,'error'=>'leader_registration_details_required','message'=>'To create a class leader account with Google, choose Create account, enter your class or organisation name and agree to the organiser terms.']);
     }
+    if (!$termsAccepted) {
+        bh_auth_response(422, ['ok'=>false,'error'=>'social_registration_terms_required','message'=>'To create a new Bubba Hub account with Google, choose Create account and agree to the terms and privacy policy.']);
+    }
     $role = $ctx === 'leader' ? 'leader' : 'family';
     try {
         $db->beginTransaction();
