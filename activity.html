@@ -560,8 +560,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
       const start=parseDate(session.start_date),end=parseDate(session.end_date),once=String(session.frequency||"").toLowerCase()==="once";
       if(start&&date<start)return false;
       if(end&&date>end)return false;
+      if(session.term_time&&isHoliday(session,date))return false;
       if(once)return !!start&&sameDay(start,date);
-      if(session.term_time&&!isHoliday(session,date)){}else if(session.term_time&&isHoliday(session,date))return false;
       const weekday=dayNumber(session);
       return !!weekday&&((date.getDay()||7)===weekday);
     };
