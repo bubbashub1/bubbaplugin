@@ -466,40 +466,41 @@ const bhInitDirectory=async()=>{
     };
 
     const schoolHolidayCache = new Map();
-    const termTimeOnly = session => [true,1,"1","true","yes","y","term time","term-time","term time only"].includes(typeof session.term_time==="string"?session.term_time.trim().toLowerCase():session.term_time);
-    const activityIsTermTime = activity => bhSessions(activity).some(termTimeOnly);
+    const termTimeOnly = session => {
+      const value=session.term_time_only ?? session.term_time;
+      return [true,1,"1","true","yes","y","term time","term-time","term time only","term-time only"].includes(typeof value==="string"?value.trim().toLowerCase():value);
+    };
     const countyForActivity = activity => {
       const raw=String(activity.county||activity.region||"").trim().toLowerCase();
       if(raw.includes("cornwall"))return "Cornwall";
       if(raw.includes("plymouth"))return "Plymouth";
       if(raw.includes("torbay"))return "Torbay";
-      if(raw.includes("devon")||raw.includes("exeter")||raw.includes("south hams")||raw.includes("teignbridge"))return "Devon";
+      if(raw.includes("devon")||raw.includes("exeter")||raw.includes("south hams")||raw.includes("teignbridge")||raw.includes("north devon")||raw.includes("mid devon")||raw.includes("east devon")||raw.includes("west devon"))return "Devon";
       return "";
     };
-    const getSchoolHolidayStatus = async county => {
-      if (!county) return false;
-      const today=new Date(),pad=n=>String(n).padStart(2,"0"),date=today.getFullYear()+"-"+pad(today.getMonth()+1)+"-"+pad(today.getDate());
-      const cacheKey=county+"|"+date;
-      if (schoolHolidayCache.has(cacheKey)) return schoolHolidayCache.get(cacheKey);
-      try {
-        const response = await fetch("/api/school-holidays.php?area="+encodeURIComponent(county)+"&from="+date+"&to="+date, {cache:"no-store"});
-        const payload = await response.json();
-        const holiday = !!(response.ok && payload.ok && (payload.holidays||[]).length);
-        schoolHolidayCache.set(cacheKey, holiday);
-        return holiday;
-      } catch (e) {
-        schoolHolidayCache.set(cacheKey, false);
-        return false;
-      }
-    };
-    const filterTermTimeForCalendar = async list => {
-      const counties = [...new Set(list.filter(activityIsTermTime).map(countyForActivity).filter(Boolean))];
-      const statuses = await Promise.all(counties.map(async county => [county, await getSchoolHolidayStatus(county)]));
-      const holidayByCounty = new Map(statuses);
-      return list.filter(activity => !(activityIsTermTime(activity) && holidayByCounty.get(countyForActivity(activity)) === true));
+    const loadSchoolHolidayDates = async (list, rangeStart, rangeEnd) => {
+      const from=calendarDateKey(rangeStart),to=calendarDateKey(rangeEnd);
+      const areas=[...new Set(list.filter(activity=>bhSessions(activity).some(termTimeOnly)).map(countyForActivity).filter(Boolean))];
+      const results=await Promise.all(areas.map(async area=>{
+        const cacheKey=area+"|"+from+"|"+to;
+        if(schoolHolidayCache.has(cacheKey))return [area,schoolHolidayCache.get(cacheKey)];
+        const dates=new Set();
+        try{
+          const response=await fetch("/api/school-holidays.php?area="+encodeURIComponent(area)+"&from="+from+"&to="+to,{cache:"no-store"});
+          const payload=await response.json();
+          if(response.ok&&payload.ok)(payload.holidays||[]).forEach(period=>{
+            const start=parseLocalDate(period.start_date),end=parseLocalDate(period.end_date);
+            if(!start||!end)return;
+            for(let date=new Date(start);date<=end;date.setDate(date.getDate()+1))dates.add(calendarDateKey(date));
+          });
+        }catch(error){}
+        schoolHolidayCache.set(cacheKey,dates);
+        return [area,dates];
+      }));
+      return new Map(results);
     };
 
-    const buildCalendarEvents = (list, rangeStart, rangeEnd) => {
+    const buildCalendarEvents = (list, rangeStart, rangeEnd, holidayDates = new Map()) => {
       const events = {};
       list.forEach(activity => {
         bhSessions(activity).forEach(session => {
@@ -512,6 +513,8 @@ const bhInitDirectory=async()=>{
             if (jsDay !== day) continue;
             if (sessionStart && date < sessionStart) continue;
             if (sessionEnd && date > sessionEnd) continue;
+            const area=countyForActivity(activity);
+            if (termTimeOnly(session) && area && holidayDates.get(area)?.has(calendarDateKey(date))) continue;
             addCalendarEvent(events, new Date(date), activity, session);
           }
         });
@@ -520,7 +523,7 @@ const bhInitDirectory=async()=>{
     };
 
     let calendarTimeFilter = "all";
-    const renderCalendar = list => {
+    const renderCalendar = async list => {
       const calendar = $("calendarView");
       if (!calendar) return;
 
@@ -551,7 +554,8 @@ const bhInitDirectory=async()=>{
         date.setDate(weekStart.getDate() + index);
         return date;
       });
-      const events = buildCalendarEvents(displayedList, days[0], days[6]);
+      const holidayDates = await loadSchoolHolidayDates(displayedList, days[0], days[6]);
+      const events = buildCalendarEvents(displayedList, days[0], days[6], holidayDates);
       const filteredEvents = Object.fromEntries(Object.entries(events).map(([day, entries]) => [day, entries.filter(event => {
         if (calendarTimeFilter === "all") return true;
         const match = String(event.time || "").match(/^(\d{1,2}):(\d{2})/);
@@ -941,10 +945,7 @@ const bhInitDirectory=async()=>{
         calendarRenderToken++;
         const token = calendarRenderToken;
         calendarLoading();
-        filterTermTimeForCalendar(list).then(calendarList => {
-          if (token !== calendarRenderToken || currentView !== "calendar") return;
-          renderCalendar(calendarList);
-        });
+        renderCalendar(list).catch(error => { if (token === calendarRenderToken) console.error("Directory calendar render failed", error); });
       }
     };
 
