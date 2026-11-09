@@ -527,11 +527,11 @@ document.addEventListener("DOMContentLoaded",async()=>{
       return [true,1,"1","true","yes","y","term time","term-time","term time only","term-time only"].includes(typeof value==="string"?value.trim().toLowerCase():value);
     };
     const areaForSession=session=>{
-      const raw=String(a.county||a.region||session.venue_region||session.venue?.region||"").trim().toLowerCase();
+      const raw=[a.county,a.region,session.venue_region,session.venue_town,session.venue_postcode,session.venue?.region,session.venue?.town,session.venue?.postcode].filter(Boolean).join(" ").trim().toLowerCase();
       if(raw.includes("cornwall"))return "Cornwall";
       if(raw.includes("plymouth"))return "Plymouth";
       if(raw.includes("torbay"))return "Torbay";
-      if(raw.includes("devon")||raw.includes("exeter")||raw.includes("south hams")||raw.includes("teignbridge")||raw.includes("north devon")||raw.includes("mid devon")||raw.includes("east devon")||raw.includes("west devon"))return "Devon";
+      if(raw.includes("devon")||raw.includes("exeter")||raw.includes("south hams")||raw.includes("teignbridge")||raw.includes("north devon")||raw.includes("mid devon")||raw.includes("east devon")||raw.includes("west devon")||raw.includes("bradworthy")||/\\bex\\d{1,2}/i.test(raw))return "Devon";
       return "";
     };
     const loadHolidayDates=async month=>{
