@@ -4,19 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 function out(int $code,array $data):never{http_response_code($code);echo json_encode($data);exit;}
-$secure=!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS'])!=='off';
-if(session_status()!==PHP_SESSION_ACTIVE){
- ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');
- session_name('BUBBAHUB_ADMINSESSID');
- session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);
- session_start();
-}
-if(empty($_SESSION['bh_admin_authenticated']))out(401,['ok'=>false,'error'=>'admin_required']);
-if(!empty($_SESSION['bh_admin_last_activity']) && time()-(int)$_SESSION['bh_admin_last_activity']>1800){
- unset($_SESSION['bh_admin_authenticated'],$_SESSION['bh_admin_last_activity']);
- out(401,['ok'=>false,'error'=>'session_expired']);
-}
-$_SESSION['bh_admin_last_activity']=time();
+require_once __DIR__ . '/admin-session-guard.php';
 $method=$_SERVER['REQUEST_METHOD']??'GET';
 if(!in_array($method,['GET','POST'],true))out(405,['ok'=>false,'error'=>'method_not_allowed']);
 if($method==='POST'){
