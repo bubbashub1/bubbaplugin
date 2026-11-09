@@ -27,13 +27,18 @@ try{
  $q->execute([$id]);$item=$q->fetch(PDO::FETCH_ASSOC);
  if(!$item||$item['status']!=='pending'){$db->rollBack();duplicate_review_reply(409,['ok'=>false,'error'=>'review_no_longer_pending']);}
  $activityStatus=$decision==='approve'?'published':'rejected';
- $db->prepare("UPDATE bh_activities SET status=? WHERE id=? AND status='pending'")->execute([$activityStatus,(int)$item['activity_id']]);
- if($db->lastInsertId()==='-1'){} // Keep review status and activity transition in the same transaction.
+ $activityUpdate=$db->prepare("UPDATE bh_activities SET status=? WHERE id=? AND status='pending'");
+ $activityUpdate->execute([$activityStatus,(int)$item['activity_id']]);
+ if($activityUpdate->rowCount()!==1){$db->rollBack();duplicate_review_reply(409,['ok'=>false,'error'=>'activity_no_longer_pending']);}
  $db->prepare("UPDATE bh_duplicate_review_requests SET status=?,review_reason=?,reviewed_at=UTC_TIMESTAMP() WHERE id=? AND status='pending'")->execute([$decision==='approve'?'approved':'rejected',$reason!==''?$reason:null,$id]);
  $db->commit();
  $notificationSent=false;
  if($decision==='reject'){
-  $mail=$db->prepare("SELECT COALESCE(NULLIF(u.email,''),NULLIF(o.email,'')) FROM bh_activities a JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_users u ON u.id=o.user_id WHERE a.id=? LIMIT 1");
+  $hasUserLink=false;
+  $checkLink=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers' AND COLUMN_NAME='user_id'");
+  $checkLink->execute();$hasUserLink=(int)$checkLink->fetchColumn()>0;
+  if($hasUserLink){$mail=$db->prepare("SELECT COALESCE(NULLIF(u.email,''),NULLIF(o.email,'')) FROM bh_activities a JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_users u ON u.id=o.user_id WHERE a.id=? LIMIT 1");}
+  else{$mail=$db->prepare("SELECT o.email FROM bh_activities a JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.id=? LIMIT 1");}
   $mail->execute([(int)$item['activity_id']]);$email=(string)$mail->fetchColumn();
   $title=htmlspecialchars((string)$item['title'],ENT_QUOTES,'UTF-8');$safeReason=nl2br(htmlspecialchars($reason,ENT_QUOTES,'UTF-8'));
   $html='<p>Thank you for submitting <strong>'.$title.'</strong> to Bubba Hub.</p><p>After reviewing your request, we have not approved this listing because it appears to duplicate an existing activity.</p><p><strong>Team feedback:</strong><br>'.$safeReason.'</p><p>If you think we have misunderstood, please contact the Bubba Hub team.</p>';
