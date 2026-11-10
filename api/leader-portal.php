@@ -16,6 +16,7 @@ try {
 require_once __DIR__.'/db.php';
 require_once __DIR__.'/mailer.php';
 if(session_status()!==PHP_SESSION_ACTIVE){session_name('BUBBAHUBSESSID');session_start();}
+if(empty($_SESSION['bh_csrf'])||!is_string($_SESSION['bh_csrf'])){$_SESSION['bh_csrf']=bin2hex(random_bytes(32));}
 function lp(int $s,array $d): void{http_response_code($s);echo json_encode($d,JSON_UNESCAPED_SLASHES);exit;}
 function lpEnsureExpertise(PDO $db): void{
  try{$db->exec("CREATE TABLE IF NOT EXISTS bh_leader_expertise (organiser_id BIGINT UNSIGNED NOT NULL, topic_key VARCHAR(80) NOT NULL, enabled TINYINT(1) NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, PRIMARY KEY (organiser_id,topic_key), INDEX idx_leader_expertise_topic (topic_key)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");}catch(Throwable $ignored){}
@@ -106,7 +107,7 @@ if(!$tagOptions){
  }catch(Throwable $ignored){}
 }
 sort($tagOptions,SORT_NATURAL|SORT_FLAG_CASE);
-lp(200,['ok'=>true,'organisation'=>$org,'classes'=>$classes,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions,'category_options'=>$categoryOptions,'tag_options'=>$tagOptions,'venues'=>$venues,'max_images'=>$imageLimit,'is_pro'=>$isPro,'faq_limit'=>$faqLimit]);
+lp(200,['ok'=>true,'csrf'=>$_SESSION['bh_csrf'],'organisation'=>$org,'classes'=>$classes,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions,'category_options'=>$categoryOptions,'tag_options'=>$tagOptions,'venues'=>$venues,'max_images'=>$imageLimit,'is_pro'=>$isPro,'faq_limit'=>$faqLimit]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')lp(405,['ok'=>false,'error'=>'method_not_allowed']);
 if($_SERVER['REQUEST_METHOD']==='POST' && !empty($_FILES['image']) && ($_POST['action']??'')==='upload_activity_image'){
@@ -184,6 +185,11 @@ if($photos)$db->prepare("UPDATE bh_activities SET image_path=? WHERE id=?")->exe
 }
 
 $b=json_decode(file_get_contents('php://input'),true);if(!is_array($b))lp(400,['ok'=>false,'error'=>'invalid_json']);$action=$b['action']??'';
+$csrfProtectedActions=['save_profile_public','save_terms','save_account','change_password','save_expertise','save_faq','delete_faq'];
+if(in_array($action,$csrfProtectedActions,true)){
+ $provided=(string)($_SERVER['HTTP_X_BH_CSRF']??'');
+ if($provided===''||empty($_SESSION['bh_csrf'])||!hash_equals((string)$_SESSION['bh_csrf'],$provided))lp(403,['ok'=>false,'error'=>'csrf_failed','message'=>'Your session security check has expired. Refresh the page and try again.']);
+}
 if($action==='save_listing_photos'){$activityId=(int)($b['activity_id']??0);$photos=is_array($b['photos']??null)?array_values(array_unique(array_filter(array_map('trim',$b['photos'])))):[];if(count($photos)>$imageLimit)lp(422,['ok'=>false,'error'=>'too_many_photos','message'=>'Your plan allows up to '.$imageLimit.' photos.']);$own=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND organiser_id=? LIMIT 1");$own->execute([$activityId,$oid]);if(!$own->fetch())lp(404,['ok'=>false,'error'=>'activity_not_found']);$q=$db->prepare("UPDATE bh_activities SET gallery_images=? WHERE id=?");$q->execute([json_encode($photos,JSON_UNESCAPED_SLASHES),$activityId]);if($photos)$db->prepare("UPDATE bh_activities SET image_path=? WHERE id=?")->execute([$photos[0],$activityId]);lp(200,['ok'=>true,'photos'=>$photos]);}
 
 if($action==='save_profile_public'){
