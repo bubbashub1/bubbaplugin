@@ -8,6 +8,7 @@ on:
       - 'leader/messages.html'
       - 'leader/schedule.html'
       - 'leader/bookings.html'
+      - 'leader/statistics.html'
       - 'api/leader-portal.php'
       - 'api/leader-messages.php'
       - 'assets/js/leader-dashboard-home.js'
@@ -37,6 +38,7 @@ jobs:
           messages = Path("leader/messages.html").read_text()
           schedule = Path("leader/schedule.html").read_text()
           bookings = Path("leader/bookings.html").read_text()
+          statistics = Path("leader/statistics.html").read_text()
           portal_api = Path("api/leader-portal.php").read_text()
           portal_js = Path("assets/js/leader-portal.js").read_text()
           inbox_api = Path("api/leader-messages.php").read_text()
@@ -65,6 +67,11 @@ jobs:
           assert 'id="bookingList"' in bookings and 'data-leader-page="bookings"' in bookings, 'Leader bookings renderer hook missing'
           assert 'directory-inspired reservation' in bookings, 'Leader bookings styling missing'
           assert 'payments are not collected here' in bookings, 'Leader bookings payment disclaimer missing'
+          assert '<h1>My Statistics</h1>' in statistics, 'Leader statistics title missing'
+          assert 'aria-current="page">My Statistics' in statistics, 'Leader statistics current navigation item missing'
+          assert 'id="sClasses"' in statistics and 'id="sBookings"' in statistics and 'id="statsHighlights"' in statistics, 'Leader statistics data hooks missing'
+          assert 'compact reporting without dashboard card clutter' in statistics, 'Leader statistics styling missing'
+          assert 'No estimated or invented figures are displayed' in statistics, 'Leader statistics must not invent analytics'
           assert 'data-booking-status' in portal_js and 'action:"save_booking"' in portal_js, 'Leader booking status action missing'
           assert "if($action==='save_booking')" in portal_api, 'Leader booking save API action missing'
           assert "['reserved','confirmed','cancelled','attended']" in portal_api, 'Leader booking status validation missing'
