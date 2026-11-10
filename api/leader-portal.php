@@ -110,7 +110,10 @@ sort($tagOptions,SORT_NATURAL|SORT_FLAG_CASE);
 lp(200,['ok'=>true,'csrf'=>$_SESSION['bh_csrf'],'organisation'=>$org,'classes'=>$classes,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions,'category_options'=>$categoryOptions,'tag_options'=>$tagOptions,'venues'=>$venues,'max_images'=>$imageLimit,'is_pro'=>$isPro,'faq_limit'=>$faqLimit]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')lp(405,['ok'=>false,'error'=>'method_not_allowed']);
+$uploadCsrf=(string)($_SERVER['HTTP_X_BH_CSRF']??($_POST['csrf']??''));
+$uploadCsrfValid=$uploadCsrf!==''&&!empty($_SESSION['bh_csrf'])&&hash_equals((string)$_SESSION['bh_csrf'],$uploadCsrf);
 if($_SERVER['REQUEST_METHOD']==='POST' && !empty($_FILES['image']) && ($_POST['action']??'')==='upload_activity_image'){
+ if(!$uploadCsrfValid)lp(403,['ok'=>false,'error'=>'csrf_failed','message'=>'Your session security check has expired. Refresh the page and try again.']);
  $activityId=(int)($_POST['activity_id']??0); if($activityId<1)lp(422,['ok'=>false,'error'=>'activity_required','message'=>'Activity is required.']);
  $own=$db->prepare("SELECT id FROM bh_activities WHERE id=? AND organiser_id=? LIMIT 1");$own->execute([$activityId,$oid]);if(!$own->fetch())lp(404,['ok'=>false,'error'=>'activity_not_found','message'=>'Class not found.']);
  $file=$_FILES['image'];if(($file['error']??UPLOAD_ERR_NO_FILE)!==UPLOAD_ERR_OK)lp(422,['ok'=>false,'error'=>'upload_failed','message'=>'The image could not be uploaded.']);
@@ -130,6 +133,7 @@ if($_SERVER['REQUEST_METHOD']==='POST' && !empty($_FILES['image']) && ($_POST['a
  lp(201,['ok'=>true,'url'=>$url,'main'=>count($gallery)===1]);
 }
 if($_SERVER['REQUEST_METHOD']==='POST' && ($_POST['action']??'')==='import_csv'){
+ if(!$uploadCsrfValid)lp(403,['ok'=>false,'error'=>'csrf_failed','message'=>'Your session security check has expired. Refresh the page and try again.']);
  $file=$_FILES['csv']??null;
  if(!$file || ($file['error']??UPLOAD_ERR_NO_FILE)!==UPLOAD_ERR_OK) lp(422,['ok'=>false,'error'=>'csv_upload_failed','message'=>'Please choose a CSV file to upload.']);
  if((int)$file['size']>5*1024*1024) lp(422,['ok'=>false,'error'=>'csv_too_large','message'=>'The CSV file must be 5MB or smaller.']);
