@@ -56,7 +56,7 @@ try {
 
     // Verify My Hub storage was installed by the controlled database migration.
     // Normal family requests must never create or alter application tables.
-    $requiredTables = ['bh_children','bh_bumps','bh_saved_activities','bh_planner'];
+    $requiredTables = ['bh_children','bh_bumps','bh_saved_activities','bh_planner','bh_hidden_planner_days'];
     foreach ($requiredTables as $table) {
         $tableCheck = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?");
         $tableCheck->execute([$table]);
