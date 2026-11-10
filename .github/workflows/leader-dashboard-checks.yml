@@ -6,6 +6,7 @@ on:
       - 'leader/classes.html'
       - 'leader/venues.html'
       - 'leader/messages.html'
+      - 'leader/schedule.html'
       - 'api/leader-messages.php'
       - 'assets/js/leader-dashboard-home.js'
       - 'assets/js/leader-pro-nav.js'
@@ -31,6 +32,7 @@ jobs:
           listings = Path("leader/classes.html").read_text()
           venues = Path("leader/venues.html").read_text()
           messages = Path("leader/messages.html").read_text()
+          schedule = Path("leader/schedule.html").read_text()
           inbox_api = Path("api/leader-messages.php").read_text()
           assert '<h1>My Listings</h1>' in listings, 'Leader listings page title missing'
           assert 'Add a New Activity' in listings, 'Leader listings add action missing'
@@ -46,6 +48,13 @@ jobs:
           assert "action:'reply'" in messages and 'field.value' in messages, 'Leader reply interaction missing'
           assert "if($_SERVER['REQUEST_METHOD']==='POST'&&$action==='reply')" in inbox_api, 'Leader reply API action missing'
           assert 'm.organiser_id=?' in inbox_api and 'WHERE m.id=? AND m.organiser_id=?' in inbox_api, 'Leader messages must remain organiser-scoped'
+          assert '<h1>My Schedule</h1>' in schedule, 'Leader schedule title missing'
+          assert 'aria-current="page">My Schedule' in schedule, 'Leader schedule current navigation item missing'
+          assert 'id="scheduleList"' in schedule and 'data-leader-page="schedule"' in schedule, 'Leader schedule renderer hook missing'
+          assert 'directory-inspired schedule' in schedule, 'Leader schedule styling missing'
+          assert 'leader-portal.js' in schedule, 'Leader schedule data loader missing'
+          assert 'Upcoming schedule' in schedule and 'Import your timetable' in schedule, 'Leader schedule sections missing'
+
           class Inspector(HTMLParser):
               def __init__(self):
                   super().__init__()
