@@ -9,6 +9,7 @@ on:
       - 'leader/schedule.html'
       - 'leader/bookings.html'
       - 'leader/statistics.html'
+      - 'leader/payments.html'
       - 'api/leader-portal.php'
       - 'api/leader-messages.php'
       - 'assets/js/leader-dashboard-home.js'
@@ -39,6 +40,7 @@ jobs:
           schedule = Path("leader/schedule.html").read_text()
           bookings = Path("leader/bookings.html").read_text()
           statistics = Path("leader/statistics.html").read_text()
+          payments = Path("leader/payments.html").read_text()
           portal_api = Path("api/leader-portal.php").read_text()
           portal_js = Path("assets/js/leader-portal.js").read_text()
           inbox_api = Path("api/leader-messages.php").read_text()
@@ -72,6 +74,9 @@ jobs:
           assert 'id="sClasses"' in statistics and 'id="sBookings"' in statistics and 'id="statsHighlights"' in statistics, 'Leader statistics data hooks missing'
           assert 'compact reporting without dashboard card clutter' in statistics, 'Leader statistics styling missing'
           assert 'No estimated or invented figures are displayed' in statistics, 'Leader statistics must not invent analytics'
+          assert 'data-leader-page="payments"' in payments and 'aria-current="page">Payments' in payments, 'Leader payments page navigation missing'
+          assert 'restrained information layout' in payments, 'Leader payments styling missing'
+          assert 'Bubba Hub booking fee' in payments and 'External booking' in payments, 'Leader payment information missing'
           assert 'data-booking-status' in portal_js and 'action:"save_booking"' in portal_js, 'Leader booking status action missing'
           assert "if($action==='save_booking')" in portal_api, 'Leader booking save API action missing'
           assert "['reserved','confirmed','cancelled','attended']" in portal_api, 'Leader booking status validation missing'
