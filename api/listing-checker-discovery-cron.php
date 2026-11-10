@@ -32,7 +32,7 @@ try{
  if(!function_exists('curl_init'))throw new RuntimeException('PHP cURL extension is required for discovery searches.');
  if(!function_exists('simplexml_load_string'))throw new RuntimeException('PHP SimpleXML extension is required for discovery searches.');
  $processed=0;$candidates=0;$errors=0;$duplicates=0;
- $insert=$db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,term_id,candidate_json,finding_type,confidence,source_url,checked_at,review_status) VALUES('discovery',NULL,?,?,?,?,NOW(),'new')");
+ $insert=$db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,term_id,candidate_json,finding_type,confidence,source_url,checked_at,review_status) VALUES('discovery',NULL,?,?,?,?,?,NOW(),'new')");
  $seen=$db->prepare("SELECT id FROM bh_listing_check_findings WHERE check_type='discovery' AND term_id=? AND source_url=? LIMIT 1");
  $touch=$db->prepare('UPDATE bh_listing_discovery_terms SET last_searched_at=NOW() WHERE id=?');
  foreach($terms as $term){
