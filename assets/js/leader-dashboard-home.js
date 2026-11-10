@@ -25,9 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return Number.isNaN(date.getTime()) ? String(value) : new Intl.DateTimeFormat("en-GB", { day:"numeric", month:"short", year:"numeric" }).format(date);
   };
   const dayIndex = value => {
-    const key = String(value || "").toLowerCase().trim();
-    const days = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
-    return days.findIndex(day => key.startsWith(day));
+    const key = String(value || "").toLowerCase().trim().slice(0,3);
+    const days = ["sun","mon","tue","wed","thu","fri","sat"];
+    return days.indexOf(key);
   };
   const timeLabel = value => String(value || "").slice(0,5);
   const renderUpcoming = data => {
@@ -40,7 +40,15 @@ document.addEventListener("DOMContentLoaded", () => {
           const now = new Date();
           const next = new Date(now);
           next.setHours(0,0,0,0);
-          next.setDate(next.getDate() + ((index - next.getDay() + 7) % 7 || 7));
+          let offset = (index - next.getDay() + 7) % 7;
+          if (offset === 0) {
+            const starts = timeLabel(session.start_time);
+            const [hour, minute] = starts.split(":").map(Number);
+            const startMinutes = (Number.isFinite(hour) ? hour : 0) * 60 + (Number.isFinite(minute) ? minute : 0);
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            if (startMinutes <= currentMinutes) offset = 7;
+          }
+          next.setDate(next.getDate() + offset);
           sessions.push({ title: activity.title, venue: venue.venue_name, day: next, start: session.start_time, end: session.end_time, termOnly: !!Number(session.term_time_only) });
         });
       });
