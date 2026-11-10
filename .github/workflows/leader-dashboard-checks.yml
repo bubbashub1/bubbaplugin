@@ -72,6 +72,13 @@ jobs:
           inbox_api = Path("api/leader-messages.php").read_text()
           blog_api = Path("api/leader-blog.php").read_text()
           blog_js = Path("assets/js/leader-blog.js").read_text()
+          leader_migration = Path("database/migrations/007_leader_activity_fields.sql").read_text()
+          assert 'lpRequireLeaderStorage($db)' in portal_api, 'Leader portal must fail safely when its explicit schema migration is missing'
+          assert 'ALTER TABLE' not in portal_api and 'CREATE TABLE' not in portal_api, 'Leader portal requests must never mutate the database schema'
+          required_columns = ['accessibility','tags','weekly_schedule','age_min_months','age_max_months','price_per_family','price_per_session','booking_required','drop_in_welcome','trial_available','term_time_only','holiday_sessions','siblings_welcome','what_to_bring','good_to_know','facebook_url','instagram_url','gallery_images']
+          for column in required_columns:
+              assert f"COLUMN_NAME='{column}'" in leader_migration and f'ADD COLUMN {column} ' in leader_migration, f'Migration missing activity field: {column}'
+          assert 'CREATE TABLE IF NOT EXISTS bh_leader_expertise' not in portal_api, 'Expertise storage must be installed by migration 006, not created during requests'
           assert '<h1>My Listings</h1>' in listings, 'Leader listings page title missing'
           assert 'Add a New Activity' in listings, 'Leader listings add action missing'
           assert 'directory-inspired dashboard' in listings, 'Leader listings styling missing'
