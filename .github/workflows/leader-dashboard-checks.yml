@@ -120,6 +120,7 @@ jobs:
           assert 'bh_admin_leader_promotions' in blog_api, 'Blog access must honour promotional Pro access'
           assert "$_SERVER['HTTP_X_BH_CSRF']" in blog_api and 'hash_equals((string)$_SESSION[\'bh_csrf\'],$providedCsrf)' in blog_api, 'Blog submissions must validate CSRF'
           assert "csrfToken=String(d.csrf||\"\")" in blog_js and '"X-BH-CSRF":csrfToken' in blog_js, 'Blog submissions must send the session CSRF token'
+          assert '...options,headers:' in blog_js, 'Blog request helper must preserve the CSRF header alongside JSON content type'
           assert "SELECT id FROM bh_users WHERE LOWER(email)=? AND id<>? LIMIT 1" in portal_api and "email_in_use" in portal_api, 'Leader account saves must reject duplicate login email addresses'
           assert "if(isset($orgCols['email']))" in portal_api and "UPDATE bh_users SET email=? WHERE id=?" in portal_api and "$db->beginTransaction();try{" in portal_api, 'Leader email changes must preserve organiser email linkage transactionally'
           assert "account_save_failed" in portal_api and "invalid_website" in portal_api, 'Account save failures and invalid website URLs must be handled'
