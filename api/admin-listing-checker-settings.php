@@ -41,13 +41,28 @@ try {
     $terms=$db->query('SELECT id,term,term_group,regions_json,enabled,last_searched_at FROM bh_listing_discovery_terms ORDER BY term_group,term')->fetchAll(PDO::FETCH_ASSOC);
     foreach($terms as &$term) {$term['regions']=json_decode((string)$term['regions_json'],true)?:['all'];unset($term['regions_json']);$term['enabled']=(bool)$term['enabled'];}
     unset($term);
-    bh_lc_reply(200,['ok'=>true,'csrf'=>$_SESSION['bh_listing_checker_csrf'],'settings'=>$settings,'terms'=>$terms]);
+    $runs=$db->query("SELECT id,check_type,status,started_at,finished_at,processed_count,error_count,summary_json FROM bh_listing_check_runs ORDER BY id DESC LIMIT 20")->fetchAll(PDO::FETCH_ASSOC);
+    foreach($runs as &$run){$run['summary']=json_decode((string)$run['summary_json'],true)?:[];unset($run['summary_json']);}unset($run);
+    bh_lc_reply(200,['ok'=>true,'csrf'=>$_SESSION['bh_listing_checker_csrf'],'settings'=>$settings,'terms'=>$terms,'runs'=>$runs]);
   }
   if($method!=='POST') bh_lc_reply(405,['ok'=>false,'error'=>'Method not allowed']);
   $input=json_decode((string)file_get_contents('php://input'),true);
   if(!is_array($input)) bh_lc_reply(400,['ok'=>false,'error'=>'Invalid JSON']);
   if(!hash_equals((string)$_SESSION['bh_listing_checker_csrf'],(string)($input['csrf']??''))) bh_lc_reply(403,['ok'=>false,'error'=>'Security check failed. Refresh the page and try again.']);
   $action=(string)($input['action']??'');
+  if($action==='control') {
+    $control=(string)($input['control']??'');
+    $allowed=['health_pause','health_resume','health_run_now','discovery_pause','discovery_resume','discovery_run_now'];
+    if(!in_array($control,$allowed,true)) bh_lc_reply(422,['ok'=>false,'error'=>'Unknown worker control']);
+    $map=[
+      'health_pause'=>['health_paused','1'],'health_resume'=>['health_paused','0'],'health_run_now'=>['health_run_now','1'],
+      'discovery_pause'=>['discovery_paused','1'],'discovery_resume'=>['discovery_paused','0'],'discovery_run_now'=>['discovery_run_now','1']
+    ];
+    [$key,$value]=$map[$control];
+    $stmt=$db->prepare('INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES(?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)');
+    $stmt->execute([$key,$value]);
+    bh_lc_reply(200,['ok'=>true,'message'=>str_ends_with($control,'run_now')?'A manual run has been queued for the next worker invocation.':'Worker control saved.']);
+  }
   if($action==='save_settings') {
     $allowed=['health_enabled','discovery_enabled','interval_hours','preferred_start_time','window_start','window_end','active_days','timezone','batch_size','max_runtime_seconds','request_limit','stale_after_days'];
     $values=$input['settings']??[];
