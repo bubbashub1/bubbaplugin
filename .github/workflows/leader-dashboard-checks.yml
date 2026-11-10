@@ -9,6 +9,7 @@ on:
       - 'leader/schedule.html'
       - 'api/leader-messages.php'
       - 'assets/js/leader-dashboard-home.js'
+      - 'assets/js/leader-portal.js'
       - 'assets/js/leader-pro-nav.js'
       - 'api/leader-entitlement.php'
       - '.github/workflows/leader-dashboard-checks.yml'
@@ -105,5 +106,6 @@ jobs:
               file.write(message_script.group(1)); file.flush()
               subprocess.run(['node','--check',file.name],check=True)
           subprocess.run(['node','--check','assets/js/leader-dashboard-home.js'],check=True)
+          subprocess.run(['node','--check','assets/js/leader-portal.js'],check=True)
           print('Leader dashboard static smoke checks passed')
           PY
