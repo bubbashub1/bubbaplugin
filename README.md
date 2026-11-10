@@ -60,3 +60,16 @@ Add these keys to the existing server-side `github-deploy-config.php` when ready
 Do **not** put database credentials in GitHub or any browser JavaScript.
 
 The schema deliberately creates only `bh_*` tables so the existing WordPress `wp_*` tables are left untouched while the standalone application is tested.
+
+
+## Listing Checker setup (PR #846)
+
+The Listing Checker admin settings and discovery-term editor use the standalone `bh_*` database. Before opening the settings page on a deployed environment, run the one-time migration against the Bubba Hub database:
+
+```sh
+mysql -u YOUR_DATABASE_USER -p YOUR_DATABASE_NAME < database/listing-checker-schema.sql
+```
+
+This creates checker configuration, editable discovery terms, run/queue tracking and review-finding tables. It does not modify activity, organiser or venue records. The admin page is available at `/admin/admin-listing-checker-settings.html`.
+
+The settings page stores the desired schedule (default every 4 hours, batch size 30, Europe/London) and discovery terms. **It does not itself start scheduled work**: the CLI workers and hosting cron entries must be implemented and configured before those saved schedules take effect.
