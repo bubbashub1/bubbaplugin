@@ -73,3 +73,14 @@ mysql -u YOUR_DATABASE_USER -p YOUR_DATABASE_NAME < database/listing-checker-sch
 This creates checker configuration, editable discovery terms, run/queue tracking and review-finding tables. It does not modify activity, organiser or venue records. The admin page is available at `/admin/admin-listing-checker-settings.html`.
 
 The settings page stores the desired schedule (default every 4 hours, batch size 30, Europe/London) and discovery terms. **It does not itself start scheduled work**: the CLI workers and hosting cron entries must be implemented and configured before those saved schedules take effect.
+
+
+### Existing-listing CLI worker
+
+After applying the migration, the existing-listing batch worker can be invoked from a server-side cron (never expose it as a public URL):
+
+```sh
+php /path/to/bubbaplugin/api/listing-checker-health-cron.php
+```
+
+Configure the hosting cron to invoke it every four hours. It uses the saved enable flag, UK timezone/run-window/day settings, batch size and maximum runtime; it uses a MySQL advisory lock to prevent overlapping runs. Each run handles up to the configured batch size (default 30), saves findings in the separate review table and never updates live activity records. The worker exits safely with a migration-required message until the SQL migration has been applied.
