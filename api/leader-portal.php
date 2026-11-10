@@ -107,6 +107,7 @@ if(!$tagOptions){
  }catch(Throwable $ignored){}
 }
 sort($tagOptions,SORT_NATURAL|SORT_FLAG_CASE);
+$org['email']=$leaderEmail;
 lp(200,['ok'=>true,'csrf'=>$_SESSION['bh_csrf'],'organisation'=>$org,'classes'=>$classes,'bookings'=>$bookings,'faqs'=>$faqs,'expertise_topics'=>$expertiseTopics,'expertise'=>$expertise,'accessibility_options'=>$accessibilityOptions,'age_range_options'=>$ageRangeOptions,'category_options'=>$categoryOptions,'tag_options'=>$tagOptions,'venues'=>$venues,'max_images'=>$imageLimit,'is_pro'=>$isPro,'faq_limit'=>$faqLimit]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')lp(405,['ok'=>false,'error'=>'method_not_allowed']);
