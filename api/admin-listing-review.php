@@ -22,7 +22,7 @@ try {
  if($method==='GET'){
   $status=(string)($_GET['status']??'new');$allowed=['all','new','follow_up','approved','rejected','correct','incorrect'];
   if(!in_array($status,$allowed,true))$status='new';
-  $limit=max(1,min(100,(int)($_GET['limit']??50)));$offset=max(0,(int)($_GET['offset']??0));
+  $limit=max(1,min(100,(int)($_GET['limit']??50)));$offset=max(0,min(100000,(int)($_GET['offset']??0)));
   $where=$status==='all'?'':' WHERE f.review_status=?';
   $cols=$db->query('SHOW COLUMNS FROM bh_activities')->fetchAll(PDO::FETCH_COLUMN);$title=in_array('title',$cols,true)?'a.title':'NULL';$town=in_array('town',$cols,true)?'a.town':'NULL';
   $sql="SELECT f.id,f.check_type,f.activity_id,f.term_id,f.candidate_json,f.finding_type,f.confidence,f.source_url,f.checked_at,f.review_status,".$title." AS activity_title,".$town." AS activity_town FROM bh_listing_check_findings f LEFT JOIN bh_activities a ON a.id=f.activity_id".$where." ORDER BY f.checked_at DESC,f.id DESC LIMIT ".$limit." OFFSET ".$offset;
