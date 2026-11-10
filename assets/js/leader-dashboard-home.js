@@ -25,7 +25,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return Number.isNaN(date.getTime()) ? String(value) : new Intl.DateTimeFormat("en-GB", { day:"numeric", month:"short", year:"numeric" }).format(date);
   };
   const dayIndex = value => {
-    const key = String(value || "").toLowerCase().trim().slice(0,3);
+    const raw = String(value ?? "").trim().toLowerCase();
+    // bh_sessions stores ISO-style weekdays: Monday=1 through Sunday=7.
+    if (/^[1-7]$/.test(raw)) return Number(raw) % 7;
+    const key = raw.slice(0,3);
     const days = ["sun","mon","tue","wed","thu","fri","sat"];
     return days.indexOf(key);
   };
