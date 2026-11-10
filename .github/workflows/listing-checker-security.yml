@@ -42,11 +42,14 @@ jobs:
           grep -q "bh_admin_authenticated" api/admin-listing-checker-settings.php
           grep -q "hash_equals" api/admin-listing-checker-settings.php
           grep -q "HTTP_ORIGIN" api/admin-listing-checker-settings.php
+          grep -q "CONTENT_LENGTH" api/admin-listing-checker-settings.php
           grep -q "bh_admin_authenticated" api/admin-listing-review.php
           grep -q "hash_equals" api/admin-listing-review.php
           grep -q "HTTP_ORIGIN" api/admin-listing-review.php
+          grep -q "CONTENT_LENGTH" api/admin-listing-review.php
           grep -q "PHP_SAPI !== 'cli'" api/listing-checker-health-cron.php
           grep -q "PHP_SAPI !== 'cli'" api/listing-checker-discovery-cron.php
           grep -q "GET_LOCK" api/listing-checker-health-cron.php
           grep -q "GET_LOCK" api/listing-checker-discovery-cron.php
           ! grep -q "CURLOPT_FOLLOWLOCATION=>true" api/listing-checker-discovery-cron.php
+          grep -q "2097152" api/listing-checker-discovery-cron.php
