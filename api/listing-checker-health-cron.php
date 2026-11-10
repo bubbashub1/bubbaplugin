@@ -13,6 +13,8 @@ foreach($required as $table){$q=$db->prepare('SHOW TABLES LIKE ?');$q->execute([
 $settings=[];foreach($db->query('SELECT setting_key,setting_value FROM bh_listing_checker_settings')->fetchAll(PDO::FETCH_ASSOC) as $r)$settings[$r['setting_key']]=$r['setting_value'];
 $get=static fn($k,$d='')=>(string)($settings[$k]??$d);
 if($get('health_enabled','1')!=='1'){echo "Health checks disabled\n";exit;}
+if($get('health_paused','0')==='1'){echo "Health checks paused\\n";exit;}
+$manualRun=$get('health_run_now','0')==='1';
 $tz=new DateTimeZone($get('timezone','Europe/London'));$now=new DateTimeImmutable('now',$tz);
 $days=json_decode($get('active_days','[1,2,3,4,5,6,7]'),true)?:[1,2,3,4,5,6,7];
 if(!in_array((int)$now->format('N'),array_map('intval',$days),true)){echo "Not an active day\n";exit;}
@@ -21,8 +23,8 @@ if(($start<=$end&&($clock<$start||$clock>$end))||($start>$end&&$clock<$start&&$c
 $interval=max(1,min(24,(int)$get('interval_hours','4')));
 $preferred=$get('preferred_start_time','00:00');
 $last=$db->query("SELECT MAX(finished_at) FROM bh_listing_check_runs WHERE check_type='health' AND status='completed'")->fetchColumn();
-if(!$last&&$clock<$preferred){echo "Waiting for preferred first-run time\n";exit;}
-if($last&&new DateTimeImmutable((string)$last,$tz)>$now->modify('-'.$interval.' hours')){echo "Not due yet\n";exit;}
+if(!$manualRun&&!$last&&$clock<$preferred){echo "Waiting for preferred first-run time\n";exit;}
+if(!$manualRun&&$last&&new DateTimeImmutable((string)$last,$tz)>$now->modify('-'.$interval.' hours')){echo "Not due yet\n";exit;}
 $lock=$db->query("SELECT GET_LOCK('bh_listing_checker_health',0)")->fetchColumn();if((int)$lock!==1){echo "Worker already running\n";exit;}
 $runId=0;
 try{
