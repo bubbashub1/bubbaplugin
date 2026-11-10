@@ -197,6 +197,8 @@ jobs:
           assert "in_array(strtolower(trim((string)$org[$c])),['pro','premium','ultimate'],true)){$pro=true;break;}" in entitlement_api, 'Entitlement lookup must check all available organiser plan fields'
           assert "in_array(strtolower(trim((string)$org[$pcn])),['pro','premium','ultimate'],true)){$isPro=true;break;}" in portal_api, 'Leader portal must check all available organiser plan fields'
           assert "$imageLimit=$isPro?12:3" in portal_api, 'Server must enforce the Free/Pro image allowance'
+          assert "foreach(['image_path','image_url'] as $legacyImage)" in portal_api and 'array_unique(array_filter(array_map(\'trim\',$gallery)))' in portal_api, 'Legacy primary images must count towards the server-side image allowance'
+          assert "in_array($websiteScheme,['http','https'],true)" in portal_api, 'Account website URLs must reject non-web schemes'
           assert 'querySelectorAll("[data-pro-only]")' not in html, 'Duplicate inline Pro visibility logic must not override the entitlement guard'
           assert 'leader-portal.js' in html, 'Leader portal data loader missing'
 
