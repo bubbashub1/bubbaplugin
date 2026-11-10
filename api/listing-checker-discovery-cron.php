@@ -53,7 +53,7 @@ try{
     $title=trim((string)$entry->title);$source=trim((string)$entry->link);$snippet=trim(strip_tags((string)$entry->description));
     if($title===''||$source===''||strlen($source)>1000)continue;
     $parts=parse_url($source);if(!is_array($parts)||!in_array(strtolower((string)($parts['scheme']??'')),['http','https'],true)||empty($parts['host']))continue;
-    if(preg_match('/(^|\.)bing\.com$/i',(string)$parts['host']))continue;
+    if(preg_match('/(^|\.)bing\.com$/i',(string)$parts['host'])){parse_str((string)($parts['query']??''),$bp);$encoded=(string)($bp['u']??'');if(str_starts_with($encoded,'a1')){$decoded=base64_decode(strtr(substr($encoded,2),'-_','+/'));if(is_string($decoded)&&filter_var($decoded,FILTER_VALIDATE_URL))$source=$decoded;}}
     $seen->execute([(int)$term['id'],$source]);if($seen->fetchColumn()){$duplicates++;continue;}
     $candidate=['title'=>$title,'snippet'=>substr($snippet,0,1200),'website'=>$source,'search_term'=>(string)$term['term'],'term_group'=>(string)$term['term_group'],'region_scope'=>$scope,'provider'=>'Bing RSS','evidence_note'=>'Search result only. Verify the organiser, current activity, location and dates directly before treating this as a valid listing.'];
     $insert->execute([(int)$term['id'],json_encode($candidate,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE),'discovery_candidate',45,$source]);
