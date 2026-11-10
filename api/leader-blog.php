@@ -6,6 +6,7 @@ function bhBlogReply(int $code,array $body):never{http_response_code($code);echo
 try{
 require_once __DIR__.'/db.php';
 if(session_status()!==PHP_SESSION_ACTIVE){session_name('BUBBAHUBSESSID');session_start();}
+if(empty($_SESSION['bh_csrf']))$_SESSION['bh_csrf']=bin2hex(random_bytes(32));
 $uid=(int)($_SESSION['bh_user_id']??0);
 if(!$uid)bhBlogReply(401,['ok'=>false,'message'=>'Sign in as a leader.']);
 $db=bh_mysql();
@@ -16,8 +17,9 @@ if(in_array('user_id',$cols,true)){$q=$db->prepare("SELECT * FROM bh_organisers 
 else{$q=$db->prepare("SELECT * FROM bh_organisers WHERE email=? LIMIT 1");$q->execute([$user['email']]);}
 $org=$q->fetch(PDO::FETCH_ASSOC);
 if(!$org)bhBlogReply(403,['ok'=>false,'message'=>'Organiser profile required.']);
-$pro=false;foreach(['plan','membership_plan','membership_tier','subscription_plan','tier'] as $column){if(array_key_exists($column,$org)){$pro=in_array(strtolower(trim((string)$org[$column])),['pro','premium','ultimate'],true);break;}}
+$pro=false;foreach(['plan','membership_plan','membership_tier','subscription_plan','tier'] as $column){if(array_key_exists($column,$org)&&in_array(strtolower(trim((string)$org[$column])),['pro','premium','ultimate'],true)){$pro=true;break;}}
 if(!$pro){try{$t=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_user_subscriptions'");if((int)$t->fetchColumn()){ $p=$db->prepare("SELECT COUNT(*) FROM bh_user_subscriptions WHERE user_id=? AND plan='leader_pro' AND status IN ('active','trialing') AND (expires_at IS NULL OR expires_at>UTC_TIMESTAMP())");$p->execute([$uid]);$pro=(int)$p->fetchColumn()>0; }}catch(Throwable $ignored){error_log('Leader blog subscription lookup: '.$ignored->getMessage());}}
+if(!$pro){try{$promo=$db->prepare("SELECT active FROM bh_admin_leader_promotions WHERE leader_user_id=? LIMIT 1");$promo->execute([$uid]);$pro=(int)$promo->fetchColumn()===1;}catch(Throwable $ignored){}}
 if(!$pro)bhBlogReply(403,['ok'=>false,'message'=>'Blog publishing requires Leader Pro.']);
 $wp=dirname(__DIR__).'/wp-load.php';
 if(!is_file($wp))bhBlogReply(503,['ok'=>false,'message'=>'WordPress is not available.']);
@@ -27,9 +29,10 @@ $oid=(int)$org['id'];$metaKey='_bh_leader_organiser_id';
 if($_SERVER['REQUEST_METHOD']==='GET'){
  $posts=get_posts(['post_type'=>'post','post_status'=>['draft','pending','publish'],'posts_per_page'=>100,'meta_key'=>$metaKey,'meta_value'=>(string)$oid]);
  $out=[];foreach($posts as $p)$out[]=['id'=>$p->ID,'title'=>['rendered'=>get_the_title($p)],'raw_title'=>$p->post_title,'raw_content'=>$p->post_content,'status'=>$p->post_status];
- bhBlogReply(200,['ok'=>true,'posts'=>$out]);
+ bhBlogReply(200,['ok'=>true,'csrf'=>$_SESSION['bh_csrf'],'posts'=>$out]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')bhBlogReply(405,['ok'=>false,'message'=>'Method not allowed.']);
+$providedCsrf=(string)($_SERVER['HTTP_X_BH_CSRF']??'');if($providedCsrf===''||!hash_equals((string)$_SESSION['bh_csrf'],$providedCsrf))bhBlogReply(403,['ok'=>false,'message'=>'Your session security check has expired. Refresh the page and try again.']);
 $origin=(string)($_SERVER['HTTP_ORIGIN']??'');
 if($origin!==''&&parse_url($origin,PHP_URL_HOST)!==($_SERVER['HTTP_HOST']??''))bhBlogReply(403,['ok'=>false,'message'=>'Invalid origin.']);
 $body=json_decode((string)file_get_contents('php://input'),true);
