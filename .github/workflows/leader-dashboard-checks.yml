@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'leader.html'
+      - 'leader/classes.html'
       - 'assets/js/leader-dashboard-home.js'
       - 'assets/js/leader-pro-nav.js'
       - 'api/leader-entitlement.php'
@@ -24,6 +25,10 @@ jobs:
           from pathlib import Path
           import re, subprocess, tempfile
           html = Path("leader.html").read_text()
+          listings = Path("leader/classes.html").read_text()
+          assert '<h1>My Listings</h1>' in listings, 'Leader listings page title missing'
+          assert 'Add a New Activity' in listings, 'Leader listings add action missing'
+          assert 'directory-inspired dashboard' in listings, 'Leader listings styling missing'
           class Inspector(HTMLParser):
               def __init__(self):
                   super().__init__()
