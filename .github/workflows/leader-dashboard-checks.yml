@@ -4,6 +4,8 @@ on:
     paths:
       - 'leader.html'
       - 'assets/js/leader-dashboard-home.js'
+      - 'assets/js/leader-pro-nav.js'
+      - 'api/leader-entitlement.php'
       - '.github/workflows/leader-dashboard-checks.yml'
   workflow_dispatch:
 jobs:
@@ -53,6 +55,10 @@ jobs:
               path = Path('leader') / (panel + '.html')
               assert path.is_file(), f'Missing leader panel page: {path}'
           assert 'leader-pro-nav.js' in html, 'Pro entitlement navigation guard missing'
+          pro_nav = Path('assets/js/leader-pro-nav.js').read_text()
+          assert '/api/leader-entitlement.php' in pro_nav, 'Pro navigation must use the leader entitlement endpoint'
+          assert 'data-pro-only' in pro_nav and 'data.is_pro' in pro_nav, 'Pro navigation visibility guard missing'
+          assert 'querySelectorAll("[data-pro-only]")' not in html, 'Duplicate inline Pro visibility logic must not override the entitlement guard'
           assert 'leader-portal.js' in html, 'Leader portal data loader missing'
 
           assert 'data-pro-only hidden' in html
