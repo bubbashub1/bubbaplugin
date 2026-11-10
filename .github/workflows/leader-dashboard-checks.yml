@@ -102,7 +102,7 @@ jobs:
           assert 'id="messages"' in messages and '/api/leader-messages.php' in messages, 'Leader messages API hook missing'
           assert 'directory-style layout' in messages, 'Leader messages styling missing'
           assert "action:'reply'" in messages and 'field.value' in messages, 'Leader reply interaction missing'
-          assert "if($_SERVER['REQUEST_METHOD']==='POST'&&$action==='reply')" in inbox_api, 'Leader reply API action missing'
+          assert "if ($action !== 'reply')" in inbox_api and "if ($method === 'GET')" in inbox_api, 'Leader reply API action missing'
           assert 'm.organiser_id=?' in inbox_api and 'WHERE m.id=? AND m.organiser_id=?' in inbox_api, 'Leader messages must remain organiser-scoped'
           assert 'CREATE TABLE' not in inbox_api and 'ALTER TABLE' not in inbox_api, 'Leader messaging requests must never mutate the database schema'
           assert "HTTP_X_BH_CSRF" in inbox_api and "hash_equals($_SESSION['bh_csrf'], $providedCsrf)" in inbox_api, 'Leader inbox replies must validate CSRF'
