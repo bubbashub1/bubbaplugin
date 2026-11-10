@@ -116,6 +116,8 @@ jobs:
           assert 'Contact Bubba Hub' in support and 'mailto:contact@bubbahub.co.uk' in support, 'Leader support contact route missing'
           assert "if($action==='save_faq')" in portal_api and "if($action==='delete_faq')" in portal_api, 'Leader FAQ API actions missing'
           assert "SELECT id FROM bh_activities WHERE id=? AND organiser_id=? LIMIT 1" in portal_api and "faq_activity_not_found" in portal_api, 'FAQs must not link to another organiser activity'
+          assert "JOIN bh_activities va ON va.id=v.activity_id WHERE va.organiser_id=?" in portal_api and "$vq->execute([$oid])" in portal_api, 'Leader venue choices must only include venues owned by the organiser'
+          assert "WHERE v.id=? AND va.organiser_id=? LIMIT 1" in portal_api and "Selected venue was not found or is not available to your organisation" in portal_api, 'New listings must reject venues owned by another organiser'
           assert "invalid_booking_url" in portal_api and "$pricePerSession,$url,$scheduleJson" in portal_api and "$pricePerSession,$url,$scheduleJson" in portal_api, 'New listing must validate and retain its booking URL'
           assert "WHERE id=? AND organiser_id=?" in portal_api, 'Leader FAQ edits must remain organiser-scoped'
           assert 'faq_limit_reached' in portal_api and 'faqLimit=$isPro?null:5' in portal_api, 'Free and Pro FAQ limits missing'
