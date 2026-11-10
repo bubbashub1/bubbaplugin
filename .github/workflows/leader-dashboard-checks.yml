@@ -181,6 +181,7 @@ jobs:
           assert 'data-pro-only' in pro_nav and 'data.is_pro' in pro_nav, 'Pro navigation visibility guard missing'
           assert 'bh_admin_leader_promotions' in entitlement_api and 'bh_admin_leader_promotions' in portal_api and 'bh_admin_leader_promotions' in listing_import_api, 'Promotional Pro access must match across nav, portal and imports'
           assert "WHERE email=? LIMIT 1" in listing_import_api and "SELECT role,status,email FROM bh_users" in listing_import_api, 'Listing imports must support legacy email-linked organiser records'
+          assert "hash_equals((string)$_SESSION['bh_csrf'],$providedCsrf)" in listing_import_api and "Session security check failed" in listing_import_api, 'Website and timetable imports must validate the leader session CSRF token'
           assert "listing:'.$activityId" in portal_api and "listing_key='new-draft'" in portal_api, 'New-listing import allowances must transfer to the saved listing'
           assert "in_array(strtolower(trim((string)$org[$c])),['pro','premium','ultimate'],true)){$pro=true;break;}" in entitlement_api, 'Entitlement lookup must check all available organiser plan fields'
           assert "in_array(strtolower(trim((string)$org[$pcn])),['pro','premium','ultimate'],true)){$isPro=true;break;}" in portal_api, 'Leader portal must check all available organiser plan fields'
