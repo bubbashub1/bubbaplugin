@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       location:[...new Set(normalizedVenues.map(v=>v.town).filter(Boolean))].join(", ")||normalizedVenues[0]?.name||"",organiser_id:raw.organiser?.id||"",
       organiser_name:raw.organiser?.name||"",organiser:raw.organiser?.name||"",organiser_website:raw.organiser?.website||"",
       organiser_email:raw.organiser?.email||"",organiser_phone:raw.organiser?.phone||"",organiser_slug:raw.organiser?.slug||"",
-      venues:normalizedVenues,booking_mode:raw.booking_url?"external":"reserve",booking_slots:[],booking_url:raw.booking_url||""
+      venues:normalizedVenues,booking_mode:raw.booking_url?"external":"reserve",booking_slots:Array.isArray(raw.booking_slots)?raw.booking_slots:[],booking_url:raw.booking_url||""
     };
   };
   const loadDirectActivity=async(type,value)=>{
@@ -684,7 +684,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const bookingMode=a.booking_mode||(a.booking_url?"external":"reserve");
   const bookingUrl=a.booking_url||"";
   const slotHtml=(Array.isArray(a.booking_slots)?a.booking_slots:[]).map((s,i)=>'<div class="booking-slot"><div><strong>'+bhEscape(s.date||"")+'</strong><span>'+bhEscape(s.time||"")+(s.price?" · "+bhEscape(s.price):"")+'</span></div>'+(bookingMode==="external"&&bookingUrl?'<a class="button button-primary" target="_blank" rel="noopener" href="'+bhEscape(bookingUrl)+'">Book now</a>':'<button class="button button-primary reserve-button" data-slot="'+i+'">Reserve a place</button>')+'</div>').join("");
-  if(bookingBox)bookingBox.innerHTML=slotHtml+(bookingMode==="external"&&bookingUrl?'<p class="booking-note">If the latest dates are not shown, please check the booking website for latest details.</p><a class="button button-primary button-full" target="_blank" rel="noopener" href="'+bhEscape(bookingUrl)+'">Book now</a>':bookingMode==="reserve"?'<button class="button button-primary button-full" id="reserveGeneral">Reserve a place</button>':'<p class="muted">Booking details coming soon.</p>');
+  if(bookingBox)bookingBox.innerHTML=slotHtml+(bookingMode==="external"&&bookingUrl?'<p class="booking-note">If the latest dates are not shown, please check the booking website for latest details.</p><a class="button button-primary button-full" target="_blank" rel="noopener" href="'+bhEscape(bookingUrl)+'">Book now</a>':bookingMode==="reserve"&&Array.isArray(a.booking_slots)&&a.booking_slots.length?'<button class="button button-primary button-full" id="reserveGeneral">Reserve a place</button>':'<p class="muted">No upcoming Bubba Hub booking dates are currently available. Please contact the organiser to enquire.</p>');
   function openReserve(slot){
     if(window.BH_DEMO_MODE && String(a.id||'').startsWith('demo-')){window.location.href='booking.html?slug='+encodeURIComponent(a.slug||'');return}
     const overlay=document.createElement("div");
@@ -695,11 +695,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
     overlay.querySelector(".booking-modal-close").onclick=close;
     overlay.addEventListener("click",e=>{if(e.target===overlay)close()});
     const form=overlay.querySelector("#reserveForm"), childSelect=overlay.querySelector("#reservationChild"), childHelp=overlay.querySelector("#reservationChildHelp"), consentStatus=overlay.querySelector("#reservationConsentStatus"), submit=form.querySelector("button[type=submit]");
-    let savedConsent=null, children=[];
-    try{savedConsent=JSON.parse(localStorage.getItem("bhConsentProfiles")||"null")}catch{}
-    const consentReady=!!(savedConsent&&savedConsent.consent_to_share_with_organiser&&savedConsent.consent_given_at&&savedConsent.consent_version);
-    if(consentReady) consentStatus.textContent="✓ Consent profile ready. It will be attached to this reservation request as a dated snapshot.";
-    else consentStatus.innerHTML='⚠️ A saved consent profile is required. <a href="consent.html" target="_blank" rel="noopener"><strong>Complete consent first</strong></a>.';
+    let savedConsent=null, consentProfiles=[], children=[], bookingCsrf="";
+    consentStatus.textContent="Checking your saved family consent profile…";
     const applyChild=child=>{
       if(!child)return;
       form.elements.child_name.value=child.name||"";
@@ -710,57 +707,64 @@ document.addEventListener("DOMContentLoaded",async()=>{
         if(before)age--;
         form.elements.child_age.value=age>=0?String(age):"";
       }
-      if(savedConsent && child.name && String(savedConsent.child_name||"").trim().toLowerCase()===String(child.name).trim().toLowerCase()){
-        consentStatus.textContent="✓ Consent profile matches "+child.name+". A dated consent snapshot will be attached.";
-      }else if(savedConsent){
-        consentStatus.textContent="✓ Consent profile saved. Check that it applies to the selected child before sending.";
-      }
+      savedConsent=consentProfiles.find(p=>String(p.child_id||"")===String(child.id))||null;
+      consentStatus.textContent=savedConsent&&Number(savedConsent.consent_to_share_with_organiser)?"✓ A current consent profile matches "+child.name+". The server will verify it again when you submit.":'⚠️ No current booking consent for '+child.name+'. <a href="consent.html" target="_blank" rel="noopener"><strong>Complete consent first</strong></a>.';
     };
     (async()=>{
       try{
         const res=await fetch("/api/my-hub.php?view=family",{credentials:"same-origin",headers:{Accept:"application/json"}});
-        if(res.ok){
-          const data=await res.json();
-          if(data?.ok&&Array.isArray(data.children)){
-            children=data.children;
-            children.forEach(child=>{const o=document.createElement("option");o.value=String(child.id);o.textContent=child.name+(child.date_of_birth?" · "+child.date_of_birth:"");o.dataset.child=JSON.stringify(child);childSelect.appendChild(o)});
-            if(children.length){childHelp.textContent="Choose a child from your My Hub profile. Their saved details will be added to the reservation request."}
-            const savedName=String(savedConsent?.child_name||"").trim().toLowerCase();
-            const match=children.find(x=>String(x.name||"").trim().toLowerCase()===savedName);
-            if(match){childSelect.value=String(match.id);applyChild(match)}
-          }
+        if(!res.ok){consentStatus.textContent="Please sign in to your family account before making a booking.";return}
+        const data=await res.json();
+        if(data?.ok&&Array.isArray(data.children)){
+          bookingCsrf=String(data.csrf||"");
+          if(data.user?.email){form.elements.email.value=String(data.user.email);form.elements.email.readOnly=true;}
+          children=data.children;
+          children.forEach(child=>{const o=document.createElement("option");o.value=String(child.id);o.textContent=child.name+(child.date_of_birth?" · "+child.date_of_birth:"");o.dataset.child=JSON.stringify(child);childSelect.appendChild(o)});
+          if(children.length){childHelp.textContent="Choose a child from your My Hub profile. Their saved details will be added to the reservation request."}
         }
-      }catch{}
+        const consentRes=await fetch("/api/consent-profile.php",{credentials:"same-origin",headers:{Accept:"application/json"},cache:"no-store"});
+        const consentData=await consentRes.json().catch(()=>({}));
+        if(consentRes.ok&&consentData.ok)consentProfiles=consentData.profiles||[];
+        const firstProfile=consentProfiles.find(p=>p.child_id&&children.some(ch=>String(ch.id)===String(p.child_id)));
+        if(firstProfile){const child=children.find(ch=>String(ch.id)===String(firstProfile.child_id));childSelect.value=String(child.id);applyChild(child)}
+        else consentStatus.innerHTML='⚠️ A saved consent profile is required for the selected child. <a href="consent.html" target="_blank" rel="noopener"><strong>Complete consent first</strong></a>.';
+      }catch{consentStatus.textContent="Could not check your saved consent profile. Please refresh and try again."}
     })();
     childSelect.addEventListener("change",()=>{
       const id=childSelect.value;
-      if(id==="manual"){form.elements.child_name.value="";form.elements.child_age.value="";childHelp.textContent="Enter the child details below. Your saved consent profile must still match the child you are reserving for.";return}
+      if(id==="manual"){savedConsent=null;form.elements.child_name.value="";form.elements.child_age.value="";childHelp.textContent="Enter the child details below. A matching manual consent profile must already be saved.";consentStatus.textContent="A saved manual consent profile must match the child's name.";return}
       const child=children.find(x=>String(x.id)===String(id)); if(child)applyChild(child);
     });
     form.addEventListener("submit",async e=>{
       e.preventDefault();
       const status=form.querySelector(".booking-form-status");
-      if(!consentReady){status.textContent="Please complete and save your consent profile before sending a reservation request.";return}
       const selectedId=childSelect.value;
       const selected=selectedId&&selectedId!=="manual"?children.find(x=>String(x.id)===String(selectedId)):null;
+      const typedChildName=form.elements.child_name.value.trim();
+      savedConsent=selected
+        ? consentProfiles.find(p=>String(p.child_id||"")===String(selected.id))||null
+        : consentProfiles.find(p=>!p.child_id&&String(p.child_name||"").trim().toLowerCase()===typedChildName.toLowerCase())||null;
+      if(!savedConsent||!Number(savedConsent.consent_to_share_with_organiser)||!savedConsent.consent_given_at){
+        status.textContent="Please save current booking consent for this child in your family account before sending a reservation request.";return
+      }
       if(selected && String(savedConsent.child_name||"").trim().toLowerCase()!==String(selected.name||"").trim().toLowerCase()){
         status.textContent="Your saved consent profile is for a different child. Please update consent before sending this request.";return
       }
       status.textContent="Sending…";submit.disabled=true;
-      const fd=new FormData(form);
-      fd.append("activity_id",a.id);fd.append("activity_title",a.title);
-      if(slot){fd.append("slot_date",slot.date||"");fd.append("slot_time",slot.time||"")}
-      fd.append("consent_json",JSON.stringify({...savedConsent,selected_child_id:selected?.id||"",selected_child_name:selected?.name||form.elements.child_name.value.trim(),reservation_created_at:new Date().toISOString()}));
+      if(!bookingCsrf){status.textContent="Please sign in to your family account before booking. Your bookings are kept in My Hub.";submit.disabled=false;return}
+      if(!slot||!slot.id){status.textContent="Please choose one of the dated sessions above before booking.";submit.disabled=false;return}
+      const payload={slot_id:Number(slot.id),child_id:selected?.id?Number(selected.id):0,parent_name:form.elements.name.value.trim(),parent_email:form.elements.email.value.trim(),parent_phone:form.elements.phone.value.trim(),child_name:typedChildName,child_age:form.elements.child_age.value.trim(),quantity:Number(form.elements.quantity.value||1),message:form.elements.message.value.trim(),booking_consent_confirmed:!!form.elements.consent.checked,csrf:bookingCsrf};
       try{
-        const res=await fetch("/api/reservations.php",{method:"POST",body:fd,credentials:"same-origin",headers:{Accept:"application/json"}});
-        const data=await res.json();if(!res.ok||!data.ok)throw new Error(data.error||"Could not send request");
-        status.textContent="Reservation request sent. The organiser will contact you.";submit.textContent="Request sent"; 
+        const res=await fetch("/api/booking-requests.php",{method:"POST",body:JSON.stringify(payload),credentials:"same-origin",headers:{"Content-Type":"application/json",Accept:"application/json"}});
+        const data=await res.json();if(!res.ok||!data.ok)throw new Error(data.message||data.error||"Could not create booking");
+        status.textContent="Your booking request has been saved. Reference: "+data.reference+". The organiser will review it.";
+        submit.textContent="Request sent";
       }catch(err){status.textContent=err.message||"Could not send request. Please try again.";submit.disabled=false}
     });
   }
-  document.getElementById("heroBookNow")?.addEventListener("click",()=>{if(bookingMode==="external"&&a.booking_url){window.open(a.booking_url,"_blank","noopener");return}openReserve(null)});
+  document.getElementById("heroBookNow")?.addEventListener("click",()=>{if(bookingMode==="external"&&a.booking_url){window.open(a.booking_url,"_blank","noopener");return}openReserve((a.booking_slots||[])[0]||null)});
   bookingBox?.querySelectorAll(".reserve-button").forEach(btn=>btn.onclick=()=>openReserve((a.booking_slots||[])[Number(btn.dataset.slot)]));
-  bookingBox?.querySelector("#reserveGeneral")?.addEventListener("click",()=>openReserve(null));
+  bookingBox?.querySelector("#reserveGeneral")?.addEventListener("click",()=>openReserve((a.booking_slots||[])[0]||null));
   const openContactModal=(session=null)=>{const sessionDetails=session?[session.class_name,session.date?session.date.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"}):"",session.start+(session.end?" – "+session.end:""),session.venue,session.venue_address,session.price].filter(Boolean).join(" · "):"";const overlay=document.createElement("div");overlay.className="contact-modal-backdrop";overlay.innerHTML='<div class="contact-modal" role="dialog" aria-modal="true" aria-labelledby="contactTitle"><button class="contact-modal-close" type="button" aria-label="Close">×</button><span class="eyebrow">'+(session?"CLASS ENQUIRY":"CONTACT ORGANISER")+'</span><h2 id="contactTitle">Contact '+bhEscape(a.organiser_name||"the organiser")+'</h2><p>Send a message about <strong>'+bhEscape(session?session.class_name:a.title)+'</strong>.'+(session?'<br><span class="contact-session-context">'+bhEscape(sessionDetails)+'</span>':"")+'</p><form id="contactForm"><input type="hidden" name="session_details" value="'+bhEscape(sessionDetails)+'"><label>Subject<select name="subject" required><option value="about">About '+bhEscape(session?session.class_name:a.title)+'</option><option value="booking">Booking enquiry</option><option value="availability">Availability enquiry</option><option value="general">General enquiry</option><option value="other">Other</option></select></label><label>Your name<input name="name" autocomplete="name" required></label><label>Email<input name="email" type="email" autocomplete="email" required></label><label>Message<textarea name="message" rows="6" required placeholder="How can the organiser help?"></textarea></label><input class="contact-honeypot" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="button button-primary button-full" type="submit">Send message</button><p class="contact-form-status" aria-live="polite"></p></form></div>';document.body.appendChild(overlay);const close=()=>overlay.remove();overlay.querySelector(".contact-modal-close").onclick=close;overlay.addEventListener("click",e=>{if(e.target===overlay)close();});const form=overlay.querySelector("#contactForm");if(session)form.querySelector('select[name="subject"]').value="booking";form.querySelector("input[name=name]")?.focus();form.addEventListener("submit",async e=>{e.preventDefault();const status=form.querySelector(".contact-form-status"),button=form.querySelector("button[type=submit]");status.textContent="Sending…";button.disabled=true;const fd=new FormData(form);fd.append("activity_id",String(a.id));try{const res=await fetch("/api/contact.php",{method:"POST",body:fd,headers:{Accept:"application/json"}});const data=await res.json();if(!res.ok||!data.ok)throw new Error(data.error||"Could not send your message.");status.textContent="Message sent. The organiser will get back to you.";form.reset();button.textContent="Sent"}catch(err){status.textContent=err.message||"Could not send your message.";button.disabled=false}})};
   // Bind the visible footer button directly: the legacy sidebar is removed by the layout rebuild.
   document.querySelectorAll(".bh-email-enquiry-trigger, #contactOrganiser").forEach(button=>{

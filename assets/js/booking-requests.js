@@ -1,0 +1,119 @@
+(() => {
+  "use strict";
+  const endpoint = "/api/booking-requests.php";
+  let csrf = "";
+  const $ = (id) => document.getElementById(id);
+  const safeDate = (value) => {
+    if (!value) return "Date to be confirmed";
+    const d = new Date(String(value).replace(" ", "T"));
+    return Number.isNaN(d.getTime()) ? String(value) : d.toLocaleString("en-GB", {weekday:"short", day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit"});
+  };
+  const node = (tag, text, className) => {
+    const el = document.createElement(tag);
+    if (text !== undefined && text !== null) el.textContent = String(text);
+    if (className) el.className = className;
+    return el;
+  };
+  async function request(url, options = {}) {
+    const response = await fetch(url, {credentials:"same-origin", cache:"no-store", ...options,
+      headers: {Accept:"application/json", ...(options.headers || {})}});
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) throw new Error(data.message || data.error || "The booking service could not be reached.");
+    return data;
+  }
+  function bookingCard(b, leader) {
+    const card = node("article", null, "bh-booking-request-card");
+    const top = node("div", null, "bh-booking-request-top");
+    const title = node("h3", b.title || "Family activity");
+    const status = node("span", String(b.status || "pending").replace("_"," "), "bh-booking-status bh-booking-status-" + (b.status || "pending"));
+    top.append(title, status);
+    const details = node("p", safeDate(b.starts_at) + (b.venue_name ? " · " + b.venue_name : ""));
+    const family = node("p", (b.parent_name || "") + (b.parent_email ? " · " + b.parent_email : "") + (b.parent_phone ? " · " + b.parent_phone : ""));
+    const child = node("p", "Child: " + (b.child_name || "Not supplied") + (b.child_age ? " · Age " + b.child_age : "") + " · Places: " + (b.quantity || 1));
+    const ref = node("small", "Booking reference: " + (b.public_reference || ""));
+    card.append(top, details);
+    if (leader) card.append(family, child);
+    else card.append(child);
+    card.append(ref);
+    if (leader) {
+      if (b.message) card.append(node("p", "Family message: " + b.message));
+      if (b.consent_json) {
+        try {
+          const consent = typeof b.consent_json === "string" ? JSON.parse(b.consent_json) : b.consent_json;
+          const shared = [
+            ["Additional needs",consent.additional_needs],
+            ["Allergies",consent.allergies],
+            ["Medical conditions",consent.medical_conditions],
+            ["Medication",consent.medications],
+            ["Dietary requirements",consent.dietary_requirements],
+            ["Emergency information",consent.emergency_information],
+            ["Emergency contact",consent.emergency_contact_name],
+            ["Emergency phone",consent.emergency_contact_phone]
+          ].filter(([,value])=>String(value||"").trim());
+          if (shared.length || consent.photo_activity || consent.photo_organiser_marketing) {
+            const details = document.createElement("details");
+            const summary = node("summary","Information shared with permission");
+            const list = document.createElement("ul");
+            shared.forEach(([label,value])=>list.append(node("li",label+": "+value)));
+            if(consent.photo_activity)list.append(node("li","Activity photo permission: yes"));
+            if(consent.photo_organiser_marketing)list.append(node("li","Organiser marketing photo permission: yes"));
+            details.append(summary,list);card.append(details);
+          }
+        } catch {}
+      }
+      const actions = node("div", null, "bh-booking-request-actions");
+      const select = document.createElement("select");
+      select.setAttribute("aria-label", "Update booking status");
+      [["pending","Pending (awaiting review)"],["confirmed","Confirmed"],["cancelled","Cancelled"],["attended","Attended"]].forEach(([v,l]) => {
+        const o = document.createElement("option"); o.value = v; o.textContent = l; select.append(o);
+      });
+      select.value = b.status || "pending";
+      const save = node("button", "Update status", "button button-soft");
+      save.type = "button";
+      save.addEventListener("click", async () => {
+        if(select.value === "pending"){save.textContent="Choose a new status";return}
+        save.disabled = true;
+        try {
+          await request(endpoint, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({action:"update_status",request_id:b.id,status:select.value,csrf})});
+          status.textContent = select.value;
+          status.className = "bh-booking-status bh-booking-status-" + select.value;
+          save.textContent = "Updated";
+        } catch (e) { save.textContent = e.message; }
+        finally { save.disabled = false; }
+      });
+      actions.append(select, save); card.append(actions);
+    }
+    return card;
+  }
+  async function init() {
+    const list = $("bookingList") || $("bookings");
+    if (!list) return;
+    const leader = document.body.dataset.leaderPage === "bookings" || location.pathname.includes("/leader/bookings");
+    const message = $("portalMessage") || $("bookingStatus");
+    list.replaceChildren(node("p", "Loading your bookings…"));
+    try {
+      const data = await request(endpoint);
+      csrf = data.csrf || "";
+      list.replaceChildren();
+      if (!data.bookings || !data.bookings.length) {
+        list.append(node("p", leader ? "No family booking requests yet." : "You haven't made any Bubba Hub bookings yet."));
+      } else {
+        data.bookings.forEach(b => list.append(bookingCard(b, leader)));
+      }
+      const requestCount = $("requestCount");
+      if (requestCount) requestCount.textContent = data.bookings.length + (data.bookings.length === 1 ? " request" : " requests");
+      if (message) message.textContent = data.bookings.length + (leader ? " booking request(s) for your organisation." : " booking(s) on your family account.");
+      window.BHBookingRequests = {
+        create: async (payload) => {
+          if (!csrf) throw new Error("Please refresh the page and try again.");
+          return request(endpoint, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...payload,csrf})});
+        },
+        refresh: init
+      };
+    } catch (e) {
+      list.replaceChildren(node("p", e.message));
+      if (message) message.textContent = e.message;
+    }
+  }
+  document.addEventListener("DOMContentLoaded", init);
+})();

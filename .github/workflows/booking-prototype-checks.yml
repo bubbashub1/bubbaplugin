@@ -1,0 +1,119 @@
+name: Booking prototype checks
+
+on:
+  pull_request:
+    paths:
+      - 'api/booking-requests.php'
+      - 'api/consent-profile.php'
+      - 'api/activities.php'
+      - 'api/leader-portal.php'
+      - 'assets/js/booking-manager.js'
+      - 'assets/js/booking-requests.js'
+      - 'assets/js/consent.js'
+      - 'activity.html'
+      - 'database/booking_integration_v0_2.sql'
+      - 'tests/booking-migration-fixture.sql'
+      - '.github/workflows/booking-prototype-checks.yml'
+  push:
+    branches:
+      - 'prototype/native-family-bookings-v0.1'
+    paths:
+      - 'api/booking-requests.php'
+      - 'api/consent-profile.php'
+      - 'api/activities.php'
+      - 'api/leader-portal.php'
+      - 'assets/js/booking-manager.js'
+      - 'assets/js/booking-requests.js'
+      - 'assets/js/consent.js'
+      - 'activity.html'
+      - 'database/booking_integration_v0_2.sql'
+      - '.github/workflows/booking-prototype-checks.yml'
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql
+      - name: Check changed booking PHP files
+        run: |
+          php -l api/booking-requests.php
+          php -l api/consent-profile.php
+          php -l api/activities.php
+          php -l api/leader-portal.php
+      - name: Check external JavaScript files
+        run: |
+          node --check assets/js/booking-manager.js
+          node --check assets/js/booking-requests.js
+          node --check assets/js/consent.js
+      - name: Extract and check inline activity page JavaScript
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class Scripts(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.active = False
+                  self.scripts = []
+              def handle_starttag(self, tag, attrs):
+                  if tag == "script" and not dict(attrs).get("src"):
+                      self.active = True
+                      self.scripts.append("")
+              def handle_endtag(self, tag):
+                  if tag == "script":
+                      self.active = False
+              def handle_data(self, data):
+                  if self.active:
+                      self.scripts[-1] += data
+
+          parser = Scripts()
+          parser.feed(Path("activity.html").read_text(encoding="utf-8"))
+          if not parser.scripts:
+              raise SystemExit("No inline activity page scripts were found")
+          for index, script in enumerate(parser.scripts):
+              Path(f"/tmp/activity-inline-{index}.js").write_text(script, encoding="utf-8")
+          print(f"Extracted {len(parser.scripts)} inline script(s)")
+          PY
+          for script in /tmp/activity-inline-*.js; do node --check "$script"; done
+
+  migration:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: test-root-password
+          MARIADB_DATABASE: bubbahub_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mariadb-admin ping -h 127.0.0.1 -u root -ptest-root-password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install MariaDB client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mariadb-client
+      - name: Create disposable existing-schema fixture
+        run: mariadb --skip-ssl -h127.0.0.1 -uroot -ptest-root-password bubbahub_test < tests/booking-migration-fixture.sql
+      - name: Apply booking migration twice
+        run: |
+          mariadb --skip-ssl -h127.0.0.1 -uroot -ptest-root-password bubbahub_test < database/booking_integration_v0_2.sql
+          mariadb --skip-ssl -h127.0.0.1 -uroot -ptest-root-password bubbahub_test < database/booking_integration_v0_2.sql
+      - name: Verify migration columns, index, organiser backfill and seat counts
+        run: |
+          columns=$(mariadb --skip-ssl -N -h127.0.0.1 -uroot -ptest-root-password bubbahub_test -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_booking_reservations' AND COLUMN_NAME IN ('public_reference','organiser_id','parent_name','parent_email','parent_phone','child_id','child_name','child_age','message')")
+          index=$(mariadb --skip-ssl -N -h127.0.0.1 -uroot -ptest-root-password bubbahub_test -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_booking_reservations' AND INDEX_NAME='uq_reservation_public_reference'")
+          state=$(mariadb --skip-ssl -N -h127.0.0.1 -uroot -ptest-root-password bubbahub_test -e "SELECT CONCAT(br.organiser_id,':',s.seats_remaining,':',s.status) FROM bh_booking_reservations br JOIN bh_booking_slots s ON s.id=br.slot_id WHERE br.id=1")
+          test "$columns" = "9"
+          test "$index" = "1"
+          test "$state" = "42:2:open"

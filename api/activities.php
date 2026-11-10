@@ -386,8 +386,36 @@ try {
         }
     }
 
+    // Native Bubba Hub bookable sessions. Only future, open Bubba slots are public.
+    $hasBookingSlots = (bool)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_booking_slots'")->fetchColumn();
+    if ($activities && $hasBookingSlots) {
+        $ids = array_keys($activities);
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $slotQ = $db->prepare("SELECT s.id,s.activity_id,s.starts_at,s.ends_at,s.capacity,s.seats_remaining,s.price,s.status,v.venue_name
+            FROM bh_booking_slots s LEFT JOIN bh_venues v ON v.id=s.venue_id
+            WHERE s.activity_id IN ($placeholders) AND s.booking_mode='bubba' AND s.status='open' AND s.starts_at>NOW()
+            ORDER BY s.starts_at ASC");
+        $slotQ->execute($ids);
+        foreach ($slotQ->fetchAll(PDO::FETCH_ASSOC) as $slot) {
+            $aid = (int)$slot['activity_id'];
+            if (!isset($activities[$aid])) continue;
+            $activities[$aid]['booking_slots'][] = [
+                'id'=>(int)$slot['id'],
+                'date'=>date('Y-m-d',strtotime((string)$slot['starts_at'])),
+                'time'=>date('H:i',strtotime((string)$slot['starts_at'])),
+                'end'=>!empty($slot['ends_at'])?date('H:i',strtotime((string)$slot['ends_at'])):'',
+                'price'=>$slot['price']!==null?(float)$slot['price']:null,
+                'capacity'=>$slot['capacity']!==null?(int)$slot['capacity']:null,
+                'seats_remaining'=>$slot['seats_remaining']!==null?(int)$slot['seats_remaining']:null,
+                'venue'=>$slot['venue_name']?:'',
+                'status'=>$slot['status']
+            ];
+        }
+    }
+
     foreach ($activities as &$activity) {
         $activity['venues'] = array_values($activity['venues']);
+        $activity['booking_slots'] = $activity['booking_slots'] ?? [];
     }
     unset($activity);
 
