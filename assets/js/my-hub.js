@@ -82,8 +82,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
       if(upcoming.length) list.push({type:"booking",title:"You have "+upcoming.length+" upcoming booking"+(upcoming.length>1?"s":""),detail:"Your family plans are ready to go.",href:"account/bookings.html"});
       if(planned.size) list.push({type:"plan",title:planned.size+" activities in your planner",detail:"Keep your week organised with your saved plans.",href:"planner-pro.html"});
       if(saved.size) list.push({type:"saved",title:saved.size+" saved ideas to choose from",detail:"Turn favourites into a family activity list.",href:"planner-pro.html#activity-lists"});
-      const proBrief=document.getElementById("hubBriefItems");
-      if(proBrief&&list.length){proBrief.insertAdjacentHTML("afterbegin",list.map(x=>"<a class='hub-brief-item hub-brief-pro-item' href='"+x.href+"'><div class='hub-brief-icon'>⭐</div><div><span>Family Pro · My Plans</span><strong>"+esc(x.title)+"</strong><small>"+esc(x.detail)+"</small></div><b>→</b></a>").join(""));}
+      // Render after the base brief markup so it is not overwritten below.
+      var proBriefMarkup=list.map(x=>"<a class='hub-brief-item hub-brief-pro-item' href='"+x.href+"'><div class='hub-brief-icon'>⭐</div><div><span>Family Pro · My Plans</span><strong>"+esc(x.title)+"</strong><small>"+esc(x.detail)+"</small></div><b>→</b></a>").join("");
     }
     intro.textContent=ranked.length
       ? (ages.length?"Based on your family profiles":"Based on your saved preferences")+" · updated just now."
@@ -95,6 +95,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       const reason=ages.length&&activityFitsAge(a,ages)?"Age match":preferredDay&&x.days.includes(preferredDay)?preferredDay:(interests.has(String(a.category||"").toLowerCase())?a.category:"Good fit");
       return "<a class='hub-brief-item' href='"+url+"'><div class='hub-brief-icon'>✦</div><div><span>"+esc(reason)+"</span><strong>"+esc(a.title)+"</strong><small>"+esc(a.town||a.location||"")+" · "+esc(priceText)+"</small></div><b>→</b></a>";
     }).join(""):"<div class='hub-empty'><strong>Your plans are waiting</strong><p>Set your usual area, preferred day or interests in Preferences.</p><a class='button button-soft' href='account/preferences.html'>Set preferences</a></div>";
+    if(isPro&&proBriefMarkup){wrap.insertAdjacentHTML("afterbegin",proBriefMarkup);}
   }
 
 
