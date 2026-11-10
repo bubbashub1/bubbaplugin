@@ -26,6 +26,7 @@ if(!$isAdmin){
  if(!$org)fail(403,'Linked organiser account required');
  foreach(['plan','membership_plan','membership_tier','subscription_plan','tier'] as $column){if(isset($org[$column])&&in_array(strtolower(trim((string)$org[$column])),['pro','premium','ultimate'],true)){$isPro=true;break;}}
  try{$subscription=$db->prepare("SELECT COUNT(*) FROM bh_user_subscriptions WHERE user_id=? AND plan='leader_pro' AND status IN ('active','trialing') AND (expires_at IS NULL OR expires_at>UTC_TIMESTAMP())");$subscription->execute([$leaderId]);if((int)$subscription->fetchColumn()>0)$isPro=true;}catch(Throwable $ignored){}
+ try{$promo=$db->prepare("SELECT active FROM bh_admin_leader_promotions WHERE leader_user_id=? LIMIT 1");$promo->execute([$leaderId]);if((int)$promo->fetchColumn()===1)$isPro=true;}catch(Throwable $ignored){}
 }
 $raw=file_get_contents('php://input',false,null,0,4097);if(!is_string($raw)||strlen($raw)>4096)fail(413,'Request too large');
 $input=json_decode($raw,true);if(!is_array($input))fail(400,'Invalid JSON');
