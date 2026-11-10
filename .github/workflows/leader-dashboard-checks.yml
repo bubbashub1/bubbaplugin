@@ -4,6 +4,7 @@ on:
     paths:
       - 'leader.html'
       - 'leader/classes.html'
+      - 'leader/venues.html'
       - 'assets/js/leader-dashboard-home.js'
       - 'assets/js/leader-pro-nav.js'
       - 'api/leader-entitlement.php'
@@ -26,9 +27,15 @@ jobs:
           import re, subprocess, tempfile
           html = Path("leader.html").read_text()
           listings = Path("leader/classes.html").read_text()
+          venues = Path("leader/venues.html").read_text()
           assert '<h1>My Listings</h1>' in listings, 'Leader listings page title missing'
           assert 'Add a New Activity' in listings, 'Leader listings add action missing'
           assert 'directory-inspired dashboard' in listings, 'Leader listings styling missing'
+          assert '<h1>My Venues</h1>' in venues, 'Leader venues page title missing'
+          assert 'aria-current="page">My Venues' in venues, 'Leader venues current navigation item missing'
+          assert 'id="venueList"' in venues and 'data-leader-page="venues"' in venues, 'Leader venues renderer hook missing'
+          assert 'directory-inspired dashboard' in venues, 'Leader venues styling missing'
+          assert 'leader-portal.js' in venues, 'Leader venues data loader missing'
           class Inspector(HTMLParser):
               def __init__(self):
                   super().__init__()
