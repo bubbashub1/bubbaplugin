@@ -43,7 +43,7 @@ Make the existing Bubba Hub platform dependable and joined-up for families, orga
 
 ## 3. Duplicate listing alerts
 
-- [~] Check exact activity title + same venue matches server-side. Draft PR #843 implements a server-side title/venue preflight; staging acceptance is outstanding.
+- [~] Check exact activity title + same venue matches server-side. Draft PR #843 implements a server-side title/venue preflight. Its visible workflow passed PHP syntax and organiser-profile DB checks, but duplicate-behaviour tests and staging acceptance are outstanding.
 - [~] Block exact duplicates by default. PR #843 implements the default server-side block on its draft branch; direct production behaviour is not verified.
 - [~] Show a useful warning for possible title-only matches. PR #843 warns on same-title/different-venue matches; browser QA is outstanding.
 - [~] Provide the agreed exception/review route for genuinely different activities. PR #843 adds a leader review request and admin decision flow; staging QA is outstanding.
@@ -79,7 +79,7 @@ Make the existing Bubba Hub platform dependable and joined-up for families, orga
 - [ ] Inspect current staging plugin/form versions, form IDs/field keys and booking/session schema read-only.
 - [~] Preserve existing booking, attendee, consent, checkout, Stripe and submission data. PR #817 uses canonical reservations and consent snapshots in its prototype; full data-preservation, checkout and Stripe acceptance is not verified.
 - [ ] Confirm family child-profile ownership validation.
-- [~] Test the journey: choose class → select children → details → terms → pay → confirmation. PR #817 contains a partial native prototype for slots/capacity, consent and family/leader booking lists; payment and full confirmation E2E are not evidenced.
+- [~] Test the journey: choose class → select children → details → terms → pay → confirmation. PR #817 contains a partial native prototype for slots/capacity, consent and family/leader booking lists. Its prototype notes explicitly state that it does not collect payments; staging E2E and pay/confirmation remain outstanding.
 - [ ] Test free bookings, capacity, duplicates, sibling places, cancellation and confirmation.
 - [ ] Test payment/webhook/refund/payout only in staging test mode.
 - [ ] Keep live payment processing disabled until all acceptance gates and explicit approval are complete.
@@ -111,14 +111,14 @@ Make the existing Bubba Hub platform dependable and joined-up for families, orga
 - [x] PR #826 activity detail redesign merged (9 November 2026). **Deployment and responsive/booking regression QA are not confirmed.**
 - [~] Admin dashboard: PR #838 (colour-coded panels) and PR #849 (mobile polish) are merged to main. No deployment or staging/mobile visual QA evidence is available.
 - [~] PR #763 Leader Dashboard remains open as a draft. Its branch is 120 commits ahead and 56 behind main; the attempted reconciliation PR #850 was closed unmerged. Reconcile before review or merge.
-- [~] Duplicate checking: equivalent BubbaPlugin implementation is in draft PR #843. Its only visible PR-triggered run is the unrelated Leader organiser profile MySQL check; no duplicate-specific CI or staging acceptance is evidenced.
+- [~] Duplicate checking: equivalent BubbaPlugin implementation is in draft PR #843. Its visible PR-triggered workflow passed the PHP syntax step and organiser-profile database test; no dedicated duplicate-match/review test or staging acceptance is evidenced.
 - [~] PR #844 My Venues remains open as a draft. It uses existing organiser-scoped venue/activity data; authenticated multi-venue, cross-organiser and mobile QA remain outstanding.
 - [~] PR #819 school-holiday save/session-CSRF fix merged to main on 9 November (merge commit 6f0515b). Deployment and runtime/staging verification are not confirmed.
 - [~] Hub Demo routing: commit 6594ed2 (“Route Hub Demo to WordPress”) is included on main. PR #204 is unrelated (“Repair staging Events layout”), closed unmerged against an Expo feature branch. Actual route behaviour/deployment remain unverified.
 - [ ] Term Time Only bulk action: requested as a small admin improvement; not confirmed implemented.
 - [~] Organiser storefront: PR #845 is open and ready for review. The Pro mini-site styling is present; hero-image upload/brand controls are explicitly not included, and browser/mobile QA remains outstanding.
 - [!] Booking architecture: PR #817 is an open draft native booking prototype. Its branch is 69 commits ahead and 39 behind main; syntax and migration CI jobs passed, but the branch needs reconciliation and the final form/checkout decision plus staging E2E remain open.
-- [~] Listing Checker: PR #846 is an open draft, one commit behind main. PHP lint passed; schema/cron configuration and staging data checks are not evidenced.
+- [~] Listing Checker: PR #846 is an open draft, one commit behind main. PHP lint and critical security-guard checks passed; schema/cron configuration and staging data checks are not evidenced.
 - [!] My Hub storage migration: PR #802 is open and 45 commits behind main. No staging backup, migration execution or data-preservation QA is evidenced; reconcile and inspect staging before any SQL.
 - [~] Family session/profile fix PR #847 and subscription session fix PR #848 remain open drafts, each one commit behind main; no relevant PR-triggered CI or staging verification is evidenced.
 - [ ] No live deployment, database change or staging QA was performed during this review.
