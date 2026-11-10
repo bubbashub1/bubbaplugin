@@ -203,7 +203,6 @@ if($action==='save_profile_public'){
  $q=$db->prepare("UPDATE bh_organisers SET about_content=?,logo_url=?,facebook_url=?,instagram_url=?,tiktok_url=? WHERE id=?");$q->execute([$about,$logo,$facebook,$instagram,$tiktok,$oid]);
  lp(200,['ok'=>true,'message'=>'Public organiser profile saved.']);
 }
-if($action==='save_profile_public'){ $about=trim((string)($b['about_content']??''));$logo=trim((string)($b['logo_url']??''));$facebook=trim((string)($b['facebook_url']??''));$instagram=trim((string)($b['instagram_url']??''));$tiktok=trim((string)($b['tiktok_url']??'')); if(strlen($about)>200000)lp(422,['ok'=>false,'error'=>'about_too_long']); $q=$db->prepare("UPDATE bh_organisers SET about_content=?,logo_url=?,facebook_url=?,instagram_url=?,tiktok_url=? WHERE id=?");$q->execute([$about,$logo,$facebook,$instagram,$tiktok,$oid]); lp(200,['ok'=>true,'message'=>'Public organiser profile saved.']); }
 if($action==='save_terms'){
  $terms=trim((string)($b['terms_content']??''));
  if(strlen($terms)>200000) lp(422,['ok'=>false,'error'=>'terms_too_long','message'=>'Your terms are too long. Please keep them under 200,000 characters.']);
@@ -212,9 +211,20 @@ if($action==='save_terms'){
 }
 if($action==='save_account'){
  $businessName=trim((string)($b['business_name']??''));$name=trim((string)($b['name']??''));$email=strtolower(trim((string)($b['email']??'')));$phone=trim((string)($b['phone']??''));$website=trim((string)($b['website']??''));
- if($businessName==='')lp(422,['ok'=>false,'error'=>'business_name_required']);if(!filter_var($email,FILTER_VALIDATE_EMAIL))lp(422,['ok'=>false,'error'=>'invalid_email']);
- $u=$db->prepare("UPDATE bh_users SET email=? WHERE id=?");$u->execute([$email,$userId]);try{$db->prepare("UPDATE bh_organisers SET organisation_name=?,phone=?,website=? WHERE id=?")->execute([$businessName,$phone,$website,$oid]);}catch(Throwable $ignored){}
- if($name!==''){foreach(['name','display_name','contact_name'] as $col){try{$db->prepare("UPDATE bh_organisers SET $col=? WHERE id=?")->execute([$name,$oid]);break;}catch(Throwable $ignored){}}}
+ if($businessName==='')lp(422,['ok'=>false,'error'=>'business_name_required','message'=>'Please enter your organisation name.']);
+ if(!filter_var($email,FILTER_VALIDATE_EMAIL)||strlen($email)>254)lp(422,['ok'=>false,'error'=>'invalid_email','message'=>'Please enter a valid email address.']);
+ if(strlen($businessName)>200||strlen($name)>200||strlen($phone)>60||strlen($website)>2048)lp(422,['ok'=>false,'error'=>'account_field_too_long','message'=>'One or more account details are too long.']);
+ if($website!==''&&!filter_var($website,FILTER_VALIDATE_URL))lp(422,['ok'=>false,'error'=>'invalid_website','message'=>'Please enter a valid website URL.']);
+ $dup=$db->prepare("SELECT id FROM bh_users WHERE LOWER(email)=? AND id<>? LIMIT 1");$dup->execute([$email,$userId]);if($dup->fetch())lp(409,['ok'=>false,'error'=>'email_in_use','message'=>'That email address is already used by another account.']);
+ $orgCols=[];$colQ=$db->prepare("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers'");$colQ->execute();foreach($colQ->fetchAll(PDO::FETCH_COLUMN) as $col)$orgCols[$col]=true;
+ $db->beginTransaction();try{
+  $db->prepare("UPDATE bh_users SET email=? WHERE id=?")->execute([$email,$userId]);
+  $sets=['organisation_name=?','phone=?','website=?'];$values=[$businessName,$phone,$website];
+  if(isset($orgCols['email'])){$sets[]='email=?';$values[]=$email;}
+  if($name!==''){foreach(['name','display_name','contact_name'] as $col){if(isset($orgCols[$col])){$sets[]=$col.'=?';$values[]=$name;break;}}}
+  $values[]=$oid;$db->prepare('UPDATE bh_organisers SET '.implode(',',$sets).' WHERE id=?')->execute($values);
+  $db->commit();
+ }catch(Throwable $e){if($db->inTransaction())$db->rollBack();error_log('Leader account save failed: '.$e->getMessage());lp(500,['ok'=>false,'error'=>'account_save_failed','message'=>'Your account details could not be saved. Please try again.']);}
  lp(200,['ok'=>true,'message'=>'Account details saved.']);
 }
 if($action==='change_password'){
