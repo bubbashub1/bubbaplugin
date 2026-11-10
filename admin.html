@@ -37,6 +37,7 @@
 #adminContent .bh-admin-nav-links a:hover,#adminContent .bh-admin-nav-links a:focus-visible{background:#e5f0e5;text-decoration:underline;outline-offset:2px}
 @media(max-width:600px){#adminContent .bh-admin-nav-group>summary{padding:13px 14px}#adminContent .bh-admin-nav-links{display:grid;grid-template-columns:1fr;padding:0 12px 13px}#adminContent .bh-admin-nav-links a{width:100%;box-sizing:border-box}}
 
+</style>
 <style id="bh-admin-dashboard-refresh">
 /* Compact, task-first admin home. Preserve auth, stats IDs and existing tools. */
 .bh-admin-v2 .app-shell>.page-heading{
@@ -61,7 +62,7 @@
 @media(max-width:520px){
  #adminContent .admin-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-</style></style><style id="bh-admin-nav-colour-layout">
+</style><style id="bh-admin-nav-colour-layout">
 /* Two-column admin sections with colour-coded panels and vertically stacked links. */
 #adminContent .bh-admin-nav{
  display:grid!important;
@@ -157,6 +158,33 @@
  #adminContent .bh-admin-nav-links{padding:6px 10px 10px}
  #adminContent .bh-admin-nav-links a{min-height:44px;padding:10px}
 }
+
+/* Final mobile polish: one admin home, all existing destinations retained. */
+#adminContent .bh-admin-nav-group>summary{cursor:pointer;list-style:none;touch-action:manipulation}
+#adminContent .bh-admin-nav-group>summary::-webkit-details-marker{display:none}
+#adminContent .bh-admin-nav-group>summary:focus-visible{outline:3px solid #397454;outline-offset:-3px}
+#adminContent .bh-admin-nav-links a:focus-visible{outline:3px solid #397454;outline-offset:2px}
+@media(max-width:760px){
+ #adminContent .admin-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ #adminContent .admin-stats article{min-width:0;padding:11px 12px}
+ #adminContent .admin-stats article span{font-size:.78rem}
+ #adminContent .admin-stats article strong{font-size:1.45rem}
+ #adminContent .admin-stats article small{font-size:.72rem;line-height:1.35}
+ #adminContent .bh-admin-nav{grid-template-columns:1fr;gap:10px;margin:14px 0 24px}
+ #adminContent .bh-admin-nav-group>summary{min-height:52px;padding:12px 14px;gap:8px}
+ #adminContent .bh-admin-nav-title{font-size:.94rem}
+ #adminContent .bh-admin-nav-count{font-size:.72rem}
+ #adminContent .bh-admin-nav-links{padding:5px 10px 10px}
+ #adminContent .bh-admin-nav-links a{min-height:46px;padding:11px 10px;font-size:.88rem;line-height:1.3}
+ .bh-admin-v2 .app-shell>.page-heading{gap:14px}
+ .bh-admin-v2 .app-shell>.page-heading .hero-actions{display:flex;flex-wrap:wrap}
+ .bh-admin-v2 .app-shell>.page-heading .hero-actions .button{min-height:46px}
+}
+@media(max-width:380px){
+ #adminContent .admin-stats article{padding:10px}
+ #adminContent .admin-stats article small{font-size:.68rem}
+ #adminContent .bh-admin-nav-count{font-size:.68rem}
+}
 </style></head>
 <body class="bh-admin-v2">
 <header class="site-header"><a class="brand" href="/index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main menu">
@@ -180,7 +208,7 @@
 <section class="admin-panel" id="directoryTestPanel"><div class="admin-panel-head"><div><span class="eyebrow">Directory testing</span><h2>Make sure the directory has 3 listings</h2><p>Creates safe internal test listings only when fewer than 3 published activities exist.</p></div><button class="button button-primary" id="ensureThreeActivities" type="button">Create missing test listings</button></div><p class="library-message" id="directoryTestMessage" role="status"></p></section></div></details>
 
 <nav class="bh-admin-nav" aria-label="Admin sections">
-<details class="bh-admin-nav-group"><summary><span class="bh-admin-nav-title">Activities &amp; listings</span><span class="bh-admin-nav-count">10 areas</span></summary><div class="bh-admin-nav-links">
+<details class="bh-admin-nav-group" open><summary><span class="bh-admin-nav-title">Activities &amp; listings</span><span class="bh-admin-nav-count">10 areas</span></summary><div class="bh-admin-nav-links">
 <a href="/admin/admin-activities.html">Manage activity listings, sessions &amp; venues</a><a href="/admin/admin-school-holidays.html">School holidays &amp; bank holidays</a><a href="/admin/admin-listing-check.html">Check listings and discover activities</a><a href="/admin/admin-import-export.html">CSV and Google Sheets import/export</a><a href="/admin/admin-search.html">Directory search &amp; filters</a><a href="/admin/admin-regions.html">Regions, counties &amp; towns</a><a href="/admin/admin-organisers.html">Organisers &amp; class leaders</a><a href="/api/sheets-sync-live-update-preview.php">Preview Google Sheets updates</a><a href="/api/sheets-sync-live-bulk-review.php">Review multiple Sheets changes</a><a href="/api/sheets-sync-live-baseline-review.php">Review Google Sheets baseline</a>
 </div></details>
 <details class="bh-admin-nav-group"><summary><span class="bh-admin-nav-title">Families &amp; class leaders</span><span class="bh-admin-nav-count">3 areas</span></summary><div class="bh-admin-nav-links">
