@@ -83,7 +83,7 @@ try {
  unset($row);
  // Add validation-only checks and likely duplicate flags without changing source records.
  $normalise=static function(string $value): string {
-  $value=mb_strtolower(trim($value));
+  $value=strtolower(trim($value));
   $value=preg_replace('/[^\pL\pN]+/u',' ',$value)??$value;
   return trim(preg_replace('/\s+/u',' ',$value)??$value);
  };
