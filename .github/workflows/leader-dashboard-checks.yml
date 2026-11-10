@@ -84,6 +84,8 @@ jobs:
           for column in required_columns:
               assert f"COLUMN_NAME='{column}'" in leader_migration and f'ADD COLUMN {column} ' in leader_migration, f'Migration missing activity field: {column}'
           assert 'CREATE TABLE IF NOT EXISTS bh_leader_expertise' not in portal_api, 'Expertise storage must be installed by migration 006, not created during requests'
+          assert 'SELECT id FROM bh_leader_faqs WHERE id=? AND organiser_id=? LIMIT 1' in portal_api, 'Unchanged FAQ saves must not be reported as missing'
+          assert 'SELECT br.id FROM bh_booking_reservations br' in portal_api and 'WHERE br.id=? AND a.organiser_id=? LIMIT 1' in portal_api, 'Unchanged booking status saves must not be reported as missing'
           assert '<h1>My Listings</h1>' in listings, 'Leader listings page title missing'
           assert 'Add a New Activity' in listings, 'Leader listings add action missing'
           assert 'directory-inspired dashboard' in listings, 'Leader listings styling missing'
