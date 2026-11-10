@@ -45,9 +45,9 @@ try{
    $scope=in_array('all',$regions,true)?'Devon OR Cornwall':implode(' OR ',$regions);
    $query=trim((string)$term['term'].' ('.$scope.') family baby toddler activity class');
    $url='https://www.bing.com/search?format=rss&q='.rawurlencode($query);
-   $ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_MAXFILESIZE=>2097152,CURLOPT_CONNECTTIMEOUT=>8,CURLOPT_TIMEOUT=>18,CURLOPT_USERAGENT=>'BubbaHub-ListingChecker/1.0 (+https://bubbahub.co.uk)',CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_REDIR_PROTOCOLS=>CURLPROTO_HTTPS]);
-   $body=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$curlError=curl_error($ch);curl_close($ch);
-   if(!is_string($body)||$http<200||$http>=300)throw new RuntimeException('Search provider returned HTTP '.$http.($curlError!==''?': '.$curlError:''));
+   $ch=curl_init($url);$bodyBuffer='';curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>false,CURLOPT_WRITEFUNCTION=>static function($handle,string $chunk) use (&$bodyBuffer): int { if(strlen($bodyBuffer)+strlen($chunk)>2097152)return 0;$bodyBuffer.=$chunk;return strlen($chunk);},CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>8,CURLOPT_TIMEOUT=>18,CURLOPT_USERAGENT=>'BubbaHub-ListingChecker/1.0 (+https://bubbahub.co.uk)',CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_REDIR_PROTOCOLS=>CURLPROTO_HTTPS]);
+   $ok=curl_exec($ch);$body=$bodyBuffer;$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$curlError=curl_error($ch);curl_close($ch);
+   if($ok!==true||!is_string($body)||$http<200||$http>=300)throw new RuntimeException('Search provider returned HTTP '.$http.($curlError!==''?': '.$curlError:''));
    libxml_use_internal_errors(true);$xml=simplexml_load_string($body,'SimpleXMLElement',LIBXML_NONET|LIBXML_NOCDATA);libxml_clear_errors();
    if(!$xml||!isset($xml->channel->item))throw new RuntimeException('Search provider response was not valid RSS.');
    $count=0;
