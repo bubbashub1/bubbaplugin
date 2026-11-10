@@ -1,11 +1,39 @@
-<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Specialisms · Bubba Hub</title><link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/portal-v2.css"><style>.leader-workspace{max-width:1120px;margin:auto;padding:26px 18px 65px}.leader-workspace h1{color:#144400;font-size:clamp(2rem,4vw,3rem)}.leader-workspace .panel{background:white;border:1px solid #d8e6db;border-radius:22px;padding:24px;margin-top:18px}.leader-workspace .muted{color:#617261}.leader-workspace textarea{width:100%;min-height:105px;border:1px solid #9fb7a5;border-radius:12px;padding:12px}.leader-workspace .topics{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}.leader-workspace .topics label{padding:16px;border-radius:14px;background:#e9f2eb}.leader-workspace .message{border-top:1px solid #d8e6db;padding:18px 0}.leader-workspace .message:first-child{border:0}.leader-workspace .message p{white-space:pre-wrap}.leader-workspace .actions{display:flex;gap:12px;flex-wrap:wrap}</style></head><body class="bh-leader-v2"><header class="site-header">
-  <a class="brand" href="/index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a>
-  <nav class="main-nav" aria-label="Main menu">
-    <a href="/directory.html">Find activities</a>
-    <a href="/my-hub.html">My Hub</a>
-    <a href="/help-support.html">Support &amp; Guidance</a>
-    <a href="/leader.html">Class Leaders</a>
-    <a href="/account.html">My Account</a>
-  </nav>
-  <a class="button button-soft" href="/account.html">My account</a>
-</header><main class="leader-workspace"><a href="/leader/">← Leader dashboard</a><h1>My Specialisms</h1><p class="muted">Choose the areas where you can offer families guidance. You can change these at any time.</p><section class="panel"><form id="specialismsForm"><div id="topics" class="topics">Loading specialisms…</div><p id="status" role="status"></p><button class="button button-primary" type="submit">Save my specialisms</button></form></section></main><script>const form=document.getElementById('specialismsForm'),root=document.getElementById('topics'),status=document.getElementById('status');async function load(){try{const r=await fetch('/api/leader-portal.php',{credentials:'same-origin'});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.message||'Could not load specialisms');root.replaceChildren();const selected=new Set(d.expertise||[]);for(const [key,name] of Object.entries(d.expertise_topics||{})){const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.name='expertise';input.value=key;input.checked=selected.has(key);label.append(input,' '+name);root.append(label)}}catch(e){root.textContent='';status.textContent=e.message}}form.addEventListener('submit',async e=>{e.preventDefault();status.textContent='Saving…';try{const topics=[...form.querySelectorAll('input:checked')].map(x=>x.value);const r=await fetch('/api/leader-portal.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save_expertise',topics})});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.message||'Save failed');status.textContent='Your specialisms have been saved.'}catch(e){status.textContent=e.message}});load();</script></body></html>
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="../">
+<title>My Specialisms · Bubba Hub</title>
+<link rel="stylesheet" href="assets/css/styles.css"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/subpages-v2.css">
+<style>
+body[data-leader-page="specialisms"] .bh-leader-page{max-width:1120px;padding-top:34px;padding-bottom:56px}
+body[data-leader-page="specialisms"] .bh-leader-hero{align-items:center;background:#f4f8f4;border:1px solid #e1ebe2;border-radius:18px;padding:26px 30px;margin-bottom:24px}
+body[data-leader-page="specialisms"] .bh-leader-hero h1{color:#244c35;margin:4px 0 7px}
+body[data-leader-page="specialisms"] .bh-leader-hero p{color:#718176;margin:0}
+body[data-leader-page="specialisms"] .bh-leader-tabs{display:none}
+body[data-leader-page="specialisms"] .admin-panel{background:#fff;border:0;border-radius:0;padding:8px 0;box-shadow:none}
+body[data-leader-page="specialisms"] .admin-panel-head{padding:0 0 16px;border-bottom:1px solid #e7eee8;margin-bottom:18px}
+body[data-leader-page="specialisms"] .admin-panel-head h2{color:#244c35;margin:3px 0}
+body[data-leader-page="specialisms"] .admin-panel-head p{color:#718176;margin:0}
+body[data-leader-page="specialisms"] .bh-specialism-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 28px}
+body[data-leader-page="specialisms"] .bh-specialism-options label{display:flex;align-items:center;gap:12px;padding:17px 4px;border-bottom:1px solid #edf1ed;color:#294b35;font-weight:700}
+body[data-leader-page="specialisms"] .bh-specialism-options input{width:19px;height:19px;accent-color:#e85c91;flex:0 0 auto}
+body[data-leader-page="specialisms"] #status{color:#718176;min-height:1.5em;margin:16px 0}
+@media(max-width:620px){body[data-leader-page="specialisms"] .bh-leader-hero{padding:20px;align-items:flex-start;gap:16px;flex-direction:column}body[data-leader-page="specialisms"] .bh-specialism-options{grid-template-columns:1fr}}
+</style>
+</head>
+<body class="bh-subpage-v2" data-leader-page="specialisms">
+<header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main menu"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">My Account</a></nav><a class="button button-soft" href="account.html">My account</a></header>
+<main class="app-shell bh-leader-page">
+<section class="page-heading bh-leader-hero"><div><span class="eyebrow">Leader portal</span><h1>My Specialisms</h1><p>Tell families which areas you can offer guidance and support with.</p></div><a class="button button-soft" href="leader.html">Dashboard</a></section>
+<nav class="bh-leader-tabs" aria-label="Leader portal sections"><a href="leader.html">Dashboard</a><a href="leader/classes.html">My Listings</a><a href="leader/venues.html">My Venues</a><a href="leader/messages.html">My Messages</a><a href="leader/profile.html">Profile</a><a href="leader/faqs.html">FAQs</a><a href="leader/specialisms.html" aria-current="page">My Specialisms</a><a href="leader/support.html">Support &amp; Help</a></nav>
+<section class="admin-panel"><div class="admin-panel-head"><div><span class="eyebrow">Your areas of expertise</span><h2>Choose your specialisms</h2><p>You can update these choices at any time. They help Bubba Hub understand the topics you can support families with.</p></div></div>
+<form id="specialismsForm"><div id="topics" class="bh-specialism-options"><p class="deployment-note">Loading specialisms…</p></div><p id="status" role="status" aria-live="polite"></p><button class="button button-primary" type="submit">Save my specialisms</button></form></section>
+</main>
+<script>
+const form=document.getElementById('specialismsForm'),root=document.getElementById('topics'),status=document.getElementById('status');
+async function load(){try{const r=await fetch('/api/leader-portal.php',{credentials:'same-origin',headers:{Accept:'application/json'}});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.message||'Could not load specialisms');root.replaceChildren();const selected=new Set(d.expertise||[]);for(const [key,name] of Object.entries(d.expertise_topics||{})){const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.name='expertise';input.value=key;input.checked=selected.has(key);label.append(input,document.createTextNode(name));root.append(label)}}catch(e){root.replaceChildren();status.textContent=e.message}}
+form.addEventListener('submit',async e=>{e.preventDefault();status.textContent='Saving…';const button=form.querySelector('button[type="submit"]');button.disabled=true;try{const topics=[...form.querySelectorAll('input:checked')].map(x=>x.value);const r=await fetch('/api/leader-portal.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({action:'save_expertise',topics})});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.message||'Save failed');status.textContent='Your specialisms have been saved.'}catch(e){status.textContent=e.message}finally{button.disabled=false}});
+load();
+</script>
+</body></html>

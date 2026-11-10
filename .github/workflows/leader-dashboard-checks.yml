@@ -1,0 +1,160 @@
+name: Leader dashboard smoke checks
+on:
+  pull_request:
+    paths:
+      - 'leader.html'
+      - 'leader/classes.html'
+      - 'leader/venues.html'
+      - 'leader/messages.html'
+      - 'leader/schedule.html'
+      - 'leader/bookings.html'
+      - 'leader/statistics.html'
+      - 'leader/payments.html'
+      - 'leader/faqs.html'
+      - 'leader/specialisms.html'
+      - 'leader/profile.html'
+      - 'leader/support.html'
+      - 'api/leader-portal.php'
+      - 'api/leader-messages.php'
+      - 'assets/js/leader-dashboard-home.js'
+      - 'assets/js/leader-portal.js'
+      - 'assets/js/leader-pro-nav.js'
+      - 'api/leader-entitlement.php'
+      - '.github/workflows/leader-dashboard-checks.yml'
+  workflow_dispatch:
+jobs:
+  leader-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check dashboard structure and inline JavaScript
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import re, subprocess, tempfile
+          html = Path("leader.html").read_text()
+          listings = Path("leader/classes.html").read_text()
+          venues = Path("leader/venues.html").read_text()
+          messages = Path("leader/messages.html").read_text()
+          schedule = Path("leader/schedule.html").read_text()
+          bookings = Path("leader/bookings.html").read_text()
+          statistics = Path("leader/statistics.html").read_text()
+          payments = Path("leader/payments.html").read_text()
+          faqs = Path("leader/faqs.html").read_text()
+          specialisms = Path("leader/specialisms.html").read_text()
+          profile = Path("leader/profile.html").read_text()
+          support = Path("leader/support.html").read_text()
+          portal_api = Path("api/leader-portal.php").read_text()
+          portal_js = Path("assets/js/leader-portal.js").read_text()
+          inbox_api = Path("api/leader-messages.php").read_text()
+          assert '<h1>My Listings</h1>' in listings, 'Leader listings page title missing'
+          assert 'Add a New Activity' in listings, 'Leader listings add action missing'
+          assert 'directory-inspired dashboard' in listings, 'Leader listings styling missing'
+          assert '<h1>My Venues</h1>' in venues, 'Leader venues page title missing'
+          assert 'aria-current="page">My Venues' in venues, 'Leader venues current navigation item missing'
+          assert 'id="venueList"' in venues and 'data-leader-page="venues"' in venues, 'Leader venues renderer hook missing'
+          assert 'directory-inspired dashboard' in venues, 'Leader venues styling missing'
+          assert 'leader-portal.js' in venues, 'Leader venues data loader missing'
+          assert '<h1>My Messages</h1>' in messages, 'Leader messages title missing'
+          assert 'id="messages"' in messages and '/api/leader-messages.php' in messages, 'Leader messages API hook missing'
+          assert 'directory-style layout' in messages, 'Leader messages styling missing'
+          assert "action:'reply'" in messages and 'field.value' in messages, 'Leader reply interaction missing'
+          assert "if($_SERVER['REQUEST_METHOD']==='POST'&&$action==='reply')" in inbox_api, 'Leader reply API action missing'
+          assert 'm.organiser_id=?' in inbox_api and 'WHERE m.id=? AND m.organiser_id=?' in inbox_api, 'Leader messages must remain organiser-scoped'
+          assert '<h1>My Schedule</h1>' in schedule, 'Leader schedule title missing'
+          assert 'aria-current="page">My Schedule' in schedule, 'Leader schedule current navigation item missing'
+          assert 'id="scheduleList"' in schedule and 'data-leader-page="schedule"' in schedule, 'Leader schedule renderer hook missing'
+          assert 'directory-inspired schedule' in schedule, 'Leader schedule styling missing'
+          assert 'leader-portal.js' in schedule, 'Leader schedule data loader missing'
+          assert 'Upcoming schedule' in schedule and 'Import your timetable' in schedule, 'Leader schedule sections missing'
+          assert '<h1>My Bookings</h1>' in bookings, 'Leader bookings title missing'
+          assert 'aria-current="page">My Bookings' in bookings, 'Leader bookings current navigation item missing'
+          assert 'id="bookingList"' in bookings and 'data-leader-page="bookings"' in bookings, 'Leader bookings renderer hook missing'
+          assert 'directory-inspired reservation' in bookings, 'Leader bookings styling missing'
+          assert 'payments are not collected here' in bookings, 'Leader bookings payment disclaimer missing'
+          assert '<h1>My Statistics</h1>' in statistics, 'Leader statistics title missing'
+          assert 'aria-current="page">My Statistics' in statistics, 'Leader statistics current navigation item missing'
+          assert 'id="sClasses"' in statistics and 'id="sBookings"' in statistics and 'id="statsHighlights"' in statistics, 'Leader statistics data hooks missing'
+          assert 'compact reporting without dashboard card clutter' in statistics, 'Leader statistics styling missing'
+          assert 'No estimated or invented figures are displayed' in statistics, 'Leader statistics must not invent analytics'
+          assert 'data-leader-page="payments"' in payments and 'aria-current="page">Payments' in payments, 'Leader payments page navigation missing'
+          assert 'restrained information layout' in payments, 'Leader payments styling missing'
+          assert 'Bubba Hub booking fee' in payments and 'External booking' in payments, 'Leader payment information missing'
+          assert '<h1>My FAQs</h1>' in faqs and 'data-leader-page="faqs"' in faqs, 'Leader FAQs page shell missing'
+          assert 'id="faqList"' in faqs and 'id="addFaqButton"' in faqs and 'id="faqQuota"' in faqs, 'Leader FAQ interaction hooks missing'
+          assert 'directory-inspired management page' in faqs, 'Leader FAQs styling missing'
+          assert 'aria-current="page">FAQs' in faqs, 'Leader FAQs current navigation item missing'
+          assert '<h1>My Specialisms</h1>' in specialisms and 'id="specialismsForm"' in specialisms, 'Leader specialisms form missing'
+          assert 'save_expertise' in specialisms, 'Leader specialisms save action missing'
+          assert 'id="profileForm"' in profile and 'id="publicProfileForm"' in profile and 'id="passwordForm"' in profile, 'Leader profile forms missing'
+          assert 'save_account' in portal_js and 'save_profile_public' in portal_js and 'change_password' in portal_js, 'Leader profile actions missing'
+          assert 'id="expertiseForm"' in support and 'id="expertiseOptions"' in support, 'Leader support expertise hooks missing'
+          assert '<h1>Support &amp; Help</h1>' in support and 'aria-current="page">Support &amp; Help' in support, 'Leader support page navigation missing'
+          assert 'Contact Bubba Hub' in support and 'mailto:contact@bubbahub.co.uk' in support, 'Leader support contact route missing'
+          assert "if($action==='save_faq')" in portal_api and "if($action==='delete_faq')" in portal_api, 'Leader FAQ API actions missing'
+          assert "WHERE id=? AND organiser_id=?" in portal_api, 'Leader FAQ edits must remain organiser-scoped'
+          assert 'faq_limit_reached' in portal_api and 'faqLimit=$isPro?null:5' in portal_api, 'Free and Pro FAQ limits missing'
+          assert "if($action==='save_expertise')" in portal_api and 'WHERE organiser_id=?' in portal_api, 'Leader specialisms must remain organiser-scoped'
+          assert 'data-booking-status' in portal_js and 'action:"save_booking"' in portal_js, 'Leader booking status action missing'
+          assert "if($action==='save_booking')" in portal_api, 'Leader booking save API action missing'
+          assert "['reserved','confirmed','cancelled','attended']" in portal_api, 'Leader booking status validation missing'
+          assert 'WHERE br.id=? AND a.organiser_id=?' in portal_api, 'Leader booking updates must remain organiser-scoped'
+
+          class Inspector(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.ids = []
+                  self.panels = []
+                  self.scripts = []
+                  self.inscript = False
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if 'id' in attrs: self.ids.append(attrs['id'])
+                  if attrs.get('data-leader-panel'): self.panels.append(attrs['data-leader-panel'])
+                  if tag == 'script': self.inscript = 'src' not in attrs
+              def handle_data(self, data):
+                  if self.inscript: self.scripts.append(data)
+              def handle_endtag(self, tag):
+                  if tag == 'script': self.inscript = False
+          p=Inspector(); p.feed(html)
+          assert len(p.ids)==len(set(p.ids)), 'Duplicate HTML IDs'
+          required={'overview','classes','schedule','venues','bookings','messages','profile','specialisms','faqs','statistics','payments','blog','support'}
+          assert required.issubset(p.panels), f'Missing panels: {required-set(p.panels)}'
+          assert 'aria-controls="leaderSidebar"' in html
+          assert 'id="leaderFrame"' in html
+          assert '/images/logos/34013-20261020-162201-5c57b4.png' in html
+          home = Path("assets/js/leader-dashboard-home.js")
+          assert home.is_file(), 'Missing dashboard home renderer'
+          assert 'leader-dashboard-home.js' in html, 'Dashboard home renderer not loaded'
+          assert 'leaderUpcoming' in html and 'leaderRecentEnquiries' in html, 'Missing live dashboard sections'
+          for panel in required - {'overview'}:
+              path = Path('leader') / (panel + '.html')
+              assert path.is_file(), f'Missing leader panel page: {path}'
+          assert 'leader-pro-nav.js' in html, 'Pro entitlement navigation guard missing'
+          pro_nav = Path('assets/js/leader-pro-nav.js').read_text()
+          assert '/api/leader-entitlement.php' in pro_nav, 'Pro navigation must use the leader entitlement endpoint'
+          assert 'data-pro-only' in pro_nav and 'data.is_pro' in pro_nav, 'Pro navigation visibility guard missing'
+          assert 'querySelectorAll("[data-pro-only]")' not in html, 'Duplicate inline Pro visibility logic must not override the entitlement guard'
+          assert 'leader-portal.js' in html, 'Leader portal data loader missing'
+
+          assert 'data-pro-only hidden' in html
+          assert 'url.pathname.match(/^\\/leader\\/([a-z-]+)\\.html$/)' in html
+          for script in p.scripts:
+              if not script.strip(): continue
+              with tempfile.NamedTemporaryFile(suffix='.js',mode='w') as file:
+                  file.write(script); file.flush()
+                  subprocess.run(['node','--check',file.name],check=True)
+          message_script = re.search(r'<script>(.*?)</script>', messages, re.S)
+          assert message_script, 'Leader messages inline script missing'
+          with tempfile.NamedTemporaryFile(suffix='.js',mode='w') as file:
+              file.write(message_script.group(1)); file.flush()
+              subprocess.run(['node','--check',file.name],check=True)
+          subprocess.run(['node','--check','assets/js/leader-dashboard-home.js'],check=True)
+          subprocess.run(['node','--check','assets/js/leader-portal.js'],check=True)
+          print('Leader dashboard static smoke checks passed')
+          PY
