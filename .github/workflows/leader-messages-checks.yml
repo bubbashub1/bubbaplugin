@@ -10,6 +10,7 @@ on:
   push:
     branches:
       - main
+      - 'feature/leader-dashboard-shell-20261102'
     paths:
       - 'api/leader-messages.php'
       - 'leader/messages.html'
