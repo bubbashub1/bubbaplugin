@@ -1,5 +1,13 @@
 name: Leader dashboard smoke checks
 on:
+  push:
+    branches:
+      - 'feature/leader-dashboard-shell-20261102'
+    paths:
+      - 'leader/new.html'
+      - 'assets/js/leader-new/**'
+      - 'assets/js/leader-csv.js'
+      - '.github/workflows/leader-dashboard-checks.yml'
   pull_request:
     paths:
       - 'leader.html'
@@ -177,5 +185,7 @@ jobs:
               subprocess.run(['node','--check',file.name],check=True)
           subprocess.run(['node','--check','assets/js/leader-dashboard-home.js'],check=True)
           subprocess.run(['node','--check','assets/js/leader-portal.js'],check=True)
+          subprocess.run(['node','--check','assets/js/leader-new/core-v2.js'],check=True)
+          subprocess.run(['node','--check','assets/js/leader-csv.js'],check=True)
           print('Leader dashboard static smoke checks passed')
           PY
