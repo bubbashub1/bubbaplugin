@@ -185,7 +185,7 @@ if($photos)$db->prepare("UPDATE bh_activities SET image_path=? WHERE id=?")->exe
 }
 
 $b=json_decode(file_get_contents('php://input'),true);if(!is_array($b))lp(400,['ok'=>false,'error'=>'invalid_json']);$action=$b['action']??'';
-$csrfProtectedActions=['save_profile_public','save_terms','save_account','change_password','save_expertise','save_faq','delete_faq'];
+$csrfProtectedActions=['save_listing_photos','save_profile_public','save_terms','save_account','change_password','save_expertise','save_faq','delete_faq','add_option','create_listing','save_class','save_venue','save_booking'];
 if(in_array($action,$csrfProtectedActions,true)){
  $provided=(string)($_SERVER['HTTP_X_BH_CSRF']??'');
  if($provided===''||empty($_SESSION['bh_csrf'])||!hash_equals((string)$_SESSION['bh_csrf'],$provided))lp(403,['ok'=>false,'error'=>'csrf_failed','message'=>'Your session security check has expired. Refresh the page and try again.']);
