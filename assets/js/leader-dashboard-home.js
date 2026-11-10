@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   const dateLabel = value => {
     if (!value) return "";
-    const date = new Date(String(value).replace(" ", "T"));
+    const date = value instanceof Date ? value : new Date(String(value).replace(" ", "T"));
     return Number.isNaN(date.getTime()) ? String(value) : new Intl.DateTimeFormat("en-GB", { day:"numeric", month:"short", year:"numeric" }).format(date);
   };
   const dayIndex = value => {
