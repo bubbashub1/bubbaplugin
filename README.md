@@ -89,3 +89,16 @@ Configure the hosting cron to invoke it every four hours. It uses the saved enab
 ### Listing Checker review queue
 
 The admin review queue is available at `/admin/admin-listing-review.html`. It reads persisted findings from `bh_listing_check_findings` and allows an administrator to record a review status (new, follow-up, approved, rejected, confirmed issue or not an issue). These actions update only the finding's review metadata; they never publish, edit, remove or contact a listing. Source links are limited to HTTP(S).
+
+ 
+### New-listing discovery CLI worker
+
+The discovery worker is `api/listing-checker-discovery-cron.php`. Configure the hosting cron to invoke it on the same four-hour cadence as the health worker:
+
+```sh
+php /path/to/bubbaplugin/api/listing-checker-discovery-cron.php
+```
+
+It cycles through enabled search phrases and their selected Devon & Cornwall region scopes, respecting the saved batch, external-request and runtime limits. It currently uses Bing's public RSS search response (no paid API key). Search results are unverified leads only; they are stored with their source URL, search phrase, region scope and a deliberately cautious confidence score for an administrator to inspect in the review queue. Repeated source URLs for the same search phrase are not added again. The worker never creates, edits, publishes or deletes directory listings.
+
+The discovery worker requires PHP cURL and SimpleXML. Both workers are CLI-only and must be configured as separate server cron commands. The four-hour setting is checked independently by each worker against its own last completed run.
