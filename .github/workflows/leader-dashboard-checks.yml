@@ -103,7 +103,7 @@ jobs:
           assert "$_SESSION['bh_csrf']=bin2hex(random_bytes(32))" in portal_api, 'Leader portal CSRF token generation missing'
           assert "'X-BH-CSRF'" in portal_js and 'headers["X-BH-CSRF"]=data.csrf' in portal_js, 'Leader portal writes must send CSRF token'
           assert "$_SERVER['HTTP_X_BH_CSRF']" in portal_api and 'hash_equals((string)$_SESSION[\'bh_csrf\'],$provided)' in portal_api, 'Leader API must validate CSRF tokens'
-          for protected_action in ['save_profile_public','save_terms','save_account','change_password','save_expertise','save_faq','delete_faq']:
+          for protected_action in ['save_listing_photos','save_profile_public','save_terms','save_account','change_password','save_expertise','save_faq','delete_faq','add_option','create_listing','save_class','save_venue','save_booking']:
               assert protected_action in portal_api, f'Missing CSRF protection registration for {protected_action}'
           assert "'X-BH-CSRF':csrfToken" in specialisms, 'Specialisms form must send CSRF token'
           assert "csrfToken=d.csrf||''" in specialisms, 'Specialisms form must load session CSRF token'
