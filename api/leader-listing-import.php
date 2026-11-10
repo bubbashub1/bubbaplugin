@@ -54,7 +54,7 @@ $listingKey=$listingId>0?'listing:'.$listingId:'new-draft';
 // A single server-side draft allowance prevents clients minting arbitrary draft IDs.
 // Usage is transferred to the persisted listing when the class is created.
 if(!$isPro){
- try{$db->exec("CREATE TABLE IF NOT EXISTS bh_listing_import_usage_v2 (user_id BIGINT UNSIGNED NOT NULL, listing_key VARCHAR(80) NOT NULL, import_type VARCHAR(16) NOT NULL, month_key CHAR(7) NOT NULL, used INT UNSIGNED NOT NULL DEFAULT 0, PRIMARY KEY (user_id,listing_key,import_type,month_key)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");}
+ try{$quotaTable=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_listing_import_usage_v2'");$quotaTable->execute();if((int)$quotaTable->fetchColumn()!==1)fail(503,'Import quota service unavailable; the leader storage migration is required');}
  catch(Throwable $e){fail(503,'Import quota service unavailable');}
 }
 function chargeImport(PDO $db,int $userId,string $listingKey,string $mode): void {
