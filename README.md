@@ -102,3 +102,16 @@ php /path/to/bubbaplugin/api/listing-checker-discovery-cron.php
 It cycles through enabled search phrases and their selected Devon & Cornwall region scopes, respecting the saved batch, external-request and runtime limits. It currently uses Bing's public RSS search response (no paid API key). Search results are unverified leads only; they are stored with their source URL, search phrase, region scope and a deliberately cautious confidence score for an administrator to inspect in the review queue. Repeated source URLs for the same search phrase are not added again. The worker never creates, edits, publishes or deletes directory listings.
 
 The discovery worker requires PHP cURL and SimpleXML. Both workers are CLI-only and must be configured as separate server cron commands. The four-hour setting is checked independently by each worker against its own last completed run.
+
+
+### Admin controls and security checks
+
+The Listing Checker settings page includes pause/resume controls for each worker, a manual-run request, and the latest 20 run summaries. A manual run is queued for the next server cron invocation; it does not execute shell commands from the web request. Normal active-day and allowed-time-window restrictions still apply. Pause takes effect before a worker starts its next batch.
+
+The admin APIs require the existing authenticated Bubba Hub admin session and a per-session CSRF token. They reject cross-site requests when browser origin/fetch metadata is available, cap request body size, use prepared statements for user-supplied values, and return defensive response headers. Session cookies are HTTP-only, SameSite=Lax and Secure when HTTPS is detected. Review-queue source links are restricted to HTTP(S), and candidate text is HTML-escaped before display.
+
+Both worker scripts are CLI-only, use separate MySQL advisory locks to prevent overlapping copies, and never accept browser-supplied commands. The discovery HTTP client uses a fixed HTTPS search endpoint, verifies TLS, does not follow redirects, and caps response size. Search results remain untrusted evidence requiring admin verification.
+
+A GitHub Actions workflow at `.github/workflows/listing-checker-security.yml` runs PHP syntax lint on the five Listing Checker APIs/workers and checks that the critical authentication, CSRF, CLI-only and overlap-lock guards remain present.
+
+**Security validation still required before production:** review the workflow result, perform an authenticated/unauthenticated browser test, test CSRF and cross-origin rejection, verify admin session behaviour behind the live hosting proxy, and test database permissions and cron execution on staging. Static checks are not a penetration test.
