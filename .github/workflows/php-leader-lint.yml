@@ -6,6 +6,7 @@ on:
       - 'api/leader-entitlement.php'
       - 'api/leader-listing-import.php'
       - 'api/leader-blog.php'
+      - 'api/leader-messages.php'
       - 'api/db.php'
       - 'api/mailer.php'
       - '.github/workflows/php-leader-lint.yml'
@@ -21,5 +22,6 @@ jobs:
           php -l api/leader-entitlement.php
           php -l api/leader-listing-import.php
           php -l api/leader-blog.php
+          php -l api/leader-messages.php
           php -l api/db.php
           php -l api/mailer.php
