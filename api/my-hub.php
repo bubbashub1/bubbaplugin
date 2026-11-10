@@ -302,9 +302,11 @@ try {
             $dobValue = $dob;
         }
         if ($id > 0) {
+            $owned = $db->prepare("SELECT id FROM bh_children WHERE id=? AND user_id=? LIMIT 1");
+            $owned->execute([$id,$userId]);
+            if (!$owned->fetch()) bh_hub_json(404, ['ok' => false, 'error' => 'child_not_found']);
             $stmt = $db->prepare("UPDATE bh_children SET name=?,gender=?,date_of_birth=? WHERE id=? AND user_id=?");
             $stmt->execute([$name,$gender ?: null,$dobValue,$id,$userId]);
-            if (!$stmt->rowCount()) bh_hub_json(404, ['ok' => false, 'error' => 'child_not_found']);
         } else {
             $stmt = $db->prepare("INSERT INTO bh_children (user_id,name,gender,date_of_birth) VALUES (?,?,?,?)");
             $stmt->execute([$userId,$name,$gender ?: null,$dobValue]);
@@ -331,9 +333,11 @@ try {
             $dueValue = $due;
         }
         if ($id > 0) {
+            $owned = $db->prepare("SELECT id FROM bh_bumps WHERE id=? AND user_id=? LIMIT 1");
+            $owned->execute([$id,$userId]);
+            if (!$owned->fetch()) bh_hub_json(404, ['ok' => false, 'error' => 'bump_not_found']);
             $stmt = $db->prepare("UPDATE bh_bumps SET nickname=?,due_date=? WHERE id=? AND user_id=?");
             $stmt->execute([$nickname ?: null,$dueValue,$id,$userId]);
-            if (!$stmt->rowCount()) bh_hub_json(404, ['ok' => false, 'error' => 'bump_not_found']);
         } else {
             $stmt = $db->prepare("INSERT INTO bh_bumps (user_id,nickname,due_date) VALUES (?,?,?)");
             $stmt->execute([$userId,$nickname ?: null,$dueValue]);
