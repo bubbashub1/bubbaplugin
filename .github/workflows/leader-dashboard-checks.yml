@@ -10,6 +10,10 @@ on:
       - 'leader/bookings.html'
       - 'leader/statistics.html'
       - 'leader/payments.html'
+      - 'leader/faqs.html'
+      - 'leader/specialisms.html'
+      - 'leader/profile.html'
+      - 'leader/support.html'
       - 'api/leader-portal.php'
       - 'api/leader-messages.php'
       - 'assets/js/leader-dashboard-home.js'
@@ -41,6 +45,10 @@ jobs:
           bookings = Path("leader/bookings.html").read_text()
           statistics = Path("leader/statistics.html").read_text()
           payments = Path("leader/payments.html").read_text()
+          faqs = Path("leader/faqs.html").read_text()
+          specialisms = Path("leader/specialisms.html").read_text()
+          profile = Path("leader/profile.html").read_text()
+          support = Path("leader/support.html").read_text()
           portal_api = Path("api/leader-portal.php").read_text()
           portal_js = Path("assets/js/leader-portal.js").read_text()
           inbox_api = Path("api/leader-messages.php").read_text()
@@ -77,6 +85,15 @@ jobs:
           assert 'data-leader-page="payments"' in payments and 'aria-current="page">Payments' in payments, 'Leader payments page navigation missing'
           assert 'restrained information layout' in payments, 'Leader payments styling missing'
           assert 'Bubba Hub booking fee' in payments and 'External booking' in payments, 'Leader payment information missing'
+          assert '<h1>My FAQs</h1>' in faqs and 'data-leader-page="faqs"' in faqs, 'Leader FAQs page shell missing'
+          assert 'id="faqList"' in faqs and 'id="addFaqButton"' in faqs and 'id="faqQuota"' in faqs, 'Leader FAQ interaction hooks missing'
+          assert 'directory-inspired management page' in faqs, 'Leader FAQs styling missing'
+          assert 'aria-current="page">FAQs' in faqs, 'Leader FAQs current navigation item missing'
+          assert '<h1>My Specialisms</h1>' in specialisms and 'id="specialismsForm"' in specialisms, 'Leader specialisms form missing'
+          assert 'save_expertise' in specialisms, 'Leader specialisms save action missing'
+          assert 'id="profileForm"' in profile and 'id="publicProfileForm"' in profile and 'id="passwordForm"' in profile, 'Leader profile forms missing'
+          assert 'save_account' in portal_js and 'save_profile_public' in portal_js and 'change_password' in portal_js, 'Leader profile actions missing'
+          assert 'id="expertiseForm"' in support and 'id="expertiseOptions"' in support, 'Leader support expertise hooks missing'
           assert 'data-booking-status' in portal_js and 'action:"save_booking"' in portal_js, 'Leader booking status action missing'
           assert "if($action==='save_booking')" in portal_api, 'Leader booking save API action missing'
           assert "['reserved','confirmed','cancelled','attended']" in portal_api, 'Leader booking status validation missing'
