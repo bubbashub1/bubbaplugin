@@ -70,6 +70,8 @@ jobs:
           csv_import = Path("assets/js/leader-csv.js").read_text()
           new_listing = Path("leader/new.html").read_text()
           inbox_api = Path("api/leader-messages.php").read_text()
+          blog_api = Path("api/leader-blog.php").read_text()
+          blog_js = Path("assets/js/leader-blog.js").read_text()
           assert '<h1>My Listings</h1>' in listings, 'Leader listings page title missing'
           assert 'Add a New Activity' in listings, 'Leader listings add action missing'
           assert 'directory-inspired dashboard' in listings, 'Leader listings styling missing'
@@ -114,6 +116,10 @@ jobs:
           assert "$org['email']=$leaderEmail" in portal_api, 'Leader profile email must match the canonical login email'
           assert 'Object.fromEntries(new FormData(f))' in portal_js and 'f.name.value' not in portal_js, 'Leader profile form values must be read safely without clashing with native form properties'
           assert 'aria-busy' in portal_js and 'aria-live="polite"' in profile, 'Profile saves must expose accessible pending and confirmation states'
+          assert "if(array_key_exists($column,$org)&&in_array(strtolower(trim((string)$org[$column])),['pro','premium','ultimate'],true))" in blog_api, 'Blog entitlement must inspect every organiser plan field'
+          assert 'bh_admin_leader_promotions' in blog_api, 'Blog access must honour promotional Pro access'
+          assert "$_SERVER['HTTP_X_BH_CSRF']" in blog_api and 'hash_equals((string)$_SESSION[\'bh_csrf\'],$providedCsrf)' in blog_api, 'Blog submissions must validate CSRF'
+          assert "csrfToken=String(d.csrf||\"\")" in blog_js and '"X-BH-CSRF":csrfToken' in blog_js, 'Blog submissions must send the session CSRF token'
           assert "SELECT id FROM bh_users WHERE LOWER(email)=? AND id<>? LIMIT 1" in portal_api and "email_in_use" in portal_api, 'Leader account saves must reject duplicate login email addresses'
           assert "if(isset($orgCols['email']))" in portal_api and "UPDATE bh_users SET email=? WHERE id=?" in portal_api and "$db->beginTransaction();try{" in portal_api, 'Leader email changes must preserve organiser email linkage transactionally'
           assert "account_save_failed" in portal_api and "invalid_website" in portal_api, 'Account save failures and invalid website URLs must be handled'
