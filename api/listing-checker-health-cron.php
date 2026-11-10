@@ -26,6 +26,7 @@ $last=$db->query("SELECT MAX(finished_at) FROM bh_listing_check_runs WHERE check
 if(!$manualRun&&!$last&&$clock<$preferred){echo "Waiting for preferred first-run time\n";exit;}
 if(!$manualRun&&$last&&new DateTimeImmutable((string)$last,$tz)>$now->modify('-'.$interval.' hours')){echo "Not due yet\n";exit;}
 $lock=$db->query("SELECT GET_LOCK('bh_listing_checker_health',0)")->fetchColumn();if((int)$lock!==1){echo "Worker already running\n";exit;}
+if($manualRun){$clear=$db->prepare("INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES(?, '0') ON DUPLICATE KEY UPDATE setting_value='0'");$clear->execute(['health_run_now']);}
 $runId=0;
 try{
  $cols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);if(!$cols||!in_array('id',$cols,true))throw new RuntimeException('bh_activities table unavailable');
