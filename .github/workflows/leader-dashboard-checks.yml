@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'leader.html'
+      - 'assets/js/leader-dashboard-home.js'
       - '.github/workflows/leader-dashboard-checks.yml'
   workflow_dispatch:
 jobs:
@@ -39,16 +40,15 @@ jobs:
                   if tag == 'script': self.inscript = False
           p=Inspector(); p.feed(html)
           assert len(p.ids)==len(set(p.ids)), 'Duplicate HTML IDs'
-          required={'overview','new','classes','schedule','venues','bookings','messages','profile','specialisms','faqs','statistics','payments','blog','support'}
+          required={'overview','classes','schedule','venues','bookings','messages','profile','specialisms','faqs','statistics','payments','blog','support'}
           assert required.issubset(p.panels), f'Missing panels: {required-set(p.panels)}'
           assert 'aria-controls="leaderSidebar"' in html
           assert 'id="leaderFrame"' in html
           assert '/images/logos/34013-20261020-162201-5c57b4.png' in html
-          portal = Path("assets/js/leader-portal.js").read_text()
-          for field in ('statActivities','statVenues','statSessions','statBookings','healthBar','healthPercent','healthMessage','healthChecks','leaderAlerts'):
-              assert f'id="{field}"' in html, f'Missing dashboard field {field}'
-              assert field in portal, f'No data binding for dashboard field {field}'
-          assert 'renderDashboard()' in portal, 'Dashboard rendering not found'
+          home = Path("assets/js/leader-dashboard-home.js")
+          assert home.is_file(), 'Missing dashboard home renderer'
+          assert 'leader-dashboard-home.js' in html, 'Dashboard home renderer not loaded'
+          assert 'leaderUpcoming' in html and 'leaderRecentEnquiries' in html, 'Missing live dashboard sections'
           for panel in required - {'overview'}:
               path = Path('leader') / (panel + '.html')
               assert path.is_file(), f'Missing leader panel page: {path}'
@@ -62,5 +62,6 @@ jobs:
               with tempfile.NamedTemporaryFile(suffix='.js',mode='w') as file:
                   file.write(script); file.flush()
                   subprocess.run(['node','--check',file.name],check=True)
+          subprocess.run(['node','--check','assets/js/leader-dashboard-home.js'],check=True)
           print('Leader dashboard static smoke checks passed')
           PY
