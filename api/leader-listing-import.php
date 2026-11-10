@@ -19,10 +19,10 @@ require_once __DIR__.'/db.php';
 $db=bh_mysql();
 $org=null;$isPro=$isAdmin;
 if(!$isAdmin){
- $q=$db->prepare("SELECT role,status FROM bh_users WHERE id=?");$q->execute([$leaderId]);$user=$q->fetch();
+ $q=$db->prepare("SELECT role,status,email FROM bh_users WHERE id=?");$q->execute([$leaderId]);$user=$q->fetch();
  if(!$user||$user['role']!=='leader'||$user['status']!=='active')fail(403,'Class leader account required');
- $orgQuery=$db->prepare("SELECT * FROM bh_organisers WHERE user_id=? LIMIT 1");
- try{$orgQuery->execute([$leaderId]);$org=$orgQuery->fetch(PDO::FETCH_ASSOC);}catch(Throwable $e){fail(503,'Organiser lookup unavailable');}
+ $orgColumns=$db->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers'")->fetchAll(PDO::FETCH_COLUMN);
+ try{if(in_array('user_id',$orgColumns,true)){$orgQuery=$db->prepare("SELECT * FROM bh_organisers WHERE user_id=? LIMIT 1");$orgQuery->execute([$leaderId]);}else{$orgQuery=$db->prepare("SELECT * FROM bh_organisers WHERE email=? LIMIT 1");$orgQuery->execute([(string)$user['email']]);}$org=$orgQuery->fetch(PDO::FETCH_ASSOC);}catch(Throwable $e){fail(503,'Organiser lookup unavailable');}
  if(!$org)fail(403,'Linked organiser account required');
  foreach(['plan','membership_plan','membership_tier','subscription_plan','tier'] as $column){if(isset($org[$column])&&in_array(strtolower(trim((string)$org[$column])),['pro','premium','ultimate'],true)){$isPro=true;break;}}
  try{$subscription=$db->prepare("SELECT COUNT(*) FROM bh_user_subscriptions WHERE user_id=? AND plan='leader_pro' AND status IN ('active','trialing') AND (expires_at IS NULL OR expires_at>UTC_TIMESTAMP())");$subscription->execute([$leaderId]);if((int)$subscription->fetchColumn()>0)$isPro=true;}catch(Throwable $ignored){}
