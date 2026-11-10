@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - 'api/leader-portal.php'
+      - 'api/leader-entitlement.php'
+      - 'api/leader-listing-import.php'
       - 'api/db.php'
       - 'api/mailer.php'
       - '.github/workflows/php-leader-lint.yml'
@@ -15,5 +17,7 @@ jobs:
       - name: Check PHP syntax
         run: |
           php -l api/leader-portal.php
+          php -l api/leader-entitlement.php
+          php -l api/leader-listing-import.php
           php -l api/db.php
           php -l api/mailer.php
