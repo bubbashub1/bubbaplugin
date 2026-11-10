@@ -32,7 +32,7 @@ try{
  if(!function_exists('curl_init'))throw new RuntimeException('PHP cURL extension is required for discovery searches.');
  if(!function_exists('simplexml_load_string'))throw new RuntimeException('PHP SimpleXML extension is required for discovery searches.');
  $processed=0;$candidates=0;$errors=0;$duplicates=0;
- $insert=$db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,term_id,candidate_json,finding_type,confidence,source_url,checked_at,review_status) VALUES('discovery',NULL,?,?,?,?,?,?, 'new')");
+ $insert=$db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,term_id,candidate_json,finding_type,confidence,source_url,checked_at,review_status) VALUES('discovery',NULL,?,?,?,?,NOW(),'new')");
  $seen=$db->prepare("SELECT id FROM bh_listing_check_findings WHERE check_type='discovery' AND term_id=? AND source_url=? LIMIT 1");
  $touch=$db->prepare('UPDATE bh_listing_discovery_terms SET last_searched_at=NOW() WHERE id=?');
  foreach($terms as $term){
@@ -55,7 +55,7 @@ try{
     $parts=parse_url($source);if(!is_array($parts)||!in_array(strtolower((string)($parts['scheme']??'')),['http','https'],true)||empty($parts['host']))continue;
     if(preg_match('/(^|\.)bing\.com$/i',(string)$parts['host']))continue;
     $seen->execute([(int)$term['id'],$source]);if($seen->fetchColumn()){$duplicates++;continue;}
-    $candidate=['title'=>$title,'snippet'=>mb_substr($snippet,0,1200),'website'=>$source,'search_term'=>(string)$term['term'],'term_group'=>(string)$term['term_group'],'region_scope'=>$scope,'provider'=>'Bing RSS','evidence_note'=>'Search result only. Verify the organiser, current activity, location and dates directly before treating this as a valid listing.'];
+    $candidate=['title'=>$title,'snippet'=>substr($snippet,0,1200),'website'=>$source,'search_term'=>(string)$term['term'],'term_group'=>(string)$term['term_group'],'region_scope'=>$scope,'provider'=>'Bing RSS','evidence_note'=>'Search result only. Verify the organiser, current activity, location and dates directly before treating this as a valid listing.'];
     $insert->execute([(int)$term['id'],json_encode($candidate,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE),'discovery_candidate',45,$source]);
     $count++;$candidates++;
    }
