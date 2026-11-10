@@ -118,6 +118,8 @@ jobs:
           assert "SELECT id FROM bh_activities WHERE id=? AND organiser_id=? LIMIT 1" in portal_api and "faq_activity_not_found" in portal_api, 'FAQs must not link to another organiser activity'
           assert "JOIN bh_activities va ON va.id=v.activity_id WHERE va.organiser_id=?" in portal_api and "$vq->execute([$oid])" in portal_api, 'Leader venue choices must only include venues owned by the organiser'
           assert "WHERE v.id=? AND va.organiser_id=? LIMIT 1" in portal_api and "Selected venue was not found or is not available to your organisation" in portal_api, 'New listings must reject venues owned by another organiser'
+          assert 'SELECT id FROM bh_activities WHERE id=? AND organiser_id=? LIMIT 1' in portal_api and 'class_not_found' in portal_api, 'Unchanged listing saves must still confirm organiser ownership'
+          assert 'SELECT v.id FROM bh_venues v JOIN bh_activities a ON a.id=v.activity_id WHERE v.id=? AND a.organiser_id=? LIMIT 1' in portal_api and 'venue_not_found' in portal_api, 'Unchanged venue saves must still confirm organiser ownership'
           assert "invalid_booking_url" in portal_api and "$pricePerSession,$url,$scheduleJson" in portal_api and "$pricePerSession,$url,$scheduleJson" in portal_api, 'New listing must validate and retain its booking URL'
           assert "WHERE id=? AND organiser_id=?" in portal_api, 'Leader FAQ edits must remain organiser-scoped'
           assert 'faq_limit_reached' in portal_api and 'faqLimit=$isPro?null:5' in portal_api, 'Free and Pro FAQ limits missing'
