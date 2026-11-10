@@ -84,3 +84,8 @@ php /path/to/bubbaplugin/api/listing-checker-health-cron.php
 ```
 
 Configure the hosting cron to invoke it every four hours. It uses the saved enable flag, UK timezone/run-window/day settings, batch size and maximum runtime; it uses a MySQL advisory lock to prevent overlapping runs. Each run handles up to the configured batch size (default 30), saves findings in the separate review table and never updates live activity records. The worker exits safely with a migration-required message until the SQL migration has been applied.
+
+
+### Listing Checker review queue
+
+The admin review queue is available at `/admin/admin-listing-review.html`. It reads persisted findings from `bh_listing_check_findings` and allows an administrator to record a review status (new, follow-up, approved, rejected, confirmed issue or not an issue). These actions update only the finding's review metadata; they never publish, edit, remove or contact a listing. Source links are limited to HTTP(S).
