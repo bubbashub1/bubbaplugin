@@ -6,7 +6,6 @@ function fail(int $code,string $error): never {http_response_code($code);echo js
 if($_SERVER['REQUEST_METHOD']!=='POST')fail(405,'POST required');
 if(strtolower((string)($_SERVER['HTTP_SEC_FETCH_SITE']??''))==='cross-site')fail(403,'Cross-site requests are not permitted');
 session_name('BUBBAHUBSESSID');session_start();
-if(!$isAdmin){$providedCsrf=(string)($_SERVER['HTTP_X_BH_CSRF']??'');if($providedCsrf===''||empty($_SESSION['bh_csrf'])||!hash_equals((string)$_SESSION['bh_csrf'],$providedCsrf))fail(403,'Session security check failed; refresh the page and try again');}
 $leaderId=(int)($_SESSION['bh_user_id']??0);
 $isAdmin=false;
 if(!$leaderId){
@@ -15,6 +14,7 @@ if(!$leaderId){
  $isAdmin=!empty($_SESSION['bh_admin_authenticated']);
  if(!$isAdmin)fail(401,'Sign in as a class leader or administrator');
 }
+if(!$isAdmin){$providedCsrf=(string)($_SERVER['HTTP_X_BH_CSRF']??'');if($providedCsrf===''||empty($_SESSION['bh_csrf'])||!hash_equals((string)$_SESSION['bh_csrf'],$providedCsrf))fail(403,'Session security check failed; refresh the page and try again');}
 
 require_once __DIR__.'/db.php';
 $db=bh_mysql();
