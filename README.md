@@ -106,7 +106,7 @@ The discovery worker requires PHP cURL and SimpleXML. Both workers are CLI-only 
 
 ### Admin controls and security checks
 
-The Listing Checker settings page includes pause/resume controls for each worker, a manual-run request, and the latest 20 run summaries. A manual run is queued for the next server cron invocation; it does not execute shell commands from the web request. Normal active-day and allowed-time-window restrictions still apply. Pause takes effect before a worker starts its next batch.
+The Listing Checker settings page includes pause/resume controls for each worker, a manual-run request, and the latest 20 run summaries. A manual run is queued for the next server cron invocation; it does not execute shell commands from the web request. Normal active-day and allowed-time-window restrictions still apply. Pause prevents the next worker invocation from starting; it does not interrupt a batch already in progress.
 
 The admin APIs require the existing authenticated Bubba Hub admin session and a per-session CSRF token. They reject cross-site requests when browser origin/fetch metadata is available, cap request body size, use prepared statements for user-supplied values, and return defensive response headers. Session cookies are HTTP-only, SameSite=Lax and Secure when HTTPS is detected. Review-queue source links are restricted to HTTP(S), and candidate text is HTML-escaped before display.
 
