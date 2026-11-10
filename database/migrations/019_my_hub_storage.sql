@@ -43,6 +43,13 @@ CREATE TABLE IF NOT EXISTS bh_planner (
     PRIMARY KEY (user_id, activity_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- The planner API also stores each family's hidden weekdays.
+CREATE TABLE IF NOT EXISTS bh_hidden_planner_days (
+    user_id BIGINT UNSIGNED NOT NULL,
+    day_of_week TINYINT UNSIGNED NOT NULL,
+    PRIMARY KEY (user_id, day_of_week)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET @bh_add_column = IF((SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_children' AND COLUMN_NAME='name')=0,'ALTER TABLE bh_children ADD COLUMN name VARCHAR(120) NOT NULL DEFAULT \'\'','SELECT 1');
 PREPARE bh_stmt FROM @bh_add_column; EXECUTE bh_stmt; DEALLOCATE PREPARE bh_stmt;
 SET @bh_add_column = IF((SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_children' AND COLUMN_NAME='gender')=0,'ALTER TABLE bh_children ADD COLUMN gender VARCHAR(40) NULL','SELECT 1');
