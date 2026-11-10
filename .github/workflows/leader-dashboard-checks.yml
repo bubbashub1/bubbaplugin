@@ -66,6 +66,7 @@ jobs:
           entitlement_api = Path("api/leader-entitlement.php").read_text()
           portal_js = Path("assets/js/leader-portal.js").read_text()
           listing_wizard = Path("assets/js/leader-new/core-v2.js").read_text()
+          listing_photos = Path("assets/js/leader-new/step-photos.js").read_text()
           csv_import = Path("assets/js/leader-csv.js").read_text()
           new_listing = Path("leader/new.html").read_text()
           inbox_api = Path("api/leader-messages.php").read_text()
@@ -131,7 +132,10 @@ jobs:
           assert 'data-step="7"' in new_listing and 'step-review.js' in new_listing, 'Seven-step listing wizard must remain present'
           assert 'X-BH-CSRF' in listing_wizard and 'state.csrf=String(d.csrf||"")' in listing_wizard, 'Listing wizard must load and send its session CSRF token'
           assert 'headers:{"X-BH-CSRF":state.csrf' in listing_wizard, 'Listing image uploads must send the session CSRF token'
-          assert 'state.meta.max_images=Math.max(1,Number(d.max_images)||3)' in listing_wizard and 'imageLimit).textContent' not in listing_wizard, 'Listing wizard must use the server-side Free/Pro image allowance'
+          assert 'state.meta.max_images=Math.max(1,Number(d.max_images)||3)' in listing_wizard and 'state.meta.max_images=3;' not in listing_wizard, 'Listing wizard must retain the server-side Free/Pro image allowance'
+          assert 'bh_add_class_draft_org_' in listing_wizard and 'localStorage.setItem(state.draftKey' in listing_wizard, 'Listing drafts must be isolated by organiser'
+          assert 'B.register("photos",init,()=>{' in listing_photos, 'Listing image count must be validated before submission'
+          assert 'imageLimit">3</span>' in new_listing and 'Listing image URLs (up to 10)' not in new_listing, 'Listing image copy must not imply the wrong plan limit'
           assert 'X-BH-CSRF' in csv_import and 'tokenData.csrf' in csv_import, 'CSV importer must load and send the session CSRF token'
           assert "if($action==='save_booking')" in portal_api, 'Leader booking save API action missing'
           assert "['reserved','confirmed','cancelled','attended']" in portal_api, 'Leader booking status validation missing'
