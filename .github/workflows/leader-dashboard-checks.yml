@@ -5,6 +5,8 @@ on:
       - 'leader.html'
       - 'leader/classes.html'
       - 'leader/venues.html'
+      - 'leader/messages.html'
+      - 'api/leader-messages.php'
       - 'assets/js/leader-dashboard-home.js'
       - 'assets/js/leader-pro-nav.js'
       - 'api/leader-entitlement.php'
@@ -28,6 +30,8 @@ jobs:
           html = Path("leader.html").read_text()
           listings = Path("leader/classes.html").read_text()
           venues = Path("leader/venues.html").read_text()
+          messages = Path("leader/messages.html").read_text()
+          inbox_api = Path("api/leader-messages.php").read_text()
           assert '<h1>My Listings</h1>' in listings, 'Leader listings page title missing'
           assert 'Add a New Activity' in listings, 'Leader listings add action missing'
           assert 'directory-inspired dashboard' in listings, 'Leader listings styling missing'
@@ -36,6 +40,12 @@ jobs:
           assert 'id="venueList"' in venues and 'data-leader-page="venues"' in venues, 'Leader venues renderer hook missing'
           assert 'directory-inspired dashboard' in venues, 'Leader venues styling missing'
           assert 'leader-portal.js' in venues, 'Leader venues data loader missing'
+          assert '<h1>My Messages</h1>' in messages, 'Leader messages title missing'
+          assert 'id="messages"' in messages and '/api/leader-messages.php' in messages, 'Leader messages API hook missing'
+          assert 'directory-style layout' in messages, 'Leader messages styling missing'
+          assert "action:'reply'" in messages and 'field.value' in messages, 'Leader reply interaction missing'
+          assert "if($_SERVER['REQUEST_METHOD']==='POST'&&$action==='reply')" in inbox_api, 'Leader reply API action missing'
+          assert 'm.organiser_id=?' in inbox_api and 'WHERE m.id=? AND m.organiser_id=?' in inbox_api, 'Leader messages must remain organiser-scoped'
           class Inspector(HTMLParser):
               def __init__(self):
                   super().__init__()
@@ -80,6 +90,11 @@ jobs:
               with tempfile.NamedTemporaryFile(suffix='.js',mode='w') as file:
                   file.write(script); file.flush()
                   subprocess.run(['node','--check',file.name],check=True)
+          message_script = re.search(r'<script>(.*?)</script>', messages, re.S)
+          assert message_script, 'Leader messages inline script missing'
+          with tempfile.NamedTemporaryFile(suffix='.js',mode='w') as file:
+              file.write(message_script.group(1)); file.flush()
+              subprocess.run(['node','--check',file.name],check=True)
           subprocess.run(['node','--check','assets/js/leader-dashboard-home.js'],check=True)
           print('Leader dashboard static smoke checks passed')
           PY
