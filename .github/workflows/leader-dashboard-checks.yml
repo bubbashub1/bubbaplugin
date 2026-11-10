@@ -8,7 +8,10 @@ on:
       - 'assets/js/leader-new/**'
       - 'assets/js/leader-csv.js'
       - 'api/leader-portal.php'
+      - 'api/leader-messages.php'
+      - 'leader/messages.html'
       - 'database/migrations/007_leader_activity_fields.sql'
+      - 'database/migrations/008_leader_messages.sql'
       - '.github/workflows/leader-dashboard-checks.yml'
   pull_request:
     paths:
@@ -29,6 +32,7 @@ on:
       - 'leader/support.html'
       - 'api/leader-portal.php'
       - 'database/migrations/007_leader_activity_fields.sql'
+      - 'database/migrations/008_leader_messages.sql'
       - 'api/leader-messages.php'
       - 'assets/js/leader-dashboard-home.js'
       - 'assets/js/leader-portal.js'
@@ -100,6 +104,11 @@ jobs:
           assert "action:'reply'" in messages and 'field.value' in messages, 'Leader reply interaction missing'
           assert "if($_SERVER['REQUEST_METHOD']==='POST'&&$action==='reply')" in inbox_api, 'Leader reply API action missing'
           assert 'm.organiser_id=?' in inbox_api and 'WHERE m.id=? AND m.organiser_id=?' in inbox_api, 'Leader messages must remain organiser-scoped'
+          assert 'CREATE TABLE' not in inbox_api and 'ALTER TABLE' not in inbox_api, 'Leader messaging requests must never mutate the database schema'
+          assert "HTTP_X_BH_CSRF" in inbox_api and "hash_equals($_SESSION['bh_csrf'], $providedCsrf)" in inbox_api, 'Leader inbox replies must validate CSRF'
+          assert "'csrf' => $_SESSION['bh_csrf']" in inbox_api and "'X-BH-CSRF':csrfToken" in messages, 'Leader inbox must load and send the session CSRF token'
+          inbox_migration = Path("database/migrations/008_leader_messages.sql").read_text()
+          assert 'CREATE TABLE IF NOT EXISTS bh_leader_messages' in inbox_migration and 'idx_leader_messages_organiser' in inbox_migration, 'Leader messages migration must provision indexed storage'
           assert '<h1>My Schedule</h1>' in schedule, 'Leader schedule title missing'
           assert 'aria-current="page">My Schedule' in schedule, 'Leader schedule current navigation item missing'
           assert 'id="scheduleList"' in schedule and 'data-leader-page="schedule"' in schedule, 'Leader schedule renderer hook missing'
