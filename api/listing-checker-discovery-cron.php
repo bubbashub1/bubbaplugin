@@ -25,6 +25,7 @@ $last=$db->query("SELECT MAX(finished_at) FROM bh_listing_check_runs WHERE check
 if(!$manualRun&&!$last&&$clock<$preferred){echo "Waiting for preferred first-run time\n";exit;}
 if(!$manualRun&&$last&&new DateTimeImmutable((string)$last,$tz)>$now->modify('-'.$interval.' hours')){echo "Not due yet\n";exit;}
 $lock=$db->query("SELECT GET_LOCK('bh_listing_checker_discovery',0)")->fetchColumn();if((int)$lock!==1){echo "Discovery worker already running\n";exit;}
+if($manualRun){$clear=$db->prepare("INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES(?, '0') ON DUPLICATE KEY UPDATE setting_value='0'");$clear->execute(['discovery_run_now']);}
 $runId=0;
 try{
  $run=$db->prepare("INSERT INTO bh_listing_check_runs(check_type,status,started_at) VALUES('discovery','running',NOW())");$run->execute();$runId=(int)$db->lastInsertId();
