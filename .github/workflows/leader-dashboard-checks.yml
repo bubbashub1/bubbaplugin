@@ -7,6 +7,8 @@ on:
       - 'leader/new.html'
       - 'assets/js/leader-new/**'
       - 'assets/js/leader-csv.js'
+      - 'api/leader-portal.php'
+      - 'database/migrations/007_leader_activity_fields.sql'
       - '.github/workflows/leader-dashboard-checks.yml'
   pull_request:
     paths:
@@ -26,6 +28,7 @@ on:
       - 'leader/profile.html'
       - 'leader/support.html'
       - 'api/leader-portal.php'
+      - 'database/migrations/007_leader_activity_fields.sql'
       - 'api/leader-messages.php'
       - 'assets/js/leader-dashboard-home.js'
       - 'assets/js/leader-portal.js'
