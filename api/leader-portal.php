@@ -199,7 +199,7 @@ if($action==='save_listing_photos'){$activityId=(int)($b['activity_id']??0);$pho
 if($action==='save_profile_public'){
  $about=trim((string)($b['about_content']??''));$logo=trim((string)($b['logo_url']??''));$facebook=trim((string)($b['facebook_url']??''));$instagram=trim((string)($b['instagram_url']??''));$tiktok=trim((string)($b['tiktok_url']??''));
  if(strlen($about)>200000)lp(422,['ok'=>false,'error'=>'about_too_long','message'=>'Your organisation description is too long.']);
- foreach(['logo'=>$logo,'facebook'=>$facebook,'instagram'=>$instagram,'tiktok'=>$tiktok] as $key=>$url){if($url!==''&&!filter_var($url,FILTER_VALIDATE_URL))lp(422,['ok'=>false,'error'=>'invalid_'.$key.'_url','message'=>'Please enter a valid URL for '.ucfirst($key).'.']);}
+ foreach(['logo'=>$logo,'facebook'=>$facebook,'instagram'=>$instagram,'tiktok'=>$tiktok] as $key=>$url){if($url!==''){ $scheme=strtolower((string)(parse_url($url,PHP_URL_SCHEME)??''));if(!filter_var($url,FILTER_VALIDATE_URL)||!in_array($scheme,['http','https'],true))lp(422,['ok'=>false,'error'=>'invalid_'.$key.'_url','message'=>'Please enter a valid web address beginning with https:// or http:// for '.ucfirst($key).'.']);}}
  $q=$db->prepare("UPDATE bh_organisers SET about_content=?,logo_url=?,facebook_url=?,instagram_url=?,tiktok_url=? WHERE id=?");$q->execute([$about,$logo,$facebook,$instagram,$tiktok,$oid]);
  lp(200,['ok'=>true,'message'=>'Public organiser profile saved.']);
 }
