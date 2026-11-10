@@ -165,3 +165,12 @@ PREPARE bh_leader_stmt FROM @bh_leader_sql;
 EXECUTE bh_leader_stmt;
 DEALLOCATE PREPARE bh_leader_stmt;
 
+-- Server-side monthly import quotas (Free leader accounts only).
+CREATE TABLE IF NOT EXISTS bh_listing_import_usage_v2 (
+  user_id BIGINT UNSIGNED NOT NULL,
+  listing_key VARCHAR(80) NOT NULL,
+  import_type VARCHAR(16) NOT NULL,
+  month_key CHAR(7) NOT NULL,
+  used INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (user_id, listing_key, import_type, month_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
