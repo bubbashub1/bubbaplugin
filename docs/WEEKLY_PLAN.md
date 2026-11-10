@@ -11,7 +11,7 @@
 - Update statuses every evening: `[ ]` not started, `[~]` in progress, `[x]` complete and verified, `[!]` blocked/needs a decision.
 - Do not mark a task complete because code exists or a PR merged. Confirm the required user journey, tests and staging QA.
 - Record the PR/commit and evidence beside the task when available.
-- Keep all implementation in BubbaPlugin. Bubba4 is a source of ideas, not a second implementation.
+- Keep all implementation in BubbaPlugin. BubbaWP and Bubba4 are archived historical/reference repositories only; consult them only when a checklist item explicitly requires origin verification, never as implementation targets.
 - The broader feature roadmap lives in [Future Developments](FUTURE_DEVELOPMENTS.md).
 
 ## This week's goal
@@ -87,6 +87,8 @@ Make the existing Bubba Hub platform dependable and joined-up for families, orga
 
 ## 7. Bubba4 feature review
 
+Bubba4 and BubbaWP are archived. This is a historical source review only; do not restart either repository or create parallel implementation work.
+
 - [ ] Review personalised Leader greeting; port only if missing in BubbaPlugin.
 - [ ] Review simpler admin navigation and redundant submenu hiding; preserve routes and saved data.
 - [ ] Reuse existing activity-management links rather than creating a duplicate activity inventory.
@@ -107,6 +109,8 @@ Make the existing Bubba Hub platform dependable and joined-up for families, orga
 - [ ] Do not deploy to live without explicit approval, backup and rollback plan.
 
 ## Current known status / carry-forward
+
+- [x] Repository consolidation: user confirmed BubbaWP and Bubba4 are archived; BubbaPlugin is the sole active implementation repository.
 
 - [x] PR #826 activity detail redesign merged (9 November 2026). **Deployment and responsive/booking regression QA are not confirmed.**
 - [~] Admin dashboard: PR #838 (colour-coded panels) and PR #849 (mobile polish) are merged to main. No deployment or staging/mobile visual QA evidence is available.
@@ -153,4 +157,4 @@ Every Sunday:
 
 ## Repository consolidation note
 
-This operational checklist now lives in `bubbashub1/bubbaplugin`. PR references labelled legacy BubbaWP are historical source references only; verify equivalent work and current status in BubbaPlugin. BubbaPlugin is the single implementation target.
+This operational checklist now lives in `bubbashub1/bubbaplugin`. BubbaWP and Bubba4 are archived historical/reference repositories only; consult them only where a checklist item explicitly requires origin verification. PR references from those repositories are not BubbaPlugin PRs. BubbaPlugin is the single implementation target.
