@@ -32,6 +32,10 @@ try {
   bh_lcr_reply(200,['ok'=>true,'csrf'=>$_SESSION['bh_listing_review_csrf'],'items'=>$rows,'counts'=>$counts,'limit'=>$limit,'offset'=>$offset]);
  }
  if($method!=='POST')bh_lcr_reply(405,['ok'=>false,'error'=>'Method not allowed']);
+  $origin=(string)($_SERVER['HTTP_ORIGIN']??'');$host=(string)($_SERVER['HTTP_HOST']??'');
+  if($origin!==''&&(!filter_var($origin,FILTER_VALIDATE_URL)||strcasecmp((string)parse_url($origin,PHP_URL_HOST),preg_replace('/:\\d+$/','',$host))!==0)) bh_lcr_reply(403,['ok'=>false,'error'=>'Cross-origin request blocked']);
+  if(in_array((string)($_SERVER['HTTP_SEC_FETCH_SITE']??''),['cross-site'],true)) bh_lcr_reply(403,['ok'=>false,'error'=>'Cross-site request blocked']);
+  if((int)($_SERVER['CONTENT_LENGTH']??0)>65536) bh_lcr_reply(413,['ok'=>false,'error'=>'Request too large']);
  $input=json_decode((string)file_get_contents('php://input'),true);
  if(!is_array($input)||!hash_equals((string)$_SESSION['bh_listing_review_csrf'],(string)($input['csrf']??'')))bh_lcr_reply(403,['ok'=>false,'error'=>'Security check failed. Refresh and try again.']);
  $id=(int)($input['id']??0);$status=(string)($input['review_status']??'');
