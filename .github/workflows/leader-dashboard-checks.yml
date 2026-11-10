@@ -7,6 +7,8 @@ on:
       - 'leader/venues.html'
       - 'leader/messages.html'
       - 'leader/schedule.html'
+      - 'leader/bookings.html'
+      - 'api/leader-portal.php'
       - 'api/leader-messages.php'
       - 'assets/js/leader-dashboard-home.js'
       - 'assets/js/leader-portal.js'
@@ -34,6 +36,9 @@ jobs:
           venues = Path("leader/venues.html").read_text()
           messages = Path("leader/messages.html").read_text()
           schedule = Path("leader/schedule.html").read_text()
+          bookings = Path("leader/bookings.html").read_text()
+          portal_api = Path("api/leader-portal.php").read_text()
+          portal_js = Path("assets/js/leader-portal.js").read_text()
           inbox_api = Path("api/leader-messages.php").read_text()
           assert '<h1>My Listings</h1>' in listings, 'Leader listings page title missing'
           assert 'Add a New Activity' in listings, 'Leader listings add action missing'
@@ -55,6 +60,15 @@ jobs:
           assert 'directory-inspired schedule' in schedule, 'Leader schedule styling missing'
           assert 'leader-portal.js' in schedule, 'Leader schedule data loader missing'
           assert 'Upcoming schedule' in schedule and 'Import your timetable' in schedule, 'Leader schedule sections missing'
+          assert '<h1>My Bookings</h1>' in bookings, 'Leader bookings title missing'
+          assert 'aria-current="page">My Bookings' in bookings, 'Leader bookings current navigation item missing'
+          assert 'id="bookingList"' in bookings and 'data-leader-page="bookings"' in bookings, 'Leader bookings renderer hook missing'
+          assert 'directory-inspired reservation' in bookings, 'Leader bookings styling missing'
+          assert 'payments are not collected here' in bookings, 'Leader bookings payment disclaimer missing'
+          assert 'data-booking-status' in portal_js and 'action:"save_booking"' in portal_js, 'Leader booking status action missing'
+          assert "if($action==='save_booking')" in portal_api, 'Leader booking save API action missing'
+          assert "['reserved','confirmed','cancelled','attended']" in portal_api, 'Leader booking status validation missing'
+          assert 'WHERE br.id=? AND a.organiser_id=?' in portal_api, 'Leader booking updates must remain organiser-scoped'
 
           class Inspector(HTMLParser):
               def __init__(self):
