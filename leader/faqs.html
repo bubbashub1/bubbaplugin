@@ -1,1 +1,56 @@
-<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="../"><title>Leader FAQs · Bubba Hub</title><link rel="stylesheet" href="assets/css/styles.css"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/subpages-v2.css"></head><body class="bh-subpage-v2" data-leader-page="faqs"><header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main menu"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">My Account</a></nav><a class="button button-soft" href="account.html">My account</a></header><main class="app-shell bh-leader-page"><section class="page-heading bh-leader-hero"><div><span class="eyebrow">Leader portal</span><h1>FAQs for families</h1><p>Create useful answers about your classes so families can find the information they need before booking.</p></div><div class="hero-actions"><button class="button button-primary" id="addFaqButton" type="button">＋ Add FAQ</button><a class="button button-soft" href="leader.html">Dashboard</a></div></section><nav class="bh-leader-tabs" aria-label="Leader portal sections"><a href="leader.html">Dashboard</a><a href="leader/classes.html">Classes</a><a href="leader/venues.html">Venues</a><a href="leader/schedule.html">Schedule</a><a href="leader/bookings.html">Bookings</a><a href="leader/statistics.html">Statistics</a><a href="leader/payments.html">Payments</a><a href="leader/faqs.html">FAQs</a><a href="leader/profile.html">Profile</a><a href="leader/messages.html">My Messages</a><a href="leader/specialisms.html">My Specialisms</a><a href="leader/support.html">Support</a></nav><section class="admin-panel"><div class="admin-panel-head"><div><span class="eyebrow">Public answers</span><h2>Your FAQs</h2><p>These are separate from private family Support &amp; Help conversations.</p></div></div><p id="faqQuota" class="deployment-note">Free leaders: up to 5 FAQs. Pro: unlimited FAQs.</p><div id="faqList" class="bh-faq-list"><p class="deployment-note">Loading your FAQs…</p></div></section><p id="portalMessage" class="deployment-note" role="status"></p></main><script src="assets/js/app.js"></script><script src="assets/js/leader-portal.js"></script><script src="/assets/js/leader-pro-nav.js"></script></body></html>
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<base href="../">
+<title>My FAQs · Bubba Hub</title>
+<link rel="stylesheet" href="assets/css/styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/subpages-v2.css">
+<style>
+/* FAQs: a calm, directory-inspired management page. */
+body[data-leader-page="faqs"] .bh-leader-page{max-width:1120px;padding-top:34px;padding-bottom:56px}
+body[data-leader-page="faqs"] .bh-leader-hero{align-items:center;background:#f4f8f4;border:1px solid #e1ebe2;border-radius:18px;padding:26px 30px;margin-bottom:24px}
+body[data-leader-page="faqs"] .bh-leader-hero h1{color:#244c35;margin:4px 0 7px}
+body[data-leader-page="faqs"] .bh-leader-hero p{color:#718176;margin:0}
+body[data-leader-page="faqs"] .bh-leader-hero .button-primary{background:#e85c91;border-color:#e85c91;color:#fff}
+body[data-leader-page="faqs"] .bh-leader-tabs{display:none}
+body[data-leader-page="faqs"] .admin-panel{background:#fff;border:0;border-radius:0;padding:8px 0;box-shadow:none}
+body[data-leader-page="faqs"] .admin-panel-head{padding:0 0 16px;border-bottom:1px solid #e7eee8;margin-bottom:4px}
+body[data-leader-page="faqs"] .admin-panel-head h2{color:#244c35;margin:3px 0}
+body[data-leader-page="faqs"] .admin-panel-head p,body[data-leader-page="faqs"] #faqQuota{color:#718176;margin:5px 0}
+body[data-leader-page="faqs"] .bh-faq-list{display:grid;gap:0}
+body[data-leader-page="faqs"] .bh-faq-item{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;padding:20px 4px;border:0;border-bottom:1px solid #edf1ed;border-radius:0;background:transparent;box-shadow:none}
+body[data-leader-page="faqs"] .bh-faq-item h3{color:#294b35;margin:5px 0;font-size:1.08rem}
+body[data-leader-page="faqs"] .bh-faq-item p{color:#718176;margin:5px 0;line-height:1.6;white-space:pre-wrap}
+body[data-leader-page="faqs"] .bh-faq-item .eyebrow{color:#63816a;font-size:.72rem;font-weight:750;text-transform:uppercase;letter-spacing:.05em}
+body[data-leader-page="faqs"] .bh-faq-actions{display:flex;gap:8px;flex:0 0 auto}
+body[data-leader-page="faqs"] #portalMessage{color:#718176;margin-top:16px}
+@media(max-width:620px){body[data-leader-page="faqs"] .bh-leader-hero{padding:20px;align-items:flex-start;gap:16px;flex-direction:column}body[data-leader-page="faqs"] .bh-faq-item{flex-direction:column;gap:12px}body[data-leader-page="faqs"] .bh-faq-actions{width:100%}}
+</style>
+</head>
+<body class="bh-subpage-v2" data-leader-page="faqs">
+<header class="site-header">
+<a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a>
+<nav class="main-nav" aria-label="Main menu"><a href="directory.html">Find activities</a><a href="my-hub.html">My Hub</a><a href="help-support.html">Support &amp; Guidance</a><a href="leader.html">Class Leaders</a><a href="account.html">My Account</a></nav>
+<a class="button button-soft" href="account.html">My account</a>
+</header>
+<main class="app-shell bh-leader-page">
+<section class="page-heading bh-leader-hero">
+<div><span class="eyebrow">Leader portal</span><h1>My FAQs</h1><p>Give families clear answers to common questions about your activities.</p></div>
+<div class="hero-actions"><button class="button button-primary" id="addFaqButton" type="button">＋ Add FAQ</button><a class="button button-soft" href="leader.html">Dashboard</a></div>
+</section>
+<nav class="bh-leader-tabs" aria-label="Leader portal sections">
+<a href="leader.html">Dashboard</a><a href="leader/classes.html">My Listings</a><a href="leader/venues.html">My Venues</a><a href="leader/messages.html">My Messages</a><a href="leader/profile.html">Profile</a><a href="leader/faqs.html" aria-current="page">FAQs</a><a href="leader/specialisms.html">My Specialisms</a><a href="leader/support.html">Support &amp; Help</a>
+</nav>
+<section class="admin-panel">
+<div class="admin-panel-head"><div><span class="eyebrow">Public answers</span><h2>Your FAQs</h2><p>Published answers can help families feel confident before they contact you.</p></div></div>
+<p id="faqQuota" class="deployment-note">Free leaders: up to 5 FAQs. Pro: unlimited FAQs.</p>
+<div id="faqList" class="bh-faq-list"><p class="deployment-note">Loading your FAQs…</p></div>
+</section>
+<p id="portalMessage" class="deployment-note" role="status"></p>
+</main>
+<script src="assets/js/app.js"></script><script src="assets/js/leader-portal.js"></script><script src="/assets/js/leader-pro-nav.js"></script>
+</body></html>
