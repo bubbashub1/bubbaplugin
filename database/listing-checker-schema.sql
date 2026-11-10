@@ -52,8 +52,8 @@ CREATE TABLE IF NOT EXISTS bh_listing_check_runs (
 CREATE TABLE IF NOT EXISTS bh_listing_check_queue (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   check_type ENUM('health','discovery') NOT NULL,
-  target_id BIGINT UNSIGNED NULL,
-  target_term_id BIGINT UNSIGNED NULL,
+  target_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  target_term_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
   status ENUM('pending','processing','checked','failed','skipped') NOT NULL DEFAULT 'pending',
   attempts TINYINT UNSIGNED NOT NULL DEFAULT 0,
   next_check_at DATETIME NULL,
