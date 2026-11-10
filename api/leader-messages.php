@@ -37,6 +37,14 @@ try {
         inboxReply(403, ['ok' => false, 'message' => 'Account unavailable.']);
     }
 
+    // Storage is provisioned by migration 008, never created during a web request.
+    $table = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_leader_messages'");
+    $table->execute();
+    if ((int) $table->fetchColumn() !== 1) {
+        error_log('Leader messages migration 008 is required.');
+        inboxReply(503, ['ok' => false, 'message' => 'Messaging is not set up yet. Please contact Bubba Hub support.']);
+    }
+
     $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
     if (!in_array($method, ['GET', 'POST'], true)) {
         header('Allow: GET, POST');
@@ -106,14 +114,6 @@ try {
         }
     } elseif ($user['role'] !== 'leader') {
         inboxReply(403, ['ok' => false, 'message' => 'Leader access required.']);
-    }
-
-    // Storage is provisioned by migration 008, never created during a web request.
-    $table = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_leader_messages'");
-    $table->execute();
-    if ((int) $table->fetchColumn() !== 1) {
-        error_log('Leader messages migration 008 is required.');
-        inboxReply(503, ['ok' => false, 'message' => 'Messaging is not set up yet. Please contact Bubba Hub support.']);
     }
 
     if (empty($_SESSION['bh_csrf']) || !is_string($_SESSION['bh_csrf'])) {
