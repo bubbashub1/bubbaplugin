@@ -19,7 +19,9 @@ if(!in_array((int)$now->format('N'),array_map('intval',$days),true)){echo "Not a
 $start=$get('window_start','00:00');$end=$get('window_end','23:59');$clock=$now->format('H:i');
 if(($start<=$end&&($clock<$start||$clock>$end))||($start>$end&&$clock<$start&&$clock>$end)){echo "Outside run window\n";exit;}
 $interval=max(1,min(24,(int)$get('interval_hours','4')));
+$preferred=$get('preferred_start_time','00:00');
 $last=$db->query("SELECT MAX(finished_at) FROM bh_listing_check_runs WHERE check_type='health' AND status='completed'")->fetchColumn();
+if(!$last&&$clock<$preferred){echo "Waiting for preferred first-run time\n";exit;}
 if($last&&new DateTimeImmutable((string)$last,$tz)>$now->modify('-'.$interval.' hours')){echo "Not due yet\n";exit;}
 $lock=$db->query("SELECT GET_LOCK('bh_listing_checker_health',0)")->fetchColumn();if((int)$lock!==1){echo "Worker already running\n";exit;}
 $runId=0;
