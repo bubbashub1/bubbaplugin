@@ -1,7 +1,20 @@
 <?php
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
-require_once __DIR__.'/admin-session-guard.php';
+header('Cache-Control: no-store');
+header('X-Content-Type-Options: nosniff');
+ini_set('session.use_strict_mode','1');
+ini_set('session.use_only_cookies','1');
+$secure=!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off';
+session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);
+session_name('BUBBAHUB_ADMINSESSID');
+session_start();
+function bh_lc_auth_reply(): never {
+  http_response_code(401);
+  echo json_encode(['ok'=>false,'error'=>'Admin login required.']);
+  exit;
+}
+if(empty($_SESSION['bh_admin_authenticated'])) bh_lc_auth_reply();
 require_once __DIR__.'/db.php';
 
 function bh_lc_reply(int $status,array $payload): never {
@@ -68,7 +81,7 @@ try {
     $term=trim((string)($input['term']??''));
     $group=trim((string)($input['term_group']??'General'));
     $regions=$input['regions']??['all'];
-    if($term===''||mb_strlen($term)>190||$group===''||mb_strlen($group)>100) bh_lc_reply(422,['ok'=>false,'error'=>'Enter a search term and group']);
+    if($term===''||strlen($term)>190||$group===''||strlen($group)>100) bh_lc_reply(422,['ok'=>false,'error'=>'Enter a search term and group']);
     if(!is_array($regions)) bh_lc_reply(422,['ok'=>false,'error'=>'Invalid region selection']);
     $allowedRegions=['all','East Cornwall','East Devon','Exeter','Mid Cornwall','Mid Devon','North Cornwall','North Devon','Plymouth','South Cornwall','South Hams','Teignbridge','Torbay','West Cornwall','West Devon'];
     $regions=array_values(array_unique(array_intersect($allowedRegions,$regions)));
