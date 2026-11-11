@@ -53,3 +53,6 @@ jobs:
           grep -q "GET_LOCK" api/listing-checker-discovery-cron.php
           ! grep -q "CURLOPT_FOLLOWLOCATION=>true" api/listing-checker-discovery-cron.php
           grep -q "2097152" api/listing-checker-discovery-cron.php
+          grep -q "next_check_at=DATE_ADD(NOW(), INTERVAL" api/listing-checker-health-cron.php
+          grep -q "Refresh an existing matching finding" api/listing-checker-health-cron.php
+          grep -q "stale_listing" api/listing-checker-health-cron.php
