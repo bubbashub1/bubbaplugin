@@ -10,6 +10,25 @@ require_once __DIR__.'/db.php';
 $db=bh_mysql();
 $required=['bh_listing_checker_settings','bh_listing_discovery_terms','bh_listing_check_runs','bh_listing_check_findings'];
 foreach($required as $table){$q=$db->prepare('SHOW TABLES LIKE ?');$q->execute([$table]);if(!$q->fetchColumn()){fwrite(STDERR,"Migration required: apply database/listing-checker-schema.sql\n");exit(2);}}
+$canonicalizeDiscoveryUrl=static function(string $url): ?string {
+ $p=parse_url(trim($url));
+ if(!is_array($p)||!in_array(strtolower((string)($p['scheme']??'')),['http','https'],true)||empty($p['host'])||isset($p['user'])||isset($p['pass']))return null;
+ $scheme=strtolower((string)$p['scheme']);$host=strtolower(rtrim((string)$p['host'],'.'));
+ if(!preg_match('/^[a-z0-9.-]+$/',$host)||str_contains($host,'..'))return null;
+ $port=isset($p['port'])?(int)$p['port']:null;
+ if(($scheme==='http'&&$port===80)||($scheme==='https'&&$port===443))$port=null;
+ $path=(string)($p['path']??'');if($path==='')$path='/';elseif($path!=='/')$path=rtrim($path,'/');
+ $query=(string)($p['query']??'');
+ if($query!==''){
+  $pairs=explode('&',$query);
+  $pairs=array_values(array_filter($pairs,static function(string $pair): bool {
+   $key=strtolower(rawurldecode(explode('=',$pair,2)[0]));
+   return !preg_match('/^(utm_[a-z0-9_]+|fbclid|gclid|msclkid|dclid|mc_cid|mc_eid)$/',$key);
+  }));
+  sort($pairs,SORT_STRING);$query=implode('&',$pairs);
+ }
+ return $scheme.'://'.$host.($port!==null?':'.$port:'').$path.($query!==''?'?'.$query:'');
+};
 $settings=[];foreach($db->query('SELECT setting_key,setting_value FROM bh_listing_checker_settings')->fetchAll(PDO::FETCH_ASSOC) as $r)$settings[$r['setting_key']]=$r['setting_value'];
 $get=static fn($k,$d='')=>(string)($settings[$k]??$d);
 if($get('discovery_enabled','1')!=='1'){echo "New listing discovery disabled\n";exit;}
@@ -36,7 +55,7 @@ try{
  if(!function_exists('simplexml_load_string'))throw new RuntimeException('PHP SimpleXML extension is required for discovery searches.');
  $processed=0;$candidates=0;$errors=0;$duplicates=0;
  $insert=$db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,term_id,candidate_json,finding_type,confidence,source_url,checked_at,review_status) VALUES('discovery',NULL,?,?,?,?,?,NOW(),'new')");
- $seen=$db->prepare("SELECT id FROM bh_listing_check_findings WHERE check_type='discovery' AND term_id=? AND source_url=? LIMIT 1");
+ $seen=$db->prepare("SELECT id FROM bh_listing_check_findings WHERE check_type='discovery' AND source_url=? LIMIT 1");
  $touch=$db->prepare('UPDATE bh_listing_discovery_terms SET last_searched_at=NOW() WHERE id=?');
  foreach($terms as $term){
   if(microtime(true)>$deadline)break;
@@ -55,11 +74,12 @@ try{
     if($count>=10)break;
     $title=trim((string)$entry->title);$source=trim((string)$entry->link);$snippet=trim(strip_tags((string)$entry->description));
     if($title===''||$source===''||strlen($source)>1000)continue;
-    $parts=parse_url($source);if(!is_array($parts)||!in_array(strtolower((string)($parts['scheme']??'')),['http','https'],true)||empty($parts['host']))continue;
-    if(preg_match('/(^|\.)bing\.com$/i',(string)$parts['host'])){parse_str((string)($parts['query']??''),$bp);$encoded=(string)($bp['u']??'');if(str_starts_with($encoded,'a1')){$decoded=base64_decode(strtr(substr($encoded,2),'-_','+/'));if(is_string($decoded)&&filter_var($decoded,FILTER_VALIDATE_URL))$source=$decoded;}}
-    $seen->execute([(int)$term['id'],$source]);if($seen->fetchColumn()){$duplicates++;continue;}
-    $candidate=['title'=>$title,'snippet'=>substr($snippet,0,1200),'website'=>$source,'search_term'=>(string)$term['term'],'term_group'=>(string)$term['term_group'],'region_scope'=>$scope,'provider'=>'Bing RSS','evidence_note'=>'Search result only. Verify the organiser, current activity, location and dates directly before treating this as a valid listing.'];
-    $insert->execute([(int)$term['id'],json_encode($candidate,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE),'discovery_candidate',45,$source]);
+    $parts=parse_url($source);if(!is_array($parts)||!in_array(strtolower((string)($parts['scheme']??'')),['http','https'],true)||empty($parts['host'])||isset($parts['user'])||isset($parts['pass']))continue;
+    if(preg_match('/(^|\.)bing\.com$/i',(string)$parts['host'])){parse_str((string)($parts['query']??''),$bp);$encoded=(string)($bp['u']??'');if(str_starts_with($encoded,'a1')){$decoded=base64_decode(strtr(substr($encoded,2),'-_','+/'));if(is_string($decoded))$source=$decoded;}}
+    $canonicalUrl=$canonicalizeDiscoveryUrl($source);if($canonicalUrl===null||strlen($canonicalUrl)>1000)continue;
+    $seen->execute([$canonicalUrl]);if($seen->fetchColumn()){$duplicates++;continue;}
+    $candidate=['title'=>$title,'snippet'=>substr($snippet,0,1200),'website'=>$source,'canonical_website'=>$canonicalUrl,'search_term'=>(string)$term['term'],'term_group'=>(string)$term['term_group'],'region_scope'=>$scope,'provider'=>'Bing RSS','evidence_note'=>'Search result only. Verify the organiser, current activity, location and dates directly before treating this as a valid listing.'];
+    $insert->execute([(int)$term['id'],json_encode($candidate,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE),'discovery_candidate',45,$canonicalUrl]);
     $count++;$candidates++;
    }
    $touch->execute([(int)$term['id']]);$processed++;
