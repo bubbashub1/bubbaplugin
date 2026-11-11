@@ -12,7 +12,7 @@ foreach($required as $table){$q=$db->prepare('SHOW TABLES LIKE ?');$q->execute([
 ");exit(2);}}
 $settings=[];foreach($db->query('SELECT setting_key,setting_value FROM bh_listing_checker_settings')->fetchAll(PDO::FETCH_ASSOC) as $r)$settings[$r['setting_key']]=$r['setting_value'];
 $get=static fn($k,$d='')=>(string)($settings[$k]??$d);
-if($get('health_enabled','1')!=='1'){echo "Health checks disabled
+if($get('health_enabled','0')!=='1'){echo "Health checks disabled
 ";exit;}
 if($get('health_paused','0')==='1'){echo "Health checks paused
 ";exit;}
@@ -36,10 +36,12 @@ $lock=$db->query("SELECT GET_LOCK('bh_listing_checker_health',0)")->fetchColumn(
 $runId=0;
 try{
  $cols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);if(!$cols||!in_array('id',$cols,true))throw new RuntimeException('bh_activities table unavailable');
- $orgCols=$db->query("SHOW COLUMNS FROM bh_organisers")->fetchAll(PDO::FETCH_COLUMN);
- $venueCols=$db->query("SHOW COLUMNS FROM bh_venues")->fetchAll(PDO::FETCH_COLUMN);
- $linkCols=$db->query("SHOW COLUMNS FROM bh_activity_venues")->fetchAll(PDO::FETCH_COLUMN);
- $scheduleCols=$db->query("SHOW COLUMNS FROM bh_activity_schedules")->fetchAll(PDO::FETCH_COLUMN);
+ $tableNames=$db->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN);$tableSet=array_fill_keys($tableNames,true);
+ $columnsFor=static function(string $table) use($db,$tableSet): array {return isset($tableSet[$table])?$db->query('SHOW COLUMNS FROM `'.$table.'`')->fetchAll(PDO::FETCH_COLUMN):[];};
+ $orgCols=$columnsFor('bh_organisers');
+ $venueCols=$columnsFor('bh_venues');
+ $linkCols=$columnsFor('bh_activity_venues');
+ $scheduleCols=$columnsFor('bh_activity_schedules');
  $hasOrg=in_array('organiser_id',$cols,true)&&in_array('id',$orgCols,true);
  $hasVenueLink=in_array('activity_id',$linkCols,true)&&in_array('venue_id',$linkCols,true)&&in_array('id',$venueCols,true);
  $hasDirectVenue=in_array('activity_id',$venueCols,true)&&in_array('id',$venueCols,true);
