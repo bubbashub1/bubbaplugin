@@ -9,14 +9,12 @@ function respond(int $code,array $data):never {http_response_code($code);echo js
 
 try {
 $db=bh_mysql();
-// One-time compatible ownership-column migration for older installations.
-// Only add the nullable column; never assign or change organiser ownership.
+// Schema changes are deployment-time migrations, never performed by a web request.
+// Fail closed with an actionable status if the ownership migration has not been applied.
 $ownerColumn=$db->query("SHOW COLUMNS FROM bh_organisers LIKE 'user_id'")->fetch(PDO::FETCH_ASSOC);
 if(!$ownerColumn){
-  $db->exec("ALTER TABLE bh_organisers ADD COLUMN user_id BIGINT UNSIGNED NULL DEFAULT NULL");
-  error_log('Claim invitations: added missing nullable bh_organisers.user_id column');
+  respond(503,['ok'=>false,'error'=>'Organiser ownership schema is not installed; apply the organiser user_id migration']);
 }
-// Schema is installed by the migration, never during a user request.
 $_SESSION['bh_claim_invite_csrf']??=bin2hex(random_bytes(32));
 if($_SERVER['REQUEST_METHOD']==='GET') {
  foreach (['bh_claim_invitations','bh_listing_claims'] as $table) {
