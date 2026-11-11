@@ -42,9 +42,22 @@ try {
         $add('Optional listing fields',$missing?'warning':'pass',$missing?'Not present: '.implode(', ',$missing):'All expected listing fields are available');
     }
 
-    $checkerTables=['bh_listing_checker_settings','bh_listing_discovery_terms','bh_listing_check_runs','bh_listing_check_queue','bh_listing_check_findings'];
-    $missingTables=array_values(array_filter($checkerTables,static fn($table)=>!isset($tableSet[$table])));
-    $add('Checker SQL migration',$missingTables?'warning':'pass',$missingTables?'Not applied or incomplete; missing: '.implode(', ',$missingTables):'All Listing Checker tables are present');
+    $checkerRequirements=[
+        'bh_listing_checker_settings'=>['setting_key','setting_value'],
+        'bh_listing_discovery_terms'=>['id','term','term_group','regions_json','enabled','last_searched_at'],
+        'bh_listing_check_runs'=>['id','check_type','status','started_at','finished_at','processed_count','error_count','summary_json'],
+        'bh_listing_check_queue'=>['id','check_type','target_id','target_term_id','status','attempts','next_check_at','last_checked_at','last_error'],
+        'bh_listing_check_findings'=>['id','check_type','activity_id','term_id','candidate_json','finding_type','confidence','source_url','checked_at','review_status','reviewed_at']
+    ];
+    $migrationIssues=[];
+    foreach($checkerRequirements as $table=>$requiredColumns){
+        if(!isset($tableSet[$table])){$migrationIssues[]=$table.' (table missing)';continue;}
+        $actual=$db->query('SHOW COLUMNS FROM `'.$table.'`')->fetchAll(PDO::FETCH_COLUMN);
+        $actualSet=array_fill_keys($actual,true);
+        $missingColumns=array_values(array_filter($requiredColumns,static fn($column)=>!isset($actualSet[$column])));
+        if($missingColumns)$migrationIssues[]=$table.' (missing columns: '.implode(', ',$missingColumns).')';
+    }
+    $add('Checker SQL migration',$migrationIssues?'warning':'pass',$migrationIssues?'Not applied or incomplete: '.implode('; ',$migrationIssues):'All five checker tables and required columns are present');
 
     try {
         $lock=$db->query("SELECT GET_LOCK('bh_listing_checker_preflight',0)")->fetchColumn();
