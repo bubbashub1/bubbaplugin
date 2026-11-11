@@ -34,7 +34,8 @@ if(!$manualRun&&$last&&new DateTimeImmutable((string)$last,$tz)>$now->modify('-'
 $lock=$db->query("SELECT GET_LOCK('bh_listing_checker_health',0)")->fetchColumn();if((int)$lock!==1){echo "Worker already running
 ";exit;}
 $runId=0;
-try{\n if($manualRun){$clear=$db->prepare("INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES(?, '0') ON DUPLICATE KEY UPDATE setting_value='0'");$clear->execute(['health_run_now']);}
+try{
+ if($manualRun){$clear=$db->prepare("INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES(?, '0') ON DUPLICATE KEY UPDATE setting_value='0'");$clear->execute(['health_run_now']);}
  $cols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);if(!$cols||!in_array('id',$cols,true))throw new RuntimeException('bh_activities table unavailable');
  // INSERT IGNORE discovers newly-created listings; existing queue rows are retained for recurring checks.
  $db->exec("INSERT IGNORE INTO bh_listing_check_queue(check_type,target_id,target_term_id,status,next_check_at) SELECT 'health',id,0,'pending',NOW() FROM bh_activities");
