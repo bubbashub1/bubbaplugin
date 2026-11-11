@@ -86,7 +86,7 @@ try{
     $count++;$candidates++;
    }
    $touch->execute([(int)$term['id']]);$processed++;
-  }catch(Throwable $e){$errors++;error_log('Listing discovery term '.(int)$term['id'].': '.$e->getMessage());}
+  }catch(Throwable $e){$errors++;try{$touch->execute([(int)$term['id']]);}catch(Throwable $touchError){error_log('Listing discovery term timestamp update failed for term '.(int)$term['id'].': '.$touchError->getMessage());}error_log('Listing discovery term '.(int)$term['id'].': '.$e->getMessage());}
  }
  $remaining=(int)$db->query('SELECT COUNT(*) FROM bh_listing_discovery_terms WHERE enabled=1')->fetchColumn();
  $summary=json_encode(['processed_terms'=>$processed,'candidates_added'=>$candidates,'already_seen'=>$duplicates,'already_listed'=>$alreadyListed,'errors'=>$errors,'enabled_terms'=>$remaining,'request_limit'=>$requestLimit]);
