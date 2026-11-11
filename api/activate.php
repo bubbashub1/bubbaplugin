@@ -8,18 +8,13 @@ session_start();
 function bh_activate_response(int $status,array $data): never{http_response_code($status);echo json_encode($data,JSON_UNESCAPED_SLASHES);exit;}
 require __DIR__.'/db.php';
 $db=bh_mysql();
-$db->exec("CREATE TABLE IF NOT EXISTS bh_account_activation_tokens (
- id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
- user_id BIGINT UNSIGNED NOT NULL,
- token_hash CHAR(64) NOT NULL UNIQUE,
- code_hash CHAR(64) NULL,
- expires_at DATETIME NOT NULL,
- used_at DATETIME NULL,
- created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
- INDEX idx_activation_user (user_id),
- INDEX idx_activation_expiry (expires_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-try{$db->exec("ALTER TABLE bh_account_activation_tokens ADD COLUMN code_hash CHAR(64) NULL");}catch(Throwable $ignored){}
+$activationTable=$db->query("SHOW TABLES LIKE 'bh_account_activation_tokens'")->fetchColumn();
+if(!$activationTable)bh_activate_response(503,['ok'=>false,'error'=>'activation_storage_unavailable']);
+$activationColumns=$db->query("SHOW COLUMNS FROM bh_account_activation_tokens")->fetchAll(PDO::FETCH_COLUMN);
+foreach(['id','user_id','token_hash','code_hash','expires_at','used_at','created_at'] as $requiredActivationColumn){
+ if(!in_array($requiredActivationColumn,$activationColumns,true))bh_activate_response(503,['ok'=>false,'error'=>'activation_storage_update_required']);
+}
+
 
 $method=$_SERVER['REQUEST_METHOD'];
 if($method==='GET'){
