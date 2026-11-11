@@ -35,6 +35,7 @@ function bh_mysql(): PDO {
     }
 
     // Support the documented shared config keys and the legacy nested db shape.
+    $dbConfig = [];
     if (isset($config['db']) && is_array($config['db'])) {
         $dbConfig = $config['db'];
         $host = $dbConfig['host'] ?? null;
