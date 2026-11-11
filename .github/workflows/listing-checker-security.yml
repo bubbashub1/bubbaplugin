@@ -58,3 +58,8 @@ jobs:
           grep -q "next_check_at=DATE_ADD(NOW(), INTERVAL" api/listing-checker-health-cron.php
           grep -q "Refresh an existing matching finding" api/listing-checker-health-cron.php
           grep -q "stale_listing" api/listing-checker-health-cron.php
+          grep -q "health_enabled','0'" database/listing-checker-schema.sql
+          grep -q "discovery_enabled','0'" database/listing-checker-schema.sql
+          grep -q "get('health_enabled','0')" api/listing-checker-health-cron.php
+          grep -q "get('discovery_enabled','0')" api/listing-checker-discovery-cron.php
+          grep -q "columnsFor('bh_activity_schedules')" api/listing-checker-health-cron.php
