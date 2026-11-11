@@ -29,14 +29,14 @@
    const sessions=venues.flatMap(v=>v.sessions||[]);
    $("leaderV3Classes").textContent=classes.length;
    $("leaderV3Sessions").textContent=sessions.length;
-   $("leaderV3Bookings").textContent=bookings.length;
+   $("leaderV3BookingsCount").textContent=bookings.length;
    $("leaderV3Venues").textContent=venues.length;
    renderSchedule(classes);renderBookings(bookings);
    const name=String(data.organisation?.first_name||data.organisation?.contact_name||data.organisation?.name||"").trim().split(/\s+/)[0];
    $("leaderV3UserName").textContent=name||"Your account";
    $("leaderV3Avatar").textContent=(name||"U").slice(0,1).toUpperCase();
   }catch(error){
-   ["leaderV3Classes","leaderV3Sessions","leaderV3Bookings","leaderV3Venues"].forEach(id=>{if($(id))$(id).textContent="—";});
+   ["leaderV3Classes","leaderV3Sessions","leaderV3BookingsCount","leaderV3Venues"].forEach(id=>{if($(id))$(id).textContent="—";});
    ["leaderV3Schedule","leaderV3Bookings"].forEach(id=>{if($(id))$(id).innerHTML="<div class='bh-leader-v3-empty'>Sign in as a class leader to see your live information.</div>";});
   }
   try{
