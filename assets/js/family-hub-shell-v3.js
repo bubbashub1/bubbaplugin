@@ -7,7 +7,7 @@
   if(!main)return;
   body.classList.add("bh-family-v3");
   main.classList.add("family-v3-main");
-  const path=location.pathname.replace(/\\/+$/,"")||"/";
+  const path=location.pathname.replace(/\/+$/,"")||"/";
   const links=[
    ["/my-hub.html","My Hub","⌂","dashboard"],
    ["/planner.html","My Planner","▦","planner"],
