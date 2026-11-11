@@ -1,8 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * CLI-only existing-listing checker. Run from server cron every four hours:
- * php /path/to/api/listing-checker-health-cron.php
+ * CLI-only existing-listing checker. Run from server cron every four hours.
  * Requires database/listing-checker-schema.sql. Never changes live listings.
  */
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
@@ -13,7 +12,7 @@ foreach($required as $table){$q=$db->prepare('SHOW TABLES LIKE ?');$q->execute([
 $settings=[];foreach($db->query('SELECT setting_key,setting_value FROM bh_listing_checker_settings')->fetchAll(PDO::FETCH_ASSOC) as $r)$settings[$r['setting_key']]=$r['setting_value'];
 $get=static fn($k,$d='')=>(string)($settings[$k]??$d);
 if($get('health_enabled','1')!=='1'){echo "Health checks disabled\n";exit;}
-if($get('health_paused','0')==='1'){echo "Health checks paused\\n";exit;}
+if($get('health_paused','0')==='1'){echo "Health checks paused\n";exit;}
 $manualRun=$get('health_run_now','0')==='1';
 $tz=new DateTimeZone($get('timezone','Europe/London'));$now=new DateTimeImmutable('now',$tz);
 $days=json_decode($get('active_days','[1,2,3,4,5,6,7]'),true)?:[1,2,3,4,5,6,7];
@@ -30,26 +29,51 @@ if($manualRun){$clear=$db->prepare("INSERT INTO bh_listing_checker_settings(sett
 $runId=0;
 try{
  $cols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);if(!$cols||!in_array('id',$cols,true))throw new RuntimeException('bh_activities table unavailable');
+ // INSERT IGNORE discovers newly-created listings; existing queue rows are retained for recurring checks.
  $db->exec("INSERT IGNORE INTO bh_listing_check_queue(check_type,target_id,target_term_id,status,next_check_at) SELECT 'health',id,0,'pending',NOW() FROM bh_activities");
  $q=$db->prepare("INSERT INTO bh_listing_check_runs(check_type,status,started_at) VALUES('health','running',NOW())");$q->execute();$runId=(int)$db->lastInsertId();
  $limit=max(1,min(100,(int)$get('batch_size','30')));$runtime=max(30,min(600,(int)$get('max_runtime_seconds','240')));$deadline=microtime(true)+$runtime;
- $due=$db->prepare("SELECT id,target_id FROM bh_listing_check_queue WHERE check_type='health' AND status IN('pending','failed') AND (next_check_at IS NULL OR next_check_at<=NOW()) ORDER BY id LIMIT ?");$due->bindValue(1,$limit,PDO::PARAM_INT);$due->execute();$queue=$due->fetchAll(PDO::FETCH_ASSOC);
- $fields=['title','description','short_description','category','age_range','website','booking_url','contact_email','phone','facebook_url','instagram_url','town','region','postcode','image_path','start_date','end_date','next_session_date'];$select=['id'];foreach($fields as $f)if(in_array($f,$cols,true))$select[]='`'.$f.'`';
- $read=$db->prepare('SELECT '.implode(',',$select).' FROM bh_activities WHERE id=?');$finding=$db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,candidate_json,finding_type,confidence,checked_at,review_status) VALUES('health',?,?,?,100,NOW(),'new')");
- $mark=$db->prepare("UPDATE bh_listing_check_queue SET status=?,attempts=attempts+1,last_checked_at=NOW(),last_error=?,next_check_at=NULL WHERE id=?");
- $done=0;$errors=0;
- foreach($queue as $item){if(microtime(true)>$deadline)break;$qid=(int)$item['id'];$aid=(int)$item['target_id'];try{
-  $read->execute([$aid]);$row=$read->fetch(PDO::FETCH_ASSOC);if(!$row){$mark->execute(['skipped','Activity no longer exists',$qid]);continue;}
-  $checks=['description'=>['description','short_description'],'website'=>['website'],'booking_link'=>['booking_url'],'email'=>['contact_email'],'telephone'=>['phone'],'facebook'=>['facebook_url'],'instagram'=>['instagram_url'],'age_range'=>['age_range'],'category'=>['category'],'location'=>['town'],'postcode'=>['postcode'],'image'=>['image_path']];
-  foreach($checks as $type=>$keys){$present=false;foreach($keys as $key)if(trim((string)($row[$key]??''))!=='')$present=true;if(!$present)$finding->execute([$aid,json_encode(['field'=>$type]),'missing_'.$type]);}
-  foreach(['website','booking_url','facebook_url','instagram_url'] as $key){$v=trim((string)($row[$key]??''));if($v!==''&&!filter_var($v,FILTER_VALIDATE_URL))$finding->execute([$aid,json_encode(['field'=>$key,'value'=>$v]),'invalid_url']);}
-  $email=trim((string)($row['contact_email']??''));if($email!==''&&!filter_var($email,FILTER_VALIDATE_EMAIL))$finding->execute([$aid,json_encode(['field'=>'contact_email']),'invalid_email']);
-  $postcode=trim((string)($row['postcode']??''));if($postcode!==''&&!preg_match('/^[A-Z]{1,2}[0-9][A-Z0-9]?\s*[0-9][A-Z]{2}$/i',$postcode))$finding->execute([$aid,json_encode(['field'=>'postcode']),'invalid_postcode']);
-  foreach(['start_date','end_date','next_session_date'] as $key){$v=trim((string)($row[$key]??''));if($v!==''&&strtotime($v)!==false&&strtotime($v)<strtotime('today')){$finding->execute([$aid,json_encode(['field'=>$key,'value'=>$v]),'past_session_date']);break;}}
-  if(in_array('title',$cols,true)&&in_array('town',$cols,true)){$d=$db->prepare("SELECT id FROM bh_activities WHERE id<>? AND LOWER(TRIM(title))=LOWER(TRIM(?)) AND LOWER(TRIM(COALESCE(town,'')))=LOWER(TRIM(COALESCE(?,''))) LIMIT 1");$d->execute([$aid,(string)($row['title']??''),(string)($row['town']??'')]);if($d->fetchColumn())$finding->execute([$aid,json_encode(['title'=>$row['title']??'','town'=>$row['town']??'']),'possible_duplicate']);}
-  $mark->execute(['checked',null,$qid]);$done++;
- }catch(Throwable $e){$errors++;$mark->execute(['failed',substr($e->getMessage(),0,900),$qid]);}}
- $remaining=(int)$db->query("SELECT COUNT(*) FROM bh_listing_check_queue WHERE check_type='health' AND status IN('pending','failed')")->fetchColumn();$summary=json_encode(['processed'=>$done,'errors'=>$errors,'remaining'=>$remaining]);
+ $due=$db->prepare("SELECT id,target_id FROM bh_listing_check_queue WHERE check_type='health' AND status IN('pending','failed') AND (next_check_at IS NULL OR next_check_at<=NOW()) ORDER BY COALESCE(next_check_at,created_at),id LIMIT ?");$due->bindValue(1,$limit,PDO::PARAM_INT);$due->execute();$queue=$due->fetchAll(PDO::FETCH_ASSOC);
+ $fields=['title','description','short_description','category','age_range','website','booking_url','contact_email','phone','facebook_url','instagram_url','town','region','postcode','image_path','start_date','end_date','next_session_date'];
+ $select=['id'];foreach($fields as $f)if(in_array($f,$cols,true))$select[]='`'.$f.'`';
+ $read=$db->prepare('SELECT '.implode(',',$select).' FROM bh_activities WHERE id=?');
+ // Refresh an existing matching finding instead of creating duplicate review items on every scheduled pass.
+ $findExisting=$db->prepare("SELECT id FROM bh_listing_check_findings WHERE check_type='health' AND activity_id=? AND finding_type=? ORDER BY id LIMIT 1");
+ $refreshFinding=$db->prepare("UPDATE bh_listing_check_findings SET candidate_json=?,confidence=100,checked_at=NOW() WHERE id=?");
+ $insertFinding=$db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,candidate_json,finding_type,confidence,checked_at,review_status) VALUES('health',?,?,?,100,NOW(),'new')");
+ $record=static function(int $activityId,string $type,array $data) use($findExisting,$refreshFinding,$insertFinding): void {
+   $json=json_encode($data,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);
+   $findExisting->execute([$activityId,$type]);$existing=$findExisting->fetchColumn();
+   if($existing){$refreshFinding->execute([$json,(int)$existing]);return;}
+   $insertFinding->execute([$activityId,$json,$type]);
+ };
+ // A successful check is re-queued for the configured interval. Failures use bounded exponential backoff.
+ $markDone=$db->prepare("UPDATE bh_listing_check_queue SET status='pending',attempts=0,last_checked_at=NOW(),last_error=NULL,next_check_at=DATE_ADD(NOW(), INTERVAL ".$interval." HOUR) WHERE id=?");
+ $markFailed=$db->prepare("UPDATE bh_listing_check_queue SET status='failed',attempts=attempts+1,last_checked_at=NOW(),last_error=?,next_check_at=DATE_ADD(NOW(), INTERVAL LEAST(24,POW(2,LEAST(attempts,4))) HOUR) WHERE id=?");
+ $markSkipped=$db->prepare("UPDATE bh_listing_check_queue SET status='skipped',attempts=attempts+1,last_checked_at=NOW(),last_error=?,next_check_at=NULL WHERE id=?");
+ $done=0;$errors=0;$skipped=0;
+ foreach($queue as $item){
+  if(microtime(true)>$deadline)break;
+  $qid=(int)$item['id'];$aid=(int)$item['target_id'];
+  try{
+   $read->execute([$aid]);$row=$read->fetch(PDO::FETCH_ASSOC);
+   if(!$row){$markSkipped->execute(['Activity no longer exists',$qid]);$skipped++;continue;}
+   $checks=['description'=>['description','short_description'],'website'=>['website'],'booking_link'=>['booking_url'],'email'=>['contact_email'],'telephone'=>['phone'],'facebook'=>['facebook_url'],'instagram'=>['instagram_url'],'age_range'=>['age_range'],'category'=>['category'],'location'=>['town'],'postcode'=>['postcode'],'image'=>['image_path']];
+   foreach($checks as $type=>$keys){$present=false;foreach($keys as $key)if(trim((string)($row[$key]??''))!=='')$present=true;if(!$present)$record($aid,'missing_'.$type,['field'=>$type]);}
+   foreach(['website','booking_url','facebook_url','instagram_url'] as $key){$v=trim((string)($row[$key]??''));if($v!==''&&!filter_var($v,FILTER_VALIDATE_URL))$record($aid,'invalid_url',['field'=>$key,'value'=>$v]);}
+   $email=trim((string)($row['contact_email']??''));if($email!==''&&!filter_var($email,FILTER_VALIDATE_EMAIL))$record($aid,'invalid_email',['field'=>'contact_email']);
+   $postcode=trim((string)($row['postcode']??''));if($postcode!==''&&!preg_match('/^[A-Z]{1,2}[0-9][A-Z0-9]?\\s*[0-9][A-Z]{2}$/i',$postcode))$record($aid,'invalid_postcode',['field'=>'postcode','value'=>$postcode]);
+   foreach(['start_date','end_date','next_session_date'] as $key){$v=trim((string)($row[$key]??''));if($v!==''&&strtotime($v)!==false&&strtotime($v)<strtotime('today')){$record($aid,'past_session_date',['field'=>$key,'value'=>$v]);break;}}
+   if(in_array('title',$cols,true)&&in_array('town',$cols,true)){
+    $d=$db->prepare("SELECT id FROM bh_activities WHERE id<>? AND LOWER(TRIM(title))=LOWER(TRIM(?)) AND LOWER(TRIM(COALESCE(town,'')))=LOWER(TRIM(COALESCE(?,''))) LIMIT 1");
+    $d->execute([$aid,(string)($row['title']??''),(string)($row['town']??'')]);
+    if($d->fetchColumn())$record($aid,'possible_duplicate',['title'=>$row['title']??'','town'=>$row['town']??'']);
+   }
+   $markDone->execute([$qid]);$done++;
+  }catch(Throwable $e){$errors++;$markFailed->execute([substr($e->getMessage(),0,900),$qid]);}
+ }
+ $remaining=(int)$db->query("SELECT COUNT(*) FROM bh_listing_check_queue WHERE check_type='health' AND status IN('pending','failed')")->fetchColumn();
+ $summary=json_encode(['processed'=>$done,'skipped'=>$skipped,'errors'=>$errors,'remaining'=>$remaining,'next_check_hours'=>$interval]);
  $finish=$db->prepare("UPDATE bh_listing_check_runs SET status='completed',finished_at=NOW(),processed_count=?,error_count=?,summary_json=? WHERE id=?");$finish->execute([$done,$errors,$summary,$runId]);echo $summary."\n";
 }catch(Throwable $e){if($runId){$s=$db->prepare("UPDATE bh_listing_check_runs SET status='failed',finished_at=NOW(),summary_json=? WHERE id=?");$s->execute([json_encode(['error'=>$e->getMessage()]),$runId]);}error_log('Listing checker: '.$e->getMessage());fwrite(STDERR,"Worker failed; see PHP error log\n");exit(1);}
 finally{$db->query("SELECT RELEASE_LOCK('bh_listing_checker_health')");}
