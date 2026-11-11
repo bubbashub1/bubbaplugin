@@ -17,12 +17,27 @@ if (empty($_SESSION['bh_admin_authenticated'])) {
     bh_test_user_response(401, ['ok'=>false,'error'=>'Admin login required.']);
 }
 
+$method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+if (!in_array($method, ['GET','POST','DELETE'], true)) {
+    header('Allow: GET, POST, DELETE');
+    bh_test_user_response(405, ['ok'=>false,'error'=>'Method not allowed.']);
+}
+if (in_array($method, ['POST','DELETE'], true)) {
+    $requestHost = strtolower((string)parse_url('https://'.($_SERVER['HTTP_HOST'] ?? ''), PHP_URL_HOST));
+    $source = (string)($_SERVER['HTTP_ORIGIN'] ?? '');
+    if ($source === '') $source = (string)($_SERVER['HTTP_REFERER'] ?? '');
+    $sourceHost = strtolower((string)parse_url($source, PHP_URL_HOST));
+    $sourceScheme = strtolower((string)parse_url($source, PHP_URL_SCHEME));
+    $fetchSite = strtolower((string)($_SERVER['HTTP_SEC_FETCH_SITE'] ?? ''));
+    if ($requestHost === '' || $sourceHost !== $requestHost || $sourceScheme !== 'https' || ($fetchSite !== '' && !in_array($fetchSite, ['same-origin','none'], true))) {
+        bh_test_user_response(403, ['ok'=>false,'error'=>'cross_origin_request_blocked']);
+    }
+}
+
 require __DIR__ . '/db.php';
 
 try {
     $db = bh_mysql();
-    $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
-
     if ($method === 'GET') {
         $stmt = $db->query("SELECT id,email,role,status FROM bh_users WHERE email LIKE 'test+%@bubbahub.co.uk' ORDER BY id DESC");
         $users = [];
@@ -80,6 +95,7 @@ try {
 
     bh_test_user_response(405, ['ok'=>false,'error'=>'Method not allowed.']);
 } catch (Throwable $e) {
-    bh_test_user_response(500, ['ok'=>false,'error'=>$e->getMessage()]);
+    error_log('Bubba Hub admin test-user API failed: '.$e->getMessage());
+    bh_test_user_response(500, ['ok'=>false,'error'=>'The test-user operation could not be completed.']);
 }
 ?>
