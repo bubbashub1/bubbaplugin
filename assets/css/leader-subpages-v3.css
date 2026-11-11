@@ -40,3 +40,54 @@ body.bh-leader-v2{background:#e8f5e9;color:#1a4f3b}
  .leader-v3-main :is(.page-heading,.bh-leader-hero,.inbox-hero,.bh-new-hero,.workspace-hero){padding:20px 18px;border-radius:13px}
  .leader-v3-main :is(.admin-panel,.bh-leader-panel,.bh-card,.bh-panel,.message-list,.message,.leader-profile-card,.leader-workspace>section){padding:15px}
 }
+
+/* Layout correction: keep the global site header above the portal and
+   prevent legacy full-width page-heading rules from crossing the sidebar. */
+body.bh-leader-v2 > .site-header{
+ position:relative!important;
+ z-index:10!important;
+}
+body.bh-leader-v2 .leader-v3-shell{
+ display:grid!important;
+ grid-template-columns:244px minmax(0,1fr)!important;
+ align-items:start;
+ width:100%;
+ box-sizing:border-box;
+}
+body.bh-leader-v2 .leader-v3-shell > .leader-v3-sidebar{
+ grid-column:1!important;
+ grid-row:1!important;
+ width:100%;
+ min-width:0;
+}
+body.bh-leader-v2 .leader-v3-shell > main.leader-v3-main{
+ grid-column:2!important;
+ grid-row:1!important;
+ position:relative!important;
+ inset:auto!important;
+ float:none!important;
+ transform:none!important;
+ width:100%!important;
+ min-width:0!important;
+ max-width:none!important;
+ margin:0!important;
+ padding:0!important;
+ box-sizing:border-box!important;
+}
+body.bh-leader-v2 .leader-v3-main > :is(.page-heading,.bh-leader-hero,.inbox-hero,.bh-new-hero,.workspace-hero){
+ position:relative!important;
+ inset:auto!important;
+ float:none!important;
+ transform:none!important;
+ width:100%!important;
+ max-width:none!important;
+ margin:0 0 22px!important;
+ padding:26px 28px!important;
+ box-sizing:border-box!important;
+}
+@media(max-width:760px){
+ body.bh-leader-v2 .leader-v3-shell{grid-template-columns:minmax(0,1fr)!important}
+ body.bh-leader-v2 .leader-v3-shell > .leader-v3-sidebar,
+ body.bh-leader-v2 .leader-v3-shell > main.leader-v3-main{grid-column:1!important;grid-row:auto!important}
+ body.bh-leader-v2 .leader-v3-main > :is(.page-heading,.bh-leader-hero,.inbox-hero,.bh-new-hero,.workspace-hero){padding:20px 18px!important}
+}
