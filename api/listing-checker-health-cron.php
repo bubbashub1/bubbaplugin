@@ -34,7 +34,7 @@ try{
  $q=$db->prepare("INSERT INTO bh_listing_check_runs(check_type,status,started_at) VALUES('health','running',NOW())");$q->execute();$runId=(int)$db->lastInsertId();
  $limit=max(1,min(100,(int)$get('batch_size','30')));$runtime=max(30,min(600,(int)$get('max_runtime_seconds','240')));$deadline=microtime(true)+$runtime;
  $due=$db->prepare("SELECT id,target_id FROM bh_listing_check_queue WHERE check_type='health' AND status IN('pending','failed') AND (next_check_at IS NULL OR next_check_at<=NOW()) ORDER BY COALESCE(next_check_at,created_at),id LIMIT ?");$due->bindValue(1,$limit,PDO::PARAM_INT);$due->execute();$queue=$due->fetchAll(PDO::FETCH_ASSOC);
- $fields=['title','description','short_description','category','age_range','website','booking_url','contact_email','phone','facebook_url','instagram_url','town','region','postcode','image_path','start_date','end_date','next_session_date'];
+ $fields=['title','description','short_description','category','age_range','website','booking_url','contact_email','phone','facebook_url','instagram_url','town','region','postcode','image_path','start_date','end_date','next_session_date','updated_at'];
  $select=['id'];foreach($fields as $f)if(in_array($f,$cols,true))$select[]='`'.$f.'`';
  $read=$db->prepare('SELECT '.implode(',',$select).' FROM bh_activities WHERE id=?');
  // Refresh an existing matching finding instead of creating duplicate review items on every scheduled pass.
@@ -51,7 +51,7 @@ try{
  $markDone=$db->prepare("UPDATE bh_listing_check_queue SET status='pending',attempts=0,last_checked_at=NOW(),last_error=NULL,next_check_at=DATE_ADD(NOW(), INTERVAL ".$interval." HOUR) WHERE id=?");
  $markFailed=$db->prepare("UPDATE bh_listing_check_queue SET status='failed',attempts=attempts+1,last_checked_at=NOW(),last_error=?,next_check_at=DATE_ADD(NOW(), INTERVAL LEAST(24,POW(2,LEAST(attempts,4))) HOUR) WHERE id=?");
  $markSkipped=$db->prepare("UPDATE bh_listing_check_queue SET status='skipped',attempts=attempts+1,last_checked_at=NOW(),last_error=?,next_check_at=NULL WHERE id=?");
- $done=0;$errors=0;$skipped=0;
+ $staleAfterDays=max(30,min(1095,(int)$get('stale_after_days','180')));\n $done=0;$errors=0;$skipped=0;
  foreach($queue as $item){
   if(microtime(true)>$deadline)break;
   $qid=(int)$item['id'];$aid=(int)$item['target_id'];
@@ -63,7 +63,7 @@ try{
    foreach(['website','booking_url','facebook_url','instagram_url'] as $key){$v=trim((string)($row[$key]??''));if($v!==''&&!filter_var($v,FILTER_VALIDATE_URL))$record($aid,'invalid_url',['field'=>$key,'value'=>$v]);}
    $email=trim((string)($row['contact_email']??''));if($email!==''&&!filter_var($email,FILTER_VALIDATE_EMAIL))$record($aid,'invalid_email',['field'=>'contact_email']);
    $postcode=trim((string)($row['postcode']??''));if($postcode!==''&&!preg_match('/^[A-Z]{1,2}[0-9][A-Z0-9]?\\s*[0-9][A-Z]{2}$/i',$postcode))$record($aid,'invalid_postcode',['field'=>'postcode','value'=>$postcode]);
-   foreach(['start_date','end_date','next_session_date'] as $key){$v=trim((string)($row[$key]??''));if($v!==''&&strtotime($v)!==false&&strtotime($v)<strtotime('today')){$record($aid,'past_session_date',['field'=>$key,'value'=>$v]);break;}}
+   foreach(['start_date','end_date','next_session_date'] as $key){$v=trim((string)($row[$key]??''));if($v!==''&&strtotime($v)!==false&&strtotime($v)<strtotime('today')){$record($aid,'past_session_date',['field'=>$key,'value'=>$v]);break;}}\n   $updated=trim((string)($row['updated_at']??''));if($updated!==''&&strtotime($updated)!==false&&strtotime($updated)<strtotime('-'.$staleAfterDays.' days'))$record($aid,'stale_listing',['field'=>'updated_at','value'=>$updated,'stale_after_days'=>$staleAfterDays]);
    if(in_array('title',$cols,true)&&in_array('town',$cols,true)){
     $d=$db->prepare("SELECT id FROM bh_activities WHERE id<>? AND LOWER(TRIM(title))=LOWER(TRIM(?)) AND LOWER(TRIM(COALESCE(town,'')))=LOWER(TRIM(COALESCE(?,''))) LIMIT 1");
     $d->execute([$aid,(string)($row['title']??''),(string)($row['town']??'')]);
