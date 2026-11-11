@@ -95,7 +95,8 @@ try {
   $missing=[];
   foreach($fieldMap as $label=>$keys) if(!$has($row,$keys)){ $missing[]=$label; $missingCounts[$label]++; }
   $row['missing']=$missing;
-  $row['health_score']=(int)round((count($fieldMap)-count($missing))/count($fieldMap)*100);
+  $row['health_assessable_fields']=count($fieldMap);
+  $row['health_score']=count($fieldMap)>0 ? (int)round((count($fieldMap)-count($missing))/count($fieldMap)*100) : null;
   $row['suggested_description']='';
   if(trim((string)($row['description']??''))==='' && trim((string)($row['short_description']??''))===''){
    $activity=trim((string)($row['title']??''));
