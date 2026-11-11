@@ -29,14 +29,18 @@
    const sessions=venues.flatMap(v=>v.sessions||[]);
    $("leaderV3Classes").textContent=classes.length;
    $("leaderV3Sessions").textContent=sessions.length;
-   $("leaderV3BookingsCount").textContent=bookings.length;
-   $("leaderV3Venues").textContent=venues.length;
+   const now=new Date(),monthKey=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
+   const newThisMonth=bookings.filter(b=>String(b.created_at||"").slice(0,7)===monthKey).length;
+   $("leaderV3NewBookings").textContent=newThisMonth;
+   const series=Array.from({length:6},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-(5-i),1);const key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");return bookings.filter(b=>String(b.created_at||"").slice(0,7)===key).length;});
+   const max=Math.max(1,...series),points=series.map((v,i)=>((i*17)+","+ (19-(v/max*16)).toFixed(1))).join(" ");
+   $("leaderV3Sparkline").innerHTML="<svg viewBox='0 0 85 22' role='img' aria-label='Bookings over the last six months'><polyline points='"+points+"'/></svg>";
    renderSchedule(classes);renderBookings(bookings);
    const name=String(data.organisation?.first_name||data.organisation?.contact_name||data.organisation?.name||"").trim().split(/\s+/)[0];
    $("leaderV3UserName").textContent=name||"Your account";
    $("leaderV3Avatar").textContent=(name||"U").slice(0,1).toUpperCase();
   }catch(error){
-   ["leaderV3Classes","leaderV3Sessions","leaderV3BookingsCount","leaderV3Venues"].forEach(id=>{if($(id))$(id).textContent="—";});
+   ["leaderV3Classes","leaderV3Sessions","leaderV3NewBookings"].forEach(id=>{if($(id))$(id).textContent="—";});
    ["leaderV3Schedule","leaderV3Bookings"].forEach(id=>{if($(id))$(id).innerHTML="<div class='bh-leader-v3-empty'>Sign in as a class leader to see your live information.</div>";});
   }
   try{
