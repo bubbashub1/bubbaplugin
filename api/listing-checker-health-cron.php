@@ -49,7 +49,9 @@ try{
  $findExisting=$db->prepare("SELECT id FROM bh_listing_check_findings WHERE check_type='health' AND activity_id=? AND finding_type=? ORDER BY id LIMIT 1");
  $refreshFinding=$db->prepare("UPDATE bh_listing_check_findings SET candidate_json=?,confidence=100,checked_at=NOW() WHERE id=?");
  $insertFinding=$db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,candidate_json,finding_type,confidence,checked_at,review_status) VALUES('health',?,?,?,100,NOW(),'new')");
- $record=static function(int $activityId,string $type,array $data) use($findExisting,$refreshFinding,$insertFinding): void {
+ $detectedTypes=[];
+ $record=static function(int $activityId,string $type,array $data) use($findExisting,$refreshFinding,$insertFinding,&$detectedTypes): void {
+   $detectedTypes[$type]=true;
    $json=json_encode($data,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);
    $findExisting->execute([$activityId,$type]);$existing=$findExisting->fetchColumn();
    if($existing){$refreshFinding->execute([$json,(int)$existing]);return;}
@@ -67,6 +69,7 @@ try{
   try{
    $read->execute([$aid]);$row=$read->fetch(PDO::FETCH_ASSOC);
    if(!$row){$markSkipped->execute(['Activity no longer exists',$qid]);$skipped++;continue;}
+   $detectedTypes=[];
    $checks=['description'=>['description','short_description'],'website'=>['website'],'booking_link'=>['booking_url'],'email'=>['contact_email'],'telephone'=>['contact_phone'],'facebook'=>['facebook_url'],'instagram'=>['instagram_url'],'age_range'=>['age_range'],'category'=>['category'],'location'=>['town'],'postcode'=>['postcode'],'image'=>['image_path']];
    foreach($checks as $type=>$keys){
     // Only assess fields supported by this installation's actual bh_activities schema.
@@ -85,6 +88,11 @@ try{
     $d->execute([$aid,(string)($row['title']??''),(string)($row['town']??'')]);
     if($d->fetchColumn())$record($aid,'possible_duplicate',['title'=>$row['title']??'','town'=>$row['town']??'']);
    }
+   // Resolve only outstanding checker findings that this successful pass no longer detects.
+   // Preserve every explicit admin decision (approved/rejected/correct/incorrect).
+   $knownTypes=['missing_description','missing_website','missing_booking_link','missing_email','missing_telephone','missing_facebook','missing_instagram','missing_age_range','missing_category','missing_location','missing_postcode','missing_image','invalid_url','invalid_email','invalid_postcode','past_session_date','stale_listing','possible_duplicate'];
+   $resolve=$db->prepare("UPDATE bh_listing_check_findings SET review_status='resolved',reviewed_at=NOW() WHERE check_type='health' AND activity_id=? AND review_status IN('new','follow_up') AND finding_type=?");
+   foreach($knownTypes as $knownType){if(!isset($detectedTypes[$knownType]))$resolve->execute([$aid,$knownType]);}
    $markDone->execute([$qid]);$done++;
   }catch(Throwable $e){$errors++;$markFailed->execute([substr($e->getMessage(),0,900),$qid]);}
  }
