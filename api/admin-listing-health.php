@@ -57,6 +57,16 @@ try {
   'Postcode'=>['postcode','venue_postcode'],
   'Image'=>['image_path']
  ];
+ // A health dimension is assessed only when at least one real source column supports it.
+ $availableAliases=[];
+ $activityAliasColumns=['description'=>'description','short_description'=>'short_description','activity_website'=>'website','booking_url'=>'booking_url','contact_email'=>'contact_email','activity_phone'=>'phone','facebook_url'=>'facebook_url','instagram_url'=>'instagram_url','town'=>'town','region'=>'region','postcode'=>'postcode','image_path'=>'image_path','age_range'=>'age_range','category'=>'category'];
+ foreach($activityAliasColumns as $alias=>$column) if(in_array($column,$activityCols,true)) $availableAliases[]=$alias;
+ if($join!=='') foreach(['organisation_name','email','phone','website'] as $field) if(in_array($field,$organiserCols,true)) $availableAliases[]='organiser_'.$field;
+ if(in_array('id',$venueCols,true)&&in_array('activity_id',$venueCols,true)) foreach(['venue_name','address','town','postcode'] as $field) if(in_array($field,$venueCols,true)) $availableAliases[]='venue_'.$field;
+ foreach($fieldMap as $label=>$keys){
+  $supported=array_values(array_filter($keys,static fn($key)=>in_array($key,$availableAliases,true)));
+  if($supported) $fieldMap[$label]=$supported; else unset($fieldMap[$label]);
+ }
  $has=static function(array $row,array $keys): bool { foreach($keys as $key) if(trim((string)($row[$key]??''))!=='') return true; return false; };
  $missingCounts=array_fill_keys(array_keys($fieldMap),0);
  foreach($rows as &$row){
