@@ -18,6 +18,9 @@ if(!is_array($parts)||strtolower((string)($parts['host']??''))!==strtolower(expl
 if(!str_starts_with(strtolower((string)($_SERVER['CONTENT_TYPE']??'')),'application/json'))out(415,['ok'=>false,'error'=>'json_required']);
 
 $body=json_decode(file_get_contents('php://input'),true);if(!is_array($body))out(422,['ok'=>false,'error'=>'invalid_body']);
+$expected=(string)($_SESSION['bh_admin_csrf']??'');
+$provided=(string)($body['csrf']??'');
+if($expected===''||$provided===''||!hash_equals($expected,$provided))out(403,['ok'=>false,'error'=>'invalid_csrf']);
 $id=(int)($body['id']??0);$action=(string)($body['action']??'');
 if($id<1||!in_array($action,['edit','deactivate','restore','promote','revoke_promotion','permanent_delete'],true))out(422,['ok'=>false,'error'=>'invalid_action']);
 try{
