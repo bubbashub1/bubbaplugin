@@ -83,7 +83,7 @@ After applying the migration, the existing-listing batch worker can be invoked f
 php /path/to/bubbaplugin/api/listing-checker-health-cron.php
 ```
 
-Configure the hosting cron to invoke it every four hours. It uses the saved enable flag, UK timezone/run-window/day settings, batch size and maximum runtime; it uses a MySQL advisory lock to prevent overlapping runs. Each run handles up to the configured batch size (default 30), saves findings in the separate review table and never updates live activity records. The worker exits safely with a migration-required message until the SQL migration has been applied.
+Configure the hosting cron to invoke it every four hours. It uses the saved enable flag, UK timezone/run-window/day settings, batch size and maximum runtime; it uses a MySQL advisory lock to prevent overlapping runs. Each run handles up to the configured batch size (default 30), then schedules each successfully checked listing for another check after the configured interval. New activity IDs are added automatically; repeated findings refresh the existing review item rather than creating duplicates. The configurable stale-age threshold (default 180 days) flags listings whose `updated_at` value is old. Findings are stored in the separate review table and the worker never updates live activity records. The worker exits safely with a migration-required message until the SQL migration has been applied.
 
 
 ### Listing Checker review queue
