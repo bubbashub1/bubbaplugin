@@ -31,7 +31,7 @@ $canonicalizeDiscoveryUrl=static function(string $url): ?string {
 };
 $settings=[];foreach($db->query('SELECT setting_key,setting_value FROM bh_listing_checker_settings')->fetchAll(PDO::FETCH_ASSOC) as $r)$settings[$r['setting_key']]=$r['setting_value'];
 $get=static fn($k,$d='')=>(string)($settings[$k]??$d);
-if($get('discovery_enabled','1')!=='1'){echo "New listing discovery disabled\n";exit;}
+if($get('discovery_enabled','0')!=='1'){echo "New listing discovery disabled\n";exit;}
 if($get('discovery_paused','0')==='1'){echo "Discovery checks paused\\n";exit;}
 $manualRun=$get('discovery_run_now','0')==='1';
 $tz=new DateTimeZone($get('timezone','Europe/London'));$now=new DateTimeImmutable('now',$tz);$clock=$now->format('H:i');
