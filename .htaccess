@@ -147,3 +147,17 @@ RewriteRule ^([a-z0-9-]+)/?$ $1.html [L,QSA]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^([^/]+)/?$ activity.html?slug=$1 [L,QSA]
+
+# BEGIN WordPress
+# WordPress core rewrite rules. Keep these after Bubba Hub's custom routes
+# so the WordPress catch-all does not intercept Bubba Hub activity URLs.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+# END WordPress
