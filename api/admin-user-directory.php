@@ -2,12 +2,8 @@
 declare(strict_types=1);
 /** Admin-only, read-only account directory. No child profiles or password hashes exposed. */
 header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');header('X-Content-Type-Options: nosniff');
-$secure=!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off';
-session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);
-ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');
-session_name('BUBBAHUB_ADMINSESSID');session_start();
+require_once __DIR__.'/admin-session-guard.php';
 function admin_users_reply(int $status,array $payload):never{http_response_code($status);echo json_encode($payload,JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);exit;}
-if(empty($_SESSION['bh_admin_authenticated']))admin_users_reply(401,['ok'=>false,'error'=>'admin_login_required']);
 if(($_SERVER['REQUEST_METHOD']??'')!=='GET')admin_users_reply(405,['ok'=>false,'error'=>'method_not_allowed']);
 try{
  require_once __DIR__.'/db.php';$db=bh_mysql();
