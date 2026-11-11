@@ -55,3 +55,11 @@ body.bh-family-v3 .family-v3-main :is(.hub-stats,.hub-dashboard-grid,.hub-tools-
  body.bh-family-v3 .family-v3-main .hub-panel,
  body.bh-family-v3 .family-v3-main .hub-brief{padding:15px!important}
 }
+
+/* Family dashboard shortcuts to dedicated activity pages */
+body.bh-family-v3 .hub-section-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 20px}
+body.bh-family-v3 .hub-section-links a{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 12px;align-items:center;padding:17px 18px;background:#fff;border:1px solid #dce9df;border-radius:16px;color:#174e3b;text-decoration:none;box-shadow:0 5px 16px rgba(23,78,59,.04)}
+body.bh-family-v3 .hub-section-links a strong{font-size:15px}
+body.bh-family-v3 .hub-section-links a span{grid-column:1;color:#668276;font-size:13px}
+body.bh-family-v3 .hub-section-links a:hover{border-color:#9fc5aa;background:#f8fbf8}
+@media(max-width:560px){body.bh-family-v3 .hub-section-links{grid-template-columns:1fr}}
