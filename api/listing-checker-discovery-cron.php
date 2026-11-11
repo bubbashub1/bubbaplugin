@@ -26,7 +26,8 @@ if(!$manualRun&&!$last&&$clock<$preferred){echo "Waiting for preferred first-run
 if(!$manualRun&&$last&&new DateTimeImmutable((string)$last,$tz)>$now->modify('-'.$interval.' hours')){echo "Not due yet\n";exit;}
 $lock=$db->query("SELECT GET_LOCK('bh_listing_checker_discovery',0)")->fetchColumn();if((int)$lock!==1){echo "Discovery worker already running\n";exit;}
 $runId=0;
-try{\n if($manualRun){$clear=$db->prepare("INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES(?, '0') ON DUPLICATE KEY UPDATE setting_value='0'");$clear->execute(['discovery_run_now']);}
+try{
+ if($manualRun){$clear=$db->prepare("INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES(?, '0') ON DUPLICATE KEY UPDATE setting_value='0'");$clear->execute(['discovery_run_now']);}
  $run=$db->prepare("INSERT INTO bh_listing_check_runs(check_type,status,started_at) VALUES('discovery','running',NOW())");$run->execute();$runId=(int)$db->lastInsertId();
  $batch=max(1,min(100,(int)$get('batch_size','30')));$requestLimit=max(1,min(200,(int)$get('request_limit','30')));$limit=min($batch,$requestLimit);$runtime=max(30,min(600,(int)$get('max_runtime_seconds','240')));$deadline=microtime(true)+$runtime;
  $terms=$db->query("SELECT id,term,term_group,regions_json FROM bh_listing_discovery_terms WHERE enabled=1 ORDER BY COALESCE(last_searched_at,'1970-01-01 00:00:00') ASC,id ASC LIMIT ".$limit)->fetchAll(PDO::FETCH_ASSOC);
