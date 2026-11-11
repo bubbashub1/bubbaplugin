@@ -6,6 +6,22 @@ declare(strict_types=1);
  * Uses the server-only github-deploy-config.php shared by the standalone app.
  * Credentials are never stored in GitHub or exposed to the browser.
  */
+/**
+ * Ensure the public newsletter subscriber table exists.
+ */
+function bh_ensure_newsletter_subscribers(PDO $pdo): void {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS bh_newsletter_subscribers (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(190) NOT NULL UNIQUE,
+        status ENUM('subscribed','unsubscribed') NOT NULL DEFAULT 'subscribed',
+        source VARCHAR(80) NOT NULL DEFAULT 'website',
+        consented_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        unsubscribed_at DATETIME NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+}
+
 function bh_mysql(): PDO {
     static $pdo = null;
     if ($pdo instanceof PDO) return $pdo;
