@@ -1,0 +1,215 @@
+{
+  "schema_version": 1,
+  "description": "PR ownership and dependency hints; advisory only. Never auto-merge or copy changes between PR branches.",
+  "groups": [
+    {
+      "id": "foundation",
+      "issue": 72,
+      "primary_pr": 84,
+      "related_prs": [
+        35,
+        32,
+        17,
+        37,
+        43,
+        44,
+        56,
+        57,
+        101
+      ],
+      "path_prefixes": [
+        "api/db.php",
+        "api/auth.php",
+        "api/admin-auth.php"
+      ]
+    },
+    {
+      "id": "events-core",
+      "issue": 21,
+      "primary_pr": 65,
+      "related_prs": [
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        87,
+        89
+      ],
+      "path_prefixes": [
+        "events.html",
+        "api/event",
+        "assets/js/events"
+      ]
+    },
+    {
+      "id": "ticketing",
+      "issue": 23,
+      "primary_pr": 66,
+      "related_prs": [
+        59,
+        61,
+        67,
+        69,
+        77
+      ],
+      "path_prefixes": [
+        "api/booking",
+        "api/ticket",
+        "api/stripe"
+      ]
+    },
+    {
+      "id": "exhibitors",
+      "issue": 58,
+      "primary_pr": 64,
+      "related_prs": [
+        70,
+        86,
+        94
+      ],
+      "path_prefixes": [
+        "api/exhibitor",
+        "admin/admin-event"
+      ]
+    },
+    {
+      "id": "family",
+      "issue": 73,
+      "primary_pr": 91,
+      "related_prs": [
+        71,
+        74,
+        87,
+        88,
+        90,
+        92,
+        99
+      ],
+      "path_prefixes": [
+        "my-hub.html",
+        "api/my-hub.php"
+      ]
+    },
+    {
+      "id": "planner",
+      "issue": 74,
+      "primary_pr": 71,
+      "related_prs": [
+        65,
+        68,
+        89,
+        90,
+        99
+      ],
+      "path_prefixes": [
+        "planner.html",
+        "api/planner"
+      ]
+    },
+    {
+      "id": "leader-listings",
+      "issue": 75,
+      "primary_pr": 43,
+      "related_prs": [
+        32,
+        35,
+        37,
+        44,
+        76,
+        96
+      ],
+      "path_prefixes": [
+        "api/leader-portal.php",
+        "admin/admin-activities"
+      ]
+    },
+    {
+      "id": "venues",
+      "issue": 76,
+      "primary_pr": 96,
+      "related_prs": [
+        44,
+        86,
+        90,
+        85,
+        97
+      ],
+      "path_prefixes": [
+        "api/venues.php",
+        "venues.html"
+      ]
+    },
+    {
+      "id": "communications",
+      "issue": 79,
+      "primary_pr": 98,
+      "related_prs": [
+        57,
+        64,
+        66,
+        68,
+        71,
+        87,
+        99
+      ],
+      "path_prefixes": [
+        "api/newsletter",
+        "api/email",
+        "api/notifications"
+      ]
+    },
+    {
+      "id": "moderation",
+      "issue": 80,
+      "primary_pr": 44,
+      "related_prs": [
+        37,
+        43,
+        64,
+        70,
+        93,
+        95
+      ],
+      "path_prefixes": [
+        "api/admin",
+        "admin/"
+      ]
+    },
+    {
+      "id": "revenue",
+      "issue": 82,
+      "primary_pr": 100,
+      "related_prs": [
+        66,
+        69,
+        70,
+        94
+      ],
+      "path_prefixes": [
+        "api/stripe",
+        "api/payment"
+      ]
+    },
+    {
+      "id": "mobile",
+      "issue": 83,
+      "primary_pr": 99,
+      "related_prs": [
+        71,
+        74,
+        81,
+        101
+      ],
+      "path_prefixes": [
+        "capacitor",
+        "android/"
+      ]
+    }
+  ],
+  "excluded_features": [
+    "birthday-party-finder",
+    "party-space-directory"
+  ]
+}
