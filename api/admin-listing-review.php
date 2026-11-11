@@ -20,7 +20,7 @@ try {
  $_SESSION['bh_listing_review_csrf']??=bin2hex(random_bytes(32));
  $method=$_SERVER['REQUEST_METHOD']??'GET';
  if($method==='GET'){
-  $status=(string)($_GET['status']??'new');$allowed=['all','new','follow_up','approved','rejected','correct','incorrect'];
+  $status=(string)($_GET['status']??'new');$allowed=['all','new','follow_up','approved','rejected','correct','incorrect','resolved'];
   if(!in_array($status,$allowed,true))$status='new';
   $limit=max(1,min(100,(int)($_GET['limit']??50)));$offset=max(0,min(100000,(int)($_GET['offset']??0)));
   $where=$status==='all'?'':' WHERE f.review_status=?';
@@ -39,7 +39,7 @@ try {
  $input=json_decode((string)file_get_contents('php://input'),true);
  if(!is_array($input)||!hash_equals((string)$_SESSION['bh_listing_review_csrf'],(string)($input['csrf']??'')))bh_lcr_reply(403,['ok'=>false,'error'=>'Security check failed. Refresh and try again.']);
  $id=(int)($input['id']??0);$status=(string)($input['review_status']??'');
- if($id<1||!in_array($status,['new','correct','incorrect','follow_up','approved','rejected'],true))bh_lcr_reply(422,['ok'=>false,'error'=>'Invalid review update.']);
+ if($id<1||!in_array($status,['new','correct','incorrect','follow_up','approved','rejected','resolved'],true))bh_lcr_reply(422,['ok'=>false,'error'=>'Invalid review update.']);
  $stmt=$db->prepare('UPDATE bh_listing_check_findings SET review_status=?,reviewed_at=NOW() WHERE id=?');$stmt->execute([$status,$id]);
  if(!$stmt->rowCount()){$check=$db->prepare('SELECT id FROM bh_listing_check_findings WHERE id=?');$check->execute([$id]);if(!$check->fetchColumn())bh_lcr_reply(404,['ok'=>false,'error'=>'Finding not found.']);}
  bh_lcr_reply(200,['ok'=>true,'message'=>'Review status saved.']);
