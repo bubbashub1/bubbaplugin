@@ -10,6 +10,12 @@
   const path=location.pathname.replace(/\/+$/,"")||"/";
   const links=[
    ["/my-hub.html","My Hub","⌂","dashboard"],
+   ["/family-section.html?section=recent","Recently Viewed","◷","recent"],
+   ["/family-section.html?section=saved","Saved activities","♡","saved"],
+   ["/family-section.html?section=visited","Visited Groups","✓","visited"],
+   ["/family-section.html?section=suggested","Suggested groups & activities","✦","suggested"],
+   ["/family-section.html?section=plans","My Plans","▦","plans"],
+   ["/family-section.html?section=messages","My Messages","✉","messages"],
    ["/planner.html","My Planner","▦","planner"],
    ["/account/saved-activities.html","Saved activities","♡","saved"],
    ["/account/family.html","My Family","♧","family"],
