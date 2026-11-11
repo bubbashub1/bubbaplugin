@@ -9,9 +9,6 @@ function bh_admin_response(int $status,array $data): never{http_response_code($s
 if(empty($_SESSION['bh_admin_authenticated']))bh_admin_response(401,['ok'=>false,'error'=>'Admin login required.']);
 try{require __DIR__.'/db.php';$db=bh_mysql();
  $_SESSION['bh_listing_csrf']??=bin2hex(random_bytes(32));
- // Activity-specific social URLs: preserve independently of shared organiser details.
- $socialCols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);
- foreach(['facebook_url','instagram_url'] as $socialCol){if(!in_array($socialCol,$socialCols,true)){$db->exec("ALTER TABLE bh_activities ADD COLUMN `".$socialCol."` VARCHAR(2048) NULL DEFAULT NULL");}}
 
  if($_SERVER['REQUEST_METHOD']==='GET'&&($_GET['action']??'')==='categories'){
   $names=[];try{$q=$db->query("SELECT name FROM bh_categories ORDER BY name");$names=$q->fetchAll(PDO::FETCH_COLUMN);}catch(Throwable $ignored){}
@@ -154,6 +151,13 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
   }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
  }
 
+ // Social URL columns are installed by database migration 009, never during a request.
+ $socialColumnCheck=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);
+ foreach(['facebook_url','instagram_url'] as $requiredSocialColumn){
+  if(!in_array($requiredSocialColumn,$socialColumnCheck,true)){
+   bh_admin_response(503,['ok'=>false,'error'=>'Activity social fields are not installed yet. Apply database migration 009 and try again.']);
+  }
+ }
  $activityCountyColumn=false;
  try{$cc=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='county'");$activityCountyColumn=((int)$cc->fetchColumn())>0;}catch(Throwable $ignored){}// Decode HTML entities in plain-text listing fields, not rich HTML or URLs.
  $decodePlain=static fn($value)=>trim(html_entity_decode((string)$value,ENT_QUOTES|ENT_HTML5,'UTF-8'));
