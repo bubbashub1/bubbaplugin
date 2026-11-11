@@ -53,8 +53,10 @@ try{
  if(!$terms){$summary=json_encode(['processed'=>0,'candidates'=>0,'errors'=>0,'message'=>'No enabled discovery terms']);$u=$db->prepare("UPDATE bh_listing_check_runs SET status='completed',finished_at=NOW(),summary_json=? WHERE id=?");$u->execute([$summary,$runId]);echo $summary."\n";exit;}
  if(!function_exists('curl_init'))throw new RuntimeException('PHP cURL extension is required for discovery searches.');
  if(!function_exists('simplexml_load_string'))throw new RuntimeException('PHP SimpleXML extension is required for discovery searches.');
- $processed=0;$candidates=0;$errors=0;$duplicates=0;
+ $processed=0;$candidates=0;$errors=0;$duplicates=0;$alreadyListed=0;
  $insert=$db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,term_id,candidate_json,finding_type,confidence,source_url,checked_at,review_status) VALUES('discovery',NULL,?,?,?,?,?,NOW(),'new')");
+ $existingWebsites=[];
+ foreach($db->query("SELECT website FROM bh_activities WHERE website IS NOT NULL AND TRIM(website)<>''")->fetchAll(PDO::FETCH_COLUMN) as $existingWebsite){$existingCanonical=$canonicalizeDiscoveryUrl((string)$existingWebsite);if($existingCanonical!==null)$existingWebsites[$existingCanonical]=true;}
  $seen=$db->prepare("SELECT id FROM bh_listing_check_findings WHERE check_type='discovery' AND source_url=? LIMIT 1");
  $touch=$db->prepare('UPDATE bh_listing_discovery_terms SET last_searched_at=NOW() WHERE id=?');
  foreach($terms as $term){
@@ -77,6 +79,7 @@ try{
     $parts=parse_url($source);if(!is_array($parts)||!in_array(strtolower((string)($parts['scheme']??'')),['http','https'],true)||empty($parts['host'])||isset($parts['user'])||isset($parts['pass']))continue;
     if(preg_match('/(^|\.)bing\.com$/i',(string)$parts['host'])){parse_str((string)($parts['query']??''),$bp);$encoded=(string)($bp['u']??'');if(str_starts_with($encoded,'a1')){$decoded=base64_decode(strtr(substr($encoded,2),'-_','+/'));if(is_string($decoded))$source=$decoded;}}
     $canonicalUrl=$canonicalizeDiscoveryUrl($source);if($canonicalUrl===null||strlen($canonicalUrl)>1000)continue;
+    if(isset($existingWebsites[$canonicalUrl])){$alreadyListed++;continue;}
     $seen->execute([$canonicalUrl]);if($seen->fetchColumn()){$duplicates++;continue;}
     $candidate=['title'=>$title,'snippet'=>substr($snippet,0,1200),'website'=>$source,'canonical_website'=>$canonicalUrl,'search_term'=>(string)$term['term'],'term_group'=>(string)$term['term_group'],'region_scope'=>$scope,'provider'=>'Bing RSS','evidence_note'=>'Search result only. Verify the organiser, current activity, location and dates directly before treating this as a valid listing.'];
     $insert->execute([(int)$term['id'],json_encode($candidate,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE),'discovery_candidate',45,$canonicalUrl]);
@@ -86,7 +89,7 @@ try{
   }catch(Throwable $e){$errors++;error_log('Listing discovery term '.(int)$term['id'].': '.$e->getMessage());}
  }
  $remaining=(int)$db->query('SELECT COUNT(*) FROM bh_listing_discovery_terms WHERE enabled=1')->fetchColumn();
- $summary=json_encode(['processed_terms'=>$processed,'candidates_added'=>$candidates,'already_seen'=>$duplicates,'errors'=>$errors,'enabled_terms'=>$remaining,'request_limit'=>$requestLimit]);
+ $summary=json_encode(['processed_terms'=>$processed,'candidates_added'=>$candidates,'already_seen'=>$duplicates,'already_listed'=>$alreadyListed,'errors'=>$errors,'enabled_terms'=>$remaining,'request_limit'=>$requestLimit]);
  $finish=$db->prepare("UPDATE bh_listing_check_runs SET status='completed',finished_at=NOW(),processed_count=?,error_count=?,summary_json=? WHERE id=?");$finish->execute([$processed,$errors,$summary,$runId]);echo $summary."\n";
 }catch(Throwable $e){if($runId){$s=$db->prepare("UPDATE bh_listing_check_runs SET status='failed',finished_at=NOW(),summary_json=? WHERE id=?");$s->execute([json_encode(['error'=>$e->getMessage()]),$runId]);}error_log('Listing discovery worker: '.$e->getMessage());fwrite(STDERR,"Discovery worker failed; see PHP error log\n");exit(1);}
 finally{$db->query("SELECT RELEASE_LOCK('bh_listing_checker_discovery')");}
