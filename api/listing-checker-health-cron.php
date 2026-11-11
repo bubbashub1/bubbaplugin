@@ -50,7 +50,7 @@ try{
  if($manualRun){$clear=$db->prepare("INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES(?, '0') ON DUPLICATE KEY UPDATE setting_value='0'");$clear->execute(['health_run_now']);}
  $limit=max(1,min(100,(int)$get('batch_size','30')));$runtime=max(30,min(600,(int)$get('max_runtime_seconds','240')));$deadline=microtime(true)+$runtime;
  $due=$db->prepare("SELECT id,target_id FROM bh_listing_check_queue WHERE check_type='health' AND status IN('pending','failed') AND (next_check_at IS NULL OR next_check_at<=NOW()) ORDER BY COALESCE(next_check_at,created_at),id LIMIT ?");$due->bindValue(1,$limit,PDO::PARAM_INT);$due->execute();$queue=$due->fetchAll(PDO::FETCH_ASSOC);
- $fields=['title','description','short_description','category','age_range','website','booking_url','contact_email','contact_phone','facebook_url','instagram_url','town','region','postcode','image_path','start_date','end_date','next_session_date','updated_at'];
+ $fields=['title','description','short_description','category','age_range','booking_url','facebook_url','instagram_url','image_path','start_date','end_date','next_session_date','updated_at'];
  $select=['a.id'];foreach($fields as $f)if(in_array($f,$cols,true))$select[]='a.`'.$f.'`';
  $fallbacks=[
   'website'=>['activity'=>'website','organiser'=>'website'],
@@ -106,9 +106,16 @@ try{
    if(!$row){$markSkipped->execute(['Activity no longer exists',$qid]);$skipped++;continue;}
    $detectedTypes=[];
    $checks=['description'=>['description','short_description'],'website'=>['website'],'booking_link'=>['booking_url'],'email'=>['contact_email'],'telephone'=>['contact_phone'],'facebook'=>['facebook_url'],'instagram'=>['instagram_url'],'age_range'=>['age_range'],'category'=>['category'],'location'=>['town'],'postcode'=>['postcode'],'image'=>['image_path']];
+   $fallbackSupport=[
+    'website'=>in_array('website',$cols,true)||($hasOrg&&in_array('website',$orgCols,true)),
+    'email'=>in_array('contact_email',$cols,true)||($hasOrg&&in_array('email',$orgCols,true)),
+    'telephone'=>in_array('contact_phone',$cols,true)||($hasOrg&&in_array('phone',$orgCols,true)),
+    'location'=>in_array('town',$cols,true)||(in_array('town',$venueCols,true)&&($hasVenueLink||$hasDirectVenue)),
+    'postcode'=>in_array('postcode',$cols,true)||(in_array('postcode',$venueCols,true)&&($hasVenueLink||$hasDirectVenue))
+   ];
    foreach($checks as $type=>$keys){
-    // Only assess fields supported by this installation's actual bh_activities schema.
-    $availableKeys=array_values(array_filter($keys,static fn($key)=>in_array($key,$cols,true)));
+    // Assess fallback fields only when the real organiser/venue source is available.
+    $availableKeys=isset($fallbackSupport[$type])?($fallbackSupport[$type]?[$keys[0]]:[]):array_values(array_filter($keys,static fn($key)=>in_array($key,$cols,true)));
     if(!$availableKeys)continue;
     $present=false;foreach($availableKeys as $key)if(trim((string)($row[$key]??''))!=='')$present=true;
     if(!$present)$record($aid,'missing_'.$type,['field'=>$type,'checked_columns'=>$availableKeys]);
