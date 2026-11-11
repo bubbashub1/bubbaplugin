@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS bh_listing_check_findings (
   confidence DECIMAL(5,2) NULL,
   source_url VARCHAR(1000) NULL,
   checked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  review_status ENUM('new','correct','incorrect','follow_up','approved','rejected') NOT NULL DEFAULT 'new',
+  review_status ENUM('new','correct','incorrect','follow_up','approved','rejected','resolved') NOT NULL DEFAULT 'new',
   reviewed_at DATETIME NULL,
   KEY idx_listing_findings_review (review_status,checked_at),
   KEY idx_listing_findings_activity (activity_id)
