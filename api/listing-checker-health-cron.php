@@ -36,6 +36,14 @@ $lock=$db->query("SELECT GET_LOCK('bh_listing_checker_health',0)")->fetchColumn(
 $runId=0;
 try{
  $cols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);if(!$cols||!in_array('id',$cols,true))throw new RuntimeException('bh_activities table unavailable');
+ $orgCols=$db->query("SHOW COLUMNS FROM bh_organisers")->fetchAll(PDO::FETCH_COLUMN);
+ $venueCols=$db->query("SHOW COLUMNS FROM bh_venues")->fetchAll(PDO::FETCH_COLUMN);
+ $linkCols=$db->query("SHOW COLUMNS FROM bh_activity_venues")->fetchAll(PDO::FETCH_COLUMN);
+ $scheduleCols=$db->query("SHOW COLUMNS FROM bh_activity_schedules")->fetchAll(PDO::FETCH_COLUMN);
+ $hasOrg=in_array('organiser_id',$cols,true)&&in_array('id',$orgCols,true);
+ $hasVenueLink=in_array('activity_id',$linkCols,true)&&in_array('venue_id',$linkCols,true)&&in_array('id',$venueCols,true);
+ $hasDirectVenue=in_array('activity_id',$venueCols,true)&&in_array('id',$venueCols,true);
+ $hasSchedules=in_array('activity_id',$scheduleCols,true)&&in_array('id',$scheduleCols,true);
  // INSERT IGNORE discovers newly-created listings; existing queue rows are retained for recurring checks.
  $db->exec("INSERT IGNORE INTO bh_listing_check_queue(check_type,target_id,target_term_id,status,next_check_at) SELECT 'health',id,0,'pending',NOW() FROM bh_activities");
  $q=$db->prepare("INSERT INTO bh_listing_check_runs(check_type,status,started_at) VALUES('health','running',NOW())");$q->execute();$runId=(int)$db->lastInsertId();
@@ -43,8 +51,35 @@ try{
  $limit=max(1,min(100,(int)$get('batch_size','30')));$runtime=max(30,min(600,(int)$get('max_runtime_seconds','240')));$deadline=microtime(true)+$runtime;
  $due=$db->prepare("SELECT id,target_id FROM bh_listing_check_queue WHERE check_type='health' AND status IN('pending','failed') AND (next_check_at IS NULL OR next_check_at<=NOW()) ORDER BY COALESCE(next_check_at,created_at),id LIMIT ?");$due->bindValue(1,$limit,PDO::PARAM_INT);$due->execute();$queue=$due->fetchAll(PDO::FETCH_ASSOC);
  $fields=['title','description','short_description','category','age_range','website','booking_url','contact_email','contact_phone','facebook_url','instagram_url','town','region','postcode','image_path','start_date','end_date','next_session_date','updated_at'];
- $select=['id'];foreach($fields as $f)if(in_array($f,$cols,true))$select[]='`'.$f.'`';
- $read=$db->prepare('SELECT '.implode(',',$select).' FROM bh_activities WHERE id=?');
+ $select=['a.id'];foreach($fields as $f)if(in_array($f,$cols,true))$select[]='a.`'.$f.'`';
+ $fallbacks=[
+  'website'=>['activity'=>'website','organiser'=>'website'],
+  'contact_email'=>['activity'=>'contact_email','organiser'=>'email'],
+  'contact_phone'=>['activity'=>'contact_phone','organiser'=>'phone'],
+  'town'=>['activity'=>'town','venue'=>'town'],
+  'region'=>['activity'=>'region','venue'=>'region'],
+  'postcode'=>['activity'=>'postcode','venue'=>'postcode']
+ ];
+ foreach($fallbacks as $alias=>$sources){
+  $parts=[];
+  if(isset($sources['activity'])&&in_array($sources['activity'],$cols,true))$parts[]="NULLIF(a.`".$sources['activity']."`,'')";
+  if(isset($sources['organiser'])&&$hasOrg&&in_array($sources['organiser'],$orgCols,true))$parts[]="NULLIF(o.`".$sources['organiser']."`,'')";
+  if(isset($sources['venue'])&&in_array('id',$venueCols,true)&&($hasVenueLink||$hasDirectVenue)&&in_array($sources['venue'],$venueCols,true)){
+   $venueParts=[];
+   if($hasVenueLink){$sort=in_array('is_primary',$linkCols,true)?'av.is_primary DESC,av.venue_id':'av.venue_id';$venueParts[]="(SELECT v.`".$sources['venue']."` FROM bh_activity_venues av INNER JOIN bh_venues v ON v.id=av.venue_id WHERE av.activity_id=a.id ORDER BY ".$sort." LIMIT 1)";}
+   if($hasDirectVenue)$venueParts[]="(SELECT v.`".$sources['venue']."` FROM bh_venues v WHERE v.activity_id=a.id ORDER BY v.id LIMIT 1)";
+   if($venueParts)$parts[]='NULLIF(COALESCE('.implode(',',$venueParts)."),'')";
+  }
+  if($parts)$select[]='COALESCE('.implode(',',$parts).') AS `'.$alias.'`';
+ }
+ if($hasSchedules&&in_array('active',$scheduleCols,true)){
+  $select[]='(SELECT COUNT(*) FROM bh_activity_schedules s WHERE s.activity_id=a.id AND s.active=1) AS active_schedule_count';
+  if(in_array('end_date',$scheduleCols,true)){
+   $select[]='(SELECT MAX(s.end_date) FROM bh_activity_schedules s WHERE s.activity_id=a.id AND s.active=1) AS schedule_end_date';
+   $select[]='(SELECT COUNT(*) FROM bh_activity_schedules s WHERE s.activity_id=a.id AND s.active=1 AND s.end_date IS NULL) AS schedule_open_ended_count';
+  }
+ }
+ $read=$db->prepare('SELECT '.implode(',',$select).' FROM bh_activities a'.($hasOrg?' LEFT JOIN bh_organisers o ON o.id=a.organiser_id':'').' WHERE a.id=?');
  // Refresh an existing matching finding instead of creating duplicate review items on every scheduled pass.
  $findExisting=$db->prepare("SELECT id FROM bh_listing_check_findings WHERE check_type='health' AND activity_id=? AND finding_type=? ORDER BY id LIMIT 1");
  $refreshFinding=$db->prepare("UPDATE bh_listing_check_findings SET candidate_json=?,confidence=100,checked_at=NOW() WHERE id=?");
@@ -82,6 +117,8 @@ try{
    if(in_array('contact_email',$cols,true)){$email=trim((string)($row['contact_email']??''));if($email!==''&&!filter_var($email,FILTER_VALIDATE_EMAIL))$record($aid,'invalid_email',['field'=>'contact_email']);}
    if(in_array('postcode',$cols,true)){$postcode=trim((string)($row['postcode']??''));if($postcode!==''&&!preg_match('/^[A-Z]{1,2}[0-9][A-Z0-9]?\\s*[0-9][A-Z]{2}$/i',$postcode))$record($aid,'invalid_postcode',['field'=>'postcode','value'=>$postcode]);}
    foreach(['start_date','end_date','next_session_date'] as $key){if(!in_array($key,$cols,true))continue;$v=trim((string)($row[$key]??''));if($v!==''&&strtotime($v)!==false&&strtotime($v)<strtotime('today')){$record($aid,'past_session_date',['field'=>$key,'value'=>$v]);break;}}
+   $activeSchedules=(int)($row['active_schedule_count']??0);$openEndedSchedules=(int)($row['schedule_open_ended_count']??0);$lastScheduleDate=trim((string)($row['schedule_end_date']??''));
+   if($activeSchedules>0&&$openEndedSchedules===0&&$lastScheduleDate!==''&&strtotime($lastScheduleDate)!==false&&strtotime($lastScheduleDate)<strtotime('today'))$record($aid,'expired_active_schedules',['active_schedule_count'=>$activeSchedules,'latest_end_date'=>$lastScheduleDate]);
    $updated=trim((string)($row['updated_at']??''));if($updated!==''&&strtotime($updated)!==false&&strtotime($updated)<strtotime('-'.$staleAfterDays.' days'))$record($aid,'stale_listing',['field'=>'updated_at','value'=>$updated,'stale_after_days'=>$staleAfterDays]);
    if(in_array('title',$cols,true)&&in_array('town',$cols,true)){
     $d=$db->prepare("SELECT id FROM bh_activities WHERE id<>? AND LOWER(TRIM(title))=LOWER(TRIM(?)) AND LOWER(TRIM(COALESCE(town,'')))=LOWER(TRIM(COALESCE(?,''))) LIMIT 1");
@@ -90,7 +127,7 @@ try{
    }
    // Resolve only outstanding checker findings that this successful pass no longer detects.
    // Preserve every explicit admin decision (approved/rejected/correct/incorrect).
-   $knownTypes=['missing_description','missing_website','missing_booking_link','missing_email','missing_telephone','missing_facebook','missing_instagram','missing_age_range','missing_category','missing_location','missing_postcode','missing_image','invalid_url','invalid_email','invalid_postcode','past_session_date','stale_listing','possible_duplicate'];
+   $knownTypes=['missing_description','missing_website','missing_booking_link','missing_email','missing_telephone','missing_facebook','missing_instagram','missing_age_range','missing_category','missing_location','missing_postcode','missing_image','invalid_url','invalid_email','invalid_postcode','past_session_date','stale_listing','possible_duplicate','expired_active_schedules'];
    $resolve=$db->prepare("UPDATE bh_listing_check_findings SET review_status='resolved',reviewed_at=NOW() WHERE check_type='health' AND activity_id=? AND review_status IN('new','follow_up') AND finding_type=?");
    foreach($knownTypes as $knownType){if(!isset($detectedTypes[$knownType]))$resolve->execute([$aid,$knownType]);}
    $markDone->execute([$qid]);$done++;
