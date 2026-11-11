@@ -42,7 +42,7 @@ try{
  $q=$db->prepare("INSERT INTO bh_listing_check_runs(check_type,status,started_at) VALUES('health','running',NOW())");$q->execute();$runId=(int)$db->lastInsertId();
  $limit=max(1,min(100,(int)$get('batch_size','30')));$runtime=max(30,min(600,(int)$get('max_runtime_seconds','240')));$deadline=microtime(true)+$runtime;
  $due=$db->prepare("SELECT id,target_id FROM bh_listing_check_queue WHERE check_type='health' AND status IN('pending','failed') AND (next_check_at IS NULL OR next_check_at<=NOW()) ORDER BY COALESCE(next_check_at,created_at),id LIMIT ?");$due->bindValue(1,$limit,PDO::PARAM_INT);$due->execute();$queue=$due->fetchAll(PDO::FETCH_ASSOC);
- $fields=['title','description','short_description','category','age_range','website','booking_url','contact_email','phone','facebook_url','instagram_url','town','region','postcode','image_path','start_date','end_date','next_session_date','updated_at'];
+ $fields=['title','description','short_description','category','age_range','website','booking_url','contact_email','contact_phone','facebook_url','instagram_url','town','region','postcode','image_path','start_date','end_date','next_session_date','updated_at'];
  $select=['id'];foreach($fields as $f)if(in_array($f,$cols,true))$select[]='`'.$f.'`';
  $read=$db->prepare('SELECT '.implode(',',$select).' FROM bh_activities WHERE id=?');
  // Refresh an existing matching finding instead of creating duplicate review items on every scheduled pass.
@@ -67,7 +67,7 @@ try{
   try{
    $read->execute([$aid]);$row=$read->fetch(PDO::FETCH_ASSOC);
    if(!$row){$markSkipped->execute(['Activity no longer exists',$qid]);$skipped++;continue;}
-   $checks=['description'=>['description','short_description'],'website'=>['website'],'booking_link'=>['booking_url'],'email'=>['contact_email'],'telephone'=>['phone'],'facebook'=>['facebook_url'],'instagram'=>['instagram_url'],'age_range'=>['age_range'],'category'=>['category'],'location'=>['town'],'postcode'=>['postcode'],'image'=>['image_path']];
+   $checks=['description'=>['description','short_description'],'website'=>['website'],'booking_link'=>['booking_url'],'email'=>['contact_email'],'telephone'=>['contact_phone'],'facebook'=>['facebook_url'],'instagram'=>['instagram_url'],'age_range'=>['age_range'],'category'=>['category'],'location'=>['town'],'postcode'=>['postcode'],'image'=>['image_path']];
    foreach($checks as $type=>$keys){
     // Only assess fields supported by this installation's actual bh_activities schema.
     $availableKeys=array_values(array_filter($keys,static fn($key)=>in_array($key,$cols,true)));
