@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS bh_listing_checker_settings (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT IGNORE INTO bh_listing_checker_settings (setting_key, setting_value) VALUES
- ('health_enabled','1'),
- ('discovery_enabled','1'),
+ ('health_enabled','0'),
+ ('discovery_enabled','0'),
  ('interval_hours','4'),
  ('preferred_start_time','02:00'),
  ('window_start','00:00'),
