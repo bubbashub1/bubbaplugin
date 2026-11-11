@@ -31,7 +31,8 @@ jobs:
             api/admin-listing-health.php \
             api/admin-listing-review.php \
             api/listing-checker-health-cron.php \
-            api/listing-checker-discovery-cron.php
+            api/listing-checker-discovery-cron.php \
+            api/listing-checker-preflight.php
           do
             php -l "$file"
           done
@@ -49,6 +50,7 @@ jobs:
           grep -q "CONTENT_LENGTH" api/admin-listing-review.php
           grep -q "PHP_SAPI !== 'cli'" api/listing-checker-health-cron.php
           grep -q "PHP_SAPI !== 'cli'" api/listing-checker-discovery-cron.php
+          grep -q "PHP_SAPI !== 'cli'" api/listing-checker-preflight.php
           grep -q "GET_LOCK" api/listing-checker-health-cron.php
           grep -q "GET_LOCK" api/listing-checker-discovery-cron.php
           ! grep -q "CURLOPT_FOLLOWLOCATION=>true" api/listing-checker-discovery-cron.php
