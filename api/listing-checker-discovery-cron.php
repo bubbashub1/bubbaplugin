@@ -19,15 +19,14 @@ $tz=new DateTimeZone($get('timezone','Europe/London'));$now=new DateTimeImmutabl
 $days=json_decode($get('active_days','[1,2,3,4,5,6,7]'),true)?:[1,2,3,4,5,6,7];
 if(!in_array((int)$now->format('N'),array_map('intval',$days),true)){echo "Not an active day\n";exit;}
 $start=$get('window_start','00:00');$end=$get('window_end','23:59');
-if(($start<=$end&&($clock<$start||$clock>$end))||($start>$end&&$clock<$start&&$clock>$end)){echo "Outside run window\n";exit;}
+if(($start<=$end&&($clock<$start||$clock>$end))||($start>$end&&$clock>$end&&$clock<$start)){echo "Outside run window\n";exit;}
 $interval=max(1,min(24,(int)$get('interval_hours','4')));$preferred=$get('preferred_start_time','00:00');
 $last=$db->query("SELECT MAX(finished_at) FROM bh_listing_check_runs WHERE check_type='discovery' AND status='completed'")->fetchColumn();
 if(!$manualRun&&!$last&&$clock<$preferred){echo "Waiting for preferred first-run time\n";exit;}
 if(!$manualRun&&$last&&new DateTimeImmutable((string)$last,$tz)>$now->modify('-'.$interval.' hours')){echo "Not due yet\n";exit;}
 $lock=$db->query("SELECT GET_LOCK('bh_listing_checker_discovery',0)")->fetchColumn();if((int)$lock!==1){echo "Discovery worker already running\n";exit;}
-if($manualRun){$clear=$db->prepare("INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES(?, '0') ON DUPLICATE KEY UPDATE setting_value='0'");$clear->execute(['discovery_run_now']);}
 $runId=0;
-try{
+try{\n if($manualRun){$clear=$db->prepare("INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES(?, '0') ON DUPLICATE KEY UPDATE setting_value='0'");$clear->execute(['discovery_run_now']);}
  $run=$db->prepare("INSERT INTO bh_listing_check_runs(check_type,status,started_at) VALUES('discovery','running',NOW())");$run->execute();$runId=(int)$db->lastInsertId();
  $batch=max(1,min(100,(int)$get('batch_size','30')));$requestLimit=max(1,min(200,(int)$get('request_limit','30')));$limit=min($batch,$requestLimit);$runtime=max(30,min(600,(int)$get('max_runtime_seconds','240')));$deadline=microtime(true)+$runtime;
  $terms=$db->query("SELECT id,term,term_group,regions_json FROM bh_listing_discovery_terms WHERE enabled=1 ORDER BY COALESCE(last_searched_at,'1970-01-01 00:00:00') ASC,id ASC LIMIT ".$limit)->fetchAll(PDO::FETCH_ASSOC);
