@@ -134,7 +134,7 @@ RewriteRule ^promo/?$ wordpress-content.html [L,QSA]
 RewriteRule ^(?:pages|articles)/[a-z0-9-]+/?$ wordpress-content.html [L,QSA]
 
 # Hub Demo belongs to WordPress
-# RewriteRule ^hub-demo/?$ index.php [L,QSA]
+RewriteRule ^hub-demo/?$ index.php [L,QSA]
 
 # Clean BH static pages: /page-slug/ -> /page-slug.html
 # If a matching root-level HTML page exists, serve it before the activity fallback.
