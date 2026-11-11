@@ -62,8 +62,8 @@ jobs:
 
           required_ids = [
               "leaderWelcome", "addListingButton", "leaderFrontPageLink",
-              "leaderV3Classes", "leaderV3Sessions", "leaderV3BookingsCount",
-              "leaderV3Venues", "leaderV3Schedule", "leaderV3Bookings",
+              "leaderV3Classes", "leaderV3Sessions", "leaderV3NewBookings",
+              "leaderV3Rating", "leaderV3Schedule", "leaderV3Bookings",
               "leaderV3Messages", "portalMessage"
           ]
           for element_id in required_ids:
@@ -74,7 +74,7 @@ jobs:
           assert 'leader-entry-card' not in html, "Old tile-grid navigation is still present"
           assert '/api/leader-portal.php' in js, "Live leader portal API is not used"
           assert '/api/leader-messages.php' in js, "Live messages API is not used"
-          assert 'leaderV3BookingsCount' in js, "Booking metric hook is missing"
+          assert 'leaderV3NewBookings' in js and 'leaderV3Sparkline' in js, "Booking metric or sparkline hook is missing"
           assert 'Parent feedback' in html and "don't display sample or invented ratings" in html
           assert css.count("{") == css.count("}"), "Unbalanced CSS braces"
           assert "@media(max-width:760px)" in css, "Mobile navigation breakpoint is missing"
