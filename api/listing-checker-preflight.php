@@ -37,9 +37,9 @@ try {
         $columns=$db->query('SHOW COLUMNS FROM bh_activities')->fetchAll(PDO::FETCH_COLUMN);
         $columnSet=array_fill_keys($columns,true);
         $add('Source primary identifier',isset($columnSet['id'])?'pass':'fail',isset($columnSet['id'])?'bh_activities.id is available':'bh_activities.id is required');
-        $optional=['title','description','short_description','category','age_range','website','booking_url','contact_email','contact_phone','facebook_url','instagram_url','town','region','postcode','image_path','start_date','end_date','next_session_date','updated_at'];
+        $optional=['title','description','category','age_range','website','booking_url','contact_email','contact_phone','facebook_url','instagram_url','image_path','updated_at'];
         $missing=array_values(array_filter($optional,static fn($column)=>!isset($columnSet[$column])));
-        $add('Optional listing fields',$missing?'warning':'pass',$missing?'Not present: '.implode(', ',$missing):'All expected listing fields are available');
+        $add('Supported listing fields',$missing?'warning':'pass',$missing?'Supported fields not present: '.implode(', ',$missing):'All expected listing fields are available');
     }
 
     $checkerRequirements=[
