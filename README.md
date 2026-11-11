@@ -64,6 +64,14 @@ The schema deliberately creates only `bh_*` tables so the existing WordPress `wp
 
 ## Listing Checker setup (PR #846)
 
+Before applying the migration, run the read-only environment preflight from the server CLI:
+
+```sh
+php /path/to/bubbaplugin/api/listing-checker-preflight.php
+```
+
+It checks the existing `bh_activities` source table, available listing columns, required PHP extensions, database connectivity, advisory-lock support and whether the checker tables already exist. It does not create tables or modify listings. A missing checker migration is reported as a warning so the environment can be checked before any SQL is applied.
+
 The Listing Checker admin settings and discovery-term editor use the standalone `bh_*` database. Before opening the settings page on a deployed environment, run the one-time migration against the Bubba Hub database:
 
 ```sh
