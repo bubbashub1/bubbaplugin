@@ -7,19 +7,14 @@ declare(strict_types=1);
  * Database credentials remain server-side and are never stored in GitHub.
  */
 /**
- * Ensure the public newsletter subscriber table exists.
+ * Verify newsletter storage was installed by the database migration.
+ * Request handlers must never create or alter application tables.
  */
 function bh_ensure_newsletter_subscribers(PDO $pdo): void {
-    $pdo->exec("CREATE TABLE IF NOT EXISTS bh_newsletter_subscribers (
-        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        email VARCHAR(190) NOT NULL UNIQUE,
-        status ENUM('subscribed','unsubscribed') NOT NULL DEFAULT 'subscribed',
-        source VARCHAR(80) NOT NULL DEFAULT 'website',
-        consented_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        unsubscribed_at DATETIME NULL,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    $check = $pdo->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_newsletter_subscribers'");
+    if (!(int)$check->fetchColumn()) {
+        throw new RuntimeException('Newsletter storage is not installed.');
+    }
 }
 
 function bh_mysql(): PDO {
