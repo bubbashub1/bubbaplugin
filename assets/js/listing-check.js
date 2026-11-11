@@ -3,6 +3,7 @@
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 let results=[];
+let scanOffset=0;
 function status(msg,error=false){const el=$("#listingCheckStatus");el.textContent=msg||"";el.classList.toggle("is-error",!!error)}
 function busy(button,on){if(button)button.disabled=on}
 function renderSummary(s){$("#listingCheckSummary").innerHTML=[["total","Listings checked"],["changed","Changed"],["missing","Possible missing"],["new","New opportunities"],["same","No change"]].map(([k,l])=>'<article class="listing-check-stat"><strong>'+Number(s?.[k]||0)+'</strong><span>'+l+'</span></article>').join("")}
@@ -32,15 +33,16 @@ async function load(){
  try{const d=await request("results");results=d.results||[];renderSummary(d.summary||{});render()}catch(e){status(e.message,true)}
 }
 async function run(mode,button){
- busy(button,true);status(mode==="existing"?"Checking existing listings…":"Searching for new local listings…");
+ busy(button,true);status(mode==="existing"?"Checking existing listings…":"Checking supplied public pages…");
  $("#listingCheckResults").innerHTML='<div class="listing-check-empty"><strong>Checking sources…</strong><div class="listing-check-progress"><span></span></div></div>';
- try{const d=await request("scan",{mode,region:$("#checkRegion").value,query:$("#checkQuery").value});results=d.results||[];renderSummary(d.summary||{});render();status("✓ Listing Check complete. "+results.length+" findings ready to review.")}catch(e){status(e.message,true);load()}finally{busy(button,false)}
+ try{const d=await request("scan",{mode,region:$("#checkRegion").value,query:$("#checkQuery").value,offset:scanOffset,sources:($("#checkSources")?.value||"").split(/\r?\n/).map(x=>x.trim()).filter(Boolean)});results=d.results||[];renderSummary(d.summary||{});render();if(mode==="existing"&&d.next_offset!==null&&d.next_offset!==undefined){scanOffset=d.next_offset;status("Checked 20 activities. Continue to check the next batch.");const btn=$("#checkExisting");btn.textContent="Check next 20 listings";}else{scanOffset=0;$("#checkExisting").textContent="Check existing listings";status("✓ Listing Check complete. "+results.length+" findings ready to review.")}}catch(e){status(e.message,true);load()}finally{busy(button,false)}
 }
 document.addEventListener("click",async e=>{
  const create=e.target.closest(".lc-create-draft");if(create){busy(create,true);try{const d=await request("create_draft",{id:create.dataset.id});status("✓ Draft created. Open Activities to review it.");await load()}catch(err){status(err.message,true)}finally{busy(create,false)}return}
  const dismiss=e.target.closest(".lc-dismiss");if(dismiss){busy(dismiss,true);try{await request("dismiss",{id:dismiss.dataset.id});await load()}catch(err){status(err.message,true)}finally{busy(dismiss,false)}}
 });
-$("#checkExisting").addEventListener("click",()=>run("existing",$("#checkExisting")));
+$("#checkExisting").addEventListener("click",()=>{if(scanOffset===0)$("#checkExisting").textContent="Check existing listings";run("existing",$("#checkExisting"))});
+$("#checkRegion").addEventListener("change",()=>{scanOffset=0;$("#checkExisting").textContent="Check existing listings"});
 $("#findNew").addEventListener("click",()=>run("new",$("#findNew")));
 $("#refreshResults").addEventListener("click",load);
 load();
