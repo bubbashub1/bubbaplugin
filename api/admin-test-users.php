@@ -2,10 +2,7 @@
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
-ini_set('session.use_strict_mode', '1');
-ini_set('session.use_only_cookies', '1');
-session_name('BUBBAHUB_ADMINSESSID');
-session_start();
+require_once __DIR__ . '/admin-session-guard.php';
 
 function bh_test_user_response(int $status, array $data): never {
     http_response_code($status);

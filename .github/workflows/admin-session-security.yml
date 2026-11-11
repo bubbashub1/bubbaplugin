@@ -1,0 +1,56 @@
+name: Admin session PHP check
+on:
+  pull_request:
+    paths:
+      - 'admin-auth.php'
+      - 'api/admin-session-guard.php'
+      - 'api/admin-event-details.php'
+      - 'api/admin-activities.php'
+      - 'api/admin-volunteer-assignments.php'
+      - 'api/admin-volunteers.php'
+      - 'api/admin-leader-details.php'
+      - 'api/admin-organiser-profiles.php'
+      - 'api/admin-listing-url-preview.php'
+      - 'api/admin-ical-preview.php'
+      - 'api/admin-demo-activities.php'
+      - 'api/expo-admin-visitors.php'
+      - 'api/admin-test-users.php'
+      - 'api/admin-organiser-import.php'
+      - 'api/admin-listing-check.php'
+      - 'api/admin-import-export.php'
+      - 'api/admin-approval-centre.php'
+      - 'api/admin-approval-review.php'
+      - 'api/admin-approval-publish.php'
+      - 'api/admin-leader-actions.php'
+      - '.github/workflows/admin-session-security.yml'
+  workflow_dispatch:
+jobs:
+  admin-session-php:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - name: Check admin session PHP syntax
+        run: |
+          php -l admin-auth.php
+          php -l api/admin-session-guard.php
+          php -l api/admin-event-details.php
+          php -l api/admin-activities.php
+          php -l api/admin-volunteer-assignments.php
+          php -l api/admin-volunteers.php
+          php -l api/admin-leader-details.php
+          php -l api/admin-organiser-profiles.php
+          php -l api/admin-listing-url-preview.php
+          php -l api/admin-ical-preview.php
+          php -l api/admin-demo-activities.php
+          php -l api/expo-admin-visitors.php
+          php -l api/admin-test-users.php
+          php -l api/admin-organiser-import.php
+          php -l api/admin-listing-check.php
+          php -l api/admin-import-export.php
+          php -l api/admin-approval-centre.php
+          php -l api/admin-approval-review.php
+          php -l api/admin-approval-publish.php
+          php -l api/admin-leader-actions.php

@@ -3,8 +3,7 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 function respond(int $code,array $body): never {http_response_code($code);echo json_encode($body);exit;}
-if(session_status()!==PHP_SESSION_ACTIVE){session_name('BUBBAHUBSESSID');session_set_cookie_params(['httponly'=>true,'secure'=>!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off','samesite'=>'Lax','path'=>'/']);session_start();}
-if(empty($_SESSION['bh_admin_authenticated']))respond(403,['ok'=>false,'error'=>'admin_required']);
+require_once __DIR__ . '/admin-session-guard.php';
 try{
 require __DIR__.'/db.php';$db=bh_mysql();
 $db->exec("CREATE TABLE IF NOT EXISTS bh_volunteer_assignments (

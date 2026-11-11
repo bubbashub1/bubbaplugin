@@ -2,8 +2,7 @@
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
-session_name('BUBBAHUB_ADMINSESSID');
-session_start();
+require_once __DIR__ . '/admin-session-guard.php';
 function reply(int $code,array $data): never {http_response_code($code);echo json_encode($data,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);exit;}
 if(empty($_SESSION['bh_admin_authenticated']))reply(401,['ok'=>false,'error'=>'Admin login required']);
 if($_SERVER['REQUEST_METHOD']!=='POST')reply(405,['ok'=>false,'error'=>'POST required']);

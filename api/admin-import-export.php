@@ -13,14 +13,7 @@ register_shutdown_function(static function(): void {
 });
 if($_SERVER['REQUEST_METHOD']==='POST') ob_start();
 
-$secure=(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off');
-if (session_status() !== PHP_SESSION_ACTIVE) {
-  ini_set('session.use_strict_mode', '1');
-  ini_set('session.use_only_cookies', '1');
-  session_name('BUBBAHUB_ADMINSESSID');
-  session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);
-  session_start();
-}
+require_once __DIR__ . '/admin-session-guard.php';
 if(empty($_SESSION['bh_admin_authenticated'])){
   http_response_code(401); header('Content-Type: application/json; charset=utf-8');
   echo json_encode(['ok'=>false,'error'=>'Admin login required.']); exit;
