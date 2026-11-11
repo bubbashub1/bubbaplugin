@@ -11,21 +11,21 @@ try{
  $db=bh_mysql();
  foreach(['ALTER TABLE bh_users ADD COLUMN first_name VARCHAR(80) NULL','ALTER TABLE bh_users ADD COLUMN last_name VARCHAR(80) NULL','ALTER TABLE bh_users ADD COLUMN phone VARCHAR(40) NULL','ALTER TABLE bh_users ADD COLUMN date_of_birth DATE NULL'] as $sql){try{$db->exec($sql);}catch(Throwable $ignored){}}
  if(!isset($_SESSION['bh_csrf']))$_SESSION['bh_csrf']=bin2hex(random_bytes(24));
- $db->exec("CREATE TABLE IF NOT EXISTS bh_user_addresses (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,user_id BIGINT UNSIGNED NOT NULL,address_type VARCHAR(30) NOT NULL DEFAULT 'home',address_line1 VARCHAR(160) NULL,address_line2 VARCHAR(160) NULL,city VARCHAR(100) NULL,county VARCHAR(100) NULL,postcode VARCHAR(20) NULL,country VARCHAR(80) NOT NULL DEFAULT 'United Kingdom',latitude DECIMAL(10,7) NULL,longitude DECIMAL(10,7) NULL,created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY(id),UNIQUE KEY uq_user_address_type(user_id,address_type),KEY idx_user_id(user_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
- // Existing installations may have an older/incomplete address table. Add missing columns safely.
- foreach([
-  "ALTER TABLE bh_user_addresses ADD COLUMN address_type VARCHAR(30) NOT NULL DEFAULT 'home'",
-  "ALTER TABLE bh_user_addresses ADD COLUMN address_line1 VARCHAR(160) NULL",
-  "ALTER TABLE bh_user_addresses ADD COLUMN address_line2 VARCHAR(160) NULL",
-  "ALTER TABLE bh_user_addresses ADD COLUMN city VARCHAR(100) NULL",
-  "ALTER TABLE bh_user_addresses ADD COLUMN county VARCHAR(100) NULL",
-  "ALTER TABLE bh_user_addresses ADD COLUMN postcode VARCHAR(20) NULL",
-  "ALTER TABLE bh_user_addresses ADD COLUMN country VARCHAR(80) NOT NULL DEFAULT 'United Kingdom'",
-  "ALTER TABLE bh_user_addresses ADD COLUMN latitude DECIMAL(10,7) NULL",
-  "ALTER TABLE bh_user_addresses ADD COLUMN longitude DECIMAL(10,7) NULL"
- ] as $sql){try{$db->exec($sql);}catch(Throwable $ignored){}}
- try{$db->exec("ALTER TABLE bh_user_addresses ADD UNIQUE KEY uq_user_address_type(user_id,address_type)");}catch(Throwable $ignored){}
- try{$db->exec("ALTER TABLE bh_user_addresses ADD KEY idx_user_id(user_id)");}catch(Throwable $ignored){}
+ // Address storage is installed by migration 013, never created or altered in a request.
+ $addressTable=$db->query("SHOW TABLES LIKE 'bh_user_addresses'")->fetchColumn();
+ if(!$addressTable){
+  bh_profile_response(503,['ok'=>false,'message'=>'Profile address storage is not installed yet. Please contact support.']);
+ }
+ $addressColumns=$db->query("SHOW COLUMNS FROM bh_user_addresses")->fetchAll(PDO::FETCH_COLUMN);
+ foreach(['user_id','address_type','address_line1','address_line2','city','county','postcode','country','latitude','longitude'] as $requiredAddressColumn){
+  if(!in_array($requiredAddressColumn,$addressColumns,true)){
+   bh_profile_response(503,['ok'=>false,'message'=>'Profile address storage needs a database update. Please contact support.']);
+  }
+ }
+ $addressUnique=$db->query("SHOW INDEX FROM bh_user_addresses WHERE Key_name='uq_user_address_type'")->fetch();
+ if(!$addressUnique){
+  bh_profile_response(503,['ok'=>false,'message'=>'Profile address storage needs a database index update. Please contact support.']);
+ }
  $id=(int)$_SESSION['bh_user_id'];
  if($_SERVER['REQUEST_METHOD']==='GET'){
   $addr=$db->prepare("SELECT address_line1,address_line2,city,county,postcode,country,latitude,longitude FROM bh_user_addresses WHERE user_id=? AND address_type='home' LIMIT 1");$addr->execute([$id]);$a=$addr->fetch() ?: [];
