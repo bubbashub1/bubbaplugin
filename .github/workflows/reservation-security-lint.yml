@@ -1,0 +1,29 @@
+name: Reservation endpoint PHP lint
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'api/reservations.php'
+      - '.github/workflows/reservation-security-lint.yml'
+  push:
+    branches: [security/protect-reservation-submission]
+    paths:
+      - 'api/reservations.php'
+      - '.github/workflows/reservation-security-lint.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  php-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: Check reservation endpoint syntax
+        run: php -l api/reservations.php
