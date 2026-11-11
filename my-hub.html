@@ -54,22 +54,14 @@
   </div>
   <div class="hub-personal-actions"><button class="button button-primary" id="openWhatShallI" type="button">✨ Help me find something</button><a class="button button-soft" href="account/preferences.html">Personalise my ideas</a></div>
 </section>
-  <section class="hub-suggestions" id="hubSuggestions">
-    <div class="hub-suggestions-head">
-      <div>
-        <span class="eyebrow">Picked for your family</span>
-        <h2>Suggested groups &amp; activities</h2>
-        <p>Up to 12 ideas based on your family and preferences.</p>
-      </div>
-      <a class="button button-soft" href="account/preferences.html">Update preferences</a>
-    </div>
-    <div class="hub-suggestions-carousel">
-      <button class="hub-carousel-arrow" id="hubSuggestionsPrev" type="button" aria-label="Previous suggestions">‹</button>
-      <div class="hub-suggestions-track" id="hubSuggestionsTrack"></div>
-      <button class="hub-carousel-arrow" id="hubSuggestionsNext" type="button" aria-label="Next suggestions">›</button>
-    </div>
+  <section class="hub-section-links" aria-label="Your family activity lists">
+    <a href="/family-section.html?section=suggested"><strong>Suggested groups &amp; activities</strong><span>Ideas matched to your family</span>→</a>
+    <a href="/family-section.html?section=plans"><strong>My Plans</strong><span>Activities you have planned</span>→</a>
+    <a href="/family-section.html?section=recent"><strong>Recently Viewed</strong><span>Pick up where you left off</span>→</a>
+    <a href="/family-section.html?section=saved"><strong>Saved activities</strong><span>Your family favourites</span>→</a>
+    <a href="/family-section.html?section=visited"><strong>Visited Groups</strong><span>Groups and activities you have visited</span>→</a>
+    <a href="/family-section.html?section=messages"><strong>My Messages</strong><span>Private questions and replies</span>→</a>
   </section>
-  <div data-bh-inspire-me></div>
   <section class="admin-panel hub-panel hub-family-panel" id="family">
       <div class="admin-panel-head">
         <div><h2>My family</h2></div>
@@ -83,60 +75,11 @@
   </section>
 
   <div class="hub-dashboard-grid hub-main-dashboard">
-  <section class="hub-brief" id="hubBrief">
-    <div class="hub-brief-head">
-      <div><span class="eyebrow">Your family plans</span><h2>My Plans</h2><p id="hubBriefIntro">Loading your family-friendly ideas…</p></div>
-      <a class="button button-soft" href="account/preferences.html">Update preferences</a>
-    </div>
-    <div class="hub-brief-grid" id="hubBriefItems"><div class="hub-empty">Finding useful ideas…</div></div>
-  </section>
-
     <section class="admin-panel hub-panel">
-      <div class="admin-panel-head">
-        <div><span class="eyebrow">Your activities</span><h2>Visited Groups</h2></div>
-        <a class="button button-soft" href="directory.html">Find more</a>
-      </div>
-      <div class="hub-list" id="hubVisited"><div class="hub-empty">Loading…</div></div>
-    </section>
-
-    <section class="admin-panel hub-panel">
-      <div class="admin-panel-head">
-        <div><span class="eyebrow">Keep exploring</span><h2>Recently Viewed</h2></div>
-        <a class="button button-soft" href="directory.html">Browse activities</a>
-      </div>
-      <div class="hub-list" id="hubRecent"><div class="hub-empty">Loading…</div></div>
-    </section>
-
-    <section class="admin-panel hub-panel">
-      <div class="admin-panel-head">
-        <div><span class="eyebrow">Your favourites</span><h2>Saved activities</h2></div>
-        <a class="button button-soft" href="directory.html?saved=1">View all</a>
-      </div>
-      <div class="hub-list" id="hubSaved"><div class="hub-empty">Loading…</div></div>
-    </section>
-
-    <section class="admin-panel hub-panel">
-      <div class="admin-panel-head">
-        <div><span class="eyebrow">Bookings</span><h2>Upcoming</h2></div>
-        <a class="button button-soft" href="planner.html">Planner</a>
-      </div>
+      <div class="admin-panel-head"><div><span class="eyebrow">Bookings</span><h2>Upcoming</h2></div><a class="button button-soft" href="planner.html">Planner</a></div>
       <div class="hub-list" id="hubBookings"><div class="hub-empty">Loading…</div></div>
     </section>
   </div>
-
-  <section class="admin-panel hub-panel" id="my-messages" aria-labelledby="myMessagesHeading">
-    <div class="admin-panel-head">
-      <div><span class="eyebrow">Your private conversations</span><h2 id="myMessagesHeading">My Messages</h2><p>View your support questions, submission status and replies.</p></div>
-      <a class="button button-soft" href="/help-support#ask">Ask another question →</a>
-    </div>
-    <div id="hubSupportMessages" aria-live="polite"><p>Loading your messages…</p></div>
-  </section>
-  <section class="hub-tools-grid">
-    <a class="feature-card" href="account/preferences.html"><span class="feature-icon">⚙</span><h3>Preferences</h3><p>Set the areas, days and family planning options Bubba Hub should use for you.</p></a>
-    <a class="feature-card" href="account/consent.html"><span class="feature-icon">🔒</span><h3>Booking consent</h3><p>Manage the information and permissions you choose to share during bookings.</p></a>
-    <a class="feature-card" href="help-support.html"><span class="feature-icon">💛</span><h3>Help &amp; Support</h3><p>Get guidance or send a private support question.</p></a>
-    <a class="feature-card" href="directory.html"><span class="feature-icon">✨</span><h3>Discover more</h3><p>Find activities matched to your family's ages, location and interests.</p></a>
-  </section>
 </section>
 
 <div class="my-hub-message" id="hubMessage" aria-live="polite"></div>
