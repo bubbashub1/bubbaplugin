@@ -24,8 +24,27 @@ try {
   if(!in_array($status,$allowed,true))$status='new';
   $limit=max(1,min(100,(int)($_GET['limit']??50)));$offset=max(0,min(100000,(int)($_GET['offset']??0)));
   $where=$status==='all'?'':' WHERE f.review_status=?';
-  $cols=$db->query('SHOW COLUMNS FROM bh_activities')->fetchAll(PDO::FETCH_COLUMN);$title=in_array('title',$cols,true)?'a.title':'NULL';$town=in_array('town',$cols,true)?'a.town':'NULL';
-  $sql="SELECT f.id,f.check_type,f.activity_id,f.term_id,f.candidate_json,f.finding_type,f.confidence,f.source_url,f.checked_at,f.review_status,".$title." AS activity_title,".$town." AS activity_town FROM bh_listing_check_findings f LEFT JOIN bh_activities a ON a.id=f.activity_id".$where." ORDER BY f.checked_at DESC,f.id DESC LIMIT ".$limit." OFFSET ".$offset;
+  $cols=$db->query('SHOW COLUMNS FROM bh_activities')->fetchAll(PDO::FETCH_COLUMN);
+  $venueCols=$db->query('SHOW COLUMNS FROM bh_venues')->fetchAll(PDO::FETCH_COLUMN);
+  $linkCols=$db->query('SHOW COLUMNS FROM bh_activity_venues')->fetchAll(PDO::FETCH_COLUMN);
+  $title=in_array('title',$cols,true)?'a.title':'NULL';
+  $townParts=[];$regionParts=[];
+  if(in_array('town',$cols,true))$townParts[]="NULLIF(a.town,'')";
+  if(in_array('region',$cols,true))$regionParts[]="NULLIF(a.region,'')";
+  $hasLinkedVenue=in_array('id',$venueCols,true)&&in_array('activity_id',$linkCols,true)&&in_array('venue_id',$linkCols,true);
+  $hasDirectVenue=in_array('id',$venueCols,true)&&in_array('activity_id',$venueCols,true);
+  if($hasLinkedVenue){
+   $sort=in_array('is_primary',$linkCols,true)?'av.is_primary DESC,av.venue_id':'av.venue_id';
+   if(in_array('town',$venueCols,true))$townParts[]="(SELECT v.town FROM bh_activity_venues av INNER JOIN bh_venues v ON v.id=av.venue_id WHERE av.activity_id=a.id ORDER BY ".$sort." LIMIT 1)";
+   if(in_array('region',$venueCols,true))$regionParts[]="(SELECT v.region FROM bh_activity_venues av INNER JOIN bh_venues v ON v.id=av.venue_id WHERE av.activity_id=a.id ORDER BY ".$sort." LIMIT 1)";
+  }
+  if($hasDirectVenue){
+   if(in_array('town',$venueCols,true))$townParts[]="(SELECT v.town FROM bh_venues v WHERE v.activity_id=a.id ORDER BY v.id LIMIT 1)";
+   if(in_array('region',$venueCols,true))$regionParts[]="(SELECT v.region FROM bh_venues v WHERE v.activity_id=a.id ORDER BY v.id LIMIT 1)";
+  }
+  $town=$townParts?'COALESCE('.implode(',',$townParts).')':'NULL';
+  $region=$regionParts?'COALESCE('.implode(',',$regionParts).')':'NULL';
+  $sql="SELECT f.id,f.check_type,f.activity_id,f.term_id,f.candidate_json,f.finding_type,f.confidence,f.source_url,f.checked_at,f.review_status,".$title." AS activity_title,".$town." AS activity_town,".$region." AS activity_region FROM bh_listing_check_findings f LEFT JOIN bh_activities a ON a.id=f.activity_id".$where." ORDER BY f.checked_at DESC,f.id DESC LIMIT ".$limit." OFFSET ".$offset;
   $stmt=$db->prepare($sql);$stmt->execute($status==='all'?[]:[$status]);$rows=$stmt->fetchAll(PDO::FETCH_ASSOC);
   foreach($rows as &$row){$row['candidate']=json_decode((string)$row['candidate_json'],true)?:[];unset($row['candidate_json']);}unset($row);
   $counts=[];foreach($db->query('SELECT review_status,COUNT(*) AS total FROM bh_listing_check_findings GROUP BY review_status')->fetchAll(PDO::FETCH_ASSOC) as $r)$counts[$r['review_status']]=(int)$r['total'];
