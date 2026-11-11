@@ -65,7 +65,7 @@ try {
     [$key,$value]=$map[$control];
     $stmt=$db->prepare('INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES(?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)');
     $stmt->execute([$key,$value]);
-    bh_lc_reply(200,['ok'=>true,'message'=>str_ends_with($control,'run_now')?'A manual run has been queued for the next worker invocation.':'Worker control saved.']);
+    bh_lc_reply(200,['ok'=>true,'message'=>str_ends_with($control,'run_now')?'Manual run queued. It will run only when the worker is enabled, resumed and inside its allowed day/time window.':'Worker control saved.']);
   }
   if($action==='save_settings') {
     $allowed=['health_enabled','discovery_enabled','interval_hours','preferred_start_time','window_start','window_end','active_days','timezone','batch_size','max_runtime_seconds','request_limit','stale_after_days'];
