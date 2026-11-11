@@ -29,15 +29,32 @@ try {
  $pick=static function(array $available,string $column,string $alias,string $tableAlias='a'): string {
   return in_array($column,$available,true) ? $tableAlias.'.`'.$column.'` AS `'.$alias.'`' : "NULL AS `".$alias."`";
  };
- $select=['a.id AS id',$pick($activityCols,'title','title'),$pick($activityCols,'description','description'),$pick($activityCols,'short_description','short_description'),$pick($activityCols,'category','category'),$pick($activityCols,'age_range','age_range'),$pick($activityCols,'website','activity_website'),$pick($activityCols,'booking_url','booking_url'),$pick($activityCols,'contact_email','contact_email'),$pick($activityCols,'phone','activity_phone'),$pick($activityCols,'facebook_url','facebook_url'),$pick($activityCols,'instagram_url','instagram_url'),$pick($activityCols,'town','town'),$pick($activityCols,'region','region'),$pick($activityCols,'postcode','postcode'),$pick($activityCols,'image_path','image_path'),$pick($activityCols,'session_summary','session_summary'),$pick($activityCols,'status','status'),$pick($activityCols,'organiser_id','organiser_id'),$pick($activityCols,'session_start','session_start'),$pick($activityCols,'start_date','start_date'),$pick($activityCols,'end_date','end_date'),$pick($activityCols,'next_session_date','next_session_date'),$pick($activityCols,'updated_at','updated_at')];
+ $select=['a.id AS id',$pick($activityCols,'title','title'),$pick($activityCols,'description','description'),$pick($activityCols,'short_description','short_description'),$pick($activityCols,'category','category'),$pick($activityCols,'age_range','age_range'),$pick($activityCols,'website','activity_website'),$pick($activityCols,'booking_url','booking_url'),$pick($activityCols,'contact_email','contact_email'),$pick($activityCols,'contact_phone','activity_phone'),$pick($activityCols,'facebook_url','facebook_url'),$pick($activityCols,'instagram_url','instagram_url'),$pick($activityCols,'town','town'),$pick($activityCols,'region','region'),$pick($activityCols,'postcode','postcode'),$pick($activityCols,'image_path','image_path'),$pick($activityCols,'session_summary','session_summary'),$pick($activityCols,'status','status'),$pick($activityCols,'organiser_id','organiser_id'),$pick($activityCols,'session_start','session_start'),$pick($activityCols,'start_date','start_date'),$pick($activityCols,'end_date','end_date'),$pick($activityCols,'next_session_date','next_session_date'),$pick($activityCols,'updated_at','updated_at')];
  $join='';
  if(in_array('id',$organiserCols,true)&&in_array('organiser_id',$activityCols,true)){
   $join=' LEFT JOIN bh_organisers o ON o.id=a.organiser_id';
   foreach(['organisation_name','email','phone','website'] as $field) $select[]=$pick($organiserCols,$field,'organiser_'.$field,'o');
  }
- if(in_array('id',$venueCols,true)&&in_array('activity_id',$venueCols,true)){
-  foreach(['venue_name','address','town','postcode'] as $field){
-   if(in_array($field,$venueCols,true)) $select[]='(SELECT v.`'.$field.'` FROM bh_venues v WHERE v.activity_id=a.id ORDER BY v.id LIMIT 1) AS `venue_'.$field.'`';
+ $activityVenueCols=$columns($db,'bh_activity_venues');
+ $hasVenueLink=in_array('activity_id',$activityVenueCols,true)&&in_array('venue_id',$activityVenueCols,true)&&in_array('id',$venueCols,true);
+ $hasDirectVenue=in_array('activity_id',$venueCols,true)&&in_array('id',$venueCols,true);
+ if(in_array('id',$venueCols,true)&&($hasVenueLink||$hasDirectVenue)){
+  $venueExpressions=[
+   'venue_name'=>in_array('venue_name',$venueCols,true)&&in_array('name',$venueCols,true) ? "COALESCE(NULLIF(v.`venue_name`,''),v.`name`)" : (in_array('venue_name',$venueCols,true)?'v.`venue_name`':(in_array('name',$venueCols,true)?'v.`name`':null)),
+   'address'=>in_array('address',$venueCols,true)&&in_array('address_line_1',$venueCols,true) ? "COALESCE(NULLIF(v.`address`,''),v.`address_line_1`)" : (in_array('address',$venueCols,true)?'v.`address`':(in_array('address_line_1',$venueCols,true)?'v.`address_line_1`':null)),
+   'town'=>in_array('town',$venueCols,true)?'v.`town`':null,
+   'region'=>in_array('region',$venueCols,true)?'v.`region`':null,
+   'postcode'=>in_array('postcode',$venueCols,true)?'v.`postcode`':null
+  ];
+  foreach($venueExpressions as $alias=>$expression){
+   if($expression===null) continue;
+   $parts=[];
+   if($hasVenueLink){
+    $order=in_array('is_primary',$activityVenueCols,true)?'av.is_primary DESC,av.venue_id':'av.venue_id';
+    $parts[]='(SELECT '.$expression.' FROM bh_activity_venues av INNER JOIN bh_venues v ON v.id=av.venue_id WHERE av.activity_id=a.id ORDER BY '.$order.' LIMIT 1)';
+   }
+   if($hasDirectVenue) $parts[]='(SELECT '.$expression.' FROM bh_venues v WHERE v.activity_id=a.id ORDER BY v.id LIMIT 1)';
+   $select[]='COALESCE('.implode(',',$parts).') AS `venue_'.$alias.'`';
   }
  }
  $order=in_array('title',$activityCols,true)?'a.title':'a.id';
@@ -59,10 +76,15 @@ try {
  ];
  // A health dimension is assessed only when at least one real source column supports it.
  $availableAliases=[];
- $activityAliasColumns=['description'=>'description','short_description'=>'short_description','activity_website'=>'website','booking_url'=>'booking_url','contact_email'=>'contact_email','activity_phone'=>'phone','facebook_url'=>'facebook_url','instagram_url'=>'instagram_url','town'=>'town','region'=>'region','postcode'=>'postcode','image_path'=>'image_path','age_range'=>'age_range','category'=>'category'];
+ $activityAliasColumns=['description'=>'description','short_description'=>'short_description','activity_website'=>'website','booking_url'=>'booking_url','contact_email'=>'contact_email','activity_phone'=>'contact_phone','facebook_url'=>'facebook_url','instagram_url'=>'instagram_url','town'=>'town','region'=>'region','postcode'=>'postcode','image_path'=>'image_path','age_range'=>'age_range','category'=>'category'];
  foreach($activityAliasColumns as $alias=>$column) if(in_array($column,$activityCols,true)) $availableAliases[]=$alias;
  if($join!=='') foreach(['organisation_name','email','phone','website'] as $field) if(in_array($field,$organiserCols,true)) $availableAliases[]='organiser_'.$field;
- if(in_array('id',$venueCols,true)&&in_array('activity_id',$venueCols,true)) foreach(['venue_name','address','town','postcode'] as $field) if(in_array($field,$venueCols,true)) $availableAliases[]='venue_'.$field;
+ if(in_array('id',$venueCols,true)&&($hasVenueLink||$hasDirectVenue)){
+  foreach(['venue_name','address','town','region','postcode'] as $field){
+   $source=($field==='venue_name' ? (in_array('venue_name',$venueCols,true)||in_array('name',$venueCols,true)) : ($field==='address' ? (in_array('address',$venueCols,true)||in_array('address_line_1',$venueCols,true)) : in_array($field,$venueCols,true)));
+   if($source) $availableAliases[]='venue_'.$field;
+  }
+ }
  foreach($fieldMap as $label=>$keys){
   $supported=array_values(array_filter($keys,static fn($key)=>in_array($key,$availableAliases,true)));
   if($supported) $fieldMap[$label]=$supported; else unset($fieldMap[$label]);
