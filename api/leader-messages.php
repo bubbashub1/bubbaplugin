@@ -14,6 +14,19 @@ $db->exec("CREATE TABLE IF NOT EXISTS bh_leader_messages (id BIGINT UNSIGNED AUT
 $hasSenderEmail=false;
 try{$col=$db->query("SHOW COLUMNS FROM bh_leader_messages LIKE 'sender_email'");$hasSenderEmail=(bool)$col->fetch();}catch(Throwable $schemaError){error_log('Leader inbox column check: '.$schemaError->getMessage());}
 $senderExpr=$hasSenderEmail?'COALESCE(m.sender_email,u.email)':'u.email';
+if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
+ // The inbox uses cookie-based sessions. Require a same-origin HTTPS source for
+ // both family message submissions and leader replies.
+ $requestHost=strtolower((string)parse_url('https://'.($_SERVER['HTTP_HOST']??''),PHP_URL_HOST));
+ $requestSource=(string)($_SERVER['HTTP_ORIGIN']??'');
+ if($requestSource==='')$requestSource=(string)($_SERVER['HTTP_REFERER']??'');
+ $sourceHost=strtolower((string)parse_url($requestSource,PHP_URL_HOST));
+ $sourceScheme=strtolower((string)parse_url($requestSource,PHP_URL_SCHEME));
+ $fetchSite=strtolower((string)($_SERVER['HTTP_SEC_FETCH_SITE']??''));
+ if($requestHost===''||$sourceHost!==$requestHost||$sourceScheme!=='https'||($fetchSite!==''&&!in_array($fetchSite,['same-origin','none'],true))){
+  inboxReply(403,['ok'=>false,'error'=>'cross_origin_request_blocked','message'=>'Please reload the page and try again.']);
+ }
+}
 $body=json_decode((string)file_get_contents('php://input'),true);if(!is_array($body))$body=[];
 $action=(string)($body['action']??'');
 if($_SERVER['REQUEST_METHOD']==='POST'&&$action==='send'){
