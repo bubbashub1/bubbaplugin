@@ -68,11 +68,17 @@ try{
    $read->execute([$aid]);$row=$read->fetch(PDO::FETCH_ASSOC);
    if(!$row){$markSkipped->execute(['Activity no longer exists',$qid]);$skipped++;continue;}
    $checks=['description'=>['description','short_description'],'website'=>['website'],'booking_link'=>['booking_url'],'email'=>['contact_email'],'telephone'=>['phone'],'facebook'=>['facebook_url'],'instagram'=>['instagram_url'],'age_range'=>['age_range'],'category'=>['category'],'location'=>['town'],'postcode'=>['postcode'],'image'=>['image_path']];
-   foreach($checks as $type=>$keys){$present=false;foreach($keys as $key)if(trim((string)($row[$key]??''))!=='')$present=true;if(!$present)$record($aid,'missing_'.$type,['field'=>$type]);}
-   foreach(['website','booking_url','facebook_url','instagram_url'] as $key){$v=trim((string)($row[$key]??''));if($v!==''&&!filter_var($v,FILTER_VALIDATE_URL))$record($aid,'invalid_url',['field'=>$key,'value'=>$v]);}
-   $email=trim((string)($row['contact_email']??''));if($email!==''&&!filter_var($email,FILTER_VALIDATE_EMAIL))$record($aid,'invalid_email',['field'=>'contact_email']);
-   $postcode=trim((string)($row['postcode']??''));if($postcode!==''&&!preg_match('/^[A-Z]{1,2}[0-9][A-Z0-9]?\\s*[0-9][A-Z]{2}$/i',$postcode))$record($aid,'invalid_postcode',['field'=>'postcode','value'=>$postcode]);
-   foreach(['start_date','end_date','next_session_date'] as $key){$v=trim((string)($row[$key]??''));if($v!==''&&strtotime($v)!==false&&strtotime($v)<strtotime('today')){$record($aid,'past_session_date',['field'=>$key,'value'=>$v]);break;}}
+   foreach($checks as $type=>$keys){
+    // Only assess fields supported by this installation's actual bh_activities schema.
+    $availableKeys=array_values(array_filter($keys,static fn($key)=>in_array($key,$cols,true)));
+    if(!$availableKeys)continue;
+    $present=false;foreach($availableKeys as $key)if(trim((string)($row[$key]??''))!=='')$present=true;
+    if(!$present)$record($aid,'missing_'.$type,['field'=>$type,'checked_columns'=>$availableKeys]);
+   }
+   foreach(['website','booking_url','facebook_url','instagram_url'] as $key){if(!in_array($key,$cols,true))continue;$v=trim((string)($row[$key]??''));if($v!==''&&!filter_var($v,FILTER_VALIDATE_URL))$record($aid,'invalid_url',['field'=>$key,'value'=>$v]);}
+   if(in_array('contact_email',$cols,true)){$email=trim((string)($row['contact_email']??''));if($email!==''&&!filter_var($email,FILTER_VALIDATE_EMAIL))$record($aid,'invalid_email',['field'=>'contact_email']);}
+   if(in_array('postcode',$cols,true)){$postcode=trim((string)($row['postcode']??''));if($postcode!==''&&!preg_match('/^[A-Z]{1,2}[0-9][A-Z0-9]?\\s*[0-9][A-Z]{2}$/i',$postcode))$record($aid,'invalid_postcode',['field'=>'postcode','value'=>$postcode]);}
+   foreach(['start_date','end_date','next_session_date'] as $key){if(!in_array($key,$cols,true))continue;$v=trim((string)($row[$key]??''));if($v!==''&&strtotime($v)!==false&&strtotime($v)<strtotime('today')){$record($aid,'past_session_date',['field'=>$key,'value'=>$v]);break;}}
    $updated=trim((string)($row['updated_at']??''));if($updated!==''&&strtotime($updated)!==false&&strtotime($updated)<strtotime('-'.$staleAfterDays.' days'))$record($aid,'stale_listing',['field'=>'updated_at','value'=>$updated,'stale_after_days'=>$staleAfterDays]);
    if(in_array('title',$cols,true)&&in_array('town',$cols,true)){
     $d=$db->prepare("SELECT id FROM bh_activities WHERE id<>? AND LOWER(TRIM(title))=LOWER(TRIM(?)) AND LOWER(TRIM(COALESCE(town,'')))=LOWER(TRIM(COALESCE(?,''))) LIMIT 1");
