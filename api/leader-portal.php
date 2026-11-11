@@ -10,7 +10,7 @@ register_shutdown_function(static function (): void {
     if (headers_sent()) return;
     http_response_code(500);
     header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(['ok'=>false,'error'=>'leader_portal_fatal','message'=>'Leader portal encountered a server error.','diagnostic'=>'fatal_at_line_'.$error['line']]);
+    echo json_encode(['ok'=>false,'error'=>'leader_portal_error','message'=>'Leader portal encountered a server error. Please try again.']);
 });
 try {
 require_once __DIR__.'/db.php';
