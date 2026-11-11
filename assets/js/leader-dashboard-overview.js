@@ -38,6 +38,7 @@
    renderSchedule(classes);renderBookings(bookings);
    const name=String(data.organisation?.first_name||data.organisation?.contact_name||data.organisation?.name||"").trim().split(/\s+/)[0];
    $("leaderV3UserName").textContent=name||"Your account";
+   const sidebarBrand=$("leaderV3SidebarBrand");if(sidebarBrand)sidebarBrand.textContent=name||"Your account";
    $("leaderV3Avatar").textContent=(name||"U").slice(0,1).toUpperCase();
   }catch(error){
    ["leaderV3Classes","leaderV3Sessions","leaderV3NewBookings"].forEach(id=>{if($(id))$(id).textContent="—";});
