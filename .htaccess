@@ -136,6 +136,12 @@ RewriteRule ^(?:pages|articles)/[a-z0-9-]+/?$ wordpress-content.html [L,QSA]
 # Hub Demo belongs to WordPress; do not let the generic activity slug fallback catch it.
 RewriteRule ^hub-demo/?$ index.php [L,QSA]
 
+# Clean BH static pages: /page-slug/ -> /page-slug.html
+# If a matching root-level HTML page exists, serve it before the activity fallback.
+# This lets new BH pages be added without adding one-off rewrite rules.
+RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+RewriteRule ^([a-z0-9-]+)/?$ $1.html [L,QSA]
+
 # Clean activity URLs: /{activity-slug}/
 # IMPORTANT: never rewrite an existing physical file as an activity slug.
 RewriteCond %{REQUEST_FILENAME} !-f
