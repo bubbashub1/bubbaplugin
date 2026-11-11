@@ -25,6 +25,7 @@ try {
  $activityCols=$columns($db,'bh_activities');
  $organiserCols=$columns($db,'bh_organisers');
  $venueCols=$columns($db,'bh_venues');
+ $scheduleCols=$columns($db,'bh_activity_schedules');
  if(!$activityCols) bh_health_reply(503,['ok'=>false,'error'=>'Activity listing table is unavailable.']);
  $pick=static function(array $available,string $column,string $alias,string $tableAlias='a'): string {
   return in_array($column,$available,true) ? $tableAlias.'.`'.$column.'` AS `'.$alias.'`' : "NULL AS `".$alias."`";
@@ -55,6 +56,22 @@ try {
    }
    if($hasDirectVenue) $parts[]='(SELECT '.$expression.' FROM bh_venues v WHERE v.activity_id=a.id ORDER BY v.id LIMIT 1)';
    $select[]='COALESCE('.implode(',',$parts).') AS `venue_'.$alias.'`';
+  }
+ }
+ // Schedule records live in their own table; expose a compact, read-only summary when supported.
+ $hasSchedules=in_array('activity_id',$scheduleCols,true)&&in_array('id',$scheduleCols,true);
+ if($hasSchedules){
+  $scheduleActiveFilter=in_array('active',$scheduleCols,true)?' AND s.active=1':'';
+  $select[]='(SELECT COUNT(*) FROM bh_activity_schedules s WHERE s.activity_id=a.id) AS schedule_count';
+  if(in_array('active',$scheduleCols,true)){
+   $select[]='(SELECT COUNT(*) FROM bh_activity_schedules s WHERE s.activity_id=a.id AND s.active=1) AS active_schedule_count';
+  }
+  if(in_array('start_date',$scheduleCols,true)){
+   $select[]='(SELECT MIN(s.start_date) FROM bh_activity_schedules s WHERE s.activity_id=a.id'.$scheduleActiveFilter.') AS schedule_start_date';
+  }
+  if(in_array('end_date',$scheduleCols,true)){
+   $select[]='(SELECT MAX(s.end_date) FROM bh_activity_schedules s WHERE s.activity_id=a.id'.$scheduleActiveFilter.') AS schedule_end_date';
+   $select[]='(SELECT COUNT(*) FROM bh_activity_schedules s WHERE s.activity_id=a.id'.$scheduleActiveFilter.' AND s.end_date IS NULL) AS schedule_open_ended_count';
   }
  }
  $order=in_array('title',$activityCols,true)?'a.title':'a.id';
@@ -144,6 +161,13 @@ try {
   foreach(['end_date','next_session_date','session_start','start_date'] as $dateKey){
    $date=trim((string)($row[$dateKey]??''));
    if($date!=='' && strtotime($date)!==false && strtotime($date)<strtotime('today')) {$issues[]='Past date in '.$dateKey;break;}
+  }
+  // Only flag a schedule as expired when every active schedule has a finite end date in the past.
+  $activeSchedules=(int)($row['active_schedule_count']??0);
+  $openEndedSchedules=(int)($row['schedule_open_ended_count']??0);
+  $lastScheduleDate=trim((string)($row['schedule_end_date']??''));
+  if($activeSchedules>0 && $openEndedSchedules===0 && $lastScheduleDate!=='' && strtotime($lastScheduleDate)!==false && strtotime($lastScheduleDate)<strtotime('today')){
+   $issues[]='All active schedules have ended';
   }
   $titleKey=$normalise((string)($row['title']??''));
   $placeKey=$normalise((string)($row['town']??$row['venue_town']??$row['venue_venue_name']??''));
