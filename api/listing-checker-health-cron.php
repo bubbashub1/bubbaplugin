@@ -127,10 +127,21 @@ try{
    $activeSchedules=(int)($row['active_schedule_count']??0);$openEndedSchedules=(int)($row['schedule_open_ended_count']??0);$lastScheduleDate=trim((string)($row['schedule_end_date']??''));
    if($activeSchedules>0&&$openEndedSchedules===0&&$lastScheduleDate!==''&&strtotime($lastScheduleDate)!==false&&strtotime($lastScheduleDate)<strtotime('today'))$record($aid,'expired_active_schedules',['active_schedule_count'=>$activeSchedules,'latest_end_date'=>$lastScheduleDate]);
    $updated=trim((string)($row['updated_at']??''));if($updated!==''&&strtotime($updated)!==false&&strtotime($updated)<strtotime('-'.$staleAfterDays.' days'))$record($aid,'stale_listing',['field'=>'updated_at','value'=>$updated,'stale_after_days'=>$staleAfterDays]);
-   if(in_array('title',$cols,true)&&in_array('town',$cols,true)){
-    $d=$db->prepare("SELECT id FROM bh_activities WHERE id<>? AND LOWER(TRIM(title))=LOWER(TRIM(?)) AND LOWER(TRIM(COALESCE(town,'')))=LOWER(TRIM(COALESCE(?,''))) LIMIT 1");
-    $d->execute([$aid,(string)($row['title']??''),(string)($row['town']??'')]);
-    if($d->fetchColumn())$record($aid,'possible_duplicate',['title'=>$row['title']??'','town'=>$row['town']??'']);
+   if(in_array('title',$cols,true)){
+    $otherTown=in_array('town',$cols,true)?"NULLIF(b.town,'')":'NULL';
+    if(in_array('town',$venueCols,true)&&$hasVenueLink){
+     $venueOrder=in_array('is_primary',$linkCols,true)?'av2.is_primary DESC,av2.venue_id':'av2.venue_id';
+     $otherTown="COALESCE(".$otherTown.",(SELECT v2.town FROM bh_activity_venues av2 INNER JOIN bh_venues v2 ON v2.id=av2.venue_id WHERE av2.activity_id=b.id ORDER BY ".$venueOrder." LIMIT 1))";
+    }
+    if(in_array('town',$venueCols,true)&&$hasDirectVenue){
+     $otherTown="COALESCE(".$otherTown.",(SELECT v2.town FROM bh_venues v2 WHERE v2.activity_id=b.id ORDER BY v2.id LIMIT 1))";
+    }
+    $currentTown=trim((string)($row['town']??''));
+    if($currentTown!==''){
+     $d=$db->prepare("SELECT b.id FROM bh_activities b WHERE b.id<>? AND LOWER(TRIM(b.title))=LOWER(TRIM(?)) AND LOWER(TRIM(COALESCE(".$otherTown.",'')))=LOWER(TRIM(?)) LIMIT 1");
+     $d->execute([$aid,(string)($row['title']??''),$currentTown]);
+     if($d->fetchColumn())$record($aid,'possible_duplicate',['title'=>$row['title']??'','town'=>$currentTown]);
+    }
    }
    // Resolve only outstanding checker findings that this successful pass no longer detects.
    // Preserve every explicit admin decision (approved/rejected/correct/incorrect).
