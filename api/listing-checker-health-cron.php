@@ -84,7 +84,7 @@ try{
  $read=$db->prepare('SELECT '.implode(',',$select).' FROM bh_activities a'.($hasOrg?' LEFT JOIN bh_organisers o ON o.id=a.organiser_id':'').' WHERE a.id=?');
  // Refresh an existing matching finding instead of creating duplicate review items on every scheduled pass.
  $findExisting=$db->prepare("SELECT id FROM bh_listing_check_findings WHERE check_type='health' AND activity_id=? AND finding_type=? ORDER BY id LIMIT 1");
- $refreshFinding=$db->prepare("UPDATE bh_listing_check_findings SET candidate_json=?,confidence=100,checked_at=NOW() WHERE id=?");
+ $refreshFinding=$db->prepare("UPDATE bh_listing_check_findings SET candidate_json=?,confidence=100,checked_at=NOW(),review_status=IF(review_status='resolved','new',review_status),reviewed_at=IF(review_status='resolved',NULL,reviewed_at) WHERE id=?");
  $insertFinding=$db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,candidate_json,finding_type,confidence,checked_at,review_status) VALUES('health',?,?,?,100,NOW(),'new')");
  $detectedTypes=[];
  $record=static function(int $activityId,string $type,array $data) use($findExisting,$refreshFinding,$insertFinding,&$detectedTypes): void {
