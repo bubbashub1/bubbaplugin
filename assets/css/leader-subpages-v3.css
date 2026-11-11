@@ -1,0 +1,42 @@
+/* Shared Leader Portal sub-page shell: matches the dashboard visual system. */
+body.bh-leader-v2{background:#e8f5e9;color:#1a4f3b}
+.leader-v3-shell{display:grid;grid-template-columns:244px minmax(0,1fr);gap:30px;max-width:1500px;margin:0 auto;padding:26px 28px 54px}
+.leader-v3-sidebar{position:sticky;top:18px;align-self:start;max-height:calc(100vh - 36px);overflow:auto;padding:12px 0}
+.bh-leader-v3-brand{font-size:20px;font-weight:900;letter-spacing:-.7px;padding:8px 14px 25px;color:#1a4f3b}
+.bh-leader-v3-label{margin:16px 12px 8px;color:#82958a;font-size:11px;font-weight:850;letter-spacing:1.5px;text-transform:uppercase}
+.bh-leader-v3-nav{display:flex;flex-direction:column;gap:3px}
+.bh-leader-v3-nav a{display:flex;align-items:center;gap:12px;padding:12px 13px;border-radius:10px;color:#60766a;font-size:14px;font-weight:750;text-decoration:none;transition:background .16s,color .16s}
+.bh-leader-v3-nav a:hover,.bh-leader-v3-nav a:focus-visible{background:#dcebdc;color:#1a4f3b}
+.bh-leader-v3-nav a[aria-current=page]{background:#d7e8d4;color:#1a4f3b;font-weight:900}
+.bh-leader-v3-nav .nav-ico{width:20px;text-align:center;font-size:17px;opacity:.85}
+.leader-v3-main{min-width:0;max-width:none!important;width:100%;box-sizing:border-box}
+.leader-v3-main > :first-child{margin-top:0}
+.bh-leader-v3-topline{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 18px;color:#75877d;font-size:13px}
+.bh-leader-v3-user{display:flex;align-items:center;gap:9px;color:#1a4f3b;font-weight:800}
+.bh-leader-v3-user-avatar{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border-radius:50%;background:#d2e4d0;color:#1a4f3b;font-weight:900}
+.leader-v3-main .bh-leader-tabs{display:none!important}
+.leader-v3-main :is(.page-heading,.bh-leader-hero,.inbox-hero,.bh-new-hero,.workspace-hero){margin:0 0 22px;padding:26px 28px;border:1px solid #d7e4d9;border-radius:16px;background:#dcedc8;color:#1a4f3b;box-shadow:none}
+.leader-v3-main :is(.page-heading,.bh-leader-hero,.inbox-hero,.bh-new-hero,.workspace-hero) h1{margin:0 0 8px;color:#1a4f3b;font-size:clamp(26px,3vw,36px);font-weight:900;line-height:1.15}
+.leader-v3-main :is(.page-heading,.bh-leader-hero,.inbox-hero,.bh-new-hero,.workspace-hero) p{color:#456651;font-size:15px;line-height:1.6}
+.leader-v3-main :is(.admin-panel,.bh-leader-panel,.bh-card,.bh-panel,.message-list,.message,.leader-profile-card,.leader-workspace>section,.stats-panel,.payment-panel,.faq-list,.support-panel){box-sizing:border-box;margin:0 0 18px;padding:15px;border:1px solid #d7e4d9;border-radius:12px;background:#fff;box-shadow:none}
+.leader-v3-main :is(.admin-panel-head,.bh-leader-panel-head){margin-bottom:12px}
+.leader-v3-main :is(h2,h3){color:#1a4f3b}
+.leader-v3-main :is(p,li,label,td,th){line-height:1.55}
+.leader-v3-main :is(input:not([type=checkbox]):not([type=radio]),select,textarea){max-width:100%;box-sizing:border-box;border:1px solid #cbdccf;border-radius:9px}
+.leader-v3-main :is(.button,.btn,button.button,input[type=submit]){min-height:42px;border-radius:9px;font-weight:800}
+.leader-v3-main .button-primary{background:#1a4f3b;border-color:#1a4f3b;color:#fff}
+.leader-v3-main .button-soft{background:#dcedc8;border-color:#c8ddbd;color:#1a4f3b}
+.leader-v3-main :is(.bh-steps,.bh-leader-tabs){border-radius:12px}
+@media(max-width:1050px){.leader-v3-shell{grid-template-columns:205px minmax(0,1fr);gap:22px;padding:22px 20px 42px}}
+@media(max-width:760px){
+ .leader-v3-shell{grid-template-columns:1fr;gap:15px;padding:17px 16px 35px}
+ .leader-v3-sidebar{position:static;max-height:none;overflow:visible;padding:0}
+ .bh-leader-v3-brand{display:none}
+ .bh-leader-v3-label{display:none}
+ .bh-leader-v3-nav{flex-direction:row;gap:5px;overflow-x:auto;padding:4px 0 10px;scrollbar-width:thin}
+ .bh-leader-v3-nav a{flex:0 0 auto;gap:7px;padding:10px 12px;background:rgba(255,255,255,.68);font-size:12px;white-space:nowrap}
+ .bh-leader-v3-nav .nav-ico{width:auto}
+ .bh-leader-v3-topline{margin-bottom:13px}
+ .leader-v3-main :is(.page-heading,.bh-leader-hero,.inbox-hero,.bh-new-hero,.workspace-hero){padding:20px 18px;border-radius:13px}
+ .leader-v3-main :is(.admin-panel,.bh-leader-panel,.bh-card,.bh-panel,.message-list,.message,.leader-profile-card,.leader-workspace>section){padding:15px}
+}
