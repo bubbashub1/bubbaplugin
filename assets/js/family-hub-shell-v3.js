@@ -28,7 +28,7 @@
   const side=document.createElement("aside");
   side.className="family-v3-sidebar";
   side.setAttribute("aria-label","My Hub navigation");
-  side.innerHTML='<div class="family-v3-brand"><strong class="family-v3-user">Your family</strong><span>My workspace</span></div><span class="family-v3-nav-label">Your family space</span><nav class="family-v3-nav" aria-label="Family workspace">';
+  side.innerHTML='<div class="family-v3-brand"><strong class="family-v3-user">Your family</strong><span>My Bubba Hub</span></div><span class="family-v3-nav-label">Your family space</span><nav class="family-v3-nav" aria-label="Family workspace">';
   const nav=side.querySelector("nav");
   links.forEach(([href,label,icon])=>{
    const a=document.createElement("a");a.href=href;
