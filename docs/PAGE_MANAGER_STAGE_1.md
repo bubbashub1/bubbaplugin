@@ -13,11 +13,11 @@ System/application pages remain protected and are not imported into or overwritt
 
 ## Deployment
 1. Deploy the feature branch through the normal review and release process.
-2. Apply `database/migrations/20261112_create_bh_pages.sql` once to the standalone Bubba Hub database used by `api/db.php`.
-3. Open `/admin/admin-page-manager.html` while signed in to the admin account.
-4. Confirm that a new draft can be created, edited, archived and restored.
+2. Open `/admin/admin-page-manager.html` while signed in to the admin account.
+3. If prompted, select **Set up Page Manager**. This explicit, authenticated admin action creates the two Page Manager tables in the standalone Bubba Hub database used by `api/db.php`.
+4. Confirm that a new draft can be created, edited, previewed, published, archived and restored.
 
-The API intentionally fails closed when the migration is missing. It does not create database tables on a public request.
+The setup action is idempotent and is not exposed publicly. The SQL migration is retained as a manual fallback for controlled database administration.
 
 ## Public rendering
 The admin editor's preview currently opens the reserved integration endpoint `/page.php?slug=...`. Public page rendering and clean URL routing are a separate follow-on task and must be completed before published pages are promoted as live website pages. Do not add rewrite rules until existing standalone routes and the host's current rewrite configuration have been reviewed.
