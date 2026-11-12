@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
+header('X-Content-Type-Options: nosniff');
 
 try {
     require __DIR__ . '/db.php';
@@ -16,13 +17,14 @@ try {
         'schema' => 'bubbaplugin/main',
     ]);
 } catch (Throwable $e) {
+    // Keep connection details in server logs, never in a public health response.
+    error_log('Bubba Hub database health check failed: ' . $e->getMessage());
     http_response_code(503);
 
     echo json_encode([
         'ok' => false,
         'system' => 'Bubba Hub',
         'database' => 'not_connected',
-        'error_type' => get_class($e),
-        'error' => $e->getMessage(),
+        'message' => 'Database connection unavailable.',
     ]);
 }
