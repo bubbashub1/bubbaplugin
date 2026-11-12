@@ -2,12 +2,69 @@
 declare(strict_types=1);
 
 /**
- * Bubba Hub MySQL connection.
- * Uses the server-only github-deploy-config.php shared by the standalone app.
- * Credentials are never stored in GitHub or exposed to the browser.
+ * Read literal database constants from wp-config.php without including it.
+ * Including wp-config.php would bootstrap WordPress and is unnecessary here.
  */
+function bh_read_wp_config_constants(string $path): array {
+    if (!is_file($path) || !is_readable($path)) return [];
+
+    $source = file_get_contents($path);
+    if (!is_string($source)) return [];
+
+    $tokens = token_get_all($source);
+    $values = [];
+    $count = count($tokens);
+
+    $nextMeaningful = static function (array $tokens, int &$index, int $count) {
+        while ($index < $count) {
+            $token = $tokens[$index];
+            if (is_array($token) && in_array($token[0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)) {
+                $index++;
+                continue;
+            }
+            return $token;
+        }
+        return null;
+    };
+
+    $decodeLiteral = static function (string $literal): ?string {
+        $quote = $literal[0] ?? '';
+        if (($quote !== "'" && $quote !== '"') || substr($literal, -1) !== $quote) return null;
+        $inner = substr($literal, 1, -1);
+        if ($quote === "'") {
+            return str_replace(["\\\\", "\\'"], ["\\", "'"], $inner);
+        }
+        // Only plain, non-interpolated string tokens are accepted.
+        return stripcslashes($inner);
+    };
+
+    for ($i = 0; $i < $count; $i++) {
+        $token = $tokens[$i];
+        if (!is_array($token) || $token[0] !== T_STRING || strtolower($token[1]) !== 'define') continue;
+
+        $i++;
+        if ($nextMeaningful($tokens, $i, $count) !== '(') continue;
+        $i++;
+        $nameToken = $nextMeaningful($tokens, $i, $count);
+        if (!is_array($nameToken) || $nameToken[0] !== T_CONSTANT_ENCAPSED_STRING) continue;
+        $constantName = $decodeLiteral($nameToken[1]);
+        if (!is_string($constantName)) continue;
+
+        $i++;
+        if ($nextMeaningful($tokens, $i, $count) !== ',') continue;
+        $i++;
+        $valueToken = $nextMeaningful($tokens, $i, $count);
+        if (!is_array($valueToken) || $valueToken[0] !== T_CONSTANT_ENCAPSED_STRING) continue;
+        $value = $decodeLiteral($valueToken[1]);
+        if (is_string($value)) $values[$constantName] = $value;
+    }
+
+    return $values;
+}
+
 /**
- * Ensure the public newsletter subscriber table exists.
+ * Bubba Hub MySQL connection.
+ * Database credentials remain in server-only configuration files.
  */
 function bh_ensure_newsletter_subscribers(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS bh_newsletter_subscribers (
@@ -26,49 +83,107 @@ function bh_mysql(): PDO {
     static $pdo = null;
     if ($pdo instanceof PDO) return $pdo;
 
-    // Match the repository's existing server-side configuration lookup.
+    $documentRoot = rtrim((string)($_SERVER['DOCUMENT_ROOT'] ?? ''), '/');
+    $environmentName = $documentRoot !== '' ? basename($documentRoot) : '';
+    $environmentConfig = ($environmentName !== '' && $documentRoot !== '')
+        ? dirname($documentRoot) . '/database-config-' . $environmentName . '.php'
+        : null;
+
+    // Prefer an environment-specific private DB file, then inspect the
+    // shared deployment config and legacy locations. A deployment config
+    // without DB keys must never prevent later candidates being checked.
     $configCandidates = array_filter([
+        $environmentConfig,
         dirname(__DIR__, 2) . '/github-deploy-config.php',
-        dirname((string)($_SERVER['DOCUMENT_ROOT'] ?? '')) . '/github-deploy-config.php',
-        (string)($_SERVER['DOCUMENT_ROOT'] ?? '') . '/github-deploy-config.php',
+        dirname($documentRoot) . '/github-deploy-config.php',
+        $documentRoot . '/github-deploy-config.php',
         '/github-deploy-config.php',
         __DIR__ . '/config.php',
     ]);
 
     $config = null;
+    $dbConfig = [];
+    $host = $name = $user = $pass = null;
+    $missingKeys = ['host', 'database', 'username', 'password'];
+
     foreach (array_unique($configCandidates) as $configFile) {
         if (!is_file($configFile)) continue;
+
         $loaded = require $configFile;
-        if (!is_array($loaded)) {
-            throw new RuntimeException('Server database configuration is invalid.');
+        if (!is_array($loaded)) continue;
+
+        $candidateDb = (isset($loaded['db']) && is_array($loaded['db']))
+            ? $loaded['db']
+            : [];
+
+        $candidateHost = $candidateDb['host'] ?? $loaded['mysql_host'] ?? null;
+        $candidateName = $candidateDb['name'] ?? $loaded['mysql_database'] ?? null;
+        $candidateUser = $candidateDb['user'] ?? $loaded['mysql_username'] ?? null;
+        $candidatePass = $candidateDb['pass'] ?? $loaded['mysql_password'] ?? null;
+
+        $candidateValues = [
+            'host' => $candidateHost,
+            'database' => $candidateName,
+            'username' => $candidateUser,
+            'password' => $candidatePass,
+        ];
+        $missing = [];
+        foreach ($candidateValues as $key => $value) {
+            if (!is_string($value) || $value === '') $missing[] = $key;
         }
+
+        if ($missing) {
+            $missingKeys = $missing;
+            continue;
+        }
+
         $config = $loaded;
+        $dbConfig = $candidateDb;
+        $host = $candidateHost;
+        $name = $candidateName;
+        $user = $candidateUser;
+        $pass = $candidatePass;
         break;
     }
 
-    if (!is_array($config)) {
-        throw new RuntimeException('Server database configuration is missing. Configure mysql_host, mysql_database, mysql_username and mysql_password in the server-only github-deploy-config.php.');
-    }
+    // Last resort: read literal DB constants from this environment's WordPress
+    // config. Never include wp-config.php, because it bootstraps WordPress.
+    if (!is_array($config) && $documentRoot !== '') {
+        $wpConfigCandidates = [
+            $documentRoot . '/wp-config.php',
+            dirname($documentRoot) . '/wp-config.php',
+        ];
 
-    // Support the documented shared config keys and the legacy nested db shape.
-    $dbConfig = [];
-    if (isset($config['db']) && is_array($config['db'])) {
-        $dbConfig = $config['db'];
-        $host = $dbConfig['host'] ?? null;
-        $name = $dbConfig['name'] ?? null;
-        $user = $dbConfig['user'] ?? null;
-        $pass = $dbConfig['pass'] ?? null;
-    } else {
-        $host = $config['mysql_host'] ?? null;
-        $name = $config['mysql_database'] ?? null;
-        $user = $config['mysql_username'] ?? null;
-        $pass = $config['mysql_password'] ?? null;
-    }
+        foreach (array_unique($wpConfigCandidates) as $wpConfigFile) {
+            $wpValues = bh_read_wp_config_constants($wpConfigFile);
+            $wpHost = $wpValues['DB_HOST'] ?? null;
+            $wpName = $wpValues['DB_NAME'] ?? null;
+            $wpUser = $wpValues['DB_USER'] ?? null;
+            $wpPass = $wpValues['DB_PASSWORD'] ?? null;
 
-    foreach (['host' => $host, 'database' => $name, 'username' => $user, 'password' => $pass] as $key => $value) {
-        if (!is_string($value) || $value === '') {
-            throw new RuntimeException('Missing database configuration value: ' . $key);
+            if (
+                is_string($wpHost) && $wpHost !== '' &&
+                is_string($wpName) && $wpName !== '' &&
+                is_string($wpUser) && $wpUser !== '' &&
+                is_string($wpPass) && $wpPass !== ''
+            ) {
+                $host = $wpHost;
+                $name = $wpName;
+                $user = $wpUser;
+                $pass = $wpPass;
+                $config = ['mysql_charset' => $wpValues['DB_CHARSET'] ?? 'utf8mb4'];
+                $dbConfig = [];
+                break;
+            }
         }
+    }
+
+    if (!is_array($config)) {
+        throw new RuntimeException(
+            'No complete server database configuration was found. Missing: ' .
+            implode(', ', $missingKeys) .
+            '. Check the private database configuration or WordPress config for this environment.'
+        );
     }
 
     $charset = (string)($config['mysql_charset'] ?? ($dbConfig['charset'] ?? 'utf8mb4'));
