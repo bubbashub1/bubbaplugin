@@ -3,11 +3,13 @@ declare(strict_types=1);
 
 /**
  * Bubba Hub MySQL connection.
- * Uses the server-only github-deploy-config.php shared by the standalone app.
- * Credentials are never stored in GitHub or exposed to the browser.
- */
-/**
- * Ensure the public newsletter subscriber table exists.
+ *
+ * Environment-specific credentials live outside the public web root in:
+ *   <hosting-home>/database-config-public_html.php
+ *   <hosting-home>/database-config-staging_html.php
+ *
+ * The shared github-deploy-config.php remains available for deployment/admin
+ * settings. Database credentials are never stored in GitHub or sent to clients.
  */
 function bh_ensure_newsletter_subscribers(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS bh_newsletter_subscribers (
@@ -26,44 +28,47 @@ function bh_mysql(): PDO {
     static $pdo = null;
     if ($pdo instanceof PDO) return $pdo;
 
-    // Match the repository's existing server-side configuration lookup.
-    $configCandidates = array_filter([
-        dirname(__DIR__, 2) . '/github-deploy-config.php',
-        dirname((string)($_SERVER['DOCUMENT_ROOT'] ?? '')) . '/github-deploy-config.php',
-        (string)($_SERVER['DOCUMENT_ROOT'] ?? '') . '/github-deploy-config.php',
+    $documentRoot = rtrim((string)($_SERVER['DOCUMENT_ROOT'] ?? ''), DIRECTORY_SEPARATOR);
+    $siteDirectory = $documentRoot !== '' ? basename($documentRoot) : basename(dirname(__DIR__));
+    $hostingHome = dirname(__DIR__, 2);
+
+    // Environment-specific config is outside the public web root. The shared
+    // config is loaded as a fallback for existing deployment/admin settings.
+    $environmentConfigFile = $hostingHome . '/database-config-' . $siteDirectory . '.php';
+    $sharedConfigCandidates = array_filter([
+        $hostingHome . '/github-deploy-config.php',
+        dirname($documentRoot) . '/github-deploy-config.php',
+        $documentRoot . '/github-deploy-config.php',
         '/github-deploy-config.php',
-        __DIR__ . '/config.php',
     ]);
 
-    $config = null;
-    foreach (array_unique($configCandidates) as $configFile) {
+    $config = [];
+    if (is_file($environmentConfigFile)) {
+        $loaded = require $environmentConfigFile;
+        if (!is_array($loaded)) {
+            throw new RuntimeException('Environment database configuration is invalid.');
+        }
+        $config = $loaded;
+    }
+
+    foreach (array_unique($sharedConfigCandidates) as $configFile) {
         if (!is_file($configFile)) continue;
         $loaded = require $configFile;
         if (!is_array($loaded)) {
-            throw new RuntimeException('Server database configuration is invalid.');
+            throw new RuntimeException('Shared server configuration is invalid.');
         }
-        $config = $loaded;
+        // Environment-specific values always take precedence.
+        $config = array_replace_recursive($loaded, $config);
         break;
     }
 
-    if (!is_array($config)) {
-        throw new RuntimeException('Server database configuration is missing. Configure mysql_host, mysql_database, mysql_username and mysql_password in the server-only github-deploy-config.php.');
-    }
-
-    // Support the documented shared config keys and the legacy nested db shape.
-    $dbConfig = [];
-    if (isset($config['db']) && is_array($config['db'])) {
-        $dbConfig = $config['db'];
-        $host = $dbConfig['host'] ?? null;
-        $name = $dbConfig['name'] ?? null;
-        $user = $dbConfig['user'] ?? null;
-        $pass = $dbConfig['pass'] ?? null;
-    } else {
-        $host = $config['mysql_host'] ?? null;
-        $name = $config['mysql_database'] ?? null;
-        $user = $config['mysql_username'] ?? null;
-        $pass = $config['mysql_password'] ?? null;
-    }
+    $dbConfig = isset($config['db']) && is_array($config['db']) ? $config['db'] : [];
+    // Flat environment-specific keys take precedence over the legacy nested
+    // db shape so either supported format can safely override shared values.
+    $host = $config['mysql_host'] ?? ($dbConfig['host'] ?? null);
+    $name = $config['mysql_database'] ?? ($dbConfig['name'] ?? null);
+    $user = $config['mysql_username'] ?? ($dbConfig['user'] ?? null);
+    $pass = $config['mysql_password'] ?? ($dbConfig['pass'] ?? null);
 
     foreach (['host' => $host, 'database' => $name, 'username' => $user, 'password' => $pass] as $key => $value) {
         if (!is_string($value) || $value === '') {
