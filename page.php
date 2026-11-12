@@ -6,7 +6,7 @@ if(!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/',$slug)){http_response_code(404);ex
 $preview=isset($_GET['preview'])&&$_GET['preview']==='1';
 if($preview){
  if(session_status()!==PHP_SESSION_ACTIVE){$secure=!empty($_SERVER['HTTPS'])&&strtolower((string)$_SERVER['HTTPS'])!=='off';session_name('BUBBAHUB_ADMINSESSID');session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);session_start();}
- if(empty($_SESSION['bh_admin_authenticated'])){http_response_code(403);exit('Admin sign-in required to preview drafts.');}
+ $last=(int)($_SESSION['bh_admin_last_activity']??0);if(empty($_SESSION['bh_admin_authenticated'])||$last===0||time()-$last>1800){http_response_code(403);exit('Admin sign-in required to preview drafts.');}$_SESSION['bh_admin_last_activity']=time();
 }
 try{
  $sql="SELECT title,slug,description,content_html,meta_description,status FROM bh_pages WHERE slug=?".($preview?"":" AND status='published'")." LIMIT 1";
