@@ -48,6 +48,6 @@ async function save(status){
 }
 $('pageForm').addEventListener('submit',e=>{e.preventDefault();save('draft');});
 $('publishPage').addEventListener('click',()=>{if($('pageForm').reportValidity())save('published');});
-$('previewPage').addEventListener('click',()=>{const slug=$('pageSlug').value.trim();if(!slug){message('Add a page URL first.',true);return;}window.open('/page.php?slug='+encodeURIComponent(slug)+'&preview=1','_blank','noopener');});
+$('previewPage').addEventListener('click',()=>{if(!$('pageForm').reportValidity())return;const previewWindow=window.open('about:blank','_blank');if(!previewWindow){message('Allow pop-ups to preview this page.',true);return;}const body={action:'preview',title:$('pageTitle').value.trim(),slug:$('pageSlug').value.trim(),description:$('pageDescription').value,content_html:$('pageContent').value,meta_description:$('pageMeta').value,csrf};message('Preparing preview…');request('POST',body).then(d=>{previewWindow.location=d.preview_url;message('Preview opened. Your saved page has not been changed.');}).catch(e=>{previewWindow.close();message(e.message,true);});});
 (async()=>{try{const auth=await fetch('/admin-auth.php?action=check',{credentials:'same-origin',cache:'no-store'});if(!auth.ok){location.href='/admin-login.html?next='+encodeURIComponent(location.pathname);return;}await load();}catch(e){$('pageRows').innerHTML='<tr><td colspan="5">Admin connection unavailable. Please sign in again.</td></tr>';}})();
 })();
