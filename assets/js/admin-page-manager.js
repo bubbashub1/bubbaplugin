@@ -23,7 +23,7 @@ function render(){
 }
 async function load(){ $('pageRows').innerHTML='<tr><td colspan="5">Loading pages…</td></tr>';try{const d=await request();pages=d.pages||[];render();}catch(e){$('pageRows').innerHTML='<tr><td colspan="5">'+escapeHtml(e.message)+'</td></tr>';}}
 function openEditor(page=null){
- currentId=page?Number(page.id):null;$('pageForm').reset();$('pageId').value=page?.id||'';$('pageTitle').value=page?.title||'';$('pageSlug').value=page?.slug||'';$('pageDescription').value=page?.description||'';$('pageContent').value=page?.content_html||'';$('pageMeta').value=page?.meta_description||'';$('editorHeading').textContent=page?'Edit page':'Add a page';$('saveDraft').textContent=page?'Save changes':'Save draft';$('pageEditor').hidden=false;message('');$('pageEditor').scrollIntoView({behavior:'smooth',block:'start'});
+ currentId=page?Number(page.id):null;$('pageForm').reset();delete $('pageSlug').dataset.edited;$('pageId').value=page?.id||'';$('pageTitle').value=page?.title||'';$('pageSlug').value=page?.slug||'';$('pageDescription').value=page?.description||'';$('pageContent').value=page?.content_html||'';$('pageMeta').value=page?.meta_description||'';$('editorHeading').textContent=page?'Edit page':'Add a page';$('saveDraft').textContent=page?'Save changes':'Save draft';$('pageEditor').hidden=false;message('');$('pageEditor').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function slugify(value){return value.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,190);}
 $('newPage').addEventListener('click',()=>openEditor());
