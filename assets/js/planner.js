@@ -206,7 +206,7 @@ window.bhInitPlanner = async function(root=document){
   }
 
   const viewControls=$("plannerViewControls");
-  if(viewControls)viewControls.innerHTML="<button type=\"button\" class=\"planner-view-button is-active\" data-view=\"week\">Weekly</button><button type=\"button\" class=\"planner-view-button\" data-view=\"list\">List</button>";
+  if(viewControls)viewControls.innerHTML="<button type=\"button\" class=\"planner-view-button "+(currentView==="week"?"is-active":"")+"\" data-view=\"week\">Weekly</button><button type=\"button\" class=\"planner-view-button "+(currentView==="list"?"is-active":"")+"\" data-view=\"list\">List</button>";
 
   controls.innerHTML=days.map(day=>"<label class='planner-day-toggle'><input type='checkbox' class='day-toggle' value='"+day.num+"'><span><b>"+day.short+"</b><small>"+day.name+"</small></span></label>").join("");
 
