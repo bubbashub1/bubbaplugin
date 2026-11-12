@@ -21,12 +21,13 @@ function render(){
  const rows=filteredPages();
  $('pageRows').innerHTML=rows.length?rows.map(p=>'<tr><td><strong>'+escapeHtml(p.title)+'</strong></td><td>/page.php?slug='+encodeURIComponent(p.slug)+'</td><td><span class="bh-page-status '+escapeHtml(p.status)+'">'+escapeHtml(p.status)+'</span></td><td>'+escapeHtml(p.updated_at||'—')+'</td><td><div class="bh-page-actions"><button type="button" data-edit="'+p.id+'">Edit</button>'+(p.status==='archived'?'<button type="button" data-restore="'+p.id+'">Restore</button>':'<button type="button" data-archive="'+p.id+'">Archive</button>')+'</div></td></tr>').join(''):'<tr><td colspan="5">No pages match this filter.</td></tr>';
 }
-async function load(){ $('pageRows').innerHTML='<tr><td colspan="5">Loading pages…</td></tr>';try{const d=await request();pages=d.pages||[];render();}catch(e){$('pageRows').innerHTML='<tr><td colspan="5">'+escapeHtml(e.message)+'</td></tr>';}}
+async function load(){ $('pageRows').innerHTML='<tr><td colspan="5">Loading pages…</td></tr>';try{const d=await request();if(d.setup_required){$('pageSetup').hidden=false;$('pageRows').innerHTML='<tr><td colspan="5">Complete the one-time setup to start managing pages.</td></tr>';return;}$('pageSetup').hidden=true;pages=d.pages||[];render();}catch(e){$('pageRows').innerHTML='<tr><td colspan="5">'+escapeHtml(e.message)+'</td></tr>';}}
 function openEditor(page=null){
  currentId=page?Number(page.id):null;$('pageForm').reset();delete $('pageSlug').dataset.edited;$('pageId').value=page?.id||'';$('pageTitle').value=page?.title||'';$('pageSlug').value=page?.slug||'';$('pageDescription').value=page?.description||'';$('pageContent').value=page?.content_html||'';$('pageMeta').value=page?.meta_description||'';$('editorHeading').textContent=page?'Edit page':'Add a page';$('saveDraft').textContent=page?'Save changes':'Save draft';$('pageEditor').hidden=false;message('');$('pageEditor').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function slugify(value){return value.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,190);}
 $('newPage').addEventListener('click',()=>openEditor());
+$('setupPages')?.addEventListener('click',async()=>{const b=$('setupPages');b.disabled=true;b.textContent='Setting up…';try{await request('POST',{action:'setup',csrf});$('pageSetup').hidden=true;await load();}catch(e){alert(e.message);}finally{b.disabled=false;b.textContent='Set up Page Manager';}});
 $('closeEditor').addEventListener('click',()=>$('pageEditor').hidden=true);
 $('pageTitle').addEventListener('input',()=>{if(!$('pageId').value||!$('pageSlug').dataset.edited)$('pageSlug').value=slugify($('pageTitle').value);});
 $('pageSlug').addEventListener('input',()=>{$('pageSlug').dataset.edited='1';$('pageSlug').value=slugify($('pageSlug').value);});
