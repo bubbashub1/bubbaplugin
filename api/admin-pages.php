@@ -78,9 +78,17 @@ try{
  if(strlen($html)>500000)pages_out(422,['ok'=>false,'error'=>'Page content is too large (maximum 500 KB).']);
  $allowed='<p><br><h1><h2><h3><h4><strong><b><em><i><u><ul><ol><li><blockquote><a><hr><div><section><span>';
  $html=strip_tags($html,$allowed);
- // Remove submitted attributes to prevent event handlers, unsafe URL schemes,
- // injected styles and encoded-entity bypasses in user-authored HTML.
- $html=preg_replace('/<([a-z][a-z0-9]*)\\b[^>]*>/i','<$1>',$html)??'';
+ // Preserve safe link destinations while removing all other submitted attributes.
+ // This blocks event handlers, inline styles and dangerous URL schemes.
+ $html=preg_replace_callback('/<a\\b([^>]*)>/i',static function(array $match): string {
+  if(!preg_match('/\\bhref\\s*=\\s*(?:"([^"]*)"|\\'([^\\']*)\\'|([^\\s>]+))/i',$match[1],$hrefMatch)) return '<a>';
+  $url=trim(html_entity_decode($hrefMatch[1]??$hrefMatch[2]??$hrefMatch[3]??'',ENT_QUOTES|ENT_HTML5,'UTF-8'));
+  if($url===''||preg_match('/[\\x00-\\x20\\x7f]/',$url)) return '<a>';
+  $safe=(bool)preg_match('~^(https?://|mailto:|tel:|/(?!/)|#|\\?)~i',$url);
+  if(!$safe) return '<a>';
+  return '<a href="'.htmlspecialchars($url,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8').'">';
+ },$html)??'';
+ $html=preg_replace('/<(?!a\\b)([a-z][a-z0-9]*)\\b[^>]*>/i','<$1>',$html)??'';
  $db->beginTransaction();
  if($id>0){
   $oldQ=$db->prepare("SELECT * FROM bh_pages WHERE id=? FOR UPDATE");$oldQ->execute([$id]);$old=$oldQ->fetch();
