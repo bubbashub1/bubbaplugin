@@ -84,6 +84,11 @@ function bh_mysql(): PDO {
     if ($pdo instanceof PDO) return $pdo;
 
     $documentRoot = rtrim((string)($_SERVER['DOCUMENT_ROOT'] ?? ''), '/');
+    // CLI jobs (such as deployment migrations) do not set DOCUMENT_ROOT.
+    // In that context, api/db.php lives directly under the site's document root.
+    if ($documentRoot === '') {
+        $documentRoot = dirname(__DIR__);
+    }
     $environmentName = $documentRoot !== '' ? basename($documentRoot) : '';
     $environmentConfig = ($environmentName !== '' && $documentRoot !== '')
         ? dirname($documentRoot) . '/database-config-' . $environmentName . '.php'
