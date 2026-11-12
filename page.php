@@ -9,8 +9,13 @@ if($preview){
  $last=(int)($_SESSION['bh_admin_last_activity']??0);if(empty($_SESSION['bh_admin_authenticated'])||$last===0||time()-$last>1800){http_response_code(403);exit('Admin sign-in required to preview drafts.');}$_SESSION['bh_admin_last_activity']=time();
 }
 try{
- $sql="SELECT title,slug,description,content_html,meta_description,status FROM bh_pages WHERE slug=?".($preview?"":" AND status='published'")." LIMIT 1";
- $q=bh_mysql()->prepare($sql);$q->execute([$slug]);$page=$q->fetch();
+ $page=($preview && isset($_SESSION['bh_page_preview'][$slug]) && is_array($_SESSION['bh_page_preview'][$slug]))
+  ? $_SESSION['bh_page_preview'][$slug]
+  : null;
+ if(!$page){
+  $sql="SELECT title,slug,description,content_html,meta_description,status FROM bh_pages WHERE slug=?".($preview?"":" AND status='published'")." LIMIT 1";
+  $q=bh_mysql()->prepare($sql);$q->execute([$slug]);$page=$q->fetch();
+ }
 }catch(Throwable $e){error_log('Bubba Hub public page lookup failed: '.$e->getMessage());http_response_code(503);exit('This page is temporarily unavailable.');}
 if(!$page){http_response_code(404);exit('Page not found.');}
 $title=htmlspecialchars((string)$page['title'],ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
