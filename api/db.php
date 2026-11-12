@@ -3,8 +3,7 @@ declare(strict_types=1);
 
 /**
  * Bubba Hub MySQL connection.
- * Uses the server-only github-deploy-config.php shared by the standalone app.
- * Credentials are never stored in GitHub or exposed to the browser.
+ * Database credentials remain in server-only configuration files.
  */
 /**
  * Ensure the public newsletter subscriber table exists.
@@ -26,7 +25,9 @@ function bh_mysql(): PDO {
     static $pdo = null;
     if ($pdo instanceof PDO) return $pdo;
 
-    // Match the repository's existing server-side configuration lookup.
+    // Check each server-side location. The deployment config may exist but
+    // contain only GitHub/deployment settings, so it must not mask DB config
+    // in a later candidate.
     $configCandidates = array_filter([
         dirname(__DIR__, 2) . '/github-deploy-config.php',
         dirname((string)($_SERVER['DOCUMENT_ROOT'] ?? '')) . '/github-deploy-config.php',
@@ -36,39 +37,57 @@ function bh_mysql(): PDO {
     ]);
 
     $config = null;
+    $dbConfig = [];
+    $host = $name = $user = $pass = null;
+    $missingKeys = ['host', 'database', 'username', 'password'];
+
     foreach (array_unique($configCandidates) as $configFile) {
         if (!is_file($configFile)) continue;
+
         $loaded = require $configFile;
-        if (!is_array($loaded)) {
-            throw new RuntimeException('Server database configuration is invalid.');
+        if (!is_array($loaded)) continue;
+
+        $candidateDb = (isset($loaded['db']) && is_array($loaded['db']))
+            ? $loaded['db']
+            : [];
+
+        $candidateHost = $candidateDb['host'] ?? $loaded['mysql_host'] ?? null;
+        $candidateName = $candidateDb['name'] ?? $loaded['mysql_database'] ?? null;
+        $candidateUser = $candidateDb['user'] ?? $loaded['mysql_username'] ?? null;
+        $candidatePass = $candidateDb['pass'] ?? $loaded['mysql_password'] ?? null;
+
+        $candidateValues = [
+            'host' => $candidateHost,
+            'database' => $candidateName,
+            'username' => $candidateUser,
+            'password' => $candidatePass,
+        ];
+        $missing = [];
+        foreach ($candidateValues as $key => $value) {
+            if (!is_string($value) || $value === '') $missing[] = $key;
         }
+
+        // Only select a file when it contains a complete DB configuration.
+        if ($missing) {
+            $missingKeys = $missing;
+            continue;
+        }
+
         $config = $loaded;
+        $dbConfig = $candidateDb;
+        $host = $candidateHost;
+        $name = $candidateName;
+        $user = $candidateUser;
+        $pass = $candidatePass;
         break;
     }
 
     if (!is_array($config)) {
-        throw new RuntimeException('Server database configuration is missing. Configure mysql_host, mysql_database, mysql_username and mysql_password in the server-only github-deploy-config.php.');
-    }
-
-    // Support the documented shared config keys and the legacy nested db shape.
-    $dbConfig = [];
-    if (isset($config['db']) && is_array($config['db'])) {
-        $dbConfig = $config['db'];
-        $host = $dbConfig['host'] ?? null;
-        $name = $dbConfig['name'] ?? null;
-        $user = $dbConfig['user'] ?? null;
-        $pass = $dbConfig['pass'] ?? null;
-    } else {
-        $host = $config['mysql_host'] ?? null;
-        $name = $config['mysql_database'] ?? null;
-        $user = $config['mysql_username'] ?? null;
-        $pass = $config['mysql_password'] ?? null;
-    }
-
-    foreach (['host' => $host, 'database' => $name, 'username' => $user, 'password' => $pass] as $key => $value) {
-        if (!is_string($value) || $value === '') {
-            throw new RuntimeException('Missing database configuration value: ' . $key);
-        }
+        throw new RuntimeException(
+            'No complete server database configuration was found. Missing: ' .
+            implode(', ', $missingKeys) .
+            '. Check the server-only database configuration files.'
+        );
     }
 
     $charset = (string)($config['mysql_charset'] ?? ($dbConfig['charset'] ?? 'utf8mb4'));
