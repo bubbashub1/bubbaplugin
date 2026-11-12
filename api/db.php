@@ -5,9 +5,6 @@ declare(strict_types=1);
  * Bubba Hub MySQL connection.
  * Database credentials remain in server-only configuration files.
  */
-/**
- * Ensure the public newsletter subscriber table exists.
- */
 function bh_ensure_newsletter_subscribers(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS bh_newsletter_subscribers (
         id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -25,13 +22,20 @@ function bh_mysql(): PDO {
     static $pdo = null;
     if ($pdo instanceof PDO) return $pdo;
 
-    // Check each server-side location. The deployment config may exist but
-    // contain only GitHub/deployment settings, so it must not mask DB config
-    // in a later candidate.
+    $documentRoot = rtrim((string)($_SERVER['DOCUMENT_ROOT'] ?? ''), '/');
+    $environmentName = $documentRoot !== '' ? basename($documentRoot) : '';
+    $environmentConfig = ($environmentName !== '' && $documentRoot !== '')
+        ? dirname($documentRoot) . '/database-config-' . $environmentName . '.php'
+        : null;
+
+    // Prefer an environment-specific private DB file, then inspect the
+    // shared deployment config and legacy locations. A deployment config
+    // without DB keys must never prevent later candidates being checked.
     $configCandidates = array_filter([
+        $environmentConfig,
         dirname(__DIR__, 2) . '/github-deploy-config.php',
-        dirname((string)($_SERVER['DOCUMENT_ROOT'] ?? '')) . '/github-deploy-config.php',
-        (string)($_SERVER['DOCUMENT_ROOT'] ?? '') . '/github-deploy-config.php',
+        dirname($documentRoot) . '/github-deploy-config.php',
+        $documentRoot . '/github-deploy-config.php',
         '/github-deploy-config.php',
         __DIR__ . '/config.php',
     ]);
@@ -67,7 +71,6 @@ function bh_mysql(): PDO {
             if (!is_string($value) || $value === '') $missing[] = $key;
         }
 
-        // Only select a file when it contains a complete DB configuration.
         if ($missing) {
             $missingKeys = $missing;
             continue;
@@ -86,7 +89,7 @@ function bh_mysql(): PDO {
         throw new RuntimeException(
             'No complete server database configuration was found. Missing: ' .
             implode(', ', $missingKeys) .
-            '. Check the server-only database configuration files.'
+            '. Check the private database configuration for this environment.'
         );
     }
 
