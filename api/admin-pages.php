@@ -59,6 +59,27 @@ try{
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
   pages_out(200,['ok'=>true,'csrf'=>$csrf,'message'=>'Page Manager database setup completed.']);
  }
+ if($action==='preview'){
+  $title=trim((string)($body['title']??''));$slug=strtolower(trim((string)($body['slug']??'')));
+  $description=trim((string)($body['description']??''));$meta=trim((string)($body['meta_description']??''));
+  if($title===''||mb_strlen($title)>190)pages_out(422,['ok'=>false,'error'=>'Enter a page title before previewing.']);
+  if(!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/',$slug)||strlen($slug)>190)pages_out(422,['ok'=>false,'error'=>'Enter a valid page URL before previewing.']);
+  $protected=['index','directory','activities','venues','events','my-hub','planner','leader','account','admin','admin-login','page'];
+  if(in_array($slug,$protected,true))pages_out(409,['ok'=>false,'error'=>'That URL is reserved for a Bubba Hub system page.']);
+  $html=(string)($body['content_html']??'');if(strlen($html)>500000)pages_out(422,['ok'=>false,'error'=>'Page content is too large (maximum 500 KB).']);
+  $allowed='<p><br><h1><h2><h3><h4><strong><b><em><i><u><ul><ol><li><blockquote><a><hr><div><section><span>';
+  $html=strip_tags($html,$allowed);
+  $html=preg_replace_callback('/<a\\b([^>]*)>/i',static function(array $match): string {
+   if(!preg_match('/\\bhref\\s*=\\s*(?:"([^"]*)"|\\'([^\\']*)\\'|([^\\s>]+))/i',$match[1],$m))return '<a>';
+   $url=trim(html_entity_decode($m[1]??$m[2]??$m[3]??'',ENT_QUOTES|ENT_HTML5,'UTF-8'));
+   if($url===''||preg_match('/[\\x00-\\x20\\x7f]/',$url))return '<a>';
+   if(!preg_match('~^(https?://|mailto:|tel:|/(?!/)|#|\\?)~i',$url))return '<a>';
+   return '<a href="'.htmlspecialchars($url,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8').'">';
+  },$html)??'';
+  $html=preg_replace('/<(?!a\\b)([a-z][a-z0-9]*)\\b[^>]*>/i','<$1>',$html)??'';
+  $_SESSION['bh_page_preview'][$slug]=['title'=>$title,'slug'=>$slug,'description'=>$description,'content_html'=>$html,'meta_description'=>$meta,'status'=>'draft'];
+  pages_out(200,['ok'=>true,'csrf'=>$csrf,'preview_url'=>'/page.php?slug='.rawurlencode($slug).'&preview=1']);
+ }
  if(in_array($action,['archive','restore'],true)){
   $id=(int)($body['id']??0);if($id<1)pages_out(400,['ok'=>false,'error'=>'Invalid page ID.']);
   $status=$action==='archive'?'archived':'draft';
