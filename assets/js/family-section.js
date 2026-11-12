@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   saved:["Saved activities","Your family's saved favourites."],
   visited:["Visited Groups","Groups and activities your family has visited."],
   suggested:["Suggested groups & activities","Ideas selected using your family details and preferences."],
-  plans:["My Plans","Activities you have added to your family planner."],
+  plans:["My Plans","Your planned activities, shown as a simple list. Open My Planner for your weekly calendar."],
   messages:["My Messages","Your private questions and replies from Bubba Hub."]
  };
  const [title,intro]=config[key]||config.recent;
@@ -35,6 +35,15 @@ document.addEventListener("DOMContentLoaded",async()=>{
    const saved=new Set((hub.saved||[]).map(String)),planned=new Set((hub.planner||[]).map(p=>String(p.id)));
    rows=activities.map(a=>({a,score:(saved.has(String(a.id))?2:0)+(planned.has(String(a.id))?1:0)})).sort((a,b)=>b.score-a.score).slice(0,12);
   }
-  root.innerHTML=rows.length?rows.map(({a,meta})=>"<a class='hub-list-card' href='"+esc(typeof bhActivityUrl==="function"?bhActivityUrl(a):"/activity.html?id="+encodeURIComponent(a.id))+"'><div><span>"+esc(a.category||"Activity")+"</span><strong>"+esc(a.title)+"</strong><small>"+esc(meta||a.town||a.location||"")+"</small></div><b>→</b></a>").join(""):empty(key==="saved"?"No saved activities yet":key==="visited"?"No visited groups recorded":key==="recent"?"Nothing viewed yet":key==="plans"?"No plans yet":"No suggestions available","Explore the directory and your family activity will appear here.");
+  const activityCard=({a,meta})=>{
+   const location=[a.town||a.location||"",a.region||""].filter(Boolean).join(", ");
+   const age=Array.isArray(a.age_range)?a.age_range.join(", "):String(a.age_range||"");
+   const organiser=a.organiser_name||a.organiser||a.group_name||"";
+   const description=a.short_description||a.description||a.summary||"";
+   const href=typeof bhActivityUrl==="function"?bhActivityUrl(a):"/activity.html?id="+encodeURIComponent(a.id);
+   return "<article class='hub-list-card hub-activity-card'><div class='hub-activity-card-main'><span class='hub-activity-category'>"+esc(a.category||"Family activity")+"</span><strong>"+esc(a.title)+"</strong>"+(description?"<p>"+esc(description).slice(0,220)+"</p>":"") +"<small>"+esc([location,age,organiser].filter(Boolean).join(" · ")||meta||"View activity details")+"</small>"+(meta?"<small class='hub-activity-meta'>"+esc(meta)+"</small>":"")+"</div><a class='button button-soft' href='"+esc(href)+"'>View details →</a></article>";
+  };
+  root.innerHTML=rows.length?rows.map(activityCard).join(""):empty(key==="saved"?"No saved activities yet":key==="visited"?"No visited groups recorded":key==="recent"?"Nothing viewed yet":key==="plans"?"No plans yet":"No suggestions available","Explore the directory and your family activity will appear here.");
+  if(key==="plans")root.insertAdjacentHTML("beforeend","<p class='hub-section-footer'><a class='button button-primary' href='/planner.html'>Open My Planner →</a></p>");
  }catch(e){root.textContent=e.message||"Could not load this section.";}
 });
