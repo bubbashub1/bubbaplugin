@@ -5,8 +5,14 @@ header('Cache-Control: no-store');
 function bh_profile_response(int $status,array $data): never{http_response_code($status);echo json_encode($data,JSON_UNESCAPED_SLASHES);exit;}
 try{
  require __DIR__.'/db.php';
- $secure=(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off');
- if(session_status()!==PHP_SESSION_ACTIVE){session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);session_start();}
+ $secure=(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off')||((string)($_SERVER['HTTP_X_FORWARDED_PROTO']??'')==='https');
+ if(session_status()!==PHP_SESSION_ACTIVE){
+  ini_set('session.use_strict_mode','1');
+  ini_set('session.use_only_cookies','1');
+  session_name('BUBBAHUBSESSID');
+  session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);
+  session_start();
+ }
  if(empty($_SESSION['bh_user_id']))bh_profile_response(401,['ok'=>false,'message'=>'Please sign in to manage your profile.']);
  $db=bh_mysql();
  foreach(['ALTER TABLE bh_users ADD COLUMN first_name VARCHAR(80) NULL','ALTER TABLE bh_users ADD COLUMN last_name VARCHAR(80) NULL','ALTER TABLE bh_users ADD COLUMN phone VARCHAR(40) NULL','ALTER TABLE bh_users ADD COLUMN date_of_birth DATE NULL'] as $sql){try{$db->exec($sql);}catch(Throwable $ignored){}}
