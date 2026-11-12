@@ -16,7 +16,8 @@ try{
  $method=$_SERVER['REQUEST_METHOD']??'GET';
  if($method==='GET'){
   $table=$db->query("SHOW TABLES LIKE 'bh_pages'")->fetchColumn();
-  if(!$table)pages_out(200,['ok'=>true,'csrf'=>$csrf,'setup_required'=>true,'pages'=>[]]);
+  $revisionTable=$db->query("SHOW TABLES LIKE 'bh_page_revisions'")->fetchColumn();
+  if(!$table||!$revisionTable)pages_out(200,['ok'=>true,'csrf'=>$csrf,'setup_required'=>true,'pages'=>[]]);
  }
  if($method==='GET' && isset($_GET['id'])){
   $q=$db->prepare("SELECT id,title,slug,description,content_html,meta_description,status,created_at,updated_at FROM bh_pages WHERE id=? LIMIT 1");$q->execute([(int)$_GET['id']]);$page=$q->fetch();
