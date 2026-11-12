@@ -12,7 +12,7 @@
 <main class="bh-pages">
 <div class="admin-back"><a href="/admin/">← Admin dashboard</a></div>
 <div class="bh-pages-head"><div><span class="eyebrow">Website management</span><h1>Page Manager</h1><p>Create and manage ordinary Bubba Hub website pages.</p></div><button class="button button-primary" id="newPage" type="button">+ Add new page</button></div>
-<p class="bh-page-note">System pages such as Activities, Family Hub and Leader Dashboard are protected and are not editable here. New pages start as drafts.</p>
+<p class="bh-page-note">System pages such as Activities, Family Hub and Leader Dashboard are protected and are not editable here. New pages start as drafts.</p><div id="pageSetup" class="bh-page-note" hidden><strong>One-time setup needed.</strong> Create the Page Manager tables securely in the Bubba Hub database. <button class="button button-primary" id="setupPages" type="button">Set up Page Manager</button></div>
 <div class="bh-pages-toolbar"><input id="pageSearch" type="search" placeholder="Search pages by title or URL" aria-label="Search pages"><select id="pageFilter" aria-label="Filter pages"><option value="all">All pages</option><option value="published">Published</option><option value="draft">Drafts</option><option value="archived">Archived</option></select></div>
 <div class="bh-pages-table-wrap"><table class="bh-pages-table"><thead><tr><th>Page</th><th>URL</th><th>Status</th><th>Updated</th><th>Actions</th></tr></thead><tbody id="pageRows"><tr><td colspan="5">Loading pages…</td></tr></tbody></table></div>
 <section class="bh-page-editor" id="pageEditor" hidden>
