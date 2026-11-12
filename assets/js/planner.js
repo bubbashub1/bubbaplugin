@@ -14,7 +14,7 @@ window.bhInitPlanner = async function(root=document){
   const esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])));
   const formatTime=v=>window.bhFormatTime?window.bhFormatTime(v):String(v||"").slice(0,5);
   const today=new Date(),todayNum=((today.getDay()||7));
-  let csrf="",signedIn=false,adminOnly=false,items=[],currentView="week",plannerProfiles=[],activePlannerId="default",activePlannerFilters=null;
+  let csrf="",signedIn=false,adminOnly=false,items=[],currentView=(new URLSearchParams(location.search).get("view")==="list"?"list":"week"),plannerProfiles=[],activePlannerId="default",activePlannerFilters=null;
 
   const auth=await fetch("/api/auth.php?action=me",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}}).then(r=>r.json()).catch(()=>({ok:false,authenticated:false}));
   signedIn=!!auth.authenticated;adminOnly=!!auth.is_admin;csrf=auth.csrf||"";
@@ -206,7 +206,7 @@ window.bhInitPlanner = async function(root=document){
   }
 
   const viewControls=$("plannerViewControls");
-  if(viewControls)viewControls.innerHTML="<button type=\"button\" class=\"planner-view-button is-active\" data-view=\"week\">Weekly</button><button type=\"button\" class=\"planner-view-button\" data-view=\"list\">List</button>";
+  if(viewControls)viewControls.innerHTML="<button type=\"button\" class=\"planner-view-button "+(currentView==="week"?"is-active":"")+"\" data-view=\"week\">Weekly</button><button type=\"button\" class=\"planner-view-button "+(currentView==="list"?"is-active":"")+"\" data-view=\"list\">List</button>";
 
   controls.innerHTML=days.map(day=>"<label class='planner-day-toggle'><input type='checkbox' class='day-toggle' value='"+day.num+"'><span><b>"+day.short+"</b><small>"+day.name+"</small></span></label>").join("");
 
