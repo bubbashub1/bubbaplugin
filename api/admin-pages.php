@@ -44,8 +44,9 @@ try{
  if(strlen($html)>500000)pages_out(422,['ok'=>false,'error'=>'Page content is too large (maximum 500 KB).']);
  $allowed='<p><br><h1><h2><h3><h4><strong><b><em><i><u><ul><ol><li><blockquote><a><hr><div><section><span>';
  $html=strip_tags($html,$allowed);
- $html=preg_replace('/\s(on[a-z]+)\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i','',$html)??'';
- $html=preg_replace('/\s(href|src)\s*=\s*(["\'])\s*(javascript:|data:)[^"\']*\2/i','',$html)??'';
+ // Remove submitted attributes to prevent event handlers, unsafe URL schemes,
+ // injected styles and encoded-entity bypasses in user-authored HTML.
+ $html=preg_replace('/<([a-z][a-z0-9]*)\\b[^>]*>/i','<$1>',$html)??'';
  $db->beginTransaction();
  if($id>0){
   $oldQ=$db->prepare("SELECT * FROM bh_pages WHERE id=? FOR UPDATE");$oldQ->execute([$id]);$old=$oldQ->fetch();
