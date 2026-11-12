@@ -1,0 +1,65 @@
+name: Listing Checker PHP and security checks
+
+on:
+  push:
+    branches:
+      - feature/listing-health-checker
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  php-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+      - name: Lint Listing Checker PHP
+        run: |
+          set -eu
+          for file in \
+            api/admin-listing-checker-settings.php \
+            api/admin-listing-health.php \
+            api/admin-listing-review.php \
+            api/listing-checker-health-cron.php \
+            api/listing-checker-discovery-cron.php \
+            api/listing-checker-preflight.php
+          do
+            php -l "$file"
+          done
+      - name: Verify critical security guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "bh_admin_authenticated" api/admin-listing-checker-settings.php
+          grep -q "hash_equals" api/admin-listing-checker-settings.php
+          grep -q "HTTP_ORIGIN" api/admin-listing-checker-settings.php
+          grep -q "CONTENT_LENGTH" api/admin-listing-checker-settings.php
+          grep -q "bh_admin_authenticated" api/admin-listing-review.php
+          grep -q "hash_equals" api/admin-listing-review.php
+          grep -q "HTTP_ORIGIN" api/admin-listing-review.php
+          grep -q "CONTENT_LENGTH" api/admin-listing-review.php
+          grep -q "PHP_SAPI !== 'cli'" api/listing-checker-health-cron.php
+          grep -q "PHP_SAPI !== 'cli'" api/listing-checker-discovery-cron.php
+          grep -q "PHP_SAPI !== 'cli'" api/listing-checker-preflight.php
+          grep -q "GET_LOCK" api/listing-checker-health-cron.php
+          grep -q "GET_LOCK" api/listing-checker-discovery-cron.php
+          ! grep -q "CURLOPT_FOLLOWLOCATION=>true" api/listing-checker-discovery-cron.php
+          grep -q "2097152" api/listing-checker-discovery-cron.php
+          grep -q "next_check_at=DATE_ADD(NOW(), INTERVAL" api/listing-checker-health-cron.php
+          grep -q "Refresh an existing matching finding" api/listing-checker-health-cron.php
+          grep -q "stale_listing" api/listing-checker-health-cron.php
+          grep -q "health_enabled','0'" database/listing-checker-schema.sql
+          grep -q "discovery_enabled','0'" database/listing-checker-schema.sql
+          grep -q "get('health_enabled','0')" api/listing-checker-health-cron.php
+          grep -q "get('discovery_enabled','0')" api/listing-checker-discovery-cron.php
+          grep -q "columnsFor('bh_activity_schedules')" api/listing-checker-health-cron.php

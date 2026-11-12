@@ -60,3 +60,66 @@ Add these keys to the existing server-side `github-deploy-config.php` when ready
 Do **not** put database credentials in GitHub or any browser JavaScript.
 
 The schema deliberately creates only `bh_*` tables so the existing WordPress `wp_*` tables are left untouched while the standalone application is tested.
+
+
+## Listing Checker setup (PR #846)
+
+Before applying the migration, run the read-only environment preflight from the server CLI:
+
+```sh
+php /path/to/bubbaplugin/api/listing-checker-preflight.php
+```
+
+It checks the existing `bh_activities` source table, available listing columns, required PHP extensions, database connectivity, advisory-lock support and whether the checker tables already exist. It does not create tables or modify listings. A missing checker migration is reported as a warning so the environment can be checked before any SQL is applied.
+
+The Listing Checker admin settings and discovery-term editor use the standalone `bh_*` database. Before opening the settings page on a deployed environment, run the one-time migration against the Bubba Hub database:
+
+```sh
+mysql -u YOUR_DATABASE_USER -p YOUR_DATABASE_NAME < database/listing-checker-schema.sql
+```
+
+This creates checker configuration, editable discovery terms, run/queue tracking and review-finding tables. It does not modify activity, organiser or venue records. The admin page is available at `/admin/admin-listing-checker-settings.html`.
+
+The settings page stores the desired schedule (default every 4 hours, batch size 30, Europe/London) and discovery terms. **It does not itself start scheduled work**: the CLI workers and hosting cron entries must be implemented and configured before those saved schedules take effect.
+
+
+### Existing-listing CLI worker
+
+After applying the migration, the existing-listing batch worker can be invoked from a server-side cron (never expose it as a public URL):
+
+```sh
+php /path/to/bubbaplugin/api/listing-checker-health-cron.php
+```
+
+Configure the hosting cron to invoke it every four hours. It uses the saved enable flag, UK timezone/run-window/day settings, batch size and maximum runtime; it uses a MySQL advisory lock to prevent overlapping runs. Each run handles up to the configured batch size (default 30), then schedules each successfully checked listing for another check after the configured interval. New activity IDs are added automatically; repeated findings refresh the existing review item rather than creating duplicates. The configurable stale-age threshold (default 180 days) flags listings whose `updated_at` value is old. Findings are stored in the separate review table and the worker never updates live activity records. The worker exits safely with a migration-required message until the SQL migration has been applied.
+
+
+### Listing Checker review queue
+
+The admin review queue is available at `/admin/admin-listing-review.html`. It reads persisted findings from `bh_listing_check_findings` and allows an administrator to record a review status (new, follow-up, approved, rejected, confirmed issue or not an issue). These actions update only the finding's review metadata; they never publish, edit, remove or contact a listing. Source links are limited to HTTP(S).
+
+ 
+### New-listing discovery CLI worker
+
+The discovery worker is `api/listing-checker-discovery-cron.php`. Configure the hosting cron to invoke it on the same four-hour cadence as the health worker:
+
+```sh
+php /path/to/bubbaplugin/api/listing-checker-discovery-cron.php
+```
+
+It cycles through enabled search phrases and their selected Devon & Cornwall region scopes, respecting the saved batch, external-request and runtime limits. It currently uses Bing's public RSS search response (no paid API key). Search results are unverified leads only; they are stored with their source URL, search phrase, region scope and a deliberately cautious confidence score for an administrator to inspect in the review queue. Candidate URLs are normalized for comparison across all enabled search phrases, with common tracking parameters removed; the original destination URL is retained in the candidate evidence. Repeated candidates are not added again. The worker validates the final decoded destination after Bing redirect decoding and accepts only HTTP(S) URLs without embedded credentials. It never creates, edits, publishes or deletes directory listings.
+
+The discovery worker requires PHP cURL and SimpleXML. Both workers are CLI-only and must be configured as separate server cron commands. The four-hour setting is checked independently by each worker against its own last completed run.
+
+
+### Admin controls and security checks
+
+The Listing Checker settings page includes pause/resume controls for each worker, a manual-run request, and the latest 20 run summaries. A manual run is queued for the next eligible server cron invocation; the worker must be enabled, resumed and inside its allowed active-day/time window. It does not execute shell commands from the web request. The settings page displays whether each worker is enabled, paused or has a manual run queued. A manual request is cleared only after the worker has passed its initial setup and created a run record. Pause prevents the next worker invocation from starting; it does not interrupt a batch already in progress.
+
+The admin APIs require the existing authenticated Bubba Hub admin session and a per-session CSRF token. They reject cross-site requests when browser origin/fetch metadata is available, cap request body size, use prepared statements for user-supplied values, and return defensive response headers. Session cookies are HTTP-only, SameSite=Lax and Secure when HTTPS is detected. Review-queue source links are restricted to HTTP(S), and candidate text is HTML-escaped before display.
+
+Both worker scripts are CLI-only, use separate MySQL advisory locks to prevent overlapping copies, and never accept browser-supplied commands. The discovery HTTP client uses a fixed HTTPS search endpoint, verifies TLS, does not follow redirects, and caps response size. Search results remain untrusted evidence requiring admin verification.
+
+A GitHub Actions workflow at `.github/workflows/listing-checker-security.yml` runs PHP syntax lint on the five Listing Checker APIs/workers and checks that the critical authentication, CSRF, CLI-only and overlap-lock guards remain present.
+
+**Security validation still required before production:** review the workflow result, perform an authenticated/unauthenticated browser test, test CSRF and cross-origin rejection, verify admin session behaviour behind the live hosting proxy, and test database permissions and cron execution on staging. Static checks are not a penetration test.
