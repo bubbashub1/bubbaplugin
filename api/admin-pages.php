@@ -63,6 +63,8 @@ try{
   $title=trim((string)($body['title']??''));$slug=strtolower(trim((string)($body['slug']??'')));
   $description=trim((string)($body['description']??''));$meta=trim((string)($body['meta_description']??''));
   if($title===''||mb_strlen($title)>190)pages_out(422,['ok'=>false,'error'=>'Enter a page title before previewing.']);
+  if(mb_strlen($description)>500)pages_out(422,['ok'=>false,'error'=>'The short description must be 500 characters or fewer.']);
+  if(mb_strlen($meta)>300)pages_out(422,['ok'=>false,'error'=>'The Google description must be 300 characters or fewer.']);
   if(!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/',$slug)||strlen($slug)>190)pages_out(422,['ok'=>false,'error'=>'Enter a valid page URL before previewing.']);
   $protected=['index','directory','activities','venues','events','my-hub','planner','leader','account','admin','admin-login','page'];
   if(in_array($slug,$protected,true))pages_out(409,['ok'=>false,'error'=>'That URL is reserved for a Bubba Hub system page.']);
@@ -91,6 +93,8 @@ try{
  $id=(int)($body['id']??0);$title=trim((string)($body['title']??''));$slug=strtolower(trim((string)($body['slug']??'')));
  $description=trim((string)($body['description']??''));$meta=trim((string)($body['meta_description']??''));$status=(string)($body['status']??'draft');
  if($title===''||mb_strlen($title)>190)pages_out(422,['ok'=>false,'error'=>'Enter a page title (maximum 190 characters).']);
+ if(mb_strlen($description)>500)pages_out(422,['ok'=>false,'error'=>'The short description must be 500 characters or fewer.']);
+ if(mb_strlen($meta)>300)pages_out(422,['ok'=>false,'error'=>'The Google description must be 300 characters or fewer.']);
  if(!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/',$slug)||strlen($slug)>190)pages_out(422,['ok'=>false,'error'=>'Use a URL made from lowercase letters, numbers and hyphens.']);
  if(!in_array($status,['draft','published'],true))pages_out(422,['ok'=>false,'error'=>'Invalid publishing status.']);
  $protected=['index','directory','activities','venues','events','my-hub','planner','leader','account','admin','admin-login','page'];
