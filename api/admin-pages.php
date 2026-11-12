@@ -72,7 +72,7 @@ try{
   $allowed='<p><br><h1><h2><h3><h4><strong><b><em><i><u><ul><ol><li><blockquote><a><hr><div><section><span>';
   $html=strip_tags($html,$allowed);
   $html=preg_replace_callback('/<a\\b([^>]*)>/i',static function(array $match): string {
-   if(!preg_match('/\\bhref\\s*=\\s*(?:"([^"]*)"|\\'([^\\']*)\\'|([^\\s>]+))/i',$match[1],$m))return '<a>';
+   if(!preg_match("/\\bhref\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)'|([^\\s>]+))/i",$match[1],$m))return '<a>';
    $url=trim(html_entity_decode($m[1]??$m[2]??$m[3]??'',ENT_QUOTES|ENT_HTML5,'UTF-8'));
    if($url===''||preg_match('/[\\x00-\\x20\\x7f]/',$url))return '<a>';
    if(!preg_match('~^(https?://|mailto:|tel:|/(?!/)|#|\\?)~i',$url))return '<a>';
@@ -106,7 +106,7 @@ try{
  // Preserve safe link destinations while removing all other submitted attributes.
  // This blocks event handlers, inline styles and dangerous URL schemes.
  $html=preg_replace_callback('/<a\\b([^>]*)>/i',static function(array $match): string {
-  if(!preg_match('/\\bhref\\s*=\\s*(?:"([^"]*)"|\\'([^\\']*)\\'|([^\\s>]+))/i',$match[1],$hrefMatch)) return '<a>';
+  if(!preg_match("/\\bhref\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)'|([^\\s>]+))/i",$match[1],$m))return '<a>';
   $url=trim(html_entity_decode($hrefMatch[1]??$hrefMatch[2]??$hrefMatch[3]??'',ENT_QUOTES|ENT_HTML5,'UTF-8'));
   if($url===''||preg_match('/[\\x00-\\x20\\x7f]/',$url)) return '<a>';
   $safe=(bool)preg_match('~^(https?://|mailto:|tel:|/(?!/)|#|\\?)~i',$url);
