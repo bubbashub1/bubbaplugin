@@ -47,6 +47,6 @@ async function save(status){
 }
 $('pageForm').addEventListener('submit',e=>{e.preventDefault();save('draft');});
 $('publishPage').addEventListener('click',()=>{if($('pageForm').reportValidity())save('published');});
-$('previewPage').addEventListener('click',()=>{const slug=$('pageSlug').value.trim();if(!slug){message('Add a page URL first.',true);return;}window.open('/page.php?slug='+encodeURIComponent(slug),'_blank','noopener');});
+$('previewPage').addEventListener('click',()=>{const slug=$('pageSlug').value.trim();if(!slug){message('Add a page URL first.',true);return;}window.open('/page.php?slug='+encodeURIComponent(slug)+'&preview=1','_blank','noopener');});
 (async()=>{try{const auth=await fetch('/admin-auth.php?action=check',{credentials:'same-origin',cache:'no-store'});if(!auth.ok){location.href='/admin-login.html?next='+encodeURIComponent(location.pathname);return;}await load();}catch(e){$('pageRows').innerHTML='<tr><td colspan="5">Admin connection unavailable. Please sign in again.</td></tr>';}})();
 })();
