@@ -289,3 +289,54 @@ body.bh-subpage-v2 .hub-family-card :is(img,svg){max-width:100%}
     grid-template-columns:40px minmax(0,1fr) auto;gap:8px;
   }
 }
+
+
+/* Account polish pass: resilient widths, calmer spacing and consistent controls. */
+:is(body.bh-account-v2,body.bh-subpage-v2,body.bh-family-v3,body.bh-my-hub) :is(main,.app-shell,.account-page,.account-profile-layout,.account-dashboard-grid,.account-leader-grid,.admin-panel,.account-family-panel){
+  min-width:0;max-width:100%;box-sizing:border-box;
+}
+:is(body.bh-account-v2,body.bh-subpage-v2) .site-header,
+:is(body.bh-account-v2,body.bh-subpage-v2) .site-footer{min-width:0;}
+:is(body.bh-account-v2,body.bh-subpage-v2) .page-heading{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  min-width:0;box-sizing:border-box;
+}
+:is(body.bh-account-v2,body.bh-subpage-v2) .page-heading>div{min-width:0;}
+:is(body.bh-account-v2,body.bh-subpage-v2) .page-heading :is(h1,h2,p){max-width:100%;overflow-wrap:anywhere;}
+body.bh-account-v2 .account-dashboard-grid,
+body.bh-account-v2 .account-leader-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;
+}
+body.bh-account-v2 .account-dashboard-card,
+body.bh-account-v2 .account-leader-card{
+  min-width:0;max-width:100%;height:100%;box-sizing:border-box;
+  overflow-wrap:anywhere;
+}
+body.bh-account-v2 .account-dashboard-card :is(h3,p,a),
+body.bh-account-v2 .account-leader-card :is(h3,p,strong){min-width:0;overflow-wrap:anywhere;}
+body.bh-account-v2 .account-dashboard-card .card-link{display:inline-flex;align-items:center;gap:5px;margin-top:8px;}
+:is(body.bh-account-v2,body.bh-subpage-v2) :is(input,select,textarea,button){max-width:100%;box-sizing:border-box;}
+:is(body.bh-account-v2,body.bh-subpage-v2) :is(input,select,textarea):focus-visible,
+:is(body.bh-account-v2,body.bh-subpage-v2) a:focus-visible,
+:is(body.bh-account-v2,body.bh-subpage-v2) button:focus-visible{outline:3px solid rgba(15,118,110,.28);outline-offset:2px;}
+body.bh-subpage-v2 .account-family-panel .admin-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;min-width:0;}
+body.bh-subpage-v2 .account-family-panel .admin-panel-head>div:first-child{min-width:0;}
+body.bh-subpage-v2 .account-family-panel .hub-section-actions{display:flex;flex-wrap:wrap;gap:8px;}
+body.bh-subpage-v2 .hub-family-card :is(img,svg){display:block;max-width:100%;}
+body.bh-subpage-v2 .hub-family-card :is(button,a){max-width:100%;white-space:normal;overflow-wrap:anywhere;}
+@media(max-width:760px){
+  body.bh-account-v2 .account-dashboard-grid,
+  body.bh-account-v2 .account-leader-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+  :is(body.bh-account-v2,body.bh-subpage-v2) .page-heading{align-items:flex-start;flex-direction:column;}
+  body.bh-subpage-v2 .account-family-panel .admin-panel-head{flex-direction:column;}
+}
+@media(max-width:520px){
+  body.bh-account-v2 .account-dashboard-grid,
+  body.bh-account-v2 .account-leader-grid{grid-template-columns:minmax(0,1fr);}
+  body.bh-account-v2 .account-dashboard-card{padding:17px!important;}
+  body.bh-subpage-v2 .account-family-panel{padding:14px!important;}
+  body.bh-subpage-v2 .account-family-panel .hub-section-actions{width:100%;}
+  body.bh-subpage-v2 .account-family-panel .hub-section-actions .button{flex:1 1 110px;}
+  :is(body.bh-account-v2,body.bh-subpage-v2) .page-heading{gap:10px;}
+  :is(body.bh-account-v2,body.bh-subpage-v2) .page-heading .button{width:100%;text-align:center;}
+}
