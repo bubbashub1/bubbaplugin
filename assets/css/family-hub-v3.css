@@ -109,3 +109,12 @@ body.bh-subpage-v2 .account-page :is(.hub-family-list,.hub-empty,.account-family
 :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-list-search:focus{border-color:#0f766e;box-shadow:0 0 0 3px rgba(15,118,110,.12);outline:0}
 :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-list-count{font-size:12px;color:#668276}
 :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-list-results{min-width:0}
+
+
+/* My Hub section page height and breathing room before the back link. */
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main:has(#familySectionContent){min-height:calc(100vh - 210px);display:flex;flex-direction:column}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main:has(#familySectionContent) .hub-panel{flex:0 0 auto}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main:has(#familySectionContent)>p:last-child{margin:28px 0 8px!important;padding-top:8px}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-list-scroll-sentinel{height:2px;width:100%;pointer-events:none}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-list-load-more{display:block;margin:14px auto 4px}
+@media(max-width:850px){:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main:has(#familySectionContent){min-height:calc(100vh - 190px)}}
