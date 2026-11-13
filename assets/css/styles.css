@@ -34,12 +34,12 @@
    ========================================================================= */
 :root {
   /* Brand */
-  --bh-green:        #174b33;
-  --bh-green-dark:   #123e2b;
-  --bh-green-soft:   #c7ebd4;
-  --bh-green-pale:   #f5f7ed;
-  --bh-teal:         #0f8589;
-  --bh-teal-dark:    #086c70;   /* use for teal buttons: white text passes AA */
+  --bh-green:        #0f766e;
+  --bh-green-dark:   #115e59;
+  --bh-green-soft:   #d9eee9;
+  --bh-green-pale:   #f4f8f7;
+  --bh-teal:         #0f766e;
+  --bh-teal-dark:    #115e59;   /* use for teal buttons: white text passes AA */
   --bh-yellow:       #f6c84a;
   --bh-yellow-dark:  #eab83b;
   --bh-pink:         #ee6684;
@@ -53,18 +53,18 @@
   --bh-text:         #243027;
   --bh-muted:        #617261;
   --bh-white:        #fff;
-  --bh-bg:           #edf5ef;
-  --bh-sage:         #d7e7dc;
-  --bh-mist:         #e4f1e8;
+  --bh-bg:           #f4f8f7;
+  --bh-sage:         #e2f0ed;
+  --bh-mist:         #e8f3f1;
   --bh-soft:         #9fb7a5;
   --bh-accent:       #9cb8a4;
 
   /* Lines, shadows, radii, sizes */
-  --bh-border:       #c4d9cc;
+  --bh-border:       #d7e6e2;
   --bh-line:         rgba(18, 63, 49, .09);
   --bh-shadow:       0 8px 24px rgba(20, 68, 0, .08);
   --bh-shadow-lg:    0 18px 40px rgba(18, 63, 49, .12);
-  --bh-radius:       10px;
+  --bh-radius:       16px;
   --bh-radius-lg:    24px;
   --bh-max:          1200px;
 
@@ -7549,3 +7549,14 @@ body:not(.bh-admin):not(.bh-leader) .site-header .main-nav a:focus-visible{outli
     gap: clamp(12px, 2vw, 36px);
   }
 }
+
+
+/* Bubba Hub visual baseline: calm mint, teal and white across the site. */
+:root{--bh-page:#f4f8f7;--bh-surface:#fff;--bh-brand:#0f766e;--bh-brand-dark:#115e59;--bh-line:#d7e6e2;--bh-muted:#607a75;--bh-panel-radius:16px}
+body{background:var(--bh-page);color:#263b38}
+:where(.app-shell,.main-content,.admin-subpage-shell){color:#263b38}
+:where(.app-shell,.admin-subpage-shell) :where(.admin-panel,.account-panel,.subscription-card,.pricing-card,.feature-card,.support-card){background:#fff;border:1px solid var(--bh-line);border-radius:var(--bh-panel-radius);box-shadow:0 5px 18px rgba(17,94,89,.045)}
+:where(.app-shell,.admin-subpage-shell) :where(h1,h2,h3){color:#174e49}
+:where(.app-shell,.admin-subpage-shell) :where(input:not([type=checkbox]):not([type=radio]),select,textarea){border-color:#cbded9;border-radius:11px}
+:where(.app-shell,.admin-subpage-shell) :where(input,select,textarea):focus-visible{outline:3px solid rgba(15,118,110,.2);outline-offset:1px}
+@media(max-width:600px){.app-shell{width:min(100% - 20px,1400px)}:where(.app-shell,.admin-subpage-shell) :where(.admin-panel,.account-panel,.subscription-card,.pricing-card){border-radius:14px}}

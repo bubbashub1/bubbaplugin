@@ -141,3 +141,18 @@
 .bh-leader-v2 .bh-leader-portal-tools .bh-leader-tool:nth-child(2){background:#e1efe9}
 .bh-leader-v2 .bh-leader-portal-tools .bh-leader-tool:nth-child(3){background:#f9e8d7}
 .bh-leader-v2 .bh-leader-portal-tools .bh-leader-tool:nth-child(4){background:#e5ebfa}
+
+
+/* 2026 shared portal finish: remove competing pastel palettes and use the agreed Bubba Hub mint/teal system. */
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2){background:#f4f8f7;color:#263b38}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) :is(h1,h2,h3){color:#174e49}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) :is(.page-heading,.auth-hero,.bh-leader-hero){background:#e8f3f1;border:1px solid #d7e6e2;border-radius:18px;box-shadow:none;color:#174e49}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) :is(.page-heading,.auth-hero,.bh-leader-hero) :is(h1,p,.eyebrow){color:#174e49}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) .button-primary{background:#0f766e;border-color:#0f766e;color:#fff}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) .button-primary:hover{background:#115e59;border-color:#115e59;color:#fff}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) .button-soft{background:#e2f0ed;border-color:#d7e6e2;color:#115e59}
+:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) .button-soft:hover{background:#d3e9e4;border-color:#c6e0da;color:#115e59}
+.bh-account-v2 .account-dashboard-card,.bh-leader-v2 .bh-leader-stat,.bh-leader-v2 :is(.bh-leader-action,.bh-leader-tool){background:#fff!important;border:1px solid #d7e6e2;border-radius:16px;box-shadow:0 5px 18px rgba(17,94,89,.045)}
+.bh-account-v2 .account-dashboard-card:nth-child(n),.bh-leader-v2 .bh-leader-stat:nth-child(n),.bh-leader-v2 :is(.bh-leader-action,.bh-leader-tool):nth-child(n){background:#fff!important}
+.bh-account-v2 :is(.account-leader-card,.account-account-access),.bh-leader-v2 :is(.bh-leader-panel,.admin-panel){background:#fff;border:1px solid #d7e6e2;border-radius:16px;box-shadow:0 5px 18px rgba(17,94,89,.045)}
+@media(max-width:760px){:is(.bh-account-v2,.bh-auth-v2,.bh-leader-v2) :is(.page-heading,.auth-hero,.bh-leader-hero){border-radius:15px}}

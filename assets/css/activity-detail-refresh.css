@@ -212,3 +212,18 @@ body.bh-activity-v2 .activity-concept-two .activity-concept-support .activity-co
     width:100%!important;
   }
 }
+
+
+/* Activity detail: match the shared site surfaces and teal actions. */
+body.bh-activity-v2{background:#f4f8f7!important;color:#263b38!important}
+body.bh-activity-v2 .listing-page :is(.listing-card,.activity-reference-about,.activity-reference-schedule){border-color:#d7e6e2!important;border-radius:16px!important;box-shadow:0 5px 18px rgba(17,94,89,.045)!important}
+body.bh-activity-v2 .listing-page :is(h1,h2,h3){color:#174e49!important}
+body.bh-activity-v2 .listing-page :is(.button-primary,.btn-primary){background:#0f766e!important;border-color:#0f766e!important;color:#fff!important}
+body.bh-activity-v2 .listing-page :is(.button-primary,.btn-primary):hover{background:#115e59!important;border-color:#115e59!important}
+
+/* Match activity.html's actual app-shell / listing-hero markup. */
+body.bh-activity-v2 .app-shell{color:#263b38}
+body.bh-activity-v2 .app-shell :is(.listing-hero,.listing-summary,.listing-actions,.activity-reference-about,.activity-reference-schedule){border-color:#d7e6e2;border-radius:16px}
+body.bh-activity-v2 .app-shell :is(h1,h2,h3){color:#174e49}
+body.bh-activity-v2 .app-shell :is(.button-primary,.btn-primary,.activity-book-button){background:#0f766e;border-color:#0f766e;color:#fff}
+body.bh-activity-v2 .app-shell :is(.button-primary,.btn-primary,.activity-book-button):hover{background:#115e59;border-color:#115e59}
