@@ -27,7 +27,7 @@
 <div class="account-profile-grid">
 <label>First name<input name="first_name" type="text" autocomplete="given-name" maxlength="80" placeholder="First name"></label>
 <label>Last name<input name="last_name" type="text" autocomplete="family-name" maxlength="80" placeholder="Last name"></label>
-<label>Date of birth<input name="date_of_birth" type="date" autocomplete="bday"></label>
+<label>Date of birth<input name="date_of_birth" type="text" inputmode="numeric" autocomplete="bday" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12][0-9]|3[01])/(?:0[1-9]|1[0-2])/[0-9]{4}" maxlength="10" aria-describedby="dobFormatHint"><small id="dobFormatHint" class="bh-date-hint">Enter your date of birth as DD/MM/YYYY</small></label>
 </div>
 <div class="profile-address-section">
 <div class="profile-address-heading"><span class="eyebrow">Billing &amp; bookings</span><h3>Home address</h3><p>We’ll use this address for bookings, invoices and billing when needed. It is kept private.</p></div>
