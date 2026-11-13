@@ -17,13 +17,15 @@ function filteredPages(){
  const q=$('pageSearch').value.trim().toLowerCase(), status=$('pageFilter').value;
  return pages.filter(p=>(status==='all'||p.status===status)&&(!q||(p.title+' '+p.slug).toLowerCase().includes(q)));
 }
+function pageDepth(page){let depth=0,parent=page.parent_id,seen=new Set();while(parent&&!seen.has(Number(parent))){seen.add(Number(parent));const found=pages.find(x=>Number(x.id)===Number(parent));if(!found)break;depth++;parent=found.parent_id;}return Math.min(depth,8);}
 function render(){
- const rows=filteredPages();
- $('pageRows').innerHTML=rows.length?rows.map(p=>'<tr><td><strong>'+escapeHtml(p.title)+'</strong></td><td>/content/'+encodeURIComponent(p.slug)+'/</td><td><span class="bh-page-status '+escapeHtml(p.status)+'">'+escapeHtml(p.status)+'</span></td><td>'+escapeHtml(p.updated_at||'—')+'</td><td><div class="bh-page-actions"><button type="button" data-edit="'+p.id+'">Edit</button>'+(p.status==='archived'?'<button type="button" data-restore="'+p.id+'">Restore</button>':'<button type="button" data-archive="'+p.id+'">Archive</button>')+'</div></td></tr>').join(''):'<tr><td colspan="5">No pages match this filter.</td></tr>';
+ const visible=new Set(filteredPages().map(p=>Number(p.id))),ordered=[];const walk=(parentId=null)=>{pages.filter(p=>(p.parent_id===null||p.parent_id===''?null:Number(p.parent_id))===parentId).sort((a,b)=>a.title.localeCompare(b.title)).forEach(p=>{ordered.push(p);walk(Number(p.id));});};walk(null);const rows=ordered.filter(p=>visible.has(Number(p.id)));
+ $('pageRows').innerHTML=rows.length?rows.map(p=>'<tr class="bh-page-tree-row"><td><span class="bh-page-parent">'+(pageDepth(p)?'↳ '.repeat(pageDepth(p)):'')+'</span><strong>'+escapeHtml(p.title)+'</strong></td><td>/content/'+encodeURIComponent(p.slug)+'/</td><td><span class="bh-page-status '+escapeHtml(p.status)+'">'+escapeHtml(p.status)+'</span></td><td>'+escapeHtml(p.updated_at||'—')+'</td><td><div class="bh-page-actions"><button type="button" data-edit="'+p.id+'">Edit</button>'+(p.status==='archived'?'<button type="button" data-restore="'+p.id+'">Restore</button>':'<button type="button" data-archive="'+p.id+'">Archive</button>')+'</div></td></tr>').join(''):'<tr><td colspan="5">No pages match this filter.</td></tr>';
 }
 async function load(){ $('pageRows').innerHTML='<tr><td colspan="5">Loading pages…</td></tr>';try{const d=await request();if(d.setup_required){$('pageSetup').hidden=false;$('pageRows').innerHTML='<tr><td colspan="5">Complete the one-time setup to start managing pages.</td></tr>';return;}$('pageSetup').hidden=true;pages=d.pages||[];render();}catch(e){if(e.message==='admin_login_required'||e.message==='admin_session_expired'){location.href='/admin-login.html?next='+encodeURIComponent(location.pathname);return;}$('pageRows').innerHTML='<tr><td colspan="5">'+escapeHtml(e.message)+'</td></tr>';}}
+function fillParentOptions(selected=null){const select=$('pageParent');select.innerHTML='<option value="">No parent — top level</option>'+pages.filter(p=>p.status!=='archived'&&Number(p.id)!==Number(currentId)).map(p=>'<option value="'+p.id+'">'+escapeHtml(p.title)+'</option>').join('');select.value=selected?String(selected):'';}
 function openEditor(page=null){
- currentId=page?Number(page.id):null;$('pageForm').reset();delete $('pageSlug').dataset.edited;$('pageId').value=page?.id||'';$('pageTitle').value=page?.title||'';$('pageSlug').value=page?.slug||'';$('pageDescription').value=page?.description||'';$('pageContent').value=page?.content_html||'';$('pageMeta').value=page?.meta_description||'';$('editorHeading').textContent=page?'Edit page':'Add a page';$('saveDraft').textContent=page?'Save changes':'Save draft';$('pageEditor').hidden=false;message('');$('pageEditor').scrollIntoView({behavior:'smooth',block:'start'});
+ currentId=page?Number(page.id):null;$('pageForm').reset();delete $('pageSlug').dataset.edited;$('pageId').value=page?.id||'';$('pageTitle').value=page?.title||'';$('pageSlug').value=page?.slug||'';$('pageDescription').value=page?.description||'';$('pageContent').value=page?.content_html||'';$('pageMeta').value=page?.meta_description||'';fillParentOptions(page?.parent_id||null);$('editorHeading').textContent=page?'Edit page':'Add a page';$('saveDraft').textContent=page?'Save changes':'Save draft';$('pageEditor').hidden=false;message('');$('pageEditor').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function slugify(value){return value.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,190);}
 $('newPage').addEventListener('click',()=>openEditor());
@@ -41,7 +43,7 @@ $('pageRows').addEventListener('click',async e=>{
  }catch(err){alert(err.message);}
 });
 async function save(status){
- const body={action:'save',id:currentId,title:$('pageTitle').value.trim(),slug:$('pageSlug').value.trim(),description:$('pageDescription').value,content_html:$('pageContent').value,meta_description:$('pageMeta').value,status,csrf};
+ const body={action:'save',id:currentId,parent_id:$('pageParent').value||null,title:$('pageTitle').value.trim(),slug:$('pageSlug').value.trim(),description:$('pageDescription').value,content_html:$('pageContent').value,meta_description:$('pageMeta').value,status,csrf};
  message('Saving…');
  try{const d=await request('POST',body);currentId=d.page.id;$('pageId').value=currentId;$('editorHeading').textContent='Edit page';message(status==='published'?'Page published.':'Draft saved.');await load();}
  catch(e){message(e.message,true);}

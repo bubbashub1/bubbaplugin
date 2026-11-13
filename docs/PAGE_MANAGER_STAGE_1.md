@@ -30,3 +30,7 @@ The `/content/{slug}/` rewrite must appear before the generic root-level activit
 - Uses prepared SQL statements and validates slugs/status.
 - Sanitises submitted HTML and rejects reserved system slugs.
 - Keeps revisions before updates; archive is reversible.
+
+
+## Parent pages and folder-style organisation
+The Page Manager supports a page hierarchy: choose an optional parent page in the editor, or leave a page at the top level. Parent pages remain ordinary published pages and automatically list their published child pages under an “Explore this section” heading. The admin list indents child pages to show the hierarchy. Archived pages cannot be selected as parents; a page cannot be assigned to itself or one of its descendants. Public child links use the `/content/{slug}/` namespace.
