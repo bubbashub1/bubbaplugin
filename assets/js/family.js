@@ -34,6 +34,7 @@ function modal(title,type,item={}){
   e.preventDefault();const p=Object.fromEntries(new FormData(form));delete p.avatar;p.action=type==="child"?"save_child":"save_bump";if(item.id)p.id=item.id;p.csrf=csrf;
   const m=form.querySelector("[data-msg]");
   try{
+   if(type==="child")p.date_of_birth=toIsoDate(p.date_of_birth);else p.due_date=toIsoDate(p.due_date);
    const r=await fetch("../api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(p)});
    const j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||j.error||"Could not save.");
    if(type==="child"&&file?.files?.[0]){
