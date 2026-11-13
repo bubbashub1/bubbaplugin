@@ -303,3 +303,12 @@ body.bh-directory:not(.bh-calendar-page) #bhTermTimeQuick{position:static!import
     font-size:inherit!important;line-height:inherit!important;margin:0!important;
   }
 }
+
+
+/* Directory: clear filter controls and calm, consistent listing cards. */
+body.bh-directory{background:#f4f8f7;color:#263b38}
+body.bh-directory :is(h1,h2,h3){color:#174e49}
+body.bh-directory :is(.listing-card,.activity-card,.directory-card,.filter-panel,.directory-filter-panel){background:#fff;border-color:#d7e6e2;border-radius:15px;box-shadow:0 4px 15px rgba(17,94,89,.04)}
+body.bh-directory :is(.button-primary,.btn-primary,.directory-search-button){background:#0f766e;border-color:#0f766e;color:#fff}
+body.bh-directory :is(.button-primary,.btn-primary,.directory-search-button):hover{background:#115e59;border-color:#115e59;color:#fff}
+body.bh-directory :is(input,select){border-color:#cbded9;border-radius:11px}
