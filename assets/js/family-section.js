@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const activityCard=({a,meta})=>{
    const location=[a.town||a.location||a.venue_town||"",a.region||""].filter(Boolean).join(", ");
    const age=Array.isArray(a.age_range)?a.age_range.join(", "):String(a.age_range||a.age_group||"");
-   const organiser=a.organiser_name||a.organiser||a.group_name||"";
+   const organiser=a.organiser_name||a.organisation_name||a.organiser||a.group_name||"";
    const description=truncate(a.short_description||a.description||a.summary||"");
    const photo=a.image_url||a.image||a.photo_url||a.photo||a.cover_image||a.image_path||placeholder;
    const href=typeof bhActivityUrl==="function"?bhActivityUrl(a):"/activity.html?id="+encodeURIComponent(a.id);
