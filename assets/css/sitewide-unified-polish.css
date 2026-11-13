@@ -32,3 +32,11 @@ body:has(.bh-app-nav){padding-bottom:88px}
 .bh-footer-extra a{color:#175d46;font-weight:700}
 @media(min-width:1024px){.bh-app-nav{bottom:20px;width:min(560px,calc(100% - 32px))}}
 @media print{.bh-app-nav{display:none!important}body:has(.bh-app-nav){padding-bottom:0}}
+
+
+/* Sitewide visual consistency: agreed Bubba Hub mint and teal. */
+:root{--bh-site-teal:#0f766e;--bh-site-teal-dark:#115e59}
+body:not(.bh-home){background:#f4f8f7}
+body :is(.button-primary,.btn-primary){background:#0f766e;border-color:#0f766e;color:#fff}
+body :is(.button-primary,.btn-primary):hover{background:#115e59;border-color:#115e59;color:#fff}
+body :is(.admin-panel,.calendar-panel,.feature-card,.support-card){border-color:#d7e6e2}
