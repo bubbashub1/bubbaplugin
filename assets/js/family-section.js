@@ -15,6 +15,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
  const root=document.getElementById("familySectionContent");
  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
  const empty=(heading,body)=>"<div class='hub-empty'><strong>"+heading+"</strong><p>"+body+"</p><a class='button button-soft' href='/directory.html'>Find activities</a></div>";
+ const plainText=value=>{const parsed=new DOMParser().parseFromString(String(value??""),"text/html");return (parsed.body.textContent||"").replace(/!\[([^\]]*)\]\([^)]*\)/g,"$1").replace(/\[([^\]]+)\]\([^)]*\)/g,"$1").replace(/^\s{0,3}#{1,6}\s*/gm,"").replace(/[*_~]/g,"").replace(/\s+/g," ").trim();};
+ const truncate=(value,max=150)=>{const valueText=plainText(value);return valueText.length>max?valueText.slice(0,max).trimEnd()+"…":valueText;};
+ const placeholder="data:image/svg+xml;charset=UTF-8,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'><rect width='400' height='300' fill='#e8f3f1'/><circle cx='200' cy='112' r='48' fill='#c5e2dc'/><path d='M88 260c18-62 59-91 112-91s94 29 112 91' fill='#b5d8d0'/><path d='M178 111h44M200 89v44' stroke='#0f766e' stroke-width='9' stroke-linecap='round'/></svg>");
  try{
   const auth=await fetch("/api/auth.php?action=me",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}).then(r=>r.json());
   if(!auth.authenticated){root.innerHTML=empty("Please sign in","Sign in to see your family activity.");return;}
@@ -36,12 +39,14 @@ document.addEventListener("DOMContentLoaded",async()=>{
    rows=activities.map(a=>({a,score:(saved.has(String(a.id))?2:0)+(planned.has(String(a.id))?1:0)})).sort((a,b)=>b.score-a.score).slice(0,12);
   }
   const activityCard=({a,meta})=>{
-   const location=[a.town||a.location||"",a.region||""].filter(Boolean).join(", ");
-   const age=Array.isArray(a.age_range)?a.age_range.join(", "):String(a.age_range||"");
-   const organiser=a.organiser_name||a.organiser||a.group_name||"";
-   const description=a.short_description||a.description||a.summary||"";
+   const location=[a.town||a.location||a.venue_town||"",a.region||""].filter(Boolean).join(", ");
+   const age=Array.isArray(a.age_range)?a.age_range.join(", "):String(a.age_range||a.age_group||"");
+   const organiser=a.organiser_name||a.organisation_name||a.organiser||a.group_name||"";
+   const description=truncate(a.short_description||a.description||a.summary||"");
+   const photo=a.image_url||a.image||a.photo_url||a.photo||a.cover_image||a.image_path||placeholder;
    const href=typeof bhActivityUrl==="function"?bhActivityUrl(a):"/activity.html?id="+encodeURIComponent(a.id);
-   return "<article class='hub-list-card hub-activity-card'><div class='hub-activity-card-main'><span class='hub-activity-category'>"+esc(a.category||"Family activity")+"</span><strong>"+esc(a.title)+"</strong>"+(description?"<p>"+esc(description).slice(0,220)+"</p>":"") +"<small>"+esc([location,age,organiser].filter(Boolean).join(" · ")||meta||"View activity details")+"</small>"+(meta?"<small class='hub-activity-meta'>"+esc(meta)+"</small>":"")+"</div><a class='button button-soft' href='"+esc(href)+"'>View details →</a></article>";
+   const details=(location?"<span>⌖ "+esc(location)+"</span>":"")+(age?"<span>♡ "+esc(age)+"</span>":"")+(organiser?"<span>◉ "+esc(organiser)+"</span>":"");
+   return "<article class='hub-list-card hub-activity-card'><a class='hub-activity-thumb' href='"+esc(href)+"' tabindex='-1' aria-hidden='true'><img src='"+esc(photo)+"' alt='' loading='lazy'></a><div class='hub-activity-card-main'><span class='hub-activity-category'>"+esc(a.category||"Family activity")+"</span><strong>"+esc(a.title||"Family activity")+"</strong>"+(description?"<p>"+esc(description)+"</p>":"") +"<div class='hub-activity-details'>"+(details||"<span>⌖ Devon &amp; Cornwall</span>")+"</div>"+(meta?"<small class='hub-activity-meta'>"+esc(meta)+"</small>":"")+"</div><a class='button button-soft' href='"+esc(href)+"'>View details →</a></article>";
   };
   const emptyMessage=key==="saved"?"No saved activities yet":key==="visited"?"No visited groups recorded":key==="recent"?"Nothing viewed yet":key==="plans"?"No plans yet":"No suggestions available";
   const searchable=["saved","visited","recent","suggested","plans"].includes(key);
