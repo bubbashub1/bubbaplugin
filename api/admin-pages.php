@@ -20,12 +20,12 @@ try{
   if(!$table||!$revisionTable)pages_out(200,['ok'=>true,'csrf'=>$csrf,'setup_required'=>true,'pages'=>[]]);
  }
  if($method==='GET' && isset($_GET['id'])){
-  $q=$db->prepare("SELECT id,title,slug,description,content_html,meta_description,status,created_at,updated_at FROM bh_pages WHERE id=? LIMIT 1");$q->execute([(int)$_GET['id']]);$page=$q->fetch();
+  $q=$db->prepare("SELECT id,title,slug,parent_id,description,content_html,meta_description,status,created_at,updated_at FROM bh_pages WHERE id=? LIMIT 1");$q->execute([(int)$_GET['id']]);$page=$q->fetch();
   if(!$page)pages_out(404,['ok'=>false,'error'=>'Page not found.']);
   pages_out(200,['ok'=>true,'csrf'=>$csrf,'page'=>$page]);
  }
  if($method==='GET'){
-  $rows=$db->query("SELECT id,title,slug,status,updated_at FROM bh_pages ORDER BY updated_at DESC,id DESC")->fetchAll();
+  $rows=$db->query("SELECT id,title,slug,parent_id,status,updated_at FROM bh_pages ORDER BY updated_at DESC,id DESC")->fetchAll();
   pages_out(200,['ok'=>true,'csrf'=>$csrf,'pages'=>$rows]);
  }
  if($method!=='POST')pages_out(405,['ok'=>false,'error'=>'Method not allowed.']);
@@ -44,6 +44,8 @@ try{
    UNIQUE KEY uq_bh_pages_slug (slug),
    KEY idx_bh_pages_status_updated (status,updated_at)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+  $pageColumns=$db->query("SHOW COLUMNS FROM bh_pages LIKE 'parent_id'")->fetchColumn();
+  if(!$pageColumns){$db->exec("ALTER TABLE bh_pages ADD COLUMN parent_id BIGINT UNSIGNED NULL AFTER slug, ADD KEY idx_bh_pages_parent (parent_id)");}
   $db->exec("CREATE TABLE IF NOT EXISTS bh_page_revisions (
    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
    page_id BIGINT UNSIGNED NOT NULL,
@@ -91,12 +93,13 @@ try{
  }
  if($action!=='save')pages_out(400,['ok'=>false,'error'=>'Unknown action.']);
  $id=(int)($body['id']??0);$title=trim((string)($body['title']??''));$slug=strtolower(trim((string)($body['slug']??'')));
- $description=trim((string)($body['description']??''));$meta=trim((string)($body['meta_description']??''));$status=(string)($body['status']??'draft');
+ $description=trim((string)($body['description']??''));$meta=trim((string)($body['meta_description']??''));$status=(string)($body['status']??'draft');$parentId=isset($body['parent_id'])&&$body['parent_id']!==''?(int)$body['parent_id']:null;
  if($title===''||mb_strlen($title)>190)pages_out(422,['ok'=>false,'error'=>'Enter a page title (maximum 190 characters).']);
  if(mb_strlen($description)>500)pages_out(422,['ok'=>false,'error'=>'The short description must be 500 characters or fewer.']);
  if(mb_strlen($meta)>300)pages_out(422,['ok'=>false,'error'=>'The Google description must be 300 characters or fewer.']);
  if(!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/',$slug)||strlen($slug)>190)pages_out(422,['ok'=>false,'error'=>'Use a URL made from lowercase letters, numbers and hyphens.']);
  if(!in_array($status,['draft','published'],true))pages_out(422,['ok'=>false,'error'=>'Invalid publishing status.']);
+ if($parentId!==null){if($parentId<1||$parentId===$id)pages_out(422,['ok'=>false,'error'=>'Choose a valid parent page.']);$parentQ=$db->prepare("SELECT id FROM bh_pages WHERE id=? AND status<>'archived' LIMIT 1");$parentQ->execute([$parentId]);if(!$parentQ->fetch())pages_out(422,['ok'=>false,'error'=>'The selected parent page is unavailable.']);$ancestor=$parentId;$seen=[];while($ancestor){if($ancestor===$id)pages_out(422,['ok'=>false,'error'=>'A page cannot be placed inside one of its own child pages.']);if(isset($seen[$ancestor]))pages_out(409,['ok'=>false,'error'=>'The existing page hierarchy contains a loop.']);$seen[$ancestor]=true;$nextQ=$db->prepare("SELECT parent_id FROM bh_pages WHERE id=? LIMIT 1");$nextQ->execute([$ancestor]);$next=$nextQ->fetchColumn();$ancestor=$next===false||$next===null?null:(int)$next;}}
  $protected=['index','directory','activities','venues','events','my-hub','planner','leader','account','admin','admin-login','page'];
  if(in_array($slug,$protected,true))pages_out(409,['ok'=>false,'error'=>'That URL is reserved for a Bubba Hub system page. Choose another URL.']);
  $html=(string)($body['content_html']??'');
@@ -120,11 +123,11 @@ try{
   if(!$old){$db->rollBack();pages_out(404,['ok'=>false,'error'=>'Page not found.']);}
   $rev=$db->prepare("INSERT INTO bh_page_revisions (page_id,title,slug,description,content_html,meta_description,status) VALUES (?,?,?,?,?,?,?)");
   $rev->execute([$id,$old['title'],$old['slug'],$old['description'],$old['content_html'],$old['meta_description'],$old['status']]);
-  $q=$db->prepare("UPDATE bh_pages SET title=?,slug=?,description=?,content_html=?,meta_description=?,status=?,updated_at=NOW() WHERE id=?");
-  $q->execute([$title,$slug,$description,$html,$meta,$status,$id]);
+  $q=$db->prepare("UPDATE bh_pages SET title=?,slug=?,parent_id=?,description=?,content_html=?,meta_description=?,status=?,updated_at=NOW() WHERE id=?");
+  $q->execute([$title,$slug,$parentId,$description,$html,$meta,$status,$id]);
  }else{
-  $q=$db->prepare("INSERT INTO bh_pages (title,slug,description,content_html,meta_description,status) VALUES (?,?,?,?,?,?)");
-  $q->execute([$title,$slug,$description,$html,$meta,$status]);$id=(int)$db->lastInsertId();
+  $q=$db->prepare("INSERT INTO bh_pages (title,slug,parent_id,description,content_html,meta_description,status) VALUES (?,?,?,?,?,?,?)");
+  $q->execute([$title,$slug,$parentId,$description,$html,$meta,$status]);$id=(int)$db->lastInsertId();
  }
  $db->commit();
  $q=$db->prepare("SELECT id,title,slug,description,content_html,meta_description,status,created_at,updated_at FROM bh_pages WHERE id=?");$q->execute([$id]);
