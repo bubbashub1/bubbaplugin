@@ -58,7 +58,12 @@ document.addEventListener("DOMContentLoaded",async()=>{
     shown+=next.length;
     count.textContent=filteredRows.length?(shown+" of "+filteredRows.length+" shown"):"";
     if(shown<filteredRows.length){
-     if(!sentinel.isConnected)results.append(sentinel);
+     if("IntersectionObserver" in window){
+      if(!sentinel.isConnected)results.append(sentinel);
+      if(observer)observer.observe(sentinel);
+     }else{
+      const more=document.createElement("button");more.type="button";more.className="button button-soft hub-list-load-more";more.textContent="Load more";more.addEventListener("click",()=>{more.remove();loadMore();});results.append(more);
+     }
     }else sentinel.remove();
    };
    const render=()=>{
@@ -74,8 +79,6 @@ document.addEventListener("DOMContentLoaded",async()=>{
     if(sentinel.isConnected&&"IntersectionObserver" in window){
      observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting))loadMore();},{rootMargin:"240px 0px"});
      observer.observe(sentinel);
-    }else if(sentinel.isConnected){
-     const more=document.createElement("button");more.type="button";more.className="button button-soft hub-list-load-more";more.textContent="Load more";more.addEventListener("click",()=>{more.remove();loadMore();});sentinel.replaceWith(more);
     }
    };
    search.addEventListener("input",render);render();
