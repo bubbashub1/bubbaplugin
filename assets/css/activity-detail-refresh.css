@@ -220,3 +220,10 @@ body.bh-activity-v2 .listing-page :is(.listing-card,.activity-reference-about,.a
 body.bh-activity-v2 .listing-page :is(h1,h2,h3){color:#174e49!important}
 body.bh-activity-v2 .listing-page :is(.button-primary,.btn-primary){background:#0f766e!important;border-color:#0f766e!important;color:#fff!important}
 body.bh-activity-v2 .listing-page :is(.button-primary,.btn-primary):hover{background:#115e59!important;border-color:#115e59!important}
+
+/* Match activity.html's actual app-shell / listing-hero markup. */
+body.bh-activity-v2 .app-shell{color:#263b38}
+body.bh-activity-v2 .app-shell :is(.listing-hero,.listing-summary,.listing-actions,.activity-reference-about,.activity-reference-schedule){border-color:#d7e6e2;border-radius:16px}
+body.bh-activity-v2 .app-shell :is(h1,h2,h3){color:#174e49}
+body.bh-activity-v2 .app-shell :is(.button-primary,.btn-primary,.activity-book-button){background:#0f766e;border-color:#0f766e;color:#fff}
+body.bh-activity-v2 .app-shell :is(.button-primary,.btn-primary,.activity-book-button):hover{background:#115e59;border-color:#115e59}
