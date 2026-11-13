@@ -225,3 +225,67 @@ body.bh-subpage-v2 .school-tracker small,body.bh-subpage-v2 .pregnancy-tracker s
 body.bh-subpage-v2 .pregnancy-tracker .pregnancy-due{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 body.bh-subpage-v2 .pregnancy-tracker .pregnancy-antenatal{display:flex;flex-direction:column;gap:5px;padding-top:10px;border-top:1px solid #e0ece8;font-size:13px}
 @media(max-width:560px){body.bh-subpage-v2 .school-tracker .school-tracker-row{align-items:flex-start;flex-direction:column;gap:4px}body.bh-subpage-v2 .school-tracker,body.bh-subpage-v2 .pregnancy-tracker{padding:12px}}
+
+
+/* Contain thumbnails and text inside every My Hub / account family listing. */
+body.bh-subpage-v2 :is(.app-shell,.account-page,.account-profile-layout,.account-family-panel,#familySectionContent,.hub-list-results,.hub-family-list,.hub-family-card){
+  min-width:0;max-width:100%;box-sizing:border-box;
+}
+body.bh-subpage-v2 #familySectionContent,
+body.bh-subpage-v2 #familySectionContent .hub-list-results{width:100%;overflow-x:clip}
+body.bh-subpage-v2 #familySectionContent .hub-activity-card{
+  min-width:0;max-width:100%;width:100%;box-sizing:border-box;
+  grid-template-columns:minmax(0,116px) minmax(0,1fr) auto;
+  overflow:hidden;
+}
+body.bh-subpage-v2 #familySectionContent .hub-activity-thumb{
+  min-width:0;max-width:100%;width:100%;height:auto;aspect-ratio:4/3;
+  overflow:hidden;box-sizing:border-box;
+}
+body.bh-subpage-v2 #familySectionContent .hub-activity-thumb img{
+  display:block;width:100%;height:100%;max-width:100%;min-width:0;
+  object-fit:cover;object-position:center;
+}
+body.bh-subpage-v2 #familySectionContent .hub-activity-card-main,
+body.bh-subpage-v2 #familySectionContent .hub-activity-card-main>*,
+body.bh-subpage-v2 #familySectionContent .hub-activity-details{
+  min-width:0;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;word-break:normal;
+}
+body.bh-subpage-v2 #familySectionContent .hub-activity-card-main>strong{
+  overflow-wrap:anywhere;word-break:normal;
+}
+body.bh-subpage-v2 .hub-family-card,
+body.bh-subpage-v2 .hub-family-card-heading,
+body.bh-subpage-v2 .hub-family-main,
+body.bh-subpage-v2 .family-tracker,
+body.bh-subpage-v2 .school-tracker,
+body.bh-subpage-v2 .pregnancy-tracker{
+  min-width:0;max-width:100%;box-sizing:border-box;
+}
+body.bh-subpage-v2 .hub-family-main,
+body.bh-subpage-v2 .hub-family-main>*,
+body.bh-subpage-v2 .family-tracker,
+body.bh-subpage-v2 .school-tracker,
+body.bh-subpage-v2 .pregnancy-tracker{
+  overflow-wrap:anywhere;
+}
+body.bh-subpage-v2 .hub-family-card :is(img,svg){max-width:100%}
+@media(max-width:700px){
+  body.bh-subpage-v2 #familySectionContent .hub-activity-card{
+    grid-template-columns:minmax(0,88px) minmax(0,1fr);
+    gap:10px;
+  }
+  body.bh-subpage-v2 #familySectionContent .hub-activity-thumb{width:100%;max-width:88px}
+  body.bh-subpage-v2 #familySectionContent .hub-activity-card>.button{
+    max-width:100%;white-space:normal;overflow-wrap:anywhere;
+  }
+}
+@media(max-width:420px){
+  body.bh-subpage-v2 #familySectionContent .hub-activity-card{
+    grid-template-columns:minmax(0,76px) minmax(0,1fr);gap:8px;
+  }
+  body.bh-subpage-v2 #familySectionContent .hub-activity-thumb{max-width:76px}
+  body.bh-subpage-v2 .hub-family-card-heading{
+    grid-template-columns:40px minmax(0,1fr) auto;gap:8px;
+  }
+}
