@@ -312,3 +312,9 @@ body.bh-directory :is(.listing-card,.activity-card,.directory-card,.filter-panel
 body.bh-directory :is(.button-primary,.btn-primary,.directory-search-button){background:#0f766e;border-color:#0f766e;color:#fff}
 body.bh-directory :is(.button-primary,.btn-primary,.directory-search-button):hover{background:#115e59;border-color:#115e59;color:#fff}
 body.bh-directory :is(input,select){border-color:#cbded9;border-radius:11px}
+
+/* Match directory.html's actual banner, filters, results and map layout. */
+body.bh-directory .bh-directory-banner{background:#e8f3f1;border:1px solid #d7e6e2;border-radius:16px;color:#174e49}
+body.bh-directory .bh-directory-banner :is(h1,h2,p){color:#174e49}
+body.bh-directory :is(.directory-layout,.directory-results-column,.bh-directory-list-pane,.directory-calendar,.directory-planner-embed){border-color:#d7e6e2}
+body.bh-directory .activity-grid :is(.activity-card,.listing-card){background:#fff;border:1px solid #d7e6e2;border-radius:15px;box-shadow:0 4px 15px rgba(17,94,89,.04)}
