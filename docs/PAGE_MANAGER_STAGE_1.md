@@ -19,8 +19,10 @@ System/application pages remain protected and are not imported into or overwritt
 
 The setup action is idempotent and is not exposed publicly. The SQL migration is retained as a manual fallback for controlled database administration.
 
-## Public rendering
-The admin editor's preview currently opens the reserved integration endpoint `/page.php?slug=...`. Public page rendering and clean URL routing are a separate follow-on task and must be completed before published pages are promoted as live website pages. Do not add rewrite rules until existing standalone routes and the host's current rewrite configuration have been reviewed.
+## Public rendering and clean URLs
+Published pages render through `page.php?slug=...`; this legacy integration URL remains supported. Clean public URLs use the dedicated `/content/{slug}/` namespace, for example `/content/test-page/`. This separate namespace avoids collisions with root-level activity slugs and existing application routes.
+
+The `/content/{slug}/` rewrite must appear before the generic root-level activity-slug fallback in `.htaccess`. Verify published pages load without an admin session, while draft and archived pages remain unavailable publicly. Do not change the live site's rewrite configuration until staging QA and release approval are complete.
 
 ## Security
 - Uses the existing dedicated Bubba Hub admin session and server-only PDO configuration.
