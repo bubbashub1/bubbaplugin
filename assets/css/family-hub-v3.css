@@ -95,3 +95,8 @@
  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-section-links a, :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-activity-card{border-color:#d7e6e2;border-radius:14px;box-shadow:0 4px 14px rgba(17,94,89,.035)}
  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main :is(.button-primary,.btn-primary){background:#0f766e;border-color:#0f766e;color:#fff}
  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main :is(.button-primary,.btn-primary):hover{background:#115e59;border-color:#115e59}
+
+/* Family account subpage uses account-page/account-family-panel markup. */
+body.bh-subpage-v2 .account-page .account-family-panel{background:#fff;border:1px solid #d7e6e2;border-radius:16px;box-shadow:0 5px 18px rgba(17,94,89,.045)}
+body.bh-subpage-v2 .account-page .account-side-nav a[aria-current=page],body.bh-subpage-v2 .account-page .account-side-nav a.active{background:#e2f0ed;color:#115e59;border-radius:10px}
+body.bh-subpage-v2 .account-page :is(.hub-family-list,.hub-empty,.account-family-tip){border-color:#d7e6e2;border-radius:14px}
