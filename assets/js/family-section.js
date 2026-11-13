@@ -43,7 +43,49 @@ document.addEventListener("DOMContentLoaded",async()=>{
    const href=typeof bhActivityUrl==="function"?bhActivityUrl(a):"/activity.html?id="+encodeURIComponent(a.id);
    return "<article class='hub-list-card hub-activity-card'><div class='hub-activity-card-main'><span class='hub-activity-category'>"+esc(a.category||"Family activity")+"</span><strong>"+esc(a.title)+"</strong>"+(description?"<p>"+esc(description).slice(0,220)+"</p>":"") +"<small>"+esc([location,age,organiser].filter(Boolean).join(" · ")||meta||"View activity details")+"</small>"+(meta?"<small class='hub-activity-meta'>"+esc(meta)+"</small>":"")+"</div><a class='button button-soft' href='"+esc(href)+"'>View details →</a></article>";
   };
-  root.innerHTML=rows.length?rows.map(activityCard).join(""):empty(key==="saved"?"No saved activities yet":key==="visited"?"No visited groups recorded":key==="recent"?"Nothing viewed yet":key==="plans"?"No plans yet":"No suggestions available","Explore the directory and your family activity will appear here.");
+  const emptyMessage=key==="saved"?"No saved activities yet":key==="visited"?"No visited groups recorded":key==="recent"?"Nothing viewed yet":key==="plans"?"No plans yet":"No suggestions available";
+  const searchable=["saved","visited","recent","suggested","plans"].includes(key);
+  if(searchable){
+   root.innerHTML="<div class='hub-list-toolbar'><label class='hub-list-search-label' for='hubSectionSearch'>Search this list</label><input id='hubSectionSearch' class='hub-list-search' type='search' placeholder='Search by activity, group or location…' autocomplete='off' aria-controls='hubSectionResults'><span class='hub-list-count' id='hubSectionCount' aria-live='polite'></span></div><div id='hubSectionResults' class='hub-list-results'></div>";
+   const search=root.querySelector("#hubSectionSearch"),results=root.querySelector("#hubSectionResults"),count=root.querySelector("#hubSectionCount");
+   const pageSize=12;let filteredRows=[],shown=0,observer=null;
+   const sentinel=document.createElement("div");sentinel.className="hub-list-scroll-sentinel";sentinel.setAttribute("aria-hidden","true");
+   const loadMore=()=>{
+    if(shown>=filteredRows.length)return;
+    const next=filteredRows.slice(shown,shown+pageSize);
+    if(sentinel.isConnected)sentinel.remove();
+    const emptyState=results.querySelector(".hub-empty");if(emptyState)emptyState.remove();
+    results.insertAdjacentHTML("beforeend",next.map(activityCard).join(""));
+    shown+=next.length;
+    count.textContent=filteredRows.length?(shown+" of "+filteredRows.length+" shown"):"";
+    if(shown<filteredRows.length){
+     if("IntersectionObserver" in window){
+      if(!sentinel.isConnected)results.append(sentinel);
+      if(observer)observer.observe(sentinel);
+     }else{
+      const more=document.createElement("button");more.type="button";more.className="button button-soft hub-list-load-more";more.textContent="Load more";more.addEventListener("click",()=>{more.remove();loadMore();});results.append(more);
+     }
+    }else sentinel.remove();
+   };
+   const render=()=>{
+    if(observer){observer.disconnect();observer=null;}
+    const q=search.value.trim().toLocaleLowerCase();
+    filteredRows=rows.filter(row=>{const a=row.a;const hay=[a.title,a.category,a.town,a.location,a.region,a.organiser_name,a.organiser,a.group_name,a.short_description,a.description,a.summary,a.age_range].flat().filter(Boolean).join(" ").toLocaleLowerCase();return !q||hay.includes(q);});
+    shown=0;results.innerHTML="";
+    if(!filteredRows.length){
+     results.innerHTML="<div class='hub-empty'><strong>"+(rows.length?"No matching activities":emptyMessage)+"</strong><p>"+(rows.length?"Try another name, group or location.":"Explore the directory and your family activity will appear here.")+"</p>"+(rows.length?"":"<a class='button button-soft' href='/directory.html'>Find activities</a>")+"</div>";
+     count.textContent="";return;
+    }
+    loadMore();
+    if(sentinel.isConnected&&"IntersectionObserver" in window){
+     observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting))loadMore();},{rootMargin:"240px 0px"});
+     observer.observe(sentinel);
+    }
+   };
+   search.addEventListener("input",render);render();
+  }else{
+   root.innerHTML=rows.length?rows.map(activityCard).join(""):empty(emptyMessage,"Explore the directory and your family activity will appear here.");
+  }
   if(key==="plans")root.insertAdjacentHTML("beforeend","<p class='hub-section-footer'><a class='button button-primary' href='/planner.html'>Open My Planner →</a></p>");
  }catch(e){root.textContent=e.message||"Could not load this section.";}
 });

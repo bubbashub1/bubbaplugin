@@ -100,3 +100,21 @@
 body.bh-subpage-v2 .account-page .account-family-panel{background:#fff;border:1px solid #d7e6e2;border-radius:16px;box-shadow:0 5px 18px rgba(17,94,89,.045)}
 body.bh-subpage-v2 .account-page .account-side-nav a[aria-current=page],body.bh-subpage-v2 .account-page .account-side-nav a.active{background:#e2f0ed;color:#115e59;border-radius:10px}
 body.bh-subpage-v2 .account-page :is(.hub-family-list,.hub-empty,.account-family-tip){border-color:#d7e6e2;border-radius:14px}
+
+
+/* My Hub searchable directory-style activity lists. */
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-list-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:7px 12px;margin:0 0 16px}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-list-search-label{flex:0 0 100%;font-size:13px;font-weight:800;color:#45645e}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-list-search{display:block;width:100%;min-height:46px;padding:11px 15px;border:1px solid #cbded9;border-radius:12px;background:#fff;color:#263b38;font:inherit;font-size:15px;box-sizing:border-box;outline-offset:2px}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-list-search:focus{border-color:#0f766e;box-shadow:0 0 0 3px rgba(15,118,110,.12);outline:0}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-list-count{font-size:12px;color:#668276}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-list-results{min-width:0}
+
+
+/* My Hub section page height and breathing room before the back link. */
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main:has(#familySectionContent){min-height:calc(100vh - 210px);display:flex;flex-direction:column}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main:has(#familySectionContent) .hub-panel{flex:0 0 auto}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main:has(#familySectionContent)>p:last-child{margin:28px 0 8px!important;padding-top:8px}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-list-scroll-sentinel{height:2px;width:100%;pointer-events:none}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-list-load-more{display:block;margin:14px auto 4px}
+@media(max-width:850px){:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main:has(#familySectionContent){min-height:calc(100vh - 190px)}}
