@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
  const root=document.getElementById("familySectionContent");
  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
  const empty=(heading,body)=>"<div class='hub-empty'><strong>"+heading+"</strong><p>"+body+"</p><a class='button button-soft' href='/directory.html'>Find activities</a></div>";
- const plainText=value=>{const parsed=new DOMParser().parseFromString(String(value??""),"text/html");return (parsed.body.textContent||"").replace(/!\\[([^\\]]*)\\]\\([^)]*\\)/g,"$1").replace(/\\[([^\\]]+)\\]\\([^)]*\\)/g,"$1").replace(/^\\s{0,3}#{1,6}\\s*/gm,"").replace(/[*_~]/g,"").replace(/\\s+/g," ").trim();};
+ const plainText=value=>{const parsed=new DOMParser().parseFromString(String(value??""),"text/html");return (parsed.body.textContent||"").replace(/!\[([^\]]*)\]\([^)]*\)/g,"$1").replace(/\[([^\]]+)\]\([^)]*\)/g,"$1").replace(/^\s{0,3}#{1,6}\s*/gm,"").replace(/[*_~]/g,"").replace(/\s+/g," ").trim();};
  const truncate=(value,max=150)=>{const valueText=plainText(value);return valueText.length>max?valueText.slice(0,max).trimEnd()+"…":valueText;};
  const placeholder="data:image/svg+xml;charset=UTF-8,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'><rect width='400' height='300' fill='#e8f3f1'/><circle cx='200' cy='112' r='48' fill='#c5e2dc'/><path d='M88 260c18-62 59-91 112-91s94 29 112 91' fill='#b5d8d0'/><path d='M178 111h44M200 89v44' stroke='#0f766e' stroke-width='9' stroke-linecap='round'/></svg>");
  try{
