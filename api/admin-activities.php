@@ -200,7 +200,7 @@ try{require __DIR__.'/db.php';$db=bh_mysql();
  $cols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);
  // Keep the public directory's is_free flag in sync with the admin Is free checkbox.
  $optional['is_free']=$free?1:0;
- for($n=1;$n<=10;$n++){ $field='image_'.$n;$url=bh_localise_fb_image(trim((string)($input[$field]??'')));if($url!=='')$input[$field]=$url;if(in_array($field,$cols,true)){if($url!==''&&!filter_var($url,FILTER_VALIDATE_URL))bh_admin_response(422,['ok'=>false,'error'=>'Invalid image URL for image '.$n]);$optional[$field]=$url; }}
+ for($n=1;$n<=10;$n++){ $field='image_'.$n;$url=bh_localise_fb_image(trim((string)($input[$field]??'')));if($url!=='')$input[$field]=$url;if(in_array($field,$cols,true)){if($url!==''&&!preg_match('~^uploads/activities/[A-Za-z0-9._-]+\\.(?:jpe?g|png|webp)$~i',$url)&&!filter_var($url,FILTER_VALIDATE_URL))bh_admin_response(422,['ok'=>false,'error'=>'Invalid image URL for image '.$n]);$optional[$field]=$url; }}
  for($n=1;$n<=10;$n++){ $url=trim((string)($input['image_'.$n]??''));$isLocal=(bool)preg_match('~^uploads/activities/[A-Za-z0-9._-]+\\.(?:jpe?g|png|webp)$~i',$url);if($url!==''&&!$isLocal&&(!filter_var($url,FILTER_VALIDATE_URL)||!in_array(strtolower((string)parse_url($url,PHP_URL_SCHEME)),['http','https'],true)||strlen($url)>2048))bh_admin_response(422,['ok'=>false,'error'=>'Image '.$n.' needs a valid HTTP(S) URL or a saved Bubba Hub image.']);}
  $optional=array_intersect_key($optional,array_flip($cols));
   $db->exec("CREATE TABLE IF NOT EXISTS bh_activity_gallery (activity_id BIGINT UNSIGNED NOT NULL,position TINYINT UNSIGNED NOT NULL,image_url VARCHAR(2048) NOT NULL,PRIMARY KEY(activity_id,position)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
