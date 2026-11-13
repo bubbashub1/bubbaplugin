@@ -91,3 +91,17 @@ body.bh-leader-v2 .leader-v3-main > :is(.page-heading,.bh-leader-hero,.inbox-her
  body.bh-leader-v2 .leader-v3-shell > main.leader-v3-main{grid-column:1!important;grid-row:auto!important}
  body.bh-leader-v2 .leader-v3-main > :is(.page-heading,.bh-leader-hero,.inbox-hero,.bh-new-hero,.workspace-hero){padding:20px 18px!important}
 }
+
+
+/* Shared Bubba Hub visual language for all Leader Portal subpages. */
+body.bh-leader-v2{background:#f4f8f7;color:#263b38}
+.bh-leader-v3-nav a{border-radius:11px;color:#45645e}
+.bh-leader-v3-nav a:hover,.bh-leader-v3-nav a:focus-visible,.bh-leader-v3-nav a[aria-current=page]{background:#e2f0ed;color:#115e59}
+.leader-v3-main :is(.page-heading,.bh-leader-hero,.inbox-hero,.bh-new-hero,.workspace-hero){background:#e8f3f1;border:1px solid #d7e6e2;border-radius:16px;color:#174e49;box-shadow:none}
+.leader-v3-main :is(.page-heading,.bh-leader-hero,.inbox-hero,.bh-new-hero,.workspace-hero) :is(h1,p){color:#174e49}
+.leader-v3-main :is(.admin-panel,.bh-leader-panel,.bh-card,.bh-panel,.message-list,.message,.leader-profile-card,.leader-workspace>section,.stats-panel,.payment-panel,.faq-list,.support-panel){border:1px solid #d7e6e2;border-radius:16px;box-shadow:0 5px 18px rgba(17,94,89,.045)}
+.leader-v3-main :is(.button-primary,.btn-primary){background:#0f766e;border-color:#0f766e;color:#fff}
+.leader-v3-main :is(.button-primary,.btn-primary):hover{background:#115e59;border-color:#115e59;color:#fff}
+.leader-v3-main .button-soft{background:#e2f0ed;border-color:#d7e6e2;color:#115e59}
+.leader-v3-main :is(input:not([type=checkbox]):not([type=radio]),select,textarea){border-radius:11px;border-color:#cbded9}
+@media(max-width:760px){.leader-v3-main :is(.page-heading,.bh-leader-hero,.inbox-hero,.bh-new-hero,.workspace-hero){border-radius:14px}}
