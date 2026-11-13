@@ -91,6 +91,6 @@
 
 
 /* Family tools: same surface, border and action treatment as My Hub. */
-:where(.bh-family-v3,.bh-my-hub,.bh-planner,.bh-planner-pro) :is(.family-tool-card,.planner-tool-card,.tool-card,.calendar-panel){background:#fff;border:1px solid #d7e6e2;border-radius:15px;box-shadow:0 4px 15px rgba(17,94,89,.04)}
-:where(.bh-family-v3,.bh-my-hub,.bh-planner,.bh-planner-pro) :is(.button-primary,.btn-primary){background:#0f766e;border-color:#0f766e;color:#fff}
-:where(.bh-family-v3,.bh-my-hub,.bh-planner,.bh-planner-pro) :is(.button-primary,.btn-primary):hover{background:#115e59;border-color:#115e59;color:#fff}
+:where(.bh-family-v3,.bh-my-hub,.bh-planner,.bh-planner-pro-v2) :is(.family-tool-card,.planner-tool-card,.tool-card,.calendar-panel){background:#fff;border:1px solid #d7e6e2;border-radius:15px;box-shadow:0 4px 15px rgba(17,94,89,.04)}
+:where(.bh-family-v3,.bh-my-hub,.bh-planner,.bh-planner-pro-v2) :is(.button-primary,.btn-primary){background:#0f766e;border-color:#0f766e;color:#fff}
+:where(.bh-family-v3,.bh-my-hub,.bh-planner,.bh-planner-pro-v2) :is(.button-primary,.btn-primary):hover{background:#115e59;border-color:#115e59;color:#fff}
