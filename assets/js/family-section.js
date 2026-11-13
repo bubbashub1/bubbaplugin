@@ -48,11 +48,35 @@ document.addEventListener("DOMContentLoaded",async()=>{
   if(searchable){
    root.innerHTML="<div class='hub-list-toolbar'><label class='hub-list-search-label' for='hubSectionSearch'>Search this list</label><input id='hubSectionSearch' class='hub-list-search' type='search' placeholder='Search by activity, group or location…' autocomplete='off' aria-controls='hubSectionResults'><span class='hub-list-count' id='hubSectionCount' aria-live='polite'></span></div><div id='hubSectionResults' class='hub-list-results'></div>";
    const search=root.querySelector("#hubSectionSearch"),results=root.querySelector("#hubSectionResults"),count=root.querySelector("#hubSectionCount");
+   const pageSize=12;let filteredRows=[],shown=0,observer=null;
+   const sentinel=document.createElement("div");sentinel.className="hub-list-scroll-sentinel";sentinel.setAttribute("aria-hidden","true");
+   const loadMore=()=>{
+    if(shown>=filteredRows.length)return;
+    const next=filteredRows.slice(shown,shown+pageSize);
+    const emptyState=results.querySelector(".hub-empty");if(emptyState)emptyState.remove();
+    results.insertAdjacentHTML("beforeend",next.map(activityCard).join(""));
+    shown+=next.length;
+    count.textContent=filteredRows.length?(shown+" of "+filteredRows.length+" shown"):"";
+    if(shown<filteredRows.length){
+     if(!sentinel.isConnected)results.append(sentinel);
+    }else sentinel.remove();
+   };
    const render=()=>{
+    if(observer){observer.disconnect();observer=null;}
     const q=search.value.trim().toLocaleLowerCase();
-    const filtered=rows.filter(row=>{const a=row.a;const hay=[a.title,a.category,a.town,a.location,a.region,a.organiser_name,a.organiser,a.group_name,a.short_description,a.description,a.summary,a.age_range].flat().filter(Boolean).join(" ").toLocaleLowerCase();return !q||hay.includes(q);});
-    results.innerHTML=filtered.length?filtered.map(activityCard).join(""):("<div class='hub-empty'><strong>"+(rows.length?"No matching activities":" "+emptyMessage)+"</strong><p>"+(rows.length?"Try another name, group or location.":"Explore the directory and your family activity will appear here.")+"</p>"+(rows.length?"":"<a class='button button-soft' href='/directory.html'>Find activities</a>")+"</div>");
-    count.textContent=rows.length?(filtered.length+" of "+rows.length+" shown"):"";
+    filteredRows=rows.filter(row=>{const a=row.a;const hay=[a.title,a.category,a.town,a.location,a.region,a.organiser_name,a.organiser,a.group_name,a.short_description,a.description,a.summary,a.age_range].flat().filter(Boolean).join(" ").toLocaleLowerCase();return !q||hay.includes(q);});
+    shown=0;results.innerHTML="";
+    if(!filteredRows.length){
+     results.innerHTML="<div class='hub-empty'><strong>"+(rows.length?"No matching activities":emptyMessage)+"</strong><p>"+(rows.length?"Try another name, group or location.":"Explore the directory and your family activity will appear here.")+"</p>"+(rows.length?"":"<a class='button button-soft' href='/directory.html'>Find activities</a>")+"</div>";
+     count.textContent="";return;
+    }
+    loadMore();
+    if(sentinel.isConnected&&"IntersectionObserver" in window){
+     observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting))loadMore();},{rootMargin:"240px 0px"});
+     observer.observe(sentinel);
+    }else if(sentinel.isConnected){
+     const more=document.createElement("button");more.type="button";more.className="button button-soft hub-list-load-more";more.textContent="Load more";more.addEventListener("click",()=>{more.remove();loadMore();});sentinel.replaceWith(more);
+    }
    };
    search.addEventListener("input",render);render();
   }else{
