@@ -82,3 +82,16 @@ body.bh-family-v3 .family-v3-main .hub-section-footer{margin:16px 0 0}
  body.bh-family-v3 .family-v3-main .hub-activity-card{align-items:flex-start;flex-direction:column;gap:12px;padding:15px}
  body.bh-family-v3 .family-v3-main .hub-activity-card .button{width:100%;text-align:center;box-sizing:border-box}
 }
+
+
+/* My Bubba Hub: consistent mint background, teal navigation and quiet white panels. */
+body.bh-family-v3{background:#f4f8f7;color:#263b38}
+body.bh-family-v3 .family-v3-sidebar{border-color:#d7e6e2;border-radius:16px;box-shadow:0 5px 18px rgba(17,94,89,.045)}
+body.bh-family-v3 .family-v3-nav a{color:#45645e;border-radius:10px}
+body.bh-family-v3 .family-v3-nav a:hover,body.bh-family-v3 .family-v3-nav a[aria-current=page]{background:#e2f0ed;color:#115e59}
+body.bh-family-v3 .family-v3-main .page-heading{background:#e8f3f1!important;border-color:#d7e6e2!important;border-radius:16px!important}
+body.bh-family-v3 .family-v3-main :is(.admin-panel,.hub-panel,.hub-brief,.hub-welcome,.account-dashboard-card,.planner-shell){border-color:#d7e6e2!important;border-radius:16px!important;box-shadow:0 5px 18px rgba(17,94,89,.045)!important}
+body.bh-family-v3 .family-v3-main :is(h1,h2,h3){color:#174e49}
+body.bh-family-v3 .family-v3-main .hub-section-links a,body.bh-family-v3 .family-v3-main .hub-activity-card{border-color:#d7e6e2;border-radius:14px;box-shadow:0 4px 14px rgba(17,94,89,.035)}
+body.bh-family-v3 .family-v3-main :is(.button-primary,.btn-primary){background:#0f766e;border-color:#0f766e;color:#fff}
+body.bh-family-v3 .family-v3-main :is(.button-primary,.btn-primary):hover{background:#115e59;border-color:#115e59}
