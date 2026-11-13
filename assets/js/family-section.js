@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
    const loadMore=()=>{
     if(shown>=filteredRows.length)return;
     const next=filteredRows.slice(shown,shown+pageSize);
+    if(sentinel.isConnected)sentinel.remove();
     const emptyState=results.querySelector(".hub-empty");if(emptyState)emptyState.remove();
     results.insertAdjacentHTML("beforeend",next.map(activityCard).join(""));
     shown+=next.length;
