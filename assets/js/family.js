@@ -31,7 +31,7 @@ function modal(title,type,item={}){
  o.querySelector("[data-close]").onclick=()=>o.remove();o.onclick=e=>{if(e.target===o)o.remove()};
  const form=o.querySelector("form"),file=form.querySelector("input[name='avatar']");
  form.onsubmit=async e=>{
-  e.preventDefault();const p=Object.fromEntries(new FormData(form));delete p.avatar;if(type==="child")p.date_of_birth=toIsoDate(p.date_of_birth);else p.due_date=toIsoDate(p.due_date);p.action=type==="child"?"save_child":"save_bump";if(item.id)p.id=item.id;p.csrf=csrf;
+  e.preventDefault();const p=Object.fromEntries(new FormData(form));delete p.avatar;p.action=type==="child"?"save_child":"save_bump";if(item.id)p.id=item.id;p.csrf=csrf;
   const m=form.querySelector("[data-msg]");
   try{
    const r=await fetch("../api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(p)});
@@ -47,7 +47,7 @@ function modal(title,type,item={}){
 function schoolTracker(dob){
  if(!dob)return null;
  const d=new Date(dob+"T00:00:00"),primaryYear=d.getFullYear()+5,secondaryYear=d.getFullYear()+11;
- const now=new Date(),fmt=x=>x.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+ const now=new Date(),fmt=x=>x.toLocaleDateString("en-GB",{day:"2-digit",month:"2-digit",year:"numeric"});
  const primaryOpen=new Date(primaryYear-1,10,1),primaryClose=new Date(primaryYear,0,15);
  const secondaryOpen=new Date(secondaryYear-1,8,1),secondaryClose=new Date(secondaryYear-1,9,31);
  const primaryDays=Math.ceil((primaryClose-now)/(1000*60*60*24)),secondaryDays=Math.ceil((secondaryClose-now)/(1000*60*60*24));
