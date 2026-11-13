@@ -173,3 +173,11 @@
  .bh-home .home-hero-copy .bh-hero-detail{max-width:100%!important}
  .bh-home .home-search{order:2!important;margin-top:4px!important;width:100%!important}
 }
+
+
+/* Homepage shared brand finish. */
+body.bh-home{background:#f4f8f7;color:#263b38}
+body.bh-home :is(h1,h2,h3){color:#174e49}
+body.bh-home :is(.home-section,.home-feature-card,.home-card){border-color:#d7e6e2}
+body.bh-home :is(.button-primary,.home-full-button){background:#0f766e;border-color:#0f766e;color:#fff}
+body.bh-home :is(.button-primary,.home-full-button):hover{background:#115e59;border-color:#115e59;color:#fff}
