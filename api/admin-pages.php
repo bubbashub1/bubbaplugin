@@ -14,6 +14,12 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
 try{
  $db=bh_mysql();
  $method=$_SERVER['REQUEST_METHOD']??'GET';
+ // Upgrade existing Page Manager installations before any query reads parent_id.
+ $existingPagesTable=$db->query("SHOW TABLES LIKE 'bh_pages'")->fetchColumn();
+ if($existingPagesTable){
+  $parentColumn=$db->query("SHOW COLUMNS FROM bh_pages LIKE 'parent_id'")->fetch();
+  if(!$parentColumn){$db->exec("ALTER TABLE bh_pages ADD COLUMN parent_id BIGINT UNSIGNED NULL AFTER slug, ADD KEY idx_bh_pages_parent (parent_id)");}
+ }
  if($method==='GET'){
   $table=$db->query("SHOW TABLES LIKE 'bh_pages'")->fetchColumn();
   $revisionTable=$db->query("SHOW TABLES LIKE 'bh_page_revisions'")->fetchColumn();
