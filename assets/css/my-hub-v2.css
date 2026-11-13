@@ -129,3 +129,10 @@ body.bh-my-hub{background:#f3f6f4;color:#1b3430}
 .bh-my-hub .hub-list>*{background:#f8faf7;border:1px solid #e3eae6;border-radius:15px}
 @media(max-width:850px){.bh-my-hub .hub-family-list{grid-template-columns:repeat(2,minmax(0,1fr))}.bh-my-hub .hub-main-dashboard{grid-template-columns:1fr}.bh-my-hub .hub-main-dashboard>.hub-brief{grid-column:auto}}
 @media(max-width:570px){.bh-my-hub .hub-family-list{grid-template-columns:1fr}.bh-my-hub .my-hub-hero{border-radius:0 0 18px 18px}.bh-my-hub .my-hub-page :is(.hub-panel,.hub-suggestions,.hub-brief,.hub-welcome){padding:17px;border-radius:19px}}
+
+
+/* My Bubba Hub: consistent white panels, mint accents and teal actions. */
+.bh-my-hub .my-hub-page{background:#f4f8f7;color:#263b38}
+.bh-my-hub .my-hub-page :is(.hub-panel,.hub-list-card,.hub-booking-card,.hub-brief-item){border-color:#d7e6e2;border-radius:15px;box-shadow:0 4px 14px rgba(17,94,89,.035)}
+.bh-my-hub .my-hub-page .hub-personal-cta .button-primary{background:#0f766e;border-color:#0f766e;color:#fff}
+.bh-my-hub .my-hub-page .hub-personal-cta .button-primary:hover{background:#115e59;border-color:#115e59}
