@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded",async()=>{
 const list=document.getElementById("familyList"),message=document.getElementById("familyMessage"),esc=window.bhEscape||((x)=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])));let csrf="";
 const get=async()=>{const r=await fetch("../api/my-hub.php?view=family",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}});const j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||"Please sign in.");return j};
+const toUkDate=value=>{const m=String(value||"").match(/^(\d{4})-(\d{2})-(\d{2})/);return m?m[3]+"/"+m[2]+"/"+m[1]:String(value||"")};
+const toIsoDate=value=>{const s=String(value||"").trim();if(!s)return "";const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);if(!m)throw Error("Please enter dates as DD/MM/YYYY.");const day=Number(m[1]),month=Number(m[2]),year=Number(m[3]),d=new Date(year,month-1,day);if(d.getFullYear()!==year||d.getMonth()!==month-1||d.getDate()!==day)throw Error("Please enter a valid date in DD/MM/YYYY format.");return year+"-"+String(month).padStart(2,"0")+"-"+String(day).padStart(2,"0")};
 const age=d=>{if(!d)return "";const x=new Date(d+"T00:00:00"),n=new Date();let y=n.getFullYear()-x.getFullYear(),m=n.getMonth()-x.getMonth();if(n.getDate()<x.getDate())m--;if(m<0){y--;m+=12}return y<2?Math.max(0,y*12+m)+" months":y+" years"};
 function avatarMarkup(item){
  const path=item.photo_path||"";
@@ -22,14 +24,14 @@ async function uploadAvatar(childId,file,form,msg){
 function modal(title,type,item={}){
  const o=document.createElement("div");o.className="hub-modal";
  const fields=type==="child"
-  ? "<div class='child-avatar-field'><span class='form-field-label'>Profile photo</span><div class='child-avatar-editor'>"+avatarMarkup(item)+"<div class='child-avatar-copy'><label class='button button-soft avatar-upload-button'>Choose photo<input name='avatar' type='file' accept='image/jpeg,image/png,image/webp' hidden></label><small>JPG, PNG or WebP · up to 5 MB</small></div></div></div><label>Name<input name='name' required maxlength='100' value='"+esc(item.name||"")+"'></label><label>Gender<select name='gender'><option value=''>Prefer not to say</option><option value='Girl' "+(item.gender==="Girl"?"selected":"")+">Girl</option><option value='Boy' "+(item.gender==="Boy"?"selected":"")+">Boy</option><option value='Non-binary' "+(item.gender==="Non-binary"?"selected":"")+">Non-binary</option></select></label><label>Date of birth<input name='date_of_birth' type='date' value='"+esc(item.date_of_birth||"")+"'></label>"
-  : "<label>Nickname<input name='nickname' maxlength='80' value='"+esc(item.nickname||"")+"' placeholder='Optional'></label><label>Due date<input name='due_date' type='date' value='"+esc(item.due_date||"")+"'></label>";
+  ? "<div class='child-avatar-field'><span class='form-field-label'>Profile photo</span><div class='child-avatar-editor'>"+avatarMarkup(item)+"<div class='child-avatar-copy'><label class='button button-soft avatar-upload-button'>Choose photo<input name='avatar' type='file' accept='image/jpeg,image/png,image/webp' hidden></label><small>JPG, PNG or WebP · up to 5 MB</small></div></div></div><label>Name<input name='name' required maxlength='100' value='"+esc(item.name||"")+"'></label><label>Gender<select name='gender'><option value=''>Prefer not to say</option><option value='Girl' "+(item.gender==="Girl"?"selected":"")+">Girl</option><option value='Boy' "+(item.gender==="Boy"?"selected":"")+">Boy</option><option value='Non-binary' "+(item.gender==="Non-binary"?"selected":"")+">Non-binary</option></select></label><label>Date of birth<input name='date_of_birth' type='text' inputmode='numeric' placeholder='DD/MM/YYYY' maxlength='10' value='"+esc(toUkDate(item.date_of_birth||""))+"'></label>"
+  : "<label>Nickname<input name='nickname' maxlength='80' value='"+esc(item.nickname||"")+"' placeholder='Optional'></label><label>Due date<input name='due_date' type='text' inputmode='numeric' placeholder='DD/MM/YYYY' maxlength='10' value='"+esc(toUkDate(item.due_date||""))+"'></label>";
  o.innerHTML="<form class='hub-modal-card'><div class='admin-panel-head'><div><span class='eyebrow'>Family profile</span><h2>"+title+"</h2></div><button type='button' class='button button-soft' data-close>Close</button></div><div class='hub-form-grid family-child-form'>"+fields+"</div><div class='hero-actions'><button class='button button-primary' type='submit'>Save</button></div><p data-msg class='library-message'></p></form>";
  document.body.appendChild(o);
  o.querySelector("[data-close]").onclick=()=>o.remove();o.onclick=e=>{if(e.target===o)o.remove()};
  const form=o.querySelector("form"),file=form.querySelector("input[name='avatar']");
  form.onsubmit=async e=>{
-  e.preventDefault();const p=Object.fromEntries(new FormData(form));delete p.avatar;p.action=type==="child"?"save_child":"save_bump";if(item.id)p.id=item.id;p.csrf=csrf;
+  e.preventDefault();const p=Object.fromEntries(new FormData(form));delete p.avatar;if(type==="child")p.date_of_birth=toIsoDate(p.date_of_birth);else p.due_date=toIsoDate(p.due_date);p.action=type==="child"?"save_child":"save_bump";if(item.id)p.id=item.id;p.csrf=csrf;
   const m=form.querySelector("[data-msg]");
   try{
    const r=await fetch("../api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(p)});
@@ -60,7 +62,7 @@ function pregnancyTracker(due){
  const antenatalStart=new Date(dueDate.getTime()-12*msWeek);
  const antenatalEnd=new Date(dueDate.getTime()-8*msWeek);
  const birthReady=new Date(dueDate.getTime()-2*msWeek);
- const fmt=x=>x.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+ const fmt=x=>x.toLocaleDateString("en-GB",{day:"2-digit",month:"2-digit",year:"numeric"});
  const month=x=>x.toLocaleDateString("en-GB",{month:"long"});
  return {dueDate,weeksLeft,weeksPreg,antenatalStart,antenatalEnd,birthReady,fmt,month};
 }
@@ -88,7 +90,7 @@ function render(d){
    const secondaryStatus=secondaryOpenNow?(t.secondaryDays>0?"OPEN · "+t.secondaryDays+" days left":"CLOSES TODAY"):(t.secondaryDays>0?"Opens "+t.secondaryOpenText:"Closed");
    school="<div class='school-tracker'><span class='school-tracker-icon'>🎓</span><div><strong>School application tracker</strong><div class='school-tracker-row'><b>Primary · Sep "+t.primaryYear+"</b><span class='school-tracker-status'>"+esc(primaryStatus)+"</span></div><small>Opens "+esc(t.primaryOpenText)+" · closes "+esc(t.primaryCloseText)+"</small><div class='school-tracker-row'><b>Secondary · Sep "+t.secondaryYear+"</b><span class='school-tracker-status'>"+esc(secondaryStatus)+"</span></div><small>Opens "+esc(t.secondaryOpenText)+" · closes "+esc(t.secondaryCloseText)+"</small></div></div>";
   }
-  return "<article class='hub-family-card'>"+avatarMarkup(x)+"<div class='hub-family-main'><strong>"+esc(x.name)+"</strong><small>"+(x.date_of_birth?age(x.date_of_birth)+" · "+x.date_of_birth:"Date of birth not set")+"</small>"+school+"</div><button class='button button-soft' data-edit-child='"+x.id+"'>Edit</button></article>";
+  return "<article class='hub-family-card hub-family-child-card'><div class='hub-family-card-heading'>"+avatarMarkup(x)+"<div class='hub-family-main'><strong>"+esc(x.name)+"</strong><span class='hub-family-age'>"+(x.date_of_birth?esc(age(x.date_of_birth))+" · "+esc(toUkDate(x.date_of_birth)):"Date of birth not set")+"</span></div><button class='button button-soft hub-family-edit' data-edit-child='"+x.id+"'>Edit</button></div>"+school+"</article>";
  }).join("")+b.map(x=>{
   const t=pregnancyTracker(x.due_date);
   let tracker="";
@@ -102,7 +104,7 @@ function render(d){
    const antenatalText=antenatalActive?"Now is a good time for antenatal classes":t.weeksPreg<28?"Attend antenatal classes from "+t.month(t.antenatalStart)+" to "+t.month(t.antenatalEnd):"Recommended antenatal window: "+t.month(t.antenatalStart)+" to "+t.month(t.antenatalEnd);
    tracker="<div class='pregnancy-tracker'><span class='pregnancy-tracker-icon'>🤰</span><div><strong>Pregnancy tracker</strong><div class='pregnancy-due'><b>"+esc(weeksText)+"</b><span>"+esc(dueText)+"</span></div><small>Due "+esc(t.fmt(t.dueDate))+"</small><div class='pregnancy-antenatal'><b>💛 Antenatal classes</b><span>"+esc(antenatalText)+"</span><small>28–32 weeks · "+esc(t.fmt(t.antenatalStart))+" to "+esc(t.fmt(t.antenatalEnd))+"</small></div>"+(birthReady?"<button type='button' class='button button-primary baby-here-button' data-baby-here='"+x.id+"'>👶 Baby is here!</button>":"")+"</div></div>";
   }
-  return "<article class='hub-family-card'><span>🤰</span><div class='hub-family-main'><strong>"+esc(x.nickname||"Baby")+"</strong><small>"+(x.due_date?"Due "+esc(x.due_date):"Due date not set")+"</small>"+tracker+"</div><button class='button button-soft' data-edit-bump='"+x.id+"'>Edit</button></article>";
+  return "<article class='hub-family-card hub-family-bump-card'><div class='hub-family-card-heading'><span class='family-avatar family-avatar-placeholder' aria-hidden='true'>🤰</span><div class='hub-family-main'><strong>"+esc(x.nickname||"Baby")+"</strong><span class='hub-family-age'>"+(x.due_date?"Due "+esc(toUkDate(x.due_date)):"Due date not set")+"</span></div><button class='button button-soft hub-family-edit' data-edit-bump='"+x.id+"'>Edit</button></div>"+tracker+"</article>";
  }).join(""):"<div class='hub-empty'><strong>Your family profile is empty</strong><p>Add a child or bump profile to get started.</p></div>";
  c.forEach(x=>list.querySelector("[data-edit-child='"+x.id+"']")?.addEventListener("click",()=>modal("Edit child","child",x)));
  b.forEach(x=>list.querySelector("[data-edit-bump='"+x.id+"']")?.addEventListener("click",()=>modal("Edit bump","bump",x)));
