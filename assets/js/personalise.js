@@ -7,8 +7,8 @@
     const days=["Any day","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
     const budgets=[["Any budget",""],["Free","0"],["Up to £5","5"],["Up to £10","10"],["Up to £15","15"],["Up to £20","20"],["Up to £30","30"]];
     const requestedChildId=new URLSearchParams(location.search).get("child_id")||"";
-    const state={step:1,children:[],activities:[],day:"",region:"",town:"",budget:"",category:"",categories:Array.isArray(pref?.categories)?pref.categories:[],manualAge:"",focusChildId:requestedChildId};
     const pref=(()=>{try{return JSON.parse(localStorage.getItem("bhPreferences")||"{}")}catch{return{}}})();
+    const state={step:1,children:[],activities:[],day:"",region:"",town:"",budget:"",category:"",categories:Array.isArray(pref.categories)?pref.categories:[],manualAge:"",focusChildId:requestedChildId};
     state.region=pref.region||"";
     state.town=pref.town||"";
     state.day=pref.day||"";
@@ -270,7 +270,7 @@
       else if(state.day)pieces.push(state.day);
       if(state.town)pieces.push(state.town);else if(state.region)pieces.push(state.region);
       if(state.category)pieces.push(state.category);
-      $("resultsSummary").textContent=ranked.length?"Showing "+ranked.length+" picks · "+(pieces.join(" · ")||"based on your choices")+(focusedChild?" · matched to "+focusedChild.name+"'s age and your saved family preferences"):"We couldn't find enough suitable matches. Try another day, area or budget.";
+      $("resultsSummary").textContent=ranked.length?"Showing "+ranked.length+" picks · "+(pieces.join(" · ")||"based on your choices")+(focusedChild?" · matched to "+focusedChild.name+"'s age and your saved family preferences":""):"We couldn't find enough suitable matches. Try another day, area or budget.";
       if(!ranked.length){
         list.innerHTML="<div class='personal-no-results'><span>✨</span><h3>Nothing quite fits yet</h3><p>Try changing one of your choices rather than starting over.</p><button type='button' class='button button-soft' id='widenSearch'>Change choices</button></div>";
         $("widenSearch").onclick=()=>{ $("personalResults").hidden=true; setStep(2); window.scrollTo({top:0,behavior:"smooth"}); };
