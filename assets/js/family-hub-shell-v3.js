@@ -27,8 +27,14 @@
   const side=document.createElement("aside");
   side.className="family-v3-sidebar";
   side.setAttribute("aria-label","My Hub navigation");
-  side.innerHTML='<div class="family-v3-brand"><strong class="family-v3-user">Your family</strong><span>My Bubba Hub</span></div><span class="family-v3-nav-label">Your family space</span><nav class="family-v3-nav" aria-label="Family workspace">';
+  side.innerHTML='<button class="family-v3-menu-toggle" type="button" aria-expanded="false" aria-controls="familyV3Nav"><span>My Hub menu</span><span class="family-v3-menu-chevron" aria-hidden="true">⌄</span></button><div class="family-v3-brand"><strong class="family-v3-user">Your family</strong><span>My Bubba Hub</span></div><span class="family-v3-nav-label">Your family space</span><nav class="family-v3-nav" aria-label="Family workspace">';
   const nav=side.querySelector("nav");
+  nav.id="familyV3Nav";
+  const menuToggle=side.querySelector(".family-v3-menu-toggle");
+  const setMenuOpen=open=>{menuToggle.setAttribute("aria-expanded",String(open));menuToggle.classList.toggle("is-open",open);nav.classList.toggle("is-open",open);};
+  menuToggle.addEventListener("click",()=>setMenuOpen(menuToggle.getAttribute("aria-expanded")!=="true"));
+  nav.addEventListener("click",event=>{if(event.target.closest("a"))setMenuOpen(false);});
+  side.addEventListener("keydown",event=>{if(event.key==="Escape")setMenuOpen(false);});
   links.forEach(([href,label,icon])=>{
    const a=document.createElement("a");a.href=href;
    const active=path===href||((href==="/planner.html")&&path==="/account/planner.html");
