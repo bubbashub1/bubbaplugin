@@ -334,7 +334,7 @@
       }
       renderChoices();
       const focusedChild=state.focusChildId?state.children.find(c=>String(c.id)===String(state.focusChildId)):null;
-      if(state.focusChildId&&!focusedChild){state.focusChildId="";$("personalMessage").textContent="That child profile could not be found. Choose a family member to continue.";}
+      if(state.focusChildId&&!focusedChild){state.focusChildId="";renderChoices();$("personalMessage").textContent="That child profile could not be found. Choose a family member to continue.";}
       else if(focusedChild){const heading=root.querySelector("[data-panel='1'] h2");if(heading)heading.textContent="Find activities for "+focusedChild.name+".";const help=root.querySelector("[data-panel='1'] .personal-help");if(help)help.textContent="We'll prioritise groups suitable for "+focusedChild.name+"'s age and use your saved family preferences for day, area, budget and interests.";}
       fillRegions();
       initWhenChoices();
