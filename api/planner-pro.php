@@ -89,6 +89,7 @@ try {
         if (!is_array($windows) || count($windows) > 50) bh_pro_response(422,['ok'=>false,'error'=>'nap_windows_invalid']);
         $normalised = [];
         $ownedChildren = [];
+        $seenChildDates = [];
         $childCheck = $db->prepare("SELECT id FROM bh_children WHERE id=? AND user_id=? LIMIT 1");
         foreach ($windows as $item) {
             if (!is_array($item)) bh_pro_response(422,['ok'=>false,'error'=>'nap_window_invalid']);
@@ -103,6 +104,9 @@ try {
                 || !preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d$/',$end) || $end <= $start) {
                 bh_pro_response(422,['ok'=>false,'error'=>'nap_window_invalid']);
             }
+            $childDateKey = $childId . '|' . $date;
+            if (isset($seenChildDates[$childDateKey])) bh_pro_response(422,['ok'=>false,'error'=>'duplicate_nap_window']);
+            $seenChildDates[$childDateKey] = true;
             if (!isset($ownedChildren[$childId])) {
                 $childCheck->execute([$childId,$userId]);
                 $ownedChildren[$childId] = (bool)$childCheck->fetchColumn();
