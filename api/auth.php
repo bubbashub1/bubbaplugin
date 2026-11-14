@@ -419,8 +419,34 @@ function bh_social_login(PDO $db, string $provider, string $providerId, string $
     return [['id'=>$userId,'email'=>$email,'role'=>$role,'status'=>'active'], true];
 }
 
+/**
+ * Defer the family welcome email until after the authentication response has
+ * been sent. On PHP-FPM this prevents SMTP/network delays from holding up the
+ * new Google sign-in. The SMTP timeout remains a safeguard for other runtimes.
+ */
+function bh_defer_family_welcome(string $email, string $firstName=''): bool {
+    if (!function_exists('fastcgi_finish_request')) return false;
+
+    register_shutdown_function(static function () use ($email, $firstName): void {
+        ignore_user_abort(true);
+        if (session_status() === PHP_SESSION_ACTIVE) session_write_close();
+        fastcgi_finish_request();
+        bh_send_family_welcome($email, $firstName);
+    });
+
+    return true;
+}
+
 function bh_social_response(array $user, bool $isNew, string $ctx, string $provider, string $firstName): void {
-    $welcome = ($isNew && $ctx === 'family') ? bh_send_family_welcome((string)$user['email'], $firstName) : false;
+    $welcomeDeferred = false;
+    $welcomeSent = false;
+    if ($isNew && $ctx === 'family') {
+        $welcomeDeferred = bh_defer_family_welcome((string)$user['email'], $firstName);
+        if (!$welcomeDeferred) {
+            $welcomeSent = bh_send_family_welcome((string)$user['email'], $firstName);
+        }
+    }
+
     bh_auth_response(200, [
         'ok' => true,
         'authenticated' => true,
@@ -431,7 +457,8 @@ function bh_social_response(array $user, bool $isNew, string $ctx, string $provi
         'family_authenticated' => ($ctx === 'family'),
         'created_leader' => ($ctx === 'leader' && $isNew),
         'pending_review' => ($ctx === 'leader' && $isNew),
-        'welcome_email_sent' => $welcome,
+        'welcome_email_deferred' => $welcomeDeferred,
+        'welcome_email_sent' => $welcomeDeferred ? null : $welcomeSent,
     ]);
 }
 
