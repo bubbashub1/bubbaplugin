@@ -386,23 +386,18 @@ void bhHydrateSaved();
   else initMobileNav();
 })();
 
-/* Main navigation is intentionally fixed site-wide.
-   The Admin menu editor must not override the public header navigation. */
+/* Keep the existing public navigation unchanged.
+   The mobile workspace dropdown is handled by the family hub shell. */
 (function(){
   const MAIN_NAV=[
-    {label:"Find activities",url:"/directory.html",matches:["/directory.html","/directory","/activity","/venue"]},
-    {label:"Events",url:"/events.html",matches:["/events.html","/events","/calendar.html","/calendar"]},
-    {label:"My Hub",url:"/my-hub.html",matches:["/my-hub.html","/my-hub","/family-section","/planner.html"]},
-    {label:"Support & Guidance",url:"/help-support.html",matches:["/help-support.html","/help-support"]},
-    {label:"Class Leaders",url:"/leader.html",matches:["/leader.html","/leader","/leader/"]},
-    {label:"My Account",url:"/account.html",matches:["/account.html","/account","/account/"]}
+    {label:"Find activities",url:"/directory.html"},
+    {label:"My Hub",url:"/my-hub.html"},
+    {label:"Support & Guidance",url:"/help-support.html"},
+    {label:"Class Leaders",url:"/leader.html"},
+    {label:"My Account",url:"/account.html"}
   ];
-  const path=location.pathname.endsWith("/")?location.pathname.slice(0,-1)||"/":location.pathname;
   const applyMainNav=()=>document.querySelectorAll(".site-header .main-nav").forEach(nav=>{
-    nav.innerHTML=MAIN_NAV.map(item=>{
-      const active=item.matches.some(route=>path===route||path.startsWith(route+"/"));
-      return '<a href="'+bhEscape(item.url)+'"'+(active?' aria-current="page" class="active"':'')+'>'+bhEscape(item.label)+'</a>';
-    }).join("");
+    nav.innerHTML=MAIN_NAV.map(item=>'<a href="'+bhEscape(item.url)+'">'+bhEscape(item.label)+'</a>').join("");
     const header=nav.closest(".site-header");
     const toggle=header?.querySelector(".mobile-nav-toggle");
     if(nav.dataset.bhCloseBound!=="true"){

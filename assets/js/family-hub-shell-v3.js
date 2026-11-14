@@ -16,7 +16,7 @@
    ["/family-section.html?section=suggested","Suggested groups & activities","✦","suggested"],
    ["/family-section.html?section=messages","My Messages","✉","messages"],
    ["/planner.html","My Planner","▦","planner"],
-   ["/account/saved-activities.html","Manage saved activities","♡","saved-library"],
+   ["/account/saved-activities.html","Saved activities","♡","saved-library"],
    ["/account/family.html","My Family","♧","family"],
    ["/account/preferences.html","Preferences","⚙","preferences"],
    ["/account/profile.html","My Profile","☺","profile"],
