@@ -252,7 +252,8 @@
         else score-=28;
       }
       if(state.freeActivities&&price!==null&&price>0)score-=32;
-      if(state.termTime){const sessions=(Array.isArray(a.venues)?a.venues:[]).flatMap(v=>Array.isArray(v.sessions)?v.sessions:[]);if(sessions.some(s=>s.term_time_only===true||s.term_time_only===1||String(s.term_time_only).toLowerCase()==="yes"))score+=8;}
+      const isTermTimeOnly=a.term_time_only===true||a.term_time_only===1||String(a.term_time_only).toLowerCase()==="yes"||(Array.isArray(a.venues)?a.venues:[]).some(v=>(Array.isArray(v.sessions)?v.sessions:[]).some(s=>s.term_time_only===true||s.term_time_only===1||String(s.term_time_only).toLowerCase()==="yes"));
+      if(state.termTime&&isTermTimeOnly)score+=8;
       if(window.bhIsSaved&&bhIsSaved(a.id))score+=8;
       if(window.bhIsPlanned&&bhIsPlanned(a.id))score+=5;
       return score;
@@ -293,7 +294,7 @@
         const price=activityPrice(a);
         if(state.budget!==""&&price!==null&&price<=Number(state.budget))why.push("Within budget");
         if(state.freeActivities&&price===0)why.push("Free activities");
-        if(state.termTime&&(Array.isArray(a.venues)?a.venues:[]).some(v=>(Array.isArray(v.sessions)?v.sessions:[]).some(s=>s.term_time_only===true||s.term_time_only===1||String(s.term_time_only).toLowerCase()==="yes")))why.push("Term-time preference");
+        if(state.termTime&&(a.term_time_only===true||a.term_time_only===1||String(a.term_time_only).toLowerCase()==="yes"||(Array.isArray(a.venues)?a.venues:[]).some(v=>(Array.isArray(v.sessions)?v.sessions:[]).some(s=>s.term_time_only===true||s.term_time_only===1||String(s.term_time_only).toLowerCase()==="yes"))))why.push("Term-time preference");
         const whyText=why.length?"<small class='personal-why'>Why recommended: "+esc(why.join(" · "))+"</small>":"";
         const dateFit=state.targetDate&&state.targetDate!=="__weekend__";
         return "<article class='personal-result-card'><div class='personal-result-image'>"+img+"</div><div class='personal-result-body'><span class='personal-result-category'>"+esc(a.category||"Activity")+"</span><h3>"+esc(a.title)+"</h3><p>"+esc(a.town||a.location||"Devon & Cornwall")+" · "+esc(displayPrice(a))+"</p>"+(daysText?"<small>"+esc(daysText)+"</small>":"")+whyText+(dateFit?"<small class='personal-session-fit'>✓ Runs on "+esc(shortDate(state.targetDate))+"</small>":"")+"<div class='personal-result-actions'><a class='button button-soft' href='"+url+"'>View</a><button type='button' class='button button-soft' data-save='"+esc(a.id)+"'>"+(saved?"Saved":"Save")+"</button><button type='button' class='button button-primary' data-plan='"+esc(a.id)+"'>"+(planned?"Planned":"Plan")+"</button></div></div></article>";
