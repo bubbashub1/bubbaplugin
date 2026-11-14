@@ -390,14 +390,19 @@ void bhHydrateSaved();
    The Admin menu editor must not override the public header navigation. */
 (function(){
   const MAIN_NAV=[
-    {label:"Find activities",url:"/directory.html"},
-    {label:"My Hub",url:"/my-hub.html"},
-    {label:"Support & Guidance",url:"/help-support.html"},
-    {label:"Class Leaders",url:"/leader.html"},
-    {label:"Account",url:"/account.html"}
+    {label:"Find activities",url:"/directory.html",matches:["/directory","/activity","/venue"]},
+    {label:"Events",url:"/events.html",matches:["/events","/calendar"]},
+    {label:"My Hub",url:"/my-hub.html",matches:["/my-hub","/family-section"]},
+    {label:"Support & Guidance",url:"/help-support.html",matches:["/help-support"]},
+    {label:"Class Leaders",url:"/leader.html",matches:["/leader","/leader/"]},
+    {label:"My Account",url:"/account.html",matches:["/account","/account/"]}
   ];
+  const path=location.pathname.replace(/\\/+$/,"")||"/";
   const applyMainNav=()=>document.querySelectorAll(".site-header .main-nav").forEach(nav=>{
-    nav.innerHTML=MAIN_NAV.map(x=>'<a href="'+bhEscape(x.url)+'">'+bhEscape(x.label)+'</a>').join("");
+    nav.innerHTML=MAIN_NAV.map(item=>{
+      const active=item.matches.some(route=>path===route||path.startsWith(route+"/"));
+      return '<a href="'+bhEscape(item.url)+'"'+(active?' aria-current="page" class="is-active"':'')+'>'+bhEscape(item.label)+'</a>';
+    }).join("");
     const header=nav.closest(".site-header");
     const toggle=header?.querySelector(".mobile-nav-toggle");
     if(nav.dataset.bhCloseBound!=="true"){
