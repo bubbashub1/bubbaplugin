@@ -16,7 +16,7 @@
    ["/family-section.html?section=suggested","Suggested groups & activities","✦","suggested"],
    ["/family-section.html?section=messages","My Messages","✉","messages"],
    ["/planner.html","My Planner","▦","planner"],
-   ["/account/saved-activities.html","Saved activities","♡","saved"],
+   ["/account/saved-activities.html","Manage saved activities","♡","saved-library"],
    ["/account/family.html","My Family","♧","family"],
    ["/account/preferences.html","Preferences","⚙","preferences"],
    ["/account/profile.html","My Profile","☺","profile"],
@@ -37,7 +37,13 @@
   side.addEventListener("keydown",event=>{if(event.key==="Escape")setMenuOpen(false);});
   links.forEach(([href,label,icon])=>{
    const a=document.createElement("a");a.href=href;
-   const active=path===href||((href==="/planner.html")&&path==="/account/planner.html");
+   const target=new URL(href,location.origin);
+   const currentParams=new URLSearchParams(location.search);
+   const targetParams=target.searchParams;
+   const samePath=path===target.pathname.replace(/\\/+$/,"")||((href==="/planner.html")&&path==="/account/planner.html");
+   const queryKeys=[...targetParams.keys()];
+   const sameQuery=queryKeys.every(key=>currentParams.get(key)===targetParams.get(key));
+   const active=samePath&&sameQuery;
    if(active){a.setAttribute("aria-current","page")}
    const i=document.createElement("span");i.className="family-v3-nav-icon";i.setAttribute("aria-hidden","true");i.textContent=icon;
    const t=document.createElement("span");t.textContent=label;a.append(i,t);nav.append(a);
