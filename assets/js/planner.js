@@ -46,7 +46,7 @@ window.bhInitPlanner = async function(root=document){
     napWindows=Array.isArray(payload.napWindows)?payload.napWindows:napWindows;napCsrf=payload.csrf||napCsrf;renderNapWindows();napStatus.textContent="Nap window saved to your Bubba Hub account.";return true;
   }
   async function loadNapWindows(){
-    if(!napPanel||!signedIn||adminOnly)return;
+    if(!napPanel||!signedIn||adminOnly||new URLSearchParams(location.search).get("embed")==="directory")return;
     try{
       const familyResponse=await fetch("/api/my-hub.php?view=family",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
       const family=await familyResponse.json();
