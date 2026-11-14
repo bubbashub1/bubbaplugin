@@ -6,8 +6,9 @@
     const esc=window.bhEscape||function(x){return String(x??"").replace(/[&<>"']/g,function(m){return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])})};
     const days=["Any day","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
     const budgets=[["Any budget",""],["Free","0"],["Up to £5","5"],["Up to £10","10"],["Up to £15","15"],["Up to £20","20"],["Up to £30","30"]];
-    const state={step:1,children:[],activities:[],day:"",region:"",town:"",budget:"",category:"",manualAge:""};
+    const requestedChildId=new URLSearchParams(location.search).get("child_id")||"";
     const pref=(()=>{try{return JSON.parse(localStorage.getItem("bhPreferences")||"{}")}catch{return{}}})();
+    const state={step:1,children:[],activities:[],day:"",region:"",town:"",budget:"",category:"",categories:Array.isArray(pref.categories)?pref.categories:[],freeActivities:!!pref.freeActivities,termTime:!!pref.termTime,manualAge:"",focusChildId:requestedChildId};
     state.region=pref.region||"";
     state.town=pref.town||"";
     state.day=pref.day||"";
@@ -81,9 +82,10 @@
       if(state.children.length){
         family.innerHTML=state.children.map((c,i)=>{
           const age=ageYears(c.date_of_birth);
-          return "<label class='personal-choice'><input type='checkbox' data-child-index='"+i+"' checked><span><b>👶 "+esc(c.name||"Child")+"</b><small>"+esc(age===null?"Age not set":age<2?Math.round(age*12)+" months":Math.floor(age)+" years")+"</small></span></label>";
+          const focused=!state.focusChildId||String(c.id)===String(state.focusChildId);
+          return "<label class='personal-choice'><input type='checkbox' data-child-index='"+i+"' "+(focused?"checked":"")+(state.focusChildId&&!focused?" disabled":"")+"><span><b>👶 "+esc(c.name||"Child")+"</b><small>"+esc(age===null?"Age not set":age<2?Math.round(age*12)+" months":Math.floor(age)+" years")+"</small></span></label>";
         }).join("");
-        family.innerHTML+="<label class='personal-choice'><input type='checkbox' data-all-family checked><span><b>👨‍👩‍👧‍👦 All family</b><small>Match around everyone's ages</small></span></label>";
+        if(!state.focusChildId)family.innerHTML+="<label class='personal-choice'><input type='checkbox' data-all-family checked><span><b>👨‍👩‍👧‍👦 All family</b><small>Match around everyone's ages</small></span></label>";
       }else{
         family.innerHTML="<div class='personal-empty-inline'><strong>No family profiles yet.</strong><span>Add children in My Hub for automatic age matching, or use an age range below.</span></div>";
         $("manualAgeWrap").hidden=false;
@@ -103,6 +105,11 @@
     }
 
     function selectedAges(){
+      if(state.focusChildId){
+        const child=state.children.find(c=>String(c.id)===String(state.focusChildId));
+        const focusedAge=ageYears(child?.date_of_birth);
+        return focusedAge===null?[]:[focusedAge];
+      }
       if(state.children.length){
         const boxes=[...root.querySelectorAll("[data-child-index]:checked")];
         const ages=boxes.map(b=>ageYears(state.children[Number(b.dataset.childIndex)].date_of_birth)).filter(v=>v!==null);
@@ -197,6 +204,7 @@
       $("categoryChoices").innerHTML=list.map(c=>"<button type='button' class='personal-chip "+((!state.category&&c==="Anything")||state.category===c?"is-selected":"")+"' data-category='"+esc(c==="Anything"?"":c)+"'>"+esc(c)+"</button>").join("");
       $("categoryChoices").querySelectorAll("[data-category]").forEach(btn=>btn.addEventListener("click",function(){
         state.category=btn.dataset.category||"";
+        state.categories=state.category?[state.category]:[];
         renderCategories();
       }));
     }
@@ -235,13 +243,17 @@
         else if(price<=Number(state.budget))score+=16;
         else score-=24;
       }else score+=3;
-      if(state.category)score+=String(a.category||"").toLowerCase()===state.category.toLowerCase()?15:0;
+      const wantedCategories=state.categories.length?state.categories:(state.category?[state.category]:[]);
+      if(wantedCategories.length&&wantedCategories.some(c=>String(a.category||"").toLowerCase()===String(c).toLowerCase()))score+=18;
       if(ages.length){
         const fits=ages.filter(age=>ageMatches(a,age)).length;
         if(fits===ages.length)score+=38;
         else if(fits)score+=18;
         else score-=28;
       }
+      if(state.freeActivities&&price!==null&&price>0)score-=32;
+      const isTermTimeOnly=a.term_time_only===true||a.term_time_only===1||String(a.term_time_only).toLowerCase()==="yes"||(Array.isArray(a.venues)?a.venues:[]).some(v=>(Array.isArray(v.sessions)?v.sessions:[]).some(s=>s.term_time_only===true||s.term_time_only===1||String(s.term_time_only).toLowerCase()==="yes"));
+      if(state.termTime&&isTermTimeOnly)score+=8;
       if(window.bhIsSaved&&bhIsSaved(a.id))score+=8;
       if(window.bhIsPlanned&&bhIsPlanned(a.id))score+=5;
       return score;
@@ -249,9 +261,11 @@
 
     function renderResults(){
       const ages=selectedAges();
-      const ranked=state.activities.map(a=>({a,s:score(a,ages)})).filter(x=>x.s>-10).sort((x,y)=>y.s-x.s||String(x.a.title).localeCompare(String(y.a.title))).slice(0,8).map(x=>x.a);
+      const focusedChild=state.focusChildId?state.children.find(c=>String(c.id)===String(state.focusChildId)):null;
+      const focusedAge=focusedChild?ageYears(focusedChild.date_of_birth):null;
+      const ranked=state.activities.map(a=>({a,s:score(a,ages)})).filter(x=>x.s>-10&&!(focusedAge!==null&&activityRanges(x.a).length&&!ageMatches(x.a,focusedAge))).sort((x,y)=>y.s-x.s||String(x.a.title).localeCompare(String(y.a.title))).slice(0,8).map(x=>x.a);
       const list=$("personalResultList");
-      $("resultsTitle").textContent=ranked.length?"Ideas for your family":"Let's widen the search";
+      $("resultsTitle").textContent=ranked.length?(focusedChild?"Suggested groups for "+focusedChild.name:"Ideas for your family"):"Let's widen the search";
       const pieces=[];
       if(ages.length)pieces.push(ages.length===1?"age match":"age matches");
       if(state.targetDate==="__weekend__")pieces.push("this weekend");
@@ -259,7 +273,7 @@
       else if(state.day)pieces.push(state.day);
       if(state.town)pieces.push(state.town);else if(state.region)pieces.push(state.region);
       if(state.category)pieces.push(state.category);
-      $("resultsSummary").textContent=ranked.length?"Showing "+ranked.length+" picks · "+(pieces.join(" · ")||"based on your choices"):"We couldn't find enough matches with those choices. Try another day, area or budget.";
+      $("resultsSummary").textContent=ranked.length?"Showing "+ranked.length+" picks · "+(pieces.join(" · ")||"based on your choices")+(focusedChild?" · matched to "+focusedChild.name+"'s age and your saved family preferences":""):"We couldn't find enough suitable matches. Try another day, area or budget.";
       if(!ranked.length){
         list.innerHTML="<div class='personal-no-results'><span>✨</span><h3>Nothing quite fits yet</h3><p>Try changing one of your choices rather than starting over.</p><button type='button' class='button button-soft' id='widenSearch'>Change choices</button></div>";
         $("widenSearch").onclick=()=>{ $("personalResults").hidden=true; setStep(2); window.scrollTo({top:0,behavior:"smooth"}); };
@@ -270,8 +284,20 @@
         const url=typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id);
         const img=a.image_url?("<img src='"+esc(a.image_url)+"' alt='' loading='lazy'>"):"<div class='personal-result-placeholder'>✦</div>";
         const daysText=[...sessionDays(a)].join(" · ");
+        const why=[];
+        if(ages.length&&ages.some(age=>ageMatches(a,age)))why.push("Age suitable");
+        if(state.town&&String(a.town||"").toLowerCase()===state.town.toLowerCase())why.push("Your town");
+        else if(state.region&&String(a.region||"").toLowerCase()===state.region.toLowerCase())why.push("Your area");
+        if(state.day&&sessionDays(a).has(state.day))why.push("Preferred day");
+        const matchedCategories=state.categories.length?state.categories:(state.category?[state.category]:[]);
+        if(matchedCategories.some(c=>String(a.category||"").toLowerCase()===String(c).toLowerCase()))why.push("Your interests");
+        const price=activityPrice(a);
+        if(state.budget!==""&&price!==null&&price<=Number(state.budget))why.push("Within budget");
+        if(state.freeActivities&&price===0)why.push("Free activities");
+        if(state.termTime&&(a.term_time_only===true||a.term_time_only===1||String(a.term_time_only).toLowerCase()==="yes"||(Array.isArray(a.venues)?a.venues:[]).some(v=>(Array.isArray(v.sessions)?v.sessions:[]).some(s=>s.term_time_only===true||s.term_time_only===1||String(s.term_time_only).toLowerCase()==="yes"))))why.push("Term-time preference");
+        const whyText=why.length?"<small class='personal-why'>Why recommended: "+esc(why.join(" · "))+"</small>":"";
         const dateFit=state.targetDate&&state.targetDate!=="__weekend__";
-        return "<article class='personal-result-card'><div class='personal-result-image'>"+img+"</div><div class='personal-result-body'><span class='personal-result-category'>"+esc(a.category||"Activity")+"</span><h3>"+esc(a.title)+"</h3><p>"+esc(a.town||a.location||"Devon & Cornwall")+" · "+esc(displayPrice(a))+"</p>"+(daysText?"<small>"+esc(daysText)+"</small>":"")+(dateFit?"<small class='personal-session-fit'>✓ Runs on "+esc(shortDate(state.targetDate))+"</small>":"")+"<div class='personal-result-actions'><a class='button button-soft' href='"+url+"'>View</a><button type='button' class='button button-soft' data-save='"+esc(a.id)+"'>"+(saved?"Saved":"Save")+"</button><button type='button' class='button button-primary' data-plan='"+esc(a.id)+"'>"+(planned?"Planned":"Plan")+"</button></div></div></article>";
+        return "<article class='personal-result-card'><div class='personal-result-image'>"+img+"</div><div class='personal-result-body'><span class='personal-result-category'>"+esc(a.category||"Activity")+"</span><h3>"+esc(a.title)+"</h3><p>"+esc(a.town||a.location||"Devon & Cornwall")+" · "+esc(displayPrice(a))+"</p>"+(daysText?"<small>"+esc(daysText)+"</small>":"")+whyText+(dateFit?"<small class='personal-session-fit'>✓ Runs on "+esc(shortDate(state.targetDate))+"</small>":"")+"<div class='personal-result-actions'><a class='button button-soft' href='"+url+"'>View</a><button type='button' class='button button-soft' data-save='"+esc(a.id)+"'>"+(saved?"Saved":"Save")+"</button><button type='button' class='button button-primary' data-plan='"+esc(a.id)+"'>"+(planned?"Planned":"Plan")+"</button></div></div></article>";
       }).join("");
       list.querySelectorAll("[data-save]").forEach(btn=>btn.onclick=()=>{const saved=bhToggleSaved(btn.dataset.save);btn.textContent=saved?"Saved":"Save"});
       list.querySelectorAll("[data-plan]").forEach(btn=>btn.onclick=()=>{const planned=bhTogglePlanned(btn.dataset.plan);btn.textContent=planned?"Planned":"Plan"});
@@ -303,14 +329,20 @@
           state.region=saved.region||state.region;
           state.town=saved.town||state.town;
           state.day=saved.day||state.day;
-          state.budget=saved.maxPrice!==undefined?String(saved.maxPrice||""):(saved.freeActivities?"0":state.budget);
+          state.budget=saved.maxPrice!==undefined&&saved.maxPrice!==null&&saved.maxPrice!==""?String(saved.maxPrice):(saved.freeActivities?"0":state.budget);
+          state.freeActivities=!!saved.freeActivities;
+          state.termTime=!!saved.termTime;
           const preferred=Array.isArray(saved.categories)?saved.categories:[];
+          state.categories=preferred;
           state.category=preferred[0]||state.category;
           localStorage.setItem("bhPreferences",JSON.stringify(saved));
           $("personalRegion").value=state.region||"";
         }
       }
       renderChoices();
+      const focusedChild=state.focusChildId?state.children.find(c=>String(c.id)===String(state.focusChildId)):null;
+      if(state.focusChildId&&!focusedChild){state.focusChildId="";renderChoices();$("personalMessage").textContent="That child profile could not be found. Choose a family member to continue.";}
+      else if(focusedChild){const heading=root.querySelector("[data-panel='1'] h2");if(heading)heading.textContent="Find activities for "+focusedChild.name+".";const help=root.querySelector("[data-panel='1'] .personal-help");if(help)help.textContent="We'll prioritise groups suitable for "+focusedChild.name+"'s age and use your saved family preferences for day, area, budget and interests.";}
       fillRegions();
       initWhenChoices();
       renderBudgetChoices();
