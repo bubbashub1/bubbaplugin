@@ -136,6 +136,9 @@ RewriteRule ^(?:pages|articles)/[a-z0-9-]+/?$ wordpress-content.html [L,QSA]
 # Hub Demo belongs to WordPress; do not let the generic activity slug fallback catch it.
 RewriteRule ^hub-demo/?$ index.php [L,QSA]
 
+# Page Manager public pages have their own namespace to avoid activity slug collisions.
+RewriteRule ^content/([a-z0-9-]+)/?$ page.php?slug=$1 [B,L,QSA]
+
 # Clean activity URLs: /{activity-slug}/
 # IMPORTANT: never rewrite an existing physical file as an activity slug.
 RewriteCond %{REQUEST_FILENAME} !-f

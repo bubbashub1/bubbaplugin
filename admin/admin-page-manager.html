@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8"><base href="/"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Page Manager · Admin · Bubba Hub</title>
+<link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/admin-settings.css"><link rel="stylesheet" href="/assets/css/admin-support-v2.css">
+<style>
+.bh-pages{max-width:1180px;margin:0 auto;padding:24px 16px 64px}.bh-pages-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px}.bh-pages-head h1{margin:.2rem 0}.bh-pages-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.bh-pages-toolbar input,.bh-pages-toolbar select,.bh-page-form input,.bh-page-form textarea{box-sizing:border-box;width:100%;padding:12px;border:1px solid #cbd9ce;border-radius:9px;background:#fff;font:inherit}.bh-pages-toolbar input{max-width:420px}.bh-pages-table-wrap{overflow-x:auto;background:#fff;border:1px solid #dce8df;border-radius:14px}.bh-pages-table{width:100%;border-collapse:collapse;min-width:600px}.bh-pages-table th,.bh-pages-table td{text-align:left;padding:13px 15px;border-bottom:1px solid #edf2ed}.bh-pages-table th{background:#f4f8f4;color:#355b43;font-size:.84rem}.bh-pages-table tr:last-child td{border-bottom:0}.bh-page-actions{display:flex;gap:7px;flex-wrap:wrap}.bh-page-actions button{border:0;background:#edf5ed;color:#20563b;border-radius:7px;padding:8px 10px;font:inherit;font-weight:650;cursor:pointer}.bh-page-status{font-size:.8rem;font-weight:750}.bh-page-status.published{color:#267047}.bh-page-status.draft{color:#98651b}.bh-page-status.archived{color:#69746c}.bh-page-editor{background:#fff;border:1px solid #dce8df;border-radius:14px;padding:20px;margin-top:22px}.bh-page-editor[hidden]{display:none}.bh-page-form{display:grid;gap:14px}.bh-page-form label{display:grid;gap:6px;font-weight:700;color:#31533d}.bh-page-form textarea{min-height:250px;resize:vertical;font-family:ui-monospace,monospace;font-size:.9rem}.bh-page-form .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.bh-page-tree-row td:first-child{white-space:nowrap}.bh-page-parent{font-size:.85rem;color:#647568}.bh-page-form select{box-sizing:border-box;width:100%;padding:12px;border:1px solid #cbd9ce;border-radius:9px;background:#fff;font:inherit}.bh-page-editor-actions{display:flex;gap:9px;flex-wrap:wrap}.bh-page-note{padding:12px 14px;border-radius:9px;background:#f2f7f2;color:#47634d}.bh-page-message{min-height:24px;color:#276b43}.bh-page-message.error{color:#a12f2f}@media(max-width:650px){.bh-pages-head{align-items:flex-start;flex-direction:column}.bh-page-form .two{grid-template-columns:1fr}.bh-page-editor{padding:14px}}
+</style></head>
+<body class="bh-admin-v2">
+<header class="site-header"><a class="brand" href="/index.html"><img class="brand-logo" src="/images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav"><a href="/directory.html">Find activities</a><a href="/my-hub.html">My Hub</a><a href="/admin/">Admin</a></nav><a class="button button-soft" href="/account.html">My account</a></header>
+<main class="bh-pages">
+<div class="admin-back"><a href="/admin/">← Admin dashboard</a></div>
+<div class="bh-pages-head"><div><span class="eyebrow">Website management</span><h1>Page Manager</h1><p>Create and manage ordinary Bubba Hub website pages.</p></div><button class="button button-primary" id="newPage" type="button">+ Add new page</button></div>
+<p class="bh-page-note">System pages such as Activities, Family Hub and Leader Dashboard are protected and are not editable here. New pages start as drafts.</p><div id="pageSetup" class="bh-page-note" hidden><strong>One-time setup needed.</strong> Create the Page Manager tables securely in the Bubba Hub database. <button class="button button-primary" id="setupPages" type="button">Set up Page Manager</button></div>
+<div class="bh-pages-toolbar"><input id="pageSearch" type="search" placeholder="Search pages by title or URL" aria-label="Search pages"><select id="pageFilter" aria-label="Filter pages"><option value="all">All pages</option><option value="published">Published</option><option value="draft">Drafts</option><option value="archived">Archived</option></select></div>
+<div class="bh-pages-table-wrap"><table class="bh-pages-table"><thead><tr><th>Page</th><th>URL</th><th>Status</th><th>Updated</th><th>Actions</th></tr></thead><tbody id="pageRows"><tr><td colspan="5">Loading pages…</td></tr></tbody></table></div>
+<section class="bh-page-editor" id="pageEditor" hidden>
+<div class="bh-pages-head"><div><span class="eyebrow">Page editor</span><h2 id="editorHeading">Add a page</h2></div><button class="button button-soft" id="closeEditor" type="button">Close</button></div>
+<form class="bh-page-form" id="pageForm">
+<input type="hidden" id="pageId">
+<div class="two"><label>Page title<input id="pageTitle" maxlength="190" required placeholder="e.g. About Bubba Hub"></label><label>Page URL / slug<input id="pageSlug" maxlength="190" required placeholder="about-bubba-hub"></label></div>
+<label>Parent page (optional)<select id="pageParent"><option value="">No parent — top level</option></select></label>
+<label>Short description<textarea id="pageDescription" rows="2" maxlength="500" placeholder="A short introduction for search engines and page previews"></textarea></label>
+<label>Page content (HTML)<textarea id="pageContent" required placeholder="<h2>Welcome</h2>\n<p>Write your page content here…</p>"></textarea></label>
+<label>Google description<input id="pageMeta" maxlength="300" placeholder="Search result description"></label>
+<div class="bh-page-note">Stage 1 uses a simple content editor. Content is sanitised before saving. Visual blocks, image uploads and drag-and-drop layouts are planned for Stage 2.</div>
+<div class="bh-page-editor-actions"><button class="button button-primary" type="submit" id="saveDraft">Save draft</button><button class="button button-soft" type="button" id="publishPage">Publish page</button><button class="button button-soft" type="button" id="previewPage">Preview</button></div>
+<p class="bh-page-message" id="pageMessage" role="status"></p>
+</form></section>
+</main>
+<script src="/assets/js/admin-page-manager.js" defer></script>
+</body></html>
