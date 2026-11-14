@@ -8,7 +8,7 @@
     const budgets=[["Any budget",""],["Free","0"],["Up to £5","5"],["Up to £10","10"],["Up to £15","15"],["Up to £20","20"],["Up to £30","30"]];
     const requestedChildId=new URLSearchParams(location.search).get("child_id")||"";
     const pref=(()=>{try{return JSON.parse(localStorage.getItem("bhPreferences")||"{}")}catch{return{}}})();
-    const state={step:1,children:[],activities:[],day:"",region:"",town:"",budget:"",category:"",categories:Array.isArray(pref.categories)?pref.categories:[],manualAge:"",focusChildId:requestedChildId};
+    const state={step:1,children:[],activities:[],day:"",region:"",town:"",budget:"",category:"",categories:Array.isArray(pref.categories)?pref.categories:[],freeActivities:!!pref.freeActivities,termTime:!!pref.termTime,manualAge:"",focusChildId:requestedChildId};
     state.region=pref.region||"";
     state.town=pref.town||"";
     state.day=pref.day||"";
@@ -251,6 +251,8 @@
         else if(fits)score+=18;
         else score-=28;
       }
+      if(state.freeActivities&&price!==null&&price>0)score-=32;
+      if(state.termTime){const sessions=(Array.isArray(a.venues)?a.venues:[]).flatMap(v=>Array.isArray(v.sessions)?v.sessions:[]);if(sessions.some(s=>s.term_time_only===true||s.term_time_only===1||String(s.term_time_only).toLowerCase()==="yes"))score+=8;}
       if(window.bhIsSaved&&bhIsSaved(a.id))score+=8;
       if(window.bhIsPlanned&&bhIsPlanned(a.id))score+=5;
       return score;
@@ -290,6 +292,8 @@
         if(matchedCategories.some(c=>String(a.category||"").toLowerCase()===String(c).toLowerCase()))why.push("Your interests");
         const price=activityPrice(a);
         if(state.budget!==""&&price!==null&&price<=Number(state.budget))why.push("Within budget");
+        if(state.freeActivities&&price===0)why.push("Free activities");
+        if(state.termTime&&(Array.isArray(a.venues)?a.venues:[]).some(v=>(Array.isArray(v.sessions)?v.sessions:[]).some(s=>s.term_time_only===true||s.term_time_only===1||String(s.term_time_only).toLowerCase()==="yes")))why.push("Term-time preference");
         const whyText=why.length?"<small class='personal-why'>Why recommended: "+esc(why.join(" · "))+"</small>":"";
         const dateFit=state.targetDate&&state.targetDate!=="__weekend__";
         return "<article class='personal-result-card'><div class='personal-result-image'>"+img+"</div><div class='personal-result-body'><span class='personal-result-category'>"+esc(a.category||"Activity")+"</span><h3>"+esc(a.title)+"</h3><p>"+esc(a.town||a.location||"Devon & Cornwall")+" · "+esc(displayPrice(a))+"</p>"+(daysText?"<small>"+esc(daysText)+"</small>":"")+whyText+(dateFit?"<small class='personal-session-fit'>✓ Runs on "+esc(shortDate(state.targetDate))+"</small>":"")+"<div class='personal-result-actions'><a class='button button-soft' href='"+url+"'>View</a><button type='button' class='button button-soft' data-save='"+esc(a.id)+"'>"+(saved?"Saved":"Save")+"</button><button type='button' class='button button-primary' data-plan='"+esc(a.id)+"'>"+(planned?"Planned":"Plan")+"</button></div></div></article>";
@@ -324,7 +328,9 @@
           state.region=saved.region||state.region;
           state.town=saved.town||state.town;
           state.day=saved.day||state.day;
-          state.budget=saved.maxPrice!==undefined?String(saved.maxPrice||""):(saved.freeActivities?"0":state.budget);
+          state.budget=saved.maxPrice!==undefined&&saved.maxPrice!==null&&saved.maxPrice!==""?String(saved.maxPrice):(saved.freeActivities?"0":state.budget);
+          state.freeActivities=!!saved.freeActivities;
+          state.termTime=!!saved.termTime;
           const preferred=Array.isArray(saved.categories)?saved.categories:[];
           state.categories=preferred;
           state.category=preferred[0]||state.category;
