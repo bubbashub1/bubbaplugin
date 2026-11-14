@@ -171,6 +171,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     wrap.innerHTML="<div class='pro-modal' role='dialog' aria-modal='true'><h2>"+esc(title)+"</h2><p>"+esc(intro)+"</p><form class='pro-form'>"+fieldHtml+"<div class='pro-form-actions'><button type='button' class='button button-soft' data-cancel>Cancel</button><button class='button button-primary' type='submit'>Save</button></div></form></div>";
     document.body.appendChild(wrap);
     const form=wrap.querySelector("form");
+    fields.forEach(field=>{const control=form.elements[field.name];if(control&&field.value!==undefined)control.value=String(field.value);});
     const close=()=>{
       wrap.remove();
       document.removeEventListener("keydown",onKey);
@@ -656,8 +657,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
     el.innerHTML=sorted.map(x=>{
       const timing=x.time+(x.endTime?" – "+x.endTime:" · 1 hour");
       const type=x.type?"<small class='pro-day-type'>"+esc(x.type)+"</small>":"";
-      return "<div class='pro-day-row'><div class='pro-day-time'>"+esc(timing)+"</div><div>"+type+"<strong>"+esc(x.title)+"</strong><span>"+esc(x.detail||"")+"</span></div><div class='pro-card-actions'><button type='button' data-day-delete='"+esc(x.id)+"'>Remove</button></div></div>";
+      return "<div class='pro-day-row'><div class='pro-day-time'>"+esc(timing)+"</div><div>"+type+"<strong>"+esc(x.title)+"</strong><span>"+esc(x.detail||"")+"</span></div><div class='pro-card-actions'><button type='button' data-day-edit='"+esc(x.id)+"'>Edit</button><button type='button' data-day-delete='"+esc(x.id)+"'>Remove</button></div></div>";
     }).join("");
+    el.querySelectorAll("[data-day-edit]").forEach(b=>b.onclick=()=>editDayPlan(b.dataset.dayEdit));
     el.querySelectorAll("[data-day-delete]").forEach(b=>b.onclick=()=>{
       dayPlan=dayPlan.filter(x=>x.id!==b.dataset.dayDelete);
       write(keys.dayPlan,dayPlan);renderDayPlan();renderProCalendar();
@@ -673,12 +675,34 @@ document.addEventListener("DOMContentLoaded",async()=>{
     return {value,label:labelHour+":"+String(mins).padStart(2,"0")+" "+suffix};
   });
 
+  function editDayPlan(id){
+    const item=dayPlan.find(x=>String(x.id)===String(id));if(!item)return;
+    modal("Edit day plan","Update this planned time block.",[
+      {name:"time",label:"Start time",type:"select",required:true,className:"pro-time-select",options:planTimeOptions,value:item.time},
+      {name:"endTime",label:"End time",type:"select",required:true,className:"pro-time-select",options:planTimeOptions,value:item.endTime},
+      {name:"type",label:"Type",type:"select",value:item.type,options:[
+        {value:"Nap",label:"Nap window"},{value:"Meal",label:"Meal"},{value:"Nursery",label:"Nursery / school"},
+        {value:"Travel",label:"Travel"},{value:"Appointment",label:"Appointment"},{value:"Routine",label:"Routine"},{value:"Other",label:"Other"}
+      ]},
+      {name:"title",label:"What is happening?",value:item.title},
+      {name:"detail",label:"Notes",value:item.detail}
+    ],d=>{
+      const start=timeMinutes(d.time),end=timeMinutes(d.endTime);
+      if(start===null||end===null||end<=start){alert("Please choose an end time after the start time.");return}
+      Object.assign(item,{time:d.time,endTime:d.endTime,type:d.type,title:d.title||(d.type==="Nap"?"Nap window":""),detail:d.detail});
+      dayPlan.sort((a,b)=>String(a.time||"").localeCompare(String(b.time||"")));
+      write(keys.dayPlan,dayPlan);renderDayPlan();renderProCalendar();
+      showProSaveStatus("✓ Updated your day plan");
+      void saveProState().then(ok=>showProSaveStatus(ok?"✓ Saved to your Bubba Hub account":"✓ Saved on this device"));
+    });
+  }
+
   function addDayPlan(){
     modal("Add to your day","Create a reusable daily time block — perfect for naps, meals, nursery, travel or appointments.",[
       {name:"time",label:"Start time",type:"select",required:true,className:"pro-time-select",options:planTimeOptions},
       {name:"endTime",label:"End time",type:"select",required:true,className:"pro-time-select",options:planTimeOptions},
       {name:"type",label:"Type",type:"select",options:[
-        {value:"Nap",label:"Nap / sleep"},{value:"Meal",label:"Meal"},{value:"Nursery",label:"Nursery / school"},
+        {value:"Nap",label:"Nap window"},{value:"Meal",label:"Meal"},{value:"Nursery",label:"Nursery / school"},
         {value:"Travel",label:"Travel"},{value:"Appointment",label:"Appointment"},{value:"Routine",label:"Routine"},{value:"Other",label:"Other"}
       ]},
       {name:"title",label:"What is happening?"},
@@ -686,7 +710,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     ],d=>{
       const start=timeMinutes(d.time),end=timeMinutes(d.endTime);
       if(start===null||end===null||end<=start){alert("Please choose an end time after the start time.");return}
-      const item={id:uid("day"),time:d.time,endTime:d.endTime,type:d.type,title:d.title,detail:d.detail};
+      const item={id:uid("day"),time:d.time,endTime:d.endTime,type:d.type,title:d.title||(d.type==="Nap"?"Nap window":""),detail:d.detail};
       dayPlan.push(item);
       dayPlan.sort((a,b)=>String(a.time||"").localeCompare(String(b.time||"")));
       write(keys.dayPlan,dayPlan);
