@@ -340,3 +340,17 @@ body.bh-subpage-v2 .hub-family-card :is(button,a){max-width:100%;white-space:nor
   :is(body.bh-account-v2,body.bh-subpage-v2) .page-heading{gap:10px;}
   :is(body.bh-account-v2,body.bh-subpage-v2) .page-heading .button{width:100%;text-align:center;}
 }
+
+
+/* Mobile family workspace navigation: compact dropdown instead of a horizontal link strip. */
+.family-v3-menu-toggle{display:none;}
+@media(max-width:767px){
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar{padding:10px;border-radius:14px;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-menu-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:48px;padding:12px 15px;border:1px solid #cfe1dc;border-radius:12px;background:#e8f3f1;color:#174e49;font:700 15px 'Quicksand',sans-serif;text-align:left;cursor:pointer;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-menu-chevron{font-size:20px;line-height:1;transition:transform .18s ease;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-menu-toggle.is-open .family-v3-menu-chevron{transform:rotate(180deg);}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand{padding:10px 8px 8px;margin:0;border:0;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav{display:none;flex-direction:column;overflow:visible;gap:4px;padding:8px 0 2px;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav.is-open{display:flex;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav a{flex:0 0 auto;width:100%;min-height:46px;padding:11px 13px;white-space:normal;font-size:14px;}
+}
