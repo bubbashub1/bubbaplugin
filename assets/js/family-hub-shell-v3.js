@@ -40,7 +40,8 @@
    const target=new URL(href,location.origin);
    const currentParams=new URLSearchParams(location.search);
    const targetParams=target.searchParams;
-   const samePath=path===target.pathname.replace(/\\/+$/,"")||((href==="/planner.html")&&path==="/account/planner.html");
+   const targetPath=target.pathname.endsWith("/")?target.pathname.slice(0,-1)||"/":target.pathname;
+   const samePath=path===targetPath||((href==="/planner.html")&&path==="/account/planner.html");
    const queryKeys=[...targetParams.keys()];
    const sameQuery=queryKeys.every(key=>currentParams.get(key)===targetParams.get(key));
    const active=samePath&&sameQuery;
