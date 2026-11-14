@@ -36,13 +36,17 @@ window.bhInitPlanner = async function(root=document){
     const sorted=[...napWindows].sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.start).localeCompare(String(b.start)));
     napList.innerHTML=sorted.length?sorted.map(n=>"<article class='planner-nap-item'><div><strong>"+esc(names.get(String(n.child_id))||"Child")+"</strong><span>"+esc(n.date)+" · "+esc(n.start)+"–"+esc(n.end)+"</span></div><div><button type='button' data-nap-edit='"+esc(n.id)+"'>Edit</button><button type='button' data-nap-remove='"+esc(n.id)+"'>Remove</button></div></article>").join(""):"<p class='muted'>No nap windows added yet.</p>";
     napList.querySelectorAll("[data-nap-edit]").forEach(b=>b.onclick=()=>{const n=napWindows.find(x=>String(x.id)===b.dataset.napEdit);if(!n)return;editingNapId=String(n.id);napChild.value=String(n.child_id);napDate.value=n.date;napStart.value=n.start;napEnd.value=n.end;napSave.textContent="Update nap window";napCancel.hidden=false;napStatus.textContent="Editing nap window.";});
-    napList.querySelectorAll("[data-nap-remove]").forEach(b=>b.onclick=()=>{napWindows=napWindows.filter(x=>String(x.id)!==b.dataset.napRemove);void saveNapWindows();});
+    napList.querySelectorAll("[data-nap-remove]").forEach(b=>b.onclick=()=>{const previous=[...napWindows];napWindows=napWindows.filter(x=>String(x.id)!==b.dataset.napRemove);void saveNapWindows(previous);});
   }
-  async function saveNapWindows(){
+  async function saveNapWindows(previous=null){
     if(!signedIn||adminOnly||!napPanel)return false;
     const response=await fetch("/api/planner-pro.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"save_nap_windows",csrf:napCsrf,napWindows})}).catch(()=>null);
     const payload=response?await response.json().catch(()=>null):null;
-    if(!response?.ok||!payload?.ok){napStatus.textContent="Could not save this nap window. Your existing planner data has not been changed.";return false;}
+    if(!response?.ok||!payload?.ok){
+      if(Array.isArray(previous)){napWindows=previous;renderNapWindows();}
+      napStatus.textContent="Could not save this nap window. Your saved planner data has not been changed.";
+      return false;
+    }
     napWindows=Array.isArray(payload.napWindows)?payload.napWindows:napWindows;napCsrf=payload.csrf||napCsrf;renderNapWindows();napStatus.textContent="Nap window saved to your Bubba Hub account.";return true;
   }
   async function loadNapWindows(){
@@ -67,9 +71,10 @@ window.bhInitPlanner = async function(root=document){
     const childId=Number(napChild.value),date=napDate.value,start=napStart.value,end=napEnd.value;
     if(!childId||!date||!start||!end||end<=start){napStatus.textContent="Choose a child, day and a finish time after the start time.";return;}
     const item={id:editingNapId||("nap-"+Date.now().toString(36)),child_id:childId,date,start,end};
+    const previous=[...napWindows];
     napWindows=napWindows.filter(n=>String(n.id)!==String(item.id)&&!(Number(n.child_id)===childId&&n.date===date));
     napWindows.push(item);
-    if(await saveNapWindows())resetNapForm();
+    if(await saveNapWindows(previous))resetNapForm();
   });
   napCancel?.addEventListener("click",resetNapForm);
 
