@@ -129,6 +129,17 @@ try {
 
     $state=$body['state']??null;
     if(!is_array($state)) bh_pro_response(422,['ok'=>false,'error'=>'state_required']);
+    // Planner Pro writes its own state object. Preserve the Free nap-window
+    // collection when the Pro client posts a state version that predates it.
+    if (!array_key_exists('freeNapWindows',$state)) {
+        $existingStmt=$db->prepare("SELECT state_json FROM bh_planner_pro_state WHERE user_id=? LIMIT 1");
+        $existingStmt->execute([$userId]);
+        $existingJson=$existingStmt->fetchColumn();
+        $existingState=is_string($existingJson)?json_decode($existingJson,true):[];
+        if(is_array($existingState)&&isset($existingState['freeNapWindows'])&&is_array($existingState['freeNapWindows'])) {
+            $state['freeNapWindows']=$existingState['freeNapWindows'];
+        }
+    }
     $encoded=json_encode($state,JSON_UNESCAPED_SLASHES);
     if(!is_string($encoded)) bh_pro_response(422,['ok'=>false,'error'=>'state_invalid']);
     if(strlen($encoded)>500000) bh_pro_response(413,['ok'=>false,'error'=>'state_too_large']);
