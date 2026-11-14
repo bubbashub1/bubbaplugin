@@ -401,7 +401,7 @@ void bhHydrateSaved();
   const applyMainNav=()=>document.querySelectorAll(".site-header .main-nav").forEach(nav=>{
     nav.innerHTML=MAIN_NAV.map(item=>{
       const active=item.matches.some(route=>path===route||path.startsWith(route+"/"));
-      return '<a href="'+bhEscape(item.url)+'"'+(active?' aria-current="page" class="is-active"':'')+'>'+bhEscape(item.label)+'</a>';
+      return '<a href="'+bhEscape(item.url)+'"'+(active?' aria-current="page" class="active"':'')+'>'+bhEscape(item.label)+'</a>';
     }).join("");
     const header=nav.closest(".site-header");
     const toggle=header?.querySelector(".mobile-nav-toggle");
