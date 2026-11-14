@@ -386,18 +386,18 @@ void bhHydrateSaved();
   else initMobileNav();
 })();
 
-/* Main navigation is intentionally fixed site-wide.
-   The Admin menu editor must not override the public header navigation. */
+/* Keep the existing public navigation unchanged.
+   The mobile workspace dropdown is handled by the family hub shell. */
 (function(){
   const MAIN_NAV=[
     {label:"Find activities",url:"/directory.html"},
     {label:"My Hub",url:"/my-hub.html"},
     {label:"Support & Guidance",url:"/help-support.html"},
     {label:"Class Leaders",url:"/leader.html"},
-    {label:"Account",url:"/account.html"}
+    {label:"My Account",url:"/account.html"}
   ];
   const applyMainNav=()=>document.querySelectorAll(".site-header .main-nav").forEach(nav=>{
-    nav.innerHTML=MAIN_NAV.map(x=>'<a href="'+bhEscape(x.url)+'">'+bhEscape(x.label)+'</a>').join("");
+    nav.innerHTML=MAIN_NAV.map(item=>'<a href="'+bhEscape(item.url)+'">'+bhEscape(item.label)+'</a>').join("");
     const header=nav.closest(".site-header");
     const toggle=header?.querySelector(".mobile-nav-toggle");
     if(nav.dataset.bhCloseBound!=="true"){

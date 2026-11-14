@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="../assets/css/styles.css">
 <title>My Profile · Bubba Hub</title>
 <meta name="description" content="Manage your Bubba Hub profile details.">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/subpages-v2.css"><link rel="stylesheet" href="/assets/css/family-hub-unified.css?v=20261029"><link rel="stylesheet" href="/assets/css/family-hub-v3.css?v=20261111"></head>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/subpages-v2.css"><link rel="stylesheet" href="/assets/css/family-hub-unified.css?v=20261029"><link rel="stylesheet" href="/assets/css/family-hub-v3.css?v=20261114-mobile-dropdown"></head>
 <body class="bh-subpage-v2">
 <header class="site-header"><a class="brand" href="../index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="../directory.html">Find activities</a><a href="../events.html">Events</a><a href="../venues.html">Venues</a><a href="../planner.html">My planner</a><a href="../calendar.html">Calendar</a><a href="../my-hub.html">My Hub</a><a href="../leader.html">For class leaders</a><a href="../admin.html">Admin</a></nav><a class="button button-soft" href="../account.html">My account</a></header>
 <nav class="bh-family-nav" aria-label="Family Hub navigation"><a href="/my-hub.html">My Hub</a><a href="/planner.html">My Planner</a><a href="/account/saved-activities.html">Saved</a><a href="/account/preferences.html">Preferences</a><a href="/account.html">My Account</a></nav><main class="app-shell account-page">
@@ -27,7 +27,7 @@
 <div class="account-profile-grid">
 <label>First name<input name="first_name" type="text" autocomplete="given-name" maxlength="80" placeholder="First name"></label>
 <label>Last name<input name="last_name" type="text" autocomplete="family-name" maxlength="80" placeholder="Last name"></label>
-<label>Date of birth<input name="date_of_birth" type="date" autocomplete="bday"></label>
+<label>Date of birth<input name="date_of_birth" type="date" autocomplete="bday" aria-describedby="dobFormatHint"><small id="dobFormatHint" class="bh-date-hint">Choose your date of birth or enter it directly.</small></label>
 </div>
 <div class="profile-address-section">
 <div class="profile-address-heading"><span class="eyebrow">Billing &amp; bookings</span><h3>Home address</h3><p>We’ll use this address for bookings, invoices and billing when needed. It is kept private.</p></div>
@@ -59,5 +59,5 @@
   </div>
   <div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div>
 </footer>
-<script src="../assets/js/app.js"></script><script src="../assets/js/account-profile.js"></script>
-<script src="/assets/js/family-hub-shell-v3.js?v=20261112-planner-profile" defer></script></body></html>
+<script src="../assets/js/app.js"></script><script src="../assets/js/account-profile.js?v=20261113-family-ui"></script>
+<script src="/assets/js/family-hub-shell-v3.js?v=20261114-mobile-dropdown" defer></script></body></html>
