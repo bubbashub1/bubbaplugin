@@ -390,12 +390,12 @@ void bhHydrateSaved();
    The Admin menu editor must not override the public header navigation. */
 (function(){
   const MAIN_NAV=[
-    {label:"Find activities",url:"/directory.html",matches:["/directory","/activity","/venue"]},
-    {label:"Events",url:"/events.html",matches:["/events","/calendar"]},
-    {label:"My Hub",url:"/my-hub.html",matches:["/my-hub","/family-section"]},
-    {label:"Support & Guidance",url:"/help-support.html",matches:["/help-support"]},
-    {label:"Class Leaders",url:"/leader.html",matches:["/leader","/leader/"]},
-    {label:"My Account",url:"/account.html",matches:["/account","/account/"]}
+    {label:"Find activities",url:"/directory.html",matches:["/directory.html","/directory","/activity","/venue"]},
+    {label:"Events",url:"/events.html",matches:["/events.html","/events","/calendar.html","/calendar"]},
+    {label:"My Hub",url:"/my-hub.html",matches:["/my-hub.html","/my-hub","/family-section","/planner.html"]},
+    {label:"Support & Guidance",url:"/help-support.html",matches:["/help-support.html","/help-support"]},
+    {label:"Class Leaders",url:"/leader.html",matches:["/leader.html","/leader","/leader/"]},
+    {label:"My Account",url:"/account.html",matches:["/account.html","/account","/account/"]}
   ];
   const path=location.pathname.replace(/\\/+$/,"")||"/";
   const applyMainNav=()=>document.querySelectorAll(".site-header .main-nav").forEach(nav=>{
