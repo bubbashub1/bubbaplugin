@@ -38,6 +38,20 @@
       </div>
     </div>
 
+    <section class="admin-panel planner-nap-panel" id="napWindowPanel" hidden aria-labelledby="napWindowHeading">
+      <div class="planner-toolbar-copy"><span class="eyebrow">Simple daily planning</span><h2 id="napWindowHeading">Nap window</h2><p>Add one planned nap for a child on a particular day. This is a planning note, not sleep tracking.</p></div>
+      <div class="planner-nap-fields">
+        <label for="napChild">Child<select id="napChild" required><option value="">Choose a child</option></select></label>
+        <label for="napDate">Day<input id="napDate" type="date" required></label>
+        <label for="napStart">Start<input id="napStart" type="time" value="13:00" required></label>
+        <label for="napEnd">Finish<input id="napEnd" type="time" value="14:30" required></label>
+        <button class="button button-primary" id="saveNapWindow" type="button">Save nap window</button>
+        <button class="button button-soft" id="cancelNapEdit" type="button" hidden>Cancel edit</button>
+      </div>
+      <p id="napWindowStatus" role="status" aria-live="polite"></p>
+      <div id="napWindowList" class="planner-nap-list"></div>
+    </section>
+
     <div id="plannerProfileNote" class="planner-profile-note" hidden></div>
     <div class="planner-view-controls" id="plannerViewControls" aria-label="Planner view"></div><div class="planner-day-controls" id="dayControls" aria-label="Choose which days to show"></div>
 
