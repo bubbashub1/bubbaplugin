@@ -16,7 +16,7 @@
    ["/family-section.html?section=suggested","Suggested groups & activities","✦","suggested"],
    ["/family-section.html?section=messages","My Messages","✉","messages"],
    ["/planner.html","My Planner","▦","planner"],
-   ["/account/saved-activities.html","Manage saved activities","♡","saved-library"],
+   ["/account/saved-activities.html","Saved activities","♡","saved-library"],
    ["/account/family.html","My Family","♧","family"],
    ["/account/preferences.html","Preferences","⚙","preferences"],
    ["/account/profile.html","My Profile","☺","profile"],
@@ -40,8 +40,7 @@
    const target=new URL(href,location.origin);
    const currentParams=new URLSearchParams(location.search);
    const targetParams=target.searchParams;
-   const targetPath=target.pathname.endsWith("/")?target.pathname.slice(0,-1)||"/":target.pathname;
-   const samePath=path===targetPath||((href==="/planner.html")&&path==="/account/planner.html");
+   const samePath=path===target.pathname.replace(/\\/+$/,"")||((href==="/planner.html")&&path==="/account/planner.html");
    const queryKeys=[...targetParams.keys()];
    const sameQuery=queryKeys.every(key=>currentParams.get(key)===targetParams.get(key));
    const active=samePath&&sameQuery;
