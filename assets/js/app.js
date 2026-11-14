@@ -397,7 +397,7 @@ void bhHydrateSaved();
     {label:"Class Leaders",url:"/leader.html",matches:["/leader.html","/leader","/leader/"]},
     {label:"My Account",url:"/account.html",matches:["/account.html","/account","/account/"]}
   ];
-  const path=location.pathname.replace(/\\/+$/,"")||"/";
+  const path=location.pathname.endsWith("/")?location.pathname.slice(0,-1)||"/":location.pathname;
   const applyMainNav=()=>document.querySelectorAll(".site-header .main-nav").forEach(nav=>{
     nav.innerHTML=MAIN_NAV.map(item=>{
       const active=item.matches.some(route=>path===route||path.startsWith(route+"/"));
