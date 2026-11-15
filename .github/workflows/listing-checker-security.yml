@@ -62,4 +62,11 @@ jobs:
           grep -q "discovery_enabled','0'" database/listing-checker-schema.sql
           grep -q "get('health_enabled','0')" api/listing-checker-health-cron.php
           grep -q "get('discovery_enabled','0')" api/listing-checker-discovery-cron.php
+          grep -q "source_platform" api/admin-listing-checker-settings.php
+          grep -q "search_keywords" api/admin-listing-checker-settings.php
+          grep -q "frequency_hours" api/admin-listing-checker-settings.php
+          grep -q "site:facebook.com" api/listing-checker-discovery-cron.php
+          grep -q "site:instagram.com" api/listing-checker-discovery-cron.php
+          grep -q "DATE_ADD(last_searched_at, INTERVAL frequency_hours HOUR)" api/listing-checker-discovery-cron.php
+          test -f database/listing-checker-search-settings-migration.sql
           grep -q "columnsFor('bh_activity_schedules')" api/listing-checker-health-cron.php
