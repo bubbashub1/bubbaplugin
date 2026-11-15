@@ -36,8 +36,9 @@ try{
   if($hasVenueTown&&$hasDirectVenue)$venueParts[]="SELECT v.activity_id,v.town FROM bh_venues v WHERE v.activity_id IS NOT NULL";
   $venueJoin=$venueParts?"LEFT JOIN (SELECT activity_id,MIN(town) AS town FROM (".implode(' UNION ALL ',$venueParts).") venue_sources GROUP BY activity_id) v ON v.activity_id=a.id":'';
   $townSelect=$venueParts?"COALESCE(v.town,'') AS town":"'' AS town";
+  $canCreateSelect=$hasUserId?'(o.user_id IS NULL OR o.user_id=0) AS can_create_account':'0 AS can_create_account';
   $joinUser=$hasUserId?'u.id=o.user_id':'LOWER(u.email)=LOWER(o.email)';
-  $sql="SELECT a.id,a.title,a.contact_email,a.organiser_id,COALESCE(o.`".$nameCol."`,'') AS current_organisation,u.status AS account_status,u.email AS account_email,".$townSelect." FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_users u ON ".$joinUser." AND u.role IN ('leader','organiser') AND u.status IN ('active','pending') ".$venueJoin." WHERE ".$where." ORDER BY a.title,a.id LIMIT 1000";
+  $sql="SELECT a.id,a.title,a.contact_email,a.organiser_id,COALESCE(o.`".$nameCol."`,'') AS current_organisation,u.status AS account_status,u.email AS account_email,".$canCreateSelect.",".$townSelect." FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_users u ON ".$joinUser." AND u.role IN ('leader','organiser') AND u.status IN ('active','pending') ".$venueJoin." WHERE ".$where." ORDER BY a.title,a.id LIMIT 1000";
   $stmt=$db->prepare($sql);$stmt->execute($params);$listings=$stmt->fetchAll(PDO::FETCH_ASSOC);
   $logs=$db->query("SELECT l.activity_id,l.status,l.sent_at FROM bh_listing_assignment_email_log l INNER JOIN (SELECT activity_id,MAX(id) AS latest_id FROM bh_listing_assignment_email_log GROUP BY activity_id) x ON x.latest_id=l.id")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);foreach($listings as &$item){$log=$logs[(int)$item['id']]??null;$item['email_status']=$log['status']??'not_sent';$item['email_sent_at']=$log['sent_at']??null;}unset($item);$welcome=$db->query("SELECT organiser_id,sent_at FROM bh_listing_assignment_welcome_log")->fetchAll(PDO::FETCH_KEY_PAIR);foreach($listings as &$item){$item['welcome_email_sent_at']=$welcome[(int)$item['organiser_id']]??null;}unset($item);
   bh_assignment_reply(200,['ok'=>true,'listings'=>$listings,'leaders'=>$leaders,'csrf'=>$_SESSION['bh_assignment_csrf']]);
@@ -61,6 +62,37 @@ try{
   $log=$db->prepare("INSERT INTO bh_listing_assignment_welcome_log(organiser_id,user_id,sent_at) VALUES(?,?,NOW()) ON DUPLICATE KEY UPDATE user_id=VALUES(user_id),sent_at=VALUES(sent_at)");
   $log->execute([(int)$listing['organiser_id'],(int)$listing['user_id']]);
   bh_assignment_reply(200,['ok'=>true,'message'=>'Welcome email sent to '.$listing['email'].'.']);
+ }
+ if(($input['action']??'')==='bulk_create_accounts'){
+  $ids=array_values(array_unique(array_filter(array_map('intval',(array)($input['listing_ids']??[])),static fn($id)=>$id>0)));
+  if(!$ids||count($ids)>200)bh_assignment_reply(422,['ok'=>false,'error'=>'Select between 1 and 200 eligible listings.']);
+  if(!$hasUserId)bh_assignment_reply(422,['ok'=>false,'error'=>'Organiser account linking is unavailable.']);
+  require_once __DIR__.'/leader-welcome-email.php';
+  $marks=implode(',',array_fill(0,count($ids),'?'));
+  $stmt=$db->prepare("SELECT a.id,a.title,a.contact_email,a.organiser_id,COALESCE(o.`".$nameCol."`,'') AS organisation_name FROM bh_activities a INNER JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.id IN (".$marks.") AND TRIM(COALESCE(a.contact_email,''))<>'' ORDER BY a.id FOR UPDATE");
+  $stmt->execute($ids);$selected=$stmt->fetchAll(PDO::FETCH_ASSOC);
+  if(count($selected)!==count($ids))bh_assignment_reply(422,['ok'=>false,'error'=>'One or more selected listings are no longer eligible. Refresh the page and try again.']);
+  $groups=[];
+  foreach($selected as $item){
+   $organiserId=(int)$item['organiser_id'];
+   if(!isset($groups[$organiserId]))$groups[$organiserId]=$item;
+  }
+  $created=0;$linked=0;$skipped=0;
+  $db->beginTransaction();
+  try{
+   foreach($groups as $organiserId=>$item){
+    $lock=$db->prepare("SELECT user_id FROM bh_organisers WHERE id=? FOR UPDATE");$lock->execute([(int)$organiserId]);$ownerId=(int)$lock->fetchColumn();
+    if($ownerId>0){$skipped++;continue;}
+    $email=strtolower(trim((string)$item['contact_email']));
+    if(!filter_var($email,FILTER_VALIDATE_EMAIL))throw new RuntimeException('Listing #'.(int)$item['id'].' has an invalid contact email. No accounts were changed.');
+    $result=bh_provision_listing_leader_account($db,(int)$organiserId,$email,'',(string)$item['organisation_name'],(string)$item['title']);
+    $check=$db->prepare("SELECT user_id FROM bh_organisers WHERE id=?");$check->execute([(int)$organiserId]);$newOwner=(int)$check->fetchColumn();
+    if($newOwner<1)throw new RuntimeException('Could not safely link the account for listing #'.(int)$item['id'].'. No accounts were changed.');
+    if($result!==null)$created++;else $linked++;
+   }
+   $db->commit();
+  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+  bh_assignment_reply(200,['ok'=>true,'created'=>$created,'linked'=>$linked,'skipped'=>$skipped,'message'=>$created.' new account(s) created, '.$linked.' existing account(s) linked, '.$skipped.' already-linked organiser profile(s) skipped. No welcome emails have been sent.']);
  }
  if(($input['action']??'')==='create_account'){
   $listingId=(int)($input['listing_id']??0);
