@@ -25,7 +25,7 @@ try{
  $orgStatus=in_array('status',$organiserCols,true)?" AND (o.status IS NULL OR o.status NOT IN ('suspended','inactive'))":'';
  $leaders=$db->query("SELECT o.id AS organiser_id,o.`".$nameCol."` AS organisation_name,u.id AS user_id,u.email FROM bh_organisers o INNER JOIN bh_users u ON ".$leaderJoin." WHERE u.role IN ('leader','organiser') AND u.status='active'".$orgStatus." ORDER BY o.`".$nameCol."`,o.id")->fetchAll(PDO::FETCH_ASSOC);
  if(($_SERVER['REQUEST_METHOD']??'GET')==='GET'){
-  $q=trim((string)($_GET['q']??''));$where="TRIM(COALESCE(a.contact_email,''))<>'' AND (u.id IS NULL OR u.status='pending' OR EXISTS (SELECT 1 FROM bh_listing_assignment_email_log pending WHERE pending.activity_id=a.id AND pending.id=(SELECT MAX(latest.id) FROM bh_listing_assignment_email_log latest WHERE latest.activity_id=a.id) AND pending.status<>'sent'))";
+  $q=trim((string)($_GET['q']??''));$where="TRIM(COALESCE(a.contact_email,''))<>'' AND (u.id IS NULL OR u.status='pending' OR EXISTS (SELECT 1 FROM bh_listing_assignment_email_log pending WHERE pending.activity_id=a.id AND pending.id=(SELECT MAX(latest.id) FROM bh_listing_assignment_email_log latest WHERE latest.activity_id=a.id)) OR EXISTS (SELECT 1 FROM bh_listing_assignment_welcome_log welcome WHERE welcome.organiser_id=a.organiser_id))";
   $params=[];
   if($q!==''){$where.=" AND (a.title LIKE ? OR a.contact_email LIKE ? OR a.id=?)";$params[]='%'.$q.'%';$params[]='%'.$q.'%';$params[]=(int)$q;}
   $hasVenueTown=(bool)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_venues' AND COLUMN_NAME='town'")->fetchColumn();
