@@ -52,7 +52,7 @@ try{
   else throw new RuntimeException('Organiser table has an unsupported required field: '.$field);
   $fields[]=$field;$values[]=$value;
  }
- $quoted=implode(',',array_map(static fn($field)=>'\x60'.$field.'\x60', $fields));$marks=implode(',',array_fill(0,count($fields),'?'));
+ $quoted=implode(',',array_map(static fn($field)=>'`'.$field.'`', $fields));$marks=implode(',',array_fill(0,count($fields),'?'));
  $q=$db->prepare("INSERT INTO bh_organisers($quoted) VALUES($marks)");$q->execute($values);$organiserId=(int)$db->lastInsertId();
   $q=$db->prepare("INSERT INTO bh_account_activation_tokens(user_id,token_hash,code_hash,expires_at,organisation_name,first_name) VALUES(?,?,?,DATE_ADD(NOW(),INTERVAL 7 DAY),?,?)");
   $q->execute([$userId,hash('sha256',$token),hash('sha256',$code),$org,$first]);$db->commit();
