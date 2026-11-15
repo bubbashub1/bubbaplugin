@@ -46,17 +46,34 @@ async function runAction(button){
    const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'Unable to load linked organiser');
    const orgs=data.organisers||[];
    const editor='/admin/admin-organisers-organiser-profiles.html?return=class-leaders&leaderId='+encodeURIComponent(id);
-   if(orgs.length===1){location.href=editor+'&id='+encodeURIComponent(orgs[0].id);return;}
+   const createNew=async()=>{
+    const name=prompt('Enter the name for the new organiser profile:', 'doorsteparts');
+    if(name===null)return;
+    if(!name.trim()){report('A new organiser profile needs a name.');return;}
+    report('Creating new organiser profile…');
+    const created=await fetch('/api/admin-create-organiser-profile.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({leader_id:id,organisation_name:name.trim()})});
+    const result=await created.json();
+    if(created.status===401){location.href='/admin-login.html?next='+encodeURIComponent(location.pathname);return;}
+    if(!created.ok||!result.ok)throw Error(result.message||result.error||'Could not create organiser profile');
+    location.href=editor+'&id='+encodeURIComponent(result.organiser_id);
+   };
+   if(orgs.length===1){
+    const answer=prompt('Enter 1 to edit the existing profile, or 0 to create a new organiser profile:\\n\\n1. '+(orgs[0].name||'Organiser #'+orgs[0].id)+' (ID '+orgs[0].id+')\\n0. Create a new organiser profile');
+    if(answer===null)return;
+    if(answer.trim()==='0'){await createNew();return;}
+    if(answer.trim()==='1'){location.href=editor+'&id='+encodeURIComponent(orgs[0].id);return;}
+    report('No profile opened: enter 1 or 0.');return;
+   }
    if(orgs.length>1){
     const choices=orgs.map((org,index)=>(index+1)+'. '+(org.name||'Organiser #'+org.id)+' (ID '+org.id+')').join('\\n');
-    const answer=prompt('This leader has more than one organiser profile. Enter the number to edit:\\n\\n'+choices);
+    const answer=prompt('Choose an existing profile to edit, or enter 0 to create a new one:\\n\\n'+choices+'\\n0. Create a new organiser profile');
     if(answer===null)return;
+    if(answer.trim()==='0'){await createNew();return;}
     const choice=Number(answer),org=Number.isInteger(choice)&&choice>=1&&choice<=orgs.length?orgs[choice-1]:null;
-    if(!org){report('No profile opened: please enter one of the listed numbers.');return;}
+    if(!org){report('No profile opened: enter one of the listed numbers, or 0 to create a new profile.');return;}
     location.href=editor+'&id='+encodeURIComponent(org.id);return;
    }
-   report('No organiser profile was linked directly to '+email+'. Opening the organiser directory so you can search for their existing profile.');
-   location.href=editor+'&q='+encodeURIComponent(email);
+   await createNew();
   }catch(error){const el=document.getElementById('leaderActionStatus');if(el){el.hidden=false;el.textContent='Could not open organiser profile: '+error.message;}}
   finally{}
   return;

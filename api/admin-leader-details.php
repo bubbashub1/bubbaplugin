@@ -20,11 +20,14 @@ try{
  $hasUserId=in_array('user_id',$cols,true);
  $nameCol=null;foreach(['name','organisation_name','business_name','title'] as $c){if(in_array($c,$cols,true)){$nameCol=$c;break;}}
  $organiserSql="SELECT id".($nameCol?", `$nameCol` AS name":", CAST(id AS CHAR) AS name")." FROM bh_organisers WHERE ";
- if($hasUserId){$organiserSql.="user_id=:uid";if(in_array('email',$cols,true))$organiserSql.=" OR LOWER(email)=LOWER(:email)";}
- elseif(in_array('email',$cols,true))$organiserSql.="LOWER(email)=LOWER(:email)";
+ if($hasUserId){
+  $owned=$db->prepare("SELECT COUNT(*) FROM bh_organisers WHERE user_id=?");$owned->execute([$id]);
+  if((int)$owned->fetchColumn()>0){$organiserSql.="user_id=:uid";$orgParams=['uid'=>$id];}
+  elseif(in_array('email',$cols,true)){$organiserSql.="LOWER(email)=LOWER(:email)";$orgParams=['email'=>$leader['email']];}
+  else{$organiserSql.="user_id=:uid";$orgParams=['uid'=>$id];}
+ }elseif(in_array('email',$cols,true)){$organiserSql.="LOWER(email)=LOWER(:email)";$orgParams=['email'=>$leader['email']];}
  else reply(200,['ok'=>true,'leader'=>$leader,'organisers'=>[],'notice'=>'No organiser ownership field available']);
- $orgStmt=$db->prepare($organiserSql.' ORDER BY id LIMIT 50');
- $orgStmt->execute($hasUserId? (in_array('email',$cols,true)?['uid'=>$id,'email'=>$leader['email']]:['uid'=>$id]):['email'=>$leader['email']]);
+ $orgStmt=$db->prepare($organiserSql.' ORDER BY id LIMIT 50');$orgStmt->execute($orgParams);
  $organisers=$orgStmt->fetchAll(PDO::FETCH_ASSOC);
  $act=$db->prepare("SELECT id,title,status FROM bh_activities WHERE organiser_id=? ORDER BY title LIMIT 200");
  foreach($organisers as &$org){$act->execute([(int)$org['id']]);$org['activities']=$act->fetchAll(PDO::FETCH_ASSOC);}unset($org);
