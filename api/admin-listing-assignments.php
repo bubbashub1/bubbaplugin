@@ -69,17 +69,17 @@ try{
   if(!$hasUserId)bh_assignment_reply(422,['ok'=>false,'error'=>'Organiser account linking is unavailable.']);
   require_once __DIR__.'/leader-welcome-email.php';
   $marks=implode(',',array_fill(0,count($ids),'?'));
-  $stmt=$db->prepare("SELECT a.id,a.title,a.contact_email,a.organiser_id,COALESCE(o.`".$nameCol."`,'') AS organisation_name FROM bh_activities a INNER JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.id IN (".$marks.") AND TRIM(COALESCE(a.contact_email,''))<>'' ORDER BY a.id FOR UPDATE");
-  $stmt->execute($ids);$selected=$stmt->fetchAll(PDO::FETCH_ASSOC);
-  if(count($selected)!==count($ids))bh_assignment_reply(422,['ok'=>false,'error'=>'One or more selected listings are no longer eligible. Refresh the page and try again.']);
-  $groups=[];
-  foreach($selected as $item){
-   $organiserId=(int)$item['organiser_id'];
-   if(!isset($groups[$organiserId]))$groups[$organiserId]=$item;
-  }
   $created=0;$linked=0;$skipped=0;
   $db->beginTransaction();
   try{
+   $stmt=$db->prepare("SELECT a.id,a.title,a.contact_email,a.organiser_id,COALESCE(o.`".$nameCol."`,'') AS organisation_name FROM bh_activities a INNER JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.id IN (".$marks.") AND TRIM(COALESCE(a.contact_email,''))<>'' ORDER BY a.id FOR UPDATE");
+   $stmt->execute($ids);$selected=$stmt->fetchAll(PDO::FETCH_ASSOC);
+   if(count($selected)!==count($ids))throw new RuntimeException('One or more selected listings are no longer eligible. Refresh the page and try again. No accounts were changed.');
+   $groups=[];
+   foreach($selected as $item){
+    $organiserId=(int)$item['organiser_id'];
+    if(!isset($groups[$organiserId]))$groups[$organiserId]=$item;
+   }
    foreach($groups as $organiserId=>$item){
     $lock=$db->prepare("SELECT user_id FROM bh_organisers WHERE id=? FOR UPDATE");$lock->execute([(int)$organiserId]);$ownerId=(int)$lock->fetchColumn();
     if($ownerId>0){$skipped++;continue;}
