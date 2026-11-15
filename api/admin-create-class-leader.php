@@ -22,22 +22,38 @@ try{
  foreach(["ALTER TABLE bh_account_activation_tokens ADD COLUMN organisation_name VARCHAR(190) NULL","ALTER TABLE bh_account_activation_tokens ADD COLUMN first_name VARCHAR(120) NULL","ALTER TABLE bh_account_activation_tokens ADD COLUMN code_hash CHAR(64) NULL","ALTER TABLE bh_account_activation_tokens ADD COLUMN email_sent_at DATETIME NULL"] as $sql){try{$db->exec($sql);}catch(Throwable $ignored){}}
  $q=$db->prepare("SELECT id,role FROM bh_users WHERE LOWER(email)=? LIMIT 1");$q->execute([$email]);
  if($q->fetch(PDO::FETCH_ASSOC))admin_leader_create_reply(409,['ok'=>false,'error'=>'email_already_exists','message'=>'An account already uses this email. Find the existing account instead of creating a duplicate.']);
- $orgCols=$db->query("SHOW COLUMNS FROM bh_organisers")->fetchAll(PDO::FETCH_COLUMN);
- $slugBase=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$org),'-'));if($slugBase==='')$slugBase='organiser';$slug=$slugBase;$n=2;
- while(true){$q=$db->prepare("SELECT id FROM bh_organisers WHERE slug=? LIMIT 1");$q->execute([$slug]);if(!$q->fetchColumn())break;$slug=$slugBase.'-'.$n++;}
- $token=bin2hex(random_bytes(32));$code=(string)random_int(100000,999999);$userId=0;$organiserId=0;
- $db->beginTransaction();
- try{
-  $temporaryHash=password_hash(bin2hex(random_bytes(32)),PASSWORD_DEFAULT);
-  $q=$db->prepare("INSERT INTO bh_users(email,password_hash,role,status) VALUES(?,?,'leader','active')");$q->execute([$email,$temporaryHash]);$userId=(int)$db->lastInsertId();
-  $fields=[];$values=[];
-  if(in_array('user_id',$orgCols,true)){$fields[]='user_id';$values[]=$userId;}
-  $fields=array_merge($fields,['organisation_name','slug','email','status']);$values=array_merge($values,[$org,$slug,$email,'published']);
-  if(in_array('contact_name',$orgCols,true)){$fields[]='contact_name';$values[]=$first.' '.$last;}
-  if(in_array('phone',$orgCols,true)){$fields[]='phone';$values[]=$phone;}
-  if($town!==''&&in_array('town',$orgCols,true)){$fields[]='town';$values[]=$town;}
-  $quoted=implode(',',array_map(fn($f)=>$f,$fields));$marks=implode(',',array_fill(0,count($fields),'?'));
-  $q=$db->prepare("INSERT INTO bh_organisers($quoted) VALUES($marks)");$q->execute($values);$organiserId=(int)$db->lastInsertId();
+ $columnRows=$db->query("SHOW COLUMNS FROM bh_organisers")->fetchAll(PDO::FETCH_ASSOC);$orgCols=[];
+ foreach($columnRows as $row){$field=(string)($row['Field']??'');if($field!=='')$orgCols[$field]=$row;}
+ $nameField=isset($orgCols['organisation_name'])?'organisation_name':(isset($orgCols['name'])?'name':(isset($orgCols['organisation'])?'organisation':(isset($orgCols['business_name'])?'business_name':'')));
+ if($nameField==='')throw new RuntimeException('Organiser table has no supported organisation name field.');
+ $slugBase=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$org),'-'));if($slugBase==='')$slugBase='organiser';
+ $fields=[$nameField];$values=[$org];
+ if(isset($orgCols['slug'])){$slug=$slugBase;$n=2;while(true){$q=$db->prepare("SELECT id FROM bh_organisers WHERE slug=? LIMIT 1");$q->execute([$slug]);if(!$q->fetchColumn())break;$slug=$slugBase.'-'.$n++;}$fields[]='slug';$values[]=$slug;}
+ if(isset($orgCols['user_id'])){$fields[]='user_id';$values[]=$userId;}
+ if(isset($orgCols['email'])){$fields[]='email';$values[]=$email;}
+ if(isset($orgCols['contact_name'])){$fields[]='contact_name';$values[]=$first.' '.$last;}
+ if(isset($orgCols['phone'])){$fields[]='phone';$values[]=$phone!==''?$phone:null;}
+ if(isset($orgCols['town'])){$fields[]='town';$values[]=$town!==''?$town:null;}
+ if(isset($orgCols['status'])){
+  $type=(string)($orgCols['status']['Type']??'');$statusValue='published';
+  if(stripos($type,'enum(')!==false&&!str_contains($type,"'published'"))$statusValue=str_contains($type,"'active'")?'active':(str_contains($type,"'approved'")?'approved':(str_contains($type,"'pending'")?'pending':''));
+  if($statusValue!==''){$fields[]='status';$values[]=$statusValue;}
+ }
+ foreach($orgCols as $field=>$meta){
+  $required=(($meta['Null']??'YES')==='NO')&&($meta['Default']??null)===null&&stripos((string)($meta['Extra']??''),'auto_increment')===false;
+  if(!$required||in_array($field,$fields,true))continue;
+  $lower=strtolower($field);$value='';
+  if(in_array($lower,['created_by','owner_user_id','leader_user_id','account_user_id'],true))$value=$userId;
+  elseif(in_array($lower,['terms_accepted','terms_agreed','organiser_terms_accepted','active','is_active','enabled'],true))$value=1;
+  elseif(in_array($lower,['terms_accepted_at','terms_agreed_at'],true))$value=date('Y-m-d H:i:s');
+  elseif(str_contains($lower,'email'))$value=$email;
+  elseif(str_contains($lower,'phone'))$value=$phone;
+  elseif(str_contains($lower,'name')||str_contains($lower,'title')||str_contains($lower,'address')||str_contains($lower,'town')||str_contains($lower,'city')||str_contains($lower,'region')||str_contains($lower,'county')||str_contains($lower,'description')||str_contains($lower,'about')||str_contains($lower,'notes'))$value='';
+  else throw new RuntimeException('Organiser table has an unsupported required field: '.$field);
+  $fields[]=$field;$values[]=$value;
+ }
+ $quoted=implode(',',array_map(static fn($field)=>'\x60'.$field.'\x60', $fields));$marks=implode(',',array_fill(0,count($fields),'?'));
+ $q=$db->prepare("INSERT INTO bh_organisers($quoted) VALUES($marks)");$q->execute($values);$organiserId=(int)$db->lastInsertId();
   $q=$db->prepare("INSERT INTO bh_account_activation_tokens(user_id,token_hash,code_hash,expires_at,organisation_name,first_name) VALUES(?,?,?,DATE_ADD(NOW(),INTERVAL 7 DAY),?,?)");
   $q->execute([$userId,hash('sha256',$token),hash('sha256',$code),$org,$first]);$db->commit();
  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
