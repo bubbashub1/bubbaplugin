@@ -9,7 +9,8 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 require_once __DIR__.'/db.php';
 $db=bh_mysql();
 $required=['bh_listing_checker_settings','bh_listing_discovery_terms','bh_listing_check_runs','bh_listing_check_findings'];
-foreach($required as $table){$q=$db->prepare('SHOW TABLES LIKE ?');$q->execute([$table]);if(!$q->fetchColumn()){fwrite(STDERR,"Migration required: apply database/listing-checker-schema.sql\n");exit(2);}}
+$tableCheck=$db->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=?');
+foreach($required as $table){$tableCheck->execute([$table]);if(!(int)$tableCheck->fetchColumn()){fwrite(STDERR,"Migration required: apply database/listing-checker-schema.sql\n");exit(2);}}
 $canonicalizeDiscoveryUrl=static function(string $url): ?string {
  $p=parse_url(trim($url));
  if(!is_array($p)||!in_array(strtolower((string)($p['scheme']??'')),['http','https'],true)||empty($p['host'])||isset($p['user'])||isset($p['pass']))return null;
