@@ -25,7 +25,7 @@ if(empty($_SESSION['bh_admin_authenticated'])){
   http_response_code(401); header('Content-Type: application/json; charset=utf-8');
   echo json_encode(['ok'=>false,'error'=>'Admin login required.']); exit;
 }
-try { require __DIR__.'/db.php'; $db=bh_mysql(); } catch (Throwable $e) { http_response_code(500); header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok'=>false,'error'=>'CSV database connection failed. Check server PHP logs.']); exit; }
+try { require __DIR__.'/db.php'; $db=bh_mysql(); require_once __DIR__.'/leader-welcome-email.php'; bh_ensure_leader_activation_table($db); } catch (Throwable $e) { http_response_code(500); header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok'=>false,'error'=>'CSV database connection failed. Check server PHP logs.']); exit; }
 try{$q=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='featured'");if((int)$q->fetchColumn()===0)$db->exec("ALTER TABLE bh_activities ADD COLUMN featured TINYINT(1) NOT NULL DEFAULT 0 AFTER status");}catch(Throwable $ignored){}
 
 function csv_row(array $row): void {
@@ -321,6 +321,7 @@ foreach($rows as $idx=>$row){
     }
     if(($_POST['dry_run']??'')==='1'){$existing?$updated++:$created++;continue;}
     if(!$db->inTransaction())$db->beginTransaction();
+    $welcomePayload=null;
     if($existing){$id=(int)$existing['id'];$organiserId=(int)$existing['organiser_id'];}else{$q=$db->prepare("SELECT id FROM bh_organisers WHERE organisation_name=? LIMIT 1");$q->execute([$org]);$organiserId=(int)$q->fetchColumn();if(!$organiserId){$oslug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$org),'-'));$ob=$oslug;$on=2;$orgCols=table_columns($db,'bh_organisers');if(in_array('slug',$orgCols,true)){while(true){$q=$db->prepare("SELECT id FROM bh_organisers WHERE slug=? LIMIT 1");$q->execute([$oslug]);if(!$q->fetch())break;$oslug=$ob.'-'.$on++;}}
       $insCols=['organisation_name','email','phone','website','status'];$insVals=[$org,$email,$phone,$website,'published'];
       if(in_array('slug',$orgCols,true)){$insCols[]='slug';$insVals[]=$oslug;}
@@ -398,7 +399,7 @@ foreach($rows as $idx=>$row){
       $q->execute($values);
     }
     }
-    optional_activity_fields($db,$row,$id);if(!$existing || (array_key_exists('tags',$row)&&$tags!==''))import_tags($db,$id,$tags);if(!$existing || ($_POST['replace_gallery']??'')==='1')import_images($db,$id,$row);$db->commit();if($existing)$updated++;else$created++;
+    optional_activity_fields($db,$row,$id);if(!$existing || (array_key_exists('tags',$row)&&$tags!==''))import_tags($db,$id,$tags);if(!$existing || ($_POST['replace_gallery']??'')==='1')import_images($db,$id,$row);if(!$existing && in_array('contact_email',$activityCols,true))$db->prepare("UPDATE bh_activities SET contact_email=? WHERE id=?")->execute([$email,$id]);if(!$existing && filter_var($email,FILTER_VALIDATE_EMAIL)){$welcomePayload=bh_provision_listing_leader_account($db,$organiserId,$email,firstv($row,['first_name','contact_first_name']),$org,$title);}$db->commit();if($welcomePayload)bh_send_leader_welcome($welcomePayload['email'],$welcomePayload['first_name'],$welcomePayload['organisation'],$welcomePayload['listing'],$welcomePayload['token'],$welcomePayload['code']);if($existing)$updated++;else$created++;
   }catch(Throwable $e){if($db->inTransaction())$db->rollBack();$failed++;if(count($errors)<20)$errors[]='Row '.$line.': '.$e->getMessage();}
 }
 header('Content-Type: application/json; charset=utf-8');
