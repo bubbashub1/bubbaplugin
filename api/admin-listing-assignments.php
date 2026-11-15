@@ -14,6 +14,7 @@ try{
  $activityCols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);
  $organiserCols=$db->query("SHOW COLUMNS FROM bh_organisers")->fetchAll(PDO::FETCH_COLUMN);
  $userCols=$db->query("SHOW COLUMNS FROM bh_users")->fetchAll(PDO::FETCH_COLUMN);
+ $db->exec("CREATE TABLE IF NOT EXISTS bh_listing_assignment_welcome_log (organiser_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,user_id BIGINT UNSIGNED NOT NULL,sent_at DATETIME NOT NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
  $db->exec("CREATE TABLE IF NOT EXISTS bh_listing_assignment_email_log (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,activity_id BIGINT UNSIGNED NOT NULL,organiser_id BIGINT UNSIGNED NOT NULL,recipient_email VARCHAR(190) NOT NULL,status VARCHAR(20) NOT NULL,sent_at DATETIME NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,INDEX idx_assignment_activity(activity_id),INDEX idx_assignment_organiser(organiser_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
  if(!in_array('organiser_id',$activityCols,true)||!in_array('contact_email',$activityCols,true))bh_assignment_reply(503,['ok'=>false,'error'=>'The listing database does not support contact emails and organiser assignment.']);
  $hasUserId=in_array('user_id',$organiserCols,true);
@@ -36,9 +37,9 @@ try{
   $venueJoin=$venueParts?"LEFT JOIN (SELECT activity_id,MIN(town) AS town FROM (".implode(' UNION ALL ',$venueParts).") venue_sources GROUP BY activity_id) v ON v.activity_id=a.id":'';
   $townSelect=$venueParts?"COALESCE(v.town,'') AS town":"'' AS town";
   $joinUser=$hasUserId?'u.id=o.user_id':'LOWER(u.email)=LOWER(o.email)';
-  $sql="SELECT a.id,a.title,a.contact_email,a.organiser_id,COALESCE(o.`".$nameCol."`,'') AS current_organisation,u.status AS account_status,".$townSelect." FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_users u ON ".$joinUser." AND u.role IN ('leader','organiser') AND u.status IN ('active','pending') ".$venueJoin." WHERE ".$where." ORDER BY a.title,a.id LIMIT 1000";
+  $sql="SELECT a.id,a.title,a.contact_email,a.organiser_id,COALESCE(o.`".$nameCol."`,'') AS current_organisation,u.status AS account_status,u.email AS account_email,".$townSelect." FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_users u ON ".$joinUser." AND u.role IN ('leader','organiser') AND u.status IN ('active','pending') ".$venueJoin." WHERE ".$where." ORDER BY a.title,a.id LIMIT 1000";
   $stmt=$db->prepare($sql);$stmt->execute($params);$listings=$stmt->fetchAll(PDO::FETCH_ASSOC);
-  $logs=$db->query("SELECT l.activity_id,l.status,l.sent_at FROM bh_listing_assignment_email_log l INNER JOIN (SELECT activity_id,MAX(id) AS latest_id FROM bh_listing_assignment_email_log GROUP BY activity_id) x ON x.latest_id=l.id")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);foreach($listings as &$item){$log=$logs[(int)$item['id']]??null;$item['email_status']=$log['status']??'not_sent';$item['email_sent_at']=$log['sent_at']??null;}unset($item);
+  $logs=$db->query("SELECT l.activity_id,l.status,l.sent_at FROM bh_listing_assignment_email_log l INNER JOIN (SELECT activity_id,MAX(id) AS latest_id FROM bh_listing_assignment_email_log GROUP BY activity_id) x ON x.latest_id=l.id")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);foreach($listings as &$item){$log=$logs[(int)$item['id']]??null;$item['email_status']=$log['status']??'not_sent';$item['email_sent_at']=$log['sent_at']??null;}unset($item);$welcome=$db->query("SELECT organiser_id,sent_at FROM bh_listing_assignment_welcome_log")->fetchAll(PDO::FETCH_KEY_PAIR);foreach($listings as &$item){$item['welcome_email_sent_at']=$welcome[(int)$item['organiser_id']]??null;}unset($item);
   bh_assignment_reply(200,['ok'=>true,'listings'=>$listings,'leaders'=>$leaders,'csrf'=>$_SESSION['bh_assignment_csrf']]);
  }
  if(($_SERVER['REQUEST_METHOD']??'')!=='POST')bh_assignment_reply(405,['ok'=>false,'error'=>'GET or POST required.']);
@@ -46,6 +47,21 @@ try{
  if(!is_array($origin)||strtolower((string)($origin['host']??''))!==$host||strtolower((string)($origin['scheme']??''))!=='https'||isset($origin['port']))bh_assignment_reply(403,['ok'=>false,'error'=>'Request origin could not be verified.']);
  $input=json_decode((string)file_get_contents('php://input'),true);if(!is_array($input))bh_assignment_reply(400,['ok'=>false,'error'=>'Invalid request.']);
  if(!hash_equals($_SESSION['bh_assignment_csrf'],(string)($input['csrf']??'')))bh_assignment_reply(403,['ok'=>false,'error'=>'Please refresh the page and try again.']);
+ if(($input['action']??'')==='send_welcome'){
+  $listingId=(int)($input['listing_id']??0);
+  if($listingId<1||!$hasUserId)bh_assignment_reply(422,['ok'=>false,'error'=>'This listing cannot be linked safely.']);
+  require_once __DIR__.'/leader-welcome-email.php';bh_ensure_leader_activation_table($db);
+  $stmt=$db->prepare("SELECT a.id,a.title,a.organiser_id,COALESCE(o.\`".$nameCol."\`,'') AS organisation_name,o.user_id,u.email,u.status FROM bh_activities a INNER JOIN bh_organisers o ON o.id=a.organiser_id INNER JOIN bh_users u ON u.id=o.user_id WHERE a.id=? LIMIT 1");
+  $stmt->execute([$listingId]);$listing=$stmt->fetch(PDO::FETCH_ASSOC);
+  if(!$listing||(int)$listing['user_id']<1)bh_assignment_reply(404,['ok'=>false,'error'=>'No account is linked to this listing’s current organiser profile.']);
+  if(!filter_var((string)$listing['email'],FILTER_VALIDATE_EMAIL))bh_assignment_reply(422,['ok'=>false,'error'=>'The linked account has no valid email address.']);
+  if(!in_array((string)$listing['status'],['pending','active'],true))bh_assignment_reply(422,['ok'=>false,'error'=>'This account is not eligible for a welcome email.']);
+  $credentials=bh_leader_activation_credentials($db,(int)$listing['user_id']);
+  if(!bh_send_leader_welcome((string)$listing['email'],'',(string)$listing['organisation_name'],(string)$listing['title'],$credentials['token'],$credentials['code']))bh_assignment_reply(502,['ok'=>false,'error'=>'The welcome email could not be sent. Please check the mail settings and try again.']);
+  $log=$db->prepare("INSERT INTO bh_listing_assignment_welcome_log(organiser_id,user_id,sent_at) VALUES(?,?,NOW()) ON DUPLICATE KEY UPDATE user_id=VALUES(user_id),sent_at=VALUES(sent_at)");
+  $log->execute([(int)$listing['organiser_id'],(int)$listing['user_id']]);
+  bh_assignment_reply(200,['ok'=>true,'message'=>'Welcome email sent to '.$listing['email'].'.']);
+ }
  if(($input['action']??'')==='create_account'){
   $listingId=(int)($input['listing_id']??0);
   if($listingId<1||!$hasUserId)bh_assignment_reply(422,['ok'=>false,'error'=>'This listing cannot be linked safely because organiser account linking is unavailable.']);
