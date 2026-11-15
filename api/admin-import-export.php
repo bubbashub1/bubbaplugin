@@ -399,7 +399,7 @@ foreach($rows as $idx=>$row){
       $q->execute($values);
     }
     }
-    optional_activity_fields($db,$row,$id);if(!$existing || (array_key_exists('tags',$row)&&$tags!==''))import_tags($db,$id,$tags);if(!$existing || ($_POST['replace_gallery']??'')==='1')import_images($db,$id,$row);if(!$existing && filter_var($email,FILTER_VALIDATE_EMAIL)){$welcomePayload=bh_provision_listing_leader_account($db,$organiserId,$email,firstv($row,['first_name','contact_first_name']),$org,$title);}$db->commit();if($welcomePayload)bh_send_leader_welcome($welcomePayload['email'],$welcomePayload['first_name'],$welcomePayload['organisation'],$welcomePayload['listing'],$welcomePayload['token'],$welcomePayload['code']);if($existing)$updated++;else$created++;
+    optional_activity_fields($db,$row,$id);if(!$existing || (array_key_exists('tags',$row)&&$tags!==''))import_tags($db,$id,$tags);if(!$existing || ($_POST['replace_gallery']??'')==='1')import_images($db,$id,$row);if(!$existing && in_array('contact_email',$activityCols,true))$db->prepare("UPDATE bh_activities SET contact_email=? WHERE id=?")->execute([$email,$id]);if(!$existing && filter_var($email,FILTER_VALIDATE_EMAIL)){$welcomePayload=bh_provision_listing_leader_account($db,$organiserId,$email,firstv($row,['first_name','contact_first_name']),$org,$title);}$db->commit();if($welcomePayload)bh_send_leader_welcome($welcomePayload['email'],$welcomePayload['first_name'],$welcomePayload['organisation'],$welcomePayload['listing'],$welcomePayload['token'],$welcomePayload['code']);if($existing)$updated++;else$created++;
   }catch(Throwable $e){if($db->inTransaction())$db->rollBack();$failed++;if(count($errors)<20)$errors[]='Row '.$line.': '.$e->getMessage();}
 }
 header('Content-Type: application/json; charset=utf-8');
