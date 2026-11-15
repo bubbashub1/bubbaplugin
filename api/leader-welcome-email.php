@@ -33,16 +33,28 @@ function bh_ensure_leader_activation_table(PDO $db):void{
 function bh_provision_listing_leader_account(PDO $db,int $organiserId,string $email,string $firstName,string $organisation,string $listing):?array{
  $email=strtolower(trim($email));
  if($organiserId<1||!filter_var($email,FILTER_VALIDATE_EMAIL))return null;
- $check=$db->prepare("SELECT id FROM bh_users WHERE LOWER(email)=? LIMIT 1");
+ $orgCols=$db->query("SHOW COLUMNS FROM bh_organisers")->fetchAll(PDO::FETCH_COLUMN);
+ $ownerId=0;
+ if(in_array('user_id',$orgCols,true)){
+  $owner=$db->prepare("SELECT user_id FROM bh_organisers WHERE id=? LIMIT 1");
+  $owner->execute([$organiserId]);
+  $ownerId=(int)$owner->fetchColumn();
+  if($ownerId>0)return null;
+ }
+ $check=$db->prepare("SELECT id,role,status FROM bh_users WHERE LOWER(email)=? LIMIT 1");
  $check->execute([$email]);
- if($check->fetchColumn())return null;
- bh_ensure_leader_activation_table($db);
+ $existing=$check->fetch(PDO::FETCH_ASSOC);
+ if($existing){
+  if(in_array(($existing['role']??''),['leader','organiser'],true) && in_array(($existing['status']??''),['active','pending'],true) && in_array('user_id',$orgCols,true)){
+   $db->prepare("UPDATE bh_organisers SET user_id=? WHERE id=? AND (user_id IS NULL OR user_id=0)")->execute([(int)$existing['id'],$organiserId]);
+  }
+  return null;
+ }
  $temporaryHash=password_hash(bin2hex(random_bytes(32)),PASSWORD_DEFAULT);
  $insert=$db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,'leader','pending')");
  $insert->execute([$email,$temporaryHash]);
  $userId=(int)$db->lastInsertId();
  if($userId<1)throw new RuntimeException('Leader account could not be created.');
- $orgCols=$db->query("SHOW COLUMNS FROM bh_organisers")->fetchAll(PDO::FETCH_COLUMN);
  if(in_array('user_id',$orgCols,true)){
   $db->prepare("UPDATE bh_organisers SET user_id=? WHERE id=? AND (user_id IS NULL OR user_id=0)")->execute([$userId,$organiserId]);
  }
