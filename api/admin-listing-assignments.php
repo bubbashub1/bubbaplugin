@@ -51,7 +51,7 @@ try{
   $listingId=(int)($input['listing_id']??0);
   if($listingId<1||!$hasUserId)bh_assignment_reply(422,['ok'=>false,'error'=>'This listing cannot be linked safely.']);
   require_once __DIR__.'/leader-welcome-email.php';bh_ensure_leader_activation_table($db);
-  $stmt=$db->prepare("SELECT a.id,a.title,a.organiser_id,COALESCE(o.\`".$nameCol."\`,'') AS organisation_name,o.user_id,u.email,u.status FROM bh_activities a INNER JOIN bh_organisers o ON o.id=a.organiser_id INNER JOIN bh_users u ON u.id=o.user_id WHERE a.id=? LIMIT 1");
+  $stmt=$db->prepare("SELECT a.id,a.title,a.organiser_id,COALESCE(o.`".$nameCol."`,'') AS organisation_name,o.user_id,u.email,u.status FROM bh_activities a INNER JOIN bh_organisers o ON o.id=a.organiser_id INNER JOIN bh_users u ON u.id=o.user_id WHERE a.id=? LIMIT 1");
   $stmt->execute([$listingId]);$listing=$stmt->fetch(PDO::FETCH_ASSOC);
   if(!$listing||(int)$listing['user_id']<1)bh_assignment_reply(404,['ok'=>false,'error'=>'No account is linked to this listing’s current organiser profile.']);
   if(!filter_var((string)$listing['email'],FILTER_VALIDATE_EMAIL))bh_assignment_reply(422,['ok'=>false,'error'=>'The linked account has no valid email address.']);
@@ -66,7 +66,7 @@ try{
   $listingId=(int)($input['listing_id']??0);
   if($listingId<1||!$hasUserId)bh_assignment_reply(422,['ok'=>false,'error'=>'This listing cannot be linked safely because organiser account linking is unavailable.']);
   require_once __DIR__.'/leader-welcome-email.php';
-  $stmt=$db->prepare("SELECT a.id,a.title,a.contact_email,a.organiser_id,COALESCE(o.\`".$nameCol."\`,'') AS organisation_name,o.user_id FROM bh_activities a INNER JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.id=? AND TRIM(COALESCE(a.contact_email,''))<>'' LIMIT 1");
+  $stmt=$db->prepare("SELECT a.id,a.title,a.contact_email,a.organiser_id,COALESCE(o.`".$nameCol."`,'') AS organisation_name,o.user_id FROM bh_activities a INNER JOIN bh_organisers o ON o.id=a.organiser_id WHERE a.id=? AND TRIM(COALESCE(a.contact_email,''))<>'' LIMIT 1");
   $stmt->execute([$listingId]);$listing=$stmt->fetch(PDO::FETCH_ASSOC);
   if(!$listing)bh_assignment_reply(404,['ok'=>false,'error'=>'Listing or contact email not found.']);
   $email=strtolower(trim((string)$listing['contact_email']));
