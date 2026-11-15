@@ -14,7 +14,7 @@ const post=async body=>{let r=await fetch(API,{method:"POST",credentials:"same-o
 const syncDescription=()=>{if(Q("descriptionEditor"))Q("description").value=Q("descriptionEditor").innerHTML.trim()};
 const schedule=()=>[...document.querySelectorAll(".bh-row")].map(r=>({day:r.querySelector(".day").value,start:r.querySelector(".start").value,end:r.querySelector(".end").value}));
 function saveDraft(){
- const data={fields:{},multi:{},schedule:schedule(),accessibility:[...Q("accessibility").querySelectorAll("input:checked")].map(x=>x.value)};
+ const data={fields:{},multi:{},schedule:schedule(),venues:state.collectVenues?state.collectVenues():[],accessibility:[...Q("accessibility").querySelectorAll("input:checked")].map(x=>x.value)};
  if(Q("descriptionEditor"))data.fields.descriptionEditor=Q("descriptionEditor").innerHTML;
  document.querySelectorAll(".bh-form input,.bh-form select,.bh-form textarea").forEach(x=>{
   if(!x.id)return;
