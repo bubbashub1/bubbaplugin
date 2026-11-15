@@ -38,8 +38,8 @@ try {
   if($method==='GET') {
     $settings=[];
     foreach($db->query('SELECT setting_key,setting_value FROM bh_listing_checker_settings')->fetchAll(PDO::FETCH_ASSOC) as $row) $settings[$row['setting_key']]=$row['setting_value'];
-    $terms=$db->query('SELECT id,term,term_group,regions_json,enabled,last_searched_at FROM bh_listing_discovery_terms ORDER BY term_group,term')->fetchAll(PDO::FETCH_ASSOC);
-    foreach($terms as &$term) {$term['regions']=json_decode((string)$term['regions_json'],true)?:['all'];unset($term['regions_json']);$term['enabled']=(bool)$term['enabled'];}
+    $terms=$db->query('SELECT id,term,term_group,regions_json,source_platform,search_keywords,frequency_hours,enabled,last_searched_at FROM bh_listing_discovery_terms ORDER BY term_group,term')->fetchAll(PDO::FETCH_ASSOC);
+    foreach($terms as &$term) {$term['regions']=json_decode((string)$term['regions_json'],true)?:['all'];unset($term['regions_json']);$term['enabled']=(bool)$term['enabled'];$term['frequency_hours']=(int)$term['frequency_hours'];}
     unset($term);
     $runs=$db->query("SELECT id,check_type,status,started_at,finished_at,processed_count,error_count,summary_json FROM bh_listing_check_runs ORDER BY id DESC LIMIT 20")->fetchAll(PDO::FETCH_ASSOC);
     foreach($runs as &$run){$run['summary']=json_decode((string)$run['summary_json'],true)?:[];unset($run['summary_json']);}unset($run);
@@ -103,7 +103,13 @@ try {
     $term=trim((string)($input['term']??''));
     $group=trim((string)($input['term_group']??'General'));
     $regions=$input['regions']??['all'];
+    $source=(string)($input['source_platform']??'web');
+    $keywords=trim((string)($input['search_keywords']??''));
+    $frequency=filter_var($input['frequency_hours']??4,FILTER_VALIDATE_INT);
     if($term===''||strlen($term)>190||$group===''||strlen($group)>100) bh_lc_reply(422,['ok'=>false,'error'=>'Enter a search term and group']);
+    if(!in_array($source,['web','facebook','instagram'],true)) bh_lc_reply(422,['ok'=>false,'error'=>'Choose a valid search source']);
+    if(strlen($keywords)>255) bh_lc_reply(422,['ok'=>false,'error'=>'Extra keywords must be 255 characters or fewer']);
+    if($frequency===false||!in_array($frequency,[4,8,12,24,72,168,336,720],true)) bh_lc_reply(422,['ok'=>false,'error'=>'Choose a valid repeat interval']);
     if(!is_array($regions)) bh_lc_reply(422,['ok'=>false,'error'=>'Invalid region selection']);
     $allowedRegions=['all','East Cornwall','East Devon','Exeter','Mid Cornwall','Mid Devon','North Cornwall','North Devon','Plymouth','South Cornwall','South Hams','Teignbridge','Torbay','West Cornwall','West Devon'];
     $regions=array_values(array_unique(array_intersect($allowedRegions,$regions)));
@@ -112,11 +118,11 @@ try {
     $enabled=!empty($input['enabled'])?1:0;
     $json=json_encode($regions,JSON_UNESCAPED_UNICODE);
     if($id>0) {
-      $stmt=$db->prepare('UPDATE bh_listing_discovery_terms SET term=?,term_group=?,regions_json=?,enabled=? WHERE id=?');
-      $stmt->execute([$term,$group,$json,$enabled,$id]);
+      $stmt=$db->prepare('UPDATE bh_listing_discovery_terms SET term=?,term_group=?,regions_json=?,source_platform=?,search_keywords=?,frequency_hours=?,enabled=? WHERE id=?');
+      $stmt->execute([$term,$group,$json,$source,$keywords,$frequency,$enabled,$id]);
     } else {
-      $stmt=$db->prepare('INSERT INTO bh_listing_discovery_terms(term,term_group,regions_json,enabled) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE regions_json=VALUES(regions_json),enabled=VALUES(enabled)');
-      $stmt->execute([$term,$group,$json,$enabled]);
+      $stmt=$db->prepare('INSERT INTO bh_listing_discovery_terms(term,term_group,regions_json,source_platform,search_keywords,frequency_hours,enabled) VALUES(?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE regions_json=VALUES(regions_json),source_platform=VALUES(source_platform),search_keywords=VALUES(search_keywords),frequency_hours=VALUES(frequency_hours),enabled=VALUES(enabled)');
+      $stmt->execute([$term,$group,$json,$source,$keywords,$frequency,$enabled]);
     }
     bh_lc_reply(200,['ok'=>true,'message'=>'Search term saved.']);
   }

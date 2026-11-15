@@ -49,7 +49,7 @@ try{
  $run=$db->prepare("INSERT INTO bh_listing_check_runs(check_type,status,started_at) VALUES('discovery','running',NOW())");$run->execute();$runId=(int)$db->lastInsertId();
  if($manualRun){$clear=$db->prepare("INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES(?, '0') ON DUPLICATE KEY UPDATE setting_value='0'");$clear->execute(['discovery_run_now']);}
  $batch=max(1,min(100,(int)$get('batch_size','30')));$requestLimit=max(1,min(200,(int)$get('request_limit','30')));$limit=min($batch,$requestLimit);$runtime=max(30,min(600,(int)$get('max_runtime_seconds','240')));$deadline=microtime(true)+$runtime;
- $terms=$db->query("SELECT id,term,term_group,regions_json FROM bh_listing_discovery_terms WHERE enabled=1 ORDER BY COALESCE(last_searched_at,'1970-01-01 00:00:00') ASC,id ASC LIMIT ".$limit)->fetchAll(PDO::FETCH_ASSOC);
+ $terms=$db->query("SELECT id,term,term_group,regions_json,source_platform,search_keywords,frequency_hours FROM bh_listing_discovery_terms WHERE enabled=1 AND (last_searched_at IS NULL OR DATE_ADD(last_searched_at, INTERVAL frequency_hours HOUR)<=NOW()) ORDER BY COALESCE(last_searched_at,'1970-01-01 00:00:00') ASC,id ASC LIMIT ".$limit)->fetchAll(PDO::FETCH_ASSOC);
  if(!$terms){$summary=json_encode(['processed'=>0,'candidates'=>0,'errors'=>0,'message'=>'No enabled discovery terms']);$u=$db->prepare("UPDATE bh_listing_check_runs SET status='completed',finished_at=NOW(),summary_json=? WHERE id=?");$u->execute([$summary,$runId]);echo $summary."\n";exit;}
  if(!function_exists('curl_init'))throw new RuntimeException('PHP cURL extension is required for discovery searches.');
  if(!function_exists('simplexml_load_string'))throw new RuntimeException('PHP SimpleXML extension is required for discovery searches.');
@@ -64,7 +64,10 @@ try{
   try{
    $regions=json_decode((string)$term['regions_json'],true);if(!is_array($regions)||!$regions)$regions=['all'];
    $scope=in_array('all',$regions,true)?'Devon OR Cornwall':implode(' OR ',$regions);
-   $query=trim((string)$term['term'].' ('.$scope.') family baby toddler activity class');
+   $sourcePlatform=(string)($term['source_platform']??'web');
+   $sourceOperator=$sourcePlatform==='facebook'?'site:facebook.com ':($sourcePlatform==='instagram'?'site:instagram.com ':'');
+   $extraKeywords=trim((string)($term['search_keywords']??''));
+   $query=trim($sourceOperator.(string)$term['term'].' '.$extraKeywords.' ('.$scope.') family baby toddler activity class');
    $url='https://www.bing.com/search?format=rss&q='.rawurlencode($query);
    $ch=curl_init($url);$bodyBuffer='';curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>false,CURLOPT_WRITEFUNCTION=>static function($handle,string $chunk) use (&$bodyBuffer): int { if(strlen($bodyBuffer)+strlen($chunk)>2097152)return 0;$bodyBuffer.=$chunk;return strlen($chunk);},CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>8,CURLOPT_TIMEOUT=>18,CURLOPT_USERAGENT=>'BubbaHub-ListingChecker/1.0 (+https://bubbahub.co.uk)',CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_REDIR_PROTOCOLS=>CURLPROTO_HTTPS]);
    $ok=curl_exec($ch);$body=$bodyBuffer;$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$curlError=curl_error($ch);curl_close($ch);
@@ -81,7 +84,7 @@ try{
     $canonicalUrl=$canonicalizeDiscoveryUrl($source);if($canonicalUrl===null||strlen($canonicalUrl)>1000)continue;
     if(isset($existingWebsites[$canonicalUrl])){$alreadyListed++;continue;}
     $seen->execute([$canonicalUrl]);if($seen->fetchColumn()){$duplicates++;continue;}
-    $candidate=['title'=>$title,'snippet'=>substr($snippet,0,1200),'website'=>$source,'canonical_website'=>$canonicalUrl,'search_term'=>(string)$term['term'],'term_group'=>(string)$term['term_group'],'region_scope'=>$scope,'provider'=>'Bing RSS','evidence_note'=>'Search result only. Verify the organiser, current activity, location and dates directly before treating this as a valid listing.'];
+    $candidate=['title'=>$title,'snippet'=>substr($snippet,0,1200),'website'=>$source,'canonical_website'=>$canonicalUrl,'search_term'=>(string)$term['term'],'search_keywords'=>(string)($term['search_keywords']??''),'term_group'=>(string)$term['term_group'],'source_platform'=>$sourcePlatform,'region_scope'=>$scope,'frequency_hours'=>(int)($term['frequency_hours']??4),'provider'=>'Bing RSS','evidence_note'=>'Search result only. Verify the organiser, current activity, location and dates directly before treating this as a valid listing.'];
     $insert->execute([(int)$term['id'],json_encode($candidate,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE),'discovery_candidate',45,$canonicalUrl]);
     $count++;$candidates++;
    }
