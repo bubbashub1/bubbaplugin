@@ -22,6 +22,9 @@ try{
  foreach(["ALTER TABLE bh_account_activation_tokens ADD COLUMN organisation_name VARCHAR(190) NULL","ALTER TABLE bh_account_activation_tokens ADD COLUMN first_name VARCHAR(120) NULL","ALTER TABLE bh_account_activation_tokens ADD COLUMN code_hash CHAR(64) NULL","ALTER TABLE bh_account_activation_tokens ADD COLUMN email_sent_at DATETIME NULL"] as $sql){try{$db->exec($sql);}catch(Throwable $ignored){}}
  $q=$db->prepare("SELECT id,role FROM bh_users WHERE LOWER(email)=? LIMIT 1");$q->execute([$email]);
  if($q->fetch(PDO::FETCH_ASSOC))admin_leader_create_reply(409,['ok'=>false,'error'=>'email_already_exists','message'=>'An account already uses this email. Find the existing account instead of creating a duplicate.']);
+ $token=bin2hex(random_bytes(32));$code=(string)random_int(100000,999999);$userId=0;$organiserId=0;
+ $db->beginTransaction();
+ $q=$db->prepare("INSERT INTO bh_users(email,password_hash,role,status) VALUES(?,?, 'leader','active')");$q->execute([$email,password_hash(bin2hex(random_bytes(32)),PASSWORD_DEFAULT)]);$userId=(int)$db->lastInsertId();
  $columnRows=$db->query("SHOW COLUMNS FROM bh_organisers")->fetchAll(PDO::FETCH_ASSOC);$orgCols=[];
  foreach($columnRows as $row){$field=(string)($row['Field']??'');if($field!=='')$orgCols[$field]=$row;}
  $nameField=isset($orgCols['organisation_name'])?'organisation_name':(isset($orgCols['name'])?'name':(isset($orgCols['organisation'])?'organisation':(isset($orgCols['business_name'])?'business_name':'')));
@@ -56,8 +59,8 @@ try{
  $q=$db->prepare("INSERT INTO bh_organisers($quoted) VALUES($marks)");$q->execute($values);$organiserId=(int)$db->lastInsertId();
   $q=$db->prepare("INSERT INTO bh_account_activation_tokens(user_id,token_hash,code_hash,expires_at,organisation_name,first_name) VALUES(?,?,?,DATE_ADD(NOW(),INTERVAL 7 DAY),?,?)");
   $q->execute([$userId,hash('sha256',$token),hash('sha256',$code),$org,$first]);$db->commit();
- }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+ }
  $sent=bh_send_leader_welcome($email,$first,$org,'',$token,$code);
  if($sent)$db->prepare("UPDATE bh_account_activation_tokens SET email_sent_at=NOW() WHERE token_hash=?")->execute([hash('sha256',$token)]);
  admin_leader_create_reply(201,['ok'=>true,'user_id'=>$userId,'organiser_id'=>$organiserId,'status'=>'active','organiser_status'=>'published','invitation_sent'=>$sent,'message'=>$sent?'Leader account created, approved and active. Invitation email sent.':'Account created, approved and active, but the invitation email could not be sent. Check email configuration and arrange a resend.']);
-}catch(Throwable $e){error_log('Admin create class leader: '.$e->getMessage());admin_leader_create_reply(500,['ok'=>false,'error'=>'leader_account_create_failed','message'=>'The class leader account could not be created.']);}
+}catch(Throwable $e){if(isset($db)&&$db instanceof PDO&&$db->inTransaction())$db->rollBack();error_log('Admin create class leader: '.$e->getMessage());admin_leader_create_reply(500,['ok'=>false,'error'=>'leader_account_create_failed','message'=>'The class leader account could not be created.']);}
