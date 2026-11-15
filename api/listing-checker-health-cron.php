@@ -105,7 +105,7 @@ try{
  $closureSearch=static function(string $title,string $town) use (&$externalUsed,$externalLimit,$record): void {
   if($externalUsed >= $externalLimit || !function_exists('curl_init') || !function_exists('simplexml_load_string')) return;
   $title=trim(preg_replace('/\\s+/u',' ',$title)??$title);$town=trim(preg_replace('/\\s+/u',' ',$town)??$town);
-  if($title==='' || mb_strlen($title)>120) return;
+  if($title==='' || strlen($title)>480) return;
   $query='"'.$title.'"'.($town!==''?' "'.$town.'"':'').' (closed OR closure OR closing OR "no longer running" OR "permanently closed" OR cancelled OR "not running")';
   $url='https://www.bing.com/search?format=rss&q='.rawurlencode($query);
   $ch=curl_init($url);$buffer='';curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>false,CURLOPT_WRITEFUNCTION=>static function($h,string $chunk) use (&$buffer): int {if(strlen($buffer)+strlen($chunk)>524288)return 0;$buffer.=$chunk;return strlen($chunk);},CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>10,CURLOPT_USERAGENT=>'BubbaHub-ListingChecker/1.1 (+https://bubbahub.co.uk)',CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS]);
