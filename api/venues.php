@@ -68,6 +68,7 @@ try {
             v.postcode,
             v.latitude,
             v.longitude,
+            v.updated_at,
             {$activityCount} AS activity_count
         FROM bh_venues v
         WHERE TRIM(COALESCE(v.venue_name, '')) <> ''
