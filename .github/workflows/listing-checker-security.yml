@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/listing-health-checker
+      - feature/listing-checker-structured-search
   pull_request:
     branches:
       - main
