@@ -48,7 +48,7 @@ try{
   else throw new RuntimeException('Unsupported required organiser field: '.$field);
   $fields[]=$field;$values[]=$value;
  }
- $quoted=implode(',',array_map(static fn($field)=>'\x60'.$field.'\x60',$fields));
+ $quoted=implode(',',array_map(static fn($field)=>chr(96).$field.chr(96),$fields));
  $marks=implode(',',array_fill(0,count($fields),'?'));
  $db->beginTransaction();
  $insert=$db->prepare("INSERT INTO bh_organisers ($quoted) VALUES ($marks)");$insert->execute($values);
