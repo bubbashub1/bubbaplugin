@@ -59,7 +59,6 @@ try{
  $q=$db->prepare("INSERT INTO bh_organisers($quoted) VALUES($marks)");$q->execute($values);$organiserId=(int)$db->lastInsertId();
   $q=$db->prepare("INSERT INTO bh_account_activation_tokens(user_id,token_hash,code_hash,expires_at,organisation_name,first_name) VALUES(?,?,?,DATE_ADD(NOW(),INTERVAL 7 DAY),?,?)");
   $q->execute([$userId,hash('sha256',$token),hash('sha256',$code),$org,$first]);$db->commit();
- }
  $sent=bh_send_leader_welcome($email,$first,$org,'',$token,$code);
  if($sent)$db->prepare("UPDATE bh_account_activation_tokens SET email_sent_at=NOW() WHERE token_hash=?")->execute([hash('sha256',$token)]);
  admin_leader_create_reply(201,['ok'=>true,'user_id'=>$userId,'organiser_id'=>$organiserId,'status'=>'active','organiser_status'=>'published','invitation_sent'=>$sent,'message'=>$sent?'Leader account created, approved and active. Invitation email sent.':'Account created, approved and active, but the invitation email could not be sent. Check email configuration and arrange a resend.']);
