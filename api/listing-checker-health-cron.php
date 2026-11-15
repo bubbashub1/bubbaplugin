@@ -84,21 +84,46 @@ try{
  $read=$db->prepare('SELECT '.implode(',',$select).' FROM bh_activities a'.($hasOrg?' LEFT JOIN bh_organisers o ON o.id=a.organiser_id':'').' WHERE a.id=?');
  // Refresh an existing matching finding instead of creating duplicate review items on every scheduled pass.
  $findExisting=$db->prepare("SELECT id FROM bh_listing_check_findings WHERE check_type='health' AND activity_id=? AND finding_type=? ORDER BY id LIMIT 1");
- $refreshFinding=$db->prepare("UPDATE bh_listing_check_findings SET candidate_json=?,confidence=100,checked_at=NOW(),review_status=IF(review_status='resolved','new',review_status),reviewed_at=IF(review_status='resolved',NULL,reviewed_at) WHERE id=?");
- $insertFinding=$db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,candidate_json,finding_type,confidence,checked_at,review_status) VALUES('health',?,?,?,100,NOW(),'new')");
+ $refreshFinding=$db->prepare("UPDATE bh_listing_check_findings SET candidate_json=?,source_url=?,confidence=?,checked_at=NOW(),review_status=IF(review_status='resolved','new',review_status),reviewed_at=IF(review_status='resolved',NULL,reviewed_at) WHERE id=?");
+ $insertFinding=$db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,candidate_json,finding_type,confidence,source_url,checked_at,review_status) VALUES('health',?,?,?,?,?,NOW(),'new')");
  $detectedTypes=[];
  $record=static function(int $activityId,string $type,array $data) use($findExisting,$refreshFinding,$insertFinding,&$detectedTypes): void {
    $detectedTypes[$type]=true;
    $json=json_encode($data,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);
    $findExisting->execute([$activityId,$type]);$existing=$findExisting->fetchColumn();
-   if($existing){$refreshFinding->execute([$json,(int)$existing]);return;}
-   $insertFinding->execute([$activityId,$json,$type]);
+   $sourceUrl=isset($data['signals'][0]['source_url'])?(string)$data['signals'][0]['source_url']:null;$confidence=$type==='possible_closure'?65:100;
+   if($existing){$refreshFinding->execute([$json,$sourceUrl,$confidence,(int)$existing]);return;}
+   $insertFinding->execute([$activityId,$json,$type,$confidence,$sourceUrl]);
  };
  // A successful check is re-queued for the configured interval. Failures use bounded exponential backoff.
  $markDone=$db->prepare("UPDATE bh_listing_check_queue SET status='pending',attempts=0,last_checked_at=NOW(),last_error=NULL,next_check_at=DATE_ADD(NOW(), INTERVAL ".$interval." HOUR) WHERE id=?");
  $markFailed=$db->prepare("UPDATE bh_listing_check_queue SET status='failed',attempts=attempts+1,last_checked_at=NOW(),last_error=?,next_check_at=DATE_ADD(NOW(), INTERVAL LEAST(24,POW(2,LEAST(attempts,4))) HOUR) WHERE id=?");
  $markSkipped=$db->prepare("UPDATE bh_listing_check_queue SET status='skipped',attempts=attempts+1,last_checked_at=NOW(),last_error=?,next_check_at=NULL WHERE id=?");
  $staleAfterDays=max(30,min(1095,(int)$get('stale_after_days','180')));
+ $closureEnabled=$get('closure_checks_enabled','1')==='1';
+ $externalLimit=max(0,min(200,(int)$get('request_limit','30')));$externalUsed=0;
+ $closureSearch=static function(string $title,string $town) use (&$externalUsed,$externalLimit,$record): void {
+  if($externalUsed >= $externalLimit || !function_exists('curl_init') || !function_exists('simplexml_load_string')) return;
+  $title=trim(preg_replace('/\\s+/u',' ',$title)??$title);$town=trim(preg_replace('/\\s+/u',' ',$town)??$town);
+  if($title==='' || mb_strlen($title)>120) return;
+  $query='"'.$title.'"'.($town!==''?' "'.$town.'"':'').' (closed OR closure OR closing OR "no longer running" OR "permanently closed" OR cancelled OR "not running")';
+  $url='https://www.bing.com/search?format=rss&q='.rawurlencode($query);
+  $ch=curl_init($url);$buffer='';curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>false,CURLOPT_WRITEFUNCTION=>static function($h,string $chunk) use (&$buffer): int {if(strlen($buffer)+strlen($chunk)>524288)return 0;$buffer.=$chunk;return strlen($chunk);},CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>10,CURLOPT_USERAGENT=>'BubbaHub-ListingChecker/1.1 (+https://bubbahub.co.uk)',CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS]);
+  $ok=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);$externalUsed++;
+  if($ok!==true||$http<200||$http>=300||$buffer==='') return;
+  libxml_use_internal_errors(true);$xml=simplexml_load_string($buffer,'SimpleXMLElement',LIBXML_NONET|LIBXML_NOCDATA);libxml_clear_errors();if(!$xml||!isset($xml->channel->item))return;
+  $signals=[];
+  foreach($xml->channel->item as $item){
+   $headline=trim((string)$item->title);$snippet=trim(strip_tags((string)$item->description));$evidence=trim((string)$item->link);
+   $text=strtolower($headline.' '.$snippet);
+   if(!preg_match('/\\b(closed|closure|closing|no longer running|permanently closed|cancelled|not running)\\b/i',$text))continue;
+   if($evidence===''||!filter_var($evidence,FILTER_VALIDATE_URL))continue;
+   $host=strtolower((string)parse_url($evidence,PHP_URL_HOST));
+   $signals[]=['headline'=>substr($headline,0,500),'snippet'=>substr($snippet,0,900),'source_url'=>$evidence,'source_host'=>$host];
+   if(count($signals)>=3)break;
+  }
+  if($signals)$record((int)($GLOBALS['bh_lc_current_activity']??0),'possible_closure',['field'=>'external_search','query'=>$query,'provider'=>'Bing RSS','signals'=>$signals,'evidence_note'=>'Search-engine evidence only. This is not confirmation of closure; check the organiser and current timetable before changing the listing.']);
+ };
  $done=0;$errors=0;$skipped=0;
  foreach($queue as $item){
   if(microtime(true)>$deadline)break;
@@ -129,6 +154,7 @@ try{
    $activeSchedules=(int)($row['active_schedule_count']??0);$openEndedSchedules=(int)($row['schedule_open_ended_count']??0);$lastScheduleDate=trim((string)($row['schedule_end_date']??''));
    if($activeSchedules>0&&$openEndedSchedules===0&&$lastScheduleDate!==''&&strtotime($lastScheduleDate)!==false&&strtotime($lastScheduleDate)<strtotime('today'))$record($aid,'expired_active_schedules',['active_schedule_count'=>$activeSchedules,'latest_end_date'=>$lastScheduleDate]);
    $updated=trim((string)($row['updated_at']??''));if($updated!==''&&strtotime($updated)!==false&&strtotime($updated)<strtotime('-'.$staleAfterDays.' days'))$record($aid,'stale_listing',['field'=>'updated_at','value'=>$updated,'stale_after_days'=>$staleAfterDays]);
+   if($closureEnabled && $externalUsed<$externalLimit){$GLOBALS['bh_lc_current_activity']=$aid;try{$closureSearch((string)($row['title']??''),(string)($row['town']??''));}catch(Throwable $searchError){error_log('Listing closure search for activity '.$aid.' failed: '.$searchError->getMessage());}}
    if(in_array('title',$cols,true)){
     $otherTown=in_array('town',$cols,true)?"NULLIF(b.town,'')":'NULL';
     if(in_array('town',$venueCols,true)&&$hasVenueLink){
@@ -147,7 +173,7 @@ try{
    }
    // Resolve only outstanding checker findings that this successful pass no longer detects.
    // Preserve every explicit admin decision (approved/rejected/correct/incorrect).
-   $knownTypes=['missing_description','missing_website','missing_booking_link','missing_email','missing_telephone','missing_facebook','missing_instagram','missing_age_range','missing_category','missing_location','missing_postcode','missing_image','invalid_url','invalid_email','invalid_postcode','past_session_date','stale_listing','possible_duplicate','expired_active_schedules'];
+   $knownTypes=['missing_description','missing_website','missing_booking_link','missing_email','missing_telephone','missing_facebook','missing_instagram','missing_age_range','missing_category','missing_location','missing_postcode','missing_image','invalid_url','invalid_email','invalid_postcode','past_session_date','stale_listing','possible_duplicate','expired_active_schedules','possible_closure'];
    $resolve=$db->prepare("UPDATE bh_listing_check_findings SET review_status='resolved',reviewed_at=NOW() WHERE check_type='health' AND activity_id=? AND review_status IN('new','follow_up') AND finding_type=?");
    foreach($knownTypes as $knownType){if(!isset($detectedTypes[$knownType]))$resolve->execute([$aid,$knownType]);}
    $markDone->execute([$qid]);$done++;
