@@ -26,7 +26,7 @@ function bh_localise_fb_image(string $url): string {
  return 'uploads/activities/'.$name;
 }
 if(empty($_SESSION['bh_admin_authenticated']))bh_admin_response(401,['ok'=>false,'error'=>'Admin login required.']);
-try{require __DIR__.'/db.php';$db=bh_mysql();require_once __DIR__.'/leader-welcome-email.php';
+try{require __DIR__.'/db.php';$db=bh_mysql();require_once __DIR__.'/leader-welcome-email.php';bh_ensure_leader_activation_table($db);
  $_SESSION['bh_listing_csrf']??=bin2hex(random_bytes(32));
  // Activity-specific social URLs: preserve independently of shared organiser details.
  $socialCols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);
