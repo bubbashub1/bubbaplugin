@@ -29,7 +29,13 @@ try {
     };
 
     if ($hasColumn('bh_venues', 'activity_id')) {
-        $activityCount = 'COUNT(DISTINCT v.activity_id)';
+        // Count activity links for this venue only. A table-wide aggregate here
+        // collapses the entire venue result into a single row on MySQL.
+        $activityCount = '(
+            SELECT COUNT(DISTINCT venue_activity.activity_id)
+            FROM bh_venues venue_activity
+            WHERE venue_activity.id = v.id
+        )';
     } elseif ($hasTable('bh_activity_venues')) {
         $activityCount = '(
             SELECT COUNT(DISTINCT av.activity_id)
