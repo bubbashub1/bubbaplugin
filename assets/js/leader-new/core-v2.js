@@ -31,7 +31,7 @@ function loadDraft(){
   Object.entries(multi).forEach(([id,values])=>{const x=Q(id);if(!x||!x.multiple)return;values.forEach(v=>addOpt(x,v,true))});
   Object.entries(fields).forEach(([id,v])=>{const x=Q(id);if(!x)return;if(x.type==="checkbox")x.checked=!!v;else if(x.type==="radio"){if(x.value===v)x.checked=true}else x.value=v});
   if(Q("descriptionEditor")&&fields.descriptionEditor)Q("descriptionEditor").innerHTML=fields.descriptionEditor;
-  if(Array.isArray(d.schedule)&&d.schedule.length){Q("scheduleRows").innerHTML="";d.schedule.forEach(x=>state.addRow(x))}
+  if(Array.isArray(d.venues)&&d.venues.length){const main=d.venues[0];for(const [id,key] of [["venueName","venue_name"],["town","town"],["address","address"],["region","region"],["postcode","postcode"],["latitude","latitude"],["longitude","longitude"],["venueBookingUrl","booking_url"]])if(Q(id)&&main[key]!==undefined)Q(id).value=main[key]??"";d.venues.slice(1).forEach(v=>state.addVenueCard&&state.addVenueCard({venueName:v.venue_name,town:v.town,address:v.address,region:v.region,postcode:v.postcode,latitude:v.latitude,longitude:v.longitude,booking:v.booking_url}));}if(Array.isArray(d.schedule)&&d.schedule.length){Q("scheduleRows").innerHTML="";d.schedule.forEach(x=>state.addRow(x))}
   if(Array.isArray(d.accessibility))Q("accessibility").querySelectorAll("input").forEach(x=>x.checked=d.accessibility.includes(x.value));
  }catch(e){}
  syncDescription();if(state.ageUpdate)state.ageUpdate();if(state.photoRender)state.photoRender();if(state.renderPicker){state.renderPicker("categories");state.renderPicker("tags")}
