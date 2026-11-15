@@ -173,7 +173,7 @@ try{
    }
    // Resolve only outstanding checker findings that this successful pass no longer detects.
    // Preserve every explicit admin decision (approved/rejected/correct/incorrect).
-   $knownTypes=['missing_description','missing_website','missing_booking_link','missing_email','missing_telephone','missing_facebook','missing_instagram','missing_age_range','missing_category','missing_location','missing_postcode','missing_image','invalid_url','invalid_email','invalid_postcode','past_session_date','stale_listing','possible_duplicate','expired_active_schedules','possible_closure'];
+   $knownTypes=['missing_description','missing_website','missing_booking_link','missing_email','missing_telephone','missing_facebook','missing_instagram','missing_age_range','missing_category','missing_location','missing_postcode','missing_image','invalid_url','invalid_email','invalid_postcode','past_session_date','stale_listing','possible_duplicate','expired_active_schedules'];
    $resolve=$db->prepare("UPDATE bh_listing_check_findings SET review_status='resolved',reviewed_at=NOW() WHERE check_type='health' AND activity_id=? AND review_status IN('new','follow_up') AND finding_type=?");
    foreach($knownTypes as $knownType){if(!isset($detectedTypes[$knownType]))$resolve->execute([$aid,$knownType]);}
    $markDone->execute([$qid]);$done++;
