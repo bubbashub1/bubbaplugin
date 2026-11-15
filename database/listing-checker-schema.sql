@@ -94,4 +94,8 @@ INSERT IGNORE INTO bh_listing_discovery_terms (term,term_group,regions_json) VAL
  ('baby signing','Music & sensory','["all"]'),
  ('toddler music classes','Music & sensory','["all"]'),
  ('forest school under 5s','Outdoor & nature','["all"]'),
- ('parent and baby groups','Baby & pregnancy','["all"]');
+ ('parent and baby groups','Baby & pregnancy','["all"]'),
+ ('site:facebook.com baby groups','Social media discovery','["all"]'),
+ ('site:facebook.com toddler groups','Social media discovery','["all"]'),
+ ('site:instagram.com baby classes','Social media discovery','["all"]'),
+ ('site:instagram.com toddler groups','Social media discovery','["all"]');
