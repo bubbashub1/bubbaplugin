@@ -76,11 +76,13 @@ The Listing Checker admin settings and discovery-term editor use the standalone 
 
 ```sh
 mysql -u YOUR_DATABASE_USER -p YOUR_DATABASE_NAME < database/listing-checker-schema.sql
+# Then add the structured search controls to an existing checker installation:
+mysql -u YOUR_DATABASE_USER -p YOUR_DATABASE_NAME < database/listing-checker-search-settings-migration.sql
 ```
 
 This creates checker configuration, editable discovery terms, run/queue tracking and review-finding tables. It does not modify activity, organiser or venue records. The admin page is available at `/admin/admin-listing-checker-settings.html`.
 
-The settings page stores the desired schedule (default every 4 hours, batch size 30, Europe/London) and discovery terms. **It does not itself start scheduled work**: the CLI workers and hosting cron entries must be implemented and configured before those saved schedules take effect.
+The settings page stores the desired schedule (default every 4 hours, batch size 30, Europe/London) and discovery terms. The structured search editor lets an administrator set a phrase, directory category, source scope (general web, publicly indexed Facebook or publicly indexed Instagram), extra keywords, region scope and a per-term repeat interval (4 hours to monthly). The discovery worker only processes terms that are due for their own interval. Bing RSS remains the search provider; the social options apply public search operators, not direct platform API access, and cannot see private groups or content blocked from indexing. **It does not itself start scheduled work**: the CLI workers and hosting cron entries must be implemented and configured before those saved schedules take effect.
 
 
 ### Existing-listing CLI worker
@@ -107,7 +109,7 @@ The discovery worker is `api/listing-checker-discovery-cron.php`. Configure the 
 php /path/to/bubbaplugin/api/listing-checker-discovery-cron.php
 ```
 
-It cycles through enabled search phrases and their selected Devon & Cornwall region scopes, respecting the saved batch, external-request and runtime limits. It currently uses Bing's public RSS search response (no paid API key). Search results are unverified leads only; they are stored with their source URL, search phrase, region scope and a deliberately cautious confidence score for an administrator to inspect in the review queue. Candidate URLs are normalized for comparison across all enabled search phrases, with common tracking parameters removed; the original destination URL is retained in the candidate evidence. Repeated candidates are not added again. The worker validates the final decoded destination after Bing redirect decoding and accepts only HTTP(S) URLs without embedded credentials. It never creates, edits, publishes or deletes directory listings.
+It cycles through enabled, due search terms and their selected Devon & Cornwall region scopes, respecting each term's repeat interval plus the saved batch, external-request and runtime limits. Each term can target general web results or narrow Bing's search to publicly indexed Facebook or Instagram pages, with optional extra keywords. It currently uses Bing's public RSS search response (no paid API key). Search results are unverified leads only; they are stored with their source URL, search phrase, region scope and a deliberately cautious confidence score for an administrator to inspect in the review queue. Candidate URLs are normalized for comparison across all enabled search phrases, with common tracking parameters removed; the original destination URL is retained in the candidate evidence. Repeated candidates are not added again. The worker validates the final decoded destination after Bing redirect decoding and accepts only HTTP(S) URLs without embedded credentials. It never creates, edits, publishes or deletes directory listings.
 
 The discovery worker requires PHP cURL and SimpleXML. Both workers are CLI-only and must be configured as separate server cron commands. The four-hour setting is checked independently by each worker against its own last completed run.
 
