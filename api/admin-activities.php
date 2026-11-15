@@ -315,6 +315,8 @@ try{require __DIR__.'/db.php';$db=bh_mysql();require_once __DIR__.'/leader-welco
     }
    }
   }
+  $activityColumns=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);
+  if(in_array('contact_email',$activityColumns,true))$db->prepare("UPDATE bh_activities SET contact_email=? WHERE id=?")->execute([$email,$id]);
   $welcomePayload=null;
   if($action==='created' && filter_var($email,FILTER_VALIDATE_EMAIL)){$welcomePayload=bh_provision_listing_leader_account($db,$organiserId,$email,trim((string)($input['first_name']??$input['contact_name']??'')),$organisationName,$title);}
   $db->commit();
