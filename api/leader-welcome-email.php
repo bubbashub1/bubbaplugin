@@ -17,12 +17,7 @@ function bh_send_leader_welcome(string $email,string $firstName,string $organisa
  $m->AltBody="Welcome to Bubba Hub — your leader account is ready 💚\n\n{$hello}\n\nYour one-time sign-in code: {$code}\n\nLog in, set your password and take charge of your listing: https://bubbahub.co.uk/activate.html?token=".rawurlencode($token)."\n\nThe code expires in 7 days.\n\nThe Bubba Hub Team";$m->send();return true;
  }catch(Throwable $e){error_log('Bubba Hub leader welcome failed: '.$e->getMessage());return false;}
 }
-function bh_provision_listing_leader_account(PDO $db,int $organiserId,string $email,string $firstName,string $organisation,string $listing):?array{
- $email=strtolower(trim($email));
- if($organiserId<1||!filter_var($email,FILTER_VALIDATE_EMAIL))return null;
- $check=$db->prepare("SELECT id FROM bh_users WHERE LOWER(email)=? LIMIT 1");
- $check->execute([$email]);
- if($check->fetchColumn())return null;
+function bh_ensure_leader_activation_table(PDO $db):void{
  $db->exec("CREATE TABLE IF NOT EXISTS bh_account_activation_tokens (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT UNSIGNED NOT NULL,
@@ -34,6 +29,14 @@ function bh_provision_listing_leader_account(PDO $db,int $organiserId,string $em
   INDEX idx_activation_user (user_id),
   INDEX idx_activation_expiry (expires_at)
  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+}
+function bh_provision_listing_leader_account(PDO $db,int $organiserId,string $email,string $firstName,string $organisation,string $listing):?array{
+ $email=strtolower(trim($email));
+ if($organiserId<1||!filter_var($email,FILTER_VALIDATE_EMAIL))return null;
+ $check=$db->prepare("SELECT id FROM bh_users WHERE LOWER(email)=? LIMIT 1");
+ $check->execute([$email]);
+ if($check->fetchColumn())return null;
+ bh_ensure_leader_activation_table($db);
  $temporaryHash=password_hash(bin2hex(random_bytes(32)),PASSWORD_DEFAULT);
  $insert=$db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,'leader','pending')");
  $insert->execute([$email,$temporaryHash]);
