@@ -1,5 +1,8 @@
 name: Leader listing wizard checks
 on:
+  push:
+    branches:
+      - 'feature/leader-listing-wizard-admin-parity'
   pull_request:
     paths:
       - 'leader/new.html'
