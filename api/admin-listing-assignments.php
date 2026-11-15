@@ -57,9 +57,9 @@ try{
   $titles=array_map(static fn($item)=>(string)$item['title'],$selected);
   $emailSent=bh_assignment_send_email((string)$leader['email'],(string)$leader['organisation_name'],$titles);
   if(!$emailSent)$emailError='The listings were assigned, but the update email could not be sent.';
-  $log=$db->prepare("INSERT INTO bh_listing_assignment_email_log(activity_id,organiser_id,recipient_email,status,sent_at) VALUES(?,?,?,?,?)");
-  foreach($selected as $listing)$log->execute([(int)$listing['id'],$organiserId,(string)$leader['email'],$emailSent?'sent':($sendEmail?'failed':'not_sent'),$emailSent?date('Y-m-d H:i:s'):null]);
  }
+ $log=$db->prepare("INSERT INTO bh_listing_assignment_email_log(activity_id,organiser_id,recipient_email,status,sent_at) VALUES(?,?,?,?,?)");
+ foreach($selected as $listing)$log->execute([(int)$listing['id'],$organiserId,(string)$leader['email'],$emailSent?'sent':($sendEmail?'failed':'not_sent'),$emailSent?date('Y-m-d H:i:s'):null]);
  bh_assignment_reply(200,['ok'=>true,'assigned'=>count($selected),'leader_email'=>$leader['email'],'email_requested'=>$sendEmail,'email_sent'=>$emailSent,'email_error'=>$emailError,'message'=>count($selected).' listing(s) assigned to '.$leader['organisation_name'].'.'.($sendEmail?($emailSent?' Update email sent.':' Email could not be sent; you can retry from this page.'):'')]);
 }catch(Throwable $e){error_log('Admin listing assignment: '.$e->getMessage());bh_assignment_reply(500,['ok'=>false,'error'=>$e->getMessage()]);}
 
