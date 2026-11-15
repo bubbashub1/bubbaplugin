@@ -20,15 +20,23 @@ try{
  $nameCol=in_array('organisation_name',$organiserCols,true)?'organisation_name':(in_array('name',$organiserCols,true)?'name':null);
  if(!$nameCol)bh_assignment_reply(503,['ok'=>false,'error'=>'Organiser names are unavailable.']);
  $_SESSION['bh_assignment_csrf']??=bin2hex(random_bytes(32));
- $leaderJoin=$hasUserId?'u.id=o.user_id':'LOWER(u.email)=LOWER(o.email)';
+ $leaderJoin=$hasUserId?'(u.id=o.user_id OR LOWER(u.email)=LOWER(o.email))':'LOWER(u.email)=LOWER(o.email)';
  $orgStatus=in_array('status',$organiserCols,true)?" AND (o.status IS NULL OR o.status NOT IN ('suspended','inactive'))":'';
  $leaders=$db->query("SELECT o.id AS organiser_id,o.`".$nameCol."` AS organisation_name,u.id AS user_id,u.email FROM bh_organisers o INNER JOIN bh_users u ON ".$leaderJoin." WHERE u.role IN ('leader','organiser') AND u.status='active'".$orgStatus." ORDER BY o.`".$nameCol."`,o.id")->fetchAll(PDO::FETCH_ASSOC);
  if(($_SERVER['REQUEST_METHOD']??'GET')==='GET'){
   $q=trim((string)($_GET['q']??''));$where="TRIM(COALESCE(a.contact_email,''))<>'' AND (u.id IS NULL OR EXISTS (SELECT 1 FROM bh_listing_assignment_email_log pending WHERE pending.activity_id=a.id AND pending.id=(SELECT MAX(latest.id) FROM bh_listing_assignment_email_log latest WHERE latest.activity_id=a.id) AND pending.status<>'sent'))";
   $params=[];
   if($q!==''){$where.=" AND (a.title LIKE ? OR a.contact_email LIKE ? OR a.id=?)";$params[]='%'.$q.'%';$params[]='%'.$q.'%';$params[]=(int)$q;}
+  $hasVenueTown=(bool)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_venues' AND COLUMN_NAME='town'")->fetchColumn();
+  $hasVenueLinks=(bool)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activity_venues'")->fetchColumn();
+  $hasDirectVenue=(bool)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_venues' AND COLUMN_NAME='activity_id'")->fetchColumn();
+  $venueParts=[];
+  if($hasVenueTown&&$hasVenueLinks)$venueParts[]="SELECT av.activity_id,v.town FROM bh_activity_venues av INNER JOIN bh_venues v ON v.id=av.venue_id";
+  if($hasVenueTown&&$hasDirectVenue)$venueParts[]="SELECT v.activity_id,v.town FROM bh_venues v WHERE v.activity_id IS NOT NULL";
+  $venueJoin=$venueParts?"LEFT JOIN (SELECT activity_id,MIN(town) AS town FROM (".implode(' UNION ALL ',$venueParts).") venue_sources GROUP BY activity_id) v ON v.activity_id=a.id":'';
+  $townSelect=$venueParts?"COALESCE(v.town,'') AS town":"'' AS town";
   $joinUser=$hasUserId?'(u.id=o.user_id OR LOWER(u.email)=LOWER(o.email))':'LOWER(u.email)=LOWER(o.email)';
-  $sql="SELECT a.id,a.title,a.contact_email,a.organiser_id,COALESCE(o.`".$nameCol."`,'') AS current_organisation,COALESCE(v.town,'') AS town FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_users u ON ".$joinUser." AND u.role IN ('leader','organiser') AND u.status='active' LEFT JOIN (SELECT activity_id,MIN(town) AS town FROM bh_venues GROUP BY activity_id) v ON v.activity_id=a.id WHERE ".$where." ORDER BY a.title,a.id LIMIT 1000";
+  $sql="SELECT a.id,a.title,a.contact_email,a.organiser_id,COALESCE(o.`".$nameCol."`,'') AS current_organisation,".$townSelect." FROM bh_activities a LEFT JOIN bh_organisers o ON o.id=a.organiser_id LEFT JOIN bh_users u ON ".$joinUser." AND u.role IN ('leader','organiser') AND u.status='active' ".$venueJoin." WHERE ".$where." ORDER BY a.title,a.id LIMIT 1000";
   $stmt=$db->prepare($sql);$stmt->execute($params);$listings=$stmt->fetchAll(PDO::FETCH_ASSOC);
   $logs=$db->query("SELECT activity_id,status,sent_at FROM bh_listing_assignment_email_log l INNER JOIN (SELECT activity_id,MAX(id) AS latest_id FROM bh_listing_assignment_email_log GROUP BY activity_id) x ON x.latest_id=l.id")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);foreach($listings as &$item){$log=$logs[(int)$item['id']]??null;$item['email_status']=$log['status']??'not_sent';$item['email_sent_at']=$log['sent_at']??null;}unset($item);
   bh_assignment_reply(200,['ok'=>true,'listings'=>$listings,'leaders'=>$leaders,'csrf'=>$_SESSION['bh_assignment_csrf']]);
