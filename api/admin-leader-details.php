@@ -20,7 +20,7 @@ try{
  $hasUserId=in_array('user_id',$cols,true);
  $nameCol=null;foreach(['name','organisation_name','business_name','title'] as $c){if(in_array($c,$cols,true)){$nameCol=$c;break;}}
  $organiserSql="SELECT id".($nameCol?", `$nameCol` AS name":", CAST(id AS CHAR) AS name")." FROM bh_organisers WHERE ";
- if($hasUserId){$organiserSql.="user_id=:uid";if(in_array('email',$cols,true))$organiserSql.=" OR (user_id IS NULL AND LOWER(email)=LOWER(:email))";}
+ if($hasUserId){$organiserSql.="user_id=:uid";if(in_array('email',$cols,true))$organiserSql.=" OR LOWER(email)=LOWER(:email)";}
  elseif(in_array('email',$cols,true))$organiserSql.="LOWER(email)=LOWER(:email)";
  else reply(200,['ok'=>true,'leader'=>$leader,'organisers'=>[],'notice'=>'No organiser ownership field available']);
  $orgStmt=$db->prepare($organiserSql.' ORDER BY id LIMIT 50');

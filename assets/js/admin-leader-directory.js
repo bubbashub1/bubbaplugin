@@ -45,9 +45,18 @@ async function runAction(button){
    if(response.status===401){location.href='/admin-login.html?next='+encodeURIComponent(location.pathname);return;}
    const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'Unable to load linked organiser');
    const orgs=data.organisers||[];
-   if(orgs.length===1){location.href='/admin/admin-organisers-organiser-profiles.html?id='+encodeURIComponent(orgs[0].id)+'&return=class-leaders&leaderId='+encodeURIComponent(id);return;}
-   const view=rows.querySelector('[data-leader-id="'+id+'"]');if(view)view.click();
-   if(!orgs.length){const el=document.getElementById('leaderActionStatus');if(el){el.hidden=false;el.textContent='No organiser profile is linked to '+email+'. Open View listings to review the account.';}}
+   const editor='/admin/admin-organisers-organiser-profiles.html?return=class-leaders&leaderId='+encodeURIComponent(id);
+   if(orgs.length===1){location.href=editor+'&id='+encodeURIComponent(orgs[0].id);return;}
+   if(orgs.length>1){
+    const choices=orgs.map((org,index)=>(index+1)+'. '+(org.name||'Organiser #'+org.id)+' (ID '+org.id+')').join('\\n');
+    const answer=prompt('This leader has more than one organiser profile. Enter the number to edit:\\n\\n'+choices);
+    if(answer===null)return;
+    const choice=Number(answer),org=Number.isInteger(choice)&&choice>=1&&choice<=orgs.length?orgs[choice-1]:null;
+    if(!org){report('No profile opened: please enter one of the listed numbers.');return;}
+    location.href=editor+'&id='+encodeURIComponent(org.id);return;
+   }
+   report('No organiser profile was linked directly to '+email+'. Opening the organiser directory so you can search for their existing profile.');
+   location.href=editor+'&q='+encodeURIComponent(email);
   }catch(error){const el=document.getElementById('leaderActionStatus');if(el){el.hidden=false;el.textContent='Could not open organiser profile: '+error.message;}}
   finally{}
   return;
