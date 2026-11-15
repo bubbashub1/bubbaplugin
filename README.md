@@ -80,7 +80,7 @@ mysql -u YOUR_DATABASE_USER -p YOUR_DATABASE_NAME < database/listing-checker-sch
 
 This creates checker configuration, editable discovery terms, run/queue tracking and review-finding tables. It does not modify activity, organiser or venue records. The admin page is available at `/admin/admin-listing-checker-settings.html`.
 
-The settings page stores the desired schedule (default every 4 hours, batch size 30, Europe/London) and discovery terms. **It does not itself start scheduled work**: the CLI workers and hosting cron entries must be implemented and configured before those saved schedules take effect.
+The settings page stores the desired schedule (every 4 hours, batch size 30, Europe/London). The migration enables both existing-listing health checks and new-listing discovery by default, with closure monitoring enabled. **It does not itself start scheduled work**: the CLI workers and hosting cron entries must be installed and configured before those saved schedules take effect.
 
 
 ### Existing-listing CLI worker
