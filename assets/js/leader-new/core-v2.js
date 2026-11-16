@@ -12,9 +12,9 @@ const say=(t,ok)=>{const m=Q("formMessage");if(m){m.textContent=t||"";m.classNam
 const addOpt=(s,v,on)=>{v=String(v||"").trim();if(!v)return;let o=[...s.options].find(x=>x.value.toLowerCase()===v.toLowerCase());if(o)o.selected=on||o.selected;else s.add(new Option(v,v,!!on))};
 const post=async body=>{let r=await fetch(API,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(body)}),d=await readApiJson(r);if(!r.ok||!d.ok)throw Error(d.message||d.error||"The class could not be submitted.");return d};
 const syncDescription=()=>{if(Q("descriptionEditor"))Q("description").value=Q("descriptionEditor").innerHTML.trim()};
-const schedule=()=>[...document.querySelectorAll(".bh-row")].map(r=>({day:r.querySelector(".day").value,start:r.querySelector(".start").value,end:r.querySelector(".end").value,venue_index:Number(r.querySelector(".bh-session-venue")?.value||0)}));
+const schedule=()=>Q("noSessionsAvailable")?.checked?[]:[...document.querySelectorAll(".bh-row")].map(r=>({day:r.querySelector(".day").value,start:r.querySelector(".start").value,end:r.querySelector(".end").value,venue_index:Number(r.querySelector(".bh-session-venue")?.value||0)}));
 function saveDraft(){
- const data={fields:{},multi:{},schedule:schedule(),venues:state.collectVenues?state.collectVenues():[],accessibility:[...Q("accessibility").querySelectorAll("input:checked")].map(x=>x.value)};
+ const data={fields:{},multi:{},schedule:schedule(),no_sessions_available:!!Q("noSessionsAvailable")?.checked,venues:state.collectVenues?state.collectVenues():[],accessibility:[...Q("accessibility").querySelectorAll("input:checked")].map(x=>x.value)};
  if(Q("descriptionEditor"))data.fields.descriptionEditor=Q("descriptionEditor").innerHTML;
  document.querySelectorAll(".bh-form input,.bh-form select,.bh-form textarea").forEach(x=>{
   if(!x.id)return;
