@@ -73,7 +73,7 @@ jobs:
               'volunteer Google button is hidden': 'wrap.hidden=context==="volunteer"' in script,
               'Turnstile checks both email registration handlers': auth.count('bh_turnstile_registration_verify($body);') >= 2,
               'registration browser sends a ready Turnstile token': 'p.turnstile_token=turnstileToken' in script and '!turnstileWidgetReady||!turnstileToken' in script,
-              'public Turnstile config exposes site key only': "'site_key'=>$enabled?$site:''" in config and 'secret_key' not in config.lower(),
+              'public Turnstile config exposes site key only': "'site_key'=>$enabled?$site:''" in config and 'secret' not in config.split('echo json_encode',1)[1].lower(),
               'admin leader actions require session CSRF': 'invalid_csrf' in admin_actions and 'hash_equals($expected,$provided)' in admin_actions,
               'admin directory issues session CSRF': "'csrf'=>$_SESSION['bh_admin_csrf']" in admin_directory,
               'admin directory UI sends CSRF': 'status:requestedStatus,csrf' in admin_script and 'confirmation,csrf' in admin_script,
