@@ -70,6 +70,10 @@ jobs:
           grep -q "next_check_at=DATE_ADD(NOW(), INTERVAL" api/listing-checker-health-cron.php
           grep -q "Refresh an existing matching finding" api/listing-checker-health-cron.php
           grep -q "stale_listing" api/listing-checker-health-cron.php
+          grep -q "closure_checks_enabled" api/admin-listing-checker-settings.php
+          grep -q "get('closure_checks_enabled','0')" api/listing-checker-health-cron.php
+          grep -q "possible_closure" api/listing-checker-health-cron.php
+          grep -q "closure_checks_enabled','0'" database/listing-checker-schema.sql
           grep -q "health_enabled','0'" database/listing-checker-schema.sql
           grep -q "discovery_enabled','0'" database/listing-checker-schema.sql
           grep -q "get('health_enabled','0')" api/listing-checker-health-cron.php
