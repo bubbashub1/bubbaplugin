@@ -41,6 +41,7 @@ jobs:
         run: |
           php -l api/auth.php
           php -l api/turnstile-config.php
+          php -l api/turnstile-settings.php
           php -l api/admin-leader-actions.php
           php -l api/admin-user-directory.php
 
