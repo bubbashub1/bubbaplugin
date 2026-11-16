@@ -102,6 +102,43 @@ try{
   $q=$db->prepare('DELETE FROM bh_venues WHERE id=?');$q->execute([$id]);
   $db->commit();reply(200,['ok'=>true,'sessions_remapped'=>$sessions]);
  }
+ if($action==='listing_assignments'){
+  $hasLinks=(bool)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activity_venues'")->fetchColumn();
+  if(!$hasLinks)reply(503,['ok'=>false,'error'=>'Shared venue links are not installed. Apply the shared venue migration first.']);
+  $venueId=filter_var($data['venue_id']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
+  if(!$venueId)reply(422,['ok'=>false,'error'=>'Choose a valid venue.']);
+  $q=$db->prepare('SELECT id,venue_name FROM bh_venues WHERE id=?');$q->execute([$venueId]);$venue=$q->fetch(PDO::FETCH_ASSOC);
+  if(!$venue)reply(404,['ok'=>false,'error'=>'Venue not found.']);
+  $activities=$db->query("SELECT id,title,status FROM bh_activities ORDER BY title,id")->fetchAll(PDO::FETCH_ASSOC);
+  $q=$db->prepare('SELECT activity_id FROM bh_activity_venues WHERE venue_id=?');$q->execute([$venueId]);$assigned=array_map('intval',$q->fetchAll(PDO::FETCH_COLUMN));
+  $q=$db->prepare('SELECT activity_id FROM bh_venues WHERE id=? AND activity_id IS NOT NULL');$q->execute([$venueId]);$legacy=(int)$q->fetchColumn();if($legacy>0&&!in_array($legacy,$assigned,true))$assigned[]=$legacy;
+  reply(200,['ok'=>true,'venue'=>$venue,'activities'=>$activities,'assigned_ids'=>$assigned]);
+ }
+ if($action==='assign_listings'){
+  $venueId=filter_var($data['venue_id']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
+  $ids=$data['listing_ids']??[];
+  if(!$venueId||!is_array($ids)||count($ids)>500)reply(422,['ok'=>false,'error'=>'Choose a venue and up to 500 listings.']);
+  $ids=array_values(array_unique(array_filter(array_map('intval',$ids),static fn($id)=>$id>0)));
+  $hasLinks=(bool)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activity_venues'")->fetchColumn();
+  if(!$hasLinks)reply(503,['ok'=>false,'error'=>'Shared venue links are not installed. Apply the shared venue migration first.']);
+  $db->beginTransaction();
+  try{
+   $q=$db->prepare('SELECT id FROM bh_venues WHERE id=? FOR UPDATE');$q->execute([$venueId]);if(!$q->fetchColumn())throw new RuntimeException('Venue not found.');
+   if($ids){$marks=implode(',',array_fill(0,count($ids),'?'));$q=$db->prepare("SELECT id FROM bh_activities WHERE id IN ($marks) FOR UPDATE");$q->execute($ids);if(count($q->fetchAll(PDO::FETCH_COLUMN))!==count($ids))throw new RuntimeException('One or more listings no longer exist. Nothing was changed.');}
+   $q=$db->prepare('DELETE FROM bh_activity_venues WHERE venue_id=?');$q->execute([$venueId]);
+   $cols=$db->query('SHOW COLUMNS FROM bh_activity_venues')->fetchAll(PDO::FETCH_COLUMN);
+   $hasPrimary=in_array('is_primary',$cols,true);
+   foreach($ids as $index=>$activityId){
+    $exists=$db->prepare('SELECT 1 FROM bh_activity_venues WHERE activity_id=? AND venue_id=?');$exists->execute([$activityId,$venueId]);
+    if(!$exists->fetchColumn()){
+     if($hasPrimary)$db->prepare('INSERT INTO bh_activity_venues(activity_id,venue_id,is_primary) VALUES(?,?,?)')->execute([$activityId,$venueId,$index===0?1:0]);
+     else $db->prepare('INSERT INTO bh_activity_venues(activity_id,venue_id) VALUES(?,?)')->execute([$activityId,$venueId]);
+    }
+   }
+   $db->commit();
+  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+  reply(200,['ok'=>true,'assigned'=>count($ids),'message'=>count($ids).' listing(s) assigned to this venue.']);
+ }
  if($action==='merge'){
   $source=filter_var($data['source_id']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
   $target=filter_var($data['target_id']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
@@ -111,8 +148,22 @@ try{
   $q=$db->prepare('SELECT id,activity_id FROM bh_venues WHERE id IN (?,?) FOR UPDATE');$q->execute([$source,$target]);
   $rows=[];foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row)$rows[(int)$row['id']]=$row;
   if(count($rows)!==2){$db->rollBack();reply(404,['ok'=>false,'error'=>'Venue not found']);}
-  if((int)$rows[$source]['activity_id']!==(int)$rows[$target]['activity_id']){$db->rollBack();reply(409,['ok'=>false,'error'=>'These venues belong to different activities. Cross-activity merging needs a shared venue model; no records changed.']);}
+  $hasLinks=(bool)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activity_venues'")->fetchColumn();
+  if(!$hasLinks){$db->rollBack();reply(503,['ok'=>false,'error'=>'Shared venue links are not installed. Apply the shared venue migration first; no records changed.']);}
+  $linkCols=$db->query('SHOW COLUMNS FROM bh_activity_venues')->fetchAll(PDO::FETCH_COLUMN);
+  $activityIds=[];
+  foreach([$source,$target] as $venueId){$q=$db->prepare('SELECT activity_id FROM bh_activity_venues WHERE venue_id=?');$q->execute([$venueId]);foreach($q->fetchAll(PDO::FETCH_COLUMN) as $activityId)$activityIds[(int)$activityId]=true;}
+  foreach([$rows[$source]['activity_id'],$rows[$target]['activity_id']] as $activityId)if((int)$activityId>0)$activityIds[(int)$activityId]=true;
+  foreach(array_keys($activityIds) as $activityId){
+   $check=$db->prepare('SELECT 1 FROM bh_activity_venues WHERE activity_id=? AND venue_id=?');$check->execute([$activityId,$target]);
+   if(!$check->fetchColumn()){
+    if(in_array('is_primary',$linkCols,true))$db->prepare('INSERT INTO bh_activity_venues(activity_id,venue_id,is_primary) VALUES(?,?,0)')->execute([$activityId,$target]);
+    else $db->prepare('INSERT INTO bh_activity_venues(activity_id,venue_id) VALUES(?,?)')->execute([$activityId,$target]);
+   }
+  }
   $q=$db->prepare('UPDATE bh_sessions SET venue_id=? WHERE venue_id=?');$q->execute([$target,$source]);$moved=$q->rowCount();
+  foreach(['bh_activity_schedules','bh_booking_slots'] as $related){$exists=$db->prepare('SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?');$exists->execute([$related]);if((int)$exists->fetchColumn()>0){$cols=$db->query('SHOW COLUMNS FROM `'.$related.'`')->fetchAll(PDO::FETCH_COLUMN);if(in_array('venue_id',$cols,true))$db->prepare('UPDATE `'.$related.'` SET venue_id=? WHERE venue_id=?')->execute([$target,$source]);}}
+  $db->prepare('DELETE FROM bh_activity_venues WHERE venue_id=?')->execute([$source]);
   $q=$db->prepare('DELETE FROM bh_venues WHERE id=?');$q->execute([$source]);
   $db->commit();reply(200,['ok'=>true,'sessions_moved'=>$moved]);
  }
