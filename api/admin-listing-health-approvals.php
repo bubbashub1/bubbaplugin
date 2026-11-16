@@ -56,8 +56,12 @@ try{
  };
  $validUrl=static function(string $url):bool{
   if($url===''||mb_strlen($url)>2048||!filter_var($url,FILTER_VALIDATE_URL)) return false;
-  $scheme=strtolower((string)parse_url($url,PHP_URL_SCHEME));
-  return in_array($scheme,['http','https'],true)&&parse_url($url,PHP_URL_HOST)!==false;
+  $parts=parse_url($url);
+  if(!is_array($parts))return false;
+  $scheme=strtolower((string)($parts['scheme']??''));
+  if(!in_array($scheme,['http','https'],true)||empty($parts['host'])||isset($parts['user'])||isset($parts['pass']))return false;
+  $port=(int)($parts['port']??($scheme==='https'?443:80));
+  return $port===($scheme==='https'?443:80);
  };
  if(($_SERVER['REQUEST_METHOD']??'GET')==='GET'){
   $q=$db->query("SELECT id,activity_id,activity_title,field_name,original_value,proposed_value,source_url,evidence,source_platform,confidence,status,created_at FROM bh_listing_health_approvals WHERE status='pending' ORDER BY created_at DESC,id DESC LIMIT 500");
@@ -84,6 +88,7 @@ try{
    $field=(string)($finding['field']??'description');
    $value=$finding['proposed_value']??$finding['suggested_value']??($field==='description'?($finding['suggested_description']??null):null);
    $url=trim((string)($finding['source_url']??$finding['url']??''));
+   if(is_string($value))$value=trim(strip_tags($value));
    if(!$id||!isset($allowed[$field])||!in_array($field,$activityCols,true)||!is_string($value)||trim($value)===''||mb_strlen($value)>$allowed[$field]||!$validUrl($url)){
     $skipped++;$errors[]='Finding '.($index+1).': needs a valid listing ID, supported field, proposed value and HTTP(S) source URL.';continue;
    }
@@ -119,7 +124,7 @@ try{
   if(!$validUrl($url)) bh_lha_reply(422,['ok'=>false,'error'=>'Enter a valid public HTTP or HTTPS page URL.']);
   $parts=parse_url($url);$host=strtolower((string)($parts['host']??''));$scheme=strtolower((string)($parts['scheme']??''));
   $port=(int)($parts['port']??($scheme==='https'?443:80));
-  if(isset($parts['user'])||isset($parts['pass'])||($port!==80&&$port!==443)||filter_var($host,FILTER_VALIDATE_IP)||in_array($host,['localhost'],true)||str_ends_with($host,'.local')||str_ends_with($host,'.internal')){
+  if($port!==($scheme==='https'?443:80)||isset($parts['user'])||isset($parts['pass'])||($port!==80&&$port!==443)||filter_var($host,FILTER_VALIDATE_IP)||in_array($host,['localhost'],true)||str_ends_with($host,'.local')||str_ends_with($host,'.internal')){
    bh_lha_reply(422,['ok'=>false,'error'=>'This address is not an allowed public website URL.']);
   }
   if(!function_exists('curl_init')||!function_exists('gethostbynamel')) bh_lha_reply(503,['ok'=>false,'error'=>'Public webpage preview is not available on this server.']);
@@ -163,7 +168,7 @@ try{
  }
  if($action==='manual_import'){
   $activityId=filter_var($input['activity_id']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
-  $field=(string)($input['field']??'');$value=$input['proposed_value']??null;$url=trim((string)($input['source_url']??''));$evidence=mb_substr(trim((string)($input['evidence']??'')),0,5000);
+  $field=(string)($input['field']??'');$value=$input['proposed_value']??null;if(is_string($value))$value=trim(strip_tags($value));$url=trim((string)($input['source_url']??''));$evidence=mb_substr(trim((string)($input['evidence']??'')),0,5000);
   if(!$activityId||!isset($allowed[$field])||!in_array($field,$activityCols,true)||!is_string($value)||trim($value)===''||mb_strlen($value)>$allowed[$field]||!$validUrl($url)){
    bh_lha_reply(422,['ok'=>false,'error'=>'Choose a valid listing and supported field, enter a proposed value and provide its public source URL.']);
   }
@@ -188,7 +193,7 @@ try{
   bh_lha_reply($q->rowCount()?200:409,['ok'=>(bool)$q->rowCount(),'error'=>$q->rowCount()?null:'This item is no longer pending review.']);
  }
  if($action==='edit'){
-  $value=$input['proposed_value']??null;
+  $value=$input['proposed_value']??null;if(is_string($value))$value=trim(strip_tags($value));
   $q=$db->prepare("SELECT field_name FROM bh_listing_health_approvals WHERE id=? AND status='pending'");
   $q->execute([$id]);$field=$q->fetchColumn();
   if(!$field||!isset($allowed[$field])||!is_string($value)||trim($value)===''||mb_strlen($value)>$allowed[$field]) bh_lha_reply(422,['ok'=>false,'error'=>'The revised value is empty, too long or no longer editable.']);
@@ -213,7 +218,7 @@ try{
    $db->commit();
    bh_lha_reply(409,['ok'=>false,'stale'=>true,'error'=>'The live listing changed after this finding was imported. It has been marked stale; refresh the listing and review a new suggestion.']);
   }
-  $value=(string)$item['proposed_value'];
+  $value=trim(strip_tags((string)$item['proposed_value']));
   if(mb_strlen($value)>$allowed[$field]){ $db->rollBack();bh_lha_reply(422,['ok'=>false,'error'=>'The proposed value is too long.']);}
   if(in_array($field,['website','booking_url','facebook_url','instagram_url'],true)&&$value!==''&&!$validUrl($value)){ $db->rollBack();bh_lha_reply(422,['ok'=>false,'error'=>'The proposed web address is invalid.']);}
   if($field==='contact_email'&&$value!==''&&!filter_var($value,FILTER_VALIDATE_EMAIL)){ $db->rollBack();bh_lha_reply(422,['ok'=>false,'error'=>'The proposed email address is invalid.']);}
