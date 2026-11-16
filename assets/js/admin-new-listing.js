@@ -900,7 +900,10 @@ let step=0;
 const review=document.createElement('div');review.className='bh-review';review.hidden=true;form.querySelector('.admin-form-grid:last-of-type').after(review);
 const descriptionField=form.elements.namedItem('description');const richEditor=document.getElementById('adminDescriptionEditor');const descriptionSection=document.getElementById('adminDescriptionSection');
 const cleanDescription=html=>{const doc=new DOMParser().parseFromString(html,'text/html');const allowed=new Set(['P','BR','STRONG','B','EM','I','U','H2','H3','H4','BLOCKQUOTE','UL','OL','LI','A']);const walk=node=>{for(const child of [...node.childNodes]){if(child.nodeType===8){child.remove();continue;}if(child.nodeType!==1)continue;if(!allowed.has(child.tagName)){if(['SCRIPT','STYLE','IFRAME','OBJECT','SVG','FORM'].includes(child.tagName)){child.remove();continue;}walk(child);child.replaceWith(...child.childNodes);continue;}for(const attr of [...child.attributes]){if(child.tagName==='A'&&attr.name==='href'&&(attr.value.toLowerCase().startsWith('https://')||attr.value.toLowerCase().startsWith('http://')))continue;child.removeAttribute(attr.name);}walk(child);}};walk(doc.body);return doc.body.innerHTML;};
-if(richEditor&&descriptionField){
+let classicEditorInitialised=false;
+const initClassicEditor=()=>{
+ if(!richEditor||!descriptionField||classicEditorInitialised)return;
+ classicEditorInitialised=true;
  const editorReady=window.tinymce&&typeof window.tinymce.init==='function';
  if(editorReady){
   window.tinymce.init({target:richEditor,license_key:'gpl',menubar:false,branding:false,promotion:false,plugins:'lists link',toolbar:'undo redo | blocks | bold italic underline | bullist numlist | blockquote | link unlink | removeformat',block_formats:'Paragraph=p; Heading 2=h2; Heading 3=h3; Heading 4=h4; Quote=blockquote',height:280,resize:true,statusbar:true,convert_urls:false,relative_urls:false,remove_script_host:false,valid_elements:'p,br,strong/b,em/i,u,h2,h3,h4,blockquote,ul,ol,li,a[href|title]',setup(editor){
@@ -916,7 +919,7 @@ if(richEditor&&descriptionField){
   richEditor.setAttribute('rows','10');
   descriptionSection.insertAdjacentHTML('afterbegin','<p class="bh-editor-warning" role="status">The visual editor could not load. You can still enter a plain-text description below.</p>');
  }
-}
+};
 const identity=document.getElementById('adminListingIdentity');
 const websiteImport=document.getElementById('bhAutoFillRun')?.closest('section');
 const posterImport=document.getElementById('adminPosterImage')?.closest('.bh-card');
@@ -931,6 +934,7 @@ const renderStep=()=>{
 
  if(identity)identity.hidden=step!==0;
  if(descriptionSection)descriptionSection.hidden=step!==2;
+ if(step===2)initClassicEditor();
  const suggestedImage=document.getElementById('bhSuggestedImage');if(suggestedImage)suggestedImage.style.display=step===6?'':'none';
  const gallerySection=document.getElementById('adminListingGallery');if(gallerySection)gallerySection.hidden=step!==6;
  if(websiteImport)websiteImport.hidden=step!==0;
