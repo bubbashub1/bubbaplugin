@@ -40,17 +40,15 @@ function bh_turnstile_setting(string $name): string {
         if (!is_string($source) || $source === '') continue;
 
         foreach ($keys as $key) {
-            $quotedKey = preg_quote($key, '/');
-
             // Supports the putenv('NAME=value') form used in wp-config.php.
             if (preg_match('~^[ \\t]*putenv\\s*\\(\\s*["\\x27]' . preg_quote($key, '~') . '=([^"\\x27]*)["\\x27]\\s*\\)\\s*;~m', $source, $match)) {
-                $value = trim(stripcslashes($match[2]));
+                $value = trim(stripcslashes($match[1]));
                 if ($value !== '') return $value;
             }
 
             // Also supports define('NAME', 'value') configuration.
             if (preg_match('~^[ \\t]*define\\s*\\(\\s*["\\x27]' . preg_quote($key, '~') . '["\\x27]\\s*,\\s*["\\x27](.*?)["\\x27]\\s*\\)\\s*;~m', $source, $match)) {
-                $value = trim(stripcslashes($match[3]));
+                $value = trim(stripcslashes($match[1]));
                 if ($value !== '') return $value;
             }
         }
