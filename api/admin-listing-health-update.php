@@ -19,7 +19,7 @@ try{
  $id=filter_var($input['id']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
  $field=(string)($input['field']??'');$value=$input['value']??null;
  if(!$id||!is_string($value))bh_health_update_reply(422,['ok'=>false,'error'=>'A listing ID and text value are required.']);
- $activityMap=['title'=>190,'description'=>10000,'short_description'=>2000,'category'=>255,'age_range'=>120,'website'=>2048,'booking_url'=>2048,'contact_email'=>190,'contact_phone'=>60,'facebook_url'=>2048,'instagram_url'=>2048,'town'=>120,'region'=>120,'postcode'=>20];
+ $activityMap=['title'=>190,'description'=>10000,'short_description'=>2000,'category'=>255,'age_range'=>120,'website'=>2048,'booking_url'=>2048,'contact_email'=>190,'contact_phone'=>60,'facebook_url'=>2048,'instagram_url'=>2048,'image_path'=>2048,'town'=>120,'region'=>120,'postcode'=>20];
  $venueMap=['venue_name'=>190,'address'=>1000,'town'=>120,'region'=>120,'postcode'=>20];
  $value=trim($value);$db->beginTransaction();
  $lock=$db->prepare('SELECT id FROM bh_activities WHERE id=? FOR UPDATE');$lock->execute([$id]);if(!$lock->fetchColumn()){$db->rollBack();bh_health_update_reply(404,['ok'=>false,'error'=>'Listing not found.']);}
@@ -30,6 +30,7 @@ try{
   if(in_array($field,['website','booking_url','facebook_url','instagram_url'],true)&&$value!==''&&(!filter_var($value,FILTER_VALIDATE_URL)||!in_array(strtolower((string)parse_url($value,PHP_URL_SCHEME)),['http','https'],true)))throw new InvalidArgumentException('Enter a valid HTTP or HTTPS web address.');
   if($field==='contact_email'&&$value!==''&&!filter_var($value,FILTER_VALIDATE_EMAIL))throw new InvalidArgumentException('Enter a valid email address.');
   $db->prepare('UPDATE bh_activities SET `'.$field.'`=? WHERE id=?')->execute([$value,$id]);
+ }elseif(in_array($field,['website','contact_email','contact_phone'],true)){$organiserCols=$db->query('SHOW COLUMNS FROM bh_organisers')->fetchAll(PDO::FETCH_COLUMN);$organiserField=$field==='website'?'website':$field;if(in_array($organiserField,$organiserCols,true)){$q=$db->prepare('SELECT organiser_id FROM bh_activities WHERE id=?');$q->execute([$id]);$organiserId=(int)$q->fetchColumn();if($organiserId<1)bh_health_update_reply(409,['ok'=>false,'error'=>'This listing has no organiser profile. Open the full listing editor instead.']);$db->prepare('UPDATE bh_organisers SET `'.$organiserField.'`=? WHERE id=?')->execute([$value,$organiserId]);}else bh_health_update_reply(422,['ok'=>false,'error'=>'This field is not available in the current organiser schema.']);
  }elseif(isset($venueMap[$field])&&in_array($field,$venueCols,true)){
   if(mb_strlen($value)>$venueMap[$field])throw new InvalidArgumentException('That value is too long.');
   $q=$db->prepare('SELECT id FROM bh_venues WHERE activity_id=? ORDER BY id LIMIT 1 FOR UPDATE');$q->execute([$id]);$venueId=(int)$q->fetchColumn();
