@@ -50,6 +50,13 @@ jobs:
           grep -q "FOR UPDATE" api/admin-listing-health-approvals.php
           grep -q "status='stale'" api/admin-listing-health-approvals.php
           grep -q "bh_listing_health_approvals" api/admin-listing-health-approvals.php
+          grep -q "CURLOPT_RESOLVE" api/admin-listing-health-approvals.php
+          grep -q "CURLOPT_FOLLOWLOCATION=>false" api/admin-listing-health-approvals.php
+          grep -q "FILTER_FLAG_NO_PRIV_RANGE" api/admin-listing-health-approvals.php
+          grep -q "fetch_source" api/admin-listing-health-approvals.php
+          grep -q "manual_import" api/admin-listing-health-approvals.php
+          grep -q "bhHealthSourceOpen" assets/js/admin-listing-health-hub.js
+          grep -q "Public webpage preview" docs/LISTING-HEALTH-SCHEDULED-TASK-IMPORT.md
           ! grep -q "localStorage" assets/js/admin-listing-health-hub.js
           grep -q "approvalRequest('approve'" assets/js/admin-listing-health-hub.js
           grep -q "approvalRequest('reject'" assets/js/admin-listing-health-hub.js
