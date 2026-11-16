@@ -43,13 +43,13 @@ function bh_turnstile_setting(string $name): string {
             $quotedKey = preg_quote($key, '/');
 
             // Supports the putenv('NAME=value') form used in wp-config.php.
-            if (preg_match('/^[ \\t]*putenv\\s*\\(\\s*([\\'"])' . $quotedKey . '=([^\\'"]*)\\1\\s*\\)\\s*;/m', $source, $match)) {
+            if (preg_match('~^[ \\t]*putenv\\s*\\(\\s*["\\x27]' . preg_quote($key, '~') . '=([^"\\x27]*)["\\x27]\\s*\\)\\s*;~m', $source, $match)) {
                 $value = trim(stripcslashes($match[2]));
                 if ($value !== '') return $value;
             }
 
             // Also supports define('NAME', 'value') configuration.
-            if (preg_match('/^[ \\t]*define\\s*\\(\\s*([\\'"])' . $quotedKey . '\\1\\s*,\\s*([\\'"])(.*?)\\2\\s*\\)\\s*;/m', $source, $match)) {
+            if (preg_match('~^[ \\t]*define\\s*\\(\\s*["\\x27]' . preg_quote($key, '~') . '["\\x27]\\s*,\\s*["\\x27](.*?)["\\x27]\\s*\\)\\s*;~m', $source, $match)) {
                 $value = trim(stripcslashes($match[3]));
                 if ($value !== '') return $value;
             }
