@@ -112,7 +112,7 @@ try{
   $activities=$db->query("SELECT id,title,status FROM bh_activities ORDER BY title,id")->fetchAll(PDO::FETCH_ASSOC);
   $q=$db->prepare('SELECT activity_id FROM bh_activity_venues WHERE venue_id=?');$q->execute([$venueId]);$assigned=array_map('intval',$q->fetchAll(PDO::FETCH_COLUMN));
   $q=$db->prepare('SELECT activity_id FROM bh_venues WHERE id=? AND activity_id IS NOT NULL');$q->execute([$venueId]);$legacy=(int)$q->fetchColumn();if($legacy>0&&!in_array($legacy,$assigned,true))$assigned[]=$legacy;
-  reply(200,['ok'=>true,'venue'=>$venue,'activities'=>$activities,'assigned_ids'=>$assigned]);
+  reply(200,['ok'=>true,'venue'=>$venue,'activities'=>$activities,'assigned_ids'=>$assigned,'legacy_id'=>$legacy]);
  }
  if($action==='assign_listings'){
   $venueId=filter_var($data['venue_id']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
