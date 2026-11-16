@@ -114,6 +114,72 @@ try{
   $db->commit();
   bh_lha_reply(200,['ok'=>true,'inserted'=>$inserted,'skipped'=>$skipped,'errors'=>array_slice($errors,0,20),'message'=>$inserted.' finding(s) added for approval. No listing has been changed.']);
  }
+ if($action==='fetch_source'){
+  $url=trim((string)($input['url']??''));
+  if(!$validUrl($url)) bh_lha_reply(422,['ok'=>false,'error'=>'Enter a valid public HTTP or HTTPS page URL.']);
+  $parts=parse_url($url);$host=strtolower((string)($parts['host']??''));$scheme=strtolower((string)($parts['scheme']??''));
+  $port=(int)($parts['port']??($scheme==='https'?443:80));
+  if(isset($parts['user'])||isset($parts['pass'])||($port!==80&&$port!==443)||filter_var($host,FILTER_VALIDATE_IP)||in_array($host,['localhost'],true)||str_ends_with($host,'.local')||str_ends_with($host,'.internal')){
+   bh_lha_reply(422,['ok'=>false,'error'=>'This address is not an allowed public website URL.']);
+  }
+  if(!function_exists('curl_init')||!function_exists('gethostbynamel')) bh_lha_reply(503,['ok'=>false,'error'=>'Public webpage preview is not available on this server.']);
+  $ips=gethostbynamel($host);
+  if(!$ips) bh_lha_reply(422,['ok'=>false,'error'=>'The website host could not be resolved to a public address.']);
+  foreach($ips as $ip){
+   if(!filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4|FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE)){
+    bh_lha_reply(422,['ok'=>false,'error'=>'The website host resolves to a non-public address and cannot be fetched.']);
+   }
+  }
+  $ip=$ips[0];$buffer='';
+  $ch=curl_init($url);
+  $options=[
+   CURLOPT_RESOLVE=>[$host.':'.$port.':'.$ip],
+   CURLOPT_RETURNTRANSFER=>false,
+   CURLOPT_FOLLOWLOCATION=>false,
+   CURLOPT_CONNECTTIMEOUT=>5,
+   CURLOPT_TIMEOUT=>12,
+   CURLOPT_MAXFILESIZE=>1048576,
+   CURLOPT_USERAGENT=>'BubbaHub-ListingHealth-SourcePreview/1.0 (+https://bubbahub.co.uk)',
+   CURLOPT_SSL_VERIFYPEER=>true,
+   CURLOPT_SSL_VERIFYHOST=>2,
+   CURLOPT_PROTOCOLS=>$scheme==='https'?CURLPROTO_HTTPS:CURLPROTO_HTTP,
+   CURLOPT_WRITEFUNCTION=>static function($handle,string $chunk) use (&$buffer):int{
+    if(strlen($buffer)+strlen($chunk)>1048576)return 0;
+    $buffer.=$chunk;return strlen($chunk);
+   }
+  ];
+  curl_setopt_array($ch,$options);
+  $ok=curl_exec($ch);$http=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$contentType=strtolower((string)curl_getinfo($ch,CURLINFO_CONTENT_TYPE));curl_close($ch);
+  if($ok!==true||$http<200||$http>=300||$buffer==='') bh_lha_reply(422,['ok'=>false,'error'=>'The page could not be fetched successfully. Redirects are not followed; enter the final public page URL.']);
+  if($contentType!==''&&!str_contains($contentType,'text/html')&&!str_contains($contentType,'application/xhtml+xml')&&!str_contains($contentType,'text/plain')){
+   bh_lha_reply(415,['ok'=>false,'error'=>'Only public HTML or plain-text pages can be previewed.']);
+  }
+  $title='';
+  if(preg_match('/<title\\b[^>]*>(.*?)<\\/title>/is',$buffer,$match))$title=trim(html_entity_decode(strip_tags($match[1]),ENT_QUOTES|ENT_HTML5,'UTF-8'));
+  $text=preg_replace('/<\\s*(script|style|noscript|svg)\\b[^>]*>.*?<\\/\\s*\\1\\s*>/is',' ',$buffer)??$buffer;
+  $text=preg_replace('/<!--.*?-->/s',' ',$text)??$text;
+  $excerpt=trim(html_entity_decode(preg_replace('/\\s+/u',' ',strip_tags($text))??strip_tags($text),ENT_QUOTES|ENT_HTML5,'UTF-8'));
+  bh_lha_reply(200,['ok'=>true,'url'=>$url,'title'=>mb_substr($title,0,500),'excerpt'=>mb_substr($excerpt,0,4000),'http_status'=>$http,'message'=>'Page preview loaded. It has not changed a listing.']);
+ }
+ if($action==='manual_import'){
+  $activityId=filter_var($input['activity_id']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
+  $field=(string)($input['field']??'');$value=$input['proposed_value']??null;$url=trim((string)($input['source_url']??''));$evidence=mb_substr(trim((string)($input['evidence']??'')),0,5000);
+  if(!$activityId||!isset($allowed[$field])||!in_array($field,$activityCols,true)||!is_string($value)||trim($value)===''||mb_strlen($value)>$allowed[$field]||!$validUrl($url)){
+   bh_lha_reply(422,['ok'=>false,'error'=>'Choose a valid listing and supported field, enter a proposed value and provide its public source URL.']);
+  }
+  $value=trim($value);
+  if(in_array($field,['website','booking_url','facebook_url','instagram_url'],true)&&!$validUrl($value))bh_lha_reply(422,['ok'=>false,'error'=>'Enter a valid HTTP or HTTPS value for this field.']);
+  if($field==='contact_email'&&!filter_var($value,FILTER_VALIDATE_EMAIL))bh_lha_reply(422,['ok'=>false,'error'=>'Enter a valid email address.']);
+  $titleSelect=in_array('title',$activityCols,true)?'title':'NULL AS title';
+  $q=$db->prepare('SELECT '.$titleSelect.',`'.$field.'` AS current_value FROM bh_activities WHERE id=?');$q->execute([(int)$activityId]);$current=$q->fetch(PDO::FETCH_ASSOC);
+  if(!$current)bh_lha_reply(404,['ok'=>false,'error'=>'The selected listing was not found.']);
+  $duplicate=$db->prepare("SELECT id FROM bh_listing_health_approvals WHERE activity_id=? AND field_name=? AND proposed_value=? AND source_url=? AND status='pending' LIMIT 1");
+  $duplicate->execute([(int)$activityId,$field,$value,$url]);
+  if($duplicate->fetchColumn())bh_lha_reply(409,['ok'=>false,'error'=>'This exact suggestion is already waiting for approval.']);
+  $add=$db->prepare("INSERT INTO bh_listing_health_approvals (activity_id,activity_title,field_name,original_value,proposed_value,source_url,evidence,source_platform,confidence,imported_by) VALUES (?,?,?,?,?,?,?,?,?,?)");
+  $add->execute([(int)$activityId,(string)($current['title']??''),$field,(string)($current['current_value']??''),$value,$url,$evidence?:null,'manual',null,$actor()]);
+  bh_lha_reply(200,['ok'=>true,'id'=>(int)$db->lastInsertId(),'message'=>'Manual source suggestion added to the approval queue. No listing has been changed.']);
+ }
  $id=filter_var($input['id']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
  if(!$id) bh_lha_reply(422,['ok'=>false,'error'=>'A valid review item ID is required.']);
  if($action==='reject'){
