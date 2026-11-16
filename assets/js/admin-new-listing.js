@@ -909,6 +909,7 @@ if(richEditor&&descriptionField){
    editor.on('input change undo redo keyup',syncDescription);
    editor.on('paste',()=>setTimeout(syncDescription,0));
   }});
+  descriptionField.addEventListener('input',()=>{const editor=window.tinymce?.get('adminDescriptionEditor');if(editor&&editor.getContent()!==descriptionField.value)editor.setContent(cleanDescription(descriptionField.value||''));});
  }else{
   richEditor.hidden=false;
   richEditor.classList.add('bh-editor-fallback');
