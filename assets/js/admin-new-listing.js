@@ -937,7 +937,7 @@ next.addEventListener('click',()=>{
  document.getElementById('adminListingSteps')?.scrollIntoView({block:'start',behavior:'smooth'});
 });
 renderStep();
-form.addEventListener('submit',async e=>{e.preventDefault();if(richEditor&&descriptionField)descriptionField.value=cleanDescription(richEditor.innerHTML);status.textContent='Checking listing…';try{status.classList.remove('is-error');const importedLocations=collectVenues().filter(v=>v.venue_name);
+form.addEventListener('submit',async e=>{e.preventDefault();if(richEditor&&descriptionField){const editor=window.tinymce?.get('adminDescriptionEditor');if(editor)editor.save();descriptionField.value=cleanDescription(descriptionField.value);}status.textContent='Checking listing…';try{status.classList.remove('is-error');const importedLocations=collectVenues().filter(v=>v.venue_name);
 if(importedLocations.length&&!String(form.elements.namedItem('town')?.value||'').trim()){
  const first=importedLocations[0];
  if(!first.town){status.textContent='Please confirm the town for '+first.venue_name+' in Additional locations before saving.';status.classList.add('is-error');step=5;renderStep();return;}
