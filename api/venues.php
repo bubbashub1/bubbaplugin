@@ -28,15 +28,30 @@ try {
         return (int)$stmt->fetchColumn() > 0;
     };
 
-    if ($hasColumn('bh_venues', 'activity_id')) {
-        // Count activity links for this venue only. A table-wide aggregate here
-        // collapses the entire venue result into a single row on MySQL.
+    $hasDirectVenue = $hasColumn('bh_venues', 'activity_id');
+    $hasVenueLinks = $hasTable('bh_activity_venues');
+    if ($hasDirectVenue && $hasVenueLinks) {
+        // Some installations retain the legacy activity_id while also using
+        // bh_activity_venues for shared venues. Count both relationships.
         $activityCount = '(
-            SELECT COUNT(DISTINCT venue_activity.activity_id)
-            FROM bh_venues venue_activity
-            WHERE venue_activity.id = v.id
+            SELECT COUNT(DISTINCT linked.activity_id)
+            FROM (
+                SELECT av.activity_id
+                FROM bh_activity_venues av
+                WHERE av.venue_id = v.id
+                UNION
+                SELECT legacy.activity_id
+                FROM bh_venues legacy
+                WHERE legacy.id = v.id AND legacy.activity_id IS NOT NULL
+            ) linked
         )';
-    } elseif ($hasTable('bh_activity_venues')) {
+    } elseif ($hasDirectVenue) {
+        $activityCount = '(
+            SELECT COUNT(DISTINCT legacy.activity_id)
+            FROM bh_venues legacy
+            WHERE legacy.id = v.id AND legacy.activity_id IS NOT NULL
+        )';
+    } elseif ($hasVenueLinks) {
         $activityCount = '(
             SELECT COUNT(DISTINCT av.activity_id)
             FROM bh_activity_venues av
