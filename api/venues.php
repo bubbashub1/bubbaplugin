@@ -34,16 +34,18 @@ try {
         // Some installations retain the legacy activity_id while also using
         // bh_activity_venues for shared venues. Count both relationships.
         $activityCount = '(
-            SELECT COUNT(DISTINCT linked.activity_id)
-            FROM (
-                SELECT av.activity_id
-                FROM bh_activity_venues av
-                WHERE av.venue_id = v.id
-                UNION
-                SELECT legacy.activity_id
-                FROM bh_venues legacy
-                WHERE legacy.id = v.id AND legacy.activity_id IS NOT NULL
-            ) linked
+            SELECT COUNT(DISTINCT av.activity_id)
+            FROM bh_activity_venues av
+            WHERE av.venue_id = v.id
+        ) + (
+            SELECT COUNT(DISTINCT legacy.activity_id)
+            FROM bh_venues legacy
+            WHERE legacy.id = v.id
+              AND legacy.activity_id IS NOT NULL
+              AND NOT EXISTS (
+                  SELECT 1 FROM bh_activity_venues av2
+                  WHERE av2.venue_id = v.id AND av2.activity_id = legacy.activity_id
+              )
         )';
     } elseif ($hasDirectVenue) {
         $activityCount = '(
