@@ -73,7 +73,6 @@ try{
   if(!is_array($findings)||count($findings)>100) bh_lha_reply(422,['ok'=>false,'error'=>'Import must contain a findings array of no more than 100 items.']);
   $inserted=0;$skipped=0;$errors=[];
   $db->beginTransaction();
-  $read=$db->prepare('SELECT title,\u0060FIELD\u0060 FROM bh_activities WHERE id=?');
   $add=$db->prepare("INSERT INTO bh_listing_health_approvals (activity_id,activity_title,field_name,original_value,proposed_value,source_url,evidence,source_platform,confidence,imported_by) VALUES (?,?,?,?,?,?,?,?,?,?)");
   foreach($findings as $index=>$finding){
    if(!is_array($finding)){$skipped++;continue;}
