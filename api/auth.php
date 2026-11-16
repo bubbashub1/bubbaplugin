@@ -887,7 +887,10 @@ try {
             'organiser_id'=>$organiserId,
             'user'=>['id'=>$userId,'email'=>$email,'role'=>'leader','status'=>'active'],
             'csrf'=>$_SESSION['bh_csrf'],
-            'message'=>'Account created. Please check your email and click the verification link before signing in.','verification_email_sent'=>$verificationEmailSent
+            'message'=>$verificationEmailSent
+                ? 'Account created. Please check your email and click the verification link before signing in.'
+                : 'Your account was created, but we could not send the verification email. Please use Resend verification on the sign-in page or contact Bubba Hub support.',
+            'verification_email_sent'=>$verificationEmailSent
         ]);
     }
 
@@ -932,8 +935,11 @@ try {
             bh_auth_response(401, ['ok' => false, 'error' => 'invalid_login', 'message' => 'That email or password is not correct.']);
         }
 
-        if ($authContext === 'leader' && (($user['role'] ?? '') !== 'leader' || empty($user['email_verified_at']))) {
-            bh_auth_response(403, ['ok'=>false,'error'=>'email_not_verified','message'=>'Please verify your email address using the link we sent before signing in as a leader.']);
+        if ($authContext === 'leader' && ($user['role'] ?? '') !== 'leader') {
+            bh_auth_response(403, ['ok'=>false,'error'=>'leader_account_required','message'=>'This email is registered with a different account type. To manage a listing, sign in with a Class Leader account or upgrade your existing family account.']);
+        }
+        if ($authContext === 'leader' && empty($user['email_verified_at'])) {
+            bh_auth_response(403, ['ok'=>false,'error'=>'email_not_verified','message'=>'Your Class Leader email is not verified yet. Please check your inbox and spam folder, or request a new verification email.']);
         }
 
         bh_check_account_context($user, $authContext);
