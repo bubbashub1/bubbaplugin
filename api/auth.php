@@ -802,7 +802,7 @@ try {
         $payload = http_build_query(['secret'=>$secret,'response'=>$token,'remoteip'=>$_SERVER['REMOTE_ADDR'] ?? '']);
         $context = stream_context_create(['http'=>[
             'method'=>'POST',
-            'header'=>"Content-Type: application/x-www-form-urlencoded\\r\\n",
+            'header'=>"Content-Type: application/x-www-form-urlencoded\r\n",
             'content'=>$payload,
             'timeout'=>8,
             'ignore_errors'=>true
