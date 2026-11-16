@@ -20,6 +20,61 @@ function bh_auth_response(int $status, array $data): void {
     exit;
 }
 
+require_once __DIR__.'/turnstile-settings.php';
+
+/** Verify email/password registrations with Cloudflare Turnstile when configured. */
+function bh_turnstile_registration_verify(array $body): void {
+    $site = trim((string)bh_turnstile_setting('BUBBAHUB_TURNSTILE_SITE_KEY'));
+    $secret = trim((string)bh_turnstile_setting('BUBBAHUB_TURNSTILE_SECRET_KEY'));
+    if ($site === '' && $secret === '') return;
+    if ($site === '' || $secret === '') {
+        bh_auth_response(503, ['ok'=>false,'error'=>'turnstile_configuration_incomplete','message'=>'The security check is temporarily unavailable. Please try again later.']);
+    }
+    $token = (string)($body['turnstile_token'] ?? '');
+    if ($token === '' || strlen($token) > 2048) {
+        bh_auth_response(422, ['ok'=>false,'error'=>'turnstile_required','message'=>'Please complete the security check.']);
+    }
+    $payload = http_build_query(['secret'=>$secret,'response'=>$token,'remoteip'=>$_SERVER['REMOTE_ADDR'] ?? '']);
+    $raw = false;
+    if (function_exists('curl_init')) {
+        $ch = curl_init('https://challenges.cloudflare.com/turnstile/v0/siteverify');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $payload,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded'],
+            CURLOPT_TIMEOUT => 8,
+            CURLOPT_CONNECTTIMEOUT => 4,
+            CURLOPT_FOLLOWLOCATION => false,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
+        ]);
+        $raw = curl_exec($ch);
+        curl_close($ch);
+    } else {
+        $context = stream_context_create(['http'=>[
+            'method'=>'POST',
+            'header'=>"Content-Type: application/x-www-form-urlencoded\r\n",
+            'content'=>$payload,
+            'timeout'=>8,
+            'ignore_errors'=>true
+        ]]);
+        $raw = @file_get_contents('https://challenges.cloudflare.com/turnstile/v0/siteverify', false, $context);
+    }
+    if (!is_string($raw) || $raw === '') {
+        bh_auth_response(503, ['ok'=>false,'error'=>'turnstile_unavailable','message'=>'The security check could not be verified. Please try again.']);
+    }
+    $result = json_decode($raw, true);
+    if (!is_array($result) || empty($result['success'])) {
+        bh_auth_response(403, ['ok'=>false,'error'=>'turnstile_failed','message'=>'Security check failed or expired. Please try again.']);
+    }
+    $expectedHost = strtolower((string)(parse_url('https://'.(string)($_SERVER['HTTP_HOST'] ?? ''), PHP_URL_HOST) ?: ''));
+    $verifiedHost = strtolower((string)($result['hostname'] ?? ''));
+    if ($expectedHost === '' || $verifiedHost === '' || !hash_equals($expectedHost, $verifiedHost)) {
+        bh_auth_response(403, ['ok'=>false,'error'=>'turnstile_hostname_mismatch','message'=>'The security check could not be verified for this site.']);
+    }
+}
+
 function bh_client_ip(array $config): string {
     // Only trust a forwarded header if you explicitly configure one, e.g.
     // 'app' => ['trusted_ip_header' => 'HTTP_CF_CONNECTING_IP'] when behind Cloudflare.
@@ -761,6 +816,7 @@ try {
 
     /* ---------------- leader_register ---------------- */
     if ($action === 'leader_register') {
+        bh_turnstile_registration_verify($body);
         bh_rate_limit($db, "register-ip:$ip", 10, 3600);
 
         $email = bh_clean_email($body['email'] ?? '');
@@ -1101,6 +1157,7 @@ try {
     /* ---------------- register (family) ---------------- */
     if ($action === 'register') {
         if ($authContext === 'volunteer') bh_auth_response(403, ['ok'=>false,'error'=>'volunteer_registration_closed','message'=>'Please apply through the volunteer interest form.']);
+        bh_turnstile_registration_verify($body);
         bh_rate_limit($db, "register-ip:$ip", 10, 3600);
 
         $email = bh_clean_email($body['email'] ?? '');
