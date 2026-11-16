@@ -9,12 +9,20 @@ Scheduled Task research is imported into a persistent, server-side approval queu
 1. A recurring ChatGPT task reviews public Bubba Hub directory pages and publicly available organiser/venue sources.
 2. It reports evidence-backed findings with the exact listing ID, proposed field/value, source URL, evidence and confidence.
 3. Copy the JSON block from the task report.
-4. In Admin → Listing Health Check, choose **Import Scheduled Task JSON** and paste it.
+4. In Admin → Listing Health Check, choose **Import Scheduled Task JSON** and paste it, or select a listing and use **Import from public webpage** to preview a public source and manually enter a proposed field value.
 5. Open **Review imported findings**. Compare the current value with the proposed value and inspect the source/evidence.
 6. Optionally edit the proposal, then separately choose **Approve and update listing** or **Reject**.
 7. The server checks the admin session and CSRF token, validates the field/value/source, and verifies that the live field has not changed since import. If it has changed, the finding is marked stale and is not applied.
 
 ChatGPT Scheduled Tasks do not have access to Bubba Hub's private admin database. They cannot approve, publish, edit or remove listings. Importing a report only creates pending review records.
+
+## Manual public webpage preview
+
+- Select a listing in the Listing Health table, choose **Import from public webpage**, and enter its public page URL.
+- The server fetches only a public HTTP(S) HTML/plain-text page, with DNS resolution pinned to a validated public IPv4 address, no redirects, a short timeout and a 1 MB response limit. Private/local IPs, non-standard ports, credential-bearing URLs, non-web content and redirect responses are rejected.
+- The preview displays a page title and a short text excerpt. It does not crawl linked pages or automatically change a field.
+- Enter the proposed value and add it to the same pending approval queue. The source URL and preview excerpt are retained as evidence. The normal individual approval and stale-value safeguards still apply.
+- Page content is untrusted. Check the source yourself before approving any proposed value.
 
 ## JSON contract
 
