@@ -41,7 +41,7 @@ jobs:
           done
       - name: Check Listing Health hub JavaScript syntax
         run: node --check assets/js/admin-listing-health-hub.js
-      - name: Verify critical security guards
+      - name: Verify critical security guards and page boundaries
         shell: bash
         run: |
           set -euo pipefail
@@ -59,16 +59,17 @@ jobs:
           grep -q "fetch_source" api/admin-listing-health-approvals.php
           grep -q "manual_import" api/admin-listing-health-approvals.php
           grep -q "bhHealthSourceOpen" assets/js/admin-listing-health-hub.js
-          grep -q "bhLocationSearch" admin/admin-listing-health.html
-          grep -q "bhLocationFilter" admin/admin-listing-health.html
-          grep -q "bhNearRadius" admin/admin-listing-health.html
-          grep -q "admin-location-management.js" admin/admin-listing-health.html
-          grep -q "admin-location-actions.js" admin/admin-listing-health.html
-          grep -q "admin-location-bulk.js" admin/admin-listing-health.html
-          grep -q "Manual public webpage preview" docs/LISTING-HEALTH-SCHEDULED-TASK-IMPORT.md
-          ! grep -q "localStorage" assets/js/admin-listing-health-hub.js
           grep -q "approvalRequest('approve'" assets/js/admin-listing-health-hub.js
           grep -q "approvalRequest('reject'" assets/js/admin-listing-health-hub.js
+          ! grep -q "localStorage" assets/js/admin-listing-health-hub.js
+          grep -q 'id="search"' admin/admin-listing-health.html
+          grep -q 'id="filter"' admin/admin-listing-health.html
+          grep -q "bh-location-controls" admin/admin-listing-health.html
+          ! grep -q "admin-listing-checker-settings.html" admin/admin-listing-health.html
+          ! grep -q "admin-location-management.js" admin/admin-listing-health.html
+          ! grep -q "admin-location-actions.js" admin/admin-listing-health.html
+          ! grep -q "admin-location-bulk.js" admin/admin-listing-health.html
+          ! grep -q "bhNearRadius" admin/admin-listing-health.html
           grep -q "bh_admin_authenticated" api/admin-listing-checker-settings.php
           grep -q "hash_equals" api/admin-listing-checker-settings.php
           grep -q "HTTP_ORIGIN" api/admin-listing-checker-settings.php
