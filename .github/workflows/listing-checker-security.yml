@@ -38,6 +38,8 @@ jobs:
           do
             php -l "$file"
           done
+      - name: Check Listing Health hub JavaScript syntax
+        run: node --check assets/js/admin-listing-health-hub.js
       - name: Verify critical security guards
         shell: bash
         run: |
