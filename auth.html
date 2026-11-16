@@ -102,7 +102,7 @@
 <div id="leaderVerifyWrap" hidden style="margin:12px 0"><button type="button" id="resendLeaderVerification" class="button button-soft">Resend leader verification email</button><p class="library-message" id="leaderVerifyMessage" role="status" aria-live="polite"></p></div>
 <div class="auth-password-field" id="confirmWrap" hidden><label for="authConfirmPassword">Confirm password</label><input id="authConfirmPassword" name="confirm_password" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the password again"><span class="auth-password-row"><button type="button" class="auth-show-password" data-password-toggle="authConfirmPassword" aria-controls="authConfirmPassword" aria-pressed="false">Show password</button></span></div>
 
-<button class="button button-primary auth-submit" type="submit" id="authSubmit">Sign in</button>
+<div id="turnstileWrap" hidden><div id="turnstileWidget"></div><p id="turnstileMessage" role="status" aria-live="polite"></p></div><button class="button button-primary auth-submit" type="submit" id="authSubmit">Sign in</button>
 <p class="library-message" id="authMessage" role="status" aria-live="polite"></p>
 </form>
 <div class="auth-note"><span>🔐</span><div><strong>Your family information stays private</strong><p>Children and bump profiles are linked to your account and are not public.</p></div></div>
