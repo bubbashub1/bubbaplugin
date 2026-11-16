@@ -916,7 +916,7 @@ if(richEditor&&descriptionField){
   btn.addEventListener('click',()=>{
    const cmd=btn.dataset.format;
    let url='';
-   if(cmd==='createLink'){url=prompt('Enter a full https:// or http:// link')||'';if(!/^https?:\\/\\//i.test(url))return;}
+   if(cmd==='createLink'){url=prompt('Enter a full https:// or http:// link')||'';if(url.slice(0,8).toLowerCase()!=='https://'&&url.slice(0,7).toLowerCase()!=='http://')return;}
    restoreSelection();
    if(cmd==='createLink')document.execCommand('createLink',false,url);
    else if(cmd==='h3')document.execCommand('formatBlock',false,'h3');
