@@ -4,7 +4,12 @@ on:
   pull_request:
     paths:
       - 'api/auth.php'
+      - 'api/turnstile-config.php'
+      - 'api/turnstile-settings.php'
+      - 'api/admin-leader-actions.php'
+      - 'api/admin-user-directory.php'
       - 'assets/js/auth-page.js'
+      - 'assets/js/admin-leader-directory.js'
       - 'auth.html'
       - '.github/workflows/native-google-auth-checks.yml'
   push:
@@ -33,10 +38,16 @@ jobs:
           coverage: none
 
       - name: Check native authentication PHP syntax
-        run: php -l api/auth.php
+        run: |
+          php -l api/auth.php
+          php -l api/turnstile-config.php
+          php -l api/admin-leader-actions.php
+          php -l api/admin-user-directory.php
 
       - name: Check authentication JavaScript syntax
-        run: node --check assets/js/auth-page.js
+        run: |
+          node --check assets/js/auth-page.js
+          node --check assets/js/admin-leader-directory.js
 
       - name: Check Google sign-in wiring
         run: |
@@ -46,6 +57,10 @@ jobs:
           auth = Path('api/auth.php').read_text()
           page = Path('auth.html').read_text()
           script = Path('assets/js/auth-page.js').read_text()
+          config = Path('api/turnstile-config.php').read_text()
+          admin_actions = Path('api/admin-leader-actions.php').read_text()
+          admin_directory = Path('api/admin-user-directory.php').read_text()
+          admin_script = Path('assets/js/admin-leader-directory.js').read_text()
 
           checks = {
               'five-minute nonce endpoint': "action === 'google_nonce'" in auth and 'time() + 300' in auth,
@@ -56,6 +71,12 @@ jobs:
               'Google config and GIS scripts load': 'api/google-config.php' in page and 'accounts.google.com/gsi/client' in page,
               'browser sends nonce and selected account context': 'nonceData.nonce' in script and 'context,' in script,
               'volunteer Google button is hidden': 'wrap.hidden=context==="volunteer"' in script,
+              'Turnstile checks both email registration handlers': auth.count('bh_turnstile_registration_verify($body);') >= 2,
+              'registration browser sends a ready Turnstile token': 'p.turnstile_token=turnstileToken' in script and '!turnstileWidgetReady||!turnstileToken' in script,
+              'public Turnstile config exposes site key only': "'site_key'=>$enabled?$site:''" in config and 'secret_key' not in config.lower(),
+              'admin leader actions require session CSRF': 'invalid_csrf' in admin_actions and 'hash_equals($expected,$provided)' in admin_actions,
+              'admin directory issues session CSRF': "'csrf'=>$_SESSION['bh_admin_csrf']" in admin_directory,
+              'admin directory UI sends CSRF': 'status:requestedStatus,csrf' in admin_script and 'confirmation,csrf' in admin_script,
           }
 
           for label, passed in checks.items():
