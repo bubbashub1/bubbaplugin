@@ -121,7 +121,7 @@ try{
    $headline=trim((string)$result->title);$snippet=trim(strip_tags((string)$result->description));$evidence=trim((string)$result->link);
    $signalText=strtolower($headline.' '.$snippet);
    if(!preg_match('/\\b(closed|closure|closing|no longer running|permanently closed|cancelled|not running)\\b/i',$signalText))continue;
-   if($evidence===''||!filter_var($evidence,FILTER_VALIDATE_URL))continue;
+   if($evidence===''||strlen($evidence)>1000||!filter_var($evidence,FILTER_VALIDATE_URL))continue;
    $parts=parse_url($evidence);
    if(!is_array($parts)||!in_array(strtolower((string)($parts['scheme']??'')),['http','https'],true)||empty($parts['host'])||isset($parts['user'])||isset($parts['pass']))continue;
    $signals[]=['headline'=>mb_substr($headline,0,500),'snippet'=>mb_substr($snippet,0,900),'source_url'=>$evidence,'source_host'=>strtolower((string)$parts['host'])];
