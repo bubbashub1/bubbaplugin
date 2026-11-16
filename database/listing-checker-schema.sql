@@ -98,3 +98,11 @@ INSERT IGNORE INTO bh_listing_discovery_terms (term,term_group,regions_json) VAL
  ('toddler music classes','Music & sensory','["all"]'),
  ('forest school under 5s','Outdoor & nature','["all"]'),
  ('parent and baby groups','Baby & pregnancy','["all"]');
+ 
+-- Publicly indexed social pages are discovery leads only; private content is not accessible.
+INSERT IGNORE INTO bh_listing_discovery_terms
+ (term,term_group,regions_json,source_platform,search_keywords,frequency_hours) VALUES
+ ('baby groups','Public Facebook discovery','["all"]','facebook','under 5s',24),
+ ('toddler groups','Public Facebook discovery','["all"]','facebook','Devon Cornwall',24),
+ ('baby classes','Public Instagram discovery','["all"]','instagram','pregnancy',24),
+ ('toddler classes','Public Instagram discovery','["all"]','instagram','Devon Cornwall',24);
