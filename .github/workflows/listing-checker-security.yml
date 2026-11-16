@@ -30,6 +30,7 @@ jobs:
           for file in \
             api/admin-listing-checker-settings.php \
             api/admin-listing-health.php \
+            api/admin-listing-health-approvals.php \
             api/admin-listing-review.php \
             api/listing-checker-health-cron.php \
             api/listing-checker-discovery-cron.php \
@@ -41,6 +42,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          grep -q "bh_admin_authenticated" api/admin-listing-health-approvals.php
+          grep -q "hash_equals" api/admin-listing-health-approvals.php
+          grep -q "FOR UPDATE" api/admin-listing-health-approvals.php
+          grep -q "status='stale'" api/admin-listing-health-approvals.php
+          grep -q "bh_listing_health_approvals" api/admin-listing-health-approvals.php
+          ! grep -q "localStorage" assets/js/admin-listing-health-hub.js
+          grep -q "approvalRequest('approve'" assets/js/admin-listing-health-hub.js
+          grep -q "approvalRequest('reject'" assets/js/admin-listing-health-hub.js
           grep -q "bh_admin_authenticated" api/admin-listing-checker-settings.php
           grep -q "hash_equals" api/admin-listing-checker-settings.php
           grep -q "HTTP_ORIGIN" api/admin-listing-checker-settings.php
