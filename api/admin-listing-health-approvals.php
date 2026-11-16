@@ -94,7 +94,14 @@ try{
    if($field==='contact_email'&&$proposed!==''&&!filter_var($proposed,FILTER_VALIDATE_EMAIL)){
     $skipped++;$errors[]='Finding '.($index+1).': proposed email address is invalid.';continue;
    }
-   $confidence=isset($finding['confidence'])?max(0,min(100,(int)$finding['confidence'])):null;
+   $duplicate=$db->prepare("SELECT id FROM bh_listing_health_approvals WHERE activity_id=? AND field_name=? AND proposed_value=? AND source_url=? AND status='pending' LIMIT 1");
+   $duplicate->execute([(int)$id,$field,$proposed,$url]);
+   if($duplicate->fetchColumn()){$skipped++;continue;}
+   $confidence=null;
+   if(isset($finding['confidence'])){
+    $rawConfidence=$finding['confidence'];
+    $confidence=is_numeric($rawConfidence)?max(0,min(100,(int)$rawConfidence)):(['low'=>35,'medium'=>65,'high'=>85][strtolower((string)$rawConfidence)]??null);
+   }
    $evidence=mb_substr(trim((string)($finding['evidence']??$finding['reason']??'')),0,5000);
    $platform=mb_substr(trim((string)($finding['source_platform']??'')),0,40);
    $add->execute([(int)$id,(string)$current['title'],$field,(string)($current['current_value']??''),$proposed,$url,$evidence?:null,$platform?:null,$confidence,$actor()]);
