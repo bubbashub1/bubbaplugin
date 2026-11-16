@@ -20,28 +20,9 @@ try{
  require_once __DIR__.'/db.php';
  $db=bh_mysql();
  $_SESSION['bh_listing_health_approval_csrf']??=bin2hex(random_bytes(32));
- $db->exec("CREATE TABLE IF NOT EXISTS bh_listing_health_approvals (
-  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  activity_id BIGINT UNSIGNED NOT NULL,
-  activity_title VARCHAR(190) NULL,
-  field_name VARCHAR(64) NOT NULL,
-  original_value MEDIUMTEXT NULL,
-  proposed_value MEDIUMTEXT NOT NULL,
-  source_url VARCHAR(2048) NOT NULL,
-  evidence TEXT NULL,
-  source_platform VARCHAR(40) NULL,
-  confidence TINYINT UNSIGNED NULL,
-  status ENUM('pending','approved','rejected','stale') NOT NULL DEFAULT 'pending',
-  imported_by VARCHAR(80) NOT NULL DEFAULT 'admin',
-  reviewed_by VARCHAR(80) NULL,
-  reviewed_at DATETIME NULL,
-  applied_value MEDIUMTEXT NULL,
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_lha_status_created(status,created_at),
-  INDEX idx_lha_activity(activity_id),
-  INDEX idx_lha_source(source_url(191))
- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+ if(!$db->query('SHOW TABLES LIKE '.$db->quote('bh_listing_health_approvals'))->fetchColumn()){
+  bh_lha_reply(503,['ok'=>false,'error'=>'The approval queue table is not prepared. Open Listing Checker Settings and choose Prepare this database on staging.']);
+ }
  $activityCols=$db->query('SHOW COLUMNS FROM bh_activities')->fetchAll(PDO::FETCH_COLUMN);
  $allowed=[
   'title'=>190,'description'=>10000,'short_description'=>2000,'website'=>2048,
