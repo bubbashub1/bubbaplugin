@@ -46,6 +46,6 @@ sourceDialog.addEventListener('submit',async e=>{e.preventDefault();const b=sour
 $('bhHealthQueueView').onclick=queueView;$('bhHealthQueueCount').textContent=approvalItems.length;
 $('bhHealthWebSearch').onclick=()=>{const row=selectedRow();const id=idFromRow(row);const item=currentItem(id);if(!item){alert('Hover over or focus a listing row first, then choose web search.');return}const query=[item.title,item.organiser_organisation_name,item.town||item.venue_town,'official website contact details'].filter(Boolean).join(' ');window.open('https://www.google.com/search?q='+encodeURIComponent(query),'_blank','noopener,noreferrer')};
 const originalRefresh=$('refresh').onclick;$('refresh').addEventListener('click',()=>setTimeout(loadHealth,100));$('search').addEventListener('input',()=>setTimeout(enhanceRows,50));$('filter').addEventListener('change',()=>setTimeout(enhanceRows,50));
-loadAux().then(loadHealth).catch(err=>{console.warn('Listing management tools:',err.message)});
+loadAux().catch(err=>{console.warn('Listing management tools:',err.message)});loadHealth().catch(err=>{console.warn('Listing row actions:',err.message)});
 const observer=new MutationObserver(enhanceRows);observer.observe($('rows'),{childList:true,subtree:true});
 })();
