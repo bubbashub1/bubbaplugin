@@ -21,7 +21,8 @@ jobs:
         with:
           php-version: '8.2'
       - name: Check leader PHP syntax
-        run: php -l api/leader-portal.php
+        run: |
+          php -l api/leader-portal.php
           php -l api/admin-activities.php
       - name: Check leader wizard JavaScript syntax
         run: |
