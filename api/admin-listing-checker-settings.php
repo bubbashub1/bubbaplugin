@@ -93,14 +93,14 @@ try {
     bh_lc_reply(200,['ok'=>true,'message'=>str_ends_with($control,'run_now')?'Manual run queued. It will run only when the worker is enabled, resumed and inside its allowed day/time window.':'Worker control saved.']);
   }
   if($action==='save_settings') {
-    $allowed=['health_enabled','discovery_enabled','interval_hours','preferred_start_time','window_start','window_end','active_days','timezone','batch_size','max_runtime_seconds','request_limit','stale_after_days'];
+    $allowed=['health_enabled','discovery_enabled','closure_checks_enabled','interval_hours','preferred_start_time','window_start','window_end','active_days','timezone','batch_size','max_runtime_seconds','request_limit','stale_after_days'];
     $values=$input['settings']??[];
     if(!is_array($values)) bh_lc_reply(422,['ok'=>false,'error'=>'Settings are invalid']);
     $validated=[];
     foreach($allowed as $key) {
       if(!array_key_exists($key,$values)) continue;
       $v=$values[$key];
-      if(in_array($key,['health_enabled','discovery_enabled'],true)) $v=$v?'1':'0';
+      if(in_array($key,['health_enabled','discovery_enabled','closure_checks_enabled'],true)) $v=$v?'1':'0';
       elseif($key==='active_days') {
         if(!is_array($v)) bh_lc_reply(422,['ok'=>false,'error'=>'Select at least one active day']);
         $days=array_values(array_unique(array_filter(array_map('intval',$v),static fn($d)=>$d>=1&&$d<=7)));
