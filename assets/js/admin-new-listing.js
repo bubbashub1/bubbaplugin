@@ -900,7 +900,37 @@ let step=0;
 const review=document.createElement('div');review.className='bh-review';review.hidden=true;form.querySelector('.admin-form-grid:last-of-type').after(review);
 const descriptionField=form.elements.namedItem('description');const richEditor=document.getElementById('adminDescriptionEditor');const descriptionSection=document.getElementById('adminDescriptionSection');
 const cleanDescription=html=>{const doc=new DOMParser().parseFromString(html,'text/html');const allowed=new Set(['P','BR','STRONG','B','EM','I','H2','H3','UL','OL','LI','A']);const walk=node=>{for(const child of [...node.childNodes]){if(child.nodeType===8){child.remove();continue;}if(child.nodeType!==1)continue;if(!allowed.has(child.tagName)){if(['SCRIPT','STYLE','IFRAME','OBJECT','SVG','FORM'].includes(child.tagName)){child.remove();continue;}walk(child);child.replaceWith(...child.childNodes);continue;}for(const attr of [...child.attributes]){if(child.tagName==='A'&&attr.name==='href'&&/^https?:\/\//i.test(attr.value))continue;child.removeAttribute(attr.name);}walk(child);}};walk(doc.body);return doc.body.innerHTML;};
-if(richEditor&&descriptionField){richEditor.innerHTML=cleanDescription(descriptionField.value);richEditor.addEventListener('input',()=>{descriptionField.value=cleanDescription(richEditor.innerHTML);});document.querySelectorAll('[data-format]').forEach(btn=>btn.addEventListener('click',()=>{richEditor.focus();const cmd=btn.dataset.format;if(cmd==='createLink'){const url=prompt('Enter an https:// link');if(!url||!/^https?:\/\//i.test(url))return;document.execCommand('createLink',false,url);}else if(cmd==='h3')document.execCommand('formatBlock',false,'h3');else document.execCommand(cmd,false,null);descriptionField.value=cleanDescription(richEditor.innerHTML);}));}
+if(richEditor&&descriptionField){
+ const syncDescription=()=>{descriptionField.value=cleanDescription(richEditor.innerHTML);};
+ const loadDescription=()=>{richEditor.innerHTML=cleanDescription(descriptionField.value);};
+ let selectedRange=null;
+ const captureSelection=()=>{const selection=window.getSelection();if(selection&&selection.rangeCount&&richEditor.contains(selection.anchorNode)&&richEditor.contains(selection.focusNode))selectedRange=selection.getRangeAt(0).cloneRange();};
+ const restoreSelection=()=>{richEditor.focus();if(selectedRange){const selection=window.getSelection();selection.removeAllRanges();selection.addRange(selectedRange);}};
+ loadDescription();
+ richEditor.addEventListener('input',()=>{syncDescription();captureSelection();});
+ richEditor.addEventListener('keyup',captureSelection);
+ richEditor.addEventListener('mouseup',captureSelection);
+ document.addEventListener('selectionchange',()=>{if(!descriptionSection.hidden)captureSelection();});
+ document.querySelectorAll('[data-format]').forEach(btn=>{
+  btn.addEventListener('mousedown',event=>event.preventDefault());
+  btn.addEventListener('click',()=>{
+   const cmd=btn.dataset.format;
+   let url='';
+   if(cmd==='createLink'){url=prompt('Enter a full https:// or http:// link')||'';if(url.slice(0,8).toLowerCase()!=='https://'&&url.slice(0,7).toLowerCase()!=='http://')return;}
+   restoreSelection();
+   if(cmd==='createLink')document.execCommand('createLink',false,url);
+   else if(cmd==='h3')document.execCommand('formatBlock',false,'h3');
+   else document.execCommand(cmd,false,null);
+   syncDescription();captureSelection();
+  });
+ });
+ richEditor.addEventListener('paste',event=>{
+  event.preventDefault();
+  const plain=event.clipboardData?.getData('text/plain')||'';
+  document.execCommand('insertText',false,plain);
+  syncDescription();captureSelection();
+ });
+}
 const identity=document.getElementById('adminListingIdentity');
 const websiteImport=document.getElementById('bhAutoFillRun')?.closest('section');
 const posterImport=document.getElementById('adminPosterImage')?.closest('.bh-card');
