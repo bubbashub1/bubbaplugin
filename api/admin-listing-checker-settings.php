@@ -53,7 +53,7 @@ try {
       'frequency_hours'=>"ALTER TABLE bh_listing_discovery_terms ADD COLUMN frequency_hours SMALLINT UNSIGNED NOT NULL DEFAULT 4"
     ];
     foreach($missingColumns as $column=>$statement) if(!in_array($column,$termColumns,true)) $db->exec($statement);
-    $required=['bh_listing_checker_settings','bh_listing_discovery_terms','bh_listing_check_runs','bh_listing_check_queue','bh_listing_check_findings'];
+    $required=['bh_listing_checker_settings','bh_listing_discovery_terms','bh_listing_check_runs','bh_listing_check_queue','bh_listing_check_findings','bh_listing_health_approvals'];
     foreach($required as $table) if(!$db->query('SHOW TABLES LIKE '.$db->quote($table))->fetchColumn()) throw new RuntimeException('Migration did not create '.$table);
     bh_lc_reply(200,['ok'=>true,'message'=>'Staging Listing Checker database is ready. Existing activity listings were not changed.']);
   }
