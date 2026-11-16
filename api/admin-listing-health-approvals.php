@@ -64,6 +64,10 @@ try{
   bh_lha_reply(200,['ok'=>true,'csrf'=>$_SESSION['bh_listing_health_approval_csrf'],'data'=>$q->fetchAll(PDO::FETCH_ASSOC)]);
  }
  if(($_SERVER['REQUEST_METHOD']??'')!=='POST') bh_lha_reply(405,['ok'=>false,'error'=>'GET or POST required.']);
+ $origin=(string)($_SERVER['HTTP_ORIGIN']??'');$host=(string)($_SERVER['HTTP_HOST']??'');
+ if($origin!==''&&(!filter_var($origin,FILTER_VALIDATE_URL)||strcasecmp((string)parse_url($origin,PHP_URL_HOST),preg_replace('/:\\d+$/','',$host))!==0)) bh_lha_reply(403,['ok'=>false,'error'=>'Cross-origin request blocked.']);
+ if((string)($_SERVER['HTTP_SEC_FETCH_SITE']??'')==='cross-site') bh_lha_reply(403,['ok'=>false,'error'=>'Cross-site request blocked.']);
+ if((int)($_SERVER['CONTENT_LENGTH']??0)>262144) bh_lha_reply(413,['ok'=>false,'error'=>'Request too large.']);
  $input=json_decode((string)file_get_contents('php://input'),true);
  if(!is_array($input)) bh_lha_reply(400,['ok'=>false,'error'=>'Invalid JSON request.']);
  if(!hash_equals($_SESSION['bh_listing_health_approval_csrf'],(string)($input['csrf']??''))) bh_lha_reply(403,['ok'=>false,'error'=>'Security token expired. Refresh the page and try again.']);
@@ -83,7 +87,8 @@ try{
    if(!$id||!isset($allowed[$field])||!in_array($field,$activityCols,true)||!is_string($value)||trim($value)===''||mb_strlen($value)>$allowed[$field]||!$validUrl($url)){
     $skipped++;$errors[]='Finding '.($index+1).': needs a valid listing ID, supported field, proposed value and HTTP(S) source URL.';continue;
    }
-   $readSql='SELECT title,`'.$field.'` AS current_value FROM bh_activities WHERE id=?';
+   $titleSelect=in_array('title',$activityCols,true)?'title':'NULL AS title';
+   $readSql='SELECT '.$titleSelect.',`'.$field.'` AS current_value FROM bh_activities WHERE id=?';
    $read=$db->prepare($readSql);$read->execute([$id]);$current=$read->fetch(PDO::FETCH_ASSOC);
    if(!$current){$skipped++;$errors[]='Finding '.($index+1).': listing #'.$id.' was not found.';continue;}
    $proposed=trim($value);
