@@ -5,6 +5,7 @@ on:
     branches:
       - feature/listing-health-checker
       - feature/listing-checker-structured-search
+      - feature/listing-health-approved-research
   pull_request:
     branches:
       - main
