@@ -50,6 +50,8 @@ function bh_send_smtp_mail(
 
     try {
         $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+        // Keep transactional requests responsive if the SMTP host is slow.
+        $mail->Timeout = 6;
         $mail->isSMTP();
         $mail->Host = $host;
         $mail->Port = $port;
