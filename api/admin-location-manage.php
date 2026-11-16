@@ -131,7 +131,7 @@ try{
    foreach($ids as $index=>$activityId){
     $exists=$db->prepare('SELECT 1 FROM bh_activity_venues WHERE activity_id=? AND venue_id=?');$exists->execute([$activityId,$venueId]);
     if(!$exists->fetchColumn()){
-     if($hasPrimary)$db->prepare('INSERT INTO bh_activity_venues(activity_id,venue_id,is_primary) VALUES(?,?,?)')->execute([$activityId,$venueId,$index===0?1:0]);
+     if($hasPrimary)$db->prepare('INSERT INTO bh_activity_venues(activity_id,venue_id,is_primary) VALUES(?,?,?)')->execute([$activityId,$venueId,0]);
      else $db->prepare('INSERT INTO bh_activity_venues(activity_id,venue_id) VALUES(?,?)')->execute([$activityId,$venueId]);
     }
    }
