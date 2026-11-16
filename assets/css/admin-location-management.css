@@ -26,3 +26,5 @@
 #bhBulkDeleteDialog .button-danger{background:#a32929;color:white;border:0}
 #bhBulkDeleteDialog .button-danger:disabled{opacity:.5}
 @media(max-width:850px){.bh-location-item{align-items:flex-start;flex-direction:column}.bh-location-actions{justify-content:flex-start;width:100%}}
+
+.bh-assign-listings{max-height:55vh;overflow:auto;display:grid;gap:.45rem;padding:.5rem;border:1px solid var(--bh-border,#d8dfd8);border-radius:12px;margin:.75rem 0}.bh-assign-listing-option{display:flex;align-items:flex-start;gap:.65rem;padding:.45rem;border-radius:8px}.bh-assign-listing-option input{margin-top:.2rem;flex:0 0 auto}.bh-assign-listing-option:has(input:disabled){opacity:.72}
