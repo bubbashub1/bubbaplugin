@@ -27,14 +27,46 @@ function bh_lc_reply(int $status,array $payload): never {
 }
 try {
   $db=bh_mysql();
-  $tables=['bh_listing_checker_settings','bh_listing_discovery_terms'];
-  foreach($tables as $table) {
-    if(!$db->query('SHOW TABLES LIKE '.$db->quote($table))->fetchColumn()) {
-      bh_lc_reply(503,['ok'=>false,'error'=>'Listing Checker database migration is required. Run database/listing-checker-schema.sql first.']);
-    }
-  }
   $_SESSION['bh_listing_checker_csrf']??=bin2hex(random_bytes(32));
   $method=$_SERVER['REQUEST_METHOD']??'GET';
+  $input=[];
+  if($method==='POST') {
+    $origin=(string)($_SERVER['HTTP_ORIGIN']??'');$host=(string)($_SERVER['HTTP_HOST']??'');
+    if($origin!==''&&(!filter_var($origin,FILTER_VALIDATE_URL)||strcasecmp((string)parse_url($origin,PHP_URL_HOST),preg_replace('/:\\d+$/','',$host))!==0)) bh_lc_reply(403,['ok'=>false,'error'=>'Cross-origin request blocked']);
+    if(in_array((string)($_SERVER['HTTP_SEC_FETCH_SITE']??''),['cross-site'],true)) bh_lc_reply(403,['ok'=>false,'error'=>'Cross-site request blocked']);
+    if((int)($_SERVER['CONTENT_LENGTH']??0)>65536) bh_lc_reply(413,['ok'=>false,'error'=>'Request too large']);
+    $input=json_decode((string)file_get_contents('php://input'),true);
+    if(!is_array($input)) bh_lc_reply(400,['ok'=>false,'error'=>'Invalid JSON']);
+    if(!hash_equals((string)$_SESSION['bh_listing_checker_csrf'],(string)($input['csrf']??''))) bh_lc_reply(403,['ok'=>false,'error'=>'Security check failed. Refresh the page and try again.']);
+  }
+  if($method==='POST'&&($input['action']??'')==='run_migration') {
+    $schemaPath=dirname(__DIR__).'/database/listing-checker-schema.sql';
+    $schema=is_file($schemaPath)?file_get_contents($schemaPath):false;
+    if(!is_string($schema)||trim($schema)==='') bh_lc_reply(500,['ok'=>false,'error'=>'The Listing Checker migration file could not be read.']);
+    foreach(preg_split('/;\\s*(?:\\r?\\n|$)/',$schema) as $statement) {
+      if(trim($statement)!=='') $db->exec($statement);
+    }
+    $termColumns=$db->query('SHOW COLUMNS FROM bh_listing_discovery_terms')->fetchAll(PDO::FETCH_COLUMN);
+    $missingColumns=[
+      'source_platform'=>"ALTER TABLE bh_listing_discovery_terms ADD COLUMN source_platform VARCHAR(20) NOT NULL DEFAULT 'web'",
+      'search_keywords'=>"ALTER TABLE bh_listing_discovery_terms ADD COLUMN search_keywords VARCHAR(255) NOT NULL DEFAULT ''",
+      'frequency_hours'=>"ALTER TABLE bh_listing_discovery_terms ADD COLUMN frequency_hours SMALLINT UNSIGNED NOT NULL DEFAULT 4"
+    ];
+    foreach($missingColumns as $column=>$statement) if(!in_array($column,$termColumns,true)) $db->exec($statement);
+    $required=['bh_listing_checker_settings','bh_listing_discovery_terms','bh_listing_check_runs','bh_listing_check_queue','bh_listing_check_findings'];
+    foreach($required as $table) if(!$db->query('SHOW TABLES LIKE '.$db->quote($table))->fetchColumn()) throw new RuntimeException('Migration did not create '.$table);
+    bh_lc_reply(200,['ok'=>true,'message'=>'Staging Listing Checker database is ready. Existing activity listings were not changed.']);
+  }
+  $tables=['bh_listing_checker_settings','bh_listing_discovery_terms','bh_listing_check_runs','bh_listing_check_queue','bh_listing_check_findings'];
+  foreach($tables as $table) {
+    if(!$db->query('SHOW TABLES LIKE '.$db->quote($table))->fetchColumn()) {
+      bh_lc_reply(503,['ok'=>false,'migration_required'=>true,'csrf'=>$_SESSION['bh_listing_checker_csrf'],'error'=>'Listing Checker database migration is required.']);
+    }
+  }
+  $termColumns=$db->query('SHOW COLUMNS FROM bh_listing_discovery_terms')->fetchAll(PDO::FETCH_COLUMN);
+  foreach(['source_platform','search_keywords','frequency_hours'] as $column) if(!in_array($column,$termColumns,true)) {
+    bh_lc_reply(503,['ok'=>false,'migration_required'=>true,'csrf'=>$_SESSION['bh_listing_checker_csrf'],'error'=>'Listing Checker database update is required.']);
+  }
   if($method==='GET') {
     $settings=[];
     foreach($db->query('SELECT setting_key,setting_value FROM bh_listing_checker_settings')->fetchAll(PDO::FETCH_ASSOC) as $row) $settings[$row['setting_key']]=$row['setting_value'];
@@ -46,13 +78,6 @@ try {
     bh_lc_reply(200,['ok'=>true,'csrf'=>$_SESSION['bh_listing_checker_csrf'],'settings'=>$settings,'terms'=>$terms,'runs'=>$runs]);
   }
   if($method!=='POST') bh_lc_reply(405,['ok'=>false,'error'=>'Method not allowed']);
-  $origin=(string)($_SERVER['HTTP_ORIGIN']??'');$host=(string)($_SERVER['HTTP_HOST']??'');
-  if($origin!==''&&(!filter_var($origin,FILTER_VALIDATE_URL)||strcasecmp((string)parse_url($origin,PHP_URL_HOST),preg_replace('/:\\d+$/','',$host))!==0)) bh_lc_reply(403,['ok'=>false,'error'=>'Cross-origin request blocked']);
-  if(in_array((string)($_SERVER['HTTP_SEC_FETCH_SITE']??''),['cross-site'],true)) bh_lc_reply(403,['ok'=>false,'error'=>'Cross-site request blocked']);
-  if((int)($_SERVER['CONTENT_LENGTH']??0)>65536) bh_lc_reply(413,['ok'=>false,'error'=>'Request too large']);
-  $input=json_decode((string)file_get_contents('php://input'),true);
-  if(!is_array($input)) bh_lc_reply(400,['ok'=>false,'error'=>'Invalid JSON']);
-  if(!hash_equals((string)$_SESSION['bh_listing_checker_csrf'],(string)($input['csrf']??''))) bh_lc_reply(403,['ok'=>false,'error'=>'Security check failed. Refresh the page and try again.']);
   $action=(string)($input['action']??'');
   if($action==='control') {
     $control=(string)($input['control']??'');
