@@ -541,7 +541,11 @@ try {
     $action = trim((string)($_GET['action'] ?? 'me'));
     $ip = bh_client_ip($config);
 
-    if (!isset($_SESSION['bh_csrf'])) {
+    if (
+        !isset($_SESSION['bh_csrf']) ||
+        !is_string($_SESSION['bh_csrf']) ||
+        !preg_match('/^[a-f0-9]{48}$/', $_SESSION['bh_csrf'])
+    ) {
         $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
     }
 
