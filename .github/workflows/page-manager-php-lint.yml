@@ -1,0 +1,35 @@
+name: Page Manager PHP lint
+
+on:
+  pull_request:
+    paths:
+      - 'api/admin-pages.php'
+      - 'page.php'
+      - '.github/workflows/page-manager-php-lint.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'api/admin-pages.php'
+      - 'page.php'
+      - '.github/workflows/page-manager-php-lint.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  php-lint:
+    name: Check Page Manager PHP syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: none
+      - name: Lint Page Manager PHP files
+        run: |
+          php -l api/admin-pages.php
+          php -l page.php
