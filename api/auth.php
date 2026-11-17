@@ -508,7 +508,13 @@ try {
     $action = trim((string)($_GET['action'] ?? 'me'));
     $ip = bh_client_ip($config);
 
-    if (!isset($_SESSION['bh_csrf'])) {
+    // Repair legacy or malformed sessions that contain an empty/invalid CSRF value.
+    // isset() alone treats an empty string as present, which can permanently block login.
+    if (
+        !isset($_SESSION['bh_csrf']) ||
+        !is_string($_SESSION['bh_csrf']) ||
+        !preg_match('/^[a-f0-9]{48}$/', $_SESSION['bh_csrf'])
+    ) {
         $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
     }
 
