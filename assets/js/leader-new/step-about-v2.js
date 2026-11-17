@@ -9,14 +9,15 @@ async function addCustom(type,s,i){
   if(type==="categories")Q("categories").dispatchEvent(new Event("change"));
  }catch(e){B.say(e.message||"Could not add this option.");}
 }
-function ageUpdate(){let a=+Q("ageMin").value,b=+Q("ageMax").value;Q("ageOutput").textContent=b>=a?B.age(a)+" to "+B.age(b):"Please check the age range."}
+function ageUpdate(){let a=+Q("ageMin").value,b=+Q("ageMax").value;const pregnancy=Q("agePreset")&&[...Q("agePreset").selectedOptions].some(o=>o.value==="pregnancy-postnatal");Q("ageOutput").textContent=(pregnancy?"Pregnancy / Postnatal"+(b>=a&&Q("agePreset").selectedOptions.length>1?" · ":""):"")+(pregnancy&&Q("agePreset").selectedOptions.length===1?"":(b>=a?B.age(a)+" to "+B.age(b):"Please check the age range."))}
+function applyAgePresets(){const presets={"0-6":[0,6],"6-12":[6,12],"0-12":[0,12],"12-48":[12,48],"48+":[48,216]};const selected=[...Q("agePreset").selectedOptions].map(o=>o.value);const ranges=selected.filter(k=>presets[k]).map(k=>presets[k]);if(ranges.length){Q("ageMin").value=Math.min(...ranges.map(r=>r[0]));Q("ageMax").value=Math.max(...ranges.map(r=>r[1]));}ageUpdate();}
 function init(){
  const c=Q("categories"),t=Q("tags");
  c.innerHTML="";t.innerHTML="";
  S.meta.categories.forEach(x=>B.addOpt(c,typeof x==="object"?(x.label||x.name||x.title||x.category||""):x));
  S.meta.tags.forEach(x=>B.addOpt(t,typeof x==="object"?(x.label||x.name||x.title||x.tag||""):x));
  renderPicker("categories");renderPicker("tags");
- Q("ageMin").oninput=ageUpdate;Q("ageMax").oninput=ageUpdate;
+ Q("ageMin").oninput=ageUpdate;Q("ageMax").oninput=ageUpdate;Q("agePreset").onchange=applyAgePresets;const pricingFields=Q("blockPricingFields"),priceRadios=[...document.querySelectorAll('input[name="pricing"]')];const updatePricing=()=>{if(pricingFields)pricingFields.hidden=document.querySelector('input[name="pricing"]:checked')?.value!=="block"};priceRadios.forEach(r=>r.addEventListener("change",updatePricing));updatePricing();
  Q("addCategory").onclick=()=>addCustom("categories",c,Q("newCategory"));
  Q("addTag").onclick=()=>addCustom("tags",t,Q("newTag"));
  setupPicker("categories");setupPicker("tags");
@@ -43,4 +44,4 @@ function init(){
  S.renderPicker=renderPicker;
  S.ageUpdate=ageUpdate;
 }
-B.register("about",init,()=>{let a=+Q("ageMin").value,b=+Q("ageMax").value,p=document.querySelector('input[name="pricing"]:checked');if(!B.vals(Q("categories")).length)return B.say("Please choose at least one category."),false;if(!B.vals(Q("tags")).length)return B.say("Please choose at least one tag."),false;if(!Number.isInteger(a)||!Number.isInteger(b)||a<0||b<a||b>216)return B.say("Please enter a valid age range."),false;if(!p)return B.say("Please choose Free, Per session or Per family."),false;if(p.value!=="free"&&(!Q("price").value||+Q("price").value<0))return B.say("Please enter a price."),false;return true});})();
+B.register("about",init,()=>{let a=+Q("ageMin").value,b=+Q("ageMax").value,p=document.querySelector('input[name="pricing"]:checked');if(!B.vals(Q("categories")).length)return B.say("Please choose at least one category."),false;if(!B.vals(Q("tags")).length)return B.say("Please choose at least one tag."),false;if(!Number.isInteger(a)||!Number.isInteger(b)||a<0||b<a||b>216)return B.say("Please enter a valid age range."),false;if(!p)return B.say("Please choose Free, Per session, Per family or Per block."),false;if(p.value!=="free"&&(!Q("price").value||+Q("price").value<0))return B.say("Please enter a price."),false;if(p.value==="block"&&(!Number.isInteger(+Q("blockLengthWeeks").value)||+Q("blockLengthWeeks").value<1||+Q("blockLengthWeeks").value>104))return B.say("Please enter a block length between 1 and 104 weeks."),false;return true});})();
