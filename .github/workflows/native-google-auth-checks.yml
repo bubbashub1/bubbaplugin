@@ -8,6 +8,7 @@ on:
       - 'api/turnstile-settings.php'
       - 'api/admin-leader-actions.php'
       - 'api/admin-user-directory.php'
+      - 'api/reservations.php'
       - 'assets/js/auth-page.js'
       - 'assets/js/admin-leader-directory.js'
       - 'auth.html'
@@ -48,6 +49,7 @@ jobs:
           php -l api/turnstile-config.php
           php -l api/admin-leader-actions.php
           php -l api/admin-user-directory.php
+          php -l api/reservations.php
 
       - name: Check authentication JavaScript syntax
         run: |
