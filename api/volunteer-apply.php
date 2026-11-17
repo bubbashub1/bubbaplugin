@@ -22,14 +22,9 @@ require __DIR__.'/db.php';$db=bh_mysql();
 $recent=$db->prepare("SELECT COUNT(*) FROM bh_volunteer_applications WHERE email=? AND created_at > UTC_TIMESTAMP() - INTERVAL 1 DAY");
 $recent->execute([strtolower($email)]);
 if ((int)$recent->fetchColumn() >= 3) reply(429,['ok'=>false,'error'=>'too_many_applications']);
-$db->exec("CREATE TABLE IF NOT EXISTS bh_volunteer_applications (
-id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-name VARCHAR(160) NOT NULL,email VARCHAR(190) NOT NULL,town VARCHAR(120) NOT NULL,
-region VARCHAR(120) NOT NULL,preferred_role VARCHAR(100) NOT NULL,
-availability TEXT NOT NULL,motivation TEXT NOT NULL,status VARCHAR(30) NOT NULL DEFAULT 'pending',
-consent_at DATETIME NOT NULL,created_at DATETIME NOT NULL,
-INDEX idx_status_created(status,created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+$tableCheck=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_volunteer_applications'");
+$tableCheck->execute();
+if(!(int)$tableCheck->fetchColumn())reply(503,['ok'=>false,'error'=>'application_storage_unavailable']);
 $stmt=$db->prepare("INSERT INTO bh_volunteer_applications (name,email,town,region,preferred_role,availability,motivation,consent_at,created_at) VALUES (?,?,?,?,?,?,?,UTC_TIMESTAMP(),UTC_TIMESTAMP())");
 $stmt->execute([$name,$email,$town,$region,$role,$availability,$motivation]);
 reply(201,['ok'=>true,'message'=>'Thank you! Your application has been received.']);
