@@ -26,12 +26,26 @@ function bh_localise_fb_image(string $url): string {
  return 'uploads/activities/'.$name;
 }
 if(empty($_SESSION['bh_admin_authenticated']))bh_admin_response(401,['ok'=>false,'error'=>'Admin login required.']);
+// Cookie-authenticated mutations must originate from this HTTPS site.
+if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
+ $requestHost=strtolower((string)($_SERVER['HTTP_HOST']??''));
+ $origin=(string)($_SERVER['HTTP_ORIGIN']??'');
+ $referer=(string)($_SERVER['HTTP_REFERER']??'');
+ $source=$origin!==''?$origin:$referer;
+ $sourceParts=$source!==''?parse_url($source):false;
+ $sourceHost=is_array($sourceParts)?strtolower((string)($sourceParts['host']??'')):'';
+ $sourceScheme=is_array($sourceParts)?strtolower((string)($sourceParts['scheme']??'')):'';
+ $requestParts=$requestHost!==''?parse_url('https://'.$requestHost):false;
+ $expectedHost=is_array($requestParts)?strtolower((string)($requestParts['host']??'')):'';
+ $expectedPort=is_array($requestParts)?(int)($requestParts['port']??443):443;
+ $sourcePort=is_array($sourceParts)?(int)($sourceParts['port']??443):0;
+ $fetchSite=strtolower((string)($_SERVER['HTTP_SEC_FETCH_SITE']??''));
+ if($sourceHost===''||$expectedHost===''||$sourceScheme!=='https'||$sourceHost!==$expectedHost||$sourcePort!==$expectedPort||$fetchSite==='cross-site'){
+  bh_admin_response(403,['ok'=>false,'error'=>'This request could not be verified. Refresh the page and try again.']);
+ }
+}
 try{require __DIR__.'/db.php';$db=bh_mysql();require_once __DIR__.'/leader-welcome-email.php';bh_ensure_leader_activation_table($db);
  $_SESSION['bh_listing_csrf']??=bin2hex(random_bytes(32));
- // Activity-specific social URLs: preserve independently of shared organiser details.
- $socialCols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);
- foreach(['facebook_url','instagram_url'] as $socialCol){if(!in_array($socialCol,$socialCols,true)){$db->exec("ALTER TABLE bh_activities ADD COLUMN `".$socialCol."` VARCHAR(2048) NULL DEFAULT NULL");}}
-
  if($_SERVER['REQUEST_METHOD']==='GET'&&($_GET['action']??'')==='categories'){
   $names=[];try{$q=$db->query("SELECT name FROM bh_categories ORDER BY name");$names=$q->fetchAll(PDO::FETCH_COLUMN);}catch(Throwable $ignored){}
   $q=$db->query("SELECT DISTINCT category FROM bh_activities WHERE category IS NOT NULL AND category<>''");
@@ -52,7 +66,7 @@ try{require __DIR__.'/db.php';$db=bh_mysql();require_once __DIR__.'/leader-welco
   $q=$db->query("SELECT o.id,o.organisation_name,u.email FROM bh_organisers o JOIN bh_users u ON ".$join." WHERE u.role='leader' AND u.status='active'".$organiserStatusFilter." ORDER BY o.organisation_name,o.id");
   bh_admin_response(200,['ok'=>true,'data'=>$q->fetchAll(),'csrf'=>$_SESSION['bh_listing_csrf']]);
  }
- $venueBookingColumn=false;try{$venueBookingColumn=(bool)$db->query("SHOW COLUMNS FROM bh_venues LIKE 'booking_url'")->fetch();if(!$venueBookingColumn&&$_SERVER['REQUEST_METHOD']==='POST'){$db->exec("ALTER TABLE bh_venues ADD COLUMN booking_url VARCHAR(2048) NULL DEFAULT NULL");$venueBookingColumn=true;}}catch(Throwable $ignored){}
+ $venueBookingColumn=false;try{$venueBookingColumn=(bool)$db->query("SHOW COLUMNS FROM bh_venues LIKE 'booking_url'")->fetch();}catch(Throwable $ignored){}
  $accessibilityColumn=false;
  try{$ac=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='accessibility'");$accessibilityColumn=((int)$ac->fetchColumn())>0;}catch(Throwable $ignored){}
  if($_SERVER['REQUEST_METHOD']==='GET'){
@@ -75,6 +89,61 @@ try{require __DIR__.'/db.php';$db=bh_mysql();require_once __DIR__.'/leader-welco
  }
  if($_SERVER['REQUEST_METHOD']!=='POST')bh_admin_response(405,['ok'=>false,'error'=>'GET or POST required.']);
  $input=json_decode((string)file_get_contents('php://input'),true);if(!is_array($input))bh_admin_response(400,['ok'=>false,'error'=>'Invalid JSON.']);
+ if(($input['action']??'')==='save_sessions'){
+  if(!hash_equals($_SESSION['bh_listing_csrf'],(string)($input['csrf']??'')))bh_admin_response(403,['ok'=>false,'error'=>'Refresh the timetable editor and try again.']);
+  $activityId=(int)($input['id']??0);$submitted=(array)($input['sessions']??[]);
+  if($activityId<1)bh_admin_response(422,['ok'=>false,'error'=>'Choose an activity before saving its timetable.']);
+  if(count($submitted)>300)bh_admin_response(422,['ok'=>false,'error'=>'A timetable can contain up to 300 session rows.']);
+  $db->beginTransaction();
+  try{
+   $lock=$db->prepare("SELECT id FROM bh_activities WHERE id=? FOR UPDATE");$lock->execute([$activityId]);
+   if(!$lock->fetch())throw new RuntimeException('Activity not found.');
+   $venueQuery=$db->prepare("SELECT id FROM bh_venues WHERE activity_id=? ORDER BY id FOR UPDATE");$venueQuery->execute([$activityId]);$venueIds=array_map('intval',$venueQuery->fetchAll(PDO::FETCH_COLUMN));
+   if(!$venueIds)throw new RuntimeException('This activity has no saved venue. Add a venue before adding sessions.');
+   $sessionColumns=$db->query("SHOW COLUMNS FROM bh_sessions")->fetchAll(PDO::FETCH_COLUMN);
+   if(!in_array('class_name',$sessionColumns,true)&&!in_array('title',$sessionColumns,true))bh_admin_response(503,['ok'=>false,'error'=>'session_schema_unavailable','message'=>'The timetable database update is required before sessions can be edited.']);
+   $nameColumn=in_array('class_name',$sessionColumns,true)?'class_name':(in_array('title',$sessionColumns,true)?'title':null);
+   $clean=[];
+   foreach($submitted as $index=>$row){
+    if(!is_array($row))throw new RuntimeException('Session row '.($index+1).' is invalid.');
+    $day=(int)($row['day_of_week']??0);$start=trim((string)($row['start_time']??''));$end=trim((string)($row['end_time']??''));
+    if($day<1||$day>7||!preg_match('/^([01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?$/',$start))throw new RuntimeException('Session '.($index+1).' needs a valid weekday and start time.');
+    if($end!==''&&(!preg_match('/^([01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?$/',$end)||substr($end,0,5)<=substr($start,0,5)))throw new RuntimeException('Session '.($index+1).' must finish after it starts.');
+    $venueIndex=(int)($row['venue_index']??0);if(!array_key_exists($venueIndex,$venueIds))throw new RuntimeException('Session '.($index+1).' is assigned to an invalid venue.');
+    $frequency=trim((string)($row['frequency']??'weekly'));if(!in_array($frequency,['weekly','seven_weeks','fortnightly','monthly','once'],true))throw new RuntimeException('Session '.($index+1).' has an unsupported repeat pattern.');
+    $startDate=trim((string)($row['start_date']??''));$endDate=trim((string)($row['end_date']??''));
+    foreach(['start'=>$startDate,'end'=>$endDate] as $label=>$date){if($date!==''&&!preg_match('/^\\d{4}-\\d{2}-\\d{2}$/',$date))throw new RuntimeException('Session '.($index+1).' has an invalid '.$label.' date.');}
+    if($startDate!==''&&$endDate!==''&&$endDate<$startDate)throw new RuntimeException('Session '.($index+1).' ends before it starts.');
+    $price=($row['price']??'')===''?null:$row['price'];if($price!==null&&(!is_numeric($price)||(float)$price<0))throw new RuntimeException('Session '.($index+1).' has an invalid price.');
+    $duration=null;if($end!==''){$duration=(int)((strtotime($end)-strtotime($start))/60);}
+    $clean[]=['id'=>(int)($row['id']??0),'venue_id'=>$venueIds[$venueIndex],'day'=>$day,'start'=>$start,'end'=>$end!==''?$end:null,'duration'=>$duration,'price'=>$price===null?null:(float)$price,'term'=>!empty($row['term_time_only'])?1:0,'frequency'=>$frequency,'start_date'=>$startDate!==''?$startDate:null,'end_date'=>$endDate!==''?$endDate:null,'class_name'=>mb_substr(trim((string)($row['class_name']??'')),0,160)];
+   }
+   $existingQuery=$db->prepare("SELECT s.id FROM bh_sessions s INNER JOIN bh_venues v ON v.id=s.venue_id WHERE v.activity_id=? FOR UPDATE");$existingQuery->execute([$activityId]);$existingIds=array_map('intval',$existingQuery->fetchAll(PDO::FETCH_COLUMN));
+   $keptIds=[];$seenSubmittedIds=[];
+   foreach($clean as $index=>$session){
+    $submittedId=(int)$session['id'];
+    $values=[$session['venue_id'],$session['day'],$session['start'],$session['end'],$session['duration'],$session['price'],$session['term'],$session['frequency'],$session['start_date'],$session['end_date']];
+    if($submittedId>0){
+     if(isset($seenSubmittedIds[$submittedId]))throw new RuntimeException('A saved session was submitted more than once. Refresh and try again.');$seenSubmittedIds[$submittedId]=true;
+     if(!in_array($submittedId,$existingIds,true))throw new RuntimeException('A session no longer belongs to this activity. Refresh and try again.');
+     $set="venue_id=?,day_of_week=?,start_time=?,end_time=?,duration_minutes=?,price=?,term_time_only=?,frequency=?,start_date=?,end_date=?";
+     if($nameColumn){$set.=",`".$nameColumn."`=?";$values[]=$session['class_name'];}
+     $values[]=$submittedId;$db->prepare("UPDATE bh_sessions SET ".$set." WHERE id=?")->execute($values);$keptIds[]=$submittedId;
+    }else{
+     if($nameColumn){$insert=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date,`".$nameColumn."`) VALUES (?,?,?,?,?,?,?,?,?,?,?)");$insert->execute([...$values,$session['class_name']]);}
+     else{$insert=$db->prepare("INSERT INTO bh_sessions (venue_id,day_of_week,start_time,end_time,duration_minutes,price,term_time_only,frequency,start_date,end_date) VALUES (?,?,?,?,?,?,?,?,?,?)");$insert->execute($values);}
+     $keptIds[]=(int)$db->lastInsertId();
+    }
+   }
+   $removedIds=array_values(array_diff($existingIds,$keptIds));
+   if($removedIds){
+    $bookingCheck=$db->prepare("SELECT COUNT(*) FROM bh_bookings WHERE session_id=?");
+    $deleteSession=$db->prepare("DELETE FROM bh_sessions WHERE id=?");
+    foreach($removedIds as $removedId){$bookingCheck->execute([$removedId]);if((int)$bookingCheck->fetchColumn()>0)throw new RuntimeException('A removed session has bookings attached. Keep the session and use the cancellation workflow instead; booking-linked session records cannot be deleted.');$deleteSession->execute([$removedId]);}
+   }
+   $db->commit();bh_admin_response(200,['ok'=>true,'id'=>$activityId,'sessions_saved'=>count($clean),'sessions_removed'=>count($removedIds)]);
+  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();if($e instanceof RuntimeException)bh_admin_response(422,['ok'=>false,'error'=>$e->getMessage()]);throw $e;}
+ }
  if(($input['action']??'')==='bulk_update'){
   if(!hash_equals($_SESSION['bh_listing_csrf'],(string)($input['csrf']??'')))bh_admin_response(403,['ok'=>false,'error'=>'Please refresh the page.']);
   $ids=array_values(array_unique(array_map('intval',(array)($input['ids']??[]))));
@@ -173,6 +242,15 @@ try{require __DIR__.'/db.php';$db=bh_mysql();require_once __DIR__.'/leader-welco
   }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
  }
 
+ $requiredActivityColumns=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);
+ foreach(['facebook_url','instagram_url'] as $requiredSocialColumn){
+  if(!in_array($requiredSocialColumn,$requiredActivityColumns,true)){
+   bh_admin_response(503,['ok'=>false,'error'=>'Activity social fields are not installed yet. Apply the activity schema migration and try again.']);
+  }
+ }
+ if(!$venueBookingColumn){
+  bh_admin_response(503,['ok'=>false,'error'=>'Venue booking URL field is not installed yet. Apply the activity schema migration and try again.']);
+ }
  $activityCountyColumn=false;
  try{$cc=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='county'");$activityCountyColumn=((int)$cc->fetchColumn())>0;}catch(Throwable $ignored){}// Decode HTML entities in plain-text listing fields, not rich HTML or URLs.
  $decodePlain=static fn($value)=>trim(html_entity_decode((string)$value,ENT_QUOTES|ENT_HTML5,'UTF-8'));
@@ -190,12 +268,13 @@ try{require __DIR__.'/db.php';$db=bh_mysql();require_once __DIR__.'/leader-welco
  if($free)$priceFrom=0.0;
  $blockWeeks=null;
  if(!$free&&$unit==='per_block'){$rawWeeks=$input['block_length_weeks']??null;if(!is_numeric($rawWeeks)||(int)$rawWeeks!=(float)$rawWeeks||(int)$rawWeeks<1||(int)$rawWeeks>104)bh_admin_response(422,['ok'=>false,'error'=>'Enter a block length between 1 and 104 weeks.']);$blockWeeks=(int)$rawWeeks;}
- // Keep this field persistent for new and existing listings.
- $blockCol=$db->query("SHOW COLUMNS FROM bh_activities LIKE 'block_length_weeks'")->fetch();
- if(!$blockCol){$db->exec("ALTER TABLE bh_activities ADD COLUMN block_length_weeks SMALLINT UNSIGNED NULL DEFAULT NULL");}
- // Ensure the canonical public free flag exists rather than silently dropping it.
- $freeColumn=$db->query("SHOW COLUMNS FROM bh_activities LIKE 'is_free'")->fetch();
- if(!$freeColumn){$db->exec("ALTER TABLE bh_activities ADD COLUMN is_free TINYINT(1) NOT NULL DEFAULT 0");}
+ // Pricing fields are installed by the controlled activity-schema migration, never during a request.
+ $activitySaveCols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);
+ foreach(['block_length_weeks','is_free'] as $requiredActivitySaveColumn){
+  if(!in_array($requiredActivitySaveColumn,$activitySaveCols,true)){
+   bh_admin_response(503,['ok'=>false,'error'=>'Activity pricing fields are not installed yet. Apply the activity schema migration and try again.']);
+  }
+ }
  $optional=['age_min_months'=>$ageMin,'age_max_months'=>$ageMax,'price_free'=>$free?1:0,'price_per_family'=>!$free&&$unit==='per_family'?1:0,'price_per_session'=>!$free&&$unit==='per_session'?1:0,'pricing_unit'=>$unit,'block_length_weeks'=>$blockWeeks];
  $cols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);
  // Keep the public directory's is_free flag in sync with the admin Is free checkbox.
@@ -205,10 +284,10 @@ try{require __DIR__.'/db.php';$db=bh_mysql();require_once __DIR__.'/leader-welco
  $optional=array_intersect_key($optional,array_flip($cols));
   $db->exec("CREATE TABLE IF NOT EXISTS bh_activity_gallery (activity_id BIGINT UNSIGNED NOT NULL,position TINYINT UNSIGNED NOT NULL,image_url VARCHAR(2048) NOT NULL,PRIMARY KEY(activity_id,position)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
  $db->exec("CREATE TABLE IF NOT EXISTS bh_import_sources (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,activity_id BIGINT UNSIGNED NOT NULL,source_url VARCHAR(2048) NOT NULL,url_hash CHAR(64) NOT NULL,last_checked_at DATETIME NULL,next_check_at DATETIME NOT NULL,check_status VARCHAR(32) NOT NULL DEFAULT 'pending',last_error TEXT NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,UNIQUE KEY unique_source (activity_id,url_hash),KEY due_sources (next_check_at,check_status)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
- // Preserve per-session names on older staging databases lacking the column.
+ // Session class names are installed by the controlled activity-schema migration.
  $sessionSchema=$db->query("SHOW COLUMNS FROM bh_sessions")->fetchAll(PDO::FETCH_COLUMN);
  if(!in_array('class_name',$sessionSchema,true)){
-  $db->exec("ALTER TABLE bh_sessions ADD COLUMN class_name VARCHAR(160) NULL DEFAULT NULL");
+  bh_admin_response(503,['ok'=>false,'error'=>'Session class names are not installed yet. Apply the activity schema migration and try again.']);
  }
 
  // Reject duplicate locations before starting a database transaction (new and edited listings).
