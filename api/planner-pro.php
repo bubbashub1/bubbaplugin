@@ -30,16 +30,13 @@ try {
         bh_pro_response(401, ['ok'=>false,'error'=>'login_required']);
     }
 
-    $db->exec("CREATE TABLE IF NOT EXISTS bh_user_subscriptions (
-        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,user_id BIGINT UNSIGNED NOT NULL,
-        plan VARCHAR(40) NOT NULL DEFAULT 'family_pro',status VARCHAR(30) NOT NULL DEFAULT 'active',
-        source VARCHAR(40) NOT NULL DEFAULT 'event',stripe_customer_id VARCHAR(255) NULL,
-        stripe_subscription_id VARCHAR(255) NULL,stripe_checkout_session_id VARCHAR(255) NULL,
-        started_at DATETIME NULL,expires_at DATETIME NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        PRIMARY KEY(id),UNIQUE KEY uq_bh_user_subscription(user_id),
-        UNIQUE KEY uq_bh_stripe_subscription(stripe_subscription_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    // Schema changes are applied by numbered migrations, never by public API requests.
+    $tableCheck = $db->prepare("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?");
+    $tableCheck->execute(['bh_user_subscriptions']);
+    if (!(int)$tableCheck->fetchColumn()) {
+        bh_pro_response(503, ['ok'=>false,'error'=>'subscription_storage_unavailable']);
+    }
+
 
     $q=$db->prepare("SELECT status,expires_at FROM bh_user_subscriptions WHERE user_id=? LIMIT 1");
     $q->execute([$userId]); $subscription=$q->fetch();
@@ -50,15 +47,11 @@ try {
     // remainder of Planner Pro state stays subscription-gated below.
     if (!isset($_SESSION['bh_csrf'])) $_SESSION['bh_csrf']=bin2hex(random_bytes(24));
 
-    // Legacy databases may have subscriptions but not the Planner Pro state table.
-    // Create only the missing table; never modify or replace existing planner data.
-    $db->exec("CREATE TABLE IF NOT EXISTS bh_planner_pro_state (
-        user_id BIGINT UNSIGNED NOT NULL,
-        state_json LONGTEXT NOT NULL,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        PRIMARY KEY (user_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    $tableCheck->execute(['bh_planner_pro_state']);
+    if (!(int)$tableCheck->fetchColumn()) {
+        bh_pro_response(503, ['ok'=>false,'error'=>'planner_storage_unavailable']);
+    }
+
 
     if ($_SERVER['REQUEST_METHOD']==='GET') {
         $stmt=$db->prepare("SELECT state_json,updated_at FROM bh_planner_pro_state WHERE user_id=? LIMIT 1");
