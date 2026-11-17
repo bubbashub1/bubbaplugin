@@ -1177,7 +1177,11 @@ try {
         $configuredEventCode = strtoupper(trim((string)(($config['app']['event_signup_code'] ?? '') ?: (getenv('BUBBAHUB_EVENT_CODE') ?: ''))));
         if ($eventCode !== '' && $configuredEventCode !== '' && hash_equals($configuredEventCode, $eventCode)) {
             try {
-                $db->exec("CREATE TABLE IF NOT EXISTS bh_user_subscriptions (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,user_id BIGINT UNSIGNED NOT NULL,plan VARCHAR(40) NOT NULL DEFAULT 'family_pro',status VARCHAR(30) NOT NULL DEFAULT 'active',source VARCHAR(40) NOT NULL DEFAULT 'event',started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,expires_at DATETIME NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY(id),UNIQUE KEY uq_bh_user_subscription(user_id),KEY idx_bh_subscription_status(status)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+                // Subscription storage is provisioned by migration 017, never by a signup request.
+                $storageReady = $db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_user_subscriptions'")->fetchColumn();
+                if (!(int)$storageReady) {
+                    throw new RuntimeException('Subscription storage migration 017 has not been applied.');
+                }
                 $q = $db->prepare("INSERT INTO bh_user_subscriptions(user_id,plan,status,source,expires_at) VALUES(?,?,?,?,NULL) ON DUPLICATE KEY UPDATE plan=VALUES(plan),status='active',source=VALUES(source),expires_at=NULL");
                 $q->execute([$newUserId,'family_pro','active','event']);
                 $eventPro = true;
