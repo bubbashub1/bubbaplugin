@@ -92,36 +92,57 @@ function bh_read_wp_constant(string $name): string {
 }
 
 /* -------------------------------------------------------------------------
- * Rate limiting (DB backed, fails open if the table cannot be created)
+ * Rate limiting (atomic DB counters; fail closed if unavailable)
  * ---------------------------------------------------------------------- */
 
 function bh_rate_limit(PDO $db, string $bucket, int $max, int $windowSeconds): void {
     static $ready = false;
     try {
+        $windowSeconds = max(1, min(86400, $windowSeconds));
         if (!$ready) {
-            $db->exec("CREATE TABLE IF NOT EXISTS bh_rate_limits (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,bucket CHAR(64) NOT NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY(id),KEY idx_bucket_time(bucket,created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            $db->exec("CREATE TABLE IF NOT EXISTS bh_rate_limit_counters (
+                bucket CHAR(64) NOT NULL,
+                window_seconds INT UNSIGNED NOT NULL,
+                window_key BIGINT NOT NULL,
+                attempts INT UNSIGNED NOT NULL DEFAULT 0,
+                updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (bucket, window_seconds, window_key),
+                KEY idx_rate_counter_updated (updated_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
             $ready = true;
         }
+
         $key = hash('sha256', $bucket);
-        $q = $db->prepare("SELECT COUNT(*) FROM bh_rate_limits WHERE bucket=? AND created_at > (NOW() - INTERVAL " . (int)$windowSeconds . " SECOND)");
-        $q->execute([$key]);
-        if ((int)$q->fetchColumn() >= $max) {
-            header('Retry-After: ' . $windowSeconds);
+        $windowKey = intdiv(time(), $windowSeconds);
+        // One atomic upsert prevents concurrent requests bypassing a count-then-insert check.
+        $upsert = $db->prepare("INSERT INTO bh_rate_limit_counters (bucket, window_seconds, window_key, attempts)
+            VALUES (?, ?, ?, 1)
+            ON DUPLICATE KEY UPDATE attempts = attempts + 1");
+        $upsert->execute([$key, $windowSeconds, $windowKey]);
+
+        $q = $db->prepare("SELECT attempts FROM bh_rate_limit_counters WHERE bucket=? AND window_seconds=? AND window_key=? LIMIT 1");
+        $q->execute([$key, $windowSeconds, $windowKey]);
+        if ((int)$q->fetchColumn() > $max) {
+            header('Retry-After: ' . max(1, (($windowKey + 1) * $windowSeconds) - time()));
             bh_auth_response(429, ['ok'=>false,'error'=>'rate_limited','message'=>'Too many attempts. Please wait a little while and try again.']);
         }
-        $db->prepare("INSERT INTO bh_rate_limits (bucket) VALUES (?)")->execute([$key]);
+
         if (random_int(1, 100) === 1) {
-            $db->exec("DELETE FROM bh_rate_limits WHERE created_at < (NOW() - INTERVAL 1 DAY)");
+            $db->exec("DELETE FROM bh_rate_limit_counters WHERE updated_at < (NOW() - INTERVAL 2 DAY)");
         }
     } catch (PDOException $e) {
-        error_log('Bubba Hub rate limiter unavailable: ' . $e->getMessage());
+        error_log('Bubba Hub rate limiter unavailable; request blocked: ' . $e->getMessage());
+        header('Retry-After: 60');
+        bh_auth_response(503, ['ok'=>false,'error'=>'rate_limiter_unavailable','message'=>'Sign-in is temporarily unavailable. Please try again in a minute.']);
     }
 }
 
 function bh_rate_clear(PDO $db, string $bucket): void {
     try {
-        $db->prepare("DELETE FROM bh_rate_limits WHERE bucket=?")->execute([hash('sha256', $bucket)]);
-    } catch (PDOException $e) {}
+        $db->prepare("DELETE FROM bh_rate_limit_counters WHERE bucket=?")->execute([hash('sha256', $bucket)]);
+    } catch (PDOException $e) {
+        error_log('Bubba Hub rate limiter reset failed: ' . $e->getMessage());
+    }
 }
 
 /* -------------------------------------------------------------------------
@@ -313,51 +334,119 @@ function bh_ensure_reset_table(PDO $db): void {
  * (Google's email_verified). Only then may we attach the social identity to an
  * existing password account with the same email.
  */
-function bh_social_login(PDO $db, string $provider, string $providerId, string $email, string $displayName, string $ctx, bool $emailTrusted): array {
-    bh_ensure_social_table($db); // DDL first: it would implicitly commit a transaction.
+function bh_social_login(PDO $db, string $provider, string $providerId, string $email, string $displayName, string $ctx, bool $emailTrusted, string $organisation='', bool $termsAccepted=false, string $firstName='', string $lastName=''): array {
+    bh_ensure_social_table($db);
+    if ($ctx === 'leader') bh_ensure_email_verification_schema($db);
 
-    $stmt = $db->prepare("SELECT u.id,u.email,u.role,u.status FROM bh_social_accounts s JOIN bh_users u ON u.id=s.user_id WHERE s.provider=? AND s.provider_user_id=? LIMIT 1");
+    $verificationSelect = $ctx === 'leader' ? 'u.email_verified_at' : 'NULL AS email_verified_at';
+    $stmt = $db->prepare("SELECT u.id,u.email,u.role,u.status,".$verificationSelect." FROM bh_social_accounts s JOIN bh_users u ON u.id=s.user_id WHERE s.provider=? AND s.provider_user_id=? LIMIT 1");
     $stmt->execute([$provider, $providerId]);
-    $user = $stmt->fetch();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($user) {
         bh_check_account_context($user, $ctx);
+        if ($ctx === 'leader' && empty($user['email_verified_at'])) {
+            $db->prepare("UPDATE bh_users SET email_verified_at=NOW() WHERE id=?")->execute([(int)$user['id']]);
+        }
         return [$user, false];
     }
 
-    $stmt = $db->prepare("SELECT id,email,role,status FROM bh_users WHERE email=? LIMIT 1");
+    $verificationSelect = $ctx === 'leader' ? 'email_verified_at' : 'NULL AS email_verified_at';
+    $stmt = $db->prepare("SELECT id,email,role,status,".$verificationSelect." FROM bh_users WHERE email=? LIMIT 1");
     $stmt->execute([$email]);
-    $user = $stmt->fetch();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($user) {
         bh_check_account_context($user, $ctx);
         if (!$emailTrusted) {
             bh_auth_response(409, ['ok'=>false,'error'=>'email_exists','message'=>'An account already exists for this email. Please sign in with your email and password.']);
         }
-        $db->prepare("INSERT INTO bh_social_accounts (user_id,provider,provider_user_id,email) VALUES (?,?,?,?)")
-           ->execute([(int)$user['id'], $provider, $providerId, $email]);
+        try {
+            $db->beginTransaction();
+            if ($ctx === 'leader' && empty($user['email_verified_at'])) {
+                $db->prepare("UPDATE bh_users SET email_verified_at=NOW() WHERE id=?")->execute([(int)$user['id']]);
+            }
+            $db->prepare("INSERT INTO bh_social_accounts (user_id,provider,provider_user_id,email) VALUES (?,?,?,?)")
+               ->execute([(int)$user['id'], $provider, $providerId, $email]);
+            $db->commit();
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) $db->rollBack();
+            if ($e instanceof PDOException && (string)$e->getCode() === '23000') {
+                bh_auth_response(409, ['ok'=>false,'error'=>'social_account_already_linked','message'=>'This Google account is already linked to another Bubba Hub account. Please sign in with your existing method or contact support.']);
+            }
+            throw $e;
+        }
         return [$user, false];
     }
 
+    if ($ctx === 'leader' && (!$emailTrusted || !$termsAccepted || trim($organisation) === '' || mb_strlen(trim($organisation)) > 190)) {
+        bh_auth_response(422, ['ok'=>false,'error'=>'leader_registration_details_required','message'=>'To create a class leader account with Google, choose Create account, enter your class or organisation name and agree to the organiser terms.']);
+    }
+    if ($provider === 'google' && !$termsAccepted) {
+        bh_auth_response(422, ['ok'=>false,'error'=>'social_registration_terms_required','message'=>'To create a new Bubba Hub account with Google, choose Create account and agree to the terms and privacy policy.']);
+    }
     $role = $ctx === 'leader' ? 'leader' : 'family';
     try {
         $db->beginTransaction();
-        $db->prepare("INSERT INTO bh_users (email,password_hash,role,status) VALUES (?,?,?,'active')")
-           ->execute([$email, password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT), $role]);
-        $userId = (int)$db->lastInsertId();
         if ($ctx === 'leader') {
-            bh_create_leader_organiser($db, $userId, $email, $displayName !== '' ? $displayName : 'New organiser');
+            $db->prepare("INSERT INTO bh_users (email,password_hash,role,status,email_verified_at) VALUES (?,?,?,'active',NOW())")
+               ->execute([$email, password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT), $role]);
+        } else {
+            // Match native family registration by saving Google profile names when
+            // the optional name columns exist on this installation.
+            $columns = ['email','password_hash','role','status'];
+            $values = [$email, password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT), $role, 'active'];
+            $userColumns = [];
+            try {
+                $q = $db->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_users'");
+                $userColumns = array_map('strval', $q->fetchAll(PDO::FETCH_COLUMN));
+            } catch (Throwable $ignored) {}
+            if (in_array('first_name', $userColumns, true)) { $columns[]='first_name'; $values[]=$firstName !== '' ? mb_substr($firstName,0,100) : null; }
+            if (in_array('last_name', $userColumns, true)) { $columns[]='last_name'; $values[]=$lastName !== '' ? mb_substr($lastName,0,100) : null; }
+            $sql = "INSERT INTO bh_users (".implode(',', $columns).") VALUES (".implode(',', array_fill(0,count($columns),'?')).")";
+            $db->prepare($sql)->execute($values);
         }
+        $userId = (int)$db->lastInsertId();
+        if ($ctx === 'leader') bh_create_leader_organiser($db, $userId, $email, trim($organisation));
         $db->prepare("INSERT INTO bh_social_accounts (user_id,provider,provider_user_id,email) VALUES (?,?,?,?)")
            ->execute([$userId, $provider, $providerId, $email]);
         $db->commit();
     } catch (Throwable $e) {
         if ($db->inTransaction()) $db->rollBack();
+        if ($e instanceof PDOException && (string)$e->getCode() === '23000') {
+            bh_auth_response(409, ['ok'=>false,'error'=>'account_already_exists','message'=>'An account with this email or Google identity already exists. Please sign in instead.']);
+        }
         throw $e;
     }
     return [['id'=>$userId,'email'=>$email,'role'=>$role,'status'=>'active'], true];
 }
 
+/**
+ * Defer the family welcome email until after the authentication response has
+ * been sent. On PHP-FPM this prevents SMTP/network delays from holding up the
+ * new Google sign-in. The SMTP timeout remains a safeguard for other runtimes.
+ */
+function bh_defer_family_welcome(string $email, string $firstName=''): bool {
+    if (!function_exists('fastcgi_finish_request')) return false;
+
+    register_shutdown_function(static function () use ($email, $firstName): void {
+        ignore_user_abort(true);
+        if (session_status() === PHP_SESSION_ACTIVE) session_write_close();
+        fastcgi_finish_request();
+        bh_send_family_welcome($email, $firstName);
+    });
+
+    return true;
+}
+
 function bh_social_response(array $user, bool $isNew, string $ctx, string $provider, string $firstName): void {
-    $welcome = ($isNew && $ctx === 'family') ? bh_send_family_welcome((string)$user['email'], $firstName) : false;
+    $welcomeDeferred = false;
+    $welcomeSent = false;
+    if ($isNew && $ctx === 'family') {
+        $welcomeDeferred = bh_defer_family_welcome((string)$user['email'], $firstName);
+        if (!$welcomeDeferred) {
+            $welcomeSent = bh_send_family_welcome((string)$user['email'], $firstName);
+        }
+    }
+
     bh_auth_response(200, [
         'ok' => true,
         'authenticated' => true,
@@ -368,7 +457,8 @@ function bh_social_response(array $user, bool $isNew, string $ctx, string $provi
         'family_authenticated' => ($ctx === 'family'),
         'created_leader' => ($ctx === 'leader' && $isNew),
         'pending_review' => ($ctx === 'leader' && $isNew),
-        'welcome_email_sent' => $welcome,
+        'welcome_email_deferred' => $welcomeDeferred,
+        'welcome_email_sent' => $welcomeDeferred ? null : $welcomeSent,
     ]);
 }
 
@@ -420,6 +510,16 @@ try {
 
     if (!isset($_SESSION['bh_csrf'])) {
         $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
+    }
+
+    /* ---------------- Google nonce (GET) ---------------- */
+    if ($action === 'google_nonce' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        $nonce = bin2hex(random_bytes(32));
+        $_SESSION['bh_google_nonce'] = $nonce;
+        $_SESSION['bh_google_nonce_expires'] = time() + 300;
+        header('Content-Type: application/json; charset=utf-8');
+        header('Cache-Control: no-store, private');
+        bh_auth_response(200, ['ok'=>true,'nonce'=>$nonce,'csrf'=>$_SESSION['bh_csrf']]);
     }
 
     /* ---------------- me (GET) ---------------- */
@@ -686,8 +786,45 @@ try {
         }
     }
 
+    require_once __DIR__.'/turnstile-settings.php';
+    /** Verify registration challenges server-side when Turnstile is configured. */
+    function bh_turnstile_registration_verify(array $body): void {
+        $site = trim((string)bh_turnstile_setting('BUBBAHUB_TURNSTILE_SITE_KEY'));
+        $secret = trim((string)bh_turnstile_setting('BUBBAHUB_TURNSTILE_SECRET_KEY'));
+        if ($site === '' && $secret === '') return; // disabled until both keys are configured
+        if ($site === '' || $secret === '') {
+            bh_auth_response(503, ['ok'=>false,'error'=>'turnstile_configuration_incomplete','message'=>'The security check is temporarily unavailable. Please try again later.']);
+        }
+        $token = (string)($body['turnstile_token'] ?? '');
+        if ($token === '' || strlen($token) > 2048) {
+            bh_auth_response(422, ['ok'=>false,'error'=>'turnstile_required','message'=>'Please complete the security check.']);
+        }
+        $payload = http_build_query(['secret'=>$secret,'response'=>$token,'remoteip'=>$_SERVER['REMOTE_ADDR'] ?? '']);
+        $context = stream_context_create(['http'=>[
+            'method'=>'POST',
+            'header'=>"Content-Type: application/x-www-form-urlencoded\r\n",
+            'content'=>$payload,
+            'timeout'=>8,
+            'ignore_errors'=>true
+        ]]);
+        $raw = @file_get_contents('https://challenges.cloudflare.com/turnstile/v0/siteverify', false, $context);
+        if ($raw === false) {
+            bh_auth_response(503, ['ok'=>false,'error'=>'turnstile_unavailable','message'=>'The security check could not be verified. Please try again.']);
+        }
+        $result = json_decode($raw, true);
+        if (!is_array($result) || empty($result['success'])) {
+            bh_auth_response(403, ['ok'=>false,'error'=>'turnstile_failed','message'=>'Security check failed or expired. Please try again.']);
+        }
+        $expectedHost = strtolower(preg_replace('/:\\d+$/', '', (string)($_SERVER['HTTP_HOST'] ?? '')));
+        $verifiedHost = strtolower((string)($result['hostname'] ?? ''));
+        if ($expectedHost === '' || $verifiedHost === '' || !hash_equals($expectedHost, $verifiedHost)) {
+            bh_auth_response(403, ['ok'=>false,'error'=>'turnstile_hostname_mismatch','message'=>'The security check could not be verified for this site.']);
+        }
+    }
+
     /* ---------------- leader_register ---------------- */
     if ($action === 'leader_register') {
+        bh_turnstile_registration_verify($body);
         bh_rate_limit($db, "register-ip:$ip", 10, 3600);
 
         $email = bh_clean_email($body['email'] ?? '');
@@ -750,7 +887,10 @@ try {
             'organiser_id'=>$organiserId,
             'user'=>['id'=>$userId,'email'=>$email,'role'=>'leader','status'=>'active'],
             'csrf'=>$_SESSION['bh_csrf'],
-            'message'=>'Account created. Please check your email and click the verification link before signing in.','verification_email_sent'=>$verificationEmailSent
+            'message'=>$verificationEmailSent
+                ? 'Account created. Please check your email and click the verification link before signing in.'
+                : 'Your account was created, but we could not send the verification email. Please use Resend verification on the sign-in page or contact Bubba Hub support.',
+            'verification_email_sent'=>$verificationEmailSent
         ]);
     }
 
@@ -795,8 +935,11 @@ try {
             bh_auth_response(401, ['ok' => false, 'error' => 'invalid_login', 'message' => 'That email or password is not correct.']);
         }
 
-        if ($authContext === 'leader' && (($user['role'] ?? '') !== 'leader' || empty($user['email_verified_at']))) {
-            bh_auth_response(403, ['ok'=>false,'error'=>'email_not_verified','message'=>'Please verify your email address using the link we sent before signing in as a leader.']);
+        if ($authContext === 'leader' && ($user['role'] ?? '') !== 'leader') {
+            bh_auth_response(403, ['ok'=>false,'error'=>'leader_account_required','message'=>'This email is registered with a different account type. To manage a listing, sign in with a Class Leader account or upgrade your existing family account.']);
+        }
+        if ($authContext === 'leader' && empty($user['email_verified_at'])) {
+            bh_auth_response(403, ['ok'=>false,'error'=>'email_not_verified','message'=>'Your Class Leader email is not verified yet. Please check your inbox and spam folder, or request a new verification email.']);
         }
 
         bh_check_account_context($user, $authContext);
@@ -865,10 +1008,11 @@ try {
 
     /* ---------------- google ---------------- */
     if ($action === 'google') {
-        if ($authContext === 'leader') bh_auth_response(403,['ok'=>false,'error'=>'leader_social_disabled','message'=>'Leader accounts must register and sign in with email and password.']);
-        bh_rate_limit($db, "social-ip:$ip", 30, 900);
+        if (!in_array($authContext, ['family','leader'], true)) {
+            bh_auth_response(403,['ok'=>false,'error'=>'google_context_not_supported','message'=>'Google sign-in is available for Family and Class Leader accounts only.']);
+        }
+        bh_rate_limit($db, "social-ip:$ip", 20, 900);
 
-        // Expects the Google Identity Services JS callback: POST {credential: response.credential, context, csrf}.
         $credential = trim((string)($body['credential'] ?? ''));
         if ($credential === '' || strlen($credential) > 4096) {
             bh_auth_response(422, ['ok'=>false,'error'=>'google_credential_required','message'=>'Google sign-in could not be started.']);
@@ -877,24 +1021,53 @@ try {
         if ($clientId === '') {
             bh_auth_response(503, ['ok'=>false,'error'=>'google_not_configured','message'=>'Google sign-in is not configured yet.']);
         }
+        $expectedNonce = (string)($_SESSION['bh_google_nonce'] ?? '');
+        $nonceExpiry = (int)($_SESSION['bh_google_nonce_expires'] ?? 0);
+        if ($expectedNonce === '' || $nonceExpiry < time()) {
+            unset($_SESSION['bh_google_nonce'], $_SESSION['bh_google_nonce_expires']);
+            bh_auth_response(403, ['ok'=>false,'error'=>'google_nonce_expired','message'=>'Please refresh the page and try Google sign-in again.']);
+        }
 
         $google = bh_http_get_json('https://oauth2.googleapis.com/tokeninfo?id_token=' . rawurlencode($credential));
+        $now = time();
         $issuerOk = is_array($google) && in_array((string)($google['iss'] ?? ''), ['https://accounts.google.com','accounts.google.com'], true);
+        $issuedAt = (int)($google['iat'] ?? 0);
+        $expiresAt = (int)($google['exp'] ?? 0);
+        $audienceOk = is_array($google)
+            && hash_equals($clientId, (string)($google['aud'] ?? ''))
+            && (empty($google['azp']) || hash_equals($clientId, (string)$google['azp']));
         if (!is_array($google) || !empty($google['error']) || !empty($google['error_description'])
-            || !hash_equals($clientId, (string)($google['aud'] ?? ''))
-            || !$issuerOk
-            || (int)($google['exp'] ?? 0) < time()) {
-            bh_auth_response(401, ['ok'=>false,'error'=>'google_invalid_token','message'=>'Google could not verify this sign-in. Please try again.']);
+            || !$audienceOk || !$issuerOk || $issuedAt < ($now - 600) || $issuedAt > ($now + 60)
+            || $expiresAt <= $now || $expiresAt > ($now + 3600)
+            || !hash_equals($expectedNonce, (string)($google['nonce'] ?? ''))) {
+            bh_auth_response(401,['ok'=>false,'error'=>'google_invalid_token','message'=>'Google could not verify this sign-in. Please try again.']);
         }
+        unset($_SESSION['bh_google_nonce'], $_SESSION['bh_google_nonce_expires']);
 
         $email = bh_clean_email($google['email'] ?? '');
         $googleId = trim((string)($google['sub'] ?? ''));
         $emailVerified = filter_var($google['email_verified'] ?? false, FILTER_VALIDATE_BOOLEAN);
-        if ($email === '' || $googleId === '' || !$emailVerified) {
+        if ($email === '' || $googleId === '' || strlen($googleId) > 191 || !$emailVerified) {
             bh_auth_response(401, ['ok'=>false,'error'=>'google_unverified_email','message'=>'Google did not provide a verified email address.']);
         }
 
-        [$user, $isNew] = bh_social_login($db, 'google', $googleId, $email, (string)($google['name'] ?? ''), $authContext, true);
+        // Returning Google users should not have to choose Family or Class Leader.
+        // Resolve the role only from an existing Google link or Google's verified email;
+        // new accounts still use the role explicitly selected in the registration flow.
+        $linked = $db->prepare("SELECT u.role FROM bh_social_accounts s JOIN bh_users u ON u.id=s.user_id WHERE s.provider='google' AND s.provider_user_id=? LIMIT 1");
+        $linked->execute([$googleId]);
+        $knownRole = (string)($linked->fetchColumn() ?: '');
+        if (!in_array($knownRole, ['family','leader'], true)) {
+            $existing = $db->prepare("SELECT role FROM bh_users WHERE email=? LIMIT 1");
+            $existing->execute([$email]);
+            $emailRole = (string)($existing->fetchColumn() ?: '');
+            if (in_array($emailRole, ['family','leader'], true)) $knownRole = $emailRole;
+        }
+        if (in_array($knownRole, ['family','leader'], true)) $authContext = $knownRole;
+
+        $organisation = trim((string)($body['organisation_name'] ?? ''));
+        $termsAccepted = !empty($body['terms']);
+        [$user, $isNew] = bh_social_login($db, 'google', $googleId, $email, (string)($google['name'] ?? ''), $authContext, true, $organisation, $termsAccepted, (string)($google['given_name'] ?? ''), (string)($google['family_name'] ?? ''));
         bh_login_session((int)$user['id'], $authContext);
         bh_social_response($user, $isNew, $authContext, 'google', (string)($google['given_name'] ?? ''));
     }
@@ -997,6 +1170,7 @@ try {
 
     /* ---------------- register (family) ---------------- */
     if ($action === 'register') {
+        bh_turnstile_registration_verify($body);
         if ($authContext === 'volunteer') bh_auth_response(403, ['ok'=>false,'error'=>'volunteer_registration_closed','message'=>'Please apply through the volunteer interest form.']);
         bh_rate_limit($db, "register-ip:$ip", 10, 3600);
 
