@@ -185,7 +185,20 @@
  #adminContent .admin-stats article small{font-size:.68rem}
  #adminContent .bh-admin-nav-count{font-size:.68rem}
 }
-</style></head>
+</style><style id="admin-workspace-style">
+.bh-admin-v2 .admin-workspace{margin:22px 0 28px;padding:18px;border:1px solid #d5e7da;border-radius:24px;background:#f6fbf7;box-shadow:0 12px 32px #174e3b12;scroll-margin-top:20px}
+.bh-admin-v2 .admin-workspace[hidden]{display:none!important}
+.bh-admin-v2 .admin-workspace-toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.bh-admin-v2 .admin-workspace-toolbar h2{margin:5px 0 12px;color:#174e3b}
+.bh-admin-v2 .admin-workspace-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.bh-admin-v2 .admin-workspace-actions>a{color:#175846;font-weight:750}
+.bh-admin-v2 .admin-workspace-tabs{display:flex;gap:8px;overflow-x:auto;padding:8px 0 14px;scrollbar-width:thin}
+.bh-admin-v2 .admin-workspace-tab{white-space:nowrap;border:1px solid #d3e4d8;background:white;border-radius:999px;padding:10px 16px;font:inherit;font-weight:750;color:#174e3b;cursor:pointer}
+.bh-admin-v2 .admin-workspace-tab.active{background:#174e3b;color:white}
+.bh-admin-v2 #adminWorkspaceFrame{display:block;width:100%;height:clamp(650px,78vh,1050px);border:1px solid #d3e4d8;border-radius:18px;background:#fff}
+@media(max-width:760px){.bh-admin-v2 .admin-workspace{padding:10px;margin:14px 0;border-radius:16px}.bh-admin-v2 #adminWorkspaceFrame{height:75dvh;min-height:550px}.bh-admin-v2 .admin-workspace-toolbar{align-items:flex-start}}
+</style>
+</head>
 <body class="bh-admin-v2">
 <header class="site-header"><a class="brand" href="/index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main menu">
     <a href="/directory.html">Find activities</a>
@@ -220,14 +233,19 @@
 <details class="bh-admin-nav-group"><summary><span class="bh-admin-nav-title">Events &amp; Expo</span><span class="bh-admin-nav-count">6 areas</span></summary><div class="bh-admin-nav-links">
 <a href="/admin/admin-events.html">Manage events</a><a href="/admin/expo-visitors.html">Expo visitors &amp; check-in</a><a href="/admin/expo-exhibitor-approvals.html">Exhibitor applications</a><a href="/admin/expo-raffle-prizes.html">Raffle prizes</a><a href="/admin/expo-prize-donations.html">Prize donations</a><a href="/admin/admin-sponsors.html">Sponsors &amp; sponsorships</a>
 </div></details>
-<details class="bh-admin-nav-group"><summary><span class="bh-admin-nav-title">Website &amp; content</span><span class="bh-admin-nav-count">3 areas</span></summary><div class="bh-admin-nav-links">
-<a href="/library/">Image library</a><a href="/index.html">Public website</a><a href="/admin/admin-navigation.html">Main menu &amp; footer navigation</a>
+<details class="bh-admin-nav-group"><summary><span class="bh-admin-nav-title">Website &amp; content</span><span class="bh-admin-nav-count">4 areas</span></summary><div class="bh-admin-nav-links">
+<a href="/admin/admin-page-manager.html">Page Manager — create &amp; edit pages</a><a href="/library/">Image library</a><a href="/index.html">Public website</a><a href="/admin/admin-navigation.html">Main menu &amp; footer navigation</a>
 </div></details>
 <details class="bh-admin-nav-group"><summary><span class="bh-admin-nav-title">Settings &amp; technical tools</span><span class="bh-admin-nav-count">2 areas</span></summary><div class="bh-admin-nav-links">
-<a href="/admin/admin-system.html">System settings &amp; admin tools</a><a href="#deployLatest">Deployment &amp; testing tools</a>
+<a href="/admin/admin-system.html">System settings &amp; admin tools</a><a href="/admin/admin-security.html">Security checks</a><a href="#deployLatest">Deployment &amp; testing tools</a>
 </div></details>
 </nav>
 </div>
+<section id="adminWorkspace" class="admin-workspace" hidden aria-label="Admin tool workspace">
+ <div class="admin-workspace-toolbar"><div><span class="eyebrow">Admin workspace</span><h2 id="adminWorkspaceTitle">Management</h2></div><div class="admin-workspace-actions"><a id="adminWorkspaceOpen" href="/admin.html" target="_blank" rel="noopener">Open separately ↗</a><button id="adminWorkspaceClose" type="button" class="button button-soft">Close tab ×</button></div></div>
+ <nav id="adminWorkspaceTabs" class="admin-workspace-tabs" aria-label="Open admin tabs"></nav>
+ <iframe id="adminWorkspaceFrame" title="Admin management tool" loading="lazy"></iframe>
+ </section>
 </main>
 <script type="module" src="/assets/js/admin.js"></script><script src="/assets/js/menu-manager.js"></script>
 <footer class="site-footer">
@@ -242,4 +260,39 @@
   </div>
   <div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div>
 </footer>
+<script id="admin-inpage-workspace">
+(function(){
+ const dashboard=document.getElementById('adminContent');
+ const workspace=document.getElementById('adminWorkspace');
+ const tabs=document.getElementById('adminWorkspaceTabs');
+ const frame=document.getElementById('adminWorkspaceFrame');
+ const heading=document.getElementById('adminWorkspaceTitle');
+ const external=document.getElementById('adminWorkspaceOpen');
+ const close=document.getElementById('adminWorkspaceClose');
+ if(!dashboard||!workspace||!tabs||!frame)return;
+ const opened=new Map();let active='';
+ function activate(url){
+  const tab=opened.get(url);if(!tab)return;
+  active=url;heading.textContent=tab.label;external.href=url;
+  frame.src=url;workspace.hidden=false;
+  tabs.querySelectorAll('button').forEach(b=>{const selected=b.dataset.url===url;b.setAttribute('aria-selected',String(selected));b.classList.toggle('active',selected)});
+  workspace.scrollIntoView({behavior:'smooth',block:'start'});
+ }
+ dashboard.addEventListener('click',function(event){
+  const link=event.target.closest('a.admin-setting-card[href^="/admin/"]');
+  if(!link||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey||event.button!==0)return;
+  const url=new URL(link.href,location.origin);
+  if(url.origin!==location.origin)return;
+  event.preventDefault();
+  const path=url.pathname+url.search;
+  if(!opened.has(path)){
+   const label=(link.querySelector('h2')?.textContent||link.textContent||'Admin tool').trim();
+   opened.set(path,{label});
+   const btn=document.createElement('button');btn.type='button';btn.className='admin-workspace-tab';btn.dataset.url=path;btn.textContent=label;btn.setAttribute('role','tab');btn.addEventListener('click',()=>activate(path));tabs.appendChild(btn);
+  }
+  activate(path);
+ });
+ close.addEventListener('click',()=>{workspace.hidden=true;frame.removeAttribute('src');active='';tabs.querySelectorAll('button').forEach(b=>{b.classList.remove('active');b.setAttribute('aria-selected','false')})});
+})();
+</script>
 </body></html>
