@@ -325,8 +325,23 @@ function bh_check_account_context(array $user, string $ctx): void {
     }
 }
 
+/**
+ * Rotate an anonymous session before the user completes authentication.
+ * Doing this during the initial auth API request lets the browser store the
+ * replacement cookie before Google/password sign-in, avoiding a cookie
+ * hand-off at the exact moment the session becomes authenticated.
+ */
+function bh_prepare_auth_session(): void {
+    if (!empty($_SESSION['bh_auth_session_prepared'])) return;
+    if (!empty($_SESSION['bh_user_id']) || !empty($_SESSION['bh_admin_authenticated'])) return;
+    if (session_regenerate_id(true)) {
+        $_SESSION['bh_auth_session_prepared'] = true;
+    }
+}
+
 function bh_login_session(int $userId, string $ctx): void {
-    session_regenerate_id(true);
+    // The anonymous session is rotated before authentication by
+    // bh_prepare_auth_session(); do not change the cookie during login.
     $_SESSION['bh_user_id'] = $userId;
     unset($_SESSION['bh_family_authenticated'], $_SESSION['bh_leader_authenticated']);
     if ($ctx === 'leader') $_SESSION['bh_leader_authenticated'] = true;
@@ -520,6 +535,10 @@ try {
         ]);
         session_start();
     }
+
+    // Rotate anonymous sessions before sign-in begins, while the browser can
+    // receive and store the replacement cookie independently of the login POST.
+    bh_prepare_auth_session();
 
     // Database is lazy so anonymous ?action=me checks do not depend on MySQL being available.
     $db = null;
