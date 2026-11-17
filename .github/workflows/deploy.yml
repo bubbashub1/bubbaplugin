@@ -191,7 +191,13 @@ jobs:
           REMOTE_PATH: ${{ secrets.EWEBALL_REMOTE_PATH }}
         run: |
           set -euo pipefail
-          ssh -p "$SSH_PORT" -i "$RUNNER_TEMP/eweball_deploy_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$SSH_USERNAME@$SSH_HOST" "cd \"$REMOTE_PATH\" && php scripts/migrate-claim-invitations.php"
+          ssh -p "$SSH_PORT" \
+            -i "$RUNNER_TEMP/eweball_deploy_key" \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
+            "$SSH_USERNAME@$SSH_HOST" \
+            "cd \"$REMOTE_PATH\" && php scripts/migrate-claim-invitations.php"
 
       - name: Verify production pages and assets
         run: |
