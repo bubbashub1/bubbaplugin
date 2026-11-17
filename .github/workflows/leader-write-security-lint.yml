@@ -1,0 +1,33 @@
+name: Leader write endpoint PHP lint
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'api/leader-portal.php'
+      - 'api/leader-messages.php'
+      - '.github/workflows/leader-write-security-lint.yml'
+  push:
+    branches: [security/protect-leader-write-endpoints]
+    paths:
+      - 'api/leader-portal.php'
+      - 'api/leader-messages.php'
+      - '.github/workflows/leader-write-security-lint.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  php-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: Check leader write endpoint syntax
+        run: |
+          php -l api/leader-portal.php
+          php -l api/leader-messages.php
