@@ -82,8 +82,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
       if(upcoming.length) list.push({type:"booking",title:"You have "+upcoming.length+" upcoming booking"+(upcoming.length>1?"s":""),detail:"Your family plans are ready to go.",href:"account/bookings.html"});
       if(planned.size) list.push({type:"plan",title:planned.size+" activities in your planner",detail:"Keep your week organised with your saved plans.",href:"planner-pro.html"});
       if(saved.size) list.push({type:"saved",title:saved.size+" saved ideas to choose from",detail:"Turn favourites into a family activity list.",href:"planner-pro.html#activity-lists"});
-      const proBrief=document.getElementById("hubBriefItems");
-      if(proBrief&&list.length){proBrief.insertAdjacentHTML("afterbegin",list.map(x=>"<a class='hub-brief-item hub-brief-pro-item' href='"+x.href+"'><div class='hub-brief-icon'>⭐</div><div><span>Family Pro · My Plans</span><strong>"+esc(x.title)+"</strong><small>"+esc(x.detail)+"</small></div><b>→</b></a>").join(""));}
+      // Render after the base brief markup so it is not overwritten below.
+      var proBriefMarkup=list.map(x=>"<a class='hub-brief-item hub-brief-pro-item' href='"+x.href+"'><div class='hub-brief-icon'>⭐</div><div><span>Family Pro · My Plans</span><strong>"+esc(x.title)+"</strong><small>"+esc(x.detail)+"</small></div><b>→</b></a>").join("");
     }
     intro.textContent=ranked.length
       ? (ages.length?"Based on your family profiles":"Based on your saved preferences")+" · updated just now."
@@ -95,6 +95,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       const reason=ages.length&&activityFitsAge(a,ages)?"Age match":preferredDay&&x.days.includes(preferredDay)?preferredDay:(interests.has(String(a.category||"").toLowerCase())?a.category:"Good fit");
       return "<a class='hub-brief-item' href='"+url+"'><div class='hub-brief-icon'>✦</div><div><span>"+esc(reason)+"</span><strong>"+esc(a.title)+"</strong><small>"+esc(a.town||a.location||"")+" · "+esc(priceText)+"</small></div><b>→</b></a>";
     }).join(""):"<div class='hub-empty'><strong>Your plans are waiting</strong><p>Set your usual area, preferred day or interests in Preferences.</p><a class='button button-soft' href='account/preferences.html'>Set preferences</a></div>";
+    if(isPro&&proBriefMarkup){wrap.insertAdjacentHTML("afterbegin",proBriefMarkup);}
   }
 
 
@@ -153,11 +154,11 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const visitedActivities=activities.filter(a=>visitedIds.has(String(a.id))).slice(0,6);
     const recentActivities=recentIds.map(id=>activities.find(a=>String(a.id)===id)).filter(Boolean).slice(0,6);
     const activityList=items=>items.length?items.map(a=>"<a class='hub-list-card' href='"+(typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id))+"'><div><span>"+esc(a.category||"Activity")+"</span><strong>"+esc(a.title)+"</strong><small>"+esc(a.town||a.location||"")+" · "+esc(Array.isArray(a.age_range)?a.age_range.join(", "):a.age_range||"")+"</small></div><b>→</b></a>").join(""):"<div class='hub-empty'><strong>Nothing here yet</strong><p>Explore activities and they’ll appear here.</p><a class='button button-soft' href='directory.html'>Find activities</a></div>";
-    const visitedNode=$("hubVisited"),recentNode=$("hubRecent"),savedNode=$("hubSaved"),bookingsNode=$("hubBookings");
-    if(visitedNode)visitedNode.innerHTML=activityList(visitedActivities);
-    if(recentNode)recentNode.innerHTML=recentActivities.length?activityList(recentActivities):"<div class='hub-empty'><strong>Nothing viewed yet</strong><p>Open an activity to keep it here for later.</p><a class='button button-soft' href='directory.html'>Browse activities</a></div>";
-    if(savedNode)savedNode.innerHTML=savedActivities.length?savedActivities.map(a=>"<a class='hub-list-card' href='"+(typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id))+"'><div><span>"+esc(a.category||"Activity")+"</span><strong>"+esc(a.title)+"</strong><small>"+esc(a.town||a.location||"")+" · "+esc(Array.isArray(a.age_range)?a.age_range.join(", "):a.age_range||"")+"</small></div><b>→</b></a>").join(""):"<div class='hub-empty'><strong>No saved activities yet</strong><p>Save activities you like while browsing the directory.</p><a class='button button-soft' href='directory.html'>Find activities</a></div>";
-    if(bookingsNode)bookingsNode.innerHTML=upcoming.length?upcoming.map(b=>"<article class='hub-booking-card'><div><span class='status'>"+esc(b.status||"Reserved")+"</span><strong>"+esc(b.title||"Booking")+"</strong><small>"+esc(b.venue_name||"Venue")+" · "+esc(bookingDate(b.starts_at)||"Date to be confirmed")+"</small></div><span class='hub-booking-qty'>"+Number(b.quantity||1)+"×</span></article>").join(""):"<div class='hub-empty'><strong>No upcoming bookings</strong><p>Your confirmed or reserved bookings will appear here.</p></div>";
+    $("hubVisited").innerHTML=activityList(visitedActivities);
+    $("hubRecent").innerHTML=recentActivities.length?activityList(recentActivities):"<div class='hub-empty'><strong>Nothing viewed yet</strong><p>Open an activity to keep it here for later.</p><a class='button button-soft' href='directory.html'>Browse activities</a></div>";
+    $("hubSaved").innerHTML=savedActivities.length?savedActivities.map(a=>"<a class='hub-list-card' href='"+(typeof bhActivityUrl==="function"?bhActivityUrl(a):"activity.html?id="+encodeURIComponent(a.id))+"'><div><span>"+esc(a.category||"Activity")+"</span><strong>"+esc(a.title)+"</strong><small>"+esc(a.town||a.location||"")+" · "+esc(Array.isArray(a.age_range)?a.age_range.join(", "):a.age_range||"")+"</small></div><b>→</b></a>").join(""):"<div class='hub-empty'><strong>No saved activities yet</strong><p>Save activities you like while browsing the directory.</p><a class='button button-soft' href='directory.html'>Find activities</a></div>";
+
+    $("hubBookings").innerHTML=upcoming.length?upcoming.map(b=>"<article class='hub-booking-card'><div><span class='status'>"+esc(b.status||"Reserved")+"</span><strong>"+esc(b.title||"Booking")+"</strong><small>"+esc(b.venue_name||"Venue")+" · "+esc(bookingDate(b.starts_at)||"Date to be confirmed")+"</small></div><span class='hub-booking-qty'>"+Number(b.quantity||1)+"×</span></article>").join(""):"<div class='hub-empty'><strong>No upcoming bookings</strong><p>Your confirmed or reserved bookings will appear here.</p></div>";
     void renderBrief();
     renderSuggestionCarousel();
     renderUpcomingTicker();
