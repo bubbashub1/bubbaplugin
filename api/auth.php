@@ -333,6 +333,11 @@ function bh_login_session(int $userId, string $ctx): void {
     else $_SESSION['bh_family_authenticated'] = true;
 
     $_SESSION['bh_csrf'] = bin2hex(random_bytes(24));
+
+    // Persist the regenerated session before returning a successful login response.
+    // This ensures the next same-origin request can read the authenticated session
+    // immediately, rather than depending on PHP's shutdown-time session write.
+    session_write_close();
 }
 
 function bh_ensure_social_table(PDO $db): void {
