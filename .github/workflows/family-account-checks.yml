@@ -77,7 +77,7 @@ jobs:
         run: |
           set -eu
           mysql -h 127.0.0.1 -uroot -ptest-root-password -e "CREATE DATABASE bubbahub_fresh CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
-          mysql -h 127.0.0.1 -uroot -ptest-root-password bubbahub_fresh < database/schema.sql
+          mysql -h 127.0.0.1 -uroot -ptest-root-password bubbahub_fresh -e "CREATE TABLE bh_users (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, email VARCHAR(190) NOT NULL)"
           for file in \
             database/migrations/012_family_profile_consolidated.sql \
             database/migrations/014_activation_token_storage.sql \
