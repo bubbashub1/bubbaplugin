@@ -904,7 +904,8 @@ let classicEditorInitialised=false;
 const initClassicEditor=()=>{
  if(!richEditor||!descriptionField||classicEditorInitialised)return;
  classicEditorInitialised=true;
- if(window.tinymce&&typeof window.tinymce.init==='function'){
+ const editorReady=window.tinymce&&typeof window.tinymce.init==='function';
+ if(editorReady){
   window.tinymce.init({target:richEditor,license_key:'gpl',menubar:false,branding:false,promotion:false,plugins:'lists link',toolbar:'undo redo | blocks | bold italic underline | bullist numlist | blockquote | link unlink | removeformat',block_formats:'Paragraph=p; Heading 2=h2; Heading 3=h3; Heading 4=h4; Quote=blockquote',height:280,resize:true,statusbar:true,convert_urls:false,relative_urls:false,remove_script_host:false,valid_elements:'p,br,strong/b,em/i,u,h2,h3,h4,blockquote,ul,ol,li,a[href|title]',setup(editor){
    const syncDescription=()=>{descriptionField.value=cleanDescription(editor.getContent());};
    editor.on('init',()=>{editor.setContent(cleanDescription(descriptionField.value||''));syncDescription();});
@@ -913,7 +914,10 @@ const initClassicEditor=()=>{
   }});
   descriptionField.addEventListener('input',()=>{const editor=window.tinymce?.get('adminDescriptionEditor');if(editor&&editor.getContent()!==descriptionField.value)editor.setContent(cleanDescription(descriptionField.value||''));});
  }else{
-  richEditor.insertAdjacentHTML('afterend','<p class="bh-editor-warning" role="status">The visual editor could not load. You can still enter a plain-text description below.</p>');
+  richEditor.hidden=false;
+  richEditor.classList.add('bh-editor-fallback');
+  richEditor.setAttribute('rows','10');
+  descriptionSection.insertAdjacentHTML('afterbegin','<p class="bh-editor-warning" role="status">The visual editor could not load. You can still enter a plain-text description below.</p>');
  }
 };
 const identity=document.getElementById('adminListingIdentity');
