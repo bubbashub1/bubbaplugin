@@ -12,7 +12,7 @@
  mergeForm.addEventListener('submit',async event=>{event.preventDefault();const data=Object.fromEntries(new FormData(mergeForm));data.action='merge';if(data.confirm!=='MERGE')return status('bhMergeMessage','Type MERGE exactly to confirm');try{const result=await api(data);status('bhMergeMessage',result.sessions_moved+' sessions moved.');mergeDialog.close();location.reload()}catch(e){status('bhMergeMessage',e.message)}});
  let assigningVenueId=null;let assignmentActivities=[];let assigningListingIds=new Set();
  async function openAssign(id){
-  assigningVenueId=Number(id);assignForm.reset();status('bhAssignMessage','Loading listings…');
+  assigningVenueId=Number(id);assignForm.reset();assigningListingIds=new Set();status('bhAssignMessage','Loading listings…');
   try{
    const result=await api({action:'listing_assignments',venue_id:assigningVenueId});
    assignmentActivities=result.activities||[];
