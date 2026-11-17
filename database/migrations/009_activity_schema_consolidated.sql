@@ -63,3 +63,7 @@ CREATE TABLE IF NOT EXISTS bh_leader_expertise (
   PRIMARY KEY (organiser_id, topic_key),
   INDEX idx_leader_expertise_topic (topic_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Activity feature flag from the featured-listing migration, folded into this canonical activity migration.
+SET @bh_sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='featured')=0,'ALTER TABLE bh_activities ADD COLUMN featured TINYINT(1) NOT NULL DEFAULT 0 AFTER status','SELECT 1');
+PREPARE bh_stmt FROM @bh_sql; EXECUTE bh_stmt; DEALLOCATE PREPARE bh_stmt;
