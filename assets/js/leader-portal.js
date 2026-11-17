@@ -52,7 +52,7 @@ function renderVenues(){
  const grouped=new Map();
  allVenues().forEach(v=>{
   const parts=[v.venue_name,v.address,v.town,v.region,v.postcode].map(x=>String(x||"").trim().toLowerCase());
-  const key=parts.join("|");
+  const key=parts.some(Boolean)?parts.join("|"):"venue-id:"+String(v.id??grouped.size);
   if(!grouped.has(key))grouped.set(key,{...v,activities:new Map(),sessionCount:0,venueIds:[]});
   const group=grouped.get(key);
   group.venueIds.push(v.id);
@@ -63,7 +63,7 @@ function renderVenues(){
  const activityCount=new Set(items.flatMap(v=>[...v.activities.keys()])).size;
  if(summary){summary.hidden=!items.length;summary.innerHTML=items.length?"<span>📍 "+items.length+" venue"+(items.length===1?"":"s")+"</span><span>🎨 "+activityCount+" linked class"+(activityCount===1?"":"es")+"</span>":"";}
  root.innerHTML=items.length?items.map(v=>{
-  const activities=[...v.activities.values()].sort((a,b)=>a.title.localeCompare(b.title));
+  const activities=[...v.activities.values()].sort((a,b)=>String(a.title||"").localeCompare(String(b.title||"")));
   const address=[v.address,v.town,v.region,v.postcode].filter(Boolean).join(", ");
   const links=activities.map(a=>{
    const href=a.slug?"/activity/"+encodeURIComponent(a.slug):"/activity.html?id="+encodeURIComponent(a.id);
