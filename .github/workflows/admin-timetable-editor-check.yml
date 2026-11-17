@@ -1,0 +1,43 @@
+name: Admin timetable editor checks
+on:
+  pull_request:
+    paths:
+      - 'api/admin-activities.php'
+      - 'admin/admin-activities.html'
+      - 'admin/admin-activities-timetable-editor.html'
+      - 'assets/js/admin-timetable-editor.js'
+      - '.github/workflows/admin-timetable-editor-check.yml'
+  push:
+    branches:
+      - 'admin/dedicated-session-editor-20261108'
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check PHP syntax
+        run: php -l api/admin-activities.php
+      - name: Check JavaScript syntax
+        run: node --check assets/js/admin-timetable-editor.js
+      - name: Check editor wiring and booking-safe session handling
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          api = Path('api/admin-activities.php').read_text()
+          page = Path('admin/admin-activities-timetable-editor.html').read_text()
+          script = Path('assets/js/admin-timetable-editor.js').read_text()
+          admin = Path('admin/admin-activities.html').read_text()
+          assert "save_sessions" in api
+          assert "bh_listing_csrf" in api
+          assert "SELECT COUNT(*) FROM bh_bookings WHERE session_id=?" in api
+          assert "UPDATE bh_sessions SET " in api
+          assert "DELETE FROM bh_sessions WHERE id=?" in api
+          assert "admin-activities-timetable-editor.html" in admin
+          assert "bhAddSession" in page and "bhSaveTimetable" in page
+          assert "action:'save_sessions'" in script
+          assert "credentials:'same-origin'" in script
+          print('Timetable editor wiring and booking safeguards passed.')
+          PY
