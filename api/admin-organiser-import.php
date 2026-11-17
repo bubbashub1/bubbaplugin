@@ -16,6 +16,28 @@ if (empty($_SESSION['bh_admin_authenticated'])) {
     bh_bulk_response(401, ['ok'=>false,'error'=>'Admin login required.']);
 }
 
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+    bh_bulk_response(405, ['ok'=>false,'error'=>'POST required.']);
+}
+
+// CSV imports create accounts and listings; require a verified same-origin HTTPS request.
+$requestHost = strtolower((string)parse_url('https://'.($_SERVER['HTTP_HOST'] ?? ''), PHP_URL_HOST));
+$origin = (string)($_SERVER['HTTP_ORIGIN'] ?? '');
+$referer = (string)($_SERVER['HTTP_REFERER'] ?? '');
+$source = $origin !== '' ? $origin : $referer;
+$sourceParts = $source !== '' ? parse_url($source) : false;
+$sourceHost = is_array($sourceParts) ? strtolower((string)($sourceParts['host'] ?? '')) : '';
+$sourceScheme = is_array($sourceParts) ? strtolower((string)($sourceParts['scheme'] ?? '')) : '';
+$requestParts = $requestHost !== '' ? parse_url('https://' . $requestHost) : false;
+$expectedHost = is_array($requestParts) ? strtolower((string)($requestParts['host'] ?? '')) : '';
+$expectedPort = is_array($requestParts) ? (int)($requestParts['port'] ?? 443) : 443;
+$sourcePort = is_array($sourceParts) ? (int)($sourceParts['port'] ?? 443) : 0;
+$fetchSite = strtolower((string)($_SERVER['HTTP_SEC_FETCH_SITE'] ?? ''));
+if ($sourceHost === '' || $expectedHost === '' || $sourceScheme !== 'https'
+    || $sourceHost !== $expectedHost || $sourcePort !== $expectedPort || $fetchSite === 'cross-site') {
+    bh_bulk_response(403, ['ok'=>false,'error'=>'This import request could not be verified. Refresh the page and try again.']);
+}
+
 require __DIR__.'/db.php';
 $db = bh_mysql();
 
