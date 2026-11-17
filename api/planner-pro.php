@@ -107,16 +107,29 @@ try {
             if (!$ownedChildren[$childId]) bh_pro_response(403,['ok'=>false,'error'=>'child_not_owned']);
             $normalised[] = ['id'=>$id,'child_id'=>$childId,'date'=>$date,'start'=>$start,'end'=>$end];
         }
-        $stmt=$db->prepare("SELECT state_json FROM bh_planner_pro_state WHERE user_id=? LIMIT 1");
-        $stmt->execute([$userId]);
-        $existing=$stmt->fetchColumn();
-        $existingState=is_string($existing)?json_decode($existing,true):[];
-        if(!is_array($existingState))$existingState=[];
-        $existingState['freeNapWindows']=$normalised;
-        $encoded=json_encode($existingState,JSON_UNESCAPED_SLASHES);
-        if(!is_string($encoded)||strlen($encoded)>500000) bh_pro_response(413,['ok'=>false,'error'=>'state_too_large']);
-        $save=$db->prepare("INSERT INTO bh_planner_pro_state (user_id,state_json,created_at,updated_at) VALUES (?,?,NOW(),NOW()) ON DUPLICATE KEY UPDATE state_json=VALUES(state_json),updated_at=NOW()");
-        $save->execute([$userId,$encoded]);
+        $db->beginTransaction();
+        try {
+            // Ensure a row exists, then lock it so nap saves cannot race Pro planner saves.
+            $ensure=$db->prepare("INSERT IGNORE INTO bh_planner_pro_state (user_id,state_json,created_at,updated_at) VALUES (?,'{}',NOW(),NOW())");
+            $ensure->execute([$userId]);
+            $stmt=$db->prepare("SELECT state_json FROM bh_planner_pro_state WHERE user_id=? FOR UPDATE");
+            $stmt->execute([$userId]);
+            $existing=$stmt->fetchColumn();
+            $existingState=is_string($existing)?json_decode($existing,true):[];
+            if(!is_array($existingState))$existingState=[];
+            $existingState['freeNapWindows']=$normalised;
+            $encoded=json_encode($existingState,JSON_UNESCAPED_SLASHES);
+            if(!is_string($encoded)||strlen($encoded)>500000) {
+                $db->rollBack();
+                bh_pro_response(413,['ok'=>false,'error'=>'state_too_large']);
+            }
+            $save=$db->prepare("UPDATE bh_planner_pro_state SET state_json=?,updated_at=NOW() WHERE user_id=?");
+            $save->execute([$encoded,$userId]);
+            $db->commit();
+        } catch(Throwable $e) {
+            if($db->inTransaction())$db->rollBack();
+            throw $e;
+        }
         bh_pro_response(200,['ok'=>true,'pro'=>$isPro,'napWindows'=>$normalised,'csrf'=>$_SESSION['bh_csrf']]);
     }
 
@@ -126,23 +139,41 @@ try {
 
     $state=$body['state']??null;
     if(!is_array($state)) bh_pro_response(422,['ok'=>false,'error'=>'state_required']);
-    // Planner Pro writes its own state object. Preserve the Free nap-window
-    // collection when the Pro client posts a state version that predates it.
-    if (!array_key_exists('freeNapWindows',$state)) {
-        $existingStmt=$db->prepare("SELECT state_json FROM bh_planner_pro_state WHERE user_id=? LIMIT 1");
+
+    $db->beginTransaction();
+    try {
+        // Lock the user's single state row so a stale Pro save cannot erase a
+        // nap-window save that completed concurrently (or vice versa).
+        $ensure=$db->prepare("INSERT IGNORE INTO bh_planner_pro_state (user_id,state_json,created_at,updated_at) VALUES (?,'{}',NOW(),NOW())");
+        $ensure->execute([$userId]);
+        $existingStmt=$db->prepare("SELECT state_json FROM bh_planner_pro_state WHERE user_id=? FOR UPDATE");
         $existingStmt->execute([$userId]);
         $existingJson=$existingStmt->fetchColumn();
         $existingState=is_string($existingJson)?json_decode($existingJson,true):[];
-        if(is_array($existingState)&&isset($existingState['freeNapWindows'])&&is_array($existingState['freeNapWindows'])) {
+        if(!is_array($existingState))$existingState=[];
+        // Preserve Free nap windows when an older Pro client posts a state
+        // object that does not yet include that collection.
+        if (!array_key_exists('freeNapWindows',$state)
+            && isset($existingState['freeNapWindows'])
+            && is_array($existingState['freeNapWindows'])) {
             $state['freeNapWindows']=$existingState['freeNapWindows'];
         }
+        $encoded=json_encode($state,JSON_UNESCAPED_SLASHES);
+        if(!is_string($encoded)) {
+            $db->rollBack();
+            bh_pro_response(422,['ok'=>false,'error'=>'state_invalid']);
+        }
+        if(strlen($encoded)>500000) {
+            $db->rollBack();
+            bh_pro_response(413,['ok'=>false,'error'=>'state_too_large']);
+        }
+        $save=$db->prepare("UPDATE bh_planner_pro_state SET state_json=?,updated_at=NOW() WHERE user_id=?");
+        $save->execute([$encoded,$userId]);
+        $db->commit();
+    } catch(Throwable $e) {
+        if($db->inTransaction())$db->rollBack();
+        throw $e;
     }
-    $encoded=json_encode($state,JSON_UNESCAPED_SLASHES);
-    if(!is_string($encoded)) bh_pro_response(422,['ok'=>false,'error'=>'state_invalid']);
-    if(strlen($encoded)>500000) bh_pro_response(413,['ok'=>false,'error'=>'state_too_large']);
-
-    $stmt=$db->prepare("INSERT INTO bh_planner_pro_state (user_id,state_json,created_at,updated_at) VALUES (?,?,NOW(),NOW()) ON DUPLICATE KEY UPDATE state_json=VALUES(state_json),updated_at=NOW()");
-    $stmt->execute([$userId,$encoded]);
     bh_pro_response(200,['ok'=>true,'pro'=>true,'updated_at'=>date('Y-m-d H:i:s'),'csrf'=>$_SESSION['bh_csrf']]);
 } catch(Throwable $e) {
     bh_pro_response(500,['ok'=>false,'error'=>'planner_pro_error']);
