@@ -273,7 +273,7 @@
       const ages=selectedAges();
       const focusedChild=state.focusChildId?state.children.find(c=>String(c.id)===String(state.focusChildId)):null;
       const focusedAge=focusedChild?ageYears(focusedChild.date_of_birth):null;
-      const ranked=state.activities.map(a=>({a,s:score(a,ages)})).filter(x=>x.s>-10&&!(focusedAge!==null&&activityRanges(x.a).length&&!ageMatches(x.a,focusedAge))).sort((x,y)=>y.s-x.s||String(x.a.title).localeCompare(String(y.a.title))).slice(0,8).map(x=>x.a);
+      const ranked=state.activities.map(a=>({a,s:score(a,ages)})).filter(x=>x.s>-10&&!(focusedAge!==null&&activityRanges(x.a).length&&!ageMatches(x.a,focusedAge))).sort((x,y)=>y.s-x.s||String(x.a.title).localeCompare(String(y.a.title))).slice(0,12).map(x=>x.a);
       const list=$("personalResultList");
       $("resultsTitle").textContent=ranked.length?(focusedChild?"Suggested groups for "+focusedChild.name:"Ideas for your family"):"Let's widen the search";
       const pieces=[];
