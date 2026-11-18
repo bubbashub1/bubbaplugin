@@ -53,3 +53,13 @@ body.bh-family-v3 .family-v3-main .personal-date-row label{min-width:min(100%,26
 body.bh-family-v3 .family-v3-main .personal-date-row input[type="date"]{min-height:48px;min-width:210px;font:inherit;color:#174e49;background:#fff;color-scheme:light;accent-color:#0f766e}
 body.bh-family-v3 .family-v3-main .personal-date-help{display:block;margin-top:2px;color:#668276;font-size:12px;font-weight:500}
 @media(max-width:560px){body.bh-family-v3 .family-v3-main .personal-date-row{align-items:stretch;flex-direction:column}body.bh-family-v3 .family-v3-main .personal-date-row label,body.bh-family-v3 .family-v3-main .personal-date-row input[type="date"]{width:100%;box-sizing:border-box}body.bh-family-v3 .family-v3-main .personal-date-row input[type="date"]{min-height:52px;font-size:16px}}
+
+/* Category step: clearer hierarchy and comfortable choice chips */
+body.bh-family-v3 .family-v3-main .personal-panel[data-panel="4"] .eyebrow{display:inline-block;margin-bottom:4px;color:#0f766e;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+body.bh-family-v3 .family-v3-main .personal-panel[data-panel="4"] h2{max-width:650px;margin:4px 0 7px}
+body.bh-family-v3 .family-v3-main .personal-panel[data-panel="4"] .personal-help{max-width:680px;margin-bottom:20px}
+body.bh-family-v3 .family-v3-main .personal-panel[data-panel="4"] #categoryChoices{gap:10px}
+body.bh-family-v3 .family-v3-main .personal-panel[data-panel="4"] .personal-chip{min-height:42px;padding:10px 16px;cursor:pointer;transition:background .15s ease,border-color .15s ease}
+body.bh-family-v3 .family-v3-main .personal-panel[data-panel="4"] .personal-chip:first-child{background:#eaf4f1;border-color:#9fcac1;color:#115e59}
+body.bh-family-v3 .family-v3-main .personal-panel[data-panel="4"] .personal-chip:first-child.is-selected{background:#0f766e;border-color:#0f766e;color:#fff}
+@media(max-width:560px){body.bh-family-v3 .family-v3-main .personal-panel[data-panel="4"] #categoryChoices{gap:8px}body.bh-family-v3 .family-v3-main .personal-panel[data-panel="4"] .personal-chip{min-height:44px;padding:10px 14px}}
