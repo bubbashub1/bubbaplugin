@@ -210,13 +210,14 @@
 
     function renderCategories(){
       const cats=[...new Set(state.activities.map(a=>String(a.category||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
-      const list=["Surprise me"].concat(cats);
-      $("categoryChoices").innerHTML=list.map(c=>"<button type='button' class='personal-chip "+((!state.category&&c==="Surprise me")||state.category===c?"is-selected":"")+"' data-category='"+esc(c==="Surprise me"?"":c)+"'>"+esc(c)+"</button>").join("");
-      $("categoryChoices").querySelectorAll("[data-category]").forEach(btn=>btn.addEventListener("click",function(){
-        state.category=btn.dataset.category||"";
+      const select=$("categorySelect");
+      if(!select)return;
+      select.innerHTML="<option value=''>Surprise me — show me a mix</option>"+cats.map(c=>"<option value='"+esc(c)+"'>"+esc(c)+"</option>").join("");
+      select.value=state.category||"";
+      select.onchange=function(){
+        state.category=select.value||"";
         state.categories=state.category?[state.category]:[];
-        renderCategories();
-      }));
+      };
     }
 
     function fillRegions(){
