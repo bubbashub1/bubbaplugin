@@ -88,6 +88,7 @@ try {
         ['bh_children','nap_morning_end','TIME NULL'],
         ['bh_children','nap_afternoon_start','TIME NULL'],
         ['bh_children','nap_afternoon_end','TIME NULL'],
+        ['bh_children','support_needs','TEXT NULL'],
         ['bh_children','created_at','DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP'],
         ['bh_children','updated_at','DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'],
         ['bh_bumps','nickname','VARCHAR(120) NULL'],
@@ -118,9 +119,11 @@ try {
         // optional saved/planner/booking tables so one missing optional table
         // cannot leave the family page stuck loading.
         if (($_GET['view'] ?? '') === 'family') {
-            $stmt = $db->prepare("SELECT id,name,gender,photo_path,date_of_birth,nap_pattern,nap_morning_start,nap_morning_end,nap_afternoon_start,nap_afternoon_end,created_at,updated_at FROM bh_children WHERE user_id=? ORDER BY date_of_birth IS NULL,date_of_birth,name");
+            $stmt = $db->prepare("SELECT id,name,gender,photo_path,date_of_birth,nap_pattern,nap_morning_start,nap_morning_end,nap_afternoon_start,nap_afternoon_end,support_needs,created_at,updated_at FROM bh_children WHERE user_id=? ORDER BY date_of_birth IS NULL,date_of_birth,name");
             $stmt->execute([$userId]);
             $children = $stmt->fetchAll();
+            foreach ($children as &$child) { $child['support_needs'] = json_decode((string)($child['support_needs'] ?? '[]'), true) ?: []; }
+            unset($child);
 
             $stmt = $db->prepare("SELECT id,nickname,photo_path,due_date,created_at,updated_at FROM bh_bumps WHERE user_id=? ORDER BY due_date IS NULL,due_date");
             $stmt->execute([$userId]);
@@ -136,9 +139,11 @@ try {
         }
 
         $children = [];
-        $stmt = $db->prepare("SELECT id,name,gender,photo_path,date_of_birth,nap_pattern,nap_morning_start,nap_morning_end,nap_afternoon_start,nap_afternoon_end,created_at,updated_at FROM bh_children WHERE user_id=? ORDER BY date_of_birth IS NULL,date_of_birth,name");
+        $stmt = $db->prepare("SELECT id,name,gender,photo_path,date_of_birth,nap_pattern,nap_morning_start,nap_morning_end,nap_afternoon_start,nap_afternoon_end,support_needs,created_at,updated_at FROM bh_children WHERE user_id=? ORDER BY date_of_birth IS NULL,date_of_birth,name");
         $stmt->execute([$userId]);
         $children = $stmt->fetchAll();
+        foreach ($children as &$child) { $child['support_needs'] = json_decode((string)($child['support_needs'] ?? '[]'), true) ?: []; }
+        unset($child);
 
         $bumps = [];
         $stmt = $db->prepare("SELECT id,nickname,photo_path,due_date,created_at,updated_at FROM bh_bumps WHERE user_id=? ORDER BY due_date IS NULL,due_date");
@@ -300,6 +305,9 @@ try {
         $gender = trim((string)($body['gender'] ?? ''));
         $dob = trim((string)($body['date_of_birth'] ?? ''));
         $napPattern = (string)($body['nap_pattern'] ?? 'varies');
+        $allowedSupport = ['step_free','mobility_space','accessible_toilet','quiet_space','small_group','settling_time','communication','carer_support'];
+        $supportNeeds = array_values(array_intersect($allowedSupport, array_unique((array)($body['support_needs'] ?? []))));
+        $supportJson = json_encode($supportNeeds, JSON_UNESCAPED_SLASHES);
         if (!in_array($napPattern, ['varies','none','one','two'], true)) $napPattern = 'varies';
         $napTimes = [];
         foreach (['nap_morning_start','nap_morning_end','nap_afternoon_start','nap_afternoon_end'] as $field) {
@@ -315,16 +323,16 @@ try {
             $dobValue = $dob;
         }
         if ($id > 0) {
-            $stmt = $db->prepare("UPDATE bh_children SET name=?,gender=?,date_of_birth=?,nap_pattern=?,nap_morning_start=?,nap_morning_end=?,nap_afternoon_start=?,nap_afternoon_end=? WHERE id=? AND user_id=?");
-            $stmt->execute([$name,$gender ?: null,$dobValue,$napPattern,$napTimes['nap_morning_start'],$napTimes['nap_morning_end'],$napTimes['nap_afternoon_start'],$napTimes['nap_afternoon_end'],$id,$userId]);
+            $stmt = $db->prepare("UPDATE bh_children SET name=?,gender=?,date_of_birth=?,nap_pattern=?,nap_morning_start=?,nap_morning_end=?,nap_afternoon_start=?,nap_afternoon_end=?,support_needs=? WHERE id=? AND user_id=?");
+            $stmt->execute([$name,$gender ?: null,$dobValue,$napPattern,$napTimes['nap_morning_start'],$napTimes['nap_morning_end'],$napTimes['nap_afternoon_start'],$napTimes['nap_afternoon_end'],$supportJson,$id,$userId]);
             if (!$stmt->rowCount()) {
                 $exists = $db->prepare("SELECT id FROM bh_children WHERE id=? AND user_id=? LIMIT 1");
                 $exists->execute([$id,$userId]);
                 if (!$exists->fetch()) bh_hub_json(404, ['ok' => false, 'error' => 'child_not_found']);
             }
         } else {
-            $stmt = $db->prepare("INSERT INTO bh_children (user_id,name,gender,date_of_birth,nap_pattern,nap_morning_start,nap_morning_end,nap_afternoon_start,nap_afternoon_end) VALUES (?,?,?,?,?,?,?,?,?)");
-            $stmt->execute([$userId,$name,$gender ?: null,$dobValue,$napPattern,$napTimes['nap_morning_start'],$napTimes['nap_morning_end'],$napTimes['nap_afternoon_start'],$napTimes['nap_afternoon_end']]);
+            $stmt = $db->prepare("INSERT INTO bh_children (user_id,name,gender,date_of_birth,nap_pattern,nap_morning_start,nap_morning_end,nap_afternoon_start,nap_afternoon_end,support_needs) VALUES (?,?,?,?,?,?,?,?,?,?)");
+            $stmt->execute([$userId,$name,$gender ?: null,$dobValue,$napPattern,$napTimes['nap_morning_start'],$napTimes['nap_morning_end'],$napTimes['nap_afternoon_start'],$napTimes['nap_afternoon_end'],$supportJson]);
             $id = (int)$db->lastInsertId();
         }
         bh_hub_json(200, ['ok' => true, 'id' => $id]);
