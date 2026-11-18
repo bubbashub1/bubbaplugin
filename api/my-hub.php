@@ -317,7 +317,11 @@ try {
         if ($id > 0) {
             $stmt = $db->prepare("UPDATE bh_children SET name=?,gender=?,date_of_birth=?,nap_pattern=?,nap_morning_start=?,nap_morning_end=?,nap_afternoon_start=?,nap_afternoon_end=? WHERE id=? AND user_id=?");
             $stmt->execute([$name,$gender ?: null,$dobValue,$napPattern,$napTimes['nap_morning_start'],$napTimes['nap_morning_end'],$napTimes['nap_afternoon_start'],$napTimes['nap_afternoon_end'],$id,$userId]);
-            if (!$stmt->rowCount()) bh_hub_json(404, ['ok' => false, 'error' => 'child_not_found']);
+            if (!$stmt->rowCount()) {
+                $exists = $db->prepare("SELECT id FROM bh_children WHERE id=? AND user_id=? LIMIT 1");
+                $exists->execute([$id,$userId]);
+                if (!$exists->fetch()) bh_hub_json(404, ['ok' => false, 'error' => 'child_not_found']);
+            }
         } else {
             $stmt = $db->prepare("INSERT INTO bh_children (user_id,name,gender,date_of_birth,nap_pattern,nap_morning_start,nap_morning_end,nap_afternoon_start,nap_afternoon_end) VALUES (?,?,?,?,?,?,?,?,?)");
             $stmt->execute([$userId,$name,$gender ?: null,$dobValue,$napPattern,$napTimes['nap_morning_start'],$napTimes['nap_morning_end'],$napTimes['nap_afternoon_start'],$napTimes['nap_afternoon_end']]);
