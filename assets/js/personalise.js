@@ -134,6 +134,11 @@
       const d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));
       return d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});
     }
+    function ukDate(value){
+      if(!value)return "";
+      const p=String(value).split("-");
+      return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:value;
+    }
     function updateWhenUI(){
       const today=new Date(),tomorrow=new Date(today);tomorrow.setDate(today.getDate()+1);
       const todayISO=localISODate(today),tomorrowISO=localISODate(tomorrow);
@@ -151,7 +156,7 @@
       const input=document.getElementById("personalDate");
       if(input){const target=String(state.targetDate||"");input.value=target.startsWith("__")?"":target;}
       const selected=document.getElementById("selectedWhen");
-      if(selected)selected.textContent=state.targetDate==="__weekend__"?"This weekend":state.targetDate?shortDate(state.targetDate):state.day||"Any day";
+      if(selected)selected.textContent=state.targetDate==="__weekend__"?"This weekend":state.targetDate?ukDate(state.targetDate):state.day||"Any day";
     }
     function setTargetDate(value){
       state.targetDate=value||"";
@@ -171,7 +176,12 @@
         else if(k==="weekend"){state.targetDate="__weekend__";state.day="";updateWhenUI();}
         else {state.targetDate="";state.day="";updateWhenUI();}
       }));
-      document.getElementById("personalDate")?.addEventListener("change",e=>setTargetDate(e.target.value));
+      const dateInput=document.getElementById("personalDate");
+      if(dateInput){
+        dateInput.setAttribute("lang","en-GB");
+        dateInput.addEventListener("click",()=>{if(typeof dateInput.showPicker==="function"){try{dateInput.showPicker()}catch(_){}}});
+        dateInput.addEventListener("change",e=>setTargetDate(e.target.value));
+      }
       updateWhenUI();
     }
     function sessionOccursOnDate(a,dateValue){
