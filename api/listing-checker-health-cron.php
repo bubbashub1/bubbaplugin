@@ -139,7 +139,7 @@ try{
    $read->execute([$aid]);$row=$read->fetch(PDO::FETCH_ASSOC);
    if(!$row){$markSkipped->execute(['Activity no longer exists',$qid]);$skipped++;continue;}
    $detectedTypes=[];
-   $checks=['description'=>['description','short_description'],'website'=>['website'],'booking_link'=>['booking_url'],'email'=>['contact_email'],'telephone'=>['contact_phone'],'facebook'=>['facebook_url'],'instagram'=>['instagram_url'],'age_range'=>['age_range'],'category'=>['category'],'location'=>['town'],'postcode'=>['postcode'],'image'=>['image_path']];
+   $checks=['description'=>['description','short_description'],'website'=>['website'],'booking_link'=>['booking_url'],'email'=>['contact_email'],'telephone'=>['contact_phone'],'facebook'=>['facebook_url'],'instagram'=>['instagram_url'],'age_range'=>['age_range'],'category'=>['category'],'location'=>['town','address'],'postcode'=>['postcode'],'image'=>['image_path']];
    $fallbackSupport=[
     'website'=>in_array('website',$cols,true)||($hasOrg&&in_array('website',$orgCols,true)),
     'email'=>in_array('contact_email',$cols,true)||($hasOrg&&in_array('email',$orgCols,true)),
@@ -149,7 +149,7 @@ try{
    ];
    foreach($checks as $type=>$keys){
     // Assess fallback fields only when the real organiser/venue source is available.
-    $availableKeys=isset($fallbackSupport[$type])?($fallbackSupport[$type]?[$keys[0]]:[]):array_values(array_filter($keys,static fn($key)=>in_array($key,$cols,true)));
+    $availableKeys=isset($fallbackSupport[$type])?($fallbackSupport[$type]?($type==='location'?array_values(array_filter($keys,static fn($key)=>in_array($key,['town','address'],true))):[$keys[0]]):[]):array_values(array_filter($keys,static fn($key)=>in_array($key,$cols,true)));
     if(!$availableKeys)continue;
     $present=false;foreach($availableKeys as $key)if(trim((string)($row[$key]??''))!=='')$present=true;
     if(!$present)$record($aid,'missing_'.$type,['field'=>$type,'checked_columns'=>$availableKeys]);
