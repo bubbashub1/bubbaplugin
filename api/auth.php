@@ -1143,12 +1143,13 @@ try {
             $resolve->execute([$googleId]);
             $persistedUser = $resolve->fetch(PDO::FETCH_ASSOC);
             $socialLinkFound = is_array($persistedUser);
+            $emailAccountFound = false;
             if (!$persistedUser) {
                 $resolve = $db->prepare("SELECT id,email,role,status FROM bh_users WHERE email=? LIMIT 1");
                 $resolve->execute([$email]);
                 $persistedUser = $resolve->fetch(PDO::FETCH_ASSOC);
+                $emailAccountFound = is_array($persistedUser);
             }
-            $emailAccountFound = is_array($persistedUser);
             $resolvedUserId = (int)($persistedUser['id'] ?? 0);
             $persistedRole = (string)($persistedUser['role'] ?? '');
             $persistedStatus = (string)($persistedUser['status'] ?? '');
