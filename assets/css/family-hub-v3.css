@@ -365,3 +365,86 @@ body.bh-subpage-v2 .bh-date-picker-button{flex:0 0 46px;width:46px;height:46px;b
 body.bh-subpage-v2 .bh-date-picker-button:hover{background:#dceee9;border-color:#9fc5ba}
 body.bh-subpage-v2 .bh-date-native{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;opacity:0!important;pointer-events:none!important}
 body.bh-subpage-v2 .bh-date-field .bh-date-hint{margin-top:-2px;font-size:12px;font-weight:500;color:#668078}
+
+
+/* Family profile modal: compact, balanced heading and photo upload. */
+.hub-modal .hub-modal-card{
+  width:min(560px,100%)!important;
+  padding:24px!important;
+}
+.hub-modal .hub-modal-card>.admin-panel-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin:0 0 18px;
+  padding:0 0 14px;
+  border-bottom:1px solid #e1ebe3;
+}
+.hub-modal .hub-modal-card>.admin-panel-head>div:first-child{min-width:0}
+.hub-modal .hub-modal-card>.admin-panel-head .eyebrow{
+  display:block;
+  margin:0 0 3px;
+  color:#71877a;
+  font-size:10px;
+  line-height:1.3;
+  font-weight:800;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+.hub-modal .hub-modal-card>.admin-panel-head h2{
+  margin:0!important;
+  font-size:clamp(21px,3vw,25px)!important;
+  line-height:1.2;
+}
+.hub-modal .hub-modal-card>.admin-panel-head [data-close]{
+  flex:0 0 auto;
+  min-height:36px;
+  padding:7px 13px;
+  border-radius:11px;
+  font-size:13px;
+}
+.hub-modal .hub-modal-card .family-child-form{
+  display:grid;
+  gap:13px 16px;
+}
+.hub-modal .hub-modal-card .child-avatar-field{
+  margin:0 0 2px;
+}
+.hub-modal .hub-modal-card .child-avatar-field .form-field-label{
+  display:block;
+  margin:0 0 7px;
+  color:#355c4d;
+  font-size:13px;
+  font-weight:750;
+}
+.hub-modal .hub-modal-card .child-avatar-editor{
+  display:flex;
+  align-items:center;
+  gap:13px;
+  min-width:0;
+}
+.hub-modal .hub-modal-card .child-avatar-copy{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:5px;
+  min-width:0;
+}
+.hub-modal .hub-modal-card .avatar-upload-button{
+  min-height:36px;
+  padding:8px 13px;
+  border-radius:11px;
+  font-size:13px;
+}
+.hub-modal .hub-modal-card .child-avatar-copy small{
+  color:#71877a;
+  font-size:11px;
+  line-height:1.4;
+}
+.hub-modal .hub-modal-card .hero-actions{margin-top:17px}
+@media(max-width:560px){
+  .hub-modal .hub-modal-card{padding:20px 17px!important}
+  .hub-modal .hub-modal-card>.admin-panel-head{gap:10px;margin-bottom:15px;padding-bottom:12px}
+  .hub-modal .hub-modal-card>.admin-panel-head h2{font-size:22px!important}
+}
