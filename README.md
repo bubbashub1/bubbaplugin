@@ -125,3 +125,10 @@ Both worker scripts are CLI-only, use separate MySQL advisory locks to prevent o
 A GitHub Actions workflow at `.github/workflows/listing-checker-security.yml` runs PHP syntax lint on the five Listing Checker APIs/workers and checks that the critical authentication, CSRF, CLI-only and overlap-lock guards remain present.
 
 **Security validation still required before production:** review the workflow result, perform an authenticated/unauthenticated browser test, test CSRF and cross-origin rejection, verify admin session behaviour behind the live hosting proxy, and test database permissions and cron execution on staging. Static checks are not a penetration test.
+
+
+### Listing Health search indicator
+
+The Listing Health Check page now shows, per activity, whether the scheduled existing-listing health worker has successfully checked it and the last checked timestamp. “Searched” here means the worker inspected the saved listing fields for missing information and data-quality issues; it does **not** mean that the worker has independently searched the public web for replacement contact details. External research remains a separate, evidence-based workflow and all updates require admin approval.
+
+If recent runs stop appearing, verify the hosting cron entry is still enabled and runs the CLI command below every four hours. A successful run should add a new `health` row to `bh_listing_check_runs`; the admin settings page shows the latest run time and summary. The application cannot create or repair the eWebAll hosting cron entry from a GitHub deployment.
