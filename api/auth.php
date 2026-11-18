@@ -14,7 +14,29 @@ const BH_DUMMY_HASH = '$2y$10$abcdefghijklmnopqrstuuabcdefghijklmnopqrstuvwxyzAB
  * Generic helpers
  * ---------------------------------------------------------------------- */
 
+function bh_auth_session_debug(): array {
+    // Temporary, non-secret diagnostics are opt-in and restricted to staging.
+    if (strtolower((string)($_SERVER['HTTP_HOST'] ?? '')) !== 'staging.bubbahub.co.uk'
+        || (string)($_GET['debug_session'] ?? '') !== '1') return [];
+    $cookieId = (string)($_COOKIE[session_name()] ?? '');
+    $currentId = session_id();
+    return ['session_debug' => [
+        'session_name' => session_name(),
+        'session_id_hash' => $currentId !== '' ? substr(hash('sha256', $currentId), 0, 12) : '',
+        'request_cookie_present' => $cookieId !== '',
+        'cookie_matches_session' => $cookieId !== '' && $currentId !== '' && hash_equals($currentId, $cookieId),
+        'session_status' => session_status() === PHP_SESSION_ACTIVE ? 'active' : 'closed',
+        'has_user_id' => !empty($_SESSION['bh_user_id']),
+        'family_authenticated' => !empty($_SESSION['bh_family_authenticated']),
+        'leader_authenticated' => !empty($_SESSION['bh_leader_authenticated']),
+        'auth_session_prepared' => !empty($_SESSION['bh_auth_session_prepared']),
+        'csrf_valid' => isset($_SESSION['bh_csrf']) && is_string($_SESSION['bh_csrf']) && preg_match('/^[a-f0-9]{48}$/', $_SESSION['bh_csrf']) === 1,
+        'session_write_close_ok' => $GLOBALS['bh_auth_session_write_close_ok'] ?? null,
+    ]];
+}
+
 function bh_auth_response(int $status, array $data): void {
+    $data = array_merge($data, bh_auth_session_debug());
     http_response_code($status);
     echo json_encode($data, JSON_UNESCAPED_SLASHES);
     exit;
@@ -352,7 +374,7 @@ function bh_login_session(int $userId, string $ctx): void {
     // Persist the regenerated session before returning a successful login response.
     // This ensures the next same-origin request can read the authenticated session
     // immediately, rather than depending on PHP's shutdown-time session write.
-    session_write_close();
+    $GLOBALS['bh_auth_session_write_close_ok'] = session_write_close();
 }
 
 function bh_ensure_social_table(PDO $db): void {
