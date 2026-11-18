@@ -16,7 +16,7 @@ function dateField(name,label,value,autocomplete=""){
 }
 function parseUkDate(value){
  const s=String(value||"").trim();if(!s)return "";
- const m=s.match(/^(\\d{1,2})\\/(\\d{1,2})\\/(\\d{4})$/);if(!m)return null;
+ const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);if(!m)return null;
  const day=Number(m[1]),month=Number(m[2]),year=Number(m[3]),d=new Date(year,month-1,day);
  if(d.getFullYear()!==year||d.getMonth()!==month-1||d.getDate()!==day)return null;
  return year+"-"+String(month).padStart(2,"0")+"-"+String(day).padStart(2,"0");
