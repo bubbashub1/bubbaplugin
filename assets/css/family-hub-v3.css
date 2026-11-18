@@ -662,3 +662,75 @@ body.bh-subpage-v2 .bh-date-field .bh-date-hint{margin-top:-2px;font-size:12px;f
   :is(body.bh-family-v3,body.bh-my-hub) .family-v3-mobile-nav a{font-size:9px;}
   :is(body.bh-family-v3,body.bh-my-hub) .family-v3-mobile-nav-icon{font-size:18px;}
 }
+
+
+/* Bubba Hub family palette: confident pastels with warm, readable contrast. */
+:is(body.bh-family-v3,body.bh-my-hub){
+  --bh-pink:#f6b8c9;
+  --bh-pink-soft:#fff0f4;
+  --bh-yellow:#f7d978;
+  --bh-yellow-soft:#fff8df;
+  --bh-blue:#b9dff0;
+  --bh-blue-soft:#edf7fc;
+  --bh-lilac:#d8c8ef;
+  --bh-lilac-soft:#f5f0fc;
+  --bh-sage:#cfe2d1;
+  --bh-sage-soft:#eff6ef;
+  --bh-ink:#31534a;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar{
+  background:linear-gradient(145deg,#fff0f4 0%,#fff8df 52%,#edf7fc 100%);
+  border-color:#f0dce0;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand{
+  background:linear-gradient(110deg,#fbe0e8 0%,#fff1d0 100%);
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="explore"] .family-v3-nav-group-toggle{
+  background:#f8dce6;color:#704455;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="family"] .family-v3-nav-group-toggle{
+  background:#dcecf7;color:#31566c;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items a[aria-current="page"]{
+  background:#a94f70!important;color:#fff!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help{
+  background:#fff5d9;border-color:#f0dfaa;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help strong{color:#765b23}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta{
+  background:#f5effc;border-color:#dfd1f0;color:#51416c;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta-icon{
+  background:#e4d8f4;color:#654b8b;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta-arrow{color:#654b8b}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .page-heading{
+  background:linear-gradient(112deg,#fbe0e8 0%,#fff1cf 48%,#e5f2fa 100%)!important;
+  border-color:#ead9df!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main :is(.admin-panel,.hub-panel,.hub-brief,.hub-welcome,.account-dashboard-card,.planner-shell){
+  border-color:#e8dfe4!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main :is(input,select,textarea):focus{
+  border-color:#bd7891!important;box-shadow:0 0 0 3px rgba(189,120,145,.14)!important;
+}
+@media(max-width:850px){
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar{
+    background:rgba(255,244,239,.97);border-bottom-color:#efd9dc;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-menu-toggle{
+    background:#fff0f4;border-color:#efcbd7;color:#81485e;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="explore"] .family-v3-nav-group-toggle{background:#f8dce6;color:#704455}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="family"] .family-v3-nav-group-toggle{background:#dcecf7;color:#31566c}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-mobile-nav{
+    background:rgba(255,250,247,.98);border-top-color:#eedde0;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-mobile-nav a[aria-current="page"]{
+    background:#fbe0e8;color:#87445f;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main>.page-heading{
+    background:linear-gradient(112deg,#fbe0e8 0%,#fff1cf 52%,#e5f2fa 100%)!important;
+  }
+}
