@@ -507,3 +507,46 @@ body.bh-subpage-v2 .bh-date-field .bh-date-hint{margin-top:-2px;font-size:12px;f
 .family-support-options input{margin-top:3px;accent-color:#0f766e}
 .family-support-summary{margin:8px 0;color:#55736c;font-size:12px}
 @media(max-width:520px){.family-support-options{grid-template-columns:1fr}}
+
+
+/* Family Hub sidebar colour pass: soft sage, teal and warm cream. */
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar{
+  background:linear-gradient(160deg,#f3f7f1 0%,#edf5f2 100%);
+  border:1px solid #d8e6db;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand{
+  background:#e1eee3;
+  border-radius:13px;
+  padding:13px 14px;
+  margin:0 0 12px;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand span{color:#416651}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="explore"] .family-v3-nav-group-toggle{
+  background:#dce9dc;color:#315d43;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="family"] .family-v3-nav-group-toggle{
+  background:#d9ece9;color:#145e59;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items a{
+  border-radius:9px;transition:background .16s ease,color .16s ease;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="explore"] .family-v3-nav-group-items a:hover{
+  background:#e5efe4;color:#315d43;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="family"] .family-v3-nav-group-items a:hover{
+  background:#e1f0ed;color:#145e59;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items a[aria-current="page"]{
+  background:#0f766e!important;color:#fff!important;font-weight:800;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items a[aria-current="page"] .family-v3-nav-icon{color:#fff}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help{
+  background:#fbf3e5;border:1px solid #eee0c6;border-radius:13px;padding:14px;margin-top:14px;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help strong{color:#72552e}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help p{color:#78684e}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help a{color:#0f766e;font-weight:800}
+@media(max-width:850px){
+ :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="explore"] .family-v3-nav-group-toggle{background:#dce9dc}
+ :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="family"] .family-v3-nav-group-toggle{background:#d9ece9}
+}
