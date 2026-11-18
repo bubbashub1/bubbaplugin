@@ -776,3 +776,10 @@ body.bh-subpage-v2 .bh-date-field .bh-date-hint{margin-top:-2px;font-size:12px;f
     display:flex!important;
   }
 }
+
+
+/* Family profile grid and saved child routine summaries. */
+body.bh-subpage-v2 .hub-family-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}
+@media(max-width:700px){body.bh-subpage-v2 .hub-family-list{grid-template-columns:minmax(0,1fr)}}
+body.bh-subpage-v2 .family-nap-summary{margin:0;padding:10px 12px;border:1px solid #d7e6e2;border-radius:11px;background:#f7fbfa;color:#49685f;font-size:12px;line-height:1.5}
+body.bh-subpage-v2 .family-nap-summary strong{display:block;margin-bottom:2px;color:#174e49;font-size:13px}
