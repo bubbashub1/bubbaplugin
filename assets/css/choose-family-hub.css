@@ -73,3 +73,11 @@ body.bh-family-v3 .family-v3-main .personal-results-tools small{font-size:12px;c
 body.bh-family-v3 .family-v3-main .personal-result-card{box-shadow:0 2px 9px rgba(17,94,89,.035)}
 body.bh-family-v3 .family-v3-main .personal-result-body h3{font-size:17px;line-height:1.3}
 @media(max-width:560px){body.bh-family-v3 .family-v3-main .personal-results-tools{max-width:none}}
+
+/* Compact, contained category selector */
+body.bh-family-v3 .family-v3-main .personal-category-box{max-width:620px;padding:18px 20px;background:#f7fbfa;border:1px solid #d9e7e3;border-radius:12px}
+body.bh-family-v3 .family-v3-main .personal-category-box label{display:block;margin:0 0 8px;color:#174e49;font-size:16px;font-weight:800}
+body.bh-family-v3 .family-v3-main #categorySelect{display:block;width:100%;min-height:48px;padding:10px 42px 10px 13px;border:1px solid #bfd5ce;border-radius:9px;background:#fff;color:#174e49;font:inherit;font-size:15px}
+body.bh-family-v3 .family-v3-main #categorySelect:focus{outline:3px solid rgba(15,118,110,.15);border-color:#0f766e}
+body.bh-family-v3 .family-v3-main .personal-category-box .personal-help{margin:9px 0 0;color:#668078;font-size:13px}
+@media(max-width:560px){body.bh-family-v3 .family-v3-main .personal-category-box{padding:15px;border-radius:10px}}
