@@ -81,7 +81,7 @@ const renderGoogle=async()=>{
           const d=await readJson(r);
           if(!r.ok||!d.ok){
             if((context==="leader"&&d.error==="leader_registration_details_required")||(context==="family"&&d.error==="social_registration_terms_required")){setMode("register");terms?.classList.add("auth-terms-attention");terms?.scrollIntoView({behavior:"smooth",block:"center"});document.getElementById("terms")?.focus({preventScroll:true});setTimeout(()=>terms?.classList.remove("auth-terms-attention"),5000);}
-            throw Error(d.message||"Google sign-in could not be completed.");
+            throw Error((d.message||"Google sign-in could not be completed.")+(d.exception_debug?" Diagnostic: "+JSON.stringify(d.exception_debug):"")+(sessionDebugText(d)?" Session diagnostics: "+sessionDebugText(d):""));
           }
           if(d.csrf)csrf=d.csrf;
           // Confirm the regenerated PHP session is readable on a fresh request before redirecting.
