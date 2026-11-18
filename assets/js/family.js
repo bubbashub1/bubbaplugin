@@ -10,6 +10,26 @@ function avatarMarkup(item){
   ? "<div class='family-avatar'><img src='"+esc(path)+"' alt=''></div>"
   : "<div class='family-avatar family-avatar-placeholder'>"+esc((item.name||"Child").trim().charAt(0).toUpperCase())+"</div>";
 }
+function dateField(name,label,value,autocomplete=""){
+ const iso=String(value||"").slice(0,10),uk=toUkDate(iso);
+ return "<label class='bh-date-field'>"+label+"<span class='bh-date-control'><input class='bh-date-text' name='"+name+"_uk' type='text' inputmode='numeric' autocomplete='"+(autocomplete||"off")+"' placeholder='DD/MM/YYYY' value='"+esc(uk)+"' aria-label='"+label+" (DD/MM/YYYY)'><button class='bh-date-picker-button' type='button' aria-label='Choose "+label.toLowerCase()+"' title='Choose date'>▦</button><input class='bh-date-native' type='date' tabindex='-1' aria-hidden='true' value='"+esc(iso)+"'></span><small class='bh-date-hint'>Use DD/MM/YYYY or choose a date from the calendar.</small></label>";
+}
+function parseUkDate(value){
+ const s=String(value||"").trim();if(!s)return "";
+ const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);if(!m)return null;
+ const day=Number(m[1]),month=Number(m[2]),year=Number(m[3]),d=new Date(year,month-1,day);
+ if(d.getFullYear()!==year||d.getMonth()!==month-1||d.getDate()!==day)return null;
+ return year+"-"+String(month).padStart(2,"0")+"-"+String(day).padStart(2,"0");
+}
+function wireDateFields(form){
+ form.querySelectorAll(".bh-date-field").forEach(field=>{
+  const textInput=field.querySelector(".bh-date-text"),nativeInput=field.querySelector(".bh-date-native"),button=field.querySelector(".bh-date-picker-button");
+  button.addEventListener("click",()=>{try{if(nativeInput.showPicker)nativeInput.showPicker();else nativeInput.click()}catch(_){nativeInput.click()}});
+  nativeInput.addEventListener("change",()=>{textInput.value=toUkDate(nativeInput.value);textInput.setCustomValidity("");});
+  textInput.addEventListener("input",()=>{textInput.setCustomValidity("");});
+  textInput.addEventListener("blur",()=>{const parsed=parseUkDate(textInput.value);if(parsed!==null)nativeInput.value=parsed;});
+ });
+}
 async function uploadAvatar(childId,file,form,msg){
  if(!file)return;
  const fd=new FormData();
@@ -24,14 +44,14 @@ async function uploadAvatar(childId,file,form,msg){
 function modal(title,type,item={}){
  const o=document.createElement("div");o.className="hub-modal";
  const fields=type==="child"
-  ? "<div class='child-avatar-field'><span class='form-field-label'>Profile photo</span><div class='child-avatar-editor'>"+avatarMarkup(item)+"<div class='child-avatar-copy'><label class='button button-soft avatar-upload-button'>Choose photo<input name='avatar' type='file' accept='image/jpeg,image/png,image/webp' hidden></label><small>JPG, PNG or WebP · up to 5 MB</small></div></div></div><label>Name<input name='name' required maxlength='100' value='"+esc(item.name||"")+"'></label><label>Gender<select name='gender'><option value=''>Prefer not to say</option><option value='Girl' "+(item.gender==="Girl"?"selected":"")+">Girl</option><option value='Boy' "+(item.gender==="Boy"?"selected":"")+">Boy</option><option value='Non-binary' "+(item.gender==="Non-binary"?"selected":"")+">Non-binary</option></select></label><label>Date of birth<input name='date_of_birth' type='date' autocomplete='bday' value='"+esc(item.date_of_birth||"")+"'></label>"
-  : "<label>Nickname<input name='nickname' maxlength='80' value='"+esc(item.nickname||"")+"' placeholder='Optional'></label><label>Due date<input name='due_date' type='date' value='"+esc(item.due_date||"")+"'></label>";
+  ? "<div class='child-avatar-field'><span class='form-field-label'>Profile photo</span><div class='child-avatar-editor'>"+avatarMarkup(item)+"<div class='child-avatar-copy'><label class='button button-soft avatar-upload-button'>Choose photo<input name='avatar' type='file' accept='image/jpeg,image/png,image/webp' hidden></label><small>JPG, PNG or WebP · up to 5 MB</small></div></div></div><label>Name<input name='name' required maxlength='100' value='"+esc(item.name||"")+"'></label><label>Gender<select name='gender'><option value=''>Prefer not to say</option><option value='Girl' "+(item.gender==="Girl"?"selected":"")+">Girl</option><option value='Boy' "+(item.gender==="Boy"?"selected":"")+">Boy</option><option value='Non-binary' "+(item.gender==="Non-binary"?"selected":"")+">Non-binary</option></select></label>"+dateField("date_of_birth","Date of birth",item.date_of_birth,"bday")+""
+  : "<label>Nickname<input name='nickname' maxlength='80' value='"+esc(item.nickname||"")+"' placeholder='Optional'></label>"+dateField("due_date","Due date",item.due_date)+"";
  o.innerHTML="<form class='hub-modal-card'><div class='admin-panel-head'><div><span class='eyebrow'>Family profile</span><h2>"+title+"</h2></div><button type='button' class='button button-soft' data-close>Close</button></div><div class='hub-form-grid family-child-form'>"+fields+"</div><div class='hero-actions'><button class='button button-primary' type='submit'>Save</button></div><p data-msg class='library-message'></p></form>";
  document.body.appendChild(o);
  o.querySelector("[data-close]").onclick=()=>o.remove();o.onclick=e=>{if(e.target===o)o.remove()};
- const form=o.querySelector("form"),file=form.querySelector("input[name='avatar']");
+ const form=o.querySelector("form"),file=form.querySelector("input[name='avatar']");wireDateFields(form);
  form.onsubmit=async e=>{
-  e.preventDefault();const p=Object.fromEntries(new FormData(form));delete p.avatar;p.action=type==="child"?"save_child":"save_bump";if(item.id)p.id=item.id;p.csrf=csrf;
+  e.preventDefault();const p=Object.fromEntries(new FormData(form));delete p.avatar;for(const key of ["date_of_birth","due_date"]){const raw=p[key+"_uk"];if(raw!==undefined){const parsed=parseUkDate(raw);if(parsed===null){const field=form.querySelector("[name='"+key+"_uk']");field.setCustomValidity("Enter a real date in DD/MM/YYYY format.");field.reportValidity();return;}p[key]=parsed;delete p[key+"_uk"];}}p.action=type==="child"?"save_child":"save_bump";if(item.id)p.id=item.id;p.csrf=csrf;
   const m=form.querySelector("[data-msg]");
   try{
    const r=await fetch("../api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(p)});
