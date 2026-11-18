@@ -1142,18 +1142,33 @@ try {
             $resolve = $db->prepare("SELECT u.id,u.email,u.role,u.status FROM bh_social_accounts s JOIN bh_users u ON u.id=s.user_id WHERE s.provider='google' AND s.provider_user_id=? LIMIT 1");
             $resolve->execute([$googleId]);
             $persistedUser = $resolve->fetch(PDO::FETCH_ASSOC);
+            $socialLinkFound = is_array($persistedUser);
+            $emailAccountFound = false;
             if (!$persistedUser) {
                 $resolve = $db->prepare("SELECT id,email,role,status FROM bh_users WHERE email=? LIMIT 1");
                 $resolve->execute([$email]);
                 $persistedUser = $resolve->fetch(PDO::FETCH_ASSOC);
+                $emailAccountFound = is_array($persistedUser);
             }
             $resolvedUserId = (int)($persistedUser['id'] ?? 0);
             $persistedRole = (string)($persistedUser['role'] ?? '');
+            $persistedStatus = (string)($persistedUser['status'] ?? '');
             $roleAllowed = $authContext === 'family'
                 ? in_array($persistedRole, ['family', 'organiser', 'leader'], true)
                 : $persistedRole === 'leader';
-            if ($resolvedUserId < 1 || !$roleAllowed || (string)($persistedUser['status'] ?? '') !== 'active') {
-                throw new RuntimeException('Google sign-in could not resolve the verified account to an active Bubba Hub user. Please contact support.');
+            $failureReason = $resolvedUserId < 1 ? 'account_not_found'
+                : (!$roleAllowed ? 'role_not_allowed'
+                : ($persistedStatus !== 'active' ? 'account_not_active' : 'unknown'));
+            if ($resolvedUserId < 1 || !$roleAllowed || $persistedStatus !== 'active') {
+                // Staging-only exception diagnostics expose categories and booleans,
+                // never the Google subject, email address, or account ID.
+                throw new RuntimeException(
+                    'Google account resolution failed [reason='.$failureReason
+                    .'; returned_id_present='.(array_key_exists('id', $user) ? 'yes' : 'no')
+                    .'; social_link_found='.($socialLinkFound ? 'yes' : 'no')
+                    .'; email_account_found='.($emailAccountFound ? 'yes' : 'no')
+                    .'; context='.$authContext.'].'
+                );
             }
             $user = $persistedUser;
         }
