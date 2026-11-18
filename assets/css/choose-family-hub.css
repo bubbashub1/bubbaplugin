@@ -86,3 +86,9 @@ body.bh-family-v3 .family-v3-main .personal-category-box .personal-help{margin:9
 body.bh-family-v3 .family-v3-main .personal-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 body.bh-family-v3 .family-v3-main .personal-choice{min-height:66px;padding:12px}
 @media(max-width:430px){body.bh-family-v3 .family-v3-main .personal-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}body.bh-family-v3 .family-v3-main .personal-choice{padding:9px;font-size:13px}}
+
+
+/* Two-column child choices: scoped to the actual choose page body class. */
+body.bh-subpage-v2 .personal-choice-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+body.bh-subpage-v2 .personal-choice{min-width:0;box-sizing:border-box}
+@media(max-width:360px){body.bh-subpage-v2 .personal-choice{padding:11px 9px;gap:8px}}
