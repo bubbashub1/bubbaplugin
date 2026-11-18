@@ -8,8 +8,9 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 require_once __DIR__.'/db.php';
 $db=bh_mysql();
 $required=['bh_listing_checker_settings','bh_listing_check_queue','bh_listing_check_runs','bh_listing_check_findings'];
-$tableCheck=$db->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=?');
-foreach($required as $table){$tableCheck->execute([$table]);if(!(int)$tableCheck->fetchColumn()){fwrite(STDERR,"Migration required: apply database/listing-checker-schema.sql
+$tableNames=$db->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN);
+$tableSet=array_fill_keys($tableNames,true);
+foreach($required as $table){if(!isset($tableSet[$table])){fwrite(STDERR,"Migration required: apply database/listing-checker-schema.sql
 ");exit(2);}}
 $settings=[];foreach($db->query('SELECT setting_key,setting_value FROM bh_listing_checker_settings')->fetchAll(PDO::FETCH_ASSOC) as $r)$settings[$r['setting_key']]=$r['setting_value'];
 $get=static fn($k,$d='')=>(string)($settings[$k]??$d);
@@ -37,7 +38,6 @@ $lock=$db->query("SELECT GET_LOCK('bh_listing_checker_health',0)")->fetchColumn(
 $runId=0;
 try{
  $cols=$db->query("SHOW COLUMNS FROM bh_activities")->fetchAll(PDO::FETCH_COLUMN);if(!$cols||!in_array('id',$cols,true))throw new RuntimeException('bh_activities table unavailable');
- $tableNames=$db->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN);$tableSet=array_fill_keys($tableNames,true);
  $columnsFor=static function(string $table) use($db,$tableSet): array {return isset($tableSet[$table])?$db->query('SHOW COLUMNS FROM `'.$table.'`')->fetchAll(PDO::FETCH_COLUMN):[];};
  $orgCols=$columnsFor('bh_organisers');
  $venueCols=$columnsFor('bh_venues');
