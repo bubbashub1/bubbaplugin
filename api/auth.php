@@ -1148,7 +1148,11 @@ try {
                 $persistedUser = $resolve->fetch(PDO::FETCH_ASSOC);
             }
             $resolvedUserId = (int)($persistedUser['id'] ?? 0);
-            if ($resolvedUserId < 1 || (string)($persistedUser['role'] ?? '') !== $authContext || (string)($persistedUser['status'] ?? '') !== 'active') {
+            $persistedRole = (string)($persistedUser['role'] ?? '');
+            $roleAllowed = $authContext === 'family'
+                ? in_array($persistedRole, ['family', 'organiser', 'leader'], true)
+                : $persistedRole === 'leader';
+            if ($resolvedUserId < 1 || !$roleAllowed || (string)($persistedUser['status'] ?? '') !== 'active') {
                 throw new RuntimeException('Google sign-in could not resolve the verified account to an active Bubba Hub user. Please contact support.');
             }
             $user = $persistedUser;
