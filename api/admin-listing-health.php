@@ -77,6 +77,23 @@ try {
  $order=in_array('title',$activityCols,true)?'a.title':'a.id';
  $sql='SELECT '.implode(',',$select).' FROM bh_activities a'.$join.' ORDER BY '.$order.' LIMIT 5000';
  $rows=$db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+ // Expose the separate CLI health-check status so admins can distinguish
+ // a live read-only completeness view from a listing that the scheduled worker has scanned.
+ $queueByActivity=[];
+ try {
+  $queueRows=$db->query("SELECT target_id,status,last_checked_at,next_check_at FROM bh_listing_check_queue WHERE check_type='health'")->fetchAll(PDO::FETCH_ASSOC);
+  foreach($queueRows as $queueRow) $queueByActivity[(int)$queueRow['target_id']]=$queueRow;
+ } catch(Throwable $queueError) {
+  // Keep the read-only health page usable if the optional checker migration is absent.
+ }
+ foreach($rows as &$healthRow) {
+  $queueRow=$queueByActivity[(int)$healthRow['id']]??null;
+  $healthRow['checker_searched']=is_array($queueRow)&&!empty($queueRow['last_checked_at']);
+  $healthRow['checker_last_searched_at']=$queueRow['last_checked_at']??null;
+  $healthRow['checker_next_check_at']=$queueRow['next_check_at']??null;
+  $healthRow['checker_status']=$queueRow['status']??'not_queued';
+ }
+ unset($healthRow);
  $fieldMap=[
   'Description'=>['description','short_description'],
   'Website'=>['activity_website','organiser_website'],
