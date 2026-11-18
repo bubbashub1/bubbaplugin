@@ -1133,7 +1133,27 @@ try {
         $organisation = trim((string)($body['organisation_name'] ?? ''));
         $termsAccepted = !empty($body['terms']);
         [$user, $isNew] = bh_social_login($db, 'google', $googleId, $email, (string)($google['name'] ?? ''), $authContext, true, $organisation, $termsAccepted, (string)($google['given_name'] ?? ''), (string)($google['family_name'] ?? ''));
-        bh_login_session((int)$user['id'], $authContext);
+
+        // Resolve the authenticated account from the persisted social identity if
+        // the social-login helper returned a row without a usable primary key.
+        // This is deliberately limited to the verified Google subject/email.
+        $resolvedUserId = (int)($user['id'] ?? 0);
+        if ($resolvedUserId < 1) {
+            $resolve = $db->prepare("SELECT u.id,u.email,u.role,u.status FROM bh_social_accounts s JOIN bh_users u ON u.id=s.user_id WHERE s.provider='google' AND s.provider_user_id=? LIMIT 1");
+            $resolve->execute([$googleId]);
+            $persistedUser = $resolve->fetch(PDO::FETCH_ASSOC);
+            if (!$persistedUser) {
+                $resolve = $db->prepare("SELECT id,email,role,status FROM bh_users WHERE email=? LIMIT 1");
+                $resolve->execute([$email]);
+                $persistedUser = $resolve->fetch(PDO::FETCH_ASSOC);
+            }
+            $resolvedUserId = (int)($persistedUser['id'] ?? 0);
+            if ($resolvedUserId < 1 || (string)($persistedUser['role'] ?? '') !== $authContext || (string)($persistedUser['status'] ?? '') !== 'active') {
+                throw new RuntimeException('Google sign-in could not resolve the verified account to an active Bubba Hub user. Please contact support.');
+            }
+            $user = $persistedUser;
+        }
+        bh_login_session($resolvedUserId, $authContext);
         bh_social_response($user, $isNew, $authContext, 'google', (string)($google['given_name'] ?? ''));
     }
 
