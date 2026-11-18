@@ -354,3 +354,14 @@ body.bh-subpage-v2 .hub-family-card :is(button,a){max-width:100%;white-space:nor
   :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav.is-open{display:flex;}
   :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav a{flex:0 0 auto;width:100%;min-height:46px;padding:11px 13px;white-space:normal;font-size:14px;}
 }
+
+
+/* UK date entry for family profiles: readable DD/MM/YYYY field with native calendar popup. */
+body.bh-subpage-v2 .bh-date-field{display:flex;flex-direction:column;gap:7px;min-width:0;color:#315d53;font-weight:700}
+body.bh-subpage-v2 .bh-date-control{position:relative;display:flex;align-items:center;gap:8px;width:100%;min-width:0}
+body.bh-subpage-v2 .bh-date-text{flex:1 1 auto;width:100%;min-width:0;min-height:46px;padding:11px 13px;border:1px solid #cbded9;border-radius:11px;background:#fff;color:#263b38;font:inherit;font-size:15px;box-sizing:border-box}
+body.bh-subpage-v2 .bh-date-text:focus{outline:0;border-color:#0f766e;box-shadow:0 0 0 3px rgba(15,118,110,.12)}
+body.bh-subpage-v2 .bh-date-picker-button{flex:0 0 46px;width:46px;height:46px;border:1px solid #cbded9;border-radius:11px;background:#e8f3f1;color:#0f766e;font-size:22px;cursor:pointer}
+body.bh-subpage-v2 .bh-date-picker-button:hover{background:#dceee9;border-color:#9fc5ba}
+body.bh-subpage-v2 .bh-date-native{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;opacity:0!important;pointer-events:none!important}
+body.bh-subpage-v2 .bh-date-field .bh-date-hint{margin-top:-2px;font-size:12px;font-weight:500;color:#668078}
