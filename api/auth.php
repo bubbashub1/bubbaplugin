@@ -37,6 +37,11 @@ function bh_auth_session_debug(): array {
 
 function bh_auth_response(int $status, array $data): void {
     $data = array_merge($data, bh_auth_session_debug());
+    if (strtolower((string)($_SERVER['HTTP_HOST'] ?? '')) === 'staging.bubbahub.co.uk'
+        && (string)($_GET['debug_session'] ?? '') === '1'
+        && isset($GLOBALS['bh_auth_exception_debug'])) {
+        $data['exception_debug'] = $GLOBALS['bh_auth_exception_debug'];
+    }
     http_response_code($status);
     echo json_encode($data, JSON_UNESCAPED_SLASHES);
     exit;
@@ -1330,6 +1335,17 @@ try {
 
     bh_auth_response(400, ['ok' => false, 'error' => 'unknown_action']);
 } catch (Throwable $e) {
-    error_log('Bubba Hub auth API error: '.$e->getMessage());
+    error_log('Bubba Hub auth API error: '.get_class($e).' '.$e->getCode().' '.$e->getMessage());
+    // Expose exception diagnostics only on the staging host when explicitly requested.
+    // Never return internal exception details to production visitors.
+    if (strtolower((string)($_SERVER['HTTP_HOST'] ?? '')) === 'staging.bubbahub.co.uk'
+        && (string)($_GET['debug_session'] ?? '') === '1') {
+        $GLOBALS['bh_auth_exception_debug'] = [
+            'exception_class' => get_class($e),
+            'exception_code' => (string)$e->getCode(),
+            'exception_message' => mb_substr($e->getMessage(), 0, 240),
+            'failure_location' => basename($e->getFile()).':'.$e->getLine(),
+        ];
+    }
     bh_auth_response(500, ['ok' => false, 'error' => 'auth_error', 'message' => 'Authentication is temporarily unavailable. Please try again.']);
 }
