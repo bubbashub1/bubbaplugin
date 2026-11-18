@@ -16,15 +16,13 @@
     ["/family-section.html?section=saved","Saved activities","♡"],
     ["/family-section.html?section=visited","Visited Groups","✓"]
    ]},
-   {id:"family",label:"My family space",items:[
+   {id:"family",label:"My Space",items:[
     ["/account/family.html","My Family","♧"],
     ["/planner.html","My Planner","▦"],
     ["/family-section.html?section=messages","My Messages","✉"],
     ["/account/preferences.html","Preferences","⚙"],
-    ["/account/profile.html","My Profile","☺"],
     ["/account/notifications.html","Notifications","♧"],
-    ["/account/privacy.html","Privacy & consent","▣"],
-    ["/account.html","My Account","○"]
+    ["/account/privacy.html","Privacy & consent","▣"]
    ]}
   ];
   const side=document.createElement("aside");
@@ -71,7 +69,7 @@
    if(!isMobile()) {heading.setAttribute("aria-expanded","true");section.classList.add("is-expanded");section.querySelector(".family-v3-nav-group-items").hidden=false;}
    else {heading.setAttribute("aria-expanded","false");section.classList.remove("is-expanded");section.querySelector(".family-v3-nav-group-items").hidden=true;}
   }));
-  const help=document.createElement("div");help.className="family-v3-help";help.innerHTML='<strong>Need a hand?</strong><p>Find answers or send the Bubba Hub team a question.</p><a href="/help-support.html">Visit Help &amp; Support →</a>';side.append(help);
+  const help=document.createElement("div");help.className="family-v3-help";help.innerHTML='<strong>Need a hand?</strong><p>Find answers or send the Bubba Hub team a question.</p><a href="/help-support.html">Visit Help &amp; Support →</a><a class="family-v3-help-profile" href="/account/profile.html">My Profile →</a>';side.append(help);
   const layout=document.createElement("div");layout.className="family-v3-layout";
   const content=document.createElement("div");content.className="family-v3-main";
   while(main.firstChild)content.append(main.firstChild);
