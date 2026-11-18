@@ -6,6 +6,7 @@ on:
       - feature/listing-health-checker
       - feature/listing-checker-structured-search
       - feature/listing-health-approved-research
+      - feature/listing-reviewer-consolidated
   pull_request:
     branches:
       - main
