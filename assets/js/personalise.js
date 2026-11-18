@@ -210,8 +210,8 @@
 
     function renderCategories(){
       const cats=[...new Set(state.activities.map(a=>String(a.category||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
-      const list=["Anything"].concat(cats);
-      $("categoryChoices").innerHTML=list.map(c=>"<button type='button' class='personal-chip "+((!state.category&&c==="Anything")||state.category===c?"is-selected":"")+"' data-category='"+esc(c==="Anything"?"":c)+"'>"+esc(c)+"</button>").join("");
+      const list=["Surprise me"].concat(cats);
+      $("categoryChoices").innerHTML=list.map(c=>"<button type='button' class='personal-chip "+((!state.category&&c==="Surprise me")||state.category===c?"is-selected":"")+"' data-category='"+esc(c==="Surprise me"?"":c)+"'>"+esc(c)+"</button>").join("");
       $("categoryChoices").querySelectorAll("[data-category]").forEach(btn=>btn.addEventListener("click",function(){
         state.category=btn.dataset.category||"";
         state.categories=state.category?[state.category]:[];
