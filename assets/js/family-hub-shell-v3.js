@@ -59,7 +59,7 @@
     const t=document.createElement("span");t.textContent=label;a.append(i,t);items.append(a);
    });
    const setExpanded=open=>{heading.setAttribute("aria-expanded",String(open));section.classList.toggle("is-expanded",open);items.hidden=!open;};
-   heading.addEventListener("click",()=>setExpanded(heading.getAttribute("aria-expanded")!=="true"));
+   heading.addEventListener("click",()=>{const open=heading.getAttribute("aria-expanded")!=="true";if(open&&isMobile())nav.querySelectorAll(".family-v3-nav-group").forEach(other=>{if(other!==section){const otherHeading=other.querySelector(".family-v3-nav-group-toggle");otherHeading.setAttribute("aria-expanded","false");other.classList.remove("is-expanded");other.querySelector(".family-v3-nav-group-items").hidden=true;}});setExpanded(open);});
    setExpanded(groupActive||!isMobile());
    section.append(heading,items);nav.append(section);
   });
