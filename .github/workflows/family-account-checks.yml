@@ -1,0 +1,116 @@
+name: Family account and My Hub checks
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'api/activate.php'
+      - 'api/db.php'
+      - 'api/my-hub.php'
+      - 'api/planner.php'
+      - 'api/preferences.php'
+      - 'api/profile.php'
+      - 'assets/js/my-hub.js'
+      - 'database/schema.sql'
+      - 'database/migrations/012_family_profile_consolidated.sql'
+      - 'database/migrations/014_activation_token_storage.sql'
+      - 'database/migrations/018_newsletter_subscribers.sql'
+      - 'database/migrations/019_my_hub_storage.sql'
+      - '.github/workflows/family-account-checks.yml'
+  push:
+    branches:
+      - 'consolidated/family-newsletter-storage-799-802'
+    paths:
+      - 'api/activate.php'
+      - 'api/db.php'
+      - 'api/my-hub.php'
+      - 'api/planner.php'
+      - 'api/preferences.php'
+      - 'api/profile.php'
+      - 'assets/js/my-hub.js'
+      - 'database/schema.sql'
+      - 'database/migrations/012_family_profile_consolidated.sql'
+      - 'database/migrations/014_activation_token_storage.sql'
+      - 'database/migrations/018_newsletter_subscribers.sql'
+      - 'database/migrations/019_my_hub_storage.sql'
+      - '.github/workflows/family-account-checks.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  family-account-checks:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test-root-password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -ptest-root-password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check PHP syntax
+        run: |
+          set -eu
+          for file in api/activate.php api/db.php api/my-hub.php api/planner.php api/preferences.php api/profile.php; do
+            php -l "$file"
+          done
+      - name: Check My Hub JavaScript syntax
+        run: node --check assets/js/my-hub.js
+      - name: Test migrations on a fresh schema
+        run: |
+          set -eu
+          mysql -h 127.0.0.1 -uroot -ptest-root-password -e "CREATE DATABASE bubbahub_fresh CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+          mysql -h 127.0.0.1 -uroot -ptest-root-password bubbahub_fresh -e "CREATE TABLE bh_users (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, email VARCHAR(190) NOT NULL)"
+          for file in \
+            database/migrations/012_family_profile_consolidated.sql \
+            database/migrations/014_activation_token_storage.sql \
+            database/migrations/018_newsletter_subscribers.sql \
+            database/migrations/019_my_hub_storage.sql; do
+            mysql -h 127.0.0.1 -uroot -ptest-root-password bubbahub_fresh < "$file"
+          done
+          test "$(mysql -N -h 127.0.0.1 -uroot -ptest-root-password bubbahub_fresh -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name IN ('bh_user_addresses','bh_account_activation_tokens','bh_newsletter_subscribers','bh_children','bh_bumps','bh_saved_activities','bh_planner','bh_hidden_planner_days')")" = "8"
+      - name: Test legacy upgrades preserve duplicate address records
+        run: |
+          set -eu
+          mysql -h 127.0.0.1 -uroot -ptest-root-password -e "CREATE DATABASE bubbahub_legacy CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+          mysql -h 127.0.0.1 -uroot -ptest-root-password bubbahub_legacy <<'SQL'
+          CREATE TABLE bh_users (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, email VARCHAR(190) NOT NULL);
+          CREATE TABLE bh_user_addresses (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            user_id BIGINT UNSIGNED NOT NULL,
+            address_line1 VARCHAR(160) NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+          );
+          INSERT INTO bh_user_addresses (user_id,address_line1) VALUES (7,'Old address A'),(7,'Old address B');
+          CREATE TABLE bh_children (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,user_id BIGINT UNSIGNED NOT NULL);
+          CREATE TABLE bh_bumps (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,user_id BIGINT UNSIGNED NOT NULL);
+          SQL
+          for file in \
+            database/migrations/012_family_profile_consolidated.sql \
+            database/migrations/014_activation_token_storage.sql \
+            database/migrations/018_newsletter_subscribers.sql \
+            database/migrations/019_my_hub_storage.sql; do
+            mysql -h 127.0.0.1 -uroot -ptest-root-password bubbahub_legacy < "$file"
+          done
+          test "$(mysql -N -h 127.0.0.1 -uroot -ptest-root-password bubbahub_legacy -e "SELECT COUNT(*) FROM bh_user_addresses WHERE user_id=7")" = "2"
+          test "$(mysql -N -h 127.0.0.1 -uroot -ptest-root-password bubbahub_legacy -e "SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name='bh_user_addresses' AND index_name='uq_user_address_type'")" = "0"
+          test "$(mysql -N -h 127.0.0.1 -uroot -ptest-root-password bubbahub_legacy -e "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='bh_children' AND column_name IN ('name','gender','photo_path','date_of_birth','created_at','updated_at')")" = "6"
+          test "$(mysql -N -h 127.0.0.1 -uroot -ptest-root-password bubbahub_legacy -e "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='bh_account_activation_tokens' AND column_name='code_hash'")" = "1"
