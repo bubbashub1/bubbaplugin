@@ -2,7 +2,7 @@
 (()=> {
  const start=()=>{
   const body=document.body;
-  if(!body||body.classList.contains("bh-family-v3")||new URLSearchParams(location.search).get("embed")==="directory")return;
+  if(!body||document.querySelector(".family-v3-sidebar")||new URLSearchParams(location.search).get("embed")==="directory")return;
   const main=document.querySelector("main.app-shell");
   if(!main)return;
   body.classList.add("bh-family-v3");
@@ -74,25 +74,7 @@
   const content=document.createElement("div");content.className="family-v3-main";
   while(main.firstChild)content.append(main.firstChild);
   layout.append(side,content);
-  const mobileNav=document.createElement("nav");mobileNav.className="family-v3-mobile-nav";mobileNav.setAttribute("aria-label","Quick navigation");
-  const quickLinks=[
-   ["/my-hub.html","Home","⌂"],
-   ["/choose.html","Explore","✦"],
-   ["/account/family.html","Family","♧"],
-   ["/planner.html","Planner","▦"],
-   ["/family-section.html?section=messages","Messages","✉"]
-  ];
-  quickLinks.forEach(([href,label,icon])=>{
-   const a=document.createElement("a");a.href=href;
-   const target=new URL(href,location.origin),targetPath=target.pathname.replace(/\\/$/,"")||"/";
-   const samePath=path===targetPath||((href==="/planner.html")&&path==="/account/planner.html");
-   const sameQuery=[...target.searchParams.keys()].every(key=>new URLSearchParams(location.search).get(key)===target.searchParams.get(key));
-   if(samePath&&sameQuery){a.setAttribute("aria-current","page");a.setAttribute("aria-label",label+" (current page)");}
-   const glyph=document.createElement("span");glyph.className="family-v3-mobile-nav-icon";glyph.setAttribute("aria-hidden","true");glyph.textContent=icon;
-   const text=document.createElement("span");text.className="family-v3-mobile-nav-label";text.textContent=label;
-   a.append(glyph,text);mobileNav.append(a);
-  });
-  layout.append(mobileNav);main.append(layout);
+  main.append(layout);
   fetch("/api/auth.php?action=me",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}})
    .then(r=>r.ok?r.json():null).then(data=>{
     const user=data?.user||{};
