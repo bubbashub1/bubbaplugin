@@ -55,7 +55,7 @@
   <button type="button" class="personal-when-card" data-when="any"><b>Any day</b><small>Show all sessions</small></button>
 </div>
 <div class="personal-date-row">
-  <label>Or pick a date<input id="personalDate" type="date"></label>
+  <label>Or pick a date<input id="personalDate" type="date" lang="en-GB" aria-describedby="personalDateHelp"><small id="personalDateHelp" class="personal-date-help">Choose from the calendar · UK date format (DD/MM/YYYY)</small></label>
   <span id="selectedWhen" class="status">Any day</span>
 </div>
 <div class="personal-actions"><button class="button button-soft" type="button" data-back>Back</button><button class="button button-primary" type="button" data-next>Next: choose an area</button></div>
@@ -64,7 +64,7 @@
 <section class="personal-panel" data-panel="3" hidden>
 <span class="eyebrow">Where?</span>
 <h2>Where do you normally look?</h2>
-<p class="personal-help">Use a region or town to keep the results local. You can change this any time.</p>
+<p class="personal-help">We’ll start with the region and town saved in your Preferences. You can change either here whenever you want.</p>
 <div class="personal-two-col">
 <label>Region<select id="personalRegion"><option value="">Any region</option></select></label>
 <label>Town<select id="personalTown" disabled><option value="">Any town</option></select></label>
