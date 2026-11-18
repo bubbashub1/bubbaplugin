@@ -499,3 +499,11 @@ body.bh-subpage-v2 .bh-date-field .bh-date-hint{margin-top:-2px;font-size:12px;f
 .family-nap-grid input,.family-routine-fields select{box-sizing:border-box;width:100%;min-height:42px;margin-top:5px}
 .family-routine-fields small{display:block;margin-top:10px;color:#71877f}
 @media(max-width:520px){.family-nap-grid{grid-template-columns:1fr}}
+
+/* Family profile cards and child support preferences */
+.family-support-intro{margin:0 0 10px;color:#647d73;font-size:13px;line-height:1.45}
+.family-support-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.family-support-options label{display:flex;align-items:flex-start;gap:8px;padding:9px 10px;background:#fff;border:1px solid #e0ebe5;border-radius:8px;font-size:13px}
+.family-support-options input{margin-top:3px;accent-color:#0f766e}
+.family-support-summary{margin:8px 0;color:#55736c;font-size:12px}
+@media(max-width:520px){.family-support-options{grid-template-columns:1fr}}
