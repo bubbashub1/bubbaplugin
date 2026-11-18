@@ -362,6 +362,13 @@ function bh_prepare_auth_session(): void {
 }
 
 function bh_login_session(int $userId, string $ctx): void {
+    // Never mark a session authenticated unless it has a real persisted account ID.
+    // An empty/zero ID produces the exact failure where the Family flag is true
+    // but the next request cannot resolve a user.
+    if ($userId < 1) {
+        throw new RuntimeException('Authentication was stopped because the account ID was missing.');
+    }
+
     // The anonymous session is rotated before authentication by
     // bh_prepare_auth_session(); do not change the cookie during login.
     $_SESSION['bh_user_id'] = $userId;
@@ -502,6 +509,19 @@ function bh_social_login(PDO $db, string $provider, string $providerId, string $
             $db->prepare($sql)->execute($values);
         }
         $userId = (int)$db->lastInsertId();
+
+        // Some existing installations use a legacy bh_users primary-key definition
+        // for which PDO::lastInsertId() can be empty. Resolve the committed account
+        // by its unique email before creating the social link or starting a session.
+        if ($userId < 1) {
+            $lookup = $db->prepare("SELECT id,email,role,status,".$verificationSelect." FROM bh_users WHERE email=? LIMIT 1");
+            $lookup->execute([$email]);
+            $persistedUser = $lookup->fetch(PDO::FETCH_ASSOC);
+            $userId = (int)($persistedUser['id'] ?? 0);
+            if ($userId < 1) {
+                throw new RuntimeException('Social account was created without a resolvable Bubba Hub user ID.');
+            }
+        }
         if ($ctx === 'leader') bh_create_leader_organiser($db, $userId, $email, trim($organisation));
         $db->prepare("INSERT INTO bh_social_accounts (user_id,provider,provider_user_id,email) VALUES (?,?,?,?)")
            ->execute([$userId, $provider, $providerId, $email]);
@@ -517,11 +537,15 @@ function bh_social_login(PDO $db, string $provider, string $providerId, string $
 }
 
 function bh_social_response(array $user, bool $isNew, string $ctx, string $provider, string $firstName): void {
+    $userId = (int)($user['id'] ?? 0);
+    if ($userId < 1) {
+        throw new RuntimeException('Social sign-in could not resolve a valid Bubba Hub account ID.');
+    }
     $welcome = ($isNew && $ctx === 'family') ? bh_send_family_welcome((string)$user['email'], $firstName) : false;
     bh_auth_response(200, [
         'ok' => true,
         'authenticated' => true,
-        'user' => ['id'=>(int)$user['id'],'email'=>$user['email'],'role'=>$user['role'],'status'=>$user['status']],
+        'user' => ['id'=>$userId,'email'=>$user['email'],'role'=>$user['role'],'status'=>$user['status']],
         'csrf' => $_SESSION['bh_csrf'],
         'provider' => $provider,
         'leader_authenticated' => ($ctx === 'leader'),
