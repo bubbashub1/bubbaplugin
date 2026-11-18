@@ -734,3 +734,45 @@ body.bh-subpage-v2 .bh-date-field .bh-date-hint{margin-top:-2px;font-size:12px;f
     background:linear-gradient(112deg,#fbe0e8 0%,#fff1cf 52%,#e5f2fa 100%)!important;
   }
 }
+
+
+/* Navigation visibility safety fix: keep the family menu available at every viewport. */
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+@media(max-width:850px){
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    align-items:center!important;
+    min-height:56px;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-menu-toggle{
+    display:inline-flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    flex:0 0 auto!important;
+    width:auto!important;
+    min-width:88px;
+    min-height:42px!important;
+    margin-left:8px;
+    position:relative;
+    z-index:2;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand{
+    display:block!important;
+    visibility:visible!important;
+    flex:1 1 120px!important;
+    min-width:0!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav{
+    display:none!important;
+    flex:0 0 100%!important;
+    width:100%!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav.is-open{
+    display:flex!important;
+  }
+}
