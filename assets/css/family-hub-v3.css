@@ -470,3 +470,21 @@ body.bh-subpage-v2 .bh-date-field .bh-date-hint{margin-top:-2px;font-size:12px;f
   .hub-modal .hub-modal-card>.admin-panel-head{gap:10px;margin-bottom:15px;padding-bottom:12px}
   .hub-modal .hub-modal-card>.admin-panel-head h2{font-size:22px!important}
 }
+
+
+/* Expandable family hub navigation groups and mobile accordion layout. */
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav{display:flex;flex-direction:column;gap:10px}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group{min-width:0}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:42px;padding:10px 12px;border:0;border-radius:10px;background:#edf5f2;color:#174e49;text-align:left;font:inherit;font-size:12px;font-weight:800;letter-spacing:.045em;cursor:pointer}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group-chevron{font-size:16px;transition:transform .18s ease}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-toggle[aria-expanded="true"] .family-v3-group-chevron{transform:rotate(180deg)}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items{display:flex;flex-direction:column;gap:3px;padding:6px 0 0}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items[hidden]{display:none}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items a{min-height:39px;padding:8px 11px;font-size:13px}
+@media(max-width:850px){
+ :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav{display:flex;flex-direction:column;overflow:visible;gap:8px;padding:4px 0 0}
+ :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group{border:1px solid #d7e6e2;border-radius:12px;overflow:hidden;background:#fff}
+ :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-toggle{min-height:48px;padding:12px 14px;border-radius:0;background:#edf5f2;font-size:13px}
+ :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items{padding:6px 8px 8px}
+ :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items a{flex:initial;width:auto;min-height:42px;white-space:normal;font-size:14px}
+}
