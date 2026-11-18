@@ -550,3 +550,36 @@ body.bh-subpage-v2 .bh-date-field .bh-date-hint{margin-top:-2px;font-size:12px;f
  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="explore"] .family-v3-nav-group-toggle{background:#dce9dc}
  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="family"] .family-v3-nav-group-toggle{background:#d9ece9}
 }
+
+
+/* Sidebar support and profile actions: separate, clear calls to action. */
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help{
+  display:flex;flex-direction:column;align-items:flex-start;gap:8px;
+  padding:15px 15px 16px;background:#fbf3e5;border:1px solid #eee0c6;
+  border-radius:14px;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help strong{font-size:14px;line-height:1.3}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help p{margin:0;font-size:12px;line-height:1.5}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help .family-v3-help-link{
+  display:inline-flex;align-items:center;gap:7px;margin-top:3px;padding:9px 12px;
+  border-radius:9px;background:#fff;color:#72552e;text-decoration:none;
+  font-size:12px;font-weight:800;border:1px solid #ead8b8;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta{
+  display:flex;align-items:center;gap:11px;width:100%;box-sizing:border-box;
+  margin-top:10px;padding:13px 14px;border:1px solid #c9dfd8;border-radius:14px;
+  background:#fff;color:#174e49;text-decoration:none;transition:background .16s ease,border-color .16s ease;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta:hover{
+  background:#e8f3f1;border-color:#91bdb0;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta-icon{
+  display:flex;align-items:center;justify-content:center;flex:0 0 36px;width:36px;height:36px;
+  border-radius:11px;background:#d9ece9;color:#0f766e;font-size:20px;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta>span:nth-child(2){
+  display:flex;flex:1;flex-direction:column;gap:2px;min-width:0;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta strong{font-size:13px}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta small{color:#668078;font-size:11px;line-height:1.35}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta-arrow{color:#0f766e;font-size:18px;font-weight:800}

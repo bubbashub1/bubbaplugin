@@ -69,7 +69,7 @@
    if(!isMobile()) {heading.setAttribute("aria-expanded","true");section.classList.add("is-expanded");section.querySelector(".family-v3-nav-group-items").hidden=false;}
    else {heading.setAttribute("aria-expanded","false");section.classList.remove("is-expanded");section.querySelector(".family-v3-nav-group-items").hidden=true;}
   }));
-  const help=document.createElement("div");help.className="family-v3-help";help.innerHTML='<strong>Need a hand?</strong><p>Find answers or send the Bubba Hub team a question.</p><a href="/help-support.html">Visit Help &amp; Support →</a><a class="family-v3-help-profile" href="/account/profile.html">My Profile →</a>';side.append(help);
+  const help=document.createElement("div");help.className="family-v3-help";help.innerHTML='<strong>Need a hand?</strong><p>Find answers or send the Bubba Hub team a question.</p><a class="family-v3-help-link" href="/help-support.html">Visit Help &amp; Support <span aria-hidden="true">→</span></a>';side.append(help);const profileCta=document.createElement("a");profileCta.className="family-v3-profile-cta";profileCta.href="/account/profile.html";profileCta.innerHTML='<span class="family-v3-profile-cta-icon" aria-hidden="true">☺</span><span><strong>My Profile</strong><small>View and update your details</small></span><span class="family-v3-profile-cta-arrow" aria-hidden="true">→</span>';side.append(profileCta);
   const layout=document.createElement("div");layout.className="family-v3-layout";
   const content=document.createElement("div");content.className="family-v3-main";
   while(main.firstChild)content.append(main.firstChild);
