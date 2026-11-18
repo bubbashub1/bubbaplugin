@@ -77,10 +77,11 @@
 </section>
 
 <section class="personal-panel" data-panel="4" hidden>
-<span class="eyebrow">What are you in the mood for?</span>
-<h2>What would you like to explore?</h2>
-<p class="personal-help">Choose a category, or select <strong>Surprise me</strong> and we’ll mix things up. Your choice guides the results without ruling out other ideas.</p>
-<div id="categoryChoices" class="personal-chip-grid"></div>
+<div class="personal-category-box">
+<label for="categorySelect">What would you like to explore?</label>
+<select id="categorySelect" aria-label="Choose an activity category"><option value="">Surprise me — show me a mix</option></select>
+<p class="personal-help">Choose a category or let Bubba Hub suggest a mix of ideas.</p>
+</div>
 <div class="personal-actions"><button class="button button-soft" type="button" data-back>Back</button><button class="button button-primary" type="button" id="findIdeas">Show my ideas</button></div>
 </section>
 
