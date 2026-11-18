@@ -1,0 +1,49 @@
+/* Personalised activity shortcut — use the same family workspace shell as My Hub. */
+body.bh-family-v3 .family-v3-main .personal-page{width:100%;max-width:none;margin:0;padding:0 0 28px;box-sizing:border-box}
+body.bh-family-v3 .family-v3-main .personal-hero{display:flex;align-items:center;justify-content:space-between;gap:24px;margin:0 0 18px;padding:28px 30px;background:#e8f3f1;border:1px solid #d7e6e2;border-radius:16px;box-shadow:none}
+body.bh-family-v3 .family-v3-main .personal-hero h1{margin:5px 0 8px;color:#174e49;font-size:clamp(30px,3.5vw,42px);line-height:1.12}
+body.bh-family-v3 .family-v3-main .personal-hero p{max-width:650px;margin:0;color:#45645e;line-height:1.55}
+body.bh-family-v3 .family-v3-main .choose-hero-actions{display:flex;align-items:flex-end;flex-direction:column;gap:8px;flex:0 0 auto}
+body.bh-family-v3 .family-v3-main .choose-hero-note{font-size:12px;color:#668276;font-weight:700}
+body.bh-family-v3 .family-v3-main .personal-layout{display:block;min-width:0}
+body.bh-family-v3 .family-v3-main .personal-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:0 0 16px;padding:0;background:transparent;border:0}
+body.bh-family-v3 .family-v3-main .personal-step{display:grid;grid-template-columns:32px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;gap:0 9px;min-width:0;padding:11px 13px;background:#fff;border:1px solid #d7e6e2;border-radius:13px;color:#45645e}
+body.bh-family-v3 .family-v3-main .personal-step>b{grid-row:1/3;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#edf5f2;color:#45645e;font-size:13px}
+body.bh-family-v3 .family-v3-main .personal-step>span{font-size:14px;font-weight:800;line-height:1.2}
+body.bh-family-v3 .family-v3-main .personal-step>small{font-size:11px;color:#71877f}
+body.bh-family-v3 .family-v3-main .personal-step.is-active{background:#e2f0ed;border-color:#9fcac1;color:#115e59}
+body.bh-family-v3 .family-v3-main .personal-step.is-active>b{background:#0f766e;color:#fff}
+body.bh-family-v3 .family-v3-main .personal-main{min-width:0}
+body.bh-family-v3 .family-v3-main .personal-panel,body.bh-family-v3 .family-v3-main .personal-results{padding:24px;background:#fff;border:1px solid #d7e6e2;border-radius:16px;box-shadow:0 5px 18px rgba(17,94,89,.045)}
+body.bh-family-v3 .family-v3-main .personal-panel h2,body.bh-family-v3 .family-v3-main .personal-results h2{margin:5px 0 8px;color:#174e49;font-size:clamp(22px,2.5vw,29px);line-height:1.2}
+body.bh-family-v3 .family-v3-main .personal-help{max-width:760px;margin:0 0 18px;color:#5c756d;line-height:1.55}
+body.bh-family-v3 .family-v3-main .personal-choice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:18px 0}
+body.bh-family-v3 .family-v3-main .personal-choice{display:flex;align-items:center;gap:12px;min-width:0;padding:15px;background:#f7fbfa;border:1px solid #d7e6e2;border-radius:13px}
+body.bh-family-v3 .family-v3-main .personal-choice:has(input:checked){background:#eaf4f1;border-color:#9fcac1}
+body.bh-family-v3 .family-v3-main .personal-choice span,body.bh-family-v3 .family-v3-main .personal-choice b,body.bh-family-v3 .family-v3-main .personal-choice small{display:block;min-width:0}
+body.bh-family-v3 .family-v3-main .personal-choice small{margin-top:3px;color:#668276;font-size:12px}
+body.bh-family-v3 .family-v3-main .personal-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:22px;padding-top:17px;border-top:1px solid #e5eeeb}
+body.bh-family-v3 .family-v3-main .personal-actions .button{min-width:140px}
+body.bh-family-v3 .family-v3-main .personal-when-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+body.bh-family-v3 .family-v3-main .personal-when-card{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-height:80px;padding:15px;background:#f7fbfa;border:1px solid #d7e6e2;border-radius:13px;color:#174e49;text-align:left}
+body.bh-family-v3 .family-v3-main .personal-when-card.is-selected{background:#e2f0ed;border-color:#0f766e}
+body.bh-family-v3 .family-v3-main .personal-when-card small{color:#668276}
+body.bh-family-v3 .family-v3-main .personal-two-col{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+body.bh-family-v3 .family-v3-main .personal-two-col label,body.bh-family-v3 .family-v3-main .personal-date-row label{display:flex;flex-direction:column;gap:7px;font-weight:750;color:#45645e}
+body.bh-family-v3 .family-v3-main .personal-date-row{display:flex;align-items:flex-end;gap:15px;flex-wrap:wrap;margin-top:16px}
+body.bh-family-v3 .family-v3-main .personal-date-row input,body.bh-family-v3 .family-v3-main .personal-two-col select{min-height:44px;padding:10px 12px;border:1px solid #cbded9;border-radius:11px;background:#fff}
+body.bh-family-v3 .family-v3-main .personal-budget{margin-top:20px}
+body.bh-family-v3 .family-v3-main .personal-label{display:block;margin-bottom:9px;font-weight:800;color:#45645e}
+body.bh-family-v3 .family-v3-main .personal-chip-grid{display:flex;flex-wrap:wrap;gap:8px}
+body.bh-family-v3 .family-v3-main .personal-chip{padding:9px 14px;background:#f7fbfa;border:1px solid #d7e6e2;border-radius:999px;color:#45645e;font-weight:700}
+body.bh-family-v3 .family-v3-main .personal-chip.is-selected{background:#e2f0ed;border-color:#0f766e;color:#115e59}
+body.bh-family-v3 .family-v3-main .personal-results-head{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:18px}
+body.bh-family-v3 .family-v3-main .personal-result-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+body.bh-family-v3 .family-v3-main .personal-result-card{overflow:hidden;border:1px solid #d7e6e2;border-radius:14px;background:#fff}
+body.bh-family-v3 .family-v3-main .personal-result-body{padding:15px}
+body.bh-family-v3 .family-v3-main .personal-result-image img{display:block;width:100%;height:160px;object-fit:cover}
+body.bh-family-v3 .family-v3-main .personal-result-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+body.bh-family-v3 .family-v3-main .personal-result-actions .button{min-height:38px;padding:8px 12px}
+body.bh-family-v3 .family-v3-main .personal-message{color:#668276}
+@media(max-width:850px){body.bh-family-v3 .family-v3-main .personal-hero{align-items:flex-start;flex-direction:column}body.bh-family-v3 .family-v3-main .choose-hero-actions{align-items:flex-start}body.bh-family-v3 .family-v3-main .personal-when-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){body.bh-family-v3 .family-v3-main .personal-hero,body.bh-family-v3 .family-v3-main .personal-panel,body.bh-family-v3 .family-v3-main .personal-results{padding:17px;border-radius:14px}body.bh-family-v3 .family-v3-main .personal-steps{gap:6px}body.bh-family-v3 .family-v3-main .personal-step{grid-template-columns:26px minmax(0,1fr);gap:0 6px;padding:9px 7px}body.bh-family-v3 .family-v3-main .personal-step>b{width:25px;height:25px;font-size:11px}body.bh-family-v3 .family-v3-main .personal-step>span{font-size:12px}body.bh-family-v3 .family-v3-main .personal-step>small{font-size:10px}body.bh-family-v3 .family-v3-main .personal-two-col,body.bh-family-v3 .family-v3-main .personal-result-grid{grid-template-columns:1fr}body.bh-family-v3 .family-v3-main .personal-actions{justify-content:stretch}body.bh-family-v3 .family-v3-main .personal-actions .button{flex:1}body.bh-family-v3 .family-v3-main .personal-results-head{flex-direction:column}}
