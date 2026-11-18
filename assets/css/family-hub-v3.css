@@ -488,3 +488,14 @@ body.bh-subpage-v2 .bh-date-field .bh-date-hint{margin-top:-2px;font-size:12px;f
  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items{padding:6px 8px 8px}
  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items a{flex:initial;width:auto;min-height:42px;white-space:normal;font-size:14px}
 }
+
+/* Optional child nap routine fields */
+.family-routine-fields{grid-column:1/-1;min-width:0;margin:4px 0 0;padding:14px;border:1px solid #d9e7e3;border-radius:10px;background:#f7fbfa}
+.family-routine-fields legend{padding:0 6px;color:#174e49;font-weight:800}
+.family-routine-fields legend span{font-size:12px;font-weight:500;color:#71877f}
+.family-routine-fields>label{display:block;margin:4px 0 12px}
+.family-nap-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.family-nap-grid label{display:block;min-width:0}
+.family-nap-grid input,.family-routine-fields select{box-sizing:border-box;width:100%;min-height:42px;margin-top:5px}
+.family-routine-fields small{display:block;margin-top:10px;color:#71877f}
+@media(max-width:520px){.family-nap-grid{grid-template-columns:1fr}}
