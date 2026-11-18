@@ -125,3 +125,8 @@ Both worker scripts are CLI-only, use separate MySQL advisory locks to prevent o
 A GitHub Actions workflow at `.github/workflows/listing-checker-security.yml` runs PHP syntax lint on the five Listing Checker APIs/workers and checks that the critical authentication, CSRF, CLI-only and overlap-lock guards remain present.
 
 **Security validation still required before production:** review the workflow result, perform an authenticated/unauthenticated browser test, test CSRF and cross-origin rejection, verify admin session behaviour behind the live hosting proxy, and test database permissions and cron execution on staging. Static checks are not a penetration test.
+
+
+### Listing reviewer status and triage
+
+The Listing Health reviewer defaults to **Needs attention** (missing information, validation warnings or possible duplicates), with the existing filters available for narrower review or all listings. The per-listing status is labelled **Health check** and shows the last successful inspection of stored fields. It is intentionally not called “Web searched”: external research remains a separate, evidence-backed approval workflow in the persistent queue. The health worker can use linked venue addresses when assessing location and flags malformed telephone values; its remaining count reports listings that have not yet received their first health check.
