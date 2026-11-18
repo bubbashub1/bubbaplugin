@@ -185,7 +185,8 @@ body.bh-subpage-v2 #familySectionContent .hub-activity-card>.button{min-height:3
 @media(max-width:700px){body.bh-subpage-v2 #familySectionContent .hub-activity-card{grid-template-columns:88px minmax(0,1fr);gap:10px;padding:13px 0}body.bh-subpage-v2 #familySectionContent .hub-activity-thumb{grid-row:1/span 2;width:88px;align-self:start}body.bh-subpage-v2 #familySectionContent .hub-activity-card-main{grid-column:2}body.bh-subpage-v2 #familySectionContent .hub-activity-card>.button{grid-column:2;justify-self:start;min-height:34px;padding:7px 12px}}
 @media(max-width:420px){body.bh-subpage-v2 #familySectionContent .hub-activity-card{grid-template-columns:76px minmax(0,1fr);gap:9px}body.bh-subpage-v2 #familySectionContent .hub-activity-thumb{width:76px}}
 body.bh-subpage-v2 .account-family-panel{padding:clamp(16px,2.5vw,26px)}
-body.bh-subpage-v2 .hub-family-list{display:grid;grid-template-columns:1fr;gap:14px;margin-top:18px}
+body.bh-subpage-v2 .hub-family-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}
+@media(max-width:700px){body.bh-subpage-v2 .hub-family-list{grid-template-columns:minmax(0,1fr)}}
 body.bh-subpage-v2 .hub-family-card{display:flex;flex-direction:column;gap:14px;min-width:0;padding:18px;background:#fff;border:1px solid #d7e6e2;border-radius:16px;box-shadow:0 5px 18px rgba(17,94,89,.045)}
 body.bh-subpage-v2 .hub-family-card-heading{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:13px;min-width:0}
 body.bh-subpage-v2 .hub-family-card .family-avatar{width:52px;height:52px;flex:0 0 52px;border-radius:50%;overflow:hidden}
@@ -583,3 +584,7 @@ body.bh-subpage-v2 .bh-date-field .bh-date-hint{margin-top:-2px;font-size:12px;f
 :is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta strong{font-size:13px}
 :is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta small{color:#668078;font-size:11px;line-height:1.35}
 :is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta-arrow{color:#0f766e;font-size:18px;font-weight:800}
+
+/* Child routine summaries on My Family cards. */
+body.bh-subpage-v2 .family-nap-summary{margin:0;padding:10px 12px;border:1px solid #d7e6e2;border-radius:11px;background:#f7fbfa;color:#49685f;font-size:12px;line-height:1.5}
+body.bh-subpage-v2 .family-nap-summary strong{display:block;margin-bottom:2px;color:#174e49;font-size:13px}
