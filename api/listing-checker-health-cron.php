@@ -68,10 +68,10 @@ try{
   $parts=[];
   if(isset($sources['activity'])&&in_array($sources['activity'],$cols,true))$parts[]="NULLIF(a.`".$sources['activity']."`,'')";
   if(isset($sources['organiser'])&&$hasOrg&&in_array($sources['organiser'],$orgCols,true))$parts[]="NULLIF(o.`".$sources['organiser']."`,'')";
-  if(isset($sources['venue'])&&in_array('id',$venueCols,true)&&($hasVenueLink||$hasDirectVenue)&&in_array($sources['venue'],$venueCols,true)){
+  if(isset($sources['venue'])&&in_array('id',$venueCols,true)&&($hasVenueLink||$hasDirectVenue)&&(in_array($sources['venue'],$venueCols,true)||($sources['venue']==='address'&&in_array('address_line_1',$venueCols,true)))){
    $venueParts=[];
-   if($hasVenueLink){$sort=in_array('is_primary',$linkCols,true)?'av.is_primary DESC,av.venue_id':'av.venue_id';$venueParts[]="(SELECT v.`".$sources['venue']."` FROM bh_activity_venues av INNER JOIN bh_venues v ON v.id=av.venue_id WHERE av.activity_id=a.id ORDER BY ".$sort." LIMIT 1)";}
-   if($hasDirectVenue)$venueParts[]="(SELECT v.`".$sources['venue']."` FROM bh_venues v WHERE v.activity_id=a.id ORDER BY v.id LIMIT 1)";
+   if($hasVenueLink){$sort=in_array('is_primary',$linkCols,true)?'av.is_primary DESC,av.venue_id':'av.venue_id';$venueValue=$sources['venue']==='address'&&in_array('address',$venueCols,true)&&in_array('address_line_1',$venueCols,true)?"COALESCE(NULLIF(v.address,''),v.address_line_1)":"v.`".$sources['venue']."`";$venueParts[]="(SELECT ".$venueValue." FROM bh_activity_venues av INNER JOIN bh_venues v ON v.id=av.venue_id WHERE av.activity_id=a.id ORDER BY ".$sort." LIMIT 1)";}
+   if($hasDirectVenue){$venueValue=$sources['venue']==='address'&&in_array('address',$venueCols,true)&&in_array('address_line_1',$venueCols,true)?"COALESCE(NULLIF(v.address,''),v.address_line_1)":"v.`".$sources['venue']."`";$venueParts[]="(SELECT ".$venueValue." FROM bh_venues v WHERE v.activity_id=a.id ORDER BY v.id LIMIT 1)";}
    if($venueParts)$parts[]='NULLIF(COALESCE('.implode(',',$venueParts)."),'')";
   }
   if($parts)$select[]='COALESCE('.implode(',',$parts).') AS `'.$alias.'`';
