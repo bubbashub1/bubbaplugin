@@ -311,6 +311,15 @@
       }).join("");
       list.querySelectorAll("[data-save]").forEach(btn=>btn.onclick=()=>{const saved=bhToggleSaved(btn.dataset.save);btn.textContent=saved?"Saved":"Save"});
       list.querySelectorAll("[data-plan]").forEach(btn=>btn.onclick=()=>{const planned=bhTogglePlanned(btn.dataset.plan);btn.textContent=planned?"Planned":"Plan"});
+      const search=$("personalResultsSearch");
+      if(search&&!search.dataset.bound){
+        search.dataset.bound="1";
+        search.addEventListener("input",()=>{
+          const q=search.value.trim().toLowerCase();let shown=0;
+          list.querySelectorAll(".personal-result-card").forEach(card=>{const match=!q||card.textContent.toLowerCase().includes(q);card.hidden=!match;if(match)shown++;});
+          $("resultsSummary").textContent=q?(shown+" matching suggestions"):"Showing "+ranked.length+" picks · "+(pieces.join(" · ")||"based on your choices");
+        });
+      }
     }
 
     function showResults(){
