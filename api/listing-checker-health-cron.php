@@ -60,6 +60,7 @@ try{
   'contact_email'=>['activity'=>'contact_email','organiser'=>'email'],
   'contact_phone'=>['activity'=>'contact_phone','organiser'=>'phone'],
   'town'=>['activity'=>'town','venue'=>'town'],
+  'address'=>['venue'=>'address'],
   'region'=>['activity'=>'region','venue'=>'region'],
   'postcode'=>['activity'=>'postcode','venue'=>'postcode']
  ];
@@ -108,23 +109,24 @@ try{
    $read->execute([$aid]);$row=$read->fetch(PDO::FETCH_ASSOC);
    if(!$row){$markSkipped->execute(['Activity no longer exists',$qid]);$skipped++;continue;}
    $detectedTypes=[];
-   $checks=['description'=>['description','short_description'],'website'=>['website'],'booking_link'=>['booking_url'],'email'=>['contact_email'],'telephone'=>['contact_phone'],'facebook'=>['facebook_url'],'instagram'=>['instagram_url'],'age_range'=>['age_range'],'category'=>['category'],'location'=>['town'],'postcode'=>['postcode'],'image'=>['image_path']];
+   $checks=['description'=>['description','short_description'],'website'=>['website'],'booking_link'=>['booking_url'],'email'=>['contact_email'],'telephone'=>['contact_phone'],'facebook'=>['facebook_url'],'instagram'=>['instagram_url'],'age_range'=>['age_range'],'category'=>['category'],'location'=>['town','address'],'postcode'=>['postcode'],'image'=>['image_path']];
    $fallbackSupport=[
     'website'=>in_array('website',$cols,true)||($hasOrg&&in_array('website',$orgCols,true)),
     'email'=>in_array('contact_email',$cols,true)||($hasOrg&&in_array('email',$orgCols,true)),
     'telephone'=>in_array('contact_phone',$cols,true)||($hasOrg&&in_array('phone',$orgCols,true)),
-    'location'=>in_array('town',$cols,true)||(in_array('town',$venueCols,true)&&($hasVenueLink||$hasDirectVenue)),
+    'location'=>in_array('town',$cols,true)||(in_array('town',$venueCols,true)&&($hasVenueLink||$hasDirectVenue))||((in_array('address',$venueCols,true)||in_array('address_line_1',$venueCols,true))&&($hasVenueLink||$hasDirectVenue)),
     'postcode'=>in_array('postcode',$cols,true)||(in_array('postcode',$venueCols,true)&&($hasVenueLink||$hasDirectVenue))
    ];
    foreach($checks as $type=>$keys){
     // Assess fallback fields only when the real organiser/venue source is available.
-    $availableKeys=isset($fallbackSupport[$type])?($fallbackSupport[$type]?[$keys[0]]:[]):array_values(array_filter($keys,static fn($key)=>in_array($key,$cols,true)));
+    $availableKeys=isset($fallbackSupport[$type])?($fallbackSupport[$type]?($type==='location'?array_values(array_filter($keys,static fn($key)=>in_array($key,['town','address'],true))):[$keys[0]]):[]):array_values(array_filter($keys,static fn($key)=>in_array($key,$cols,true)));
     if(!$availableKeys)continue;
     $present=false;foreach($availableKeys as $key)if(trim((string)($row[$key]??''))!=='')$present=true;
     if(!$present)$record($aid,'missing_'.$type,['field'=>$type,'checked_columns'=>$availableKeys]);
    }
    foreach(['website','booking_url','facebook_url','instagram_url'] as $key){if(!in_array($key,$cols,true))continue;$v=trim((string)($row[$key]??''));if($v!==''&&!filter_var($v,FILTER_VALIDATE_URL))$record($aid,'invalid_url',['field'=>$key,'value'=>$v]);}
    if(in_array('contact_email',$cols,true)){$email=trim((string)($row['contact_email']??''));if($email!==''&&!filter_var($email,FILTER_VALIDATE_EMAIL))$record($aid,'invalid_email',['field'=>'contact_email']);}
+   if(in_array('contact_phone',$cols,true)){$phone=trim((string)($row['contact_phone']??''));if($phone!==''&&!preg_match('/^[0-9+() .-]{7,25}$/',$phone))$record($aid,'invalid_telephone',['field'=>'contact_phone']);}
    if(in_array('postcode',$cols,true)){$postcode=trim((string)($row['postcode']??''));if($postcode!==''&&!preg_match('/^[A-Z]{1,2}[0-9][A-Z0-9]?\\s*[0-9][A-Z]{2}$/i',$postcode))$record($aid,'invalid_postcode',['field'=>'postcode','value'=>$postcode]);}
    foreach(['start_date','end_date','next_session_date'] as $key){if(!in_array($key,$cols,true))continue;$v=trim((string)($row[$key]??''));if($v!==''&&strtotime($v)!==false&&strtotime($v)<strtotime('today')){$record($aid,'past_session_date',['field'=>$key,'value'=>$v]);break;}}
    $activeSchedules=(int)($row['active_schedule_count']??0);$openEndedSchedules=(int)($row['schedule_open_ended_count']??0);$lastScheduleDate=trim((string)($row['schedule_end_date']??''));
@@ -148,13 +150,13 @@ try{
    }
    // Resolve only outstanding checker findings that this successful pass no longer detects.
    // Preserve every explicit admin decision (approved/rejected/correct/incorrect).
-   $knownTypes=['missing_description','missing_website','missing_booking_link','missing_email','missing_telephone','missing_facebook','missing_instagram','missing_age_range','missing_category','missing_location','missing_postcode','missing_image','invalid_url','invalid_email','invalid_postcode','past_session_date','stale_listing','possible_duplicate','expired_active_schedules'];
+   $knownTypes=['missing_description','missing_website','missing_booking_link','missing_email','missing_telephone','missing_facebook','missing_instagram','missing_age_range','missing_category','missing_location','missing_postcode','missing_image','invalid_url','invalid_email','invalid_telephone','invalid_postcode','past_session_date','stale_listing','possible_duplicate','expired_active_schedules'];
    $resolve=$db->prepare("UPDATE bh_listing_check_findings SET review_status='resolved',reviewed_at=NOW() WHERE check_type='health' AND activity_id=? AND review_status IN('new','follow_up') AND finding_type=?");
    foreach($knownTypes as $knownType){if(!isset($detectedTypes[$knownType]))$resolve->execute([$aid,$knownType]);}
    $markDone->execute([$qid]);$done++;
   }catch(Throwable $e){$errors++;$markFailed->execute([substr($e->getMessage(),0,900),$qid]);}
  }
- $remaining=(int)$db->query("SELECT COUNT(*) FROM bh_listing_check_queue WHERE check_type='health' AND status IN('pending','failed')")->fetchColumn();
+ $remaining=(int)$db->query("SELECT COUNT(*) FROM bh_listing_check_queue WHERE check_type='health' AND status IN('pending','failed') AND last_checked_at IS NULL")->fetchColumn();
  $summary=json_encode(['processed'=>$done,'skipped'=>$skipped,'errors'=>$errors,'remaining'=>$remaining,'next_check_hours'=>$interval]);
  $finish=$db->prepare("UPDATE bh_listing_check_runs SET status='completed',finished_at=NOW(),processed_count=?,error_count=?,summary_json=? WHERE id=?");$finish->execute([$done,$errors,$summary,$runId]);echo $summary."
 ";
