@@ -122,8 +122,6 @@ try {
             $stmt = $db->prepare("SELECT id,name,gender,photo_path,date_of_birth,nap_pattern,nap_morning_start,nap_morning_end,nap_afternoon_start,nap_afternoon_end,support_needs,created_at,updated_at FROM bh_children WHERE user_id=? ORDER BY date_of_birth IS NULL,date_of_birth,name");
             $stmt->execute([$userId]);
             $children = $stmt->fetchAll();
-        foreach ($children as &$child) { $child['support_needs'] = json_decode((string)($child['support_needs'] ?? '[]'), true) ?: []; }
-        unset($child);
             foreach ($children as &$child) { $child['support_needs'] = json_decode((string)($child['support_needs'] ?? '[]'), true) ?: []; }
             unset($child);
 
