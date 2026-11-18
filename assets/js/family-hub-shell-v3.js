@@ -10,13 +10,13 @@
   const path=location.pathname.replace(/\/+$/,"")||"/";
   const links=[
    ["/my-hub.html","My Hub","⌂","dashboard"],
+   ["/choose.html","What should we do?","✦","choose"],
    ["/family-section.html?section=recent","Recently Viewed","◷","recent"],
    ["/family-section.html?section=saved","Saved activities","♡","saved"],
    ["/family-section.html?section=visited","Visited Groups","✓","visited"],
    ["/family-section.html?section=suggested","Suggested groups & activities","✦","suggested"],
    ["/family-section.html?section=messages","My Messages","✉","messages"],
    ["/planner.html","My Planner","▦","planner"],
-   ["/account/saved-activities.html","Saved activities","♡","saved-library"],
    ["/account/family.html","My Family","♧","family"],
    ["/account/preferences.html","Preferences","⚙","preferences"],
    ["/account/profile.html","My Profile","☺","profile"],
@@ -35,7 +35,8 @@
   menuToggle.addEventListener("click",()=>setMenuOpen(menuToggle.getAttribute("aria-expanded")!=="true"));
   nav.addEventListener("click",event=>{if(event.target.closest("a"))setMenuOpen(false);});
   side.addEventListener("keydown",event=>{if(event.key==="Escape")setMenuOpen(false);});
-  links.forEach(([href,label,icon])=>{
+  links.forEach(([href,label,icon],index)=>{
+   if(index===7){const group=document.createElement("span");group.className="family-v3-nav-label family-v3-nav-group-label";group.textContent="Your space";nav.append(group);}
    const a=document.createElement("a");a.href=href;
    const target=new URL(href,location.origin);
    const currentParams=new URLSearchParams(location.search);
