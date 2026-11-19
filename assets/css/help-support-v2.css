@@ -1,5 +1,5 @@
 /* Bubba Hub 2.0 — support landing page only. Keep private Q&A behaviour intact. */
-body.bh-support{background:#fffdf7;color:#123f31;font-family:'Quicksand',Calibri,Arial,sans-serif}
+body.bh-support{background:#fffdf7;color:#144400;font-family:'Quicksand',Calibri,Arial,sans-serif}
 .bh-support .app-shell{padding-top:24px;padding-bottom:50px}
 .bh-support .app-shell :is(h1,h2,h3){font-family:'Quicksand',Calibri,Arial,sans-serif;font-weight:700;letter-spacing:-.035em;color:#174e3b}
 .bh-support .app-shell .eyebrow{color:#3c8e96;font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
@@ -61,7 +61,7 @@ body.bh-support{background:#fffdf7;color:#123f31;font-family:'Quicksand',Calibri
   font-family:'Quicksand',Calibri,Arial,sans-serif;font-weight:800;text-decoration:none;
 }
 .bh-support .app-shell .button-primary{background:#174e3b;border-color:#174e3b;color:#fff}
-.bh-support .app-shell .button-primary:hover{background:#ee822c;border-color:#ee822c;color:#123f31}
+.bh-support .app-shell .button-primary:hover{background:#ee822c;border-color:#ee822c;color:#144400}
 .bh-support .app-shell .button-soft{background:#e5f1df;border-color:#d1e4d4;color:#174e3b}
 .bh-support .app-shell .button-soft:hover{background:#f7bf7d;border-color:#f7bf7d;color:#174e3b}
 .bh-support .support-faq-list details{
