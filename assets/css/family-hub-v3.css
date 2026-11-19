@@ -355,17 +355,824 @@ body.bh-subpage-v2 .hub-family-card :is(button,a){max-width:100%;white-space:nor
   :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav a{flex:0 0 auto;width:100%;min-height:46px;padding:11px 13px;white-space:normal;font-size:14px;}
 }
 
-/* Navigation repair: restore grouped Explore/My Family/My Space/My Planner sidebar. */
-:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav{display:flex!important;flex-direction:column!important;overflow:visible!important;gap:8px!important;padding:4px 0!important;}
-:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group{border:1px solid #e4eee9;border-radius:12px;overflow:hidden;background:#fff;}
-:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;padding:12px 13px;border:0;background:#e9f5ed;color:#174e49;font:700 14px 'Quicksand',sans-serif;cursor:pointer;}
-:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group:nth-child(2) .family-v3-group-toggle{background:#fce8e5;}
-:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group:nth-child(3) .family-v3-group-toggle{background:#e6f3fa;}
-:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group:nth-child(4) .family-v3-group-toggle{background:#fff2d9;}
-:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group:nth-child(5) .family-v3-group-toggle{background:#e9e4f8;}
-:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group-toggle[aria-expanded=false] .family-v3-group-chevron{transform:rotate(-90deg);}
-:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group-links{display:flex;flex-direction:column;padding:5px;gap:2px;}
-:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group.is-collapsed .family-v3-group-links{display:none!important;}
-:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group-links a{display:flex;align-items:center;gap:9px;padding:9px 10px;min-height:40px;border-radius:9px;color:#45645e;text-decoration:none;font-size:13px;font-weight:700;}
-:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group-links a:hover,:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group-links a[aria-current=page]{background:#f1f8f4;color:#115e59;}
-@media(max-width:767px){ :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav{display:none!important;} :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav.is-open{display:flex!important;} :is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand{display:none!important;} }
+
+/* UK date entry for family profiles: readable DD/MM/YYYY field with native calendar popup. */
+body.bh-subpage-v2 .bh-date-field{display:flex;flex-direction:column;gap:7px;min-width:0;color:#315d53;font-weight:700}
+body.bh-subpage-v2 .bh-date-control{position:relative;display:flex;align-items:center;gap:8px;width:100%;min-width:0}
+body.bh-subpage-v2 .bh-date-text{flex:1 1 auto;width:100%;min-width:0;min-height:46px;padding:11px 13px;border:1px solid #cbded9;border-radius:11px;background:#fff;color:#263b38;font:inherit;font-size:15px;box-sizing:border-box}
+body.bh-subpage-v2 .bh-date-text:focus{outline:0;border-color:#0f766e;box-shadow:0 0 0 3px rgba(15,118,110,.12)}
+body.bh-subpage-v2 .bh-date-picker-button{flex:0 0 46px;width:46px;height:46px;border:1px solid #cbded9;border-radius:11px;background:#e8f3f1;color:#0f766e;font-size:22px;cursor:pointer}
+body.bh-subpage-v2 .bh-date-picker-button:hover{background:#dceee9;border-color:#9fc5ba}
+body.bh-subpage-v2 .bh-date-native{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;opacity:0!important;pointer-events:none!important}
+body.bh-subpage-v2 .bh-date-field .bh-date-hint{margin-top:-2px;font-size:12px;font-weight:500;color:#668078}
+
+
+/* Family profile modal: compact, balanced heading and photo upload. */
+.hub-modal .hub-modal-card{
+  width:min(560px,100%)!important;
+  padding:24px!important;
+}
+.hub-modal .hub-modal-card>.admin-panel-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin:0 0 18px;
+  padding:0 0 14px;
+  border-bottom:1px solid #e1ebe3;
+}
+.hub-modal .hub-modal-card>.admin-panel-head>div:first-child{min-width:0}
+.hub-modal .hub-modal-card>.admin-panel-head .eyebrow{
+  display:block;
+  margin:0 0 3px;
+  color:#71877a;
+  font-size:10px;
+  line-height:1.3;
+  font-weight:800;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+.hub-modal .hub-modal-card>.admin-panel-head h2{
+  margin:0!important;
+  font-size:clamp(21px,3vw,25px)!important;
+  line-height:1.2;
+}
+.hub-modal .hub-modal-card>.admin-panel-head [data-close]{
+  flex:0 0 auto;
+  min-height:36px;
+  padding:7px 13px;
+  border-radius:11px;
+  font-size:13px;
+}
+.hub-modal .hub-modal-card .family-child-form{
+  display:grid;
+  gap:13px 16px;
+}
+.hub-modal .hub-modal-card .child-avatar-field{
+  margin:0 0 2px;
+}
+.hub-modal .hub-modal-card .child-avatar-field .form-field-label{
+  display:block;
+  margin:0 0 7px;
+  color:#355c4d;
+  font-size:13px;
+  font-weight:750;
+}
+.hub-modal .hub-modal-card .child-avatar-editor{
+  display:flex;
+  align-items:center;
+  gap:13px;
+  min-width:0;
+}
+.hub-modal .hub-modal-card .child-avatar-editor>.family-avatar{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:64px;
+  height:64px;
+  flex:0 0 64px;
+  overflow:hidden;
+  border:2px solid #d8e6db;
+  border-radius:50%;
+  background:#e2f0ed;
+  color:#0f766e;
+  font-size:25px;
+  font-weight:800;
+  line-height:1;
+}
+.hub-modal .hub-modal-card .child-avatar-editor>.family-avatar img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.hub-modal .hub-modal-card .child-avatar-copy{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:5px;
+  min-width:0;
+}
+.hub-modal .hub-modal-card .avatar-upload-button{
+  min-height:36px;
+  padding:8px 13px;
+  border-radius:11px;
+  font-size:13px;
+}
+.hub-modal .hub-modal-card .child-avatar-copy small{
+  color:#71877a;
+  font-size:11px;
+  line-height:1.4;
+}
+.hub-modal .hub-modal-card .hero-actions{margin-top:17px}
+@media(max-width:560px){
+  .hub-modal .hub-modal-card{padding:20px 17px!important}
+  .hub-modal .hub-modal-card>.admin-panel-head{gap:10px;margin-bottom:15px;padding-bottom:12px}
+  .hub-modal .hub-modal-card>.admin-panel-head h2{font-size:22px!important}
+}
+
+
+/* Expandable family hub navigation groups and mobile accordion layout. */
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav{display:flex;flex-direction:column;gap:10px}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group{min-width:0}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:42px;padding:10px 12px;border:0;border-radius:10px;background:#edf5f2;color:#174e49;text-align:left;font:inherit;font-size:12px;font-weight:800;letter-spacing:.045em;cursor:pointer}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group-chevron{font-size:16px;transition:transform .18s ease}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-toggle[aria-expanded="true"] .family-v3-group-chevron{transform:rotate(180deg)}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items{display:flex;flex-direction:column;gap:3px;padding:6px 0 0}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items[hidden]{display:none}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items a{min-height:39px;padding:8px 11px;font-size:13px}
+@media(max-width:850px){
+ :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav{display:flex;flex-direction:column;overflow:visible;gap:8px;padding:4px 0 0}
+ :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group{border:1px solid #d7e6e2;border-radius:12px;overflow:hidden;background:#fff}
+ :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-toggle{min-height:48px;padding:12px 14px;border-radius:0;background:#edf5f2;font-size:13px}
+ :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items{padding:6px 8px 8px}
+ :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items a{flex:initial;width:auto;min-height:42px;white-space:normal;font-size:14px}
+}
+
+/* Optional child nap routine fields */
+.family-routine-fields{grid-column:1/-1;min-width:0;margin:4px 0 0;padding:14px;border:1px solid #d9e7e3;border-radius:10px;background:#f7fbfa}
+.family-routine-fields legend{padding:0 6px;color:#174e49;font-weight:800}
+.family-routine-fields legend span{font-size:12px;font-weight:500;color:#71877f}
+.family-routine-fields>label{display:block;margin:4px 0 12px}
+.family-nap-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.family-nap-grid label{display:block;min-width:0}
+.family-nap-grid input,.family-routine-fields select{box-sizing:border-box;width:100%;min-height:42px;margin-top:5px}
+.family-routine-fields small{display:block;margin-top:10px;color:#71877f}
+@media(max-width:520px){.family-nap-grid{grid-template-columns:1fr}}
+
+/* Family profile cards and child support preferences */
+.family-support-intro{margin:0 0 10px;color:#647d73;font-size:13px;line-height:1.45}
+.family-support-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.family-support-options label{display:flex;align-items:flex-start;gap:8px;padding:9px 10px;background:#fff;border:1px solid #e0ebe5;border-radius:8px;font-size:13px}
+.family-support-options input{margin-top:3px;accent-color:#0f766e}
+.family-support-summary{margin:8px 0;color:#55736c;font-size:12px}
+@media(max-width:520px){.family-support-options{grid-template-columns:1fr}}
+
+
+/* Family Hub sidebar colour pass: soft sage, teal and warm cream. */
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar{
+  background:linear-gradient(160deg,#f3f7f1 0%,#edf5f2 100%);
+  border:1px solid #d8e6db;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand{
+  background:#e1eee3;
+  border-radius:13px;
+  padding:13px 14px;
+  margin:0 0 12px;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand span{color:#416651}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="explore"] .family-v3-nav-group-toggle{
+  background:#dce9dc;color:#315d43;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="family"] .family-v3-nav-group-toggle{
+  background:#d9ece9;color:#145e59;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items a{
+  border-radius:9px;transition:background .16s ease,color .16s ease;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="explore"] .family-v3-nav-group-items a:hover{
+  background:#e5efe4;color:#315d43;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="family"] .family-v3-nav-group-items a:hover{
+  background:#e1f0ed;color:#145e59;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items a[aria-current="page"]{
+  background:#0f766e!important;color:#fff!important;font-weight:800;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items a[aria-current="page"] .family-v3-nav-icon{color:#fff}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help{
+  background:#fbf3e5;border:1px solid #eee0c6;border-radius:13px;padding:14px;margin-top:14px;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help strong{color:#72552e}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help p{color:#78684e}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help a{color:#0f766e;font-weight:800}
+@media(max-width:850px){
+ :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="explore"] .family-v3-nav-group-toggle{background:#dce9dc}
+ :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="family"] .family-v3-nav-group-toggle{background:#d9ece9}
+}
+
+
+/* Sidebar support and profile actions: separate, clear calls to action. */
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help{
+  display:flex;flex-direction:column;align-items:flex-start;gap:8px;
+  padding:15px 15px 16px;background:#fbf3e5;border:1px solid #eee0c6;
+  border-radius:14px;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help strong{font-size:14px;line-height:1.3}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help p{margin:0;font-size:12px;line-height:1.5}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help .family-v3-help-link{
+  display:inline-flex;align-items:center;gap:7px;margin-top:3px;padding:9px 12px;
+  border-radius:9px;background:#fff;color:#72552e;text-decoration:none;
+  font-size:12px;font-weight:800;border:1px solid #ead8b8;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta{
+  display:flex;align-items:center;gap:11px;width:100%;box-sizing:border-box;
+  margin-top:10px;padding:13px 14px;border:1px solid #c9dfd8;border-radius:14px;
+  background:#fff;color:#174e49;text-decoration:none;transition:background .16s ease,border-color .16s ease;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta:hover{
+  background:#e8f3f1;border-color:#91bdb0;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta-icon{
+  display:flex;align-items:center;justify-content:center;flex:0 0 36px;width:36px;height:36px;
+  border-radius:11px;background:#d9ece9;color:#0f766e;font-size:20px;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta>span:nth-child(2){
+  display:flex;flex:1;flex-direction:column;gap:2px;min-width:0;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta strong{font-size:13px}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta small{color:#668078;font-size:11px;line-height:1.35}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta-arrow{color:#0f766e;font-size:18px;font-weight:800}
+
+
+/* Mobile app layout: compact sticky header, spacious content and thumb-friendly quick navigation. */
+@media(max-width:850px){
+  :is(body.bh-family-v3,body.bh-my-hub){padding-bottom:calc(76px + env(safe-area-inset-bottom));}
+  :is(body.bh-family-v3,body.bh-my-hub) main.family-v3-main{
+    width:100%!important;max-width:100%!important;margin:0 auto 18px!important;padding:0 12px!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-layout{display:flex;flex-direction:column;gap:12px;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar{
+    position:sticky;top:0;z-index:80;display:flex;flex-wrap:wrap;align-items:center;gap:0;
+    width:calc(100% + 24px);margin:0 -12px;padding:8px 14px;
+    border:0;border-bottom:1px solid #d8e6db;border-radius:0 0 16px 16px;
+    background:rgba(243,247,241,.97);box-shadow:0 4px 14px rgba(23,78,59,.07);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand{
+    order:1;flex:1;min-width:0;margin:0;padding:3px 4px;background:transparent;border:0;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand strong{font-size:15px;line-height:1.2;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand span{margin-top:2px;font-size:9px;letter-spacing:.08em;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-menu-toggle{
+    order:2;display:flex;align-items:center;justify-content:center;gap:7px;min-height:40px;
+    padding:8px 12px;border:1px solid #c9dfd8;border-radius:12px;background:#fff;
+    color:#145e59;font:700 12px 'Quicksand',sans-serif;cursor:pointer;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-menu-chevron{font-size:17px;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav{
+    order:3;display:none;flex:0 0 100%;width:100%;max-height:min(58vh,480px);overflow-y:auto;
+    padding:10px 0 3px;gap:8px;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav.is-open{display:flex;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group{border:1px solid #d7e6e2;border-radius:12px;overflow:hidden;background:#fff;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-toggle{min-height:46px;padding:11px 13px;border-radius:0;font-size:13px;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items{padding:5px 7px 7px;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items a{min-height:42px;padding:10px 12px;font-size:13px;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-help,
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta{display:none;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar:has(.family-v3-nav.is-open) .family-v3-help,
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar:has(.family-v3-nav.is-open) .family-v3-profile-cta{display:flex;order:4;flex:0 0 100%;margin:9px 0 0;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar:has(.family-v3-nav.is-open) .family-v3-profile-cta{display:flex;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main{width:100%;min-width:0;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main>.page-heading,
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main>.my-hub-hero,
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main>.planner-hero{margin:4px 0 14px!important;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .admin-panel,
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-panel,
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-brief,
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-welcome,
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .account-dashboard-card,
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .planner-shell{
+    padding:16px!important;border-radius:16px!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-mobile-nav{
+    position:fixed;z-index:100;left:0;right:0;bottom:0;display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;
+    padding:7px 7px calc(7px + env(safe-area-inset-bottom));
+    border-top:1px solid #d5e5dd;background:rgba(255,255,255,.97);
+    box-shadow:0 -5px 20px rgba(23,78,59,.09);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-mobile-nav a{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    min-width:0;min-height:52px;padding:5px 2px;border-radius:11px;
+    color:#60796e;text-decoration:none;font-size:10px;font-weight:750;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-mobile-nav a[aria-current="page"]{
+    color:#0f766e;background:#e3f1ed;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-mobile-nav-icon{font-size:19px;line-height:1.1;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-mobile-nav-label{
+    display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+}
+@media(min-width:851px){.family-v3-mobile-nav{display:none!important;}}
+@media(max-width:380px){
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-mobile-nav a{font-size:9px;}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-mobile-nav-icon{font-size:18px;}
+}
+
+
+/* Bubba Hub family palette: confident pastels with warm, readable contrast. */
+:is(body.bh-family-v3,body.bh-my-hub){
+  --bh-pink:#f6b8c9;
+  --bh-pink-soft:#fff0f4;
+  --bh-yellow:#f7d978;
+  --bh-yellow-soft:#fff8df;
+  --bh-blue:#b9dff0;
+  --bh-blue-soft:#edf7fc;
+  --bh-lilac:#d8c8ef;
+  --bh-lilac-soft:#f5f0fc;
+  --bh-sage:#cfe2d1;
+  --bh-sage-soft:#eff6ef;
+  --bh-ink:#31534a;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar{
+  background:linear-gradient(145deg,#fff0f4 0%,#fff8df 52%,#edf7fc 100%);
+  border-color:#f0dce0;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand{
+  background:linear-gradient(110deg,#fbe0e8 0%,#fff1d0 100%);
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="explore"] .family-v3-nav-group-toggle{
+  background:#f8dce6;color:#704455;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="family"] .family-v3-nav-group-toggle{
+  background:#dcecf7;color:#31566c;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items a[aria-current="page"]{
+  background:#a94f70!important;color:#fff!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help{
+  background:#fff5d9;border-color:#f0dfaa;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help strong{color:#765b23}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta{
+  background:#f5effc;border-color:#dfd1f0;color:#51416c;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta-icon{
+  background:#e4d8f4;color:#654b8b;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta-arrow{color:#654b8b}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .page-heading{
+  background:linear-gradient(112deg,#fbe0e8 0%,#fff1cf 48%,#e5f2fa 100%)!important;
+  border-color:#ead9df!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main :is(.admin-panel,.hub-panel,.hub-brief,.hub-welcome,.account-dashboard-card,.planner-shell){
+  border-color:#e8dfe4!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main :is(input,select,textarea):focus{
+  border-color:#bd7891!important;box-shadow:0 0 0 3px rgba(189,120,145,.14)!important;
+}
+@media(max-width:850px){
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar{
+    background:rgba(255,244,239,.97);border-bottom-color:#efd9dc;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-menu-toggle{
+    background:#fff0f4;border-color:#efcbd7;color:#81485e;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="explore"] .family-v3-nav-group-toggle{background:#f8dce6;color:#704455}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group[data-group="family"] .family-v3-nav-group-toggle{background:#dcecf7;color:#31566c}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-mobile-nav{
+    background:rgba(255,250,247,.98);border-top-color:#eedde0;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-mobile-nav a[aria-current="page"]{
+    background:#fbe0e8;color:#87445f;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-main>.page-heading{
+    background:linear-gradient(112deg,#fbe0e8 0%,#fff1cf 52%,#e5f2fa 100%)!important;
+  }
+}
+
+
+/* Navigation visibility safety fix: keep the family menu available at every viewport. */
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+@media(max-width:850px){
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    align-items:center!important;
+    min-height:56px;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-menu-toggle{
+    display:inline-flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    flex:0 0 auto!important;
+    width:auto!important;
+    min-width:88px;
+    min-height:42px!important;
+    margin-left:8px;
+    position:relative;
+    z-index:2;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand{
+    display:block!important;
+    visibility:visible!important;
+    flex:1 1 120px!important;
+    min-width:0!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav{
+    display:none!important;
+    flex:0 0 100%!important;
+    width:100%!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav.is-open{
+    display:flex!important;
+  }
+}
+
+
+/* Family profile grid and saved child routine summaries. */
+body.bh-subpage-v2 .hub-family-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}
+@media(max-width:700px){body.bh-subpage-v2 .hub-family-list{grid-template-columns:minmax(0,1fr)}}
+body.bh-subpage-v2 .family-nap-summary{margin:0;padding:10px 12px;border:1px solid #d7e6e2;border-radius:11px;background:#f7fbfa;color:#49685f;font-size:12px;line-height:1.5}
+body.bh-subpage-v2 .family-nap-summary strong{display:block;margin-bottom:2px;color:#174e49;font-size:13px}
+
+
+/* Bubba Hub family pastel palette and reliable compact menu visibility. */
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar{
+  background:linear-gradient(155deg,#fff 0%,#fff8fb 100%)!important;
+  border-color:#f1c9d6!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand strong{color:#8b4662!important}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand span{color:#987080!important}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group{border-color:#f0d5df!important}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-toggle{
+  background:#fde8ef!important;color:#81445c!important;border:1px solid #f5c8d7!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav a{color:#654b59!important}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav a:hover,
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav a[aria-current=page]{
+  background:#fce0e9!important;color:#813f59!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help{
+  background:#fff5d9!important;border-color:#f2dfa0!important;color:#6e5928!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help p{color:#79683d!important}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-help a{color:#77551a!important}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-profile-cta{
+  background:#e8f4fb!important;border-color:#c7e2f1!important;color:#315b70!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .my-hub-hero{
+  background:linear-gradient(115deg,#fce4ec 0%,#fff1c9 52%,#e4f3fb 100%)!important;
+  border:1px solid #f0d2dc!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-personal-cta{
+  background:linear-gradient(110deg,#fff0f5,#fff8df)!important;border:1px solid #f1d7df!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-panel{
+  border-color:#f0dce2!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main :is(.button-primary,.btn-primary){
+  background:#c85f85!important;border-color:#c85f85!important;color:#fff!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main :is(.button-soft,.btn-soft){
+  background:#fff1c9!important;border-color:#ecd99a!important;color:#6e5928!important;
+}
+@media(max-width:850px){
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar{
+    display:flex!important;flex-wrap:wrap!important;align-items:center!important;
+    background:linear-gradient(110deg,#fff4f7,#fff9e8)!important;
+    border-color:#efcbd8!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-menu-toggle{
+    display:flex!important;visibility:visible!important;opacity:1!important;
+    flex:1 1 100%!important;width:100%!important;min-height:48px!important;
+    margin:0!important;background:#f6c5d5!important;border:1px solid #e9a9bf!important;
+    color:#71394f!important;font-weight:800!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand{
+    flex:1 1 100%!important;padding:8px 8px 4px!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav{
+    display:none!important;flex:0 0 100%!important;width:100%!important;
+    flex-direction:column!important;overflow:visible!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav.is-open{display:flex!important}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-mobile-nav{
+    background:rgba(255,247,250,.98)!important;border-color:#f0cbd8!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-mobile-nav a[aria-current=page]{
+    background:#fce0e9!important;color:#934b67!important;
+  }
+}
+
+
+/* Restore the established family workspace navigation: desktop sidebar, mobile accordion dropdown. */
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-layout{
+  display:grid!important;
+  grid-template-columns:244px minmax(0,1fr)!important;
+  align-items:start!important;
+  gap:24px!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar{
+  display:block!important;
+  position:sticky!important;
+  top:18px!important;
+  min-width:0!important;
+  width:auto!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-menu-toggle{display:none!important}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav{
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:visible!important;
+}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items[hidden]{display:none!important}
+@media(max-width:850px){
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-layout{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:12px!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-sidebar{
+    display:flex!important;
+    flex-direction:column!important;
+    position:relative!important;
+    top:auto!important;
+    width:100%!important;
+    box-sizing:border-box!important;
+    padding:10px!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-menu-toggle{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    width:100%!important;
+    min-height:48px!important;
+    flex:0 0 auto!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand{
+    width:100%!important;
+    box-sizing:border-box!important;
+    padding:8px 8px 4px!important;
+    margin:0!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav{
+    display:none!important;
+    width:100%!important;
+    flex:0 0 auto!important;
+    flex-direction:column!important;
+    overflow:visible!important;
+    padding:8px 0 2px!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav.is-open{display:flex!important}
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group{
+    display:block!important;
+    width:100%!important;
+    border:1px solid #f0d5df!important;
+    border-radius:12px!important;
+    overflow:hidden!important;
+    background:#fff!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-toggle{
+    display:flex!important;
+    width:100%!important;
+    min-height:46px!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items{
+    display:flex;
+    flex-direction:column!important;
+  }
+  :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items[hidden]{display:none!important}
+}
+
+/* Staging fix: ensure grouped hub navigation remains visible and colourful. */
+body.bh-family-v3 .family-v3-layout{display:grid!important;grid-template-columns:250px minmax(0,1fr)!important;gap:22px!important;align-items:start!important;}
+body.bh-family-v3 .family-v3-sidebar{display:block!important;visibility:visible!important;opacity:1!important;position:sticky!important;top:16px!important;}
+body.bh-family-v3 .family-v3-nav{display:flex!important;flex-direction:column!important;overflow:visible!important;gap:9px!important;}
+body.bh-family-v3 .family-v3-nav-group{border:1px solid #e2ede7!important;border-radius:13px!important;background:#fff!important;overflow:hidden!important;}
+body.bh-family-v3 .family-v3-nav-group:nth-child(1) .family-v3-nav-group-toggle{background:#dcefe7!important;}
+body.bh-family-v3 .family-v3-nav-group:nth-child(2) .family-v3-nav-group-toggle{background:#fbe3e8!important;}
+body.bh-family-v3 .family-v3-nav-group:nth-child(3) .family-v3-nav-group-toggle{background:#e1eff6!important;}
+body.bh-family-v3 .family-v3-nav-group:nth-child(4) .family-v3-nav-group-toggle{background:#fff0d5!important;}
+body.bh-family-v3 .family-v3-nav-group-items a{display:flex!important;align-items:center!important;gap:10px!important;padding:10px!important;border-radius:9px!important;}
+@media(max-width:850px){body.bh-family-v3 .family-v3-layout{grid-template-columns:minmax(0,1fr)!important;gap:12px!important;}body.bh-family-v3 .family-v3-sidebar{display:flex!important;position:relative!important;top:auto!important;width:100%!important;}body.bh-family-v3 .family-v3-menu-toggle{display:flex!important;align-items:center!important;justify-content:space-between!important;width:100%!important;min-height:48px!important;}body.bh-family-v3 .family-v3-nav{display:none!important;width:100%!important;}body.bh-family-v3 .family-v3-nav.is-open{display:flex!important;}body.bh-family-v3 .family-v3-brand{display:none!important;}}
+
+
+/* My Hub hero polish — keep the welcome copy left and Family Pro as a clear right-hand CTA. */
+body.bh-my-hub .my-hub-hero{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(270px,360px)!important;
+  grid-template-areas:"copy pro" "actions pro"!important;
+  align-items:center!important;
+  column-gap:28px!important;
+  row-gap:14px!important;
+}
+body.bh-my-hub .my-hub-hero-copy{grid-area:copy;min-width:0}
+body.bh-my-hub .my-hub-hero-copy>.eyebrow{
+  display:block;color:#174e3b!important;font-size:14px!important;font-weight:800!important;
+  letter-spacing:.015em;text-transform:none!important;margin:0 0 8px!important;
+}
+body.bh-my-hub .my-hub-hero-copy h1{margin:0 0 7px!important}
+body.bh-my-hub .my-hub-hero-copy p{margin:0!important}
+body.bh-my-hub .my-hub-hero-actions{grid-area:actions;justify-content:flex-start!important;margin-top:2px}
+body.bh-my-hub .hub-pro-pitch{
+  grid-area:pro;align-self:stretch;display:flex;flex-direction:column;justify-content:center;
+  gap:9px;padding:19px 21px!important;border:1px solid #d7e7dc!important;
+  border-radius:22px!important;background:linear-gradient(145deg,#f4f8ef 0%,#e7f2e9 100%)!important;
+  box-shadow:0 8px 22px rgba(23,78,59,.07)!important;min-width:0;
+}
+body.bh-my-hub .hub-pro-pitch[hidden]{display:none!important}
+body.bh-my-hub .hub-pro-pitch strong{color:#174e3b!important;font-size:17px!important;font-weight:800!important}
+body.bh-my-hub .hub-pro-pitch span{color:#405d50!important;font-size:13px!important;line-height:1.55}
+body.bh-my-hub .hub-pro-pitch .button{align-self:flex-start!important;border-radius:999px!important;padding:10px 18px!important}
+body.bh-my-hub .hub-personal-cta .eyebrow,
+body.bh-my-hub .hub-family-panel>.admin-panel-head .eyebrow{
+  color:#174e3b!important;font-weight:800!important;
+}
+body.bh-my-hub .hub-personal-cta h2,
+body.bh-my-hub .hub-family-panel>.admin-panel-head h2{color:#174e3b!important}
+@media(max-width:700px){
+  body.bh-my-hub .my-hub-hero{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-areas:"copy" "pro" "actions"!important;
+    gap:14px!important;
+  }
+  body.bh-my-hub .hub-pro-pitch{padding:16px 18px!important;border-radius:18px!important}
+  body.bh-my-hub .my-hub-hero-actions{flex-wrap:wrap}
+}
+
+
+/* My Hub: requested hero layout and dark-green discovery prompt. */
+body.bh-my-hub .my-hub-hero{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(270px,360px)!important;
+  grid-template-areas:"copy pro" "actions pro"!important;
+  align-items:stretch!important;
+  column-gap:28px!important;
+  row-gap:14px!important;
+}
+body.bh-my-hub .my-hub-hero-copy{grid-area:copy!important;min-width:0}
+body.bh-my-hub .my-hub-hero-actions{grid-area:actions!important;justify-content:flex-start!important}
+body.bh-my-hub #hubProPitch{grid-area:pro!important;align-self:stretch!important}
+body.bh-my-hub .hub-personal-cta{
+  background:#174e3b!important;border:1px solid #174e3b!important;
+  color:#dcefe2!important;border-radius:18px!important;
+}
+body.bh-my-hub .hub-personal-cta :is(.eyebrow,h2,p){color:#dcefe2!important}
+body.bh-my-hub .hub-personal-cta .hub-personal-actions .button-primary{
+  background:#dcefe2!important;border-color:#dcefe2!important;color:#174e3b!important;
+}
+body.bh-my-hub .hub-personal-cta .hub-personal-actions .button-soft{
+  background:transparent!important;border:1px solid #b8d8c2!important;color:#e6f4e9!important;
+}
+@media(max-width:700px){
+  body.bh-my-hub .my-hub-hero{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-areas:"copy" "pro" "actions"!important;gap:14px!important;
+  }
+}
+
+
+/* Keep the Family Pro CTA contained within its right-hand hero column. */
+body.bh-my-hub #hubProPitch{
+  grid-area:pro!important;
+  align-self:center!important;
+  justify-self:stretch!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  overflow-wrap:anywhere;
+}
+body.bh-my-hub #hubProPitch>*{max-width:100%;min-width:0;box-sizing:border-box}
+body.bh-my-hub #hubProPitch .button{
+  align-self:flex-start!important;
+  width:auto!important;
+  max-width:100%!important;
+  white-space:normal!important;
+  box-sizing:border-box!important;
+}
+
+
+/* My Hub refinements: teal-to-green personal prompt and a fixed two-column family list. */
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-personal-cta{
+  background:linear-gradient(110deg,#3c8e96,#144400)!important;
+  border:1px solid #123f31!important;
+}
+body.bh-my-hub .family-v3-main .hub-family-list.hub-family-expanded{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+
+/* My Hub child tracker: give school dates and nap windows equal space. */
+body.bh-my-hub .family-v3-main .school-tracker{width:100%;max-width:100%;box-sizing:border-box}
+body.bh-my-hub .family-v3-main .school-tracker-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%;min-width:0}
+body.bh-my-hub .family-v3-main .school-tracker-grid>.school-tracker-item{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0;padding:12px;border:1px solid #d7e6e2;border-radius:11px;background:#fff;box-sizing:border-box}
+body.bh-my-hub .family-v3-main .school-tracker-grid>.school-tracker-item>b{color:#174e49;font-size:13px}
+body.bh-my-hub .family-v3-main .school-tracker-grid>.school-tracker-item>small{color:#0f766e;font-size:12px;font-weight:700}
+body.bh-my-hub .family-v3-main .school-tracker-grid>.school-tracker-item>p{margin:0;color:#668078;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+@media(max-width:520px){body.bh-my-hub .family-v3-main .school-tracker-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}body.bh-my-hub .family-v3-main .school-tracker-grid>.school-tracker-item{padding:9px}}
+
+/* My Hub responsive parity: keep the same sections and reading order on phones,
+   reflowing the desktop layout instead of presenting a different dashboard. */
+@media(max-width:850px){
+  body.bh-my-hub .family-v3-main{width:100%;min-width:0}
+  body.bh-my-hub .family-v3-main>.my-hub-hero,
+  body.bh-my-hub .family-v3-main>#myHubApp,
+  body.bh-my-hub .family-v3-main>.my-hub-message{width:100%;max-width:100%;box-sizing:border-box}
+  body.bh-my-hub #myHubApp{display:flex!important;flex-direction:column!important;gap:16px!important}
+  body.bh-my-hub #myHubApp>.hub-welcome{order:0!important}
+  body.bh-my-hub #myHubApp>.hub-stats{order:1!important}
+  body.bh-my-hub #myHubApp>.hub-personal-cta{order:2!important}
+  body.bh-my-hub #myHubApp>.hub-family-panel{order:3!important}
+  body.bh-my-hub #myHubApp>.hub-suggestions{order:4!important}
+  body.bh-my-hub #myHubApp>.hub-main-dashboard{order:5!important}
+  body.bh-my-hub #myHubApp>[data-bh-inspire-me]{order:6!important}
+  body.bh-my-hub #myHubApp>#my-messages{order:7!important}
+  body.bh-my-hub #myHubApp>.hub-tools-grid{order:8!important}
+  body.bh-my-hub .hub-main-dashboard{display:grid!important;grid-template-columns:minmax(0,1fr)!important}
+  body.bh-my-hub .hub-main-dashboard>.hub-brief{grid-column:auto!important}
+  body.bh-my-hub .hub-family-list.hub-family-expanded{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  body.bh-my-hub .hub-upcoming-ticker{width:100%;max-width:100%;box-sizing:border-box}
+  body.bh-my-hub .hub-ticker-track{display:flex;flex-direction:column;gap:8px;overflow:visible;white-space:normal}
+  body.bh-my-hub .hub-ticker-track a{display:flex;flex-wrap:wrap;gap:4px 8px;animation:none!important;transform:none!important;white-space:normal}
+  body.bh-my-hub .hub-ticker-track a span{overflow-wrap:anywhere}
+}
+@media(max-width:520px){
+  body.bh-my-hub .family-v3-main>.my-hub-hero{margin:0 0 12px!important;padding:20px 16px!important}
+  body.bh-my-hub .family-v3-main .hub-welcome,
+  body.bh-my-hub .family-v3-main .hub-personal-cta,
+  body.bh-my-hub .family-v3-main .hub-family-panel,
+  body.bh-my-hub .family-v3-main .hub-panel,
+  body.bh-my-hub .family-v3-main .hub-brief,
+  body.bh-my-hub .family-v3-main .hub-suggestions{min-width:0;max-width:100%;box-sizing:border-box}
+  body.bh-my-hub .hub-family-list.hub-family-expanded{gap:8px!important}
+  body.bh-my-hub .hub-family-card{min-width:0;padding:10px!important}
+}
+
+
+/* My Hub bold Bubba Hub palette — presentation only; keep the dashboard hooks and layout intact. */
+body.bh-my-hub{background:#f7f6ef;color:#173d32}
+body.bh-my-hub .family-v3-sidebar{border-color:#cbded2;background:#fff;box-shadow:0 8px 22px rgba(23,61,50,.08)}
+body.bh-my-hub .family-v3-brand strong,
+body.bh-my-hub .family-v3-main :is(h1,h2,h3){color:#174e3b}
+body.bh-my-hub .family-v3-nav a{color:#31594c}
+body.bh-my-hub .family-v3-nav a:hover{background:#e4f0e7;color:#174e3b}
+body.bh-my-hub .family-v3-nav a[aria-current=page]{background:#174e3b;color:#fff}
+body.bh-my-hub .family-v3-help{background:#e1f0ed;border-color:#bddbd3}
+body.bh-my-hub .family-v3-main .my-hub-hero{
+  background:linear-gradient(120deg,#174e3b 0%,#0f766e 72%,#287f72 100%)!important;
+  border:0!important;color:#fff;box-shadow:0 12px 28px rgba(23,78,59,.16)!important
+}
+body.bh-my-hub .family-v3-main .my-hub-hero :is(h1,h2,p,.eyebrow){color:#fff}
+body.bh-my-hub .family-v3-main .my-hub-hero .eyebrow{color:#d9eee1}
+body.bh-my-hub .family-v3-main .my-hub-hero .button-primary{background:#f0bd45;border-color:#f0bd45;color:#173d32}
+body.bh-my-hub .family-v3-main .my-hub-hero .button-soft{background:#fff;border-color:#fff;color:#174e3b}
+body.bh-my-hub .family-v3-main :is(.admin-panel,.hub-panel,.hub-brief,.hub-welcome){
+  border-color:#d6e3d9!important;box-shadow:0 5px 18px rgba(23,61,50,.055)!important
+}
+body.bh-my-hub .family-v3-main .hub-personal-cta{
+  background:#174e3b!important;border-color:#174e3b!important;color:#fff
+}
+body.bh-my-hub .family-v3-main .hub-personal-cta :is(h2,p,.eyebrow){color:#fff}
+body.bh-my-hub .family-v3-main .hub-personal-cta .button-primary{
+  background:#e97862!important;border-color:#e97862!important;color:#fff!important
+}
+body.bh-my-hub .family-v3-main .hub-personal-cta .button-soft{
+  background:#fff!important;border-color:#fff!important;color:#174e3b!important
+}
+body.bh-my-hub .family-v3-main .hub-stat:nth-child(4n+1){background:#fbe5df;border-color:#f1c6bb}
+body.bh-my-hub .family-v3-main .hub-stat:nth-child(4n+2){background:#dcefeb;border-color:#b9ddd5}
+body.bh-my-hub .family-v3-main .hub-stat:nth-child(4n+3){background:#e4efdf;border-color:#c8ddc5}
+body.bh-my-hub .family-v3-main .hub-stat:nth-child(4n+4){background:#fff1cf;border-color:#ead59c}
+body.bh-my-hub .family-v3-main .hub-section-links a{
+  border-color:#d5e2d9;color:#174e3b;box-shadow:0 4px 13px rgba(23,61,50,.045)
+}
+body.bh-my-hub .family-v3-main .hub-section-links a:nth-child(4n+1){border-top:4px solid #e97862;background:#fff8f5}
+body.bh-my-hub .family-v3-main .hub-section-links a:nth-child(4n+2){border-top:4px solid #0f766e;background:#f2faf8}
+body.bh-my-hub .family-v3-main .hub-section-links a:nth-child(4n+3){border-top:4px solid #d9a52e;background:#fffaf0}
+body.bh-my-hub .family-v3-main .hub-section-links a:nth-child(4n+4){border-top:4px solid #416651;background:#f4f8f1}
+body.bh-my-hub .family-v3-main .hub-section-links a span{color:#536e63}
+body.bh-my-hub .family-v3-main .hub-family-card{border-color:#d6e3d9;background:#f7faf6}
+body.bh-my-hub .family-v3-main :is(.hub-list-card,.hub-booking-card,.hub-brief-item){
+  border-color:#e0e8e1;background:#f8faf6
+}
+body.bh-my-hub .family-v3-main :is(.hub-list-card,.hub-booking-card,.hub-brief-item):hover{
+  border-color:#9fc7b0;background:#eaf3e9
+}
+body.bh-my-hub .family-v3-main .button-primary{background:#174e3b;border-color:#174e3b;color:#fff}
+body.bh-my-hub .family-v3-main .button-primary:hover{background:#0f766e;border-color:#0f766e}
+body.bh-my-hub .family-v3-main .button-soft{background:#e4f0e7;border-color:#cbded2;color:#174e3b}
+body.bh-my-hub .family-v3-main .button-soft:hover{background:#f7d9d1;border-color:#e97862;color:#63372e}
+@media(max-width:560px){
+  body.bh-my-hub .family-v3-main .hub-section-links{grid-template-columns:1fr}
+  body.bh-my-hub .family-v3-main .my-hub-hero .button{width:100%;justify-content:center}
+  body.bh-my-hub .family-v3-main .hub-personal-cta .hub-personal-actions{display:grid;width:100%;grid-template-columns:1fr}
+  body.bh-my-hub .family-v3-main .hub-personal-cta .button{width:100%;min-height:46px}
+}
+
+
+/* My Hub family profiles: phone-first layout. */
+@media(max-width:600px){
+  body.bh-my-hub .family-v3-main .hub-family-list.hub-family-expanded{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
+  body.bh-my-hub .family-v3-main .hub-family-card{display:flex!important;flex-direction:row!important;align-items:flex-start!important;gap:12px!important;width:100%!important;min-width:0!important;padding:14px!important;box-sizing:border-box!important}
+  body.bh-my-hub .family-v3-main .hub-family-card>.family-avatar{flex:0 0 44px!important;width:44px!important;height:44px!important;margin:2px 0 0!important}
+  body.bh-my-hub .family-v3-main .hub-family-card>.hub-family-main{flex:1 1 auto!important;width:calc(100% - 56px)!important;min-width:0!important}
+  body.bh-my-hub .family-v3-main .hub-family-title{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;flex-wrap:wrap!important;gap:10px!important;min-width:0!important}
+  body.bh-my-hub .family-v3-main .hub-family-title>div{flex:1 1 150px!important;min-width:0!important}
+  body.bh-my-hub .family-v3-main .hub-family-title strong,body.bh-my-hub .family-v3-main .hub-family-title small{overflow-wrap:anywhere!important}
+  body.bh-my-hub .family-v3-main .hub-family-title .button{flex:0 0 auto!important;min-height:40px!important;padding:8px 14px!important}
+  body.bh-my-hub .family-v3-main .school-tracker{width:100%!important;min-width:0!important;margin-top:8px!important}
+  body.bh-my-hub .family-v3-main .school-tracker-grid{grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+  body.bh-my-hub .family-v3-main .school-tracker-grid>.school-tracker-item{width:100%!important;min-width:0!important;padding:11px!important}
+  body.bh-my-hub .family-v3-main .school-tracker-link{align-self:flex-start!important;max-width:100%!important;white-space:normal!important}
+}

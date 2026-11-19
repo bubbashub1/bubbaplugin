@@ -6,7 +6,7 @@
   <title>Leader Portal · Bubba Hub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/portal-v2.css"><style>
 /* Dashboard layout is maintained in leader-dashboard-v3.css. */
-</style><link rel="stylesheet" href="/assets/css/expo-inspired-headers.css"><style>.bh-leader-v2 .bh-banner-leader{background:#e2eee5 url("/images/logos/34013-20261020-162201-5c57b4.png") center/cover no-repeat;min-height:270px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center}.bh-banner-leader>div{position:relative;z-index:1}.bh-banner-leader .hero-actions{justify-content:flex-start!important}@media(max-width:650px){.bh-leader-v2 .bh-banner-leader{background-position:center top;background-size:100% auto;padding-top:clamp(150px,43vw,260px);min-height:0}.bh-banner-leader .hero-actions{flex-wrap:wrap}}</style><link rel="stylesheet" href="/assets/css/sitewide-unified-polish.css?v=20261029">  <link rel="stylesheet" href="/assets/css/leader-dashboard-v3.css?v=20261111-2">
+</style><link rel="stylesheet" href="/assets/css/expo-inspired-headers.css"><style>.bh-leader-v2 .bh-banner-leader{background:#e2eee5 url("/images/logos/34013-20261020-162201-5c57b4.png") center/cover no-repeat;min-height:270px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center}.bh-banner-leader>div{position:relative;z-index:1}.bh-banner-leader .hero-actions{justify-content:flex-start!important}@media(max-width:650px){.bh-leader-v2 .bh-banner-leader{background-position:center top;background-size:100% auto;padding-top:clamp(150px,43vw,260px);min-height:0}.bh-banner-leader .hero-actions{flex-wrap:wrap}}</style><link rel="stylesheet" href="/assets/css/sitewide-unified-polish.css?v=20261029">  <link rel="stylesheet" href="/assets/css/leader-dashboard-v3.css?v=20261119-family-style">
 </head>
 <body class="bh-leader-v2" data-leader-page="dashboard">
 <header class="site-header">
@@ -24,21 +24,30 @@
 <div class="leader-v3-shell">
 <aside class="leader-v3-sidebar" aria-label="Leader dashboard navigation">
  <div class="bh-leader-v3-brand" id="leaderV3SidebarBrand">Your account</div>
- <div class="bh-leader-v3-label">My workspace</div>
- <nav class="bh-leader-v3-nav">
-  <a href="/leader.html" aria-current="page"><span class="nav-ico">⌂</span>Overview</a>
-  <a href="/leader/new.html"><span class="nav-ico">＋</span>Add a Class</a>
-  <a href="/leader/classes.html"><span class="nav-ico">▤</span>My Classes</a>
-  <a href="/leader/schedule.html"><span class="nav-ico">▦</span>My Schedule</a>
-  <a href="/leader/venues.html"><span class="nav-ico">⌖</span>My Venues</a>
-  <a href="/leader/bookings.html"><span class="nav-ico">▣</span>Bookings</a>
-  <a href="/leader/messages.html"><span class="nav-ico">✉</span>My Messages <span id="leaderV3Messages" class="bh-leader-v3-status pending">0</span></a>
-  <div class="bh-leader-v3-label">My account</div>
-  <a href="/leader/profile.html"><span class="nav-ico">◎</span>My Profile</a>
-  <a href="/leader/specialisms.html"><span class="nav-ico">✧</span>My Specialisms</a>
-  <a href="/leader/faqs.html"><span class="nav-ico">?</span>FAQs</a>
-  <a href="/leader/statistics.html"><span class="nav-ico">▥</span>Statistics</a>
-  <a href="/leader/payments.html"><span class="nav-ico">£</span>Payments</a>
+ <button id="leaderV3MenuToggle" class="bh-leader-v3-menu-toggle" type="button" aria-expanded="false" aria-controls="leaderV3Nav"><span>Class Leader menu</span><span aria-hidden="true">⌄</span></button>
+ <nav class="bh-leader-v3-nav" id="leaderV3Nav" aria-label="Leader workspace">
+  <section class="bh-leader-v3-nav-group" data-nav-group="workspace">
+   <button class="bh-leader-v3-nav-group-toggle" type="button" aria-expanded="true">My workspace <span aria-hidden="true">⌄</span></button>
+   <div class="bh-leader-v3-nav-group-items">
+    <a href="/leader.html" aria-current="page"><span class="nav-ico">⌂</span>Overview</a>
+    <a href="/leader/new.html"><span class="nav-ico">＋</span>Add a Class</a>
+    <a href="/leader/classes.html"><span class="nav-ico">▤</span>My Classes</a>
+    <a href="/leader/schedule.html"><span class="nav-ico">▦</span>My Schedule</a>
+    <a href="/leader/venues.html"><span class="nav-ico">⌖</span>My Venues</a>
+    <a href="/leader/bookings.html"><span class="nav-ico">▣</span>Bookings</a>
+    <a href="/leader/messages.html"><span class="nav-ico">✉</span>My Messages <span id="leaderV3Messages" class="bh-leader-v3-status pending">0</span></a>
+   </div>
+  </section>
+  <section class="bh-leader-v3-nav-group" data-nav-group="account">
+   <button class="bh-leader-v3-nav-group-toggle" type="button" aria-expanded="true">My account <span aria-hidden="true">⌄</span></button>
+   <div class="bh-leader-v3-nav-group-items">
+    <a href="/leader/profile.html"><span class="nav-ico">◎</span>My Profile</a>
+    <a href="/leader/specialisms.html"><span class="nav-ico">✧</span>My Specialisms</a>
+    <a href="/leader/faqs.html"><span class="nav-ico">?</span>FAQs</a>
+    <a href="/leader/statistics.html"><span class="nav-ico">▥</span>Statistics</a>
+    <a href="/leader/payments.html"><span class="nav-ico">£</span>Payments</a>
+   </div>
+  </section>
  </nav>
 </aside>
 <main class="leader-v3-main">
@@ -111,13 +120,16 @@ fetch("/api/subscription.php",{credentials:"same-origin",cache:"no-store"}).then
  const a=document.getElementById("leaderProAction"); if(!a)return;
  if(d.pro&&d.subscription?.plan==="leader_pro"){
   a.textContent="⭐ Leader Pro"; a.href="/pro.html#leader-pro"; a.className="account-pro-badge";
-  document.getElementById("leaderProTitle").textContent="Your Leader Pro account is active";
-  document.getElementById("leaderProText").textContent="You have access to your Leader Pro features.";
+  const proPanel=a.closest(".bh-leader-v3-pro");
+  const proTitle=proPanel?.querySelector("h2");
+  const proText=proPanel?.querySelector("p");
+  if(proTitle)proTitle.textContent="Your Leader Pro account is active";
+  if(proText)proText.textContent="You have access to your Leader Pro features.";
  }
 }).catch(()=>{});
 </script>
 <script>
 (async()=>{try{const r=await fetch('/api/leader-messages.php',{credentials:'same-origin',cache:'no-store'});if(!r.ok)return;const d=await r.json();const count=Number(d.unanswered_count||0),badge=document.getElementById('leaderMessageCount');if(badge&&count>0){badge.textContent=count+' new';badge.hidden=false;badge.style.display='inline-flex';document.title='('+count+') Leader Portal · Bubba Hub';}}catch(e){}})();
-</script><script src="/assets/js/leader-pro-nav.js"></script><script src="/assets/js/leader-dashboard-overview.js?v=20261111"></script>
+</script><script src="/assets/js/leader-pro-nav.js"></script><script src="/assets/js/leader-dashboard-overview.js?v=20261119-family-style"></script>
 </body>
 </html>

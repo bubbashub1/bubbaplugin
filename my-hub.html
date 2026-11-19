@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="/assets/css/my-hub.css">
 <link rel="stylesheet" href="/assets/css/inspire-me.css">
 <link rel="stylesheet" href="/assets/css/my-hub-v2.css">
-<link rel="stylesheet" href="/assets/css/expo-inspired-headers.css?v=20261020-cta2"><link rel="stylesheet" href="/assets/css/family-hub-unified.css?v=20261029"><link rel="stylesheet" href="/assets/css/family-hub-v3.css?v=20261114-mobile-dropdown"></head>
+<link rel="stylesheet" href="/assets/css/expo-inspired-headers.css?v=20261020-cta2"><link rel="stylesheet" href="/assets/css/family-hub-unified.css?v=20261029"><link rel="stylesheet" href="/assets/css/family-hub-v3.css?v=20261119-family-cards-mobile"></head>
 <body class="bh-my-hub">
 <header class="site-header"><a class="brand" href="index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main menu">
     <a href="directory.html">Find activities</a>
@@ -22,7 +22,7 @@
 <div class="my-hub-hero">
   <div class="my-hub-hero-copy">
     <span class="hub-pro-status" id="hubProStatus" hidden>⭐ Family Pro</span><span class="eyebrow">Your family space</span>
-    <h1>Hello <span id="hubHeroName">there</span></h1>
+    <h1>Hello, <span id="hubHeroName">there</span></h1>
     <p>Everything your family has saved, planned and booked — all in one place.</p>
   </div>
   <div class="my-hub-hero-actions">
@@ -54,6 +54,7 @@
   </div>
   <div class="hub-personal-actions"><button class="button button-primary" id="openWhatShallI" type="button">✨ Help me find something</button><a class="button button-soft" href="account/preferences.html">Personalise my ideas</a></div>
 </section>
+  <div data-bh-inspire-me></div>
   <section class="hub-section-links" aria-label="Your family activity lists">
     <a href="/family-section.html?section=suggested"><strong>Suggested groups &amp; activities</strong><span>Ideas matched to your family</span>→</a>
     <a href="/planner.html?view=list"><strong>My Plans</strong><span>See your planned activities in a simple list</span>→</a>
@@ -89,8 +90,8 @@
 
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/inspire-me.js" defer></script>
-<script src="/assets/js/my-hub.js"></script>
+<script src="/assets/js/my-hub.js?v=20261119-ticker-visible"></script>
 <script src="/assets/js/hub-messages.js" defer></script>
 <script>(async()=>{try{const r=await fetch("api/subscription.php",{credentials:"same-origin",cache:"no-store"}),d=await r.json();if(d.pro){const e=document.getElementById("hubProStatus");if(e)e.hidden=false}else{const p=document.getElementById("hubProPitch");if(p)p.hidden=false}}catch(e){}})();</script>
-<script src="/assets/js/family-hub-shell-v3.js?v=20261114-mobile-dropdown" defer></script></body>
+<script src="/assets/js/family-hub-shell-v3.js?v=20261119-myhub-planner-top" defer></script></body>
 </html>
