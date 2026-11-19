@@ -397,7 +397,8 @@ void bhHydrateSaved();
     {label:"My Account",url:"/account.html"}
   ];
   const applyMainNav=()=>document.querySelectorAll(".site-header .main-nav").forEach(nav=>{
-    nav.querySelectorAll("a").forEach(link=>{if(link.textContent.trim().toLowerCase()==="explore")link.remove();});\n    nav.innerHTML=MAIN_NAV.filter(item=>item.label.trim().toLowerCase()!=="explore").map(item=>'<a href="'+bhEscape(item.url)+'">'+bhEscape(item.label)+'</a>').join("");
+    nav.querySelectorAll("a").forEach(link=>{if(link.textContent.trim().toLowerCase()==="explore")link.remove();});\n    const navIcons={"/directory.html":'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5M8 10.8h5.6M10.8 8v5.6"/></svg>',"/events.html":'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17M8 13h3M8 16.5h6"/></svg>',"/my-hub.html":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></svg>',"/leader.html":'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.8 20v-1.5a6.2 6.2 0 0 1 12.4 0V20M16 5.2a3.5 3.5 0 0 1 0 6.8M18 14a4.5 4.5 0 0 1 3.2 4.3V20"/></svg>',"/account.html":'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg>'};
+    nav.innerHTML=MAIN_NAV.map(item=>'<a href="'+bhEscape(item.url)+'"><span class="bh-nav-icon">'+(navIcons[item.url]||'')+'</span><span>'+bhEscape(item.label)+'</span></a>').join("");
     const header=nav.closest(".site-header");
     const toggle=header?.querySelector(".mobile-nav-toggle");
     if(nav.dataset.bhCloseBound!=="true"){
