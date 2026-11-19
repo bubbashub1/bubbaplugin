@@ -1,7 +1,7 @@
 name: Leader dashboard visual checks
 on:
   pull_request:
-    branches: [main]
+    branches: [main, staging-site]
     paths:
       - 'leader.html'
       - 'assets/css/leader-dashboard-v3.css'
@@ -10,6 +10,7 @@ on:
   push:
     branches:
       - 'feature/leader-dashboard-visual-20261111'
+      - 'staging-site'
     paths:
       - 'leader.html'
       - 'assets/css/leader-dashboard-v3.css'
@@ -64,7 +65,7 @@ jobs:
               "leaderWelcome", "addListingButton", "leaderFrontPageLink",
               "leaderV3Classes", "leaderV3Sessions", "leaderV3NewBookings",
               "leaderV3Rating", "leaderV3Schedule", "leaderV3Bookings",
-              "leaderV3Messages", "portalMessage"
+              "leaderV3Messages", "portalMessage", "leaderV3MenuToggle"
           ]
           for element_id in required_ids:
               assert element_id in parser.ids, f"Missing dashboard integration hook: {element_id}"
