@@ -33,33 +33,32 @@
    1. TOKENS — single :root, single source of truth
    ========================================================================= */
 :root {
-  /* Brand */
-  --bh-green:        #0f766e;
-  --bh-green-dark:   #115e59;
-  --bh-green-soft:   #d9eee9;
-  --bh-green-pale:   #f4f8f7;
-  --bh-teal:         #0f766e;
-  --bh-teal-dark:    #115e59;   /* use for teal buttons: white text passes AA */
-  --bh-yellow:       #f6c84a;
-  --bh-yellow-dark:  #eab83b;
-  --bh-pink:         #ee6684;
-  --bh-purple:       #8068cf;
-  --bh-blue:         #55a9c2;
-  --bh-danger:       #a8445a;
+  /* Brand palette — November 2026 */
+  --bh-green:        #416651;
+  --bh-green-dark:   #144400;
+  --bh-green-soft:   #daede2;
+  --bh-green-pale:   #cdd8c7;
+  --bh-teal:         #679483;
+  --bh-teal-dark:    #3f573a;
+  --bh-yellow:        #e2a9f1;
+  --bh-yellow-dark:   #d28be2;
+  --bh-pink:          #a172ac;
+  --bh-purple:        #817ab3;
+  --bh-blue:          #3f4897;
+  --bh-danger:        #a8445a;
 
   /* Neutrals / surfaces */
-  --bh-ink:          #123f31;   /* dark text on pale/teal surfaces */
-  --bh-deep:         #0d3b32;   /* footer background */
-  --bh-text:         #243027;
-  --bh-muted:        #617261;
+  --bh-ink:          #144400;
+  --bh-deep:         #3f573a;
+  --bh-text:          #243027;
+  --bh-muted:         #3f573a;
   --bh-white:        #fff;
-  --bh-bg:           #f4f8f7;
-  --bh-sage:         #e2f0ed;
-  --bh-mist:         #e8f3f1;
-  --bh-soft:         #9fb7a5;
-  --bh-accent:       #9cb8a4;
+  --bh-bg:            #daede2;
+  --bh-sage:          #cdd8c7;
+  --bh-mist:           #daede2;
+  --bh-soft:            #9daa96;
+  --bh-accent:          #679483;
 
-  /* Lines, shadows, radii, sizes */
   --bh-border:       #d7e6e2;
   --bh-line:         rgba(18, 63, 49, .09);
   --bh-shadow:       0 8px 24px rgba(20, 68, 0, .08);
@@ -1729,7 +1728,7 @@ body:has(.hub-modal), body:has(.hero-advanced-modal:not([hidden])) { overflow: h
   --bh-home-gutter:12px;
   --bh-home-dark:#0d3b32;
   --bh-home-teal:#159d9b;
-  --bh-home-yellow:#f6c84a;
+  --bh-home-yellow:#e2a9f1;
   --bh-home-pink:#ee6684;
   --bh-home-purple:#8068cf;
   --bh-home-green:#69ad35;
@@ -2457,7 +2456,7 @@ body:has(.hub-modal), body:has(.hero-advanced-modal:not([hidden])) { overflow: h
 .bh-home .home-footer .site-footer-title{color:#fff}
 
 .bh-home .home-footer .site-footer-links a{color:rgba(255,255,255,.85)}
-.bh-home .home-footer .site-footer-links a:hover{color:#f6c84a}
+.bh-home .home-footer .site-footer-links a:hover{color:#e2a9f1}
 
 .bh-home .home-newsletter form{display:flex}
 .bh-home .home-newsletter input{
@@ -3352,8 +3351,8 @@ body:has(.hub-modal), body:has(.hero-advanced-modal:not([hidden])) { overflow: h
   box-shadow:0 6px 16px rgba(20,68,0,.10);
 }
 .bh-directory .directory-search-advanced-link:hover{
-  background:#f6c84a;
-  border-color:#f6c84a;
+  background:#e2a9f1;
+  border-color:#e2a9f1;
   color:#144400;
 }
 .bh-directory .directory-calendar-hero-button,
@@ -3380,8 +3379,8 @@ body:has(.hub-modal), body:has(.hero-advanced-modal:not([hidden])) { overflow: h
 .bh-directory .directory-map-action-button:hover,
 .bh-directory .directory-map-hero-button:hover,
 .bh-directory .directory-planner-action-button:hover{
-  background:#f6c84a;
-  border-color:#f6c84a;
+  background:#e2a9f1;
+  border-color:#e2a9f1;
   color:#144400;
 }
 .bh-directory .directory-popular{
@@ -4036,7 +4035,7 @@ body:has(.hub-modal), body:has(.hero-advanced-modal:not([hidden])) { overflow: h
 }
 .bh-directory .directory-map-hero-button:hover,
 .bh-directory .directory-map-hero-button:focus-visible{
-  background:#f6c84a;color:#144400;border-color:#f6c84a;
+  background:#e2a9f1;color:#144400;border-color:#e2a9f1;
   transform:translateY(-1px);box-shadow:0 8px 18px rgba(20,68,0,.12);
 }
 .bh-directory .directory-map-hero-button:focus-visible{outline:3px solid rgba(60,142,150,.28);outline-offset:2px}
@@ -4322,7 +4321,7 @@ body:not(.bh-home) .activity-hero .listing-actions .activity-action:hover,
 body:not(.bh-home) .activity-hero .listing-actions .activity-action:focus-visible{background:#fff!important;border-color:#b9d8c5!important;box-shadow:0 5px 14px rgba(18,61,48,.14)!important;color:#123d30!important;transform:translateY(-1px)!important}
 body:not(.bh-home) .activity-hero .listing-actions #planner{background:var(--ad-pale)!important;border-color:var(--ad-pale)!important;color:var(--ad-forest)!important}
 body:not(.bh-home) .activity-hero .listing-actions #planner::first-letter{font-size:24px} /* only sensible if the label starts with an icon */
-body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{flex:1.1 1 0!important;background:#f6c84a!important;border:1px solid #f6c84a!important;box-shadow:0 5px 14px rgba(20,68,0,.16)!important;color:var(--ad-ink)!important;text-shadow:none!important}
+body:not(.bh-home) .activity-hero .listing-actions .activity-book-button{flex:1.1 1 0!important;background:#e2a9f1!important;border:1px solid #e2a9f1!important;box-shadow:0 5px 14px rgba(20,68,0,.16)!important;color:var(--ad-ink)!important;text-shadow:none!important}
 body:not(.bh-home) .activity-hero .listing-actions .activity-book-button:hover,
 body:not(.bh-home) .activity-hero .listing-actions .activity-book-button:focus-visible{background:#f1b92e!important;border-color:#f1b92e!important;color:var(--ad-ink)!important;transform:translateY(-1px)!important}
 
@@ -4989,7 +4988,7 @@ body:not(.bh-home) .schedule-hours-status.is-closed .schedule-hours-status-dot{b
 .bh-header-search-submit {
   height: 42px;
   flex: 0 0 auto;
-  background: #f6c84a;
+  background: #e2a9f1;
   color: #144400;
   border: 0;
   border-radius: 10px;
@@ -6881,7 +6880,7 @@ body.bh-stripe-modal-open{overflow:hidden}
   font-size:13px;box-shadow:0 6px 14px rgba(20,68,0,.10);
   transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
 }
-.bh-directory .directory-search-advanced-link{background:#f6c84a;color:#144400;}
+.bh-directory .directory-search-advanced-link{background:#e2a9f1;color:#144400;}
 .bh-directory .directory-calendar-hero-button,
 .bh-directory .directory-map-action-button,
 .bh-directory .directory-map-hero-button,
