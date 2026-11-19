@@ -30,6 +30,14 @@
   const setMessage = (id, message) => { const node=$(id); if(node) node.innerHTML='<p class="explore-loading">'+esc(message)+'</p>'; };
 
   async function init() {
+    const tickerToggle=$("exploreTickerToggle");
+    tickerToggle?.addEventListener("click",()=>{
+      const ticker=document.querySelector(".explore-news-ticker");
+      const paused=ticker?.classList.toggle("is-paused")||false;
+      tickerToggle.setAttribute("aria-pressed",String(paused));
+      tickerToggle.textContent=paused?"Play":"Pause";
+      tickerToggle.setAttribute("aria-label",paused?"Resume scrolling updates":"Pause scrolling updates");
+    });
     const form=$("exploreSearch"), regionSelect=$("exploreRegion"), townSelect=$("exploreTown");
     form?.addEventListener("submit", event => {
       event.preventDefault();
@@ -88,6 +96,20 @@
     }));
     items.sort((x,y)=>x.date-y.date);
     const rows=items.slice(0,10);
+    const ticker=$("exploreTickerTrack");
+    if(ticker){
+      if(rows.length){
+        const tickerEntries=rows.map(x=>{
+          const d=x.date,day=d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});
+          const time=d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+          const place=[x.venue.name,x.venue.town||x.venue.region].filter(Boolean).join(" · ");
+          return '<a class="explore-news-item" href="'+esc(activityUrl(x.a))+'"><span class="explore-news-date">'+esc(day+' · '+time)+'</span><strong>'+esc(x.a.title||"Family group")+'</strong><span class="explore-news-place">'+esc(place||"Devon & Cornwall")+'</span><span class="explore-news-arrow" aria-hidden="true">↗</span></a>';
+        }).join("");
+        ticker.innerHTML='<div class="explore-news-group">'+tickerEntries+'</div><div class="explore-news-group" aria-hidden="true" inert>'+tickerEntries+'</div>';
+      }else{
+        ticker.innerHTML='<p class="explore-news-empty">No upcoming sessions listed just now — explore all activities to find something for your family.</p>';
+      }
+    }
     node.innerHTML=rows.length?rows.map((x,i)=>{
       const d=x.date,today=new Date(),tomorrow=new Date(today.getFullYear(),today.getMonth(),today.getDate()+1);
       const same=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();

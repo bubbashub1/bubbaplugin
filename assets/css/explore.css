@@ -132,3 +132,28 @@
 
 /* Keep the category section heading distinctly Bubba Hub green. */
 .bh-explore #explore-categories-title{color:#174e3b!important}
+
+
+/* Live-style upcoming events ticker, positioned between the hero and category discovery. */
+.bh-explore .explore-news-ticker{display:grid;grid-template-columns:205px minmax(0,1fr) auto;align-items:center;gap:18px;margin:-30px 0 42px;padding:13px 16px;border:1px solid #dce8d9;border-radius:16px;background:linear-gradient(100deg,#e6f0e5 0%,#f8f0e5 52%,#e8f1f3 100%);overflow:hidden}
+.bh-explore .explore-news-label{display:flex;align-items:center;gap:11px;min-width:0}
+.bh-explore .explore-news-label>div{display:flex;flex-direction:column;gap:3px}
+.bh-explore .explore-news-kicker{font-size:.64rem;font-weight:700;letter-spacing:.12em;color:#63836b}
+.bh-explore .explore-news-label strong{font-size:.87rem;color:#24543f;white-space:nowrap}
+.bh-explore .explore-news-live{width:10px;height:10px;flex:0 0 10px;border-radius:50%;background:#4d9a70;box-shadow:0 0 0 4px rgba(77,154,112,.13)}
+.bh-explore .explore-news-window{min-width:0;overflow:hidden;mask-image:linear-gradient(90deg,transparent 0,#000 3%,#000 97%,transparent 100%)}
+.bh-explore .explore-news-track{display:flex;width:max-content;align-items:center}
+.bh-explore .explore-news-group{display:flex;flex:0 0 auto;align-items:center;animation:bhExploreTicker 48s linear infinite}
+.bh-explore .explore-news-ticker:hover .explore-news-group,.bh-explore .explore-news-ticker:focus-within .explore-news-group,.bh-explore .explore-news-ticker.is-paused .explore-news-group{animation-play-state:paused}
+.bh-explore .explore-news-item{display:inline-flex;align-items:center;gap:9px;padding:7px 20px;border-right:1px solid rgba(66,103,77,.18);color:#315b45;text-decoration:none;white-space:nowrap;font-size:.78rem}
+.bh-explore .explore-news-item:hover strong{text-decoration:underline}
+.bh-explore .explore-news-date{color:#9a6744;font-weight:700}
+.bh-explore .explore-news-item strong{font-size:.82rem;color:#24543f}
+.bh-explore .explore-news-place{color:#6d7f70}
+.bh-explore .explore-news-arrow{color:#b17a4e;font-weight:700}
+.bh-explore .explore-news-empty{margin:0;padding:8px 14px;color:#687d6d;font-size:.8rem}
+.bh-explore .explore-news-toggle{border:1px solid #cbdccf;border-radius:999px;background:#fffefa;color:#35644e;padding:8px 12px;font:700 .72rem "Quicksand",Arial,sans-serif;cursor:pointer}
+.bh-explore .explore-news-toggle:hover{background:#dcebe0}
+@keyframes bhExploreTicker{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+@media(prefers-reduced-motion:reduce){.bh-explore .explore-news-group{animation:none}}
+@media(max-width:760px){.bh-explore .explore-news-ticker{grid-template-columns:minmax(0,1fr) auto;gap:9px 12px;margin:-18px 0 30px;padding:12px}.bh-explore .explore-news-label{grid-column:1/-1}.bh-explore .explore-news-window{grid-column:1;grid-row:2}.bh-explore .explore-news-toggle{grid-column:2;grid-row:2}}
