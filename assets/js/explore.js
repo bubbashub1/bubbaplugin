@@ -10,7 +10,7 @@
   };
   const imageFor = activity => {
     const path = normal(activity?.image_path || activity?.image_url);
-    if (!path) return "/wp-content/uploads/logo/placeholder.jpeg";
+    if (!path) return "/images/home/card-classes-art.svg";
     if (/^https?:\/\//i.test(path)) return path;
     return path.startsWith("/") ? path : "/" + path.replace(/^\.\//,"");
   };
@@ -123,13 +123,13 @@
     activities.forEach(a=>getCategories(a).forEach(c=>{if(!categoryMap.has(c))categoryMap.set(c,a)}));
     const categoryEntries=[...categoryMap.entries()].sort((a,b)=>a[0].localeCompare(b[0])).slice(0,8);
     const categories=$("exploreCategories");
-    if(categories) categories.innerHTML=categoryEntries.length ? categoryEntries.map(([name,activity],i)=>'<a class="explore-category" href="'+esc(directoryUrl({category:name}))+'"><img src="'+esc(imageFor(activity))+'" alt="" loading="lazy"><strong>'+esc(name)+'</strong></a>').join("") : '<p class="explore-loading">No categories are available yet.</p>';
+    if(categories) categories.innerHTML=categoryEntries.length ? categoryEntries.map(([name,activity],i)=>'<a class="explore-category" href="'+esc(directoryUrl({category:name}))+'"><img src="'+esc(imageFor(activity))+'" alt="" loading="lazy" onerror="this.onerror=null;this.src=\'/images/home/card-classes-art.svg\'"><strong>'+esc(name)+'</strong></a>').join("") : '<p class="explore-loading">No categories are available yet.</p>';
     const featured=activities.filter(a=>a.title).slice(0,6);
     const activityNode=$("exploreActivities");
     if(activityNode) activityNode.innerHTML=featured.length ? featured.map(a=>{
       const category=getCategories(a)[0] || "Family activity";
       const place=[townOf(a),regionOf(a)].filter(Boolean).join(" · ");
-      return '<a class="explore-activity" href="'+esc(activityUrl(a))+'"><img src="'+esc(imageFor(a))+'" alt="" loading="lazy"><div class="explore-activity-body"><span class="explore-activity-meta">'+esc(category)+'</span><h3>'+esc(a.title)+'</h3><p>'+esc(place || "Devon & Cornwall")+'</p></div></a>';
+      return '<a class="explore-activity" href="'+esc(activityUrl(a))+'"><img src="'+esc(imageFor(a))+'" alt="" loading="lazy" onerror="this.onerror=null;this.src=\'/images/home/card-classes-art.svg\'"><div class="explore-activity-body"><span class="explore-activity-meta">'+esc(category)+'</span><h3>'+esc(a.title)+'</h3><p>'+esc(place || "Devon & Cornwall")+'</p></div></a>';
     }).join("") : '<p class="explore-loading">No published activities are available at the moment.</p>';
     renderUpcoming(activities);
     const regionNode=$("exploreRegions");
