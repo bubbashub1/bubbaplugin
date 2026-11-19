@@ -24,7 +24,7 @@
 <div class="leader-v3-shell">
 <aside class="leader-v3-sidebar" aria-label="Leader dashboard navigation">
  <div class="bh-leader-v3-brand" id="leaderV3SidebarBrand">Your account</div>
- <button class="bh-leader-v3-menu-toggle" type="button" aria-expanded="false" aria-controls="leaderV3Nav"><span>Class Leader menu</span><span aria-hidden="true">⌄</span></button>
+ <button id="leaderV3MenuToggle" class="bh-leader-v3-menu-toggle" type="button" aria-expanded="false" aria-controls="leaderV3Nav"><span>Class Leader menu</span><span aria-hidden="true">⌄</span></button>
  <nav class="bh-leader-v3-nav" id="leaderV3Nav" aria-label="Leader workspace">
   <section class="bh-leader-v3-nav-group" data-nav-group="workspace">
    <button class="bh-leader-v3-nav-group-toggle" type="button" aria-expanded="true">My workspace <span aria-hidden="true">⌄</span></button>
@@ -120,8 +120,11 @@ fetch("/api/subscription.php",{credentials:"same-origin",cache:"no-store"}).then
  const a=document.getElementById("leaderProAction"); if(!a)return;
  if(d.pro&&d.subscription?.plan==="leader_pro"){
   a.textContent="⭐ Leader Pro"; a.href="/pro.html#leader-pro"; a.className="account-pro-badge";
-  document.getElementById("leaderProTitle").textContent="Your Leader Pro account is active";
-  document.getElementById("leaderProText").textContent="You have access to your Leader Pro features.";
+  const proPanel=a.closest(".bh-leader-v3-pro");
+  const proTitle=proPanel?.querySelector("h2");
+  const proText=proPanel?.querySelector("p");
+  if(proTitle)proTitle.textContent="Your Leader Pro account is active";
+  if(proText)proText.textContent="You have access to your Leader Pro features.";
  }
 }).catch(()=>{});
 </script>
