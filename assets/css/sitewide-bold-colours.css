@@ -30,7 +30,7 @@
 /* Clear, warm neutral page base with confident green typography. */
 body{background-color:#f7f8f4!important;color:#263b33}
 body :is(h1,h2,h3,h4,.page-title,.section-title){color:#174e3b}
-body :is(a:not(.button):not(.btn):not([class*="button"])){color:#176b52}
+body :is(a:not(.button):not(.btn):not([class*="button"])){color:#000}
 body :is(a:not(.button):not(.btn):not([class*="button"])):hover{color:#b85e43}
 ::selection{background:#e5a92e!important;color:#123f30!important}
 :focus-visible{outline-color:#187d8a!important}
