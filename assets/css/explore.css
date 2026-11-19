@@ -49,3 +49,37 @@
 .bh-explore .site-footer{margin-top:0}
 @media(max-width:850px){.bh-explore .explore-hero{grid-template-columns:1fr;gap:24px}.bh-explore .explore-hero-note{margin-top:0}.bh-explore .explore-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bh-explore .explore-regions{grid-template-columns:1fr}.bh-explore .explore-activity-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.bh-explore-main{padding:0 15px 42px}.bh-explore .explore-hero{margin:14px 0 42px;padding:26px 19px;border-radius:21px}.bh-explore .explore-hero h1{font-size:2.45rem}.bh-explore .explore-search{padding:17px;border-radius:17px}.bh-explore .explore-search-row{grid-template-columns:1fr}.bh-explore .explore-section{margin-bottom:45px}.bh-explore .explore-section-heading{align-items:start;flex-direction:column;gap:8px}.bh-explore .explore-category-grid{gap:10px}.bh-explore .explore-category{min-height:142px;border-radius:15px}.bh-explore .explore-category strong{left:12px;bottom:12px;font-size:.9rem}.bh-explore .explore-activity-grid{grid-template-columns:1fr;gap:13px}.bh-explore .explore-activity{display:grid;grid-template-columns:112px 1fr;min-height:116px}.bh-explore .explore-activity img{height:100%;min-height:116px}.bh-explore .explore-activity-body{padding:12px}.bh-explore .explore-activity h3{font-size:.95rem;margin:5px 0}.bh-explore .explore-regions{padding:25px 19px;border-radius:19px;gap:20px}.bh-explore .explore-family-cta{padding:25px 20px;align-items:flex-start;flex-direction:column}.bh-explore .explore-cta-link{align-self:flex-start}}
+
+
+/* A little more Bubba colour: warm, playful accents without losing the calm directory feel. */
+.bh-explore{background:#fffdf8}
+.bh-explore .explore-hero{background:linear-gradient(118deg,#f7e9d9 0%,#f5f0df 43%,#dceee7 100%)}
+.bh-explore .explore-hero:after{background:rgba(255,255,255,.38)}
+.bh-explore .explore-eyebrow{color:#a56b42}
+.bh-explore .explore-hero h1{color:#24543f}
+.bh-explore .explore-hero-copy>p{color:#5d6d5e}
+.bh-explore .explore-search{box-shadow:0 15px 38px rgba(91,76,49,.12);border:1px solid rgba(255,255,255,.8)}
+.bh-explore .explore-primary{background:#267b68}
+.bh-explore .explore-primary:hover{background:#195e51}
+.bh-explore .explore-hero-note{color:#647c68}
+.bh-explore .explore-hero-note span{color:#d58a50}
+.bh-explore .explore-section-heading h2,.bh-explore .explore-regions h2{color:#285840}
+.bh-explore .explore-section-heading:before{content:"";display:block;width:34px;height:4px;border-radius:8px;background:#e7a56f;position:absolute;transform:translateY(-12px)}
+.bh-explore .explore-section-heading{position:relative}
+.bh-explore .explore-category:nth-child(4n+1){background:#d9e9dc}
+.bh-explore .explore-category:nth-child(4n+2){background:#f0dfcf}
+.bh-explore .explore-category:nth-child(4n+3){background:#dce8ef}
+.bh-explore .explore-category:nth-child(4n){background:#e8e1ef}
+.bh-explore .explore-category:after{background:linear-gradient(0deg,rgba(25,63,48,.82),rgba(25,63,48,.03) 82%)}
+.bh-explore .explore-activity{border-color:#eee8dc}
+.bh-explore .explore-activity-meta{display:inline-block;padding:5px 9px;border-radius:999px;background:#f8eadb;color:#9b623b;letter-spacing:.035em}
+.bh-explore .explore-activity:nth-child(3n+2) .explore-activity-meta{background:#e4f0e5;color:#397257}
+.bh-explore .explore-activity:nth-child(3n) .explore-activity-meta{background:#e8edf5;color:#536d91}
+.bh-explore .explore-regions{background:linear-gradient(120deg,#f5eadb 0%,#e8f1e7 100%)}
+.bh-explore .explore-region{border-color:#d8dfce;background:#fffefa}
+.bh-explore .explore-region:nth-child(3n+2){background:#fff1e3;border-color:#f0d8c2;color:#8c5b36}
+.bh-explore .explore-region:nth-child(3n){background:#e8f0f5;border-color:#d2e0e8;color:#42677a}
+.bh-explore .explore-region:hover{background:#dcebe0}
+.bh-explore .explore-family-cta{background:linear-gradient(115deg,#205b48 0%,#287a69 100%)}
+.bh-explore .explore-cta-link{background:#f5dfc9;color:#714c31}
+@media(max-width:560px){.bh-explore .explore-section-heading:before{transform:translateY(-9px)}}
