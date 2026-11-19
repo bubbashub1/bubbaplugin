@@ -83,3 +83,23 @@
 .bh-explore .explore-family-cta{background:linear-gradient(115deg,#205b48 0%,#287a69 100%)}
 .bh-explore .explore-cta-link{background:#f5dfc9;color:#714c31}
 @media(max-width:560px){.bh-explore .explore-section-heading:before{transform:translateY(-9px)}}
+
+/* Clear separators between each Explore sector */
+.bh-explore-main>.explore-section{border-top:1px solid #e7dfd2;padding-top:34px}
+.bh-explore-main>.explore-section:first-of-type{border-top:0}
+.bh-explore-main>.explore-regions{border-top:1px solid #e1d8c9;border-bottom:1px solid #e1d8c9}
+.bh-explore-main>.explore-family-cta{margin-top:38px}
+.bh-explore .explore-upcoming-list{border-top:1px solid #e9e1d6}
+.bh-explore .explore-upcoming-item{display:grid;grid-template-columns:42px minmax(125px,.7fr) minmax(0,2fr) minmax(75px,.55fr) 22px;align-items:center;gap:15px;padding:15px 8px;border-bottom:1px solid #e9e1d6;text-decoration:none;color:#294c3b;transition:background .18s}
+.bh-explore .explore-upcoming-item:hover{background:#f8f1e8}
+.bh-explore .explore-upcoming-number{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#f4e2d2;color:#a3663d;font-weight:700;font-size:.8rem}
+.bh-explore .explore-upcoming-item:nth-child(3n+2) .explore-upcoming-number{background:#e1eee2;color:#397257}
+.bh-explore .explore-upcoming-item:nth-child(3n) .explore-upcoming-number{background:#e4ebf2;color:#536d91}
+.bh-explore .explore-upcoming-date{font-size:.84rem;font-weight:700;color:#a3663d}
+.bh-explore .explore-upcoming-details{min-width:0;display:flex;flex-direction:column;gap:4px}
+.bh-explore .explore-upcoming-details strong{font-size:.94rem;color:#285840}
+.bh-explore .explore-upcoming-details small{font-size:.78rem;color:#718075}
+.bh-explore .explore-upcoming-time{font-size:.8rem;color:#63786a;font-weight:600}
+.bh-explore .explore-upcoming-arrow{font-size:1.2rem;color:#c18b60}
+.bh-explore .explore-refresh-status{font-size:.76rem;color:#778477;white-space:nowrap}
+@media(max-width:650px){.bh-explore .explore-upcoming-item{grid-template-columns:34px 1fr auto;gap:10px;padding:13px 4px}.bh-explore .explore-upcoming-number{width:30px;height:30px}.bh-explore .explore-upcoming-date{grid-column:2;grid-row:1;font-size:.76rem}.bh-explore .explore-upcoming-details{grid-column:2;grid-row:2}.bh-explore .explore-upcoming-time{grid-column:3;grid-row:1;font-size:.75rem}.bh-explore .explore-upcoming-arrow{grid-column:3;grid-row:2;text-align:right}.bh-explore .explore-refresh-status{white-space:normal;text-align:right;max-width:130px;font-size:.7rem}}
