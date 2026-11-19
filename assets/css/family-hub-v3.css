@@ -354,3 +354,18 @@ body.bh-subpage-v2 .hub-family-card :is(button,a){max-width:100%;white-space:nor
   :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav.is-open{display:flex;}
   :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav a{flex:0 0 auto;width:100%;min-height:46px;padding:11px 13px;white-space:normal;font-size:14px;}
 }
+
+/* Navigation repair: restore grouped Explore/My Family/My Space/My Planner sidebar. */
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav{display:flex!important;flex-direction:column!important;overflow:visible!important;gap:8px!important;padding:4px 0!important;}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group{border:1px solid #e4eee9;border-radius:12px;overflow:hidden;background:#fff;}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;padding:12px 13px;border:0;background:#e9f5ed;color:#174e49;font:700 14px 'Quicksand',sans-serif;cursor:pointer;}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group:nth-child(2) .family-v3-group-toggle{background:#fce8e5;}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group:nth-child(3) .family-v3-group-toggle{background:#e6f3fa;}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group:nth-child(4) .family-v3-group-toggle{background:#fff2d9;}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group:nth-child(5) .family-v3-group-toggle{background:#e9e4f8;}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group-toggle[aria-expanded=false] .family-v3-group-chevron{transform:rotate(-90deg);}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group-links{display:flex;flex-direction:column;padding:5px;gap:2px;}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group.is-collapsed .family-v3-group-links{display:none!important;}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group-links a{display:flex;align-items:center;gap:9px;padding:9px 10px;min-height:40px;border-radius:9px;color:#45645e;text-decoration:none;font-size:13px;font-weight:700;}
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group-links a:hover,:is(body.bh-family-v3,body.bh-my-hub) .family-v3-group-links a[aria-current=page]{background:#f1f8f4;color:#115e59;}
+@media(max-width:767px){ :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav{display:none!important;} :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav.is-open{display:flex!important;} :is(body.bh-family-v3,body.bh-my-hub) .family-v3-brand{display:none!important;} }
