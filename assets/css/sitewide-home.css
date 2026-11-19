@@ -3,11 +3,11 @@
    Homepage-specific rules remain in homepage.css.
 */
 :root{
-  --bh-site-dark:#0d3b32;
+  --bh-site-dark:#3f573a;
   --bh-site-teal:#159d9b;
-  --bh-site-yellow:#f6c84a;
-  --bh-site-pink:#ee6684;
-  --bh-site-purple:#8068cf;
+  --bh-site-yellow:#e2a9f1;
+  --bh-site-pink:#a172ac;
+  --bh-site-purple:#817ab3;
   --bh-site-green:#69ad35;
   --bh-site-bg:#f7fbf8;
   --bh-site-card:#fff;
@@ -20,7 +20,7 @@
 /* Page foundation */
 body:not(.bh-home){
   background:var(--bh-site-bg);
-  color:#123f31;
+  color:#144400;
   font-family:Calibri,Arial,Helvetica,sans-serif;
 }
 body:not(.bh-home) main{
@@ -184,7 +184,7 @@ body:not(.bh-home) textarea{
   border:1px solid rgba(18,63,49,.14);
   border-radius:12px;
   background:#fff;
-  color:#123f31;
+  color:#144400;
   min-height:44px;
 }
 body:not(.bh-home) input:focus,
