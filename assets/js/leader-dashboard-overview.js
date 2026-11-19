@@ -79,5 +79,5 @@
    if(response.ok&&data.ok&&$("leaderV3Messages"))$("leaderV3Messages").textContent=count;
   }catch(e){}
  }
- if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{initLeaderNavigation();init();},{once:true});else{initLeaderNavigation();init();}
 })();
