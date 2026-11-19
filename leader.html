@@ -24,21 +24,30 @@
 <div class="leader-v3-shell">
 <aside class="leader-v3-sidebar" aria-label="Leader dashboard navigation">
  <div class="bh-leader-v3-brand" id="leaderV3SidebarBrand">Your account</div>
- <div class="bh-leader-v3-label">My workspace</div>
- <nav class="bh-leader-v3-nav">
-  <a href="/leader.html" aria-current="page"><span class="nav-ico">⌂</span>Overview</a>
-  <a href="/leader/new.html"><span class="nav-ico">＋</span>Add a Class</a>
-  <a href="/leader/classes.html"><span class="nav-ico">▤</span>My Classes</a>
-  <a href="/leader/schedule.html"><span class="nav-ico">▦</span>My Schedule</a>
-  <a href="/leader/venues.html"><span class="nav-ico">⌖</span>My Venues</a>
-  <a href="/leader/bookings.html"><span class="nav-ico">▣</span>Bookings</a>
-  <a href="/leader/messages.html"><span class="nav-ico">✉</span>My Messages <span id="leaderV3Messages" class="bh-leader-v3-status pending">0</span></a>
-  <div class="bh-leader-v3-label">My account</div>
-  <a href="/leader/profile.html"><span class="nav-ico">◎</span>My Profile</a>
-  <a href="/leader/specialisms.html"><span class="nav-ico">✧</span>My Specialisms</a>
-  <a href="/leader/faqs.html"><span class="nav-ico">?</span>FAQs</a>
-  <a href="/leader/statistics.html"><span class="nav-ico">▥</span>Statistics</a>
-  <a href="/leader/payments.html"><span class="nav-ico">£</span>Payments</a>
+ <button class="bh-leader-v3-menu-toggle" type="button" aria-expanded="false" aria-controls="leaderV3Nav"><span>Class Leader menu</span><span aria-hidden="true">⌄</span></button>
+ <nav class="bh-leader-v3-nav" id="leaderV3Nav" aria-label="Leader workspace">
+  <section class="bh-leader-v3-nav-group" data-nav-group="workspace">
+   <button class="bh-leader-v3-nav-group-toggle" type="button" aria-expanded="true">My workspace <span aria-hidden="true">⌄</span></button>
+   <div class="bh-leader-v3-nav-group-items">
+    <a href="/leader.html" aria-current="page"><span class="nav-ico">⌂</span>Overview</a>
+    <a href="/leader/new.html"><span class="nav-ico">＋</span>Add a Class</a>
+    <a href="/leader/classes.html"><span class="nav-ico">▤</span>My Classes</a>
+    <a href="/leader/schedule.html"><span class="nav-ico">▦</span>My Schedule</a>
+    <a href="/leader/venues.html"><span class="nav-ico">⌖</span>My Venues</a>
+    <a href="/leader/bookings.html"><span class="nav-ico">▣</span>Bookings</a>
+    <a href="/leader/messages.html"><span class="nav-ico">✉</span>My Messages <span id="leaderV3Messages" class="bh-leader-v3-status pending">0</span></a>
+   </div>
+  </section>
+  <section class="bh-leader-v3-nav-group" data-nav-group="account">
+   <button class="bh-leader-v3-nav-group-toggle" type="button" aria-expanded="true">My account <span aria-hidden="true">⌄</span></button>
+   <div class="bh-leader-v3-nav-group-items">
+    <a href="/leader/profile.html"><span class="nav-ico">◎</span>My Profile</a>
+    <a href="/leader/specialisms.html"><span class="nav-ico">✧</span>My Specialisms</a>
+    <a href="/leader/faqs.html"><span class="nav-ico">?</span>FAQs</a>
+    <a href="/leader/statistics.html"><span class="nav-ico">▥</span>Statistics</a>
+    <a href="/leader/payments.html"><span class="nav-ico">£</span>Payments</a>
+   </div>
+  </section>
  </nav>
 </aside>
 <main class="leader-v3-main">
