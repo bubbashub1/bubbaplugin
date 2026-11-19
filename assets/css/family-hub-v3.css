@@ -1159,3 +1159,20 @@ body.bh-my-hub .family-v3-main .button-soft:hover{background:#f7d9d1;border-colo
   body.bh-my-hub .family-v3-main .hub-personal-cta .hub-personal-actions{display:grid;width:100%;grid-template-columns:1fr}
   body.bh-my-hub .family-v3-main .hub-personal-cta .button{width:100%;min-height:46px}
 }
+
+
+/* My Hub family profiles: phone-first layout. */
+@media(max-width:600px){
+  body.bh-my-hub .family-v3-main .hub-family-list.hub-family-expanded{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
+  body.bh-my-hub .family-v3-main .hub-family-card{display:flex!important;flex-direction:row!important;align-items:flex-start!important;gap:12px!important;width:100%!important;min-width:0!important;padding:14px!important;box-sizing:border-box!important}
+  body.bh-my-hub .family-v3-main .hub-family-card>.family-avatar{flex:0 0 44px!important;width:44px!important;height:44px!important;margin:2px 0 0!important}
+  body.bh-my-hub .family-v3-main .hub-family-card>.hub-family-main{flex:1 1 auto!important;width:calc(100% - 56px)!important;min-width:0!important}
+  body.bh-my-hub .family-v3-main .hub-family-title{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;flex-wrap:wrap!important;gap:10px!important;min-width:0!important}
+  body.bh-my-hub .family-v3-main .hub-family-title>div{flex:1 1 150px!important;min-width:0!important}
+  body.bh-my-hub .family-v3-main .hub-family-title strong,body.bh-my-hub .family-v3-main .hub-family-title small{overflow-wrap:anywhere!important}
+  body.bh-my-hub .family-v3-main .hub-family-title .button{flex:0 0 auto!important;min-height:40px!important;padding:8px 14px!important}
+  body.bh-my-hub .family-v3-main .school-tracker{width:100%!important;min-width:0!important;margin-top:8px!important}
+  body.bh-my-hub .family-v3-main .school-tracker-grid{grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+  body.bh-my-hub .family-v3-main .school-tracker-grid>.school-tracker-item{width:100%!important;min-width:0!important;padding:11px!important}
+  body.bh-my-hub .family-v3-main .school-tracker-link{align-self:flex-start!important;max-width:100%!important;white-space:normal!important}
+}
