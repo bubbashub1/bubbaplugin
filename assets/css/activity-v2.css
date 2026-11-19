@@ -1,5 +1,5 @@
 /* Bubba Hub 2.0 activity details — scoped visuals, no booking/API changes. */
-body.bh-activity-v2{background:#fffdf7;color:#123f31;font-family:'Quicksand',Calibri,Arial,sans-serif}
+body.bh-activity-v2{background:#fffdf7;color:#144400;font-family:'Quicksand',Calibri,Arial,sans-serif}
 .bh-activity-v2 .app-shell{padding-top:20px;padding-bottom:45px}
 .bh-activity-v2 .app-shell :is(h1,h2,h3){font-family:'Quicksand',Calibri,Arial,sans-serif;font-weight:700;letter-spacing:-.035em;color:#174e3b}
 .bh-activity-v2 .listing-page{color:#174e3b}

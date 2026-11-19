@@ -1,5 +1,5 @@
 /* Bubba Hub activity detail refresh — native activity.html presentation layer */
-body.bh-activity-v2{background:#f4f8f7!important;color:#243b38!important}
+body.bh-activity-v2{background:#daede2!important;color:#243b38!important}
 body.bh-activity-v2 .app-shell{max-width:1220px!important;padding:26px clamp(14px,2vw,26px) 36px!important}
 body.bh-activity-v2 .listing-page{color:#243b38!important}
 body.bh-activity-v2 .listing-page .listing-card,
@@ -24,9 +24,9 @@ body.bh-activity-v2 .activity-concept-two .activity-reference-schedule,
 body.bh-activity-v2 .activity-concept-two .activity-reference-contact,
 body.bh-activity-v2 .activity-concept-two .activity-useful-info{background:#fff!important}
 body.bh-activity-v2 :is(.activity-reference-about,.activity-reference-schedule,.activity-reference-contact,.activity-useful-info) h2,
-body.bh-activity-v2 .activity-contact-footer h2{color:#115e59!important}
+body.bh-activity-v2 .activity-contact-footer h2{color:#3f573a!important}
 body.bh-activity-v2 .activity-category-strip .activity-keyword-tags>span{
-  background:#e8f5f1!important;color:#0f766e!important;border:1px solid #d4ebe3!important;border-radius:999px!important;
+  background:#e8f5f1!important;color:#679483!important;border:1px solid #d4ebe3!important;border-radius:999px!important;
 }
 body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero{
   background:#fff!important;border:1px solid #e0ebe8!important;border-radius:18px!important;
@@ -36,7 +36,7 @@ body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listin
   border-radius:14px!important;overflow:hidden!important;height:260px!important;max-height:260px!important;
 }
 body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .listing-summary h1{
-  color:#115e59!important;font-size:clamp(1.8rem,3vw,2.65rem)!important;line-height:1.12!important;
+  color:#3f573a!important;font-size:clamp(1.8rem,3vw,2.65rem)!important;line-height:1.12!important;
 }
 body.bh-activity-v2 .app-shell>.listing-page>.listing-hero.activity-hero .activity-hero-intro{
   color:#61756f!important;display:block!important;-webkit-line-clamp:unset!important;max-width:58ch!important;
@@ -55,16 +55,16 @@ body.bh-activity-v2 .activity-contact-footer>h2{display:none!important}
 body.bh-activity-v2 .bh-organiser-profile-row{display:flex!important;align-items:center!important;gap:13px!important;min-width:220px!important;flex:1 1 280px!important}
 body.bh-activity-v2 .bh-organiser-avatar{
   width:52px!important;height:52px!important;flex:0 0 52px!important;border-radius:50%!important;
-  display:grid!important;place-items:center!important;background:#e5f4ef!important;color:#0f766e!important;
+  display:grid!important;place-items:center!important;background:#e5f4ef!important;color:#679483!important;
   font-size:18px!important;font-weight:800!important;border:1px solid #d4ebe3!important;
 }
 body.bh-activity-v2 .bh-organiser-copy strong{display:block!important;color:#173f39!important;font-size:15px!important;line-height:1.35!important}
-body.bh-activity-v2 .bh-organiser-copy a{display:inline-block!important;margin-top:3px!important;color:#0f766e!important;font-size:12px!important;font-weight:700!important}
+body.bh-activity-v2 .bh-organiser-copy a{display:inline-block!important;margin-top:3px!important;color:#679483!important;font-size:12px!important;font-weight:700!important}
 body.bh-activity-v2 .activity-contact-buttons{display:flex!important;align-items:center!important;justify-content:flex-end!important;flex-wrap:wrap!important;gap:8px!important;margin:0!important}
 body.bh-activity-v2 .activity-contact-link{
   display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;
   min-height:38px!important;padding:8px 14px!important;border:1px solid #d7e7e2!important;border-radius:999px!important;
-  background:#fff!important;color:#0f766e!important;font-size:12px!important;font-weight:700!important;text-decoration:none!important;
+  background:#fff!important;color:#679483!important;font-size:12px!important;font-weight:700!important;text-decoration:none!important;
 }
 body.bh-activity-v2 .activity-contact-link:hover{background:#edf7f4!important;border-color:#0d9488!important}
 body.bh-activity-v2 .activity-reference-contact .listing-map{
@@ -74,24 +74,24 @@ body.bh-activity-v2 .activity-reference-contact .listing-map{
 body.bh-activity-v2 .activity-reference-contact .activity-map-directions{
   position:absolute!important;z-index:1000!important;right:12px!important;bottom:12px!important;left:auto!important;top:auto!important;
   display:inline-flex!important;align-items:center!important;justify-content:center!important;
-  padding:9px 14px!important;border-radius:999px!important;background:#fff!important;color:#0f766e!important;
+  padding:9px 14px!important;border-radius:999px!important;background:#fff!important;color:#679483!important;
   border:1px solid #dcebe6!important;box-shadow:0 5px 18px rgba(0,0,0,.12)!important;
   font-size:12px!important;font-weight:800!important;text-decoration:none!important;
 }
-body.bh-activity-v2 .activity-reference-contact .activity-map-directions:hover{background:#0f766e!important;color:#fff!important}
+body.bh-activity-v2 .activity-reference-contact .activity-map-directions:hover{background:#679483!important;color:#fff!important}
 body.bh-activity-v2 .bh-session-calendar{max-width:none!important;margin:0!important}
 body.bh-activity-v2 .bh-calendar-toolbar{margin-bottom:9px!important}
-body.bh-activity-v2 .bh-calendar-toolbar strong{font-size:15px!important;color:#115e59!important}
-body.bh-activity-v2 .bh-calendar-nav{width:30px!important;height:30px!important;border:1px solid #e0ebe8!important;border-radius:9px!important;background:#fff!important;color:#0f766e!important}
+body.bh-activity-v2 .bh-calendar-toolbar strong{font-size:15px!important;color:#3f573a!important}
+body.bh-activity-v2 .bh-calendar-nav{width:30px!important;height:30px!important;border:1px solid #e0ebe8!important;border-radius:9px!important;background:#fff!important;color:#679483!important}
 body.bh-activity-v2 .bh-calendar-weekdays,
 body.bh-activity-v2 .bh-calendar-days{gap:4px!important}
 body.bh-activity-v2 .bh-calendar-weekdays span{font-size:10px!important;color:#718580!important}
 body.bh-activity-v2 .bh-calendar-day{height:35px!important;border:1px solid transparent!important;border-radius:9px!important;background:#f7faf9!important;color:#304b45!important;font-size:12px!important}
-body.bh-activity-v2 .bh-calendar-day.has-sessions{background:#e5f5f0!important;border-color:#c9e8de!important;color:#0f766e!important}
-body.bh-activity-v2 .bh-calendar-day.is-selected{background:#0f766e!important;border-color:#0f766e!important;color:#fff!important}
+body.bh-activity-v2 .bh-calendar-day.has-sessions{background:#e5f5f0!important;border-color:#c9e8de!important;color:#679483!important}
+body.bh-activity-v2 .bh-calendar-day.is-selected{background:#679483!important;border-color:#679483!important;color:#fff!important}
 body.bh-activity-v2 .bh-calendar-day.is-today:not(.is-selected){box-shadow:inset 0 0 0 1px #0d9488!important}
 body.bh-activity-v2 .bh-calendar-selected{margin-top:12px!important;padding-top:11px!important;border-top:1px solid #e0ebe8!important}
-body.bh-activity-v2 .bh-calendar-selected-date{font-size:12px!important;color:#115e59!important;font-weight:800!important}
+body.bh-activity-v2 .bh-calendar-selected-date{font-size:12px!important;color:#3f573a!important;font-weight:800!important}
 body.bh-activity-v2 .bh-calendar-session{padding:12px!important;border:1px solid #e0ebe8!important;border-radius:12px!important;background:#f9fcfb!important;gap:8px!important}
 body.bh-activity-v2 .bh-calendar-session-copy strong{font-size:14px!important;color:#173f39!important}
 body.bh-activity-v2 .bh-calendar-session-copy span,
@@ -102,10 +102,10 @@ body.bh-activity-v2 .bh-calendar-add{
   display:inline-flex!important;align-items:center!important;justify-content:center!important;
   min-height:34px!important;padding:7px 13px!important;border-radius:999px!important;font-size:12px!important;font-weight:800!important;
 }
-body.bh-activity-v2 .bh-calendar-enquire{background:#0f766e!important;border:1px solid #0f766e!important;color:#fff!important}
-body.bh-activity-v2 .bh-calendar-add{background:#fff!important;border:1px solid #0f766e!important;color:#0f766e!important}
-body.bh-activity-v2 .activity-venue-toggle{border-radius:10px!important;color:#115e59!important}
-body.bh-activity-v2 .activity-schedule-directions{color:#0f766e!important}
+body.bh-activity-v2 .bh-calendar-enquire{background:#679483!important;border:1px solid #679483!important;color:#fff!important}
+body.bh-activity-v2 .bh-calendar-add{background:#fff!important;border:1px solid #679483!important;color:#679483!important}
+body.bh-activity-v2 .activity-venue-toggle{border-radius:10px!important;color:#3f573a!important}
+body.bh-activity-v2 .activity-schedule-directions{color:#679483!important}
 body.bh-activity-v2 .activity-concept-extras .contact-card{display:none!important}
 body.bh-activity-v2 .activity-concept-extras .booking-card{border-radius:16px!important}
 body.bh-activity-v2 .activity-contact-footer .activity-contact-link:focus-visible,
@@ -136,9 +136,9 @@ body.bh-activity-v2 .activity-contact-footer .activity-contact-buttons .activity
   min-width:112px!important;
   min-height:42px!important;
   padding:10px 16px!important;
-  border:1px solid #0f766e!important;
+  border:1px solid #679483!important;
   border-radius:999px!important;
-  background:#0f766e!important;
+  background:#679483!important;
   color:#ffffff!important;
   -webkit-text-fill-color:#ffffff!important;
   font-family:inherit!important;
@@ -156,8 +156,8 @@ body.bh-activity-v2 .activity-contact-footer .activity-contact-buttons .activity
   box-shadow:0 3px 10px rgba(15,118,110,.16)!important;
 }
 body.bh-activity-v2 .activity-contact-footer .activity-contact-buttons .activity-contact-link:hover{
-  background:#115e59!important;
-  border-color:#115e59!important;
+  background:#3f573a!important;
+  border-color:#3f573a!important;
   color:#ffffff!important;
   -webkit-text-fill-color:#ffffff!important;
   transform:translateY(-1px);
@@ -215,15 +215,15 @@ body.bh-activity-v2 .activity-concept-two .activity-concept-support .activity-co
 
 
 /* Activity detail: match the shared site surfaces and teal actions. */
-body.bh-activity-v2{background:#f4f8f7!important;color:#263b38!important}
-body.bh-activity-v2 .listing-page :is(.listing-card,.activity-reference-about,.activity-reference-schedule){border-color:#d7e6e2!important;border-radius:16px!important;box-shadow:0 5px 18px rgba(17,94,89,.045)!important}
+body.bh-activity-v2{background:#daede2!important;color:#263b38!important}
+body.bh-activity-v2 .listing-page :is(.listing-card,.activity-reference-about,.activity-reference-schedule){border-color:#9daa96!important;border-radius:16px!important;box-shadow:0 5px 18px rgba(17,94,89,.045)!important}
 body.bh-activity-v2 .listing-page :is(h1,h2,h3){color:#174e49!important}
-body.bh-activity-v2 .listing-page :is(.button-primary,.btn-primary){background:#0f766e!important;border-color:#0f766e!important;color:#fff!important}
-body.bh-activity-v2 .listing-page :is(.button-primary,.btn-primary):hover{background:#115e59!important;border-color:#115e59!important}
+body.bh-activity-v2 .listing-page :is(.button-primary,.btn-primary){background:#679483!important;border-color:#679483!important;color:#fff!important}
+body.bh-activity-v2 .listing-page :is(.button-primary,.btn-primary):hover{background:#3f573a!important;border-color:#3f573a!important}
 
 /* Match activity.html's actual app-shell / listing-hero markup. */
 body.bh-activity-v2 .app-shell{color:#263b38}
-body.bh-activity-v2 .app-shell :is(.listing-hero,.listing-summary,.listing-actions,.activity-reference-about,.activity-reference-schedule){border-color:#d7e6e2;border-radius:16px}
+body.bh-activity-v2 .app-shell :is(.listing-hero,.listing-summary,.listing-actions,.activity-reference-about,.activity-reference-schedule){border-color:#9daa96;border-radius:16px}
 body.bh-activity-v2 .app-shell :is(h1,h2,h3){color:#174e49}
-body.bh-activity-v2 .app-shell :is(.button-primary,.btn-primary,.activity-book-button){background:#0f766e;border-color:#0f766e;color:#fff}
-body.bh-activity-v2 .app-shell :is(.button-primary,.btn-primary,.activity-book-button):hover{background:#115e59;border-color:#115e59}
+body.bh-activity-v2 .app-shell :is(.button-primary,.btn-primary,.activity-book-button){background:#679483;border-color:#679483;color:#fff}
+body.bh-activity-v2 .app-shell :is(.button-primary,.btn-primary,.activity-book-button):hover{background:#3f573a;border-color:#3f573a}
