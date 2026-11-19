@@ -7561,3 +7561,20 @@ body{background:var(--bh-page);color:#263b38}
 :where(.app-shell,.admin-subpage-shell) :where(input:not([type=checkbox]):not([type=radio]),select,textarea){border-color:#cbded9;border-radius:11px}
 :where(.app-shell,.admin-subpage-shell) :where(input,select,textarea):focus-visible{outline:3px solid rgba(15,118,110,.2);outline-offset:1px}
 @media(max-width:600px){.app-shell{width:min(100% - 20px,1400px)}:where(.app-shell,.admin-subpage-shell) :where(.admin-panel,.account-panel,.subscription-card,.pricing-card){border-radius:14px}}
+
+
+/* Modern icon navigation */
+.site-header .main-nav{gap:5px;padding:5px;border-radius:18px;background:#f4f7f2}
+.site-header .main-nav a{gap:8px;padding:10px 13px;border-radius:13px;color:#263b30;font-size:.91rem;font-weight:700;white-space:nowrap}
+.site-header .main-nav a .bh-nav-icon{display:inline-flex;align-items:center;justify-content:center;width:29px;height:29px;flex:0 0 29px;border-radius:10px;background:#e2eee5;color:#416651;transition:background .18s ease,color .18s ease,transform .18s ease}
+.site-header .main-nav a .bh-nav-icon svg{display:block;width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.site-header .main-nav a:hover,.site-header .main-nav a.active{background:#fff;color:#144400;box-shadow:0 3px 12px rgba(20,68,0,.09);transform:translateY(-1px)}
+.site-header .main-nav a:hover .bh-nav-icon,.site-header .main-nav a.active .bh-nav-icon{background:#416651;color:#fff}
+@media(max-width:760px){
+ .site-header .main-nav{gap:5px;padding:9px;background:#fff}
+ .site-header .main-nav a{min-height:54px;padding:8px 12px;gap:12px;border:1px solid #edf1eb;background:#fff}
+ .site-header .main-nav a .bh-nav-icon{width:36px;height:36px;flex-basis:36px;border-radius:12px;background:#e2eee5}
+ .site-header .main-nav a .bh-nav-icon svg{width:19px;height:19px}
+ .site-header .main-nav a:hover,.site-header .main-nav a.active{background:#f4f8f3;box-shadow:none}
+ .site-header .main-nav a:hover .bh-nav-icon,.site-header .main-nav a.active .bh-nav-icon{background:#416651;color:#fff}
+}
