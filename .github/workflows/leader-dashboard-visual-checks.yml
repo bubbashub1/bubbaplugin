@@ -96,7 +96,8 @@ jobs:
           assert css.count("{") == css.count("}"), "Unbalanced CSS braces"
           assert 'data-bh-inspire-me' in hub, "My Hub Inspire Me mount point is missing"
           assert 'assets/js/inspire-me.js' in hub and 'assets/js/my-hub.js' in hub, "My Hub scripts are not linked"
-          for element_id in ["whatShallI", "openWhatShallI", "whatRegionChoices", "whatTownChoices", "whatDayChoices", "whatCategoryChoices", "whatResultsGrid"]:
+          assert 'id="openWhatShallI"' in hub, "My Hub Inspire Me launch button is missing"
+          for element_id in ["whatShallI", "whatRegionChoices", "whatTownChoices", "whatDayChoices", "whatCategoryChoices", "whatResultsGrid"]:
               assert f'id="{element_id}"' in inspire_html or f"id='{element_id}'" in inspire_html, f"Missing Inspire Me control: {element_id}"
           assert 'renderUpcomingTicker' in hub_js, "My Hub upcoming ticker renderer is missing"
           assert "@media(max-width:760px)" in css, "Mobile navigation breakpoint is missing"
