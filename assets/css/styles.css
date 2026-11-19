@@ -7578,3 +7578,34 @@ body{background:var(--bh-page);color:#263b38}
  .site-header .main-nav a:hover,.site-header .main-nav a.active{background:#f4f8f3;box-shadow:none}
  .site-header .main-nav a:hover .bh-nav-icon,.site-header .main-nav a.active .bh-nav-icon{background:#416651;color:#fff}
 }
+
+
+/* Refined navigation — lighter, cleaner and less like nested buttons */
+.site-header{gap:24px}
+.site-header .brand-text{font-size:25px;font-weight:800;letter-spacing:-.8px;color:#144400}
+.site-header .main-nav{display:flex;align-items:center;gap:3px;padding:0;background:transparent;border-radius:0}
+.site-header .main-nav a{position:relative;display:inline-flex;align-items:center;gap:8px;padding:11px 12px;border-radius:12px;background:transparent;color:#263b30;font-size:.9rem;font-weight:700;letter-spacing:-.1px;box-shadow:none;transform:none}
+.site-header .main-nav a .bh-nav-icon{width:25px;height:25px;flex:0 0 25px;border-radius:50%;background:transparent;color:#679483}
+.site-header .main-nav a .bh-nav-icon svg{width:19px;height:19px;stroke-width:1.9}
+.site-header .main-nav a:hover,.site-header .main-nav a.active{background:#edf4ef;color:#144400;box-shadow:none;transform:none}
+.site-header .main-nav a:hover .bh-nav-icon,.site-header .main-nav a.active .bh-nav-icon{background:transparent;color:#144400}
+.site-header .main-nav a:focus-visible{outline:3px solid #a172ac;outline-offset:2px}
+.mobile-nav-toggle{border:0;border-radius:13px;background:#144400;color:#fff;box-shadow:0 5px 14px rgba(20,68,0,.16)}
+.mobile-nav-toggle span{width:20px;height:2px}
+@media(max-width:900px) and (min-width:761px){
+ .site-header{gap:10px;padding-inline:18px}
+ .site-header .brand-text{font-size:22px}
+ .site-header .main-nav a{gap:5px;padding:10px 7px;font-size:.82rem}
+ .site-header .main-nav a .bh-nav-icon{width:21px;height:21px;flex-basis:21px}
+ .site-header .main-nav a .bh-nav-icon svg{width:17px;height:17px}
+}
+@media(max-width:760px){
+ .site-header{position:relative}
+ .site-header .main-nav{gap:0;padding:8px 12px;background:#fff;border:1px solid #e7eee8;border-radius:18px;box-shadow:0 16px 36px rgba(20,68,0,.14)}
+ .site-header .main-nav a{min-height:52px;gap:13px;padding:8px 10px;border:0;border-bottom:1px solid #edf1ed;border-radius:0;background:transparent;font-size:.96rem}
+ .site-header .main-nav a:last-child{border-bottom:0}
+ .site-header .main-nav a .bh-nav-icon{width:34px;height:34px;flex:0 0 34px;border-radius:11px;background:#edf4ef;color:#416651}
+ .site-header .main-nav a .bh-nav-icon svg{width:19px;height:19px}
+ .site-header .main-nav a:hover,.site-header .main-nav a.active{background:#f7faf7;box-shadow:none}
+ .site-header .main-nav a:hover .bh-nav-icon,.site-header .main-nav a.active .bh-nav-icon{background:#416651;color:#fff}
+}
