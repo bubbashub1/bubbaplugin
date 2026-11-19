@@ -945,3 +945,47 @@ body.bh-family-v3 .family-v3-nav-group:nth-child(3) .family-v3-nav-group-toggle{
 body.bh-family-v3 .family-v3-nav-group:nth-child(4) .family-v3-nav-group-toggle{background:#fff0d5!important;}
 body.bh-family-v3 .family-v3-nav-group-items a{display:flex!important;align-items:center!important;gap:10px!important;padding:10px!important;border-radius:9px!important;}
 @media(max-width:850px){body.bh-family-v3 .family-v3-layout{grid-template-columns:minmax(0,1fr)!important;gap:12px!important;}body.bh-family-v3 .family-v3-sidebar{display:flex!important;position:relative!important;top:auto!important;width:100%!important;}body.bh-family-v3 .family-v3-menu-toggle{display:flex!important;align-items:center!important;justify-content:space-between!important;width:100%!important;min-height:48px!important;}body.bh-family-v3 .family-v3-nav{display:none!important;width:100%!important;}body.bh-family-v3 .family-v3-nav.is-open{display:flex!important;}body.bh-family-v3 .family-v3-brand{display:none!important;}}
+
+
+/* My Hub hero polish — keep the welcome copy left and Family Pro as a clear right-hand CTA. */
+body.bh-my-hub .my-hub-hero{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(270px,360px)!important;
+  grid-template-areas:"copy pro" "actions pro"!important;
+  align-items:center!important;
+  column-gap:28px!important;
+  row-gap:14px!important;
+}
+body.bh-my-hub .my-hub-hero-copy{grid-area:copy;min-width:0}
+body.bh-my-hub .my-hub-hero-copy>.eyebrow{
+  display:block;color:#174e3b!important;font-size:14px!important;font-weight:800!important;
+  letter-spacing:.015em;text-transform:none!important;margin:0 0 8px!important;
+}
+body.bh-my-hub .my-hub-hero-copy h1{margin:0 0 7px!important}
+body.bh-my-hub .my-hub-hero-copy p{margin:0!important}
+body.bh-my-hub .my-hub-hero-actions{grid-area:actions;justify-content:flex-start!important;margin-top:2px}
+body.bh-my-hub .hub-pro-pitch{
+  grid-area:pro;align-self:stretch;display:flex;flex-direction:column;justify-content:center;
+  gap:9px;padding:19px 21px!important;border:1px solid #d7e7dc!important;
+  border-radius:22px!important;background:linear-gradient(145deg,#f4f8ef 0%,#e7f2e9 100%)!important;
+  box-shadow:0 8px 22px rgba(23,78,59,.07)!important;min-width:0;
+}
+body.bh-my-hub .hub-pro-pitch[hidden]{display:none!important}
+body.bh-my-hub .hub-pro-pitch strong{color:#174e3b!important;font-size:17px!important;font-weight:800!important}
+body.bh-my-hub .hub-pro-pitch span{color:#405d50!important;font-size:13px!important;line-height:1.55}
+body.bh-my-hub .hub-pro-pitch .button{align-self:flex-start!important;border-radius:999px!important;padding:10px 18px!important}
+body.bh-my-hub .hub-personal-cta .eyebrow,
+body.bh-my-hub .hub-family-panel>.admin-panel-head .eyebrow{
+  color:#174e3b!important;font-weight:800!important;
+}
+body.bh-my-hub .hub-personal-cta h2,
+body.bh-my-hub .hub-family-panel>.admin-panel-head h2{color:#174e3b!important}
+@media(max-width:700px){
+  body.bh-my-hub .my-hub-hero{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-areas:"copy" "pro" "actions"!important;
+    gap:14px!important;
+  }
+  body.bh-my-hub .hub-pro-pitch{padding:16px 18px!important;border-radius:18px!important}
+  body.bh-my-hub .my-hub-hero-actions{flex-wrap:wrap}
+}
