@@ -136,3 +136,29 @@ body.bh-my-hub{background:#f3f6f4;color:#1b3430}
 .bh-my-hub .my-hub-page :is(.hub-panel,.hub-list-card,.hub-booking-card,.hub-brief-item){border-color:#9daa96;border-radius:15px;box-shadow:0 4px 14px rgba(17,94,89,.035)}
 .bh-my-hub .my-hub-page .hub-personal-cta .button-primary{background:#679483;border-color:#679483;color:#fff}
 .bh-my-hub .my-hub-page .hub-personal-cta .button-primary:hover{background:#3f573a;border-color:#3f573a}
+
+
+/* November 2026 palette refinement: remove pink/orange accents from My Hub. */
+.bh-my-hub .my-hub-page{background:#f4f8f7!important;color:#243027}
+.bh-my-hub .my-hub-hero{background:#416651!important;border-color:#416651!important}
+.bh-my-hub .my-hub-hero :is(h1,h2,p,.eyebrow){color:#fff!important}
+.bh-my-hub .my-hub-hero .eyebrow{color:#d8e6db!important}
+.bh-my-hub .my-hub-page .button-primary,
+.bh-my-hub .my-hub-page .hub-personal-cta .button-primary{background:#416651!important;border-color:#416651!important;color:#fff!important}
+.bh-my-hub .my-hub-page .button-primary:hover,
+.bh-my-hub .my-hub-page .hub-personal-cta .button-primary:hover{background:#144400!important;border-color:#144400!important}
+.bh-my-hub .my-hub-page .button-soft{background:#d8e6db!important;border-color:#cdd8c7!important;color:#144400!important}
+.bh-my-hub .my-hub-page .button-soft:hover{background:#cdd8c7!important;border-color:#9daa96!important;color:#144400!important}
+.bh-my-hub .my-hub-page .hub-stat:nth-child(4n+1),
+.bh-my-hub .my-hub-page .hub-suggestion-card:nth-child(3n+2),
+.bh-my-hub .my-hub-page .hub-tools-grid .feature-card{background:#d8e6db!important;border-color:#cdd8c7!important}
+.bh-my-hub .my-hub-page .hub-stat:nth-child(4n+2),
+.bh-my-hub .my-hub-page .hub-suggestion-card{background:#dcebea!important;border-color:#c5dedb!important}
+.bh-my-hub .my-hub-page .hub-stat:nth-child(4n+3),
+.bh-my-hub .my-hub-page .hub-suggestion-card:nth-child(3n+3),
+.bh-my-hub .my-hub-page .hub-tools-grid .feature-card:nth-child(3){background:#cdd8c7!important;border-color:#b8c6b0!important}
+.bh-my-hub .my-hub-page .hub-stat:nth-child(4n+4),
+.bh-my-hub .my-hub-page .hub-tools-grid .feature-card:nth-child(4){background:#e6e3f1!important;border-color:#d3cfe7!important}
+.bh-my-hub .my-hub-page .hub-tools-grid .feature-card:nth-child(2){background:#dcebea!important}
+.bh-my-hub .my-hub-page .hub-suggestion-card :is(h2,h3,p),
+.bh-my-hub .my-hub-page .hub-tools-grid .feature-card :is(h2,h3,p){color:#144400}
