@@ -105,8 +105,8 @@
   font-weight:800;
 }
 .organiser-actions .button-primary{
-  background:#f6c84a;
-  border-color:#f6c84a;
+  background:#e2a9f1;
+  border-color:#e2a9f1;
   color:var(--os-ink);
 }
 .organiser-actions .button-soft{
@@ -145,7 +145,7 @@
   line-height:1;
 }
 .organiser-summary-stat span{
-  color:#617261;
+  color:#3f573a;
   font-size:12px;
   font-weight:700;
 }
@@ -177,7 +177,7 @@
   border-radius:12px;
 }
 .organiser-venue-card strong{color:var(--os-ink);font-size:14px;font-weight:800}
-.organiser-venue-card span{color:#617261;font-size:11px;line-height:1.45}
+.organiser-venue-card span{color:#3f573a;font-size:11px;line-height:1.45}
 .organiser-map-panel{
   min-width:0;
   overflow:hidden;
@@ -188,15 +188,15 @@
 .organiser-map{width:100%;height:100%;min-height:360px;background:var(--os-mint)}
 .organiser-map .leaflet-control-attribution{font-size:9px}
 .organiser-map-note{margin:0;padding:7px 10px;color:#718076;font-size:9px;text-align:right;background:#fff}
-.organiser-map-empty{display:grid;place-items:center;height:100%;min-height:360px;color:#617261;font-size:13px}
+.organiser-map-empty{display:grid;place-items:center;height:100%;min-height:360px;color:#3f573a;font-size:13px}
 
 
 /* 4. ORGANISER INFO + FAQ --------------------------------------------- */
 .organiser-info-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;width:100%;margin:0 0 34px}
 .organiser-info-card{min-width:0;padding:22px;background:#fff;border:1px solid var(--os-line);border-radius:16px}
 .organiser-info-card h2,.organiser-faq h2{margin:8px 0 7px;color:var(--os-ink);font-family:var(--os-font);font-size:23px;font-weight:800;line-height:1.15}
-.organiser-info-card p{margin:0 0 14px;color:#617261;font-size:12px;line-height:1.55}
-.organiser-info-card ul{margin:0;padding-left:18px;color:#617261;font-size:12px;line-height:1.65}
+.organiser-info-card p{margin:0 0 14px;color:#3f573a;font-size:12px;line-height:1.55}
+.organiser-info-card ul{margin:0;padding-left:18px;color:#3f573a;font-size:12px;line-height:1.65}
 .organiser-info-card li+li{margin-top:5px}
 .organiser-faq{width:100%;margin:0 0 28px;padding:24px;background:var(--os-mint);border:1px solid var(--os-line);border-radius:16px}
 .organiser-faq .storefront-heading{margin-bottom:14px}
@@ -206,7 +206,7 @@
 .organiser-faq summary::-webkit-details-marker{display:none}
 .organiser-faq summary:after{content:"+";float:right;color:var(--os-teal);font-size:18px;line-height:1}
 .organiser-faq details[open] summary:after{content:"−"}
-.organiser-faq details p{margin:0;padding:0 16px 15px;color:#617261;font-size:12px;line-height:1.55}
+.organiser-faq details p{margin:0;padding:0 16px 15px;color:#3f573a;font-size:12px;line-height:1.55}
 @media(max-width:900px){.organiser-info-grid{grid-template-columns:1fr 1fr}.organiser-support-card{grid-column:1/-1}}
 @media(max-width:700px){.organiser-info-grid{grid-template-columns:1fr}.organiser-support-card{grid-column:auto}.organiser-info-card,.organiser-faq{padding:18px}}
 /* 5. ACTIVITY HEADING --------------------------------------------------- */
@@ -223,7 +223,7 @@
 }
 .storefront-heading p{
   margin:0;
-  color:#617261;
+  color:#3f573a;
   font-size:13px;
   line-height:1.5;
 }
@@ -291,7 +291,7 @@
 .storefront-description{
   display:-webkit-box;
   margin:0 0 13px;
-  color:#617261;
+  color:#3f573a;
   font-size:12px;
   line-height:1.55;
   -webkit-box-orient:vertical;
@@ -410,7 +410,7 @@
   display:grid;
   place-items:center;
   min-height:360px;
-  color:#617261;
+  color:#3f573a;
   font-size:14px;
 }
 .organiser-empty{
@@ -444,7 +444,7 @@
 }
 .organiser-empty p{
   margin:0 0 13px;
-  color:#617261;
+  color:#3f573a;
 }
 
 /* 8. RESPONSIVE -------------------------------------------------------- */
@@ -637,7 +637,7 @@ body.bh-modal-open{overflow:hidden}
 }
 .bh-modal-intro{
   margin:0 0 18px;
-  color:#617261;
+  color:#3f573a;
   font-size:12px;
   line-height:1.55;
 }
