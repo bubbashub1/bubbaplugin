@@ -218,3 +218,34 @@
 .bh-explore .explore-leader-panel .explore-cta-link{background:#9b6745;color:#fff}
 @media(max-width:850px){.bh-explore .explore-family-cta{grid-template-columns:1fr}.bh-explore .explore-cta-panel{min-height:220px}}
 @media(max-width:560px){.bh-explore .explore-hero{background-image:linear-gradient(100deg,rgba(250,252,247,.93),rgba(250,252,247,.78)),url('/images/home/gemini_generated_image_dbeql8dbeql8dbeq-20260927-181224-80709b.jpeg')}.bh-explore .explore-cta-panel{padding:24px 20px;border-radius:19px}}
+
+
+/* Reliable continuous marquee: animate the complete duplicated track as one unit. */
+.bh-explore .explore-news-window{display:block;min-width:0;overflow:hidden}
+.bh-explore .explore-news-track{
+  display:flex;
+  width:max-content;
+  max-width:none;
+  align-items:center;
+  will-change:transform;
+  animation:bhExploreTickerTrack 48s linear infinite;
+}
+.bh-explore .explore-news-group{
+  display:flex;
+  flex:0 0 auto;
+  width:max-content;
+  align-items:center;
+  animation:none!important;
+}
+.bh-explore .explore-news-ticker:hover .explore-news-track,
+.bh-explore .explore-news-ticker:focus-within .explore-news-track,
+.bh-explore .explore-news-ticker.is-paused .explore-news-track{
+  animation-play-state:paused;
+}
+@keyframes bhExploreTickerTrack{
+  from{transform:translate3d(0,0,0)}
+  to{transform:translate3d(-50%,0,0)}
+}
+@media(prefers-reduced-motion:reduce){
+  .bh-explore .explore-news-track{animation:none}
+}
