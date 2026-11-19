@@ -1041,3 +1041,14 @@ body.bh-my-hub #hubProPitch .button{
   white-space:normal!important;
   box-sizing:border-box!important;
 }
+
+
+/* My Hub refinements: teal-to-green personal prompt and a fixed two-column family list. */
+:is(body.bh-family-v3,body.bh-my-hub) .family-v3-main .hub-personal-cta{
+  background:linear-gradient(110deg,#3c8e96,#144400)!important;
+  border:1px solid #123f31!important;
+}
+body.bh-my-hub .family-v3-main .hub-family-list.hub-family-expanded{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
