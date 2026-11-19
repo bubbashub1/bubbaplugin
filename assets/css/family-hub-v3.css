@@ -1052,3 +1052,12 @@ body.bh-my-hub .family-v3-main .hub-family-list.hub-family-expanded{
   display:grid!important;
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
 }
+
+/* My Hub child tracker: give school dates and nap windows equal space. */
+body.bh-my-hub .family-v3-main .school-tracker{width:100%;max-width:100%;box-sizing:border-box}
+body.bh-my-hub .family-v3-main .school-tracker-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%;min-width:0}
+body.bh-my-hub .family-v3-main .school-tracker-grid>.school-tracker-item{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0;padding:12px;border:1px solid #d7e6e2;border-radius:11px;background:#fff;box-sizing:border-box}
+body.bh-my-hub .family-v3-main .school-tracker-grid>.school-tracker-item>b{color:#174e49;font-size:13px}
+body.bh-my-hub .family-v3-main .school-tracker-grid>.school-tracker-item>small{color:#0f766e;font-size:12px;font-weight:700}
+body.bh-my-hub .family-v3-main .school-tracker-grid>.school-tracker-item>p{margin:0;color:#668078;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+@media(max-width:520px){body.bh-my-hub .family-v3-main .school-tracker-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}body.bh-my-hub .family-v3-main .school-tracker-grid>.school-tracker-item{padding:9px}}
