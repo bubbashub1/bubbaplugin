@@ -103,3 +103,28 @@
 .bh-explore .explore-upcoming-arrow{font-size:1.2rem;color:#c18b60}
 .bh-explore .explore-refresh-status{font-size:.76rem;color:#778477;white-space:nowrap}
 @media(max-width:650px){.bh-explore .explore-upcoming-item{grid-template-columns:34px 1fr auto;gap:10px;padding:13px 4px}.bh-explore .explore-upcoming-number{width:30px;height:30px}.bh-explore .explore-upcoming-date{grid-column:2;grid-row:1;font-size:.76rem}.bh-explore .explore-upcoming-details{grid-column:2;grid-row:2}.bh-explore .explore-upcoming-time{grid-column:3;grid-row:1;font-size:.75rem}.bh-explore .explore-upcoming-arrow{grid-column:3;grid-row:2;text-align:right}.bh-explore .explore-refresh-status{white-space:normal;text-align:right;max-width:130px;font-size:.7rem}}
+
+
+/* Section colour panels: remove the heading accent rule and let each area breathe. */
+.bh-explore .explore-section-heading:before{content:none!important;display:none!important}
+.bh-explore-main>.explore-section{
+  border-top:0;
+  padding:30px 30px 32px;
+  border-radius:24px;
+  margin-bottom:28px;
+}
+.bh-explore-main>.explore-section:nth-of-type(2){background:#f7f0e6}
+.bh-explore-main>.explore-section:nth-of-type(3){background:#edf4eb}
+.bh-explore-main>.explore-section:nth-of-type(4){background:#edf2f6}
+.bh-explore-main>.explore-section:nth-of-type(5){background:#f7eee8}
+.bh-explore-main>.explore-regions{
+  border:0;
+  background:linear-gradient(120deg,#f1eadf 0%,#e6f0e7 100%);
+  margin-bottom:28px;
+}
+.bh-explore-main>.explore-family-cta{margin-top:0}
+.bh-explore .explore-upcoming-list{border-top:1px solid rgba(67,91,72,.16)}
+.bh-explore .explore-upcoming-item{border-bottom-color:rgba(67,91,72,.16)}
+@media(max-width:560px){
+  .bh-explore-main>.explore-section{padding:22px 17px 24px;border-radius:19px;margin-bottom:20px}
+}
