@@ -9,21 +9,10 @@
   main.classList.add("family-v3-main");
   const path=location.pathname.replace(/\/+$/,"")||"/";
   const groups=[
-   {id:"explore",label:"Explore",items:[
-    ["/my-hub.html","My Hub","⌂"],
-    ["/choose.html","What should we do?","✦"],
-    ["/family-section.html?section=recent","Recently Viewed","◷"],
-    ["/family-section.html?section=saved","Saved activities","♡"],
-    ["/family-section.html?section=visited","Visited Groups","✓"]
-   ]},
-   {id:"family",label:"My Space",items:[
-    ["/account/family.html","My Family","♧"],
-    ["/planner.html","My Planner","▦"],
-    ["/family-section.html?section=messages","My Messages","✉"],
-    ["/account/preferences.html","Preferences","⚙"],
-    ["/account/notifications.html","Notifications","♧"],
-    ["/account/privacy.html","Privacy & consent","▣"]
-   ]}
+   {id:"explore",label:"Explore",items:[["/choose.html","Explore activities","✦"],["/family-section.html?section=recent","Recently Viewed","◷"],["/family-section.html?section=saved","Saved activities","♡"],["/family-section.html?section=visited","Visited Groups","✓"]]},
+   {id:"family",label:"My Family",items:[["/account/family.html","Family profiles","♧"],["/account/preferences.html","Family preferences","⚙"]]},
+   {id:"space",label:"My Space",items:[["/family-section.html?section=messages","My Messages","✉"],["/account/notifications.html","Notifications","♧"],["/account/privacy.html","Privacy & consent","▣"],["/account/profile.html","My Profile","☺"]]},
+   {id:"planner",label:"My Planner",items:[["/planner.html","My Planner","▦"],["/account/bookings.html","Bookings","▣"]]}
   ];
   const side=document.createElement("aside");
   side.className="family-v3-sidebar";
