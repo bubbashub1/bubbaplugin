@@ -73,7 +73,7 @@
   ];
   quickLinks.forEach(([href,label,icon])=>{
    const a=document.createElement("a");a.href=href;
-   const target=new URL(href,location.origin),targetPath=target.pathname.replace(/\\/$/,"")||"/";
+   const target=new URL(href,location.origin),targetPath=target.pathname.replace(/\/$/,"")||"/";
    const samePath=path===targetPath||((href==="/planner.html")&&path==="/account/planner.html");
    const sameQuery=[...target.searchParams.keys()].every(key=>new URLSearchParams(location.search).get(key)===target.searchParams.get(key));
    if(samePath&&sameQuery){a.setAttribute("aria-current","page");a.setAttribute("aria-label",label+" (current page)");}
