@@ -1,5 +1,5 @@
 /* Bubba Hub 2.0 — homepage rebuild; isolated from account, directory and portal pages */
-.bh-home{background:#fffdf7;color:#123f31}
+.bh-home{background:#fffdf7;color:#144400}
 .bh-home .home-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.18fr);align-items:center;gap:0 3%;padding:36px max(20px,calc((100vw - 1380px)/2)) 38px;background:linear-gradient(165deg,#fffdf7 60%,#dcebd9);overflow:hidden;position:relative}
 .bh-home .home-hero-copy{grid-column:1;grid-row:1;max-width:none;padding:22px 0 35px;z-index:1}
 .bh-home .home-hero-image{grid-column:2;grid-row:1;width:100%;min-height:450px;align-self:stretch;border-radius:42% 58% 32% 54% / 36% 32% 56% 48%;background:url('/images/home/gemini_generated_image_dbeql8dbeql8dbeq-20260927-181224-80709b.jpeg') center/cover no-repeat;box-shadow:0 18px 40px #174e3b18}
@@ -13,14 +13,14 @@
 .bh-home .home-search-fields{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr auto;gap:10px;align-items:stretch}
 .bh-home .home-search-fields label{display:flex;align-items:center;min-width:0;border:1px solid #dce8df;border-radius:14px;padding:0 12px;background:#fff;gap:8px}
 .bh-home .home-search-fields label span{flex:none;color:#416651}
-.bh-home .home-search-fields input,.bh-home .home-search-fields select{min-width:0;width:100%;border:0;background:transparent;padding:13px 0;color:#123f31;box-shadow:none}
+.bh-home .home-search-fields input,.bh-home .home-search-fields select{min-width:0;width:100%;border:0;background:transparent;padding:13px 0;color:#144400;box-shadow:none}
 .bh-home .home-search-fields button{min-height:52px;border:0;border-radius:999px;padding:12px 27px;background:#174e3b;color:#fff;font-weight:800;cursor:pointer}
-.bh-home .home-search-fields button:hover{background:#ee822c;color:#123f31}
+.bh-home .home-search-fields button:hover{background:#ee822c;color:#144400}
 .bh-home .bh-quick-links{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:14px}
 .bh-home .bh-quick-links a{background:#eaf3e9;border-radius:999px;padding:10px 18px;text-decoration:none;font-weight:700;color:#174e3b}
 .bh-home .bh-quick-links a:hover{background:#d0e6d7}
 .bh-home .home-category-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:15px;max-width:1440px;margin:0 auto;padding:32px 20px 46px;background:transparent}
-.bh-home .home-category-row>a{display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-width:0;min-height:255px;padding:22px;border-radius:25px;background:#fbe4e0;color:#123f31;text-decoration:none;box-shadow:none;transition:transform .2s ease}
+.bh-home .home-category-row>a{display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-width:0;min-height:255px;padding:22px;border-radius:25px;background:#fbe4e0;color:#144400;text-decoration:none;box-shadow:none;transition:transform .2s ease}
 .bh-home .home-category-row>a:nth-child(2){background:#def1f4}.bh-home .home-category-row>a:nth-child(3){background:#e5f1df}.bh-home .home-category-row>a:nth-child(4){background:#fff0d0}.bh-home .home-category-row>a:nth-child(5){background:#eee7f8}
 .bh-home .home-category-row>a:hover{transform:translateY(-3px)}
 .bh-home .home-category-row .home-category-icon{display:flex;align-items:center;justify-content:center;width:46px;height:46px;min-height:46px;position:static;margin:0;border-radius:14px;font-size:1.6rem}
@@ -43,7 +43,7 @@
 .bh-home .home-search{position:relative;left:auto;right:auto;bottom:auto;top:auto;width:100%;margin:0;border:0;background:#fff}
 .bh-home .home-search h2{color:#174e3b;font-size:1.05rem}
 .bh-home .home-search-fields .button{background:#174e3b!important;color:#fff!important;min-width:125px}
-.bh-home .home-search-fields .button:hover{background:#ee822c!important;color:#123f31!important}
+.bh-home .home-search-fields .button:hover{background:#ee822c!important;color:#144400!important}
 .bh-home .home-search-fields input,.bh-home .home-search-fields select{font-size:clamp(14px,1vw,16px)}
 .bh-home .home-category-row{width:100%;max-width:1440px;margin:0 auto;padding:32px 20px 46px}
 .bh-home .home-category-row a{width:auto;max-width:none;min-width:0;justify-content:flex-start;background-image:none!important}
@@ -176,8 +176,8 @@
 
 
 /* Homepage shared brand finish. */
-body.bh-home{background:#f4f8f7;color:#263b38}
+body.bh-home{background:#daede2;color:#263b38}
 body.bh-home :is(h1,h2,h3){color:#174e49}
-body.bh-home :is(.home-section,.home-feature-card,.home-card){border-color:#d7e6e2}
-body.bh-home :is(.button-primary,.home-full-button){background:#0f766e;border-color:#0f766e;color:#fff}
-body.bh-home :is(.button-primary,.home-full-button):hover{background:#115e59;border-color:#115e59;color:#fff}
+body.bh-home :is(.home-section,.home-feature-card,.home-card){border-color:#9daa96}
+body.bh-home :is(.button-primary,.home-full-button){background:#679483;border-color:#679483;color:#fff}
+body.bh-home :is(.button-primary,.home-full-button):hover{background:#3f573a;border-color:#3f573a;color:#fff}
