@@ -7609,3 +7609,20 @@ body{background:var(--bh-page);color:#263b38}
  .site-header .main-nav a:hover,.site-header .main-nav a.active{background:#f7faf7;box-shadow:none}
  .site-header .main-nav a:hover .bh-nav-icon,.site-header .main-nav a.active .bh-nav-icon{background:#416651;color:#fff}
 }
+
+
+/* November 2026 palette refinement: soften the shared footer navigation. */
+.site-footer,
+.bh-home .home-footer{background:#d8e6db!important;color:#144400!important}
+.site-footer :is(h2,h3,strong,.site-footer-title),
+.bh-home .home-footer :is(h2,h3,strong,.site-footer-title){color:#144400!important}
+.site-footer :is(a,.site-footer-links a),
+.bh-home .home-footer .site-footer-links a{color:#144400!important}
+.site-footer .site-footer-brand-copy p,
+.site-footer .site-footer-bottom,
+.bh-home .home-footer .site-footer-brand-copy p,
+.bh-home .home-footer .site-footer-bottom{color:#3f573a!important}
+.site-footer .site-footer-links a:hover,
+.bh-home .home-footer .site-footer-links a:hover{color:#0f766e!important}
+.site-footer .site-footer-bottom{border-color:rgba(20,68,0,.18)!important}
+.site-footer .bh-cookie-settings{color:#144400!important}
