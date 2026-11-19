@@ -29,6 +29,34 @@
   };
   const setMessage = (id, message) => { const node=$(id); if(node) node.innerHTML='<p class="explore-loading">'+esc(message)+'</p>'; };
 
+
+  let upcomingAutoTimer=null;
+  function setupUpcomingCarousel() {
+    const track=$("exploreUpcoming");
+    if(!track || track.dataset.carouselReady==="1") return;
+    track.dataset.carouselReady="1";
+    const move=direction=>{
+      const card=track.querySelector(".explore-upcoming-item");
+      if(!card)return;
+      const gap=parseFloat(getComputedStyle(track).columnGap)||18;
+      const amount=card.getBoundingClientRect().width+gap;
+      const atEnd=track.scrollLeft+track.clientWidth>=track.scrollWidth-8;
+      if(direction>0&&atEnd) track.scrollTo({left:0,behavior:"smooth"});
+      else if(direction<0&&track.scrollLeft<=8) track.scrollTo({left:track.scrollWidth,behavior:"smooth"});
+      else track.scrollBy({left:direction*amount,behavior:"smooth"});
+    };
+    $("exploreUpcomingPrev")?.addEventListener("click",()=>move(-1));
+    $("exploreUpcomingNext")?.addEventListener("click",()=>move(1));
+    const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(!reduced) {
+      const start=()=>{if(upcomingAutoTimer)clearInterval(upcomingAutoTimer);upcomingAutoTimer=setInterval(()=>move(1),6500);};
+      const stop=()=>{if(upcomingAutoTimer)clearInterval(upcomingAutoTimer);upcomingAutoTimer=null;};
+      track.addEventListener("mouseenter",stop);track.addEventListener("mouseleave",start);
+      track.addEventListener("focusin",stop);track.addEventListener("focusout",start);
+      start();
+    }
+  }
+
   async function init() {
     const form=$("exploreSearch"), regionSelect=$("exploreRegion"), townSelect=$("exploreTown");
     form?.addEventListener("submit", event => {
@@ -54,6 +82,7 @@
     }
     allActivities=response.data.filter(item=>item && item.status!=="draft");
     render(allActivities);
+    setupUpcomingCarousel();
     window.setInterval(async()=>{try{const res=await fetch("/api/activities.php?page=1&per_page=200",{headers:{Accept:"application/json"},cache:"no-store"});const data=await res.json();if(!res.ok||!data?.ok)return;let rows=data.data||[];for(let page=2;page<=Number(data.pagination?.pages||1);page++){const pageRes=await fetch("/api/activities.php?page="+page+"&per_page=200",{headers:{Accept:"application/json"},cache:"no-store"});const pageData=await pageRes.json();if(pageData?.ok&&Array.isArray(pageData.data))rows=rows.concat(pageData.data);}allActivities=rows.filter(item=>item&&item.status!=="draft");render(allActivities);}catch(error){}},300000);
   }
   let allActivities=[];
@@ -95,7 +124,7 @@
       const time=d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
       const place=[x.venue.name,x.venue.town||x.venue.region].filter(Boolean).join(" · ");
       const duration=[x.s.start_time,x.s.end_time].filter(Boolean).map(v=>String(v).slice(0,5)).join("–");
-      return '<a class="explore-upcoming-item" href="'+esc(activityUrl(x.a))+'"><span class="explore-upcoming-number">'+String(i+1).padStart(2,"0")+'</span><span class="explore-upcoming-date">'+esc(day+' · '+time)+'</span><span class="explore-upcoming-details"><strong>'+esc(x.a.title||"Family group")+'</strong><small>'+esc(place||"Devon & Cornwall")+'</small></span><span class="explore-upcoming-time">'+esc(duration)+'</span><span class="explore-upcoming-arrow" aria-hidden="true">→</span></a>';
+      return '<a class="explore-upcoming-item" href="'+esc(activityUrl(x.a))+'"><span class="explore-upcoming-topline"><span class="explore-upcoming-number">'+String(i+1).padStart(2,"0")+'</span><span class="explore-upcoming-date">'+esc(day+' · '+time)+'</span></span><span class="explore-upcoming-details"><strong>'+esc(x.a.title||"Family group")+'</strong><small>'+esc(place||"Devon & Cornwall")+'</small></span><span class="explore-upcoming-time">'+esc(duration)+'</span><span class="explore-upcoming-arrow" aria-hidden="true">→</span></a>';
     }).join(""):'<p class="explore-loading">No upcoming scheduled groups are listed just now. Browse all activities to find something for your family.</p>';
     const status=$("exploreRefreshStatus");if(status)status.textContent="Updated "+now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})+" · refreshes every 5 minutes";
   }
