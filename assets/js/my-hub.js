@@ -104,12 +104,6 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const ages=children.map(c=>childAge(c.date_of_birth)).filter(v=>v!==null);
     const saved=new Set((data.saved||[]).map(String));
     const planner=new Set((data.planner||[]).map(x=>String(x.id)));
-    activities.map(a=>{let score=0;const cat=String(a.category||"").toLowerCase();
-      if(ages.length&&activityFitsAge(a,ages))score+=35;
-      if(saved.has(String(a.id)))score+=20;
-      if(planner.has(String(a.id)))score+=15;
-      return {a,score};
-    }).sort((x,y)=>y.score-x.score).slice(0,12).forEach(()=>{});
     const ranked=activities.map(a=>{
       let score=0;
       if(ages.length&&activityFitsAge(a,ages))score+=35;
