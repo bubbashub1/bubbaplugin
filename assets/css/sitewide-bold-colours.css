@@ -28,55 +28,55 @@
 }
 
 /* Clear, warm neutral page base with confident green typography. */
-body{background-color:#f7f8f4!important;color:#263b33}
+body{background-color:#f7f8f4!important !important !important;color:#263b33}
 body :is(h1,h2,h3,h4,.page-title,.section-title){color:#174e3b}
 body :is(a:not(.button):not(.btn):not([class*="button"])){color:#176b52}
 body :is(a:not(.button):not(.btn):not([class*="button"])):hover{color:#b85e43}
-::selection{background:#e5a92e!important;color:#123f30!important}
+::selection{background:#e5a92e!important !important;color:#123f30!important}
 :focus-visible{outline-color:#187d8a!important}
 
 /* Shared navigation and header accents. */
 .site-header,.bh-site-header{border-color:rgba(23,63,50,.13)}
 .site-header .main-nav a:hover,.site-header .main-nav a.active,
-.bh-main-nav a:hover,.bh-main-nav a:focus-visible{background:#e4eee5!important;color:#123f30!important}
-.bh-site-header{background:#e4eee5!important;color:#123f30!important}
+.bh-main-nav a:hover,.bh-main-nav a:focus-visible{background:#e4eee5!important !important;color:#123f30!important}
+.bh-site-header{background:#e4eee5!important !important;color:#123f30!important}
 .bh-main-nav a{color:#123f30!important}
-.mobile-nav-toggle{background:#e4eee5!important;border-color:#187d8a!important;color:#123f30!important}
+.mobile-nav-toggle{background:#e4eee5!important !important;border-color:#187d8a!important !important !important;color:#123f30!important}
 
 /* Primary actions: forest green. Secondary actions: teal. */
 body :is(.button-primary,.btn-primary,.button-green,.button-green-alt,.button-full,.home-full-button,.bh-primary-button){
-  background:#176b52!important;border-color:#176b52!important;color:#fff!important;
+  background:#176b52!important !important;border-color:#176b52!important !important !important;color:#fff!important !important;
 }
 body :is(.button-primary,.btn-primary,.button-green,.button-green-alt,.button-full,.home-full-button,.bh-primary-button):hover{
-  background:#10563f!important;border-color:#10563f!important;color:#fff!important;
+  background:#10563f!important !important;border-color:#10563f!important !important !important;color:#fff!important !important;
 }
 body :is(.button-teal,.btn-teal,.button-secondary,.bh-secondary-button){
-  background:#187d8a!important;border-color:#187d8a!important;color:#fff!important;
+  background:#187d8a!important !important;border-color:#187d8a!important !important !important;color:#fff!important !important;
 }
 body :is(.button-soft,.btn-soft){
-  background:#e4eee5!important;border-color:#cbdccf!important;color:#174e3b!important;
+  background:#e4eee5!important !important;border-color:#cbdccf!important !important !important;color:#174e3b!important !important;
 }
-body :is(.button-danger,.btn-danger){background:#b85e43!important;border-color:#b85e43!important;color:#fff!important}
+body :is(.button-danger,.btn-danger){background:#b85e43!important !important;border-color:#b85e43!important !important !important;color:#fff!important}
 
 /* Stronger accents for labels, filters, active states and status chips. */
 body :is(.eyebrow,.section-kicker,.page-kicker,.activity-meta,.calendar-event-time){color:#187d8a}
 body :is(.status,.badge,.chip,.filter-chip,.category-chip){border-color:#c5d9cb}
 body :is(.status.active,.badge.active,.chip.active,.filter-chip.active,.category-chip.active,
-[aria-pressed="true"],[aria-current="page"]){background:#176b52!important;border-color:#176b52!important;color:#fff!important}
-body :is(.tag,.pill,.status-badge){background:#e4eee5;color:#174e3b}
+[aria-pressed="true"],[aria-current="page"]){background:#176b52!important !important;border-color:#176b52!important !important !important;color:#fff!important}
+body :is(.tag,.pill,.status-badge){background:#e4eee5 !important;color:#174e3b}
 
 /* Panels remain light and readable; use stronger colour for the controls and accents. */
 body :is(.admin-panel,.account-panel,.subscription-card,.pricing-card,.feature-card,.support-card,
 .calendar-panel,.calendar-event,.activity-card,.home-activity-card,.hub-panel,.hub-brief,
 .hub-suggestions,.bh-leader-v3-stat,.bh-leader-v3-row){
-  border-color:#d4e1d7;
+  border-color:#d4e1d7 !important !important;
 }
 body :is(input:not([type=checkbox]):not([type=radio]),select,textarea){
-  border-color:#c5d9cb;
+  border-color:#c5d9cb !important !important;
 }
 body :is(input,select,textarea):focus{
-  border-color:#187d8a!important;
-  box-shadow:0 0 0 3px rgba(24,125,138,.15)!important;
+  border-color:#187d8a!important !important !important;
+  box-shadow:0 0 0 3px rgba(24,125,138,.15)!important !important;
 }
 
 /* Homepage and directory feature accents. */
@@ -86,38 +86,38 @@ body.bh-home .home-category-icon.green{background:#176b52!important}
 body.bh-home .home-category-icon.purple{background:#526c9b!important}
 body.bh-home .home-category-icon.yellow{background:#b77a22!important}
 body.bh-home .home-search{background:#187d8a!important}
-body.bh-home .home-search-fields .button{background:#e5a92e!important;color:#123f30!important}
+body.bh-home .home-search-fields .button{background:#e5a92e!important !important;color:#123f30!important}
 body.bh-home .home-age-badge{background:#176b52!important}
 body.bh-home .home-age-badge.pink{background:#b85e43!important}
 body.bh-home .home-age-badge.purple{background:#526c9b!important}
 body.bh-home .home-age-badge.teal{background:#187d8a!important}
 
 /* Family hub: stronger green welcome and teal action accents, without changing layout. */
-body.bh-my-hub :is(.hub-welcome,.my-hub-hero){background:#176b52!important;color:#fff!important}
+body.bh-my-hub :is(.hub-welcome,.my-hub-hero){background:#176b52!important !important;color:#fff!important}
 body.bh-my-hub :is(.hub-welcome,.my-hub-hero) :is(h1,h2,h3,p,span,strong){color:#fff}
 body.bh-my-hub :is(.hub-personal-cta,.hub-family-panel){border-color:#c5d9cb}
-body.bh-my-hub :is(.hub-upcoming-ticker,.hub-ticker){background:#123f30!important;color:#fff!important}
+body.bh-my-hub :is(.hub-upcoming-ticker,.hub-ticker){background:#123f30!important !important;color:#fff!important}
 body.bh-my-hub :is(.hub-upcoming-ticker,.hub-ticker) a{color:#fff!important}
 
 /* Class leader portal: confident green hero, teal navigation and readable panels. */
-body.bh-leader-v2 .bh-leader-v3-hero{background:#176b52!important;color:#fff!important}
+body.bh-leader-v2 .bh-leader-v3-hero{background:#176b52!important !important;color:#fff!important}
 body.bh-leader-v2 .bh-leader-v3-hero :is(h1,h2,h3,p,span,strong){color:#fff}
 body.bh-leader-v2 .bh-leader-v3-nav a[aria-current="page"],
-body.bh-leader-v2 .bh-leader-v3-nav a.active{background:#176b52!important;color:#fff!important}
-body.bh-leader-v2 .bh-leader-v3-nav a:hover{background:#e4eee5!important;color:#123f30!important}
+body.bh-leader-v2 .bh-leader-v3-nav a.active{background:#176b52!important !important;color:#fff!important}
+body.bh-leader-v2 .bh-leader-v3-nav a:hover{background:#e4eee5!important !important;color:#123f30!important}
 body.bh-leader-v2 .bh-leader-v3-stat strong{color:#176b52!important}
 
 /* Subpages and account areas use a stronger brand banner, not pastel blocks. */
 body.bh-subpage-v2 .app-shell :is(.page-heading,.auth-hero,.subscription-hero,.account-hero,.pro-hero){
-  background:#e4eee5!important;border-color:#c5d9cb!important;color:#174e3b!important;
+  background:#e4eee5!important !important;border-color:#c5d9cb!important !important !important;color:#174e3b!important !important;
 }
 body.bh-subpage-v2 .app-shell :is(.page-heading,.auth-hero,.subscription-hero,.account-hero,.pro-hero) :is(h1,h2,p){color:#174e3b!important}
 
 /* Admin pages: stronger active navigation and action links, while keeping work surfaces white. */
 body.bh-admin :is(.admin-nav a.active,.admin-nav a[aria-current="page"],.admin-sidebar a.active){
-  background:#176b52!important;color:#fff!important;
+  background:#176b52!important !important;color:#fff!important !important;
 }
 body.bh-admin :is(.admin-links a:hover,.admin-nav a:hover,.admin-sidebar a:hover){
-  background:#e4eee5!important;color:#123f30!important;
+  background:#e4eee5!important !important;color:#123f30!important !important;
 }
 body.bh-admin :is(.admin-stats strong,.admin-panel h2,.admin-panel h3){color:#174e3b}
