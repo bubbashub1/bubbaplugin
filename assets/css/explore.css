@@ -183,3 +183,22 @@
 .bh-explore .explore-hero-note{grid-column:1/-1;margin-top:-12px}
 @media(max-width:850px){.bh-explore .explore-hero{grid-template-columns:1fr;gap:22px}.bh-explore .explore-hero-copy{grid-column:1;grid-row:auto}.bh-explore .explore-hero-image{grid-column:1;grid-row:auto;min-height:300px;max-height:390px}.bh-explore .explore-search{grid-column:1}.bh-explore .explore-hero-note{grid-column:1}}
 @media(max-width:560px){.bh-explore .explore-hero-image{min-height:220px;max-height:260px;border-radius:32% 48% 28% 42% / 25% 35% 30% 35%}}
+
+
+/* Use the homepage family photo as a full-bleed hero background, not a separate image panel. */
+.bh-explore .explore-hero{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:24px;
+  background:
+    linear-gradient(90deg,rgba(248,246,235,.95) 0%,rgba(248,246,235,.88) 48%,rgba(248,246,235,.48) 100%),
+    url('/images/home/gemini_generated_image_dbeql8dbeql8dbeq-20260927-181224-80709b.jpeg') center/cover no-repeat;
+}
+.bh-explore .explore-hero-copy{max-width:720px}
+.bh-explore .explore-search{grid-column:1;max-width:780px}
+.bh-explore .explore-hero-note{grid-column:1;margin-top:0}
+@media(max-width:850px){
+  .bh-explore .explore-hero{grid-template-columns:minmax(0,1fr);background-position:center}
+  .bh-explore .explore-search{grid-column:1}
+  .bh-explore .explore-hero-note{grid-column:1}
+}
