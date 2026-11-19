@@ -1061,3 +1061,40 @@ body.bh-my-hub .family-v3-main .school-tracker-grid>.school-tracker-item>b{color
 body.bh-my-hub .family-v3-main .school-tracker-grid>.school-tracker-item>small{color:#0f766e;font-size:12px;font-weight:700}
 body.bh-my-hub .family-v3-main .school-tracker-grid>.school-tracker-item>p{margin:0;color:#668078;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
 @media(max-width:520px){body.bh-my-hub .family-v3-main .school-tracker-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}body.bh-my-hub .family-v3-main .school-tracker-grid>.school-tracker-item{padding:9px}}
+
+/* My Hub responsive parity: keep the same sections and reading order on phones,
+   reflowing the desktop layout instead of presenting a different dashboard. */
+@media(max-width:850px){
+  body.bh-my-hub .family-v3-main{width:100%;min-width:0}
+  body.bh-my-hub .family-v3-main>.my-hub-hero,
+  body.bh-my-hub .family-v3-main>#myHubApp,
+  body.bh-my-hub .family-v3-main>.my-hub-message{width:100%;max-width:100%;box-sizing:border-box}
+  body.bh-my-hub #myHubApp{display:flex!important;flex-direction:column!important;gap:16px!important}
+  body.bh-my-hub #myHubApp>.hub-welcome{order:0!important}
+  body.bh-my-hub #myHubApp>.hub-stats{order:1!important}
+  body.bh-my-hub #myHubApp>.hub-personal-cta{order:2!important}
+  body.bh-my-hub #myHubApp>.hub-family-panel{order:3!important}
+  body.bh-my-hub #myHubApp>.hub-suggestions{order:4!important}
+  body.bh-my-hub #myHubApp>.hub-main-dashboard{order:5!important}
+  body.bh-my-hub #myHubApp>[data-bh-inspire-me]{order:6!important}
+  body.bh-my-hub #myHubApp>#my-messages{order:7!important}
+  body.bh-my-hub #myHubApp>.hub-tools-grid{order:8!important}
+  body.bh-my-hub .hub-main-dashboard{display:grid!important;grid-template-columns:minmax(0,1fr)!important}
+  body.bh-my-hub .hub-main-dashboard>.hub-brief{grid-column:auto!important}
+  body.bh-my-hub .hub-family-list.hub-family-expanded{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  body.bh-my-hub .hub-upcoming-ticker{width:100%;max-width:100%;box-sizing:border-box}
+  body.bh-my-hub .hub-ticker-track{display:flex;flex-direction:column;gap:8px;overflow:visible;white-space:normal}
+  body.bh-my-hub .hub-ticker-track a{display:flex;flex-wrap:wrap;gap:4px 8px;animation:none!important;transform:none!important;white-space:normal}
+  body.bh-my-hub .hub-ticker-track a span{overflow-wrap:anywhere}
+}
+@media(max-width:520px){
+  body.bh-my-hub .family-v3-main>.my-hub-hero{margin:0 0 12px!important;padding:20px 16px!important}
+  body.bh-my-hub .family-v3-main .hub-welcome,
+  body.bh-my-hub .family-v3-main .hub-personal-cta,
+  body.bh-my-hub .family-v3-main .hub-family-panel,
+  body.bh-my-hub .family-v3-main .hub-panel,
+  body.bh-my-hub .family-v3-main .hub-brief,
+  body.bh-my-hub .family-v3-main .hub-suggestions{min-width:0;max-width:100%;box-sizing:border-box}
+  body.bh-my-hub .hub-family-list.hub-family-expanded{gap:8px!important}
+  body.bh-my-hub .hub-family-card{min-width:0;padding:10px!important}
+}
