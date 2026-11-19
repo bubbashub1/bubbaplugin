@@ -345,3 +345,6 @@
 .bh-explore .explore-category strong{z-index:2;color:#144400;text-shadow:0 1px 3px rgba(255,255,255,.9)}
 .bh-explore .home-category-row>a:nth-child(6){background:#a172ac!important;color:#fff!important}
 .bh-explore .home-category-row>a:nth-child(6) .home-category-icon{background:rgba(255,255,255,.2);color:#fff}
+
+/* Text-only Bubba Hub wordmark on the homepage */
+body.bh-explore .site-header .brand-text{font-size:23px;font-weight:800;letter-spacing:-.045em;line-height:1;color:var(--bh-ink);white-space:nowrap;text-decoration:none}
