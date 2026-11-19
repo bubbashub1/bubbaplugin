@@ -933,3 +933,15 @@ body.bh-subpage-v2 .family-nap-summary strong{display:block;margin-bottom:2px;co
   }
   :is(body.bh-family-v3,body.bh-my-hub) .family-v3-nav-group-items[hidden]{display:none!important}
 }
+
+/* Staging fix: ensure grouped hub navigation remains visible and colourful. */
+body.bh-family-v3 .family-v3-layout{display:grid!important;grid-template-columns:250px minmax(0,1fr)!important;gap:22px!important;align-items:start!important;}
+body.bh-family-v3 .family-v3-sidebar{display:block!important;visibility:visible!important;opacity:1!important;position:sticky!important;top:16px!important;}
+body.bh-family-v3 .family-v3-nav{display:flex!important;flex-direction:column!important;overflow:visible!important;gap:9px!important;}
+body.bh-family-v3 .family-v3-nav-group{border:1px solid #e2ede7!important;border-radius:13px!important;background:#fff!important;overflow:hidden!important;}
+body.bh-family-v3 .family-v3-nav-group:nth-child(1) .family-v3-nav-group-toggle{background:#dcefe7!important;}
+body.bh-family-v3 .family-v3-nav-group:nth-child(2) .family-v3-nav-group-toggle{background:#fbe3e8!important;}
+body.bh-family-v3 .family-v3-nav-group:nth-child(3) .family-v3-nav-group-toggle{background:#e1eff6!important;}
+body.bh-family-v3 .family-v3-nav-group:nth-child(4) .family-v3-nav-group-toggle{background:#fff0d5!important;}
+body.bh-family-v3 .family-v3-nav-group-items a{display:flex!important;align-items:center!important;gap:10px!important;padding:10px!important;border-radius:9px!important;}
+@media(max-width:850px){body.bh-family-v3 .family-v3-layout{grid-template-columns:minmax(0,1fr)!important;gap:12px!important;}body.bh-family-v3 .family-v3-sidebar{display:flex!important;position:relative!important;top:auto!important;width:100%!important;}body.bh-family-v3 .family-v3-menu-toggle{display:flex!important;align-items:center!important;justify-content:space-between!important;width:100%!important;min-height:48px!important;}body.bh-family-v3 .family-v3-nav{display:none!important;width:100%!important;}body.bh-family-v3 .family-v3-nav.is-open{display:flex!important;}body.bh-family-v3 .family-v3-brand{display:none!important;}}
