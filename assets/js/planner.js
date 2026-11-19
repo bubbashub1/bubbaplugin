@@ -27,6 +27,57 @@ window.bhInitPlanner = async function(root=document){
     if(!signedIn||adminOnly||!csrf)return false;
     try{const response=await fetch("/api/planner.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({...body,csrf})});const payload=await response.json();return !!(response.ok&&payload.ok)}catch{return false}
   }
+  const napPanel=$("napWindowPanel"),napChild=$("napChild"),napDate=$("napDate"),napStart=$("napStart"),napEnd=$("napEnd"),napSave=$("saveNapWindow"),napCancel=$("cancelNapEdit"),napStatus=$("napWindowStatus"),napList=$("napWindowList");
+  let napWindows=[],napChildren=[],editingNapId="",napCsrf="";
+  const localDate=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+  function renderNapWindows(){
+    if(!napList)return;
+    const names=new Map(napChildren.map(c=>[String(c.id),c.name||"Child"]));
+    const sorted=[...napWindows].sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.start).localeCompare(String(b.start)));
+    napList.innerHTML=sorted.length?sorted.map(n=>"<article class='planner-nap-item'><div><strong>"+esc(names.get(String(n.child_id))||"Child")+"</strong><span>"+esc(n.date)+" · "+esc(n.start)+"–"+esc(n.end)+"</span></div><div><button type='button' data-nap-edit='"+esc(n.id)+"'>Edit</button><button type='button' data-nap-remove='"+esc(n.id)+"'>Remove</button></div></article>").join(""):"<p class='muted'>No nap windows added yet.</p>";
+    napList.querySelectorAll("[data-nap-edit]").forEach(b=>b.onclick=()=>{const n=napWindows.find(x=>String(x.id)===b.dataset.napEdit);if(!n)return;editingNapId=String(n.id);napChild.value=String(n.child_id);napDate.value=n.date;napStart.value=n.start;napEnd.value=n.end;napSave.textContent="Update nap window";napCancel.hidden=false;napStatus.textContent="Editing nap window.";});
+    napList.querySelectorAll("[data-nap-remove]").forEach(b=>b.onclick=()=>{const previous=[...napWindows];napWindows=napWindows.filter(x=>String(x.id)!==b.dataset.napRemove);void saveNapWindows(previous);});
+  }
+  async function saveNapWindows(previous=null){
+    if(!signedIn||adminOnly||!napPanel)return false;
+    const response=await fetch("/api/planner-pro.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({action:"save_nap_windows",csrf:napCsrf,napWindows})}).catch(()=>null);
+    const payload=response?await response.json().catch(()=>null):null;
+    if(!response?.ok||!payload?.ok){
+      if(Array.isArray(previous)){napWindows=previous;renderNapWindows();}
+      napStatus.textContent="Could not save this nap window. Your saved planner data has not been changed.";
+      return false;
+    }
+    napWindows=Array.isArray(payload.napWindows)?payload.napWindows:napWindows;napCsrf=payload.csrf||napCsrf;renderNapWindows();napStatus.textContent="Nap window saved to your Bubba Hub account.";return true;
+  }
+  async function loadNapWindows(){
+    if(!napPanel||!signedIn||adminOnly||new URLSearchParams(location.search).get("embed")==="directory")return;
+    try{
+      const familyResponse=await fetch("/api/my-hub.php?view=family",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+      const family=await familyResponse.json();
+      if(!familyResponse.ok||!family.ok)return;
+      napChildren=Array.isArray(family.children)?family.children:[];
+      napPanel.hidden=false;
+      if(!napChildren.length){napPanel.querySelector(".planner-nap-fields").hidden=true;napStatus.textContent="Add a child profile in My Hub to use nap windows.";return;}
+      napPanel.querySelector(".planner-nap-fields").hidden=false;
+      napChild.innerHTML="<option value=''>Choose a child</option>"+napChildren.map(c=>"<option value='"+esc(c.id)+"'>"+esc(c.name||"Child")+"</option>").join("");
+      const stateResponse=await fetch("/api/planner-pro.php",{cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json"}});
+      const state=await stateResponse.json();
+      if(!stateResponse.ok||!state.ok)throw new Error("Nap windows unavailable");
+      napCsrf=state.csrf||csrf;napWindows=Array.isArray(state.napWindows)?state.napWindows:[];napDate.value=localDate();renderNapWindows();
+    }catch(error){napStatus.textContent="Nap windows are temporarily unavailable. Your planner remains available.";}
+  }
+  function resetNapForm(){editingNapId="";napChild.value="";napDate.value=localDate();napStart.value="13:00";napEnd.value="14:30";napSave.textContent="Save nap window";napCancel.hidden=true;}
+  napSave?.addEventListener("click",async()=>{
+    const childId=Number(napChild.value),date=napDate.value,start=napStart.value,end=napEnd.value;
+    if(!childId||!date||!start||!end||end<=start){napStatus.textContent="Choose a child, day and a finish time after the start time.";return;}
+    const item={id:editingNapId||("nap-"+Date.now().toString(36)),child_id:childId,date,start,end};
+    const previous=[...napWindows];
+    napWindows=napWindows.filter(n=>String(n.id)!==String(item.id)&&!(Number(n.child_id)===childId&&n.date===date));
+    napWindows.push(item);
+    if(await saveNapWindows(previous))resetNapForm();
+  });
+  napCancel?.addEventListener("click",resetNapForm);
+
   const localPlanned=()=>bhGet(BH_KEYS.planner),localVisited=()=>getList(VISITED_KEY),localHidden=()=>getList(HIDE_KEY);
   const plannerProfileSelect=$("plannerProfileSelect"),plannerProfileNote=$("plannerProfileNote");
   const normalise=v=>String(v??"").trim().toLowerCase();
@@ -302,6 +353,7 @@ window.bhInitPlanner = async function(root=document){
   }));
   await syncAccount();
   await loadPlannerProfiles();
+  await loadNapWindows();
   plannerProfileSelect?.addEventListener("change",()=>{
     activePlannerId=plannerProfileSelect.value;
     const profile=plannerProfiles.find(p=>String(p.id)===String(activePlannerId));

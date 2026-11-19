@@ -10,6 +10,26 @@ function avatarMarkup(item){
   ? "<div class='family-avatar'><img src='"+esc(path)+"' alt=''></div>"
   : "<div class='family-avatar family-avatar-placeholder'>"+esc((item.name||"Child").trim().charAt(0).toUpperCase())+"</div>";
 }
+function dateField(name,label,value,autocomplete=""){
+ const iso=String(value||"").slice(0,10),uk=toUkDate(iso);
+ return "<label class='bh-date-field'>"+label+"<span class='bh-date-control'><input class='bh-date-text' name='"+name+"_uk' type='text' inputmode='numeric' autocomplete='"+(autocomplete||"off")+"' placeholder='DD/MM/YYYY' value='"+esc(uk)+"' aria-label='"+label+" (DD/MM/YYYY)'><button class='bh-date-picker-button' type='button' aria-label='Choose "+label.toLowerCase()+"' title='Choose date'>▦</button><input class='bh-date-native' type='date' tabindex='-1' aria-hidden='true' value='"+esc(iso)+"'></span><small class='bh-date-hint'>Use DD/MM/YYYY or choose a date from the calendar.</small></label>";
+}
+function parseUkDate(value){
+ const s=String(value||"").trim();if(!s)return "";
+ const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);if(!m)return null;
+ const day=Number(m[1]),month=Number(m[2]),year=Number(m[3]),d=new Date(year,month-1,day);
+ if(d.getFullYear()!==year||d.getMonth()!==month-1||d.getDate()!==day)return null;
+ return year+"-"+String(month).padStart(2,"0")+"-"+String(day).padStart(2,"0");
+}
+function wireDateFields(form){
+ form.querySelectorAll(".bh-date-field").forEach(field=>{
+  const textInput=field.querySelector(".bh-date-text"),nativeInput=field.querySelector(".bh-date-native"),button=field.querySelector(".bh-date-picker-button");
+  button.addEventListener("click",()=>{try{if(nativeInput.showPicker)nativeInput.showPicker();else nativeInput.click()}catch(_){nativeInput.click()}});
+  nativeInput.addEventListener("change",()=>{textInput.value=toUkDate(nativeInput.value);textInput.setCustomValidity("");});
+  textInput.addEventListener("input",()=>{textInput.setCustomValidity("");});
+  textInput.addEventListener("blur",()=>{const parsed=parseUkDate(textInput.value);if(parsed!==null)nativeInput.value=parsed;});
+ });
+}
 async function uploadAvatar(childId,file,form,msg){
  if(!file)return;
  const fd=new FormData();
@@ -24,14 +44,14 @@ async function uploadAvatar(childId,file,form,msg){
 function modal(title,type,item={}){
  const o=document.createElement("div");o.className="hub-modal";
  const fields=type==="child"
-  ? "<div class='child-avatar-field'><span class='form-field-label'>Profile photo</span><div class='child-avatar-editor'>"+avatarMarkup(item)+"<div class='child-avatar-copy'><label class='button button-soft avatar-upload-button'>Choose photo<input name='avatar' type='file' accept='image/jpeg,image/png,image/webp' hidden></label><small>JPG, PNG or WebP · up to 5 MB</small></div></div></div><label>Name<input name='name' required maxlength='100' value='"+esc(item.name||"")+"'></label><label>Gender<select name='gender'><option value=''>Prefer not to say</option><option value='Girl' "+(item.gender==="Girl"?"selected":"")+">Girl</option><option value='Boy' "+(item.gender==="Boy"?"selected":"")+">Boy</option><option value='Non-binary' "+(item.gender==="Non-binary"?"selected":"")+">Non-binary</option></select></label><label>Date of birth<input name='date_of_birth' type='date' autocomplete='bday' value='"+esc(item.date_of_birth||"")+"'></label>"
-  : "<label>Nickname<input name='nickname' maxlength='80' value='"+esc(item.nickname||"")+"' placeholder='Optional'></label><label>Due date<input name='due_date' type='date' value='"+esc(item.due_date||"")+"'></label>";
+  ? "<div class='child-avatar-field'><span class='form-field-label'>Profile photo</span><div class='child-avatar-editor'>"+avatarMarkup(item)+"<div class='child-avatar-copy'><label class='button button-soft avatar-upload-button'>Choose photo<input name='avatar' type='file' accept='image/jpeg,image/png,image/webp' hidden></label><small>JPG, PNG or WebP · up to 5 MB</small></div></div></div><label>Name<input name='name' required maxlength='100' value='"+esc(item.name||"")+"'></label><label>Gender<select name='gender'><option value=''>Prefer not to say</option><option value='Girl' "+(item.gender==="Girl"?"selected":"")+">Girl</option><option value='Boy' "+(item.gender==="Boy"?"selected":"")+">Boy</option><option value='Non-binary' "+(item.gender==="Non-binary"?"selected":"")+">Non-binary</option></select></label>"+dateField("date_of_birth","Date of birth",item.date_of_birth,"bday")+"<fieldset class='family-routine-fields'><legend>Nap routine <span>(optional)</span></legend><label>Usual pattern<select name='nap_pattern'><option value='varies' "+((item.nap_pattern||"varies")==="varies"?"selected":"")+">Varies day to day</option><option value='none' "+(item.nap_pattern==="none"?"selected":"")+">No regular naps</option><option value='one' "+(item.nap_pattern==="one"?"selected":"")+">Usually one nap</option><option value='two' "+(item.nap_pattern==="two"?"selected":"")+">Usually two naps</option></select></label><div class='family-nap-grid'><label>Morning nap starts<input type='time' name='nap_morning_start' value='"+esc(item.nap_morning_start||"")+"'></label><label>Morning nap ends<input type='time' name='nap_morning_end' value='"+esc(item.nap_morning_end||"")+"'></label><label>Afternoon nap starts<input type='time' name='nap_afternoon_start' value='"+esc(item.nap_afternoon_start||"")+"'></label><label>Afternoon nap ends<input type='time' name='nap_afternoon_end' value='"+esc(item.nap_afternoon_end||"")+"'></label></div><small>These are usual times, not fixed appointments. You can leave them blank.</small></fieldset><fieldset class='family-routine-fields'><legend>Access &amp; support preferences <span>(optional)</span></legend><p class='family-support-intro'>Choose anything that would help your child enjoy a group. You do not need to share a diagnosis or medical history.</p><div class='family-support-options'><label><input type='checkbox' name='support_needs' value='step_free' ${(Array.isArray(item.support_needs)&&item.support_needs.includes('step_free'))?'checked':''}><span>Step-free access</span></label><label><input type='checkbox' name='support_needs' value='mobility_space' ${(Array.isArray(item.support_needs)&&item.support_needs.includes('mobility_space'))?'checked':''}><span>Space for a wheelchair or mobility aid</span></label><label><input type='checkbox' name='support_needs' value='accessible_toilet' ${(Array.isArray(item.support_needs)&&item.support_needs.includes('accessible_toilet'))?'checked':''}><span>Accessible toilet</span></label><label><input type='checkbox' name='support_needs' value='quiet_space' ${(Array.isArray(item.support_needs)&&item.support_needs.includes('quiet_space'))?'checked':''}><span>Quieter or lower-sensory setting</span></label><label><input type='checkbox' name='support_needs' value='small_group' ${(Array.isArray(item.support_needs)&&item.support_needs.includes('small_group'))?'checked':''}><span>Smaller group preferred</span></label><label><input type='checkbox' name='support_needs' value='settling_time' ${(Array.isArray(item.support_needs)&&item.support_needs.includes('settling_time'))?'checked':''}><span>Extra time to settle in</span></label><label><input type='checkbox' name='support_needs' value='communication' ${(Array.isArray(item.support_needs)&&item.support_needs.includes('communication'))?'checked':''}><span>Communication support</span></label><label><input type='checkbox' name='support_needs' value='carer_support' ${(Array.isArray(item.support_needs)&&item.support_needs.includes('carer_support'))?'checked':''}><span>Additional parent or carer support</span></label></div></fieldset>"
+  : "<label>Nickname<input name='nickname' maxlength='80' value='"+esc(item.nickname||"")+"' placeholder='Optional'></label>"+dateField("due_date","Due date",item.due_date)+"";
  o.innerHTML="<form class='hub-modal-card'><div class='admin-panel-head'><div><span class='eyebrow'>Family profile</span><h2>"+title+"</h2></div><button type='button' class='button button-soft' data-close>Close</button></div><div class='hub-form-grid family-child-form'>"+fields+"</div><div class='hero-actions'><button class='button button-primary' type='submit'>Save</button></div><p data-msg class='library-message'></p></form>";
  document.body.appendChild(o);
  o.querySelector("[data-close]").onclick=()=>o.remove();o.onclick=e=>{if(e.target===o)o.remove()};
- const form=o.querySelector("form"),file=form.querySelector("input[name='avatar']");
+ const form=o.querySelector("form"),file=form.querySelector("input[name='avatar']");wireDateFields(form);
  form.onsubmit=async e=>{
-  e.preventDefault();const p=Object.fromEntries(new FormData(form));delete p.avatar;p.action=type==="child"?"save_child":"save_bump";if(item.id)p.id=item.id;p.csrf=csrf;
+  e.preventDefault();const p=Object.fromEntries(new FormData(form));delete p.avatar;p.support_needs=[...form.querySelectorAll("input[name='support_needs']:checked")].map(el=>el.value);for(const key of ["date_of_birth","due_date"]){const raw=p[key+"_uk"];if(raw!==undefined){const parsed=parseUkDate(raw);if(parsed===null){const field=form.querySelector("[name='"+key+"_uk']");field.setCustomValidity("Enter a real date in DD/MM/YYYY format.");field.reportValidity();return;}p[key]=parsed;delete p[key+"_uk"];}}p.action=type==="child"?"save_child":"save_bump";if(item.id)p.id=item.id;p.csrf=csrf;
   const m=form.querySelector("[data-msg]");
   try{
    const r=await fetch("../api/my-hub.php",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(p)});
@@ -85,12 +105,17 @@ function render(d){
   let school="";
   if(t){
    const primaryOpenNow=new Date()>=t.primaryOpen&&new Date()<=t.primaryClose;
-   const secondaryOpenNow=new Date()>=t.secondaryOpen&&new Date()<=t.secondaryClose;
    const primaryStatus=primaryOpenNow?(t.primaryDays>0?"OPEN · "+t.primaryDays+" days left":"CLOSES TODAY"):(t.primaryDays>0?"Opens "+t.primaryOpenText:"Closed");
-   const secondaryStatus=secondaryOpenNow?(t.secondaryDays>0?"OPEN · "+t.secondaryDays+" days left":"CLOSES TODAY"):(t.secondaryDays>0?"Opens "+t.secondaryOpenText:"Closed");
-   school="<div class='school-tracker'><span class='school-tracker-icon'>🎓</span><div><strong>School application tracker</strong><div class='school-tracker-row'><b>Primary · Sep "+t.primaryYear+"</b><span class='school-tracker-status'>"+esc(primaryStatus)+"</span></div><small>Opens "+esc(t.primaryOpenText)+" · closes "+esc(t.primaryCloseText)+"</small><div class='school-tracker-row'><b>Secondary · Sep "+t.secondaryYear+"</b><span class='school-tracker-status'>"+esc(secondaryStatus)+"</span></div><small>Opens "+esc(t.secondaryOpenText)+" · closes "+esc(t.secondaryCloseText)+"</small></div></div>";
+   school="<div class='school-tracker'><span class='school-tracker-icon'>🎓</span><div><strong>Primary school application</strong><div class='school-tracker-row'><b>Reception · Sep "+t.primaryYear+"</b><span class='school-tracker-status'>"+esc(primaryStatus)+"</span></div><small>Opens "+esc(t.primaryOpenText)+" · closes "+esc(t.primaryCloseText)+"</small></div></div>";
   }
-  return "<article class='hub-family-card hub-family-child-card'><div class='hub-family-card-heading'>"+avatarMarkup(x)+"<div class='hub-family-main'><strong>"+esc(x.name)+"</strong><span class='hub-family-age'>"+(x.date_of_birth?esc(age(x.date_of_birth))+" · "+esc(toUkDate(x.date_of_birth)):"Date of birth not set")+"</span></div><button class='button button-soft hub-family-edit' data-edit-child='"+x.id+"'>Edit</button></div>"+school+"</article>";
+  const napPattern=x.nap_pattern||"varies";
+  const napTimes=[];
+  if(x.nap_morning_start||x.nap_morning_end)napTimes.push("Morning "+[x.nap_morning_start,x.nap_morning_end].filter(Boolean).join("–"));
+  if(x.nap_afternoon_start||x.nap_afternoon_end)napTimes.push("Afternoon "+[x.nap_afternoon_start,x.nap_afternoon_end].filter(Boolean).join("–"));
+  const napLabel=napPattern==="none"?"No regular naps":napPattern==="one"?"Usually one nap":napPattern==="two"?"Usually two naps":"Varies day to day";
+  const napSummary="<div class='family-nap-summary'><strong>Nap routine</strong>"+esc(napTimes.length?napLabel+" · "+napTimes.join(" · "):napPattern==="none"?napLabel:"Not added yet · Edit to add usual nap times")+"</div>";
+  const childId=Number(x.id??x.child_id??x.childId)||0;
+  return "<article class='hub-family-card hub-family-child-card'><div class='hub-family-card-heading'>"+avatarMarkup(x)+"<div class='hub-family-main'><strong>"+esc(x.name)+"</strong><span class='hub-family-age'>"+(x.date_of_birth?esc(age(x.date_of_birth))+" · "+esc(toUkDate(x.date_of_birth)):"Date of birth not set")+"</span></div><button class='button button-soft hub-family-edit' data-edit-child='"+x.id+"'>Edit</button></div>"+school+napSummary+(Array.isArray(x.support_needs)&&x.support_needs.length?"<p class='family-support-summary'>Access preferences saved · "+x.support_needs.length+" selected</p>":"")+"<div class='hub-family-actions'>"+(childId>0?"<a class='button button-soft' href='../choose?child_id="+encodeURIComponent(childId)+"'>Suggested groups for "+esc(x.name)+"</a>":"<span class='family-nap-summary'>Child link unavailable. Please refresh the profile.</span>")+"</div></article>";
  }).join("")+b.map(x=>{
   const t=pregnancyTracker(x.due_date);
   let tracker="";

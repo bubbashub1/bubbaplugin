@@ -9,44 +9,79 @@
   main.classList.add("family-v3-main");
   const path=location.pathname.replace(/\/+$/,"")||"/";
   const groups=[
-   {title:"Explore",links:[["/family-section.html?section=recent","Recently Viewed","◷"],["/family-section.html?section=saved","Saved activities","♡"],["/family-section.html?section=visited","Visited Groups","✓"],["/family-section.html?section=suggested","Suggested groups & activities","✦"]]},
-   {title:"My Family",links:[["/account/family.html","Family profiles","♧"],["/account/preferences.html","Family preferences","⚙"]]},
-   {title:"My Space",links:[["/family-section.html?section=messages","My Messages","✉"],["/account/profile.html","My Profile","☺"],["/account/notifications.html","Notifications","♧"],["/account/privacy.html","Privacy & consent","▣"]]},
-   {title:"My Planner",links:[["/planner.html","My Planner","▦"],["/account/bookings.html","Bookings","▣"]]},
-   {title:"Account",links:[["/account.html","My Account","○"]]}
+   {id:"hub",label:"My Hub",items:[["/my-hub.html","My Hub","⌂"],["/planner.html","My Planner","▦"]]},
+   {id:"explore",label:"Explore",items:[["/choose.html","Explore activities","✦"],["/family-section.html?section=recent","Recently Viewed","◷"],["/family-section.html?section=saved","Saved activities","♡"],["/family-section.html?section=visited","Visited Groups","✓"]]},
+   {id:"family",label:"My Family",items:[["/account/family.html","Family profiles","♧"],["/account/preferences.html","Family preferences","⚙"]]},
+   {id:"space",label:"My Space",items:[["/account/bookings.html","Bookings","▣"],["/family-section.html?section=messages","My Messages","✉"],["/account/notifications.html","Notifications","♧"],["/account/privacy.html","Privacy & consent","▣"],["/account/profile.html","My Profile","☺"]]}
   ];
   const side=document.createElement("aside");
   side.className="family-v3-sidebar";
   side.setAttribute("aria-label","My Hub navigation");
-  side.innerHTML='<button class="family-v3-menu-toggle" type="button" aria-expanded="false" aria-controls="familyV3Nav"><span>My Hub menu</span><span class="family-v3-menu-chevron" aria-hidden="true">⌄</span></button><nav class="family-v3-nav" aria-label="Family workspace">';
-  const nav=side.querySelector("nav");nav.id="familyV3Nav";
+  side.innerHTML='<button class="family-v3-menu-toggle" type="button" aria-expanded="false" aria-controls="familyV3Nav"><span>My Hub menu</span><span class="family-v3-menu-chevron" aria-hidden="true">⌄</span></button><div class="family-v3-brand"><strong class="family-v3-user">Your family</strong><span>My Bubba Hub</span></div><nav class="family-v3-nav" id="familyV3Nav" aria-label="Family workspace"></nav>';
+  const nav=side.querySelector("nav");
   const menuToggle=side.querySelector(".family-v3-menu-toggle");
   const setMenuOpen=open=>{menuToggle.setAttribute("aria-expanded",String(open));menuToggle.classList.toggle("is-open",open);nav.classList.toggle("is-open",open);};
   menuToggle.addEventListener("click",()=>setMenuOpen(menuToggle.getAttribute("aria-expanded")!=="true"));
-  nav.addEventListener("click",event=>{if(event.target.closest("a")&&window.matchMedia("(max-width:767px)").matches)setMenuOpen(false);});
+  nav.addEventListener("click",event=>{if(event.target.closest("a"))setMenuOpen(false);});
   side.addEventListener("keydown",event=>{if(event.key==="Escape")setMenuOpen(false);});
+  const isMobile=()=>window.matchMedia("(max-width:850px)").matches;
   groups.forEach(group=>{
-    const section=document.createElement("section");section.className="family-v3-group";
-    const button=document.createElement("button");button.type="button";button.className="family-v3-group-toggle";button.setAttribute("aria-expanded","true");
-    button.innerHTML="<span>"+group.title+"</span><span class='family-v3-group-chevron' aria-hidden='true'>⌄</span>";
-    const subnav=document.createElement("div");subnav.className="family-v3-group-links";
-    button.addEventListener("click",()=>{const open=button.getAttribute("aria-expanded")!=="true";button.setAttribute("aria-expanded",String(open));section.classList.toggle("is-collapsed",!open);});
-    group.links.forEach(([href,label,icon])=>{
-      const a=document.createElement("a");a.href=href;const target=new URL(href,location.origin),currentParams=new URLSearchParams(location.search);
-      const pathNow=location.pathname.replace(/\/+$/,"")||"/",targetPath=target.pathname.replace(/\/+$/,"")||"/";
-      const samePath=pathNow===targetPath||(href==="/planner.html"&&pathNow==="/account/planner.html");
-      const sameQuery=[...target.searchParams.keys()].every(key=>currentParams.get(key)===target.searchParams.get(key));
-      if(samePath&&sameQuery)a.setAttribute("aria-current","page");
-      const i=document.createElement("span");i.className="family-v3-nav-icon";i.setAttribute("aria-hidden","true");i.textContent=icon;
-      const t=document.createElement("span");t.textContent=label;a.append(i,t);subnav.append(a);
-    });
-    section.append(button,subnav);nav.append(section);
+   const section=document.createElement("section");section.className="family-v3-nav-group";section.dataset.group=group.id;
+   const heading=document.createElement("button");heading.type="button";heading.className="family-v3-nav-group-toggle";
+   heading.setAttribute("aria-expanded","false");
+   const title=document.createElement("span");title.textContent=group.label;
+   const chevron=document.createElement("span");chevron.className="family-v3-group-chevron";chevron.setAttribute("aria-hidden","true");chevron.textContent="⌄";
+   heading.append(title,chevron);
+   const items=document.createElement("div");items.className="family-v3-nav-group-items";
+   let groupActive=false;
+   group.items.forEach(([href,label,icon])=>{
+    const a=document.createElement("a");a.href=href;
+    const target=new URL(href,location.origin);
+    const currentParams=new URLSearchParams(location.search);
+    const targetPath=target.pathname.endsWith("/")?target.pathname.slice(0,-1)||"/":target.pathname;
+    const samePath=path===targetPath||((href==="/planner.html")&&path==="/account/planner.html");
+    const sameQuery=[...target.searchParams.keys()].every(key=>currentParams.get(key)===target.searchParams.get(key));
+    if(samePath&&sameQuery){a.setAttribute("aria-current","page");groupActive=true;}
+    const i=document.createElement("span");i.className="family-v3-nav-icon";i.setAttribute("aria-hidden","true");i.textContent=icon;
+    const t=document.createElement("span");t.textContent=label;a.append(i,t);items.append(a);
+   });
+   const setExpanded=open=>{heading.setAttribute("aria-expanded",String(open));section.classList.toggle("is-expanded",open);items.hidden=!open;};
+   heading.addEventListener("click",()=>{const open=heading.getAttribute("aria-expanded")!=="true";if(open&&isMobile())nav.querySelectorAll(".family-v3-nav-group").forEach(other=>{if(other!==section){const otherHeading=other.querySelector(".family-v3-nav-group-toggle");otherHeading.setAttribute("aria-expanded","false");other.classList.remove("is-expanded");other.querySelector(".family-v3-nav-group-items").hidden=true;}});setExpanded(open);});
+   setExpanded(groupActive||!isMobile());
+   section.append(heading,items);nav.append(section);
   });
-  const help=document.createElement("div");help.className="family-v3-help";help.innerHTML='<strong>Need a hand?</strong><p>Find answers or send the Bubba Hub team a question.</p><a href="/help-support.html">Visit Help &amp; Support →</a>';side.append(help);
+  window.addEventListener("resize",()=>groups.forEach(group=>{
+   const section=nav.querySelector('[data-group="'+group.id+'"]');
+   if(!section)return;
+   const heading=section.querySelector(".family-v3-nav-group-toggle");
+   if(isMobile()&&heading.getAttribute("aria-expanded")==="true")return;
+   if(!isMobile()) {heading.setAttribute("aria-expanded","true");section.classList.add("is-expanded");section.querySelector(".family-v3-nav-group-items").hidden=false;}
+   else {heading.setAttribute("aria-expanded","false");section.classList.remove("is-expanded");section.querySelector(".family-v3-nav-group-items").hidden=true;}
+  }));
+  const help=document.createElement("div");help.className="family-v3-help";help.innerHTML='<strong>Need a hand?</strong><p>Find answers or send the Bubba Hub team a question.</p><a class="family-v3-help-link" href="/help-support.html">Visit Help &amp; Support <span aria-hidden="true">→</span></a>';side.append(help);const profileCta=document.createElement("a");profileCta.className="family-v3-profile-cta";profileCta.href="/account/profile.html";profileCta.innerHTML='<span class="family-v3-profile-cta-icon" aria-hidden="true">☺</span><span><strong>My Profile</strong><small>View and update your details</small></span><span class="family-v3-profile-cta-arrow" aria-hidden="true">→</span>';side.append(profileCta);
   const layout=document.createElement("div");layout.className="family-v3-layout";
   const content=document.createElement("div");content.className="family-v3-main";
   while(main.firstChild)content.append(main.firstChild);
-  layout.append(side,content);main.append(layout);
+  layout.append(side,content);
+  const mobileNav=document.createElement("nav");mobileNav.className="family-v3-mobile-nav";mobileNav.setAttribute("aria-label","Quick navigation");
+  const quickLinks=[
+   ["/my-hub.html","Home","⌂"],
+   ["/choose.html","Explore","✦"],
+   ["/account/family.html","Family","♧"],
+   ["/planner.html","My Planner","▦"],
+   ["/family-section.html?section=messages","Messages","✉"]
+  ];
+  quickLinks.forEach(([href,label,icon])=>{
+   const a=document.createElement("a");a.href=href;
+   const target=new URL(href,location.origin),targetPath=target.pathname.replace(/\/$/,"")||"/";
+   const samePath=path===targetPath||((href==="/planner.html")&&path==="/account/planner.html");
+   const sameQuery=[...target.searchParams.keys()].every(key=>new URLSearchParams(location.search).get(key)===target.searchParams.get(key));
+   if(samePath&&sameQuery){a.setAttribute("aria-current","page");a.setAttribute("aria-label",label+" (current page)");}
+   const glyph=document.createElement("span");glyph.className="family-v3-mobile-nav-icon";glyph.setAttribute("aria-hidden","true");glyph.textContent=icon;
+   const text=document.createElement("span");text.className="family-v3-mobile-nav-label";text.textContent=label;
+   a.append(glyph,text);mobileNav.append(a);
+  });
+  layout.append(mobileNav);main.append(layout);
   fetch("/api/auth.php?action=me",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}})
    .then(r=>r.ok?r.json():null).then(data=>{
     const user=data?.user||{};
