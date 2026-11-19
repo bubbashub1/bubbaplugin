@@ -128,3 +128,7 @@
 @media(max-width:560px){
   .bh-explore-main>.explore-section{padding:22px 17px 24px;border-radius:19px;margin-bottom:20px}
 }
+
+
+/* Keep the category section heading distinctly Bubba Hub green. */
+.bh-explore #explore-categories-title{color:#174e3b!important}
