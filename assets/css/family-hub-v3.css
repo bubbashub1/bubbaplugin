@@ -1020,3 +1020,24 @@ body.bh-my-hub .hub-personal-cta .hub-personal-actions .button-soft{
     grid-template-areas:"copy" "pro" "actions"!important;gap:14px!important;
   }
 }
+
+
+/* Keep the Family Pro CTA contained within its right-hand hero column. */
+body.bh-my-hub #hubProPitch{
+  grid-area:pro!important;
+  align-self:center!important;
+  justify-self:stretch!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  overflow-wrap:anywhere;
+}
+body.bh-my-hub #hubProPitch>*{max-width:100%;min-width:0;box-sizing:border-box}
+body.bh-my-hub #hubProPitch .button{
+  align-self:flex-start!important;
+  width:auto!important;
+  max-width:100%!important;
+  white-space:normal!important;
+  box-sizing:border-box!important;
+}
