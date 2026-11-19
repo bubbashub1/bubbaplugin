@@ -249,3 +249,79 @@
 @media(prefers-reduced-motion:reduce){
   .bh-explore .explore-news-track{animation:none}
 }
+
+
+/* Restore the balanced two-column hero: story on the left, search on the right. */
+.bh-explore .explore-hero{
+  grid-template-columns:minmax(0,1fr) minmax(360px,.92fr);
+  gap:28px 44px;
+  align-items:center;
+  min-height:440px;
+  background-image:linear-gradient(90deg,rgba(250,252,247,.94) 0%,rgba(250,252,247,.86) 42%,rgba(250,252,247,.62) 100%),url('/images/home/gemini_generated_image_dbeql8dbeql8dbeq-20260927-181224-80709b.jpeg');
+  background-position:center;
+}
+.bh-explore .explore-hero-copy{grid-column:1;grid-row:1;max-width:620px}
+.bh-explore .explore-search{
+  grid-column:2;
+  grid-row:1;
+  width:100%;
+  align-self:center;
+  padding:clamp(22px,2.6vw,34px);
+  background:rgba(255,255,255,.96);
+  border:1px solid rgba(23,78,59,.16);
+  box-shadow:0 16px 38px rgba(20,55,39,.18);
+}
+.bh-explore .explore-hero-note{grid-column:1;grid-row:2;margin-top:-4px}
+@media(max-width:850px){
+  .bh-explore .explore-hero{grid-template-columns:1fr;min-height:0;gap:22px}
+  .bh-explore .explore-hero-copy{grid-column:1;grid-row:1}
+  .bh-explore .explore-search{grid-column:1;grid-row:2}
+  .bh-explore .explore-hero-note{grid-column:1;grid-row:3}
+}
+
+/* Stronger, more confident Bubba Hub colours: rich greens, teal, coral and ochre. */
+.bh-explore .explore-hero h1{color:#123f30}
+.bh-explore .explore-hero-copy>p{color:#304f40}
+.bh-explore .explore-eyebrow{color:#176b52}
+.bh-explore .explore-primary{background:#176b52;color:#fff;box-shadow:0 5px 14px rgba(23,107,82,.2)}
+.bh-explore .explore-primary:hover{background:#10563f}
+.bh-explore .explore-advanced{color:#176b52}
+.bh-explore .explore-hero-note{color:#315b46}
+.bh-explore .explore-hero-note span{color:#c56b3c}
+
+/* Give the five main navigation tiles more depth and contrast. */
+.bh-explore .home-category-row>a{color:#fff;box-shadow:0 8px 20px rgba(28,55,42,.09)}
+.bh-explore .home-category-row>a:nth-child(1){background:#176b52}
+.bh-explore .home-category-row>a:nth-child(2){background:#187d8a}
+.bh-explore .home-category-row>a:nth-child(3){background:#b85e43}
+.bh-explore .home-category-row>a:nth-child(4){background:#b77a22}
+.bh-explore .home-category-row>a:nth-child(5){background:#526c9b}
+.bh-explore .home-category-row .home-category-icon{background:rgba(255,255,255,.18);color:#fff}
+.bh-explore .home-category-row .bh-category-description{color:rgba(255,255,255,.91)}
+.bh-explore .home-category-row .bh-category-action{color:#fff}
+.bh-explore .home-category-row>a:hover{filter:brightness(1.08);box-shadow:0 12px 24px rgba(28,55,42,.15)}
+
+/* Keep section surfaces clean; use stronger colour on headings and accents instead. */
+.bh-explore-main>.explore-section:nth-of-type(2),
+.bh-explore-main>.explore-section:nth-of-type(3),
+.bh-explore-main>.explore-section:nth-of-type(4),
+.bh-explore-main>.explore-section:nth-of-type(5){background:#f7f8f4}
+.bh-explore .explore-section-heading h2,
+.bh-explore .explore-regions h2{color:#174e3b}
+.bh-explore .explore-section-heading .explore-eyebrow{color:#b85e43}
+.bh-explore .explore-region{background:#176b52;color:#fff;border-color:#176b52}
+.bh-explore .explore-region:hover{background:#10563f;color:#fff}
+
+/* More confident split family and leader panels. */
+.bh-explore .explore-family-panel{background:#176b52;color:#fff}
+.bh-explore .explore-leader-panel{background:#b85e43;color:#fff}
+.bh-explore .explore-cta-panel .explore-eyebrow,
+.bh-explore .explore-cta-panel h2,
+.bh-explore .explore-cta-panel p{color:#fff}
+.bh-explore .explore-cta-panel .explore-cta-link,
+.bh-explore .explore-leader-panel .explore-cta-link{background:#fff;color:#174e3b}
+.bh-explore .explore-leader-panel .explore-cta-link:hover,
+.bh-explore .explore-cta-panel .explore-cta-link:hover{background:#f2e8d9;color:#174e3b}
+@media(max-width:560px){
+  .bh-explore .explore-hero{background-image:linear-gradient(100deg,rgba(250,252,247,.94),rgba(250,252,247,.84)),url('/images/home/gemini_generated_image_dbeql8dbeql8dbeq-20260927-181224-80709b.jpeg')}
+}
