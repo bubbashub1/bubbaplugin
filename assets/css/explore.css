@@ -228,7 +228,7 @@
   max-width:none;
   align-items:center;
   will-change:transform;
-  animation:bhExploreTickerTrack 48s linear infinite;
+  animation:bhExploreTickerTrack 96s linear infinite;
 }
 .bh-explore .explore-news-group{
   display:flex;
