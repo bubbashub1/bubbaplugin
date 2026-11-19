@@ -127,9 +127,20 @@ document.addEventListener("DOMContentLoaded",async()=>{
     $("hubSuggestionsNext").onclick=()=>track.scrollBy({left:Math.max(260,track.clientWidth*.75),behavior:"smooth"});
   }
   function renderUpcomingTicker(){
-    const wrap=$("hubTickerTrack"); if(!wrap)return;
-    const upcoming=(data.planner||[]).map(p=>{const a=activities.find(x=>String(x.id)===String(p.id));return a?{a,p}:null}).filter(Boolean).slice(0,8);
-    wrap.innerHTML=upcoming.length?upcoming.map(({a,p})=>"<a href='planner.html'><strong>"+esc(p.date||p.starts_at||"Upcoming")+"</strong><span>"+esc(a.title)+"</span></a>").join(""):"<span>Add activities to My Planner and your upcoming plans will appear here.</span>";
+    const wrap=$("hubTickerTrack");if(!wrap)return;
+    const now=new Date(),items=[];
+    (data.bookings||[]).filter(b=>!["cancelled","refunded"].includes(String(b.status||"").toLowerCase())).forEach(b=>{
+      const raw=b.starts_at||"",date=raw?new Date(String(raw).replace(" ","T")):null;
+      if(!date||Number.isNaN(date.getTime())||date<now)return;
+      items.push({date,title:b.title||"Booked activity",detail:b.venue_name||"",kind:"Booking",href:"/account/bookings.html"});
+    });
+    (data.planner||[]).filter(p=>!p.visited).forEach(p=>{
+      const a=activities.find(x=>String(x.id)===String(p.id));if(!a)return;
+      items.push({date:null,title:a.title||"Planned activity",detail:a.town||a.location||"",kind:"In your planner",href:"/planner.html"});
+    });
+    items.sort((a,b)=>(a.date?.getTime()??Number.MAX_SAFE_INTEGER)-(b.date?.getTime()??Number.MAX_SAFE_INTEGER));
+    const fmt=d=>d?d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"}):"Saved plan";
+    wrap.innerHTML=items.length?items.slice(0,8).map(item=>"<a href='"+item.href+"'><strong>"+esc(fmt(item.date))+"</strong><span>"+esc(item.title)+(item.detail?" · "+esc(item.detail):"")+"</span><small>"+esc(item.kind)+"</small></a>").join(""):"<span>Your upcoming bookings and planned activities will appear here. Add an activity to My Planner to get started.</span>";
   }
 
   const schoolTracker=child=>{const dob=child.date_of_birth;let school="";if(dob){const d=new Date(dob+"T00:00:00"),now=new Date(),py=d.getFullYear()+5,fmt=x=>x.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}),po=new Date(py-1,10,1),pc=new Date(py,0,15),days=x=>Math.ceil((x-now)/86400000),status=(o,c)=>now>=o&&now<=c?(days(c)>0?"Open · "+days(c)+" days left":"Closes today"):(days(o)>0?"Opens "+fmt(o):"Closed");school="<div class='school-tracker-item'><b>Primary · Sep "+py+"</b><small>"+esc(status(po,pc))+"</small><p>Opens "+esc(fmt(po))+" · closes "+esc(fmt(pc))+"</p></div>";}const pattern={varies:"Varies",none:"No daytime naps",one:"One nap",two:"Two naps"}[child.nap_pattern||"varies"]||"Varies",time=v=>v?String(v).slice(0,5):"",range=(start,end)=>start&&end?time(start)+"–"+time(end):start?"From "+time(start):end?"Until "+time(end):"Not set",napDetails=(child.nap_pattern==="none")?"No daytime naps":(child.nap_pattern==="varies"||!child.nap_pattern)?"Routine varies":(["one","two"].includes(child.nap_pattern)?("Morning "+range(child.nap_morning_start,child.nap_morning_end)+(child.nap_pattern==="two"?" · Afternoon "+range(child.nap_afternoon_start,child.nap_afternoon_end):"")):"Routine varies");return "<div class='school-tracker'><div class='school-tracker-head'><span>📅</span><strong>Family trackers</strong></div><div class='school-tracker-grid'>"+school+"<div class='school-tracker-item nap-window-item'><b>😴 Nap windows</b><small>"+esc(pattern)+"</small><p>"+esc(napDetails)+"</p></div></div></div>"};
