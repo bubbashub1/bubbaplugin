@@ -125,14 +125,14 @@
 .planner-print-week{display:grid;grid-template-columns:repeat(var(--planner-print-days,7),minmax(0,1fr));gap:4mm;width:100%}
 .planner-print-week-day{min-height:165mm;padding:7px;border:1px solid #bfcfc5;border-radius:4px;overflow:hidden}
 .planner-print-week-heading{display:flex;justify-content:space-between;gap:5px;padding-bottom:5px;margin-bottom:4px;border-bottom:1px solid #d7e2da;color:#416651;font-size:9px}
-.planner-print-entry{margin:5px 0;color:#123f31;font-size:9px;line-height:1.25}
+.planner-print-entry{margin:5px 0;color:#144400;font-size:9px;line-height:1.25}
 .planner-print-entry strong,.planner-print-entry span{display:block}
 .planner-print-entry strong{font-size:8px}
 .planner-print-entry span{margin-top:1px}
 .planner-print-empty,.planner-print-empty-day{color:#718078;font-size:8px}
 .planner-print-list{border-top:1px solid #bfcfc5}
 .planner-print-list-day{padding:5mm 0;border-bottom:1px solid #d7e2da;break-inside:avoid}
-.planner-print-list-day h2{margin:0 0 3mm;color:#123f31;font-size:13px}
+.planner-print-list-day h2{margin:0 0 3mm;color:#144400;font-size:13px}
 .planner-print-list-day .planner-print-entry{display:grid;grid-template-columns:minmax(0,1fr) 1fr;gap:6mm;padding:2mm 0;border-top:1px solid #edf1ed}
 .planner-print-footer{margin-top:7mm;padding-top:4mm;border-top:1px solid #d7e2da;color:#5c7067;font-size:8px;text-align:right}
 
@@ -189,7 +189,7 @@
   .app-shell{max-width:none!important;padding:0!important;margin:0!important}
   .planner-print-header{display:flex;align-items:flex-end;gap:18px;margin:0 0 7mm;padding-bottom:5mm;border-bottom:1px solid #d7e2da}
   .planner-print-header img{width:135px;height:auto;max-height:48px;object-fit:contain}
-  .planner-print-header h1{margin:0;color:#123f31;font-size:25px;line-height:1.05}
+  .planner-print-header h1{margin:0;color:#144400;font-size:25px;line-height:1.05}
   .planner-print-header p{margin:4px 0 0;color:#5c7067;font-size:10px}
   .planner-print-footer{display:block!important}
   .planner-print-week{grid-template-columns:repeat(var(--planner-print-days,7),minmax(0,1fr));gap:4mm}

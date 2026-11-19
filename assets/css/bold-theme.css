@@ -2,9 +2,9 @@
    Visual refresh only. Existing layout and application behaviour are preserved. */
 :root{
   --bh-primary:#416651;--bh-secondary:#3c8e96;--bh-bg:#edf5ef;--bh-surface:#fff;
-  --bh-sage:#d7e7dc;--bh-soft:#a7c3b0;--bh-accent:#9cb8a4;--bh-text:#123f31;
+  --bh-sage:#d7e7dc;--bh-soft:#a7c3b0;--bh-accent:#679483;--bh-text:#144400;
   --bh-text-muted:#5c7067;--bh-border:rgba(18,63,49,.13);--bh-shadow:0 18px 48px rgba(18,63,49,.11);
-  --bh-radius:24px;--bh-radius-sm:15px;--bh-yellow:#f6c84a;--bh-pink:#ee6684;--bh-purple:#8068cf;--bh-blue:#55a9c2;--bh-dark:#0d3b32;
+  --bh-radius:24px;--bh-radius-sm:15px;--bh-yellow:#e2a9f1;--bh-pink:#a172ac;--bh-purple:#817ab3;--bh-blue:#3f4897;--bh-dark:#3f573a;
 }
 body{background:radial-gradient(circle at 8% 4%,rgba(85,169,194,.08),transparent 25rem),radial-gradient(circle at 92% 18%,rgba(238,102,132,.06),transparent 24rem),#f8fbf9;color:var(--bh-text)}
 ::selection{background:var(--bh-yellow);color:var(--bh-dark)}:focus-visible{outline:3px solid rgba(246,200,74,.95);outline-offset:3px}
@@ -31,7 +31,7 @@ body{background:radial-gradient(circle at 8% 4%,rgba(85,169,194,.08),transparent
 .button-teal,.button-green-alt{background:var(--bh-secondary);color:#fff;box-shadow:0 8px 18px rgba(60,142,150,.18)}.button-green-alt:hover,.button-teal:hover{background:#2e7780}
 .button-soft{background:#e7f1ea;color:var(--bh-primary)}.button-soft:hover{background:#d8e9de}
 .hero-links .button:first-child{background:var(--bh-yellow);color:var(--bh-dark);box-shadow:0 9px 20px rgba(246,200,74,.25)}.hero-links .button:first-child:hover{background:#f0bc2e}
-.hero{min-height:500px;margin-top:14px;padding:60px 42px 96px;border-radius:32px;background:linear-gradient(135deg,#e9f4eb 0%,#d9eee9 52%,#e8f3f0 100%);box-shadow:0 20px 50px rgba(18,63,49,.09)}
+.hero{min-height:500px;margin-top:14px;padding:60px 42px 96px;border-radius:32px;background:linear-gradient(135deg,#e9f4eb 0%,#daede2 52%,#e8f3f0 100%);box-shadow:0 20px 50px rgba(18,63,49,.09)}
 .hero::before{opacity:.28}.hero::after{background:linear-gradient(120deg,rgba(65,102,81,.1),transparent 45%),linear-gradient(180deg,rgba(255,255,255,.03),rgba(18,63,49,.12))}
 .hero h1{color:var(--bh-dark);font-size:clamp(44px,5.5vw,70px);text-shadow:0 3px 0 rgba(255,255,255,.55)}.hero h1 em{color:var(--bh-secondary)}.hero p{font-size:19px;max-width:650px;color:var(--bh-dark)}
 .eyebrow{color:var(--bh-secondary);font-weight:900}.hero-search{padding:13px;gap:9px;border:2px solid rgba(60,142,150,.16);border-radius:22px;box-shadow:0 20px 45px rgba(18,63,49,.18)}
@@ -87,10 +87,10 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
 .bh-home .home-category-row{background:rgba(255,255,255,.98)}
 .bh-home .home-activity-card:hover,.bh-home .home-lower-card:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(18,63,49,.1)}
 .bh-home .home-plan-band{background:linear-gradient(135deg,#eef7e8,#e0f0e9)}
-.bh-home .home-footer{background:#0d3b32;color:#fff;border-radius:0 0 24px 24px}
+.bh-home .home-footer{background:#3f573a;color:#fff;border-radius:0 0 24px 24px}
 .bh-home .home-footer .site-footer-column h2,.bh-home .home-footer .site-footer-title{color:#fff}
 .bh-home .home-footer .site-footer-links a{color:rgba(255,255,255,.85)}
-.bh-home .home-footer .site-footer-links a:hover{color:#f6c84a}
+.bh-home .home-footer .site-footer-links a:hover{color:#e2a9f1}
 
 
 /* =========================================================
@@ -223,7 +223,7 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
   border:1px solid rgba(65,102,81,.13)!important;
   border-radius:12px!important;
   background:#fff!important;
-  color:#123f31!important;
+  color:#144400!important;
   box-shadow:none!important;
 }
 .directory-filter-fields .filter-input:focus{
@@ -233,7 +233,7 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
 .directory-filter-fields .filter-free{
   border-bottom:1px solid rgba(65,102,81,.09);
   padding:12px 0!important;
-  color:#123f31!important;
+  color:#144400!important;
 }
 .directory-filter-fields .filter-free input{
   accent-color:#3c8e96;
@@ -250,7 +250,7 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
   padding:10px 0;
   border:0;
   background:transparent;
-  color:#123f31;
+  color:#144400;
   font-size:12px;
   font-weight:900;
   cursor:pointer;
@@ -316,15 +316,15 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
   outline:0!important;
   box-shadow:none!important;
   background:transparent!important;
-  color:#123f31!important;
+  color:#144400!important;
   font-size:12px;
 }
 .directory-hero-search-fields .button{
   min-width:112px;
   min-height:48px;
   padding:10px 20px;
-  background:#f6c84a!important;
-  color:#123f31!important;
+  background:#e2a9f1!important;
+  color:#144400!important;
   border:0!important;
   border-radius:999px!important;
   box-shadow:none!important;
@@ -382,7 +382,7 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
   letter-spacing:.07em;
 }
 .activity-card h3{
-  color:#123f31!important;
+  color:#144400!important;
   margin-top:6px!important;
 }
 .activity-footer{
@@ -404,7 +404,7 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
   grid-column:1/-1;
   padding:40px;
   text-align:center;
-  color:#617261;
+  color:#3f573a;
   font-weight:700;
 }
 
@@ -540,7 +540,7 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
 .site-footer-logo img{width:100%;height:100%;object-fit:contain;border-radius:12px}
 .site-footer-brand-copy{min-width:0}.site-footer-brand-copy p{margin:7px 0 0;color:rgba(255,255,255,.72);font-size:13px;line-height:1.55}
 .site-footer-column h2{margin:0 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.08em}
-.site-footer-links{display:flex;flex-direction:column;gap:8px}.site-footer-links a{color:rgba(255,255,255,.82);font-size:13px;line-height:1.35;transition:color .18s ease}.site-footer-links a:hover{color:#f6c84a}
+.site-footer-links{display:flex;flex-direction:column;gap:8px}.site-footer-links a{color:rgba(255,255,255,.82);font-size:13px;line-height:1.35;transition:color .18s ease}.site-footer-links a:hover{color:#e2a9f1}
 .site-footer-bottom{width:min(1180px,100%);margin:32px auto 0;padding:18px 24px 0;border-top:1px solid rgba(255,255,255,.14);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:rgba(255,255,255,.62);font-size:11px}
 .home-newsletter>p{margin:0 0 9px;color:rgba(255,255,255,.72);font-size:12px}
 .home-newsletter form{display:flex;min-width:0}.home-newsletter input{min-width:0;flex:1;height:40px;padding:0 12px;border:0;border-radius:999px 0 0 999px;background:#fff;color:#123d30}.home-newsletter button{flex:0 0 44px!important;width:44px!important;height:40px!important;border:0!important;border-radius:0 999px 999px 0!important;background:#3c9fa9!important;color:#d8e6db!important;font-weight:900}
@@ -1548,20 +1548,20 @@ body:has(.bh-leader-modal),body:has(.booking-modal-backdrop),body:has(.contact-m
 .bh-leader-page h2,
 .bh-leader-page .admin-panel-head h2,
 .bh-leader-page .bh-leader-panel h2{
-  color:#9cb8a4!important;
+  color:#679483!important;
 }
 
 
 /* Leader Portal — View directory CTA */
 .bh-leader-page a.button.button-soft[href="directory.html"]{
-  background:#f6c84a!important;
-  border-color:#f6c84a!important;
+  background:#e2a9f1!important;
+  border-color:#e2a9f1!important;
   color:#416651!important;
 }
 .bh-leader-page a.button.button-soft[href="directory.html"]:hover,
 .bh-leader-page a.button.button-soft[href="directory.html"]:focus-visible{
-  background:#eab83b!important;
-  border-color:#eab83b!important;
+  background:#d28be2!important;
+  border-color:#d28be2!important;
   color:#416651!important;
 }
 

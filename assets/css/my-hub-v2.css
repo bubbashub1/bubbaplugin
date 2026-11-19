@@ -1,5 +1,5 @@
 /* Bubba Hub 2.0 — My Hub visual refresh. Presentation only; preserve JS IDs and auth. */
-body.bh-my-hub{background:#fffdf7;color:#123f31;font-family:'Quicksand',Calibri,Arial,sans-serif}
+body.bh-my-hub{background:#fffdf7;color:#144400;font-family:'Quicksand',Calibri,Arial,sans-serif}
 .bh-my-hub .my-hub-page{padding-top:22px;padding-bottom:48px}
 .bh-my-hub .my-hub-page :is(h1,h2,h3){font-family:'Quicksand',Calibri,Arial,sans-serif;font-weight:700;letter-spacing:-.035em;color:#174e3b}
 .bh-my-hub .my-hub-hero{
@@ -21,7 +21,7 @@ body.bh-my-hub{background:#fffdf7;color:#123f31;font-family:'Quicksand',Calibri,
   text-decoration:none;line-height:1.25;box-sizing:border-box;
 }
 .bh-my-hub .my-hub-page .button-primary{background:#174e3b;border-color:#174e3b;color:#fff}
-.bh-my-hub .my-hub-page .button-primary:hover{background:#ee822c;border-color:#ee822c;color:#123f31}
+.bh-my-hub .my-hub-page .button-primary:hover{background:#ee822c;border-color:#ee822c;color:#144400}
 .bh-my-hub .my-hub-page .button-soft{background:#e5f1df;border-color:#d1e4d4;color:#174e3b}
 .bh-my-hub .my-hub-page .button-soft:hover{background:#f7bf7d;border-color:#f7bf7d;color:#174e3b}
 .bh-my-hub .my-hub-hero-actions{display:flex;gap:12px;flex-wrap:wrap}
@@ -132,7 +132,7 @@ body.bh-my-hub{background:#f3f6f4;color:#1b3430}
 
 
 /* My Bubba Hub: consistent white panels, mint accents and teal actions. */
-.bh-my-hub .my-hub-page{background:#f4f8f7;color:#263b38}
-.bh-my-hub .my-hub-page :is(.hub-panel,.hub-list-card,.hub-booking-card,.hub-brief-item){border-color:#d7e6e2;border-radius:15px;box-shadow:0 4px 14px rgba(17,94,89,.035)}
-.bh-my-hub .my-hub-page .hub-personal-cta .button-primary{background:#0f766e;border-color:#0f766e;color:#fff}
-.bh-my-hub .my-hub-page .hub-personal-cta .button-primary:hover{background:#115e59;border-color:#115e59}
+.bh-my-hub .my-hub-page{background:#daede2;color:#263b38}
+.bh-my-hub .my-hub-page :is(.hub-panel,.hub-list-card,.hub-booking-card,.hub-brief-item){border-color:#9daa96;border-radius:15px;box-shadow:0 4px 14px rgba(17,94,89,.035)}
+.bh-my-hub .my-hub-page .hub-personal-cta .button-primary{background:#679483;border-color:#679483;color:#fff}
+.bh-my-hub .my-hub-page .hub-personal-cta .button-primary:hover{background:#3f573a;border-color:#3f573a}
