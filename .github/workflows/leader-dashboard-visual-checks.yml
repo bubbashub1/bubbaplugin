@@ -30,6 +30,13 @@ on:
       - 'assets/js/my-hub.js'
       - 'assets/js/inspire-me.js'
       - 'components/inspire-me.html'
+      - 'api/my-hub.php'
+      - 'api/planner-pro.php'
+      - 'assets/js/family.js'
+      - 'assets/js/personalise.js'
+      - 'assets/js/planner.js'
+      - 'assets/js/planner-pro.js'
+      - 'assets/js/explore.js'
       - '.github/workflows/leader-dashboard-visual-checks.yml'
   workflow_dispatch:
 jobs:
