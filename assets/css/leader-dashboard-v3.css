@@ -233,3 +233,5 @@ body.bh-leader-v2 .bh-leader-v3-support-links a{color:#0f766e}
  body.bh-leader-v2 .bh-leader-v3-row{flex-wrap:wrap}
  body.bh-leader-v2 .bh-leader-v3-pro,body.bh-leader-v2 .bh-leader-v3-support{align-items:flex-start;flex-direction:column}
 }
+
+body.bh-leader-v2 .bh-leader-v3-nav-group-items[hidden]{display:none!important}
