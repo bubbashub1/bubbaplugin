@@ -397,7 +397,7 @@ void bhHydrateSaved();
     {label:"My Account",url:"/account.html"}
   ];
   const applyMainNav=()=>document.querySelectorAll(".site-header .main-nav").forEach(nav=>{
-    nav.innerHTML=MAIN_NAV.map(item=>'<a href="'+bhEscape(item.url)+'">'+bhEscape(item.label)+'</a>').join("");
+    nav.querySelectorAll("a").forEach(link=>{if(link.textContent.trim().toLowerCase()==="explore")link.remove();});\n    nav.innerHTML=MAIN_NAV.filter(item=>item.label.trim().toLowerCase()!=="explore").map(item=>'<a href="'+bhEscape(item.url)+'">'+bhEscape(item.label)+'</a>').join("");
     const header=nav.closest(".site-header");
     const toggle=header?.querySelector(".mobile-nav-toggle");
     if(nav.dataset.bhCloseBound!=="true"){
