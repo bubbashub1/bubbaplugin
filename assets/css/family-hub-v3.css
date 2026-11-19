@@ -989,3 +989,34 @@ body.bh-my-hub .hub-family-panel>.admin-panel-head h2{color:#174e3b!important}
   body.bh-my-hub .hub-pro-pitch{padding:16px 18px!important;border-radius:18px!important}
   body.bh-my-hub .my-hub-hero-actions{flex-wrap:wrap}
 }
+
+
+/* My Hub: requested hero layout and dark-green discovery prompt. */
+body.bh-my-hub .my-hub-hero{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(270px,360px)!important;
+  grid-template-areas:"copy pro" "actions pro"!important;
+  align-items:stretch!important;
+  column-gap:28px!important;
+  row-gap:14px!important;
+}
+body.bh-my-hub .my-hub-hero-copy{grid-area:copy!important;min-width:0}
+body.bh-my-hub .my-hub-hero-actions{grid-area:actions!important;justify-content:flex-start!important}
+body.bh-my-hub #hubProPitch{grid-area:pro!important;align-self:stretch!important}
+body.bh-my-hub .hub-personal-cta{
+  background:#174e3b!important;border:1px solid #174e3b!important;
+  color:#dcefe2!important;border-radius:18px!important;
+}
+body.bh-my-hub .hub-personal-cta :is(.eyebrow,h2,p){color:#dcefe2!important}
+body.bh-my-hub .hub-personal-cta .hub-personal-actions .button-primary{
+  background:#dcefe2!important;border-color:#dcefe2!important;color:#174e3b!important;
+}
+body.bh-my-hub .hub-personal-cta .hub-personal-actions .button-soft{
+  background:transparent!important;border:1px solid #b8d8c2!important;color:#e6f4e9!important;
+}
+@media(max-width:700px){
+  body.bh-my-hub .my-hub-hero{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-areas:"copy" "pro" "actions"!important;gap:14px!important;
+  }
+}
