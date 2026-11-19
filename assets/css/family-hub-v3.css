@@ -1098,3 +1098,64 @@ body.bh-my-hub .family-v3-main .school-tracker-grid>.school-tracker-item>p{margi
   body.bh-my-hub .hub-family-list.hub-family-expanded{gap:8px!important}
   body.bh-my-hub .hub-family-card{min-width:0;padding:10px!important}
 }
+
+
+/* My Hub bold Bubba Hub palette — presentation only; keep the dashboard hooks and layout intact. */
+body.bh-my-hub{background:#f7f6ef;color:#173d32}
+body.bh-my-hub .family-v3-sidebar{border-color:#cbded2;background:#fff;box-shadow:0 8px 22px rgba(23,61,50,.08)}
+body.bh-my-hub .family-v3-brand strong,
+body.bh-my-hub .family-v3-main :is(h1,h2,h3){color:#174e3b}
+body.bh-my-hub .family-v3-nav a{color:#31594c}
+body.bh-my-hub .family-v3-nav a:hover{background:#e4f0e7;color:#174e3b}
+body.bh-my-hub .family-v3-nav a[aria-current=page]{background:#174e3b;color:#fff}
+body.bh-my-hub .family-v3-help{background:#e1f0ed;border-color:#bddbd3}
+body.bh-my-hub .family-v3-main .my-hub-hero{
+  background:linear-gradient(120deg,#174e3b 0%,#0f766e 72%,#287f72 100%)!important;
+  border:0!important;color:#fff;box-shadow:0 12px 28px rgba(23,78,59,.16)!important
+}
+body.bh-my-hub .family-v3-main .my-hub-hero :is(h1,h2,p,.eyebrow){color:#fff}
+body.bh-my-hub .family-v3-main .my-hub-hero .eyebrow{color:#d9eee1}
+body.bh-my-hub .family-v3-main .my-hub-hero .button-primary{background:#f0bd45;border-color:#f0bd45;color:#173d32}
+body.bh-my-hub .family-v3-main .my-hub-hero .button-soft{background:#fff;border-color:#fff;color:#174e3b}
+body.bh-my-hub .family-v3-main :is(.admin-panel,.hub-panel,.hub-brief,.hub-welcome){
+  border-color:#d6e3d9!important;box-shadow:0 5px 18px rgba(23,61,50,.055)!important
+}
+body.bh-my-hub .family-v3-main .hub-personal-cta{
+  background:#174e3b!important;border-color:#174e3b!important;color:#fff
+}
+body.bh-my-hub .family-v3-main .hub-personal-cta :is(h2,p,.eyebrow){color:#fff}
+body.bh-my-hub .family-v3-main .hub-personal-cta .button-primary{
+  background:#e97862!important;border-color:#e97862!important;color:#fff!important
+}
+body.bh-my-hub .family-v3-main .hub-personal-cta .button-soft{
+  background:#fff!important;border-color:#fff!important;color:#174e3b!important
+}
+body.bh-my-hub .family-v3-main .hub-stat:nth-child(4n+1){background:#fbe5df;border-color:#f1c6bb}
+body.bh-my-hub .family-v3-main .hub-stat:nth-child(4n+2){background:#dcefeb;border-color:#b9ddd5}
+body.bh-my-hub .family-v3-main .hub-stat:nth-child(4n+3){background:#e4efdf;border-color:#c8ddc5}
+body.bh-my-hub .family-v3-main .hub-stat:nth-child(4n+4){background:#fff1cf;border-color:#ead59c}
+body.bh-my-hub .family-v3-main .hub-section-links a{
+  border-color:#d5e2d9;color:#174e3b;box-shadow:0 4px 13px rgba(23,61,50,.045)
+}
+body.bh-my-hub .family-v3-main .hub-section-links a:nth-child(4n+1){border-top:4px solid #e97862;background:#fff8f5}
+body.bh-my-hub .family-v3-main .hub-section-links a:nth-child(4n+2){border-top:4px solid #0f766e;background:#f2faf8}
+body.bh-my-hub .family-v3-main .hub-section-links a:nth-child(4n+3){border-top:4px solid #d9a52e;background:#fffaf0}
+body.bh-my-hub .family-v3-main .hub-section-links a:nth-child(4n+4){border-top:4px solid #416651;background:#f4f8f1}
+body.bh-my-hub .family-v3-main .hub-section-links a span{color:#536e63}
+body.bh-my-hub .family-v3-main .hub-family-card{border-color:#d6e3d9;background:#f7faf6}
+body.bh-my-hub .family-v3-main :is(.hub-list-card,.hub-booking-card,.hub-brief-item){
+  border-color:#e0e8e1;background:#f8faf6
+}
+body.bh-my-hub .family-v3-main :is(.hub-list-card,.hub-booking-card,.hub-brief-item):hover{
+  border-color:#9fc7b0;background:#eaf3e9
+}
+body.bh-my-hub .family-v3-main .button-primary{background:#174e3b;border-color:#174e3b;color:#fff}
+body.bh-my-hub .family-v3-main .button-primary:hover{background:#0f766e;border-color:#0f766e}
+body.bh-my-hub .family-v3-main .button-soft{background:#e4f0e7;border-color:#cbded2;color:#174e3b}
+body.bh-my-hub .family-v3-main .button-soft:hover{background:#f7d9d1;border-color:#e97862;color:#63372e}
+@media(max-width:560px){
+  body.bh-my-hub .family-v3-main .hub-section-links{grid-template-columns:1fr}
+  body.bh-my-hub .family-v3-main .my-hub-hero .button{width:100%;justify-content:center}
+  body.bh-my-hub .family-v3-main .hub-personal-cta .hub-personal-actions{display:grid;width:100%;grid-template-columns:1fr}
+  body.bh-my-hub .family-v3-main .hub-personal-cta .button{width:100%;min-height:46px}
+}
