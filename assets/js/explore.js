@@ -42,6 +42,10 @@
       if(!res.ok) throw new Error("The activity directory is temporarily unavailable.");
       response=await res.json();
       if(!response?.ok || !Array.isArray(response.data)) throw new Error(response?.error || "Activity data could not be loaded.");
+      let rows=response.data;
+      const pages=Number(response.pagination?.pages||1);
+      for(let page=2;page<=pages;page++){const pageRes=await fetch("/api/activities.php?page="+page+"&per_page=200",{headers:{Accept:"application/json"},cache:"no-store"});if(!pageRes.ok)continue;const pageData=await pageRes.json();if(pageData?.ok&&Array.isArray(pageData.data))rows=rows.concat(pageData.data);}
+      response.data=rows;
     } catch(error) {
       setMessage("exploreCategories",error.message);
       setMessage("exploreActivities","Please try the full activity directory instead.");
@@ -50,6 +54,7 @@
     }
     allActivities=response.data.filter(item=>item && item.status!=="draft");
     render(allActivities);
+    window.setInterval(async()=>{try{const res=await fetch("/api/activities.php?page=1&per_page=200",{headers:{Accept:"application/json"},cache:"no-store"});const data=await res.json();if(!res.ok||!data?.ok)return;let rows=data.data||[];for(let page=2;page<=Number(data.pagination?.pages||1);page++){const pageRes=await fetch("/api/activities.php?page="+page+"&per_page=200",{headers:{Accept:"application/json"},cache:"no-store"});const pageData=await pageRes.json();if(pageData?.ok&&Array.isArray(pageData.data))rows=rows.concat(pageData.data);}allActivities=rows.filter(item=>item&&item.status!=="draft");render(allActivities);}catch(error){}},300000);
   }
   let allActivities=[];
   function fillTowns(region, activities) {
@@ -113,7 +118,8 @@
       const place=[townOf(a),regionOf(a)].filter(Boolean).join(" · ");
       return '<a class="explore-activity" href="'+esc(activityUrl(a))+'"><img src="'+esc(imageFor(a))+'" alt="" loading="lazy"><div class="explore-activity-body"><span class="explore-activity-meta">'+esc(category)+'</span><h3>'+esc(a.title)+'</h3><p>'+esc(place || "Devon & Cornwall")+'</p></div></a>';
     }).join("") : '<p class="explore-loading">No published activities are available at the moment.</p>';
-    renderUpcoming(activities);\n    const regionNode=$("exploreRegions");
+    renderUpcoming(activities);
+    const regionNode=$("exploreRegions");
     if(regionNode) regionNode.innerHTML=regions.length ? regions.map(r=>'<a class="explore-region" href="'+esc(directoryUrl({region:r}))+'">'+esc(r)+'</a>').join("") : '<span class="explore-loading">No areas are available yet.</span>';
   }
   let regionSelect, townSelect;
