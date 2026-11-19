@@ -87,7 +87,7 @@
     return end&&date>end?null:date;
   }
   function renderUpcoming(activities) {
-    const node=$("exploreUpcoming");if(!node)return;
+
     const now=new Date(),items=[];
     activities.forEach(a=>(Array.isArray(a.sessions)?a.sessions:[]).forEach(s=>{
       const date=upcomingDate(s,now);if(!date)return;
@@ -110,16 +110,7 @@
         ticker.innerHTML='<p class="explore-news-empty">No upcoming sessions listed just now — explore all activities to find something for your family.</p>';
       }
     }
-    node.innerHTML=rows.length?rows.map((x,i)=>{
-      const d=x.date,today=new Date(),tomorrow=new Date(today.getFullYear(),today.getMonth(),today.getDate()+1);
-      const same=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
-      const day=same(d,today)?"Today":same(d,tomorrow)?"Tomorrow":d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});
-      const time=d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
-      const place=[x.venue.name,x.venue.town||x.venue.region].filter(Boolean).join(" · ");
-      const duration=[x.s.start_time,x.s.end_time].filter(Boolean).map(v=>String(v).slice(0,5)).join("–");
-      return '<a class="explore-upcoming-item" href="'+esc(activityUrl(x.a))+'"><span class="explore-upcoming-number">'+String(i+1).padStart(2,"0")+'</span><span class="explore-upcoming-date">'+esc(day+' · '+time)+'</span><span class="explore-upcoming-details"><strong>'+esc(x.a.title||"Family group")+'</strong><small>'+esc(place||"Devon & Cornwall")+'</small></span><span class="explore-upcoming-time">'+esc(duration)+'</span><span class="explore-upcoming-arrow" aria-hidden="true">→</span></a>';
-    }).join(""):'<p class="explore-loading">No upcoming scheduled groups are listed just now. Browse all activities to find something for your family.</p>';
-    const status=$("exploreRefreshStatus");if(status)status.textContent="Updated "+now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})+" · refreshes every 5 minutes";
+
   }
 
   function render(activities) {
