@@ -34,8 +34,9 @@
 </div>
 </section>
 <aside class="bhvb-inspector">
-<div class="bhvb-inspector-tabs"><span class="active">Properties</span><span>Layers</span></div>
-<section class="bhvb-inspector-section"><span class="eyebrow">Selected element</span><h2 id="selectedName">Nothing selected</h2><p id="selectedDescription">Click a heading, paragraph, image, button or section in the preview to inspect it.</p><dl id="selectedDetails" hidden><dt>Element</dt><dd id="selectedTag">—</dd><dt>Text / alternative text</dt><dd id="selectedText">—</dd></dl></section>
+<div class="bhvb-inspector-tabs" role="tablist" aria-label="Inspector panels"><button type="button" class="active" id="propertiesTab" role="tab" aria-selected="true" aria-controls="propertiesPanel">Properties</button><button type="button" id="layersTab" role="tab" aria-selected="false" aria-controls="layersPanel">Layers</button></div>
+<section class="bhvb-inspector-section" id="propertiesPanel" role="tabpanel" aria-labelledby="propertiesTab"><span class="eyebrow">Selected element</span><h2 id="selectedName">Nothing selected</h2><p id="selectedDescription">Click a heading, paragraph, image, button or section in the preview to inspect it.</p><dl id="selectedDetails" hidden><dt>Element</dt><dd id="selectedTag">—</dd><dt>Text / alternative text</dt><dd id="selectedText">—</dd></dl></section>
+<section class="bhvb-layers-panel" id="layersPanel" role="tabpanel" aria-labelledby="layersTab" hidden><p class="bhvb-layers-empty">Choose a page to see its editable elements.</p><div id="builderLayers" class="bhvb-layer-list"></div></section>
 <div class="bhvb-inspector-note"><strong>Editing is coming next</strong><p>Text, image, link and layout controls will be enabled after the safe component model and draft-saving API are in place. Nothing on this screen can publish changes yet.</p></div>
 </aside>
 </div>
