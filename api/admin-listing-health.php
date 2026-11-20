@@ -78,6 +78,23 @@ try {
  $statusFilter=in_array('status',$activityCols,true)?" WHERE COALESCE(a.status,'')<>'archived'":'';
  $sql='SELECT '.implode(',',$select).' FROM bh_activities a'.$join.$statusFilter.' ORDER BY '.$order.' LIMIT 5000';
  $rows=$db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+ // Health-check status is deliberately separate from public-web research status.
+ // It records inspection of stored fields only; it does not mean missing details were found online.
+ $queueByActivity=[];
+ try {
+  $queueRows=$db->query("SELECT target_id,last_checked_at,next_check_at,status FROM bh_listing_check_queue WHERE check_type='health'")->fetchAll(PDO::FETCH_ASSOC);
+  foreach($queueRows as $queueRow) $queueByActivity[(int)$queueRow['target_id']]=$queueRow;
+ } catch(Throwable $queueError) {
+  // Keep the read-only reviewer usable before the optional checker migration is prepared.
+ }
+ foreach($rows as &$healthRow) {
+  $queueRow=$queueByActivity[(int)$healthRow['id']]??null;
+  $queueStatus=(string)($queueRow['status']??'not_queued');
+  $healthRow['health_check_status']=in_array($queueStatus,['failed','skipped'],true)?$queueStatus:(!empty($queueRow['last_checked_at'])?'checked':$queueStatus);
+  $healthRow['health_last_checked_at']=$queueRow['last_checked_at']??null;
+  $healthRow['health_next_check_at']=$queueRow['next_check_at']??null;
+ }
+ unset($healthRow);
  $fieldMap=[
   'Description'=>['description','short_description'],
   'Website'=>['activity_website','organiser_website'],
