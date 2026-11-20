@@ -154,8 +154,11 @@ async function loadPage(slug){
  $('selectedName').textContent='Nothing selected';$('selectedDescription').textContent='Choose a page to begin.';$('selectedDetails').hidden=true;$('editControls').hidden=true;
  $('builderLayers').replaceChildren();$('saveDraft').disabled=true;$('prepareDraft').disabled=!page;$('setupDraftStorage').hidden=true;$('revisionControls').hidden=true;
  if(!page){frame.hidden=true;$('canvasEmpty').hidden=false;return;}
- frame.src='/page.php?slug='+encodeURIComponent(page.slug);frame.hidden=false;$('canvasEmpty').hidden=true;
+ frame.hidden=false;$('canvasEmpty').hidden=true;
  $('canvasDimensions').textContent=page.title+' · '+device;
+ const loaded=new Promise(resolve=>frame.addEventListener('load',resolve,{once:true}));
+ frame.src='/page.php?slug='+encodeURIComponent(page.slug);
+ await loaded;
  await loadDraft();
 }
 $('builderPage').addEventListener('change',event=>loadPage(event.target.value));
@@ -184,8 +187,9 @@ function applyEdit(){
  if(!currentBlock||previewMode!=='draft')return;
  const props=currentBlock.props;props.text=$('editText').value;
  if(currentBlock.type==='button'){
-  props.href=$('editHref').value.trim();
-  if(!safeHref(props.href)){draftStatus('That link format is not supported. Use a valid website, email, phone or same-site link.');return;}
+  const nextHref=$('editHref').value.trim();
+  if(!safeHref(nextHref)){draftStatus('That link format is not supported. Use a valid website, email, phone or same-site link.');return;}
+  props.href=nextHref;
  }
  const node=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');
  if(node){node.textContent=props.text;if(currentBlock.type==='button')node.setAttribute('href',props.href);}
