@@ -5,6 +5,8 @@ on:
     paths:
       - 'api/admin-site-settings.php'
       - 'api/site-design.php'
+      - 'api/page-document-validator-v1.php'
+      - 'tests/page-document-validator-v1.php'
       - 'admin/admin-site-manager.html'
       - 'admin/admin-visual-builder.html'
       - 'assets/js/admin-site-manager.js'
@@ -60,6 +62,10 @@ jobs:
           tools: none
       - name: Validate visual builder JSON schema syntax
         run: node -e "JSON.parse(require('fs').readFileSync('schemas/page-document-v1.schema.json', 'utf8'))"
+      - name: Lint visual document validator
+        run: php -l api/page-document-validator-v1.php
+      - name: Run visual document validator tests
+        run: php tests/page-document-validator-v1.php
       - name: Lint admin settings API
         run: php -l api/admin-site-settings.php
       - name: Lint public design API
