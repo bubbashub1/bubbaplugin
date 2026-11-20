@@ -21,7 +21,9 @@ try {
  foreach($sectionDefaults as $key=>$default)$safe['homepage_sections'][$key]=array_key_exists($key,$sections)?($sections[$key]===false?false:true):$default;
  $orderDefaults=['ticker','categories','quick_links','latest','regions','cta'];
  $order=is_array($settings['homepage_order']??null)?array_values($settings['homepage_order']):$orderDefaults;
- if(count($order)!==count($orderDefaults)||count(array_unique($order))!==count($orderDefaults)||array_diff($order,$orderDefaults)||array_diff($orderDefaults,$order))$order=$orderDefaults;
+ $validOrder=count($order)===count($orderDefaults);
+ if($validOrder){foreach($order as $key){if(!is_string($key)||!in_array($key,$orderDefaults,true)){$validOrder=false;break;}}}
+ if(!$validOrder||count(array_unique($order))!==count($orderDefaults))$order=$orderDefaults;
  $safe['homepage_order']=$order;
  echo json_encode(['ok'=>true,'published'=>$safe],JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 } catch(Throwable $e){error_log('Public Site Manager settings read failed: '.$e->getMessage());http_response_code(200);echo json_encode(['ok'=>true,'published'=>null]);}
