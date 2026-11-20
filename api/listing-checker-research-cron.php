@@ -88,6 +88,6 @@ try{
   }catch(Throwable $e){$errors++;error_log('Missing-information research activity '.$aid.': '.$e->getMessage());}
  }
  $summary=json_encode(['listings_considered'=>count($missing),'processed'=>$processed,'suggestions_saved'=>$suggestions,'external_requests'=>$requests,'errors'=>$errors,'remaining_limit'=>$requestLimit-$requests]);
- $finish=$db->prepare("UPDATE bh_listing_check_runs SET status='completed',finished_at=NOW(),processed_count=?,error_count=?,summary_json=? WHERE id=?");$finish->execute([$processed,$errors,$summary,$runId]);echo $summary."\n";
+ $finish=$db->prepare("UPDATE bh_listing_check_runs SET status='completed',finished_at=NOW(),processed_count=?,error_count=?,summary_json=? WHERE id=?");$finish->execute([$processed,$errors,$summary,$runId]);$stamp=$db->prepare("INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES('research_last_run_at',?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)");$stamp->execute([$now->format('Y-m-d H:i:s')]);echo $summary."\n";
 }catch(Throwable $e){if($runId){$u=$db->prepare("UPDATE bh_listing_check_runs SET status='failed',finished_at=NOW(),summary_json=? WHERE id=?");$u->execute([json_encode(['error'=>$e->getMessage()]),$runId]);}error_log('Missing-information research worker: '.$e->getMessage());fwrite(STDERR,"Research worker failed; see PHP error log\n");exit(1);}
 finally{$db->query("SELECT RELEASE_LOCK('bh_listing_missing_research')");}
