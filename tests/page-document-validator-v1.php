@@ -21,6 +21,11 @@ $bad=$valid;$bad['sections'][0]['children'][0]['props']['text']=str_repeat('x',5
 $bad=$valid;$bad['sections'][0]['props']['background']='url(javascript:alert(1))';assert_test(!bh_validate_page_document_v1($bad)['ok'],'unsafe section background rejected');
 $bad=$valid;$bad['sections'][0]['props']['padding']=97;assert_test(!bh_validate_page_document_v1($bad)['ok'],'section padding upper bound');
 $bad=$valid;$bad['sections'][0]['props']['gap']=-1;assert_test(!bh_validate_page_document_v1($bad)['ok'],'section gap lower bound');
+$validContainer=$valid;$validContainer['sections'][0]['props']=['background'=>'#f4f8f7','padding'=>32,'gap'=>20,'width'=>80,'min_height'=>240,'radius'=>16,'border_width'=>2,'border_color'=>'#3c8e96','align'=>'center','margin_bottom'=>24];assert_test(bh_validate_page_document_v1($validContainer)['ok'],'valid independent container layout properties');
+$bad=$valid;$bad['sections'][0]['props']['width']=101;assert_test(!bh_validate_page_document_v1($bad)['ok'],'container width upper bound');
+$bad=$valid;$bad['sections'][0]['props']['min_height']=801;assert_test(!bh_validate_page_document_v1($bad)['ok'],'container height upper bound');
+$bad=$valid;$bad['sections'][0]['props']['border_color']='url(javascript:alert(1))';assert_test(!bh_validate_page_document_v1($bad)['ok'],'unsafe container border colour rejected');
+$bad=$valid;$bad['sections'][0]['props']['align']='stretch';assert_test(!bh_validate_page_document_v1($bad)['ok'],'invalid container alignment rejected');
 assert_test(bh_page_document_safe_href_v1('https://example.com'),'https URL');
 assert_test(bh_page_document_safe_href_v1('mailto:test@example.com'),'mailto URL');
 assert_test(bh_page_document_safe_href_v1('tel:+441234567890'),'tel URL');
