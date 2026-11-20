@@ -34,6 +34,7 @@ function selectNode(node){
   node.classList.add('bhvb-selected-preview');
   currentBlock=draft&&node.dataset.bhBlockId?findBlock(node.dataset.bhBlockId):null;
   currentSection=draft&&node.dataset.bhSectionId?findSection(node.dataset.bhSectionId):null;
+  ['addHeading','addParagraph','addButtonBlock'].forEach(id=>$(id).disabled=!currentSection||previewMode!=='draft');
   updateSelectionDetails(node);
   const index=layerNodes.indexOf(node);
   document.querySelectorAll('.bhvb-layer-button').forEach((button,i)=>button.classList.toggle('active',i===index));
@@ -109,7 +110,7 @@ function renderDraft(){
  frame.srcdoc='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="/"><style>*{box-sizing:border-box}body{margin:0;padding:32px;background:#f4f8f7;color:#17221c;font:16px Calibri,Arial,sans-serif}main{max-width:960px;margin:auto}h1,h2,h3,h4{font-family:Quicksand,Arial,sans-serif;color:#244d37}section{margin:0 0 18px;border-radius:14px}p{line-height:1.7}.cta{display:inline-block;padding:12px 20px;background:#416651;color:white;border-radius:999px;text-decoration:none;font-weight:700}@media(max-width:600px){body{padding:14px}}</style></head><body><main>'+titleMarkup+sections+'</main></body></html>';
  $('canvasEmpty').hidden=true;frame.hidden=false;
  $('canvasDimensions').textContent=(page?.title||title)+' · '+device+' · Draft';
- $('saveDraft').disabled=false;
+ $('saveDraft').disabled=false;$('addContainer').disabled=false;
 }
 function convertPage(){
  const doc=frame.contentDocument;
