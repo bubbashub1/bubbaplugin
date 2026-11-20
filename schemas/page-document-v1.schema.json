@@ -98,6 +98,42 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 64
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 25,
+              "maximum": 100
+            },
+            "min_height": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 800
+            },
+            "radius": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 48
+            },
+            "border_width": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 8
+            },
+            "border_color": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            },
+            "align": {
+              "enum": [
+                "left",
+                "center",
+                "right"
+              ]
+            },
+            "margin_bottom": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 96
             }
           }
         },
