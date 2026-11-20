@@ -26,11 +26,11 @@ Develop on `staging/site-manager-native-20261120`, based on `staging-site`. Do n
 - Visibility is stored inside the existing draft/published Site Manager JSON setting. No additional table or migration is introduced.
 - The admin controls default all six sections to visible, merge defaults for older settings snapshots, and save through the existing CSRF-protected draft/publish API.
 - The homepage reads only the public published snapshot. Missing settings, endpoint errors or missing keys leave sections visible. Hidden sections are hidden without removing their DOM, so existing scripts and IDs remain intact.
-- Section order is stored as a validated six-key array in the same draft/published settings JSON. The admin uses accessible up/down buttons; the public homepage applies order only after validating the complete key set. The hero and footer remain outside the reorderable set. Invalid or missing order data falls back to the default order.
+- Section order is stored as a validated six-key array in the same draft/published settings JSON. The admin uses accessible up/down buttons with a live announcement; the public homepage applies order only after validating the complete key set. The hero and footer remain outside the reorderable set. Invalid or missing order data falls back to the default order.
 
 ## Next phases
 1. Staging QA of homepage section visibility, including older settings snapshots, draft/publish, endpoint failure and phone layout.
-2. Complete staging QA of section ordering and keyboard/mobile controls; preserve sensible mobile order and existing page scripts.
+2. Complete staging QA of section ordering and keyboard/mobile controls; verify hidden sections remain hidden after reordering and preserve existing page scripts.
 3. Connect section spacing and card shape to the actual shared components; add component-specific controls and revision/restore.
 4. Add navigation, banner/media and responsive settings.
 5. Add click-to-edit visual editing only after stable component schemas exist.
