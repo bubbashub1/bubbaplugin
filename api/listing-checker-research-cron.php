@@ -21,8 +21,8 @@ if(!in_array((int)$now->format('N'),array_map('intval',$days),true)){echo "Not a
 $clock=$now->format('H:i');$start=$get('window_start','00:00');$end=$get('window_end','23:59');
 if(($start<=$end&&($clock<$start||$clock>$end))||($start>$end&&$clock>$end&&$clock<$start)){echo "Outside run window\n";exit;}
 $interval=max(1,min(24,(int)$get('interval_hours','4')));
-$last=$db->query("SELECT MAX(finished_at) FROM bh_listing_check_runs WHERE check_type='discovery' AND status='completed'")->fetchColumn();
-if(!$manual&&$last&&new DateTimeImmutable((string)$last,$tz)>$now->modify('-'.$interval.' hours')){echo "Not due yet\n";exit;}
+$last=$get('research_last_run_at','');
+if(!$manual&&$last!==''&&new DateTimeImmutable($last,$tz)>$now->modify('-'.$interval.' hours')){echo "Not due yet\n";exit;}
 $lock=$db->query("SELECT GET_LOCK('bh_listing_missing_research',0)")->fetchColumn();if((int)$lock!==1){echo "Research worker already running\n";exit;}
 $runId=0;
 try{
