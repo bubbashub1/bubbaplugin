@@ -19,3 +19,8 @@ This validator is not yet wired into page-save endpoints. Do not treat the schem
 ## Draft-storage API foundation
 
 `api/admin-visual-page-drafts.php` adds a separate, administrator-authenticated draft-document storage endpoint. It requires the existing admin session guard and a session CSRF token, provides an explicit one-time `setup` action for its two isolated tables, validates documents server-side, anchors page title and slug to the existing Page Manager record, rejects archived pages, and snapshots the previous structured draft before replacing it. This storage is separate from legacy `content_html`; it does not publish, render structured documents publicly, convert legacy content, or enable visual editor controls. Staging testing and a reviewed safe renderer are still required.
+
+
+## Link destination validation
+
+The v1 validator accepts validated HTTP(S) URLs, valid email addresses with the `mailto:` scheme, and telephone numbers with the `tel:` scheme. Same-origin root-relative, fragment and query references are accepted. Protocol-relative URLs, control characters, backslashes, malformed email/telephone destinations, and executable/data schemes are rejected. The public renderer must still escape text and emit only validated href attributes.
