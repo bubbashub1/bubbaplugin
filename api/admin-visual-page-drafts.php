@@ -78,6 +78,8 @@ try {
         if ($row) {
             $draft = json_decode((string)$row['document_json'], true);
             if (!is_array($draft)) bh_vb_out(500, ['ok'=>false, 'error'=>'The saved builder draft could not be read.']);
+            $storedValidation = bh_validate_page_document_v1($draft);
+            if (!$storedValidation['ok']) bh_vb_out(409, ['ok'=>false, 'error'=>'The saved builder draft failed validation and has been withheld from preview.']);
         }
 
         $revisionQ = $db->prepare("SELECT id,created_at FROM bh_visual_page_document_revisions WHERE page_id=? ORDER BY id DESC LIMIT 30");
