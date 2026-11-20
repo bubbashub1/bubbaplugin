@@ -17,6 +17,7 @@ on:
       - 'docs/SITE_MANAGER_NATIVE_FOUNDATION.md'
       - 'docs/VISUAL_BUILDER_ARCHITECTURE.md'
       - 'docs/VISUAL_BUILDER_DOCUMENT_V1.md'
+      - 'docs/VISUAL_BUILDER_VALIDATOR.md'
       - 'schemas/page-document-v1.schema.json'
       - 'assets/css/admin-site-manager.css'
       - 'assets/css/admin-visual-builder.css'
