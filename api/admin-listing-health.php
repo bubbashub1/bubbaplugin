@@ -127,17 +127,14 @@ try {
    $region=trim((string)($row['region']??''));
    $where=trim(implode(', ',array_filter([$venue,$town,$region])));
    $placeholderTitle=in_array(strtolower($activity),['untitled','untitled listing','new listing','tbc','tbd'],true);
-   $parts=[];
-   if($activity!=='' && !$placeholderTitle){
-    $parts[]=$activity.'.';
-    if($kind!=='') $parts[]='Category: '.$kind.'.';
-    if($age!=='') $parts[]='Age range: '.$age.'.';
-    if($where!=='') $parts[]='Location: '.$where.'.';
-    if($org!=='') $parts[]='Organiser: '.$org.'.';
-   }
-   // A title plus at least one useful detail is required; never pad an empty listing with generic copy.
-   if($parts){
-    $row['suggested_description']=implode(' ',$parts);
+   $details=[];
+   if($kind!=='') $details[]='Category: '.$kind.'.';
+   if($age!=='') $details[]='Age range: '.$age.'.';
+   if($where!=='') $details[]='Location: '.$where.'.';
+   if($org!=='') $details[]='Organiser: '.$org.'.';
+   // Require a meaningful title and at least one useful detail; never pad an empty listing with generic copy.
+   if($activity!=='' && !$placeholderTitle && $details){
+    $row['suggested_description']=implode(' ',array_merge([$activity.'.'],$details));
     $row['suggested_description_status']='generated_from_existing_fields';
    }
   }
