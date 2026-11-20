@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+      - staging-site
   workflow_dispatch:
 
 permissions:
