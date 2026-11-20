@@ -188,7 +188,7 @@ try {
  foreach($rows as &$healthRow) {
   $queueRow=$queueByActivity[(int)$healthRow['id']]??null;
   $queueStatus=(string)($queueRow['status']??'not_queued');
-  $healthRow['health_check_status']=in_array($queueStatus,['failed','skipped'],true)?$queueStatus:(!empty($queueRow['last_checked_at'])?'checked':$queueStatus);
+  $healthRow['health_check_status']=in_array($queueStatus,['pending','processing','checked','failed','skipped'],true)?$queueStatus:'not_queued';
   $healthRow['health_last_checked_at']=$queueRow['last_checked_at']??null;
  }
  unset($healthRow);
