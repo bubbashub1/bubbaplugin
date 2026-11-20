@@ -84,7 +84,7 @@ Integrate with existing upload/media handling only after permissions, storage pa
 - Reuse Page Manager page records and page hierarchy; no duplicate page list.
 - Provide page selection and a desktop/tablet/mobile canvas.
 - Render an existing managed page in a sandboxed same-origin preview or a safe renderer.
-- Add a layers tree and component selection for supported, explicitly registered elements.
+- Add a layers tree and component selection for supported, explicitly registered elements. The first prototype now lists page headings, paragraphs, links, buttons, images and section/article elements; choosing a layer selects the corresponding item in the preview.
 - At this stage, selection is read-only; do not offer save/publish for unsupported page content.
 - Test mobile usability, admin session behavior and isolation from live/published content.
 
@@ -134,4 +134,4 @@ Integrate with existing upload/media handling only after permissions, storage pa
 
 ## First acceptance milestone
 
-The first usable milestone is a stable editor shell that can open an existing managed content page, show a responsive canvas and layers panel, select registered elements, and clearly indicate that editing is not yet enabled for unsupported legacy content. The next milestone then enables safe editing of headings, paragraphs and buttons.
+The first prototype now provides the editor shell, published managed-page selector, responsive-width preview, clickable element selection, a layers list, and a read-only properties inspector. It has not yet passed staging browser QA. The next milestone should add a validated structured page-document model and safe text/link editing against drafts, while preserving existing legacy HTML pages and revision history.
