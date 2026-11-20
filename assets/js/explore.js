@@ -29,7 +29,29 @@
   };
   const setMessage = (id, message) => { const node=$(id); if(node) node.innerHTML='<p class="explore-loading">'+esc(message)+'</p>'; };
 
+  // Published Site Manager visibility is optional; defaults keep every section visible.
+  async function applyHomepageSectionVisibility() {
+    try {
+      const response = await fetch("/api/site-design.php", {headers:{Accept:"application/json"}, cache:"default"});
+      if (!response.ok) return;
+      const payload = await response.json();
+      const settings = payload?.published?.homepage_sections;
+      if (!settings || typeof settings !== "object") return;
+      document.querySelectorAll("[data-bh-home-section]").forEach(section => {
+        const key = section.dataset.bhHomeSection;
+        if (!Object.prototype.hasOwnProperty.call(settings, key)) return;
+        const visible = settings[key] !== false;
+        section.hidden = !visible;
+        if (visible) section.style.removeProperty("display");
+        else section.style.setProperty("display", "none", "important");
+      });
+    } catch (_) {
+      // A missing settings table or unavailable endpoint must not affect the homepage.
+    }
+  }
+
   async function init() {
+    void applyHomepageSectionVisibility();
     const tickerToggle=$("exploreTickerToggle");
     tickerToggle?.addEventListener("click",()=>{
       const ticker=document.querySelector(".explore-news-ticker");
