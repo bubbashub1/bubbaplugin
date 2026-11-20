@@ -64,23 +64,15 @@ The schema deliberately creates only `bh_*` tables so the existing WordPress `wp
 
 ## Listing Checker setup (PR #846)
 
-Before applying the migration, run the read-only environment preflight from the server CLI:
+The Listing Checker admin settings and discovery-term editor use the standalone `bh_*` database. On **staging**, sign in as an administrator and open `/admin/admin-listing-checker-settings.html`. If the page reports that database preparation is required, use its **Prepare this database** action. The authenticated API applies the versioned checker schema and verifies the required tables; it does not modify activity, organiser or venue records. Do not run the migration against the live database until staging has been fully tested and a separate live deployment has been approved.
+
+The read-only CLI preflight is an optional diagnostic for a developer or hosting administrator. It checks the existing `bh_activities` source table, available listing columns, required PHP extensions, database connectivity, advisory-lock support and whether checker tables exist. It does not create tables or modify listings:
 
 ```sh
 php /path/to/bubbaplugin/api/listing-checker-preflight.php
 ```
 
-It checks the existing `bh_activities` source table, available listing columns, required PHP extensions, database connectivity, advisory-lock support and whether the checker tables already exist. It does not create tables or modify listings. A missing checker migration is reported as a warning so the environment can be checked before any SQL is applied.
-
-The Listing Checker admin settings and discovery-term editor use the standalone `bh_*` database. Before opening the settings page on a deployed environment, run the one-time migration against the Bubba Hub database:
-
-```sh
-mysql -u YOUR_DATABASE_USER -p YOUR_DATABASE_NAME < database/listing-checker-schema.sql
-# Then add the structured search controls to an existing checker installation:
-mysql -u YOUR_DATABASE_USER -p YOUR_DATABASE_NAME < database/listing-checker-search-settings-migration.sql
-```
-
-This creates checker configuration, editable discovery terms, run/queue tracking and review-finding tables. It does not modify activity, organiser or venue records. The admin page is available at `/admin/admin-listing-checker-settings.html`.
+The admin page is available at `/admin/admin-listing-checker-settings.html`.
 
 The settings page stores the desired schedule (default every 4 hours, batch size 30, Europe/London) and discovery terms. The structured search editor lets an administrator set a phrase, directory category, source scope (general web, publicly indexed Facebook or publicly indexed Instagram), extra keywords, region scope and a per-term repeat interval (4 hours to monthly). The discovery worker only processes terms that are due for their own interval. Bing RSS remains the search provider; the social options apply public search operators, not direct platform API access, and cannot see private groups or content blocked from indexing. **It does not itself start scheduled work**: the CLI workers and hosting cron entries must be implemented and configured before those saved schedules take effect.
 
