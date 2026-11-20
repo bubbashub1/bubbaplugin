@@ -49,8 +49,12 @@ try {
  foreach($sectionDefaults as $key=>$default){$value=$sectionInput[$key]??$default;if(!is_bool($value))bhsm_out(422,['ok'=>false,'error'=>'Choose whether each homepage section should be shown.']);$settings['homepage_sections'][$key]=$value;}
  $orderDefaults=$defaults['homepage_order'];
  $orderInput=$input['homepage_order']??$orderDefaults;
- if(!is_array($orderInput)||count($orderInput)!==count($orderDefaults)||array_values(array_unique($orderInput))!==$orderDefaults&&(!is_array($orderInput)||count(array_unique($orderInput))!==count($orderDefaults)||array_diff($orderInput,$orderDefaults)||array_diff($orderDefaults,$orderInput)))bhsm_out(422,['ok'=>false,'error'=>'Homepage section order is invalid.']);
- $settings['homepage_order']=array_values($orderInput);
+ if(!is_array($orderInput))bhsm_out(422,['ok'=>false,'error'=>'Homepage section order is invalid.']);
+ $orderInput=array_values($orderInput);
+ if(count($orderInput)!==count($orderDefaults))bhsm_out(422,['ok'=>false,'error'=>'Homepage section order is invalid.']);
+ foreach($orderInput as $key){if(!is_string($key)||!in_array($key,$orderDefaults,true))bhsm_out(422,['ok'=>false,'error'=>'Homepage section order is invalid.']);}
+ if(count(array_unique($orderInput))!==count($orderDefaults))bhsm_out(422,['ok'=>false,'error'=>'Homepage section order is invalid.']);
+ $settings['homepage_order']=$orderInput;
  $json=json_encode($settings,JSON_UNESCAPED_SLASHES);
  if($action==='save_draft'){$q=$db->prepare("UPDATE bh_site_settings SET draft_json=? WHERE setting_id=1");$q->execute([$json]);bhsm_out(200,['ok'=>true,'csrf'=>$csrf,'message'=>'Draft saved. The public website has not been changed.']);}
  if($action==='publish'){$q=$db->prepare("UPDATE bh_site_settings SET draft_json=?,published_json=? WHERE setting_id=1");$q->execute([$json,$json]);bhsm_out(200,['ok'=>true,'csrf'=>$csrf,'message'=>'Published settings saved. Supported shared design tokens and homepage section visibility will apply; some legacy page components still need design-token integration.']);}
