@@ -5,9 +5,9 @@ This is the first structured-content contract for the native Wix-style builder.
 - Machine-readable schema: `schemas/page-document-v1.schema.json`
 - Schema dialect: JSON Schema 2020-12
 - Version: `schema_version: 1`
-- Initial blocks: section, heading, paragraph and button
+- Initial blocks: section/container, heading, paragraph and button
 - Layout controls are deliberately constrained to approved values; no arbitrary HTML, JavaScript, event handlers, CSS declarations or unknown properties are accepted.
-- Section nesting is intentionally flat in v1: sections contain heading, paragraph or button blocks only.
+- Container nesting is intentionally flat in this stage: each page-level container holds heading, paragraph or button blocks. Containers can be added, reordered and deleted in the private draft. Each has independent background, padding, inner gap, width, minimum height, corner radius, border colour/thickness, horizontal alignment and spacing after.
 - Page documents are data, not rendered HTML. The public renderer must escape text and validate link destinations before output.
 
 ## Persistence boundary
