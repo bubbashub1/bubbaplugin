@@ -89,10 +89,11 @@ Integrate with existing upload/media handling only after permissions, storage pa
 - Test mobile usability, admin session behavior and isolation from live/published content.
 
 ### Stage 2 — safe text and link editing
-- Enable heading, paragraph and button text/link properties.
-- Validate and save a draft document.
-- Preview draft without publishing.
-- Verify revision creation and restore.
+- Use the v1 data contract in `schemas/page-document-v1.schema.json` (documented in `docs/VISUAL_BUILDER_DOCUMENT_V1.md`).
+- Enable heading, paragraph and button text/link properties only after server-side validation independently enforces the contract, including unique IDs, size limits, safe links and allowed properties.
+- Validate and save a draft document without changing the published page.
+- Preview draft without publishing; verify authorisation and CSRF protection.
+- Snapshot the complete prior document before each update and verify revision restore.
 
 ### Stage 3 — sections and layout editing
 - Add supported sections and blocks.
