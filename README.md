@@ -123,3 +123,14 @@ Both worker scripts are CLI-only, use separate MySQL advisory locks to prevent o
 A GitHub Actions workflow at `.github/workflows/listing-checker-security.yml` runs PHP syntax lint on the five Listing Checker APIs/workers and checks that the critical authentication, CSRF, CLI-only and overlap-lock guards remain present.
 
 **Security validation still required before production:** review the workflow result, perform an authenticated/unauthenticated browser test, test CSRF and cross-origin rejection, verify admin session behaviour behind the live hosting proxy, and test database permissions and cron execution on staging. Static checks are not a penetration test.
+
+
+### Missing-information research worker
+
+The CLI-only worker `api/listing-checker-research-cron.php` searches existing incomplete listings using their activity name, organiser, town, region and category. It deliberately strips the platform name from the search query: **“Bubba Hub” is never used as a search keyword**. It uses Bing RSS and checks a small number of public HTTPS result pages for possible missing descriptions, websites, booking links, contact details, age ranges and social links. Findings are stored as `auto_research_suggestions` in the existing review queue. The worker does not write to `bh_activities`, organisers or venues. Run it from server cron every four hours after enabling Missing-information research in Listing Checker Settings:
+
+```sh
+php /path/to/bubbaplugin/api/listing-checker-research-cron.php
+```
+
+Suggestions are unverified. Review the evidence and edit/confirm values before any future application workflow. The worker is disabled by default and has a separate advisory lock. It respects the saved run window, active days, batch/runtime and external request limits.
