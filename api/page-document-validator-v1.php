@@ -37,7 +37,14 @@ function bh_validate_page_document_v1(mixed $document): array {
    if($key==='background'&&(!is_string($value)||!preg_match('/^#[0-9a-fA-F]{6}$/',$value)))$errors[]='Invalid section background.';
    elseif($key==='padding'&&(!is_int($value)||$value<0||$value>96))$errors[]='Invalid section padding.';
    elseif($key==='gap'&&(!is_int($value)||$value<0||$value>64))$errors[]='Invalid section gap.';
-   elseif(!in_array($key,['background','padding','gap'],true))$errors[]='Unknown section property.';
+   elseif($key==='width'&&(!is_int($value)||$value<25||$value>100))$errors[]='Invalid container width.';
+   elseif($key==='min_height'&&(!is_int($value)||$value<0||$value>800))$errors[]='Invalid container minimum height.';
+   elseif($key==='radius'&&(!is_int($value)||$value<0||$value>48))$errors[]='Invalid container radius.';
+   elseif($key==='border_width'&&(!is_int($value)||$value<0||$value>8))$errors[]='Invalid container border width.';
+   elseif($key==='border_color'&&(!is_string($value)||!preg_match('/^#[0-9a-fA-F]{6}$/',$value)))$errors[]='Invalid container border colour.';
+   elseif($key==='align'&&!in_array($value,['left','center','right'],true))$errors[]='Invalid container alignment.';
+   elseif($key==='margin_bottom'&&(!is_int($value)||$value<0||$value>96))$errors[]='Invalid container spacing.';
+   elseif(!in_array($key,['background','padding','gap','width','min_height','radius','border_width','border_color','align','margin_bottom'],true))$errors[]='Unknown section property.';
   }
   if(!array_key_exists('children',$section))$errors[]='Section children are required.';
   $children=$section['children']??null;
