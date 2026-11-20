@@ -166,3 +166,8 @@ The visual-builder screen now connects to the isolated draft API for a deliberat
 - The editor has no publish control and does not write to Page Manager `content_html` or the public renderer.
 
 This is a controlled first editing slice, not yet a full Wix-style page editor. Do not use the conversion workflow for complex or visually sensitive pages until the user has reviewed its simplified preview. Staging browser QA must verify session behaviour, API setup, selection/edit/save/restore, desktop and mobile canvas, and unchanged public output before this stage is considered ready.
+
+
+## Stage 3 — constrained section styling controls
+
+The draft inspector now supports selecting a converted section and changing its background colour, inner padding (0–96px) and spacing between child blocks (0–64px). The controls write only allow-listed section properties already enforced by the v1 server validator. The draft iframe updates in place; saving still uses the isolated draft API and does not publish or change legacy page content. This is a first constrained layout control, not arbitrary CSS editing.
