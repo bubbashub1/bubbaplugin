@@ -8,8 +8,9 @@ function bhsm_out(int $status,array $data): never { http_response_code($status);
 if(empty($_SESSION['bh_site_manager_csrf'])) $_SESSION['bh_site_manager_csrf']=bin2hex(random_bytes(32));
 $csrf=(string)$_SESSION['bh_site_manager_csrf'];
 $defaults=['primary'=>'#416651','accent'=>'#3c8e96','surface'=>'#f4f8f7','text'=>'#17221c','heading_font'=>'Quicksand','body_font'=>'Quicksand','card_radius'=>16,'button_radius'=>999,'section_gap'=>24,'homepage_sections'=>['ticker'=>true,'categories'=>true,'quick_links'=>true,'latest'=>true,'regions'=>true,'cta'=>true],'homepage_order'=>['ticker','categories','quick_links','latest','regions','cta']];
+$phase='database_connection';
 try {
- $db=bh_mysql(); $method=$_SERVER['REQUEST_METHOD']??'GET';
+ $db=bh_mysql(); $phase='settings_table_check'; $method=$_SERVER['REQUEST_METHOD']??'GET';
  $table=$db->query("SHOW TABLES LIKE 'bh_site_settings'")->fetchColumn();
  if($method==='GET'){
   if(!$table)bhsm_out(200,['ok'=>true,'csrf'=>$csrf,'setup_required'=>true,'draft'=>$defaults,'published'=>null]);
@@ -59,4 +60,4 @@ try {
  if($action==='save_draft'){$q=$db->prepare("UPDATE bh_site_settings SET draft_json=? WHERE setting_id=1");$q->execute([$json]);bhsm_out(200,['ok'=>true,'csrf'=>$csrf,'message'=>'Draft saved. The public website has not been changed.']);}
  if($action==='publish'){$q=$db->prepare("UPDATE bh_site_settings SET draft_json=?,published_json=? WHERE setting_id=1");$q->execute([$json,$json]);bhsm_out(200,['ok'=>true,'csrf'=>$csrf,'message'=>'Published settings saved. Supported shared design tokens and homepage section visibility and order will apply; some legacy page components still need design-token integration.']);}
  bhsm_out(400,['ok'=>false,'error'=>'Unknown action.']);
-} catch(Throwable $e){error_log('Site Manager settings error: '.$e->getMessage());bhsm_out(500,['ok'=>false,'error'=>'Site Manager could not complete the request. Check the server error log.']);}
+} catch(Throwable $e){error_log('Site Manager settings error ['.$phase.']: '.$e->getMessage());bhsm_out(500,['ok'=>false,'error'=>'Site Manager request failed during '.$phase.'. No settings were changed.']);}
