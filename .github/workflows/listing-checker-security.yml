@@ -66,7 +66,7 @@ jobs:
           grep -q 'id="search"' admin/admin-listing-health.html
           grep -q 'id="filter"' admin/admin-listing-health.html
           grep -q "bh-location-controls" admin/admin-listing-health.html
-          grep -q "\$queueStatus=(string)(\$queueRow\[\x27status\x27\]" api/admin-listing-health.php
+          grep -Fq "\$queueStatus=(string)(\$queueRow['status']??'not_queued');" api/admin-listing-health.php
           grep -q "Latest check failed" admin/admin-listing-health.html
           grep -q "Last successful check:" admin/admin-listing-health.html
           ! grep -q "admin-listing-checker-settings.html" admin/admin-listing-health.html
