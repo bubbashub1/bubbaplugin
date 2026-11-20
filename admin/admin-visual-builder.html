@@ -41,6 +41,12 @@
 <label for="editHref" id="editHrefLabel" hidden>Button / link destination</label><input id="editHref" type="text" maxlength="2048" hidden>
 <p class="bhvb-edit-help">Changes are only in this private draft preview until you save the draft. The published page is not affected.</p>
 </div>
+<div class="bhvb-edit-controls bhvb-section-controls" id="sectionControls" hidden>
+<label for="sectionBackground">Section background</label><input id="sectionBackground" type="color" value="#ffffff">
+<label for="sectionPadding">Section padding <output id="sectionPaddingValue">24px</output></label><input id="sectionPadding" type="range" min="0" max="96" step="4" value="24">
+<label for="sectionGap">Space between elements <output id="sectionGapValue">16px</output></label><input id="sectionGap" type="range" min="0" max="64" step="4" value="16">
+<p class="bhvb-edit-help">Section styling is limited to safe, supported controls. Changes remain in this private draft.</p>
+</div>
 </section>
 <section class="bhvb-layers-panel" id="layersPanel" role="tabpanel" aria-labelledby="layersTab" hidden><p class="bhvb-layers-empty">Choose a page to see its editable elements.</p><div id="builderLayers" class="bhvb-layer-list"></div></section>
 <div class="bhvb-builder-actions">
