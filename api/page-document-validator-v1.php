@@ -75,7 +75,7 @@ function bh_validate_page_document_v1(mixed $document): array {
  return ['ok'=>!$errors,'errors'=>array_values(array_unique($errors))];
 }
 function bh_page_document_safe_href_v1(string $href): bool {
- if($href===''||preg_match('/[\\\\x00-\\\\x20\\\\x7f]/',$href)||str_contains($href,'\\\\')||str_starts_with($href,'//'))return false;
+ if($href===''||preg_match('/[\x00-\x20\x7f]/',$href)||str_contains($href,'\\')||str_starts_with($href,'//'))return false;
  if(preg_match('/^https?:/i',$href)){
   $parts=parse_url($href);
   return is_array($parts)&&isset($parts['host'])&&filter_var($href,FILTER_VALIDATE_URL)!==false;
@@ -86,7 +86,7 @@ function bh_page_document_safe_href_v1(string $href): bool {
  }
  if(str_starts_with(strtolower($href),'tel:')){
   $number=substr($href,4);
-  return (bool)preg_match('/^\\+?[0-9().-]{3,32}$/',$number);
+  return (bool)preg_match('/^\+?[0-9().-]{3,32}$/',$number);
  }
  if(str_starts_with($href,'/'))return true;
  if(str_starts_with($href,'#')||str_starts_with($href,'?'))return strlen($href)>1;
