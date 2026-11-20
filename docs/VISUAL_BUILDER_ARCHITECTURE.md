@@ -151,3 +151,18 @@ The existing `api/admin-visual-page-drafts.php` endpoint now provides the first 
 - Legacy Page Manager pages are not silently converted. A later editor step must provide an explicit conversion/initialisation preview before any existing page is treated as builder-managed.
 
 The API is backend groundwork only. The current visual-builder screen remains read-only until the editor UI, safe draft preview renderer, and staging tests are connected. A successful PHP syntax workflow alone is not staging sign-off.
+
+
+## Stage 3 — first draft editing workflow
+
+The visual-builder screen now connects to the isolated draft API for a deliberately limited first editing path:
+
+- The page selector uses published records from the existing Page Manager.
+- An administrator explicitly prepares a structured conversion preview from the selected page; it is not automatic.
+- The initial converter extracts up to 80 headings, paragraphs and eligible links from the page's main content. It reports how many supported blocks were prepared and warns that images, complex layout, original styling and unsupported elements are not carried into this first simplified draft.
+- The draft canvas renders the structured document as escaped text and validated link destinations inside the sandboxed preview. It does not execute page scripts.
+- Headings, paragraphs and button/link text and destinations can be edited in the draft inspector.
+- Save sends the v1 document to the authenticated draft API. Previous draft snapshots are listed and can be restored after confirmation.
+- The editor has no publish control and does not write to Page Manager `content_html` or the public renderer.
+
+This is a controlled first editing slice, not yet a full Wix-style page editor. Do not use the conversion workflow for complex or visually sensitive pages until the user has reviewed its simplified preview. Staging browser QA must verify session behaviour, API setup, selection/edit/save/restore, desktop and mobile canvas, and unchanged public output before this stage is considered ready.
