@@ -57,6 +57,23 @@ try {
   if((int)($_SERVER['CONTENT_LENGTH']??0)>65536) bh_lcr_reply(413,['ok'=>false,'error'=>'Request too large']);
  $input=json_decode((string)file_get_contents('php://input'),true);
  if(!is_array($input)||!hash_equals((string)$_SESSION['bh_listing_review_csrf'],(string)($input['csrf']??'')))bh_lcr_reply(403,['ok'=>false,'error'=>'Security check failed. Refresh and try again.']);
+ $action=(string)($input['action']??'update_status');
+ if($action==='add_research'){
+  $activityId=(int)($input['activity_id']??0);
+  $title=trim((string)($input['title']??''));
+  $source=trim((string)($input['source_url']??''));
+  $note=trim((string)($input['note']??''));
+  if($activityId<1||$title===''||strlen($title)>250||$source===''||strlen($source)>1000||strlen($note)>1500)bh_lcr_reply(422,['ok'=>false,'error'=>'Enter a source title and valid source link.']);
+  $parts=parse_url($source);
+  if(!is_array($parts)||!in_array(strtolower((string)($parts['scheme']??'')),['http','https'],true)||empty($parts['host'])||isset($parts['user'])||isset($parts['pass'])||!filter_var($source,FILTER_VALIDATE_URL))bh_lcr_reply(422,['ok'=>false,'error'=>'The source link must be a valid http or https web address.']);
+  $activity=$db->prepare('SELECT id,title FROM bh_activities WHERE id=? LIMIT 1');$activity->execute([$activityId]);$activityRow=$activity->fetch(PDO::FETCH_ASSOC);
+  if(!$activityRow)bh_lcr_reply(404,['ok'=>false,'error'=>'The listing could not be found.']);
+  $candidate=['title'=>$title,'website'=>$source,'snippet'=>$note,'provider'=>'Manual admin research','evidence_note'=>'Saved by an administrator as unverified source evidence. Verify the source and details before approving any listing changes.'];
+  $insert=$db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,term_id,candidate_json,finding_type,confidence,source_url,checked_at,review_status) VALUES('discovery',?,NULL,?,'manual_research_source',NULL,?,NOW(),'new')");
+  $insert->execute([$activityId,json_encode($candidate,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE),$source]);
+  bh_lcr_reply(200,['ok'=>true,'message'=>'Source saved to the Listing Review Queue. It has not changed the listing.','finding_id'=>(int)$db->lastInsertId()]);
+ }
+ if($action!=='update_status')bh_lcr_reply(422,['ok'=>false,'error'=>'Unknown review action.']);
  $id=(int)($input['id']??0);$status=(string)($input['review_status']??'');
  if($id<1||!in_array($status,['new','correct','incorrect','follow_up','approved','rejected','resolved'],true))bh_lcr_reply(422,['ok'=>false,'error'=>'Invalid review update.']);
  $stmt=$db->prepare('UPDATE bh_listing_check_findings SET review_status=?,reviewed_at=NOW() WHERE id=?');$stmt->execute([$status,$id]);
