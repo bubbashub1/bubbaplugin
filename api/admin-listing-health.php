@@ -14,6 +14,7 @@ session_name('BUBBAHUB_ADMINSESSID');
 session_start();
 function bh_health_reply(int $status,array $data): never { http_response_code($status); echo json_encode($data,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE); exit; }
 if(empty($_SESSION['bh_admin_authenticated'])) bh_health_reply(401,['ok'=>false,'error'=>'Admin login required.']);
+$_SESSION['bh_listing_review_csrf']??=bin2hex(random_bytes(32));
 if(($_SERVER['REQUEST_METHOD']??'GET')!=='GET') bh_health_reply(405,['ok'=>false,'error'=>'GET only. This first release is read-only.']);
 try {
  require_once __DIR__.'/db.php';
@@ -202,7 +203,7 @@ try {
  $score=0;
  foreach($rows as $row){ if(count($row['missing']))$totals['with_missing']++; if(in_array('Description',$row['missing'],true))$totals['description_missing']++; $totals['validation_issues']+=count($row['validation_issues']??[]); if(!empty($row['possible_duplicate']))$totals['possible_duplicates']++; $score+=(int)$row['health_score']; }
  $totals['average_health']=$totals['listings']?(int)round($score/$totals['listings']):0;
- bh_health_reply(200,['ok'=>true,'read_only'=>true,'totals'=>$totals,'missing_counts'=>$missingCounts,'data'=>$rows,'message'=>'Read-only checks include completeness, format validation, past-date flags and likely same-title/same-location duplicates. Findings are suggestions only; no listings are changed.']);
+ bh_health_reply(200,['ok'=>true,'read_only'=>true,'csrf'=>$_SESSION['bh_listing_review_csrf'],'totals'=>$totals,'missing_counts'=>$missingCounts,'data'=>$rows,'message'=>'Read-only checks include completeness, format validation, past-date flags and likely same-title/same-location duplicates. Findings are suggestions only; no listings are changed.']);
 } catch(Throwable $e) {
  error_log('Listing health checker: '.$e->getMessage());
  bh_health_reply(500,['ok'=>false,'error'=>'Listing health check could not be completed.']);

@@ -70,3 +70,7 @@ jobs:
           grep -q "placeholderTitle" api/admin-listing-health.php
           grep -q "at least one useful detail" api/admin-listing-health.php
           grep -q "Not enough reliable listing details" admin/admin-listing-health.html
+          grep -q "add_research" api/admin-listing-review.php
+          grep -q "manual_research_source" api/admin-listing-review.php
+          grep -q "bh_listing_review_csrf" api/admin-listing-health.php
+          grep -q "Save source to review queue" admin/admin-listing-health.html
