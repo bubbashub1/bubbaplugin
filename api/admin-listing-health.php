@@ -115,7 +115,9 @@ try {
   $row['health_assessable_fields']=count($fieldMap);
   $row['health_score']=count($fieldMap)>0 ? (int)round((count($fieldMap)-count($missing))/count($fieldMap)*100) : null;
   $row['suggested_description']='';
+  $row['suggested_description_status']='existing_description';
   if(trim((string)($row['description']??''))==='' && trim((string)($row['short_description']??''))===''){
+   $row['suggested_description_status']='insufficient_data';
    $activity=trim((string)($row['title']??''));
    $org=trim((string)($row['organiser_organisation_name']??''));
    $kind=trim((string)($row['category']??''));
@@ -124,13 +126,17 @@ try {
    $town=trim((string)($row['town']??$row['venue_town']??''));
    $region=trim((string)($row['region']??''));
    $where=trim(implode(', ',array_filter([$venue,$town,$region])));
-   $parts=[];
-   if($activity!=='') $parts[]=$activity.($where!==''?' in '.$where:'').' is an activity'.($kind!==''?' in the '.$kind.' category':'').'.';
-   if($org!=='') $parts[]='Run by '.$org.'.';
-   if($age!=='') $parts[]='Suitable for '.$age.'.';
-   if($where!=='' && $activity==='') $parts[]='Based at '.$where.'.';
-   $parts[]='Please check the organiser’s current details for session times, availability and booking information before attending.';
-   $row['suggested_description']=implode(' ',$parts);
+   $placeholderTitle=in_array(strtolower($activity),['untitled','untitled listing','new listing','tbc','tbd'],true);
+   $details=[];
+   if($kind!=='') $details[]='Category: '.$kind.'.';
+   if($age!=='') $details[]='Age range: '.$age.'.';
+   if($where!=='') $details[]='Location: '.$where.'.';
+   if($org!=='') $details[]='Organiser: '.$org.'.';
+   // Require a meaningful title and at least one useful detail; never pad an empty listing with generic copy.
+   if($activity!=='' && !$placeholderTitle && $details){
+    $row['suggested_description']=implode(' ',array_merge([$activity.'.'],$details));
+    $row['suggested_description_status']='generated_from_existing_fields';
+   }
   }
  }
  unset($row);

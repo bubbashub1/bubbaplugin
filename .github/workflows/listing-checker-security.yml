@@ -66,3 +66,7 @@ jobs:
           grep -q "get('health_enabled','0')" api/listing-checker-health-cron.php
           grep -q "get('discovery_enabled','0')" api/listing-checker-discovery-cron.php
           grep -q "columnsFor('bh_activity_schedules')" api/listing-checker-health-cron.php
+          grep -q "insufficient_data" api/admin-listing-health.php
+          grep -q "placeholderTitle" api/admin-listing-health.php
+          grep -q "at least one useful detail" api/admin-listing-health.php
+          grep -q "Not enough reliable listing details" admin/admin-listing-health.html
