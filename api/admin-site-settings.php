@@ -7,7 +7,7 @@ require_once __DIR__.'/db.php';
 function bhsm_out(int $status,array $data): never { http_response_code($status); echo json_encode($data,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE); exit; }
 if(empty($_SESSION['bh_site_manager_csrf'])) $_SESSION['bh_site_manager_csrf']=bin2hex(random_bytes(32));
 $csrf=(string)$_SESSION['bh_site_manager_csrf'];
-$defaults=['primary'=>'#416651','accent'=>'#3c8e96','surface'=>'#f4f8f7','text'=>'#17221c','heading_font'=>'Quicksand','body_font'=>'Quicksand','card_radius'=>16,'button_radius'=>999,'section_gap'=>24,'homepage_sections'=>['ticker'=>true,'categories'=>true,'quick_links'=>true,'latest'=>true,'regions'=>true,'cta'=>true]];
+$defaults=['primary'=>'#416651','accent'=>'#3c8e96','surface'=>'#f4f8f7','text'=>'#17221c','heading_font'=>'Quicksand','body_font'=>'Quicksand','card_radius'=>16,'button_radius'=>999,'section_gap'=>24,'homepage_sections'=>['ticker'=>true,'categories'=>true,'quick_links'=>true,'latest'=>true,'regions'=>true,'cta'=>true],'homepage_order'=>['ticker','categories','quick_links','latest','regions','cta']];
 try {
  $db=bh_mysql(); $method=$_SERVER['REQUEST_METHOD']??'GET';
  $table=$db->query("SHOW TABLES LIKE 'bh_site_settings'")->fetchColumn();
@@ -19,7 +19,9 @@ try {
   $draft=is_array($draftRaw)?array_merge($defaults,$draftRaw):$defaults;
   $published=is_array($publishedRaw)?array_merge($defaults,$publishedRaw):null;
   $draft['homepage_sections']=array_merge($defaults['homepage_sections'],is_array($draftRaw['homepage_sections']??null)?$draftRaw['homepage_sections']:[]);
+  $draft['homepage_order']=is_array($draftRaw['homepage_order']??null)?$draftRaw['homepage_order']:$defaults['homepage_order'];
   if($published!==null)$published['homepage_sections']=array_merge($defaults['homepage_sections'],is_array($publishedRaw['homepage_sections']??null)?$publishedRaw['homepage_sections']:[]);
+  if($published!==null)$published['homepage_order']=is_array($publishedRaw['homepage_order']??null)?$publishedRaw['homepage_order']:$defaults['homepage_order'];
   bhsm_out(200,['ok'=>true,'csrf'=>$csrf,'setup_required'=>false,'draft'=>$draft,'published'=>$published,'updated_at'=>$row['updated_at']??null]);
  }
  if($method!=='POST')bhsm_out(405,['ok'=>false,'error'=>'Method not allowed.']);
@@ -45,6 +47,10 @@ try {
  if(!is_array($sectionInput))bhsm_out(422,['ok'=>false,'error'=>'Homepage section settings are invalid.']);
  $settings['homepage_sections']=[];
  foreach($sectionDefaults as $key=>$default){$value=$sectionInput[$key]??$default;if(!is_bool($value))bhsm_out(422,['ok'=>false,'error'=>'Choose whether each homepage section should be shown.']);$settings['homepage_sections'][$key]=$value;}
+ $orderDefaults=$defaults['homepage_order'];
+ $orderInput=$input['homepage_order']??$orderDefaults;
+ if(!is_array($orderInput)||count($orderInput)!==count($orderDefaults)||array_values(array_unique($orderInput))!==$orderDefaults&&(!is_array($orderInput)||count(array_unique($orderInput))!==count($orderDefaults)||array_diff($orderInput,$orderDefaults)||array_diff($orderDefaults,$orderInput)))bhsm_out(422,['ok'=>false,'error'=>'Homepage section order is invalid.']);
+ $settings['homepage_order']=array_values($orderInput);
  $json=json_encode($settings,JSON_UNESCAPED_SLASHES);
  if($action==='save_draft'){$q=$db->prepare("UPDATE bh_site_settings SET draft_json=? WHERE setting_id=1");$q->execute([$json]);bhsm_out(200,['ok'=>true,'csrf'=>$csrf,'message'=>'Draft saved. The public website has not been changed.']);}
  if($action==='publish'){$q=$db->prepare("UPDATE bh_site_settings SET draft_json=?,published_json=? WHERE setting_id=1");$q->execute([$json,$json]);bhsm_out(200,['ok'=>true,'csrf'=>$csrf,'message'=>'Published settings saved. Supported shared design tokens and homepage section visibility will apply; some legacy page components still need design-token integration.']);}
