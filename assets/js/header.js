@@ -14,10 +14,10 @@
         set('--bh-primary',s.primary);set('--bh-green',s.primary);set('--bh-brand',s.primary);set('--bh-green-dark',s.primary);set('--bh-brand-dark',s.primary);
       }
       if(colour(s.accent)){
-        set('--bh-secondary',s.accent);set('--bh-teal',s.accent);set('--bh-accent',s.accent);set('--bh-teal-dark',s.accent);set('--bh-yellow',s.accent);set('--bh-blue',s.accent);
+        set('--bh-secondary',s.accent);set('--bh-teal',s.accent);set('--bh-accent',s.accent);set('--bh-teal-dark',s.accent);
       }
       if(colour(s.surface)){set('--bh-bg',s.surface);set('--bh-page',s.surface);set('--bh-surface',s.surface);set('--bh-mist',s.surface);}
-      if(colour(s.text)){set('--bh-text',s.text);set('--bh-ink',s.text);set('--bh-muted',s.text);set('--bh-text-muted',s.text);}
+      if(colour(s.text)){set('--bh-text',s.text);set('--bh-ink',s.text);}
       const fonts=['Quicksand','Arial','Calibri','Georgia','Verdana'];
       if(fonts.includes(s.heading_font))set('--bh-heading-font',"'"+s.heading_font+"'");
       if(fonts.includes(s.body_font))set('--bh-body-font',"'"+s.body_font+"'");
