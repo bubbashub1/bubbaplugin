@@ -18,6 +18,9 @@ $bad=$valid;unset($bad['sections'][0]['children']);assert_test(!bh_validate_page
 $bad=$valid;$bad['sections'][0]['children'][0]['props']['align']='justify';assert_test(!bh_validate_page_document_v1($bad)['ok'],'invalid alignment rejected');
 $bad=$valid;$bad['sections'][0]['evil']='x';assert_test(!bh_validate_page_document_v1($bad)['ok'],'unknown section property');
 $bad=$valid;$bad['sections'][0]['children'][0]['props']['text']=str_repeat('x',501);assert_test(!bh_validate_page_document_v1($bad)['ok'],'heading text length');
+$bad=$valid;$bad['sections'][0]['props']['background']='url(javascript:alert(1))';assert_test(!bh_validate_page_document_v1($bad)['ok'],'unsafe section background rejected');
+$bad=$valid;$bad['sections'][0]['props']['padding']=97;assert_test(!bh_validate_page_document_v1($bad)['ok'],'section padding upper bound');
+$bad=$valid;$bad['sections'][0]['props']['gap']=-1;assert_test(!bh_validate_page_document_v1($bad)['ok'],'section gap lower bound');
 assert_test(bh_page_document_safe_href_v1('https://example.com'),'https URL');
 assert_test(bh_page_document_safe_href_v1('mailto:test@example.com'),'mailto URL');
 assert_test(bh_page_document_safe_href_v1('tel:+441234567890'),'tel URL');
