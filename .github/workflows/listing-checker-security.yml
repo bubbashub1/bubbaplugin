@@ -56,6 +56,8 @@ jobs:
           ! grep -q "CURLOPT_FOLLOWLOCATION=>true" api/listing-checker-discovery-cron.php
           grep -q "2097152" api/listing-checker-discovery-cron.php
           grep -q "next_check_at=DATE_ADD(NOW(), INTERVAL" api/listing-checker-health-cron.php
+          ! grep -q "status='failed',attempts=attempts+1,last_checked_at=NOW()" api/listing-checker-health-cron.php
+          ! grep -q "status='skipped',attempts=attempts+1,last_checked_at=NOW()" api/listing-checker-health-cron.php
           grep -q "Refresh an existing matching finding" api/listing-checker-health-cron.php
           grep -q "stale_listing" api/listing-checker-health-cron.php
           grep -q "health_enabled','0'" database/listing-checker-schema.sql
