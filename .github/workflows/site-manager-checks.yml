@@ -7,7 +7,6 @@ on:
       - 'api/site-design.php'
       - 'admin/admin-site-manager.html'
       - 'assets/js/admin-site-manager.js'
-      - 'assets/js/site-manager-design.js'
       - 'assets/js/header.js'
       - 'assets/css/admin-site-manager.css'
       - 'assets/css/site-manager-design.css'
@@ -21,7 +20,6 @@ on:
       - 'api/site-design.php'
       - 'admin/admin-site-manager.html'
       - 'assets/js/admin-site-manager.js'
-      - 'assets/js/site-manager-design.js'
       - 'assets/js/header.js'
       - 'assets/css/admin-site-manager.css'
       - 'assets/css/site-manager-design.css'
@@ -49,7 +47,5 @@ jobs:
         run: php -l api/site-design.php
       - name: Check admin JavaScript syntax
         run: node --check assets/js/admin-site-manager.js
-      - name: Check public design loader syntax
-        run: node --check assets/js/site-manager-design.js
       - name: Check shared header JavaScript syntax
         run: node --check assets/js/header.js
