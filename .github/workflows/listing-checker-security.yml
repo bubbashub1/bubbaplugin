@@ -5,6 +5,7 @@ on:
     branches:
       - feature/listing-health-checker
       - feature/listing-checker-structured-search
+      - feature/listing-health-approved-research
   pull_request:
     branches:
       - main
@@ -30,6 +31,7 @@ jobs:
           for file in \
             api/admin-listing-checker-settings.php \
             api/admin-listing-health.php \
+            api/admin-listing-health-approvals.php \
             api/admin-listing-review.php \
             api/listing-checker-health-cron.php \
             api/listing-checker-discovery-cron.php \
@@ -37,10 +39,37 @@ jobs:
           do
             php -l "$file"
           done
-      - name: Verify critical security guards
+      - name: Check Listing Health hub JavaScript syntax
+        run: node --check assets/js/admin-listing-health-hub.js
+      - name: Verify critical security guards and page boundaries
         shell: bash
         run: |
           set -euo pipefail
+          grep -q "bh_admin_authenticated" api/admin-listing-health-approvals.php
+          grep -q "hash_equals" api/admin-listing-health-approvals.php
+          grep -q "FOR UPDATE" api/admin-listing-health-approvals.php
+          grep -q "status='stale'" api/admin-listing-health-approvals.php
+          grep -q "bh_listing_health_approvals" api/admin-listing-health-approvals.php
+          grep -q "bh_listing_health_approvals" database/listing-checker-schema.sql
+          grep -q "bh_listing_health_approvals" api/admin-listing-checker-settings.php
+          ! grep -q "CREATE TABLE IF NOT EXISTS bh_listing_health_approvals" api/admin-listing-health-approvals.php
+          grep -q "CURLOPT_RESOLVE" api/admin-listing-health-approvals.php
+          grep -q "CURLOPT_FOLLOWLOCATION=>false" api/admin-listing-health-approvals.php
+          grep -q "FILTER_FLAG_NO_PRIV_RANGE" api/admin-listing-health-approvals.php
+          grep -q "fetch_source" api/admin-listing-health-approvals.php
+          grep -q "manual_import" api/admin-listing-health-approvals.php
+          grep -q "bhHealthSourceOpen" assets/js/admin-listing-health-hub.js
+          grep -q "approvalRequest('approve'" assets/js/admin-listing-health-hub.js
+          grep -q "approvalRequest('reject'" assets/js/admin-listing-health-hub.js
+          ! grep -q "localStorage" assets/js/admin-listing-health-hub.js
+          grep -q 'id="search"' admin/admin-listing-health.html
+          grep -q 'id="filter"' admin/admin-listing-health.html
+          grep -q "bh-location-controls" admin/admin-listing-health.html
+          ! grep -q "admin-listing-checker-settings.html" admin/admin-listing-health.html
+          ! grep -q "admin-location-management.js" admin/admin-listing-health.html
+          ! grep -q "admin-location-actions.js" admin/admin-listing-health.html
+          ! grep -q "admin-location-bulk.js" admin/admin-listing-health.html
+          ! grep -q "bhNearRadius" admin/admin-listing-health.html
           grep -q "bh_admin_authenticated" api/admin-listing-checker-settings.php
           grep -q "hash_equals" api/admin-listing-checker-settings.php
           grep -q "HTTP_ORIGIN" api/admin-listing-checker-settings.php
@@ -59,6 +88,10 @@ jobs:
           grep -q "next_check_at=DATE_ADD(NOW(), INTERVAL" api/listing-checker-health-cron.php
           grep -q "Refresh an existing matching finding" api/listing-checker-health-cron.php
           grep -q "stale_listing" api/listing-checker-health-cron.php
+          grep -q "closure_checks_enabled" api/admin-listing-checker-settings.php
+          grep -q "get('closure_checks_enabled','0')" api/listing-checker-health-cron.php
+          grep -q "possible_closure" api/listing-checker-health-cron.php
+          grep -q "closure_checks_enabled','0'" database/listing-checker-schema.sql
           grep -q "health_enabled','0'" database/listing-checker-schema.sql
           grep -q "discovery_enabled','0'" database/listing-checker-schema.sql
           grep -q "get('health_enabled','0')" api/listing-checker-health-cron.php
