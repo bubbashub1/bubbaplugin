@@ -37,13 +37,13 @@ try{
  $limit=max(1,min(30,(int)$get('research_batch_size','10')));
  $requestLimit=max(1,min(30,(int)$get('request_limit','30')));
  $runtime=max(30,min(240,(int)$get('max_runtime_seconds','180')));$deadline=microtime(true)+$runtime;
- $query='SELECT '.implode(',',$select).' FROM bh_activities a'.$join.' ORDER BY a.id LIMIT '.$limit;
+ $query='SELECT '.implode(',',$select).' FROM bh_activities a'.$join.' WHERE NOT EXISTS (SELECT 1 FROM bh_listing_check_findings rf WHERE rf.check_type=\'health\' AND rf.activity_id=a.id AND rf.finding_type IN (\'auto_research_suggestions\',\'auto_research_no_suggestions\')) ORDER BY a.id LIMIT 5000';
  $rows=$db->query($query)->fetchAll(PDO::FETCH_ASSOC);
  $run=$db->prepare("INSERT INTO bh_listing_check_runs(check_type,status,started_at) VALUES('health','running',NOW())");$run->execute();$runId=(int)$db->lastInsertId();
  if($manual){$clear=$db->prepare("INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES('research_run_now','0') ON DUPLICATE KEY UPDATE setting_value='0'");$clear->execute();}
  $missing=[];$keys=['description'=>['description','short_description'],'website'=>['website','organiser_website'],'booking_url'=>['booking_url'],'contact_email'=>['contact_email','organiser_email'],'contact_phone'=>['contact_phone','organiser_phone'],'age_range'=>['age_range'],'category'=>['category'],'town'=>['town'],'postcode'=>['postcode'],'facebook_url'=>['facebook_url'],'instagram_url'=>['instagram_url']];
- foreach($rows as $row){$want=[];foreach($keys as $field=>$sources){$supported=array_filter($sources,static fn($k)=>array_key_exists($k,$row));if(!$supported)continue;$present=false;foreach($supported as $k)if(trim((string)($row[$k]??''))!=='')$present=true;if(!$present)$want[]=$field;}if($want)$missing[]=['row'=>$row,'fields'=>$want];}
- $insert=$db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,term_id,candidate_json,finding_type,confidence,source_url,checked_at,review_status) VALUES('health',?,NULL,?,'auto_research_suggestions',NULL,?,NOW(),'new')");
+ foreach($rows as $row){$want=[];foreach($keys as $field=>$sources){$supported=array_filter($sources,static fn($k)=>array_key_exists($k,$row));if(!$supported)continue;$present=false;foreach($supported as $k)if(trim((string)($row[$k]??''))!=='')$present=true;if(!$present)$want[]=$field;}if($want&&count($missing)<$limit)$missing[]=['row'=>$row,'fields'=>$want];}
+ $insert=$db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,term_id,candidate_json,finding_type,confidence,source_url,checked_at,review_status) VALUES('health',?,NULL,?,?,NULL,?,NOW(),?)");
  $find=$db->prepare("SELECT id,review_status FROM bh_listing_check_findings WHERE check_type='health' AND activity_id=? AND finding_type='auto_research_suggestions' ORDER BY id DESC LIMIT 1");
  $refresh=$db->prepare("UPDATE bh_listing_check_findings SET candidate_json=?,source_url=?,checked_at=NOW() WHERE id=? AND review_status IN('new','follow_up')");
  $safeUrl=static function(string $url): ?string{$p=parse_url(trim($url));if(!is_array($p)||strtolower((string)($p['scheme']??''))!=='https'||empty($p['host'])||isset($p['user'])||isset($p['pass']))return null;$h=strtolower((string)$p['host']);if(filter_var($h,FILTER_VALIDATE_IP)||!preg_match('/^(?=.{1,253}$)[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/',$h)||str_contains($h,'..')||in_array($h,['localhost','localhost.localdomain'],true))return null;return $url;};
@@ -63,7 +63,7 @@ try{
     $dom=new DOMDocument();@$dom->loadHTML($html,LIBXML_NONET|LIBXML_NOERROR|LIBXML_NOWARNING);$xp=new DOMXPath($dom);
     $meta='';foreach(["//meta[@name='description']/@content","//meta[@property='og:description']/@content"] as $path){$n=$xp->query($path)?->item(0);if($n){$meta=trim((string)$n->nodeValue);if($meta!=='')break;}}
     $pageTitle=trim((string)($xp->query('//title')?->item(0)?->textContent??''));$text=html_entity_decode(strip_tags($html),ENT_QUOTES|ENT_HTML5,'UTF-8');$text=preg_replace('/\s+/u',' ',$text)??$text;
-    $propose=static function(string $field,string $value,string $url,string $reason)use(&$suggested):void{$value=trim($value);if($value===''||isset($suggested[$field]))return;$suggested[$field]=['value'=>mb_substr($value,0,1200),'source_url'=>$url,'evidence'=>$reason,'confidence'=>60];};
+    $propose=static function(string $field,string $value,string $url,string $reason)use(&$suggested):void{$value=trim($value);if($value===''||isset($suggested[$field]))return;$suggested[$field]=['value'=>substr($value,0,1200),'source_url'=>$url,'evidence'=>$reason,'confidence'=>60];};
     if(in_array('website',$item['fields'],true))$propose('website',$source,$source,'Official/public page returned by the search result; confirm it belongs to this organiser.');
     if(in_array('description',$item['fields'],true)&&$meta!=='')$propose('description',$meta,$source,'Page metadata description; check that it describes this activity.');
     if(in_array('contact_email',$item['fields'],true)&&preg_match('/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i',$text,$m))$propose('contact_email',$m[0],$source,'Email address found in page text.');
@@ -76,14 +76,14 @@ try{
       if(in_array('booking_url',$item['fields'],true)&&preg_match('/book|booking|tickets|register|reserve|sign.?up/',$label))$propose('booking_url',$abs,$source,'Link labelled as a booking or registration action.');
      }
     }
-    $sources[]=['url'=>$source,'title'=>$pageTitle,'snippet'=>mb_substr($meta,0,500)];
+    $sources[]=['url'=>$source,'title'=>$pageTitle,'snippet'=>substr($meta,0,500)];
    }
-   if(!$suggested){$processed++;continue;}
+   if(!$suggested){$noResult=['activity_title'=>$title,'missing_fields'=>$item['fields'],'suggested_fields'=>[],'sources'=>$sources,'search_query'=>$query,'provider'=>'Bing RSS + public page metadata','evidence_note'=>'No usable missing-field suggestions were found. This attempt is recorded to avoid repeatedly searching the same listing.'];$insert->execute([$aid,json_encode($noResult,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE),'auto_research_no_suggestions',null,'resolved']);$processed++;continue;}
    $candidate=['activity_title'=>$title,'missing_fields'=>$item['fields'],'suggested_fields'=>$suggested,'sources'=>$sources,'search_query'=>$query,'provider'=>'Bing RSS + public page metadata','evidence_note'=>'Automatically collected suggestions from public search results/pages. Values are unverified; inspect each source and approve or edit each field before applying. No listing data was changed.'];
    $json=json_encode($candidate,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);$sourceUrl=(string)array_values($suggested)[0]['source_url'];
    $find->execute([$aid]);$existing=$find->fetch(PDO::FETCH_ASSOC);
    if($existing){if(in_array($existing['review_status'],['new','follow_up'],true))$refresh->execute([$json,$sourceUrl,(int)$existing['id']]);}
-   else $insert->execute([$aid,$json,$sourceUrl]);
+   else $insert->execute([$aid,$json,'auto_research_suggestions',$sourceUrl,'new']);
    $suggestions++;$processed++;
   }catch(Throwable $e){$errors++;error_log('Missing-information research activity '.$aid.': '.$e->getMessage());}
  }
