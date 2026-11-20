@@ -39,24 +39,29 @@ function bh_validate_page_document_v1(mixed $document): array {
    elseif($key==='gap'&&(!is_int($value)||$value<0||$value>64))$errors[]='Invalid section gap.';
    elseif(!in_array($key,['background','padding','gap'],true))$errors[]='Unknown section property.';
   }
-  if(!array_key_exists('children',$section))$errors[]='Section children are required.';\n  $children=$section['children']??null;
+  if(!array_key_exists('children',$section))$errors[]='Section children are required.';
+  $children=$section['children']??null;
   if(!is_array($children)||count($children)>80){$errors[]='Section children must be an array of at most 80 items.';continue;}
   foreach($children as $child){
    if(!is_array($child)){$errors[]='Block must be an object.';continue;}
    $type=$child['type']??null;
    $allowed=['id','type','props'];
    if(array_diff(array_keys($child),$allowed))$errors[]='Unknown block properties.';
-   if(!array_key_exists('id',$child)||!array_key_exists('type',$child)||!array_key_exists('props',$child))$errors[]='Block id, type and props are required.';\n   $idCheck($child['id']??null);$p=$child['props']??null;
+   if(!array_key_exists('id',$child)||!array_key_exists('type',$child)||!array_key_exists('props',$child))$errors[]='Block id, type and props are required.';
+   $idCheck($child['id']??null);$p=$child['props']??null;
    if(!is_array($p)){$errors[]='Block props must be an object.';continue;}
    if($type==='heading'){
-    if(array_diff(array_keys($p),['text','level','align']))$errors[]='Unknown heading property.';\n    if(!array_key_exists('text',$p)||!array_key_exists('level',$p))$errors[]='Heading text and level are required.';
+    if(array_diff(array_keys($p),['text','level','align']))$errors[]='Unknown heading property.';
+    if(!array_key_exists('text',$p)||!array_key_exists('level',$p))$errors[]='Heading text and level are required.';
     if(!is_string($p['text']??null)||mb_strlen($p['text'])>500)$errors[]='Heading text invalid.';
     if(!in_array($p['level']??null,[1,2,3,4],true))$errors[]='Heading level invalid.';
    }elseif($type==='paragraph'){
-    if(array_diff(array_keys($p),['text','align']))$errors[]='Unknown paragraph property.';\n    if(!array_key_exists('text',$p))$errors[]='Paragraph text is required.';
+    if(array_diff(array_keys($p),['text','align']))$errors[]='Unknown paragraph property.';
+    if(!array_key_exists('text',$p))$errors[]='Paragraph text is required.';
     if(!is_string($p['text']??null)||mb_strlen($p['text'])>10000)$errors[]='Paragraph text invalid.';
    }elseif($type==='button'){
-    if(array_diff(array_keys($p),['text','href']))$errors[]='Unknown button property.';\n    if(!array_key_exists('text',$p)||!array_key_exists('href',$p))$errors[]='Button text and link are required.';
+    if(array_diff(array_keys($p),['text','href']))$errors[]='Unknown button property.';
+    if(!array_key_exists('text',$p)||!array_key_exists('href',$p))$errors[]='Button text and link are required.';
     if(!is_string($p['text']??null)||trim($p['text'])===''||mb_strlen($p['text'])>120)$errors[]='Button text invalid.';
     $href=$p['href']??null;
     if(!is_string($href)||strlen($href)>2048||!bh_page_document_safe_href_v1($href))$errors[]='Button link invalid.';
