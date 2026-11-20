@@ -177,6 +177,21 @@ try {
   $row['issue_count']=count($issues)+($row['possible_duplicate']?1:0);
  }
  unset($row);
+ // Keep the latest queue outcome separate from the last successful inspection timestamp.
+ $queueByActivity=[];
+ try {
+  $queueRows=$db->query("SELECT target_id,last_checked_at,next_check_at,status FROM bh_listing_check_queue WHERE check_type='health'")->fetchAll(PDO::FETCH_ASSOC);
+  foreach($queueRows as $queueRow) $queueByActivity[(int)$queueRow['target_id']]=$queueRow;
+ } catch(Throwable $queueError) {
+  // The read-only health screen remains available before checker tables are prepared.
+ }
+ foreach($rows as &$healthRow) {
+  $queueRow=$queueByActivity[(int)$healthRow['id']]??null;
+  $queueStatus=(string)($queueRow['status']??'not_queued');
+  $healthRow['health_check_status']=in_array($queueStatus,['failed','skipped','processing'],true)?$queueStatus:($queueStatus==='checked'||($queueStatus==='pending'&&!empty($queueRow['last_checked_at']))?'checked':($queueStatus==='pending'?'pending':'not_queued'));
+  $healthRow['health_last_checked_at']=$queueRow['last_checked_at']??null;
+ }
+ unset($healthRow);
  $totals=['listings'=>count($rows),'with_missing'=>0,'description_missing'=>0,'average_health'=>0,'validation_issues'=>0,'possible_duplicates'=>0];
  $score=0;
  foreach($rows as $row){ if(count($row['missing']))$totals['with_missing']++; if(in_array('Description',$row['missing'],true))$totals['description_missing']++; $totals['validation_issues']+=count($row['validation_issues']??[]); if(!empty($row['possible_duplicate']))$totals['possible_duplicates']++; $score+=(int)$row['health_score']; }
