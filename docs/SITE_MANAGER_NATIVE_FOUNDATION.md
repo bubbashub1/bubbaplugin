@@ -10,7 +10,7 @@ Bubba Hub is a standalone PHP/JavaScript application, not a WordPress theme/plug
 - The endpoint creates only `bh_site_settings` after an authenticated admin explicitly selects setup. It does not alter existing tables.
 - Draft and published settings are stored separately.
 - `api/site-design.php`: public read-only endpoint exposing only the published allow-listed settings.
-- `assets/js/site-manager-design.js` and the shared `assets/js/header.js` integration load published settings and set validated CSS custom properties. The loader fails silently when no published settings exist.
+- The shared `assets/js/header.js` loader loads published settings and sets validated CSS custom properties. It is used by the shared public-page loader in `assets/js/app.js` and by pages that include the header script directly. It fails silently when no published settings exist.
 - `assets/css/site-manager-design.css` defines safe baseline token mappings and is imported by `assets/css/styles.css`.
 
 ## Important scope limitation
