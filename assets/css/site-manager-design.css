@@ -19,7 +19,7 @@ body.bh-site-manager-design-active :where(.button,.btn,button.button-primary,but
  border-radius:var(--bh-button-radius,999px)!important;
 }
 /* Main reusable content cards; specialised map/modal shapes remain unchanged. */
-body.bh-site-manager-design-active :where(.card,.feature-card,.activity-card,.bh-card){
+body.bh-site-manager-design-active :where(.card,.feature-card,.activity-card,.bh-card,.home-activity-card,.home-category-card,.hub-panel,.admin-panel,.subscription-card,.pricing-card,.support-card,.calendar-panel){
  border-radius:var(--bh-radius,16px)!important;
 }
 /* Explicit spacing utility used by page sections. */
