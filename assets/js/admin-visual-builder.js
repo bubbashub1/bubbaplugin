@@ -76,7 +76,7 @@ function setTab(tab){
 function safeHref(value){
  const href=String(value||'').trim();
  if(!href||/[\\u0000-\\u0020\\u007f\\\\]/.test(href)||href.startsWith('//'))return false;
- if(/^https?:\\/\\//i.test(href)){
+ if(/^https?:\/\//i.test(href)){
   try{const parsed=new URL(href);return (parsed.protocol==='http:'||parsed.protocol==='https:')&&Boolean(parsed.hostname)&&!parsed.username&&!parsed.password;}
   catch(error){return false;}
  }
