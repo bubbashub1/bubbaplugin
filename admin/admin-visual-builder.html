@@ -41,15 +41,28 @@
 <label for="editHref" id="editHrefLabel" hidden>Button / link destination</label><input id="editHref" type="text" maxlength="2048" hidden>
 <p class="bhvb-edit-help">Changes are only in this private draft preview until you save the draft. The published page is not affected.</p>
 </div>
-<div class="bhvb-edit-controls bhvb-section-controls" id="sectionControls" hidden>
+<div class="bhvb-edit-controls bhvb-section-controls" id="sectionControls" hidden><strong>Container settings</strong>
 <label for="sectionBackground">Section background</label><input id="sectionBackground" type="color" value="#ffffff">
 <label for="sectionPadding">Section padding <output id="sectionPaddingValue">24px</output></label><input id="sectionPadding" type="range" min="0" max="96" step="4" value="24">
 <label for="sectionGap">Space between elements <output id="sectionGapValue">16px</output></label><input id="sectionGap" type="range" min="0" max="64" step="4" value="16">
-<p class="bhvb-edit-help">Section styling is limited to safe, supported controls. Changes remain in this private draft.</p>
+<label for="containerWidth">Width <output id="containerWidthValue">100%</output></label><input id="containerWidth" type="range" min="25" max="100" step="5" value="100">
+<label for="containerHeight">Minimum height <output id="containerHeightValue">0px</output></label><input id="containerHeight" type="range" min="0" max="800" step="20" value="0">
+<label for="containerRadius">Corner radius <output id="containerRadiusValue">12px</output></label><input id="containerRadius" type="range" min="0" max="48" step="2" value="12">
+<label for="containerBorderWidth">Border thickness <output id="containerBorderWidthValue">0px</output></label><input id="containerBorderWidth" type="range" min="0" max="8" step="1" value="0">
+<label for="containerBorderColor">Border colour</label><input id="containerBorderColor" type="color" value="#dce8df">
+<label for="containerAlign">Horizontal position</label><select id="containerAlign"><option value="left">Left</option><option value="center" selected>Centre</option><option value="right">Right</option></select>
+<label for="containerSpacing">Space after container <output id="containerSpacingValue">18px</output></label><input id="containerSpacing" type="range" min="0" max="96" step="2" value="18">
+<div class="bhvb-container-actions"><button type="button" id="moveContainerUp">Move up</button><button type="button" id="moveContainerDown">Move down</button><button type="button" id="deleteContainer">Delete container</button></div>
+<p class="bhvb-edit-help">Each container has independent layout and style settings. Changes remain in this private draft.</p>
 </div>
 </section>
 <section class="bhvb-layers-panel" id="layersPanel" role="tabpanel" aria-labelledby="layersTab" hidden><p class="bhvb-layers-empty">Choose a page to see its editable elements.</p><div id="builderLayers" class="bhvb-layer-list"></div></section>
 <div class="bhvb-builder-actions">
+<div class="bhvb-add-controls"><strong>Add to page</strong>
+<button type="button" id="addContainer" disabled>Add container</button>
+<button type="button" id="addHeading" disabled>Add heading to selected container</button>
+<button type="button" id="addParagraph" disabled>Add text to selected container</button>
+<button type="button" id="addButtonBlock" disabled>Add button to selected container</button></div>
 <button type="button" id="prepareDraft" disabled>Prepare draft from page</button>
 <button type="button" id="saveDraft" disabled>Save draft</button>
 <button type="button" id="setupDraftStorage" hidden>Set up draft storage</button>
