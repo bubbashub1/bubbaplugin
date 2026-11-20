@@ -16,6 +16,7 @@ function updateSelectionDetails(node){
  if(editable){
   const props=currentBlock.props||{};
   $('editText').value=props.text||'';
+  $('editText').maxLength=currentBlock.type==='heading'?500:(currentBlock.type==='button'?120:10000);
   const isButton=currentBlock.type==='button';
   $('editHref').hidden=!isButton;$('editHrefLabel').hidden=!isButton;
   $('editHref').value=isButton?(props.href||''):'';
