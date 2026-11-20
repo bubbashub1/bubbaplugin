@@ -7,3 +7,16 @@
 .bhsm-section-options strong{font-size:.92rem;color:#244d37;line-height:1.3}
 .bhsm-section-options small{font-size:.78rem;color:#718075;line-height:1.35;font-weight:500}
 @media(max-width:760px){.bhsm-homepage-sections{grid-column:auto}.bhsm-section-options{grid-template-columns:1fr}}
+
+.bhsm-order-heading{margin-top:20px;padding-top:18px;border-top:1px solid #e1e9e2}
+.bhsm-order-heading h3{margin:0 0 4px;color:#244d37;font-size:1rem}
+.bhsm-order-heading p{margin:0}
+.bhsm-order-list{display:grid;gap:7px;margin:12px 0 0;padding:0;list-style:none}
+.bhsm-order-list li{display:flex;align-items:center;gap:10px;min-width:0;padding:9px 10px;border:1px solid #dce7dd;border-radius:10px;background:#fff}
+.bhsm-order-number{display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;border-radius:50%;background:#eaf2eb;color:#315d40;font-size:.8rem;font-weight:800}
+.bhsm-order-name{flex:1;min-width:0;color:#244d37;font-size:.88rem;font-weight:700;line-height:1.35}
+.bhsm-order-actions{display:flex;gap:5px;flex:0 0 auto}
+.bhsm-order-actions button{width:34px;height:34px;border:1px solid #d5e1d7;border-radius:8px;background:#f7faf7;color:#315d40;font-size:1.1rem;font-weight:800;cursor:pointer}
+.bhsm-order-actions button:disabled{opacity:.35;cursor:not-allowed}
+.bhsm-order-actions button:focus-visible,.bhsm-section-options input:focus-visible{outline:3px solid #3c8e96;outline-offset:2px}
+@media(max-width:480px){.bhsm-order-list li{gap:7px;padding:8px}.bhsm-order-name{font-size:.82rem}.bhsm-order-actions button{width:32px;height:32px}}
