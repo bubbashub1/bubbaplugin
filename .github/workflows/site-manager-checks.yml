@@ -8,6 +8,8 @@ on:
       - 'admin/admin-site-manager.html'
       - 'assets/js/admin-site-manager.js'
       - 'assets/js/header.js'
+      - 'assets/js/explore.js'
+      - 'index.html'
       - 'assets/css/admin-site-manager.css'
       - 'assets/css/site-manager-design.css'
       - 'assets/css/styles.css'
@@ -49,3 +51,5 @@ jobs:
         run: node --check assets/js/admin-site-manager.js
       - name: Check shared header JavaScript syntax
         run: node --check assets/js/header.js
+      - name: Check homepage JavaScript syntax
+        run: node --check assets/js/explore.js
