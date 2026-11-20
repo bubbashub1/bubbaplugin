@@ -1,12 +1,13 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const frame=$('pageCanvas');
-let pages=[],page=null,device='desktop',layerNodes=[],draft=null,csrf='',revisionRows=[],currentBlock=null,previewMode='published';
+let pages=[],page=null,device='desktop',layerNodes=[],draft=null,csrf='',revisionRows=[],currentBlock=null,previewMode='published',draftHasValidationError=false;
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function status(message){$('builderStatus').textContent=message;}
 function draftStatus(message){$('draftStatus').textContent=message;}
 function readableName(node){const tag=node.tagName.toLowerCase();const text=(node.getAttribute('alt')||node.innerText||node.textContent||'').trim().replace(/\s+/g,' ').slice(0,54);return (tag==='a'?'Button / link':tag==='img'?'Image':tag==='button'?'Button':tag==='section'?'Section':tag==='article'?'Content block':tag.toUpperCase())+(text?' · '+text:'');}
 function updateSelectionDetails(node){
+ draftHasValidationError=false;$('saveDraft').disabled=!draft||!page;
  $('selectedName').textContent=node.getAttribute('aria-label')||readableName(node);
  $('selectedDescription').textContent=previewMode==='draft'?'Edit the selected supported block below. Changes remain in this private draft.':'This is the published page preview. Prepare a structured draft before editing.';
  $('selectedDetails').hidden=false;$('selectedTag').textContent=node.tagName.toLowerCase();
@@ -74,11 +75,14 @@ function setTab(tab){
 }
 function safeHref(value){
  const href=String(value||'').trim();
- if(!href||/[\u0000-\u0020\u007f\\]/.test(href)||href.startsWith('//'))return false;
- if(/^https?:\/\//i.test(href))return true;
- if(/^mailto:[^\s@]+@[^\s@]+\.[^\s@]+$/i.test(href))return true;
- if(/^tel:\+?[0-9().-]{3,32}$/i.test(href))return true;
- return href.startsWith('/')||(/^[/#?]/.test(href)&&href.length>1);
+ if(!href||/[\\u0000-\\u0020\\u007f\\\\]/.test(href)||href.startsWith('//'))return false;
+ if(/^https?:\\/\\//i.test(href)){
+  try{const parsed=new URL(href);return (parsed.protocol==='http:'||parsed.protocol==='https:')&&Boolean(parsed.hostname)&&!parsed.username&&!parsed.password;}
+  catch(error){return false;}
+ }
+ if(/^mailto:[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/i.test(href))return true;
+ if(/^tel:\\+?[0-9().-]{3,32}$/i.test(href))return true;
+ return href.startsWith('/')||((href.startsWith('#')||href.startsWith('?'))&&href.length>1);
 }
 function renderDraft(){
  if(!draft)return;
@@ -174,7 +178,7 @@ $('setupDraftStorage').addEventListener('click',async()=>{
  catch(error){draftStatus(error.message);}
 });
 $('saveDraft').addEventListener('click',async()=>{
- if(!draft||!page)return;
+ if(!draft||!page||draftHasValidationError)return;
  $('saveDraft').disabled=true;
  try{const data=await api('/api/admin-visual-page-drafts.php',{action:'save_draft',page_id:page.id,document:draft});draft=data.document||draft;draftStatus(data.message||'Draft saved.');await loadDraft();}
  catch(error){draftStatus(error.message);}
@@ -188,12 +192,17 @@ $('restoreRevision').addEventListener('click',async()=>{
 });
 function applyEdit(){
  if(!currentBlock||previewMode!=='draft')return;
- const props=currentBlock.props;props.text=$('editText').value;
- if(currentBlock.type==='button'){
-  const nextHref=$('editHref').value.trim();
-  if(!safeHref(nextHref)){draftStatus('That link format is not supported. Use a valid website, email, phone or same-site link.');return;}
-  props.href=nextHref;
+ const nextText=$('editText').value;
+ const nextHref=currentBlock.type==='button' ? $('editHref').value.trim() : '';
+ if(currentBlock.type==='button'&&!safeHref(nextHref)){
+  draftHasValidationError=true;$('saveDraft').disabled=true;
+  draftStatus('Link not saved: enter a valid http(s) website, email, phone or same-site link. Correct the address before saving.');
+  return;
  }
+ const props=currentBlock.props;
+ props.text=nextText;
+ if(currentBlock.type==='button')props.href=nextHref;
+ draftHasValidationError=false;$('saveDraft').disabled=false;
  const node=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');
  if(node){node.textContent=props.text;if(currentBlock.type==='button')node.setAttribute('href',props.href);}
  if(node){$('selectedText').textContent=props.text;$('selectedName').textContent=readableName(node);}
