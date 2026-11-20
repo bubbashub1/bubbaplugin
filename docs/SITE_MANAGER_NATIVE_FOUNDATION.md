@@ -11,10 +11,10 @@ Bubba Hub is a standalone PHP/JavaScript application, not a WordPress theme/plug
 - Draft and published settings are stored separately.
 - `api/site-design.php`: public read-only endpoint exposing only the published allow-listed settings.
 - The shared `assets/js/header.js` loader loads published settings and sets validated CSS custom properties. It is used by the shared public-page loader in `assets/js/app.js` and by pages that include the header script directly. It fails silently when no published settings exist.
-- `assets/css/site-manager-design.css` defines safe baseline token mappings and is imported by `assets/css/styles.css`.
+- `assets/css/site-manager-design.css` defines safe baseline token mappings and is imported by `assets/css/styles.css`. After a published snapshot loads, primary colour maps to the shared green/brand aliases; accent maps to teal/yellow/blue aliases; surface maps to page/mist aliases; text maps to text/ink aliases. The radius control covers common activity, homepage, family hub, admin, subscription, pricing, support and calendar panels. These are deliberate shared-component mappings, not universal control of every legacy component.
 
 ## Important scope limitation
-The published tokens currently provide a foundation, not complete visual control of every legacy component. Some site styles use hard-coded values and will not respond yet. In particular, section spacing, card radius and other component styling need to be connected deliberately to real components. Do not claim that the entire site can already be restyled from this panel.
+The published tokens currently provide a foundation, not complete visual control of every legacy component. Some site styles use hard-coded values and will not respond yet. The radius control now covers a defined set of shared panel/card classes; specialised page components may still retain their own shapes. Section spacing currently affects only `.section-gap`, not every section's padding. Do not claim that the entire site can already be restyled from this panel.
 
 ## Deployment and QA
 Develop on `staging/site-manager-native-20261120`, based on `staging-site`. Do not merge to main or deploy live. After staging deployment, test admin authentication, setup, save draft, reload/discard, publish snapshot, invalid input rejection, CSRF rejection, phone layout and existing admin navigation. Then verify public pages load the published tokens and that existing login, booking, directory and other interactions remain unchanged.
