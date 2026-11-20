@@ -4,18 +4,28 @@ on:
   pull_request:
     paths:
       - 'api/admin-site-settings.php'
+      - 'api/site-design.php'
       - 'admin/admin-site-manager.html'
       - 'assets/js/admin-site-manager.js'
+      - 'assets/js/site-manager-design.js'
+      - 'assets/js/header.js'
       - 'assets/css/admin-site-manager.css'
+      - 'assets/css/site-manager-design.css'
+      - 'assets/css/styles.css'
       - '.github/workflows/site-manager-checks.yml'
   push:
     branches:
       - main
     paths:
       - 'api/admin-site-settings.php'
+      - 'api/site-design.php'
       - 'admin/admin-site-manager.html'
       - 'assets/js/admin-site-manager.js'
+      - 'assets/js/site-manager-design.js'
+      - 'assets/js/header.js'
       - 'assets/css/admin-site-manager.css'
+      - 'assets/css/site-manager-design.css'
+      - 'assets/css/styles.css'
       - '.github/workflows/site-manager-checks.yml'
 
 permissions:
@@ -33,7 +43,13 @@ jobs:
         with:
           php-version: '8.2'
           tools: none
-      - name: Lint Site Manager API
+      - name: Lint admin settings API
         run: php -l api/admin-site-settings.php
-      - name: Check browser JavaScript syntax
+      - name: Lint public design API
+        run: php -l api/site-design.php
+      - name: Check admin JavaScript syntax
         run: node --check assets/js/admin-site-manager.js
+      - name: Check public design loader syntax
+        run: node --check assets/js/site-manager-design.js
+      - name: Check shared header JavaScript syntax
+        run: node --check assets/js/header.js
