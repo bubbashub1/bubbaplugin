@@ -33,7 +33,7 @@ try{
  $id=(int)($body['page_id']??0);if($id<1)bh_vb_out(422,['ok'=>false,'error'=>'Page ID required.']);
  $doc=$body['document']??null;$validation=bh_validate_page_document_v1($doc);if(!$validation['ok'])bh_vb_out(422,['ok'=>false,'error'=>'Document validation failed.','details'=>$validation['errors']]);
  if(($doc['page']['slug']??'')==='')bh_vb_out(422,['ok'=>false,'error'=>'Invalid document slug.']);
- $pageQ=$db->prepare("SELECT id,title,slug,status FROM bh_pages WHERE id=? FOR UPDATE");$pageQ->execute([$id]);$page=$pageQ->fetch();if(!$page)bh_vb_out(404,['ok'=>false,'error'=>'Page not found.']);
+ $db->beginTransaction();\n $pageQ=$db->prepare("SELECT id,title,slug,status FROM bh_pages WHERE id=? FOR UPDATE");$pageQ->execute([$id]);$page=$pageQ->fetch();if(!$page){$db->rollBack();bh_vb_out(404,['ok'=>false,'error'=>'Page not found.']);}
  if($page['status']==='archived')bh_vb_out(409,['ok'=>false,'error'=>'Archived pages cannot be edited in the visual builder.']);
  // Page identity stays anchored to Page Manager; no slug or status changes here.
  $doc['page']['title']=$page['title'];$doc['page']['slug']=$page['slug'];
