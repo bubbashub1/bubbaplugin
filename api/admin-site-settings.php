@@ -57,6 +57,6 @@ try {
  $settings['homepage_order']=$orderInput;
  $json=json_encode($settings,JSON_UNESCAPED_SLASHES);
  if($action==='save_draft'){$q=$db->prepare("UPDATE bh_site_settings SET draft_json=? WHERE setting_id=1");$q->execute([$json]);bhsm_out(200,['ok'=>true,'csrf'=>$csrf,'message'=>'Draft saved. The public website has not been changed.']);}
- if($action==='publish'){$q=$db->prepare("UPDATE bh_site_settings SET draft_json=?,published_json=? WHERE setting_id=1");$q->execute([$json,$json]);bhsm_out(200,['ok'=>true,'csrf'=>$csrf,'message'=>'Published settings saved. Supported shared design tokens and homepage section visibility will apply; some legacy page components still need design-token integration.']);}
+ if($action==='publish'){$q=$db->prepare("UPDATE bh_site_settings SET draft_json=?,published_json=? WHERE setting_id=1");$q->execute([$json,$json]);bhsm_out(200,['ok'=>true,'csrf'=>$csrf,'message'=>'Published settings saved. Supported shared design tokens and homepage section visibility and order will apply; some legacy page components still need design-token integration.']);}
  bhsm_out(400,['ok'=>false,'error'=>'Unknown action.']);
 } catch(Throwable $e){error_log('Site Manager settings error: '.$e->getMessage());bhsm_out(500,['ok'=>false,'error'=>'Site Manager could not complete the request. Check the server error log.']);}
