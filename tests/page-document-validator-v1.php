@@ -20,6 +20,10 @@ $bad=$valid;$bad['sections'][0]['evil']='x';assert_test(!bh_validate_page_docume
 $bad=$valid;$bad['sections'][0]['children'][0]['props']['text']=str_repeat('x',501);assert_test(!bh_validate_page_document_v1($bad)['ok'],'heading text length');
 assert_test(bh_page_document_safe_href_v1('https://example.com'),'https URL');
 assert_test(bh_page_document_safe_href_v1('mailto:test@example.com'),'mailto URL');
+assert_test(bh_page_document_safe_href_v1('tel:+441234567890'),'tel URL');
+assert_test(!bh_page_document_safe_href_v1('tel:abc'),'malformed tel URL rejected');
+assert_test(!bh_page_document_safe_href_v1('mailto:not-an-email'),'malformed mailto URL rejected');
+assert_test(!bh_page_document_safe_href_v1('/\\\\evil.test'),'backslash URL rejected');
 assert_test(!bh_page_document_safe_href_v1('data:text/html,evil'),'data URL rejected');
 echo "All validator tests passed.
 ";
