@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const frame=$('pageCanvas');
-let pages=[],page=null,device='desktop',layerNodes=[],draft=null,csrf='',revisionRows=[],currentBlock=null,previewMode='published',draftHasValidationError=false;
+let pages=[],page=null,device='desktop',layerNodes=[],draft=null,csrf='',revisionRows=[],currentBlock=null,currentSection=null,previewMode='published',draftHasValidationError=false;
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function status(message){$('builderStatus').textContent=message;}
 function draftStatus(message){$('draftStatus').textContent=message;}
@@ -14,6 +14,9 @@ function updateSelectionDetails(node){
  $('selectedText').textContent=String(node.getAttribute('alt')||node.innerText||node.textContent||'').trim().replace(/\s+/g,' ').slice(0,240)||'No text content';
  const editable=previewMode==='draft'&&currentBlock;
  $('editControls').hidden=!editable;
+ const sectionEditable=previewMode==='draft'&&currentSection;
+ $('sectionControls').hidden=!sectionEditable;
+ if(sectionEditable){const props=currentSection.props||{};$('sectionBackground').value=/^#[0-9a-f]{6}$/i.test(props.background||'')?props.background:'#ffffff';$('sectionPadding').value=Number.isInteger(props.padding)?props.padding:24;$('sectionGap').value=Number.isInteger(props.gap)?props.gap:16;$('sectionPaddingValue').textContent=$('sectionPadding').value+'px';$('sectionGapValue').textContent=$('sectionGap').value+'px';}
  if(editable){
   const props=currentBlock.props||{};
   $('editText').value=props.text||'';
@@ -30,6 +33,7 @@ function selectNode(node){
   doc?.querySelectorAll('.bhvb-selected-preview').forEach(n=>n.classList.remove('bhvb-selected-preview'));
   node.classList.add('bhvb-selected-preview');
   currentBlock=draft&&node.dataset.bhBlockId?findBlock(node.dataset.bhBlockId):null;
+  currentSection=draft&&node.dataset.bhSectionId?findSection(node.dataset.bhSectionId):null;
   updateSelectionDetails(node);
   const index=layerNodes.indexOf(node);
   document.querySelectorAll('.bhvb-layer-button').forEach((button,i)=>button.classList.toggle('active',i===index));
@@ -39,6 +43,7 @@ function findBlock(id){
  for(const section of draft?.sections||[])for(const block of section.children||[])if(block.id===id)return block;
  return null;
 }
+function findSection(id){return (draft?.sections||[]).find(section=>section.id===id)||null;}
 function buildLayers(doc){
  const list=$('builderLayers');list.replaceChildren();layerNodes=[];
  const nodes=[...doc.querySelectorAll('main h1,main h2,main h3,main h4,main p,main a,main button,main img,main section,main article')].slice(0,120);
@@ -96,7 +101,7 @@ function renderDraft(){
    return '';
   }).join('');
   const props=section.props||{};
-  return '<section style="padding:'+Math.min(96,Math.max(0,Number(props.padding)||24))+'px;gap:'+Math.min(64,Math.max(0,Number(props.gap)||16))+'px;background:'+( /^#[0-9a-f]{6}$/i.test(props.background||'')?props.background:'#ffffff')+'">'+children+'</section>';
+  return '<section data-bh-section-id="'+esc(section.id)+'" style="display:flex;flex-direction:column;padding:'+Math.min(96,Math.max(0,Number(props.padding??24)))+'px;gap:'+Math.min(64,Math.max(0,Number(props.gap??16)))+'px;background:'+( /^#[0-9a-f]{6}$/i.test(props.background||'')?props.background:'#ffffff')+'">'+children+'</section>';
  }).join('');
  const title=esc(draft.page?.title||page?.title||'Draft preview');
  const hasPageHeading=(draft.sections||[]).some(section=>(section.children||[]).some(block=>block.type==='heading'&&Number(block.props?.level)===1));
@@ -157,7 +162,7 @@ async function loadDraft(){
  }catch(error){draftStatus(error.message);$('saveDraft').disabled=true;}
 }
 async function loadPage(slug){
- page=pages.find(item=>item.slug===slug)||null;draft=null;previewMode='published';currentBlock=null;layerNodes=[];
+ page=pages.find(item=>item.slug===slug)||null;draft=null;previewMode='published';currentBlock=null;currentSection=null;layerNodes=[];
  $('selectedName').textContent='Nothing selected';$('selectedDescription').textContent='Choose a page to begin.';$('selectedDetails').hidden=true;$('editControls').hidden=true;
  $('builderLayers').replaceChildren();$('saveDraft').disabled=true;$('prepareDraft').disabled=!page;$('setupDraftStorage').hidden=true;$('revisionControls').hidden=true;
  if(!page){frame.hidden=true;$('canvasEmpty').hidden=false;return;}
@@ -209,6 +214,8 @@ function applyEdit(){
  draftStatus('Unsaved draft changes. Save draft when ready.');
 }
 $('editText').addEventListener('input',applyEdit);$('editHref').addEventListener('change',applyEdit);
+function applySectionEdit(){if(!currentSection||previewMode!=='draft')return;const props=currentSection.props||(currentSection.props={});props.background=$('sectionBackground').value;props.padding=Number($('sectionPadding').value);props.gap=Number($('sectionGap').value);$('sectionPaddingValue').textContent=props.padding+'px';$('sectionGapValue').textContent=props.gap+'px';const node=frame.contentDocument?.querySelector('[data-bh-section-id="'+CSS.escape(currentSection.id)+'"]');if(node){node.style.background=props.background;node.style.padding=props.padding+'px';node.style.gap=props.gap+'px';}draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Unsaved section changes. Save draft when ready.');}
+$('sectionBackground').addEventListener('input',applySectionEdit);$('sectionPadding').addEventListener('input',applySectionEdit);$('sectionGap').addEventListener('input',applySectionEdit);
 async function init(){
  try{
   const auth=await fetch('/admin-auth.php?action=check',{credentials:'same-origin',cache:'no-store'});
