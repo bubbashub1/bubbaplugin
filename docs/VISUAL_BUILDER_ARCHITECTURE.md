@@ -171,3 +171,8 @@ This is a controlled first editing slice, not yet a full Wix-style page editor. 
 ## Stage 3 — constrained section styling controls
 
 The draft inspector now supports selecting a converted section and changing its background colour, inner padding (0–96px) and spacing between child blocks (0–64px). The controls write only allow-listed section properties already enforced by the v1 server validator. The draft iframe updates in place; saving still uses the isolated draft API and does not publish or change legacy page content. This is a first constrained layout control, not arbitrary CSS editing.
+
+
+## Stage 3 — independent page containers
+
+The Visual Builder treats each top-level section as an editable container. Administrators can add containers, add headings/text/buttons to the selected container, move containers up/down, and delete a container (a page must retain at least one). Each container has constrained settings for background, padding, inner gap, width percentage, minimum height, corner radius, border thickness/colour, horizontal alignment and spacing after. Values are stored in the structured draft and independently validated by the server. This remains draft-only; it does not change the public renderer or Page Manager content.
