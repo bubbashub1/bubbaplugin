@@ -136,3 +136,18 @@ Integrate with existing upload/media handling only after permissions, storage pa
 ## First acceptance milestone
 
 The first prototype now provides the editor shell, published managed-page selector, responsive-width preview, clickable element selection, a layers list, and a read-only properties inspector. It has not yet passed staging browser QA. The next milestone should add a validated structured page-document model and safe text/link editing against drafts, while preserving existing legacy HTML pages and revision history.
+
+## Stage 2 backend progress — draft persistence boundary
+
+The existing `api/admin-visual-page-drafts.php` endpoint now provides the first isolated persistence path for structured visual-builder drafts:
+
+- It uses the existing administrator session guard and a session CSRF token.
+- Its one-time setup creates only the dedicated `bh_visual_page_documents` and `bh_visual_page_document_revisions` tables, linked to existing Page Manager records. It does not alter `bh_pages`, `bh_page_revisions`, or legacy `content_html`.
+- Draft saves validate the v1 document server-side, lock the Page Manager record, reject archived pages, and take page title/slug identity from the database rather than trusting the canvas payload.
+- Each replacement of an existing builder draft snapshots the prior JSON document in the builder revision table in the same transaction.
+- The API returns the current draft and the latest 30 revision identifiers/timestamps.
+- A revision can be restored only to the same page; the current draft is snapshotted before the restore.
+- There is deliberately no publish action and no public-renderer integration in this stage. Saving or restoring a builder draft cannot change what visitors see.
+- Legacy Page Manager pages are not silently converted. A later editor step must provide an explicit conversion/initialisation preview before any existing page is treated as builder-managed.
+
+The API is backend groundwork only. The current visual-builder screen remains read-only until the editor UI, safe draft preview renderer, and staging tests are connected. A successful PHP syntax workflow alone is not staging sign-off.
