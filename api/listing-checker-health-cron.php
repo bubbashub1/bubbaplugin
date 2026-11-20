@@ -96,8 +96,8 @@ try{
  };
  // A successful check is re-queued for the configured interval. Failures use bounded exponential backoff.
  $markDone=$db->prepare("UPDATE bh_listing_check_queue SET status='pending',attempts=0,last_checked_at=NOW(),last_error=NULL,next_check_at=DATE_ADD(NOW(), INTERVAL ".$interval." HOUR) WHERE id=?");
- $markFailed=$db->prepare("UPDATE bh_listing_check_queue SET status='failed',attempts=attempts+1,last_checked_at=NOW(),last_error=?,next_check_at=DATE_ADD(NOW(), INTERVAL LEAST(24,POW(2,LEAST(attempts,4))) HOUR) WHERE id=?");
- $markSkipped=$db->prepare("UPDATE bh_listing_check_queue SET status='skipped',attempts=attempts+1,last_checked_at=NOW(),last_error=?,next_check_at=NULL WHERE id=?");
+ $markFailed=$db->prepare("UPDATE bh_listing_check_queue SET status='failed',attempts=attempts+1,last_error=?,next_check_at=DATE_ADD(NOW(), INTERVAL LEAST(24,POW(2,LEAST(attempts,4))) HOUR) WHERE id=?");
+ $markSkipped=$db->prepare("UPDATE bh_listing_check_queue SET status='skipped',attempts=attempts+1,last_error=?,next_check_at=NULL WHERE id=?");
  $staleAfterDays=max(30,min(1095,(int)$get('stale_after_days','180')));
  $done=0;$errors=0;$skipped=0;
  foreach($queue as $item){
