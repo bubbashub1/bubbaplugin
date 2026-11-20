@@ -1,0 +1,11 @@
+/* Site Manager token integration. Scoped variables preserve existing layout and behaviour. */
+:root{
+ --bh-heading-font:'Quicksand',Calibri,Arial,sans-serif;
+ --bh-body-font:'Quicksand',Calibri,Arial,sans-serif;
+ --bh-button-radius:999px;
+ --bh-section-gap:24px;
+}
+body{font-family:var(--bh-body-font, 'Quicksand',Calibri,Arial,sans-serif)}
+:where(h1,h2,h3,h4,.page-title,.section-title){font-family:var(--bh-heading-font,'Quicksand',Calibri,Arial,sans-serif)}
+:where(.button,.btn,button.button-primary,button.btn-primary){border-radius:var(--bh-button-radius,999px)}
+/* Components opt in through shared design tokens; no broad layout or sizing overrides. */
