@@ -6,12 +6,16 @@ on:
       - 'api/admin-site-settings.php'
       - 'api/site-design.php'
       - 'admin/admin-site-manager.html'
+      - 'admin/admin-visual-builder.html'
       - 'assets/js/admin-site-manager.js'
+      - 'assets/js/admin-visual-builder.js'
       - 'assets/js/header.js'
       - 'assets/js/explore.js'
       - 'index.html'
       - 'docs/SITE_MANAGER_NATIVE_FOUNDATION.md'
+      - 'docs/VISUAL_BUILDER_ARCHITECTURE.md'
       - 'assets/css/admin-site-manager.css'
+      - 'assets/css/admin-visual-builder.css'
       - 'assets/css/site-manager-design.css'
       - 'assets/css/styles.css'
       - '.github/workflows/site-manager-checks.yml'
@@ -53,6 +57,8 @@ jobs:
         run: php -l api/site-design.php
       - name: Check admin JavaScript syntax
         run: node --check assets/js/admin-site-manager.js
+      - name: Check visual builder JavaScript syntax
+        run: node --check assets/js/admin-visual-builder.js
       - name: Check shared header JavaScript syntax
         run: node --check assets/js/header.js
       - name: Check homepage JavaScript syntax
