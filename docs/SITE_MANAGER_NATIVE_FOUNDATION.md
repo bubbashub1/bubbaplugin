@@ -34,3 +34,32 @@ Develop on `staging/site-manager-native-20261120`, based on `staging-site`. Do n
 3. Connect section spacing and card shape to the actual shared components; add component-specific controls and revision/restore.
 4. Add navigation, banner/media and responsive settings.
 5. Add click-to-edit visual editing only after stable component schemas exist.
+
+## Staging QA sign-off checklist
+
+Record each item as pass/fail on the deployed staging branch; do not infer browser behavior from syntax checks.
+
+### Admin and persistence
+- [ ] Non-admin session is rejected; authenticated admin can open Site Manager.
+- [ ] First-time setup creates only `bh_site_settings` and can be safely repeated.
+- [ ] CSRF-less and invalid-value write requests are rejected.
+- [ ] Save draft, reload, and confirm draft values persist without affecting public output.
+- [ ] Discard restores the saved draft; publish updates the public snapshot.
+- [ ] Older snapshots receive defaults for missing homepage settings and order.
+
+### Homepage behavior
+- [ ] Each of the six optional sections can be hidden and restored independently.
+- [ ] All six sections can be reordered, including while one is hidden.
+- [ ] Hero search and footer stay fixed.
+- [ ] Refresh retains the published visibility and order.
+- [ ] Missing table, unpublished settings, malformed order, and endpoint failure leave the default homepage usable.
+- [ ] Ticker, category cards, latest activity cards, region links and search still initialize.
+
+### Responsive and regression checks
+- [ ] Admin controls and preview are usable at desktop and narrow phone widths.
+- [ ] Move controls work with keyboard focus and announce the new position.
+- [ ] Public homepage layout does not overflow horizontally.
+- [ ] Existing admin navigation, family/leader sign-in, booking and directory flows still work.
+- [ ] No unexpected colour changes occur when only accent or body text is changed.
+
+A successful PHP/JavaScript workflow is a syntax gate only. It is not a substitute for this staging checklist.
