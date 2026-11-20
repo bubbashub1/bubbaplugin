@@ -51,6 +51,13 @@ jobs:
           grep -q "CONTENT_LENGTH" api/admin-listing-review.php
           grep -q "PHP_SAPI !== 'cli'" api/listing-checker-health-cron.php
           grep -q "PHP_SAPI !== 'cli'" api/listing-checker-discovery-cron.php
+          grep -q "PHP_SAPI !== 'cli'" api/listing-checker-research-cron.php
+          grep -q "preg_replace" api/listing-checker-research-cron.php
+          grep -q "Bubba" api/listing-checker-research-cron.php
+          grep -q "suggested_fields" api/listing-checker-research-cron.php
+          ! grep -q "UPDATE bh_activities" api/listing-checker-research-cron.php
+          grep -q "auto_research_suggestions" api/listing-checker-research-cron.php
+          grep -q "No listing data was changed" api/listing-checker-research-cron.php
           grep -q "PHP_SAPI !== 'cli'" api/listing-checker-preflight.php
           grep -q "GET_LOCK" api/listing-checker-health-cron.php
           grep -q "GET_LOCK" api/listing-checker-discovery-cron.php

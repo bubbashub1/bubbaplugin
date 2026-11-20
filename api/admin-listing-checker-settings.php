@@ -56,11 +56,12 @@ try {
   $action=(string)($input['action']??'');
   if($action==='control') {
     $control=(string)($input['control']??'');
-    $allowed=['health_pause','health_resume','health_run_now','discovery_pause','discovery_resume','discovery_run_now'];
+    $allowed=['health_pause','health_resume','health_run_now','discovery_pause','discovery_resume','discovery_run_now','research_pause','research_resume','research_run_now'];
     if(!in_array($control,$allowed,true)) bh_lc_reply(422,['ok'=>false,'error'=>'Unknown worker control']);
     $map=[
       'health_pause'=>['health_paused','1'],'health_resume'=>['health_paused','0'],'health_run_now'=>['health_run_now','1'],
-      'discovery_pause'=>['discovery_paused','1'],'discovery_resume'=>['discovery_paused','0'],'discovery_run_now'=>['discovery_run_now','1']
+      'discovery_pause'=>['discovery_paused','1'],'discovery_resume'=>['discovery_paused','0'],'discovery_run_now'=>['discovery_run_now','1'],
+      'research_pause'=>['research_paused','1'],'research_resume'=>['research_paused','0'],'research_run_now'=>['research_run_now','1']
     ];
     [$key,$value]=$map[$control];
     $stmt=$db->prepare('INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES(?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)');
@@ -68,14 +69,14 @@ try {
     bh_lc_reply(200,['ok'=>true,'message'=>str_ends_with($control,'run_now')?'Manual run queued. It will run only when the worker is enabled, resumed and inside its allowed day/time window.':'Worker control saved.']);
   }
   if($action==='save_settings') {
-    $allowed=['health_enabled','discovery_enabled','interval_hours','preferred_start_time','window_start','window_end','active_days','timezone','batch_size','max_runtime_seconds','request_limit','stale_after_days'];
+    $allowed=['health_enabled','discovery_enabled','research_enabled','interval_hours','preferred_start_time','window_start','window_end','active_days','timezone','batch_size','max_runtime_seconds','request_limit','stale_after_days'];
     $values=$input['settings']??[];
     if(!is_array($values)) bh_lc_reply(422,['ok'=>false,'error'=>'Settings are invalid']);
     $validated=[];
     foreach($allowed as $key) {
       if(!array_key_exists($key,$values)) continue;
       $v=$values[$key];
-      if(in_array($key,['health_enabled','discovery_enabled'],true)) $v=$v?'1':'0';
+      if(in_array($key,['health_enabled','discovery_enabled','research_enabled'],true)) $v=$v?'1':'0';
       elseif($key==='active_days') {
         if(!is_array($v)) bh_lc_reply(422,['ok'=>false,'error'=>'Select at least one active day']);
         $days=array_values(array_unique(array_filter(array_map('intval',$v),static fn($d)=>$d>=1&&$d<=7)));
