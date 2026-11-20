@@ -12,8 +12,12 @@ try {
  $json=$q->fetchColumn();
  $settings=is_string($json)?json_decode($json,true):null;
  if(!is_array($settings)){echo json_encode(['ok'=>true,'published'=>null]);exit;}
- $allowed=['primary','accent','surface','text','heading_font','body_font','card_radius','button_radius','section_gap'];
+ $allowed=['primary','accent','surface','text','heading_font','body_font','card_radius','button_radius','section_gap','homepage_sections'];
  $safe=[];
  foreach($allowed as $key){if(array_key_exists($key,$settings))$safe[$key]=$settings[$key];}
+ $sectionDefaults=['ticker'=>true,'categories'=>true,'quick_links'=>true,'latest'=>true,'regions'=>true,'cta'=>true];
+ $sections=is_array($settings['homepage_sections']??null)?$settings['homepage_sections']:[];
+ $safe['homepage_sections']=[];
+ foreach($sectionDefaults as $key=>$default)$safe['homepage_sections'][$key]=array_key_exists($key,$sections)?($sections[$key]===false?false:true):$default;
  echo json_encode(['ok'=>true,'published'=>$safe],JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 } catch(Throwable $e){error_log('Public Site Manager settings read failed: '.$e->getMessage());http_response_code(200);echo json_encode(['ok'=>true,'published'=>null]);}
