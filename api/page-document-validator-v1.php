@@ -74,7 +74,7 @@ function bh_validate_page_document_v1(mixed $document): array {
    if(!is_array($p)){$errors[]='Block props must be an object.';continue;}
    if($type==='image'){
     if(array_diff(array_keys($p),['src','alt','width','fit','radius','margin_bottom','font_size','align','color','background']))$errors[]='Unknown image property.';
-    $src=$p['src']??null;$safe=is_string($src)&&strlen($src)<=2048&&!preg_match('/[\\x00-\\x20\\x7f\\\\]/',$src)&&!str_starts_with($src,'//')&&(str_starts_with($src,'/')||((parse_url($src,PHP_URL_SCHEME)==='https')&&filter_var($src,FILTER_VALIDATE_URL)!==false));
+    $src=$p['src']??null;$safe=false;if(is_string($src)&&strlen($src)<=2048&&!preg_match('/[\\x00-\\x20\\x7f\\\\]/',$src)&&!str_starts_with($src,'//')){$scheme=parse_url($src,PHP_URL_SCHEME);$safe=str_starts_with($src,'/')||($scheme==='https'&&filter_var($src,FILTER_VALIDATE_URL)!==false);}
     if(!$safe)$errors[]='Image source must be a safe https URL or site-relative path.';
     if(!is_string($p['alt']??null)||mb_strlen($p['alt'])>300)$errors[]='Image alternative text invalid.';
     if(isset($p['width'])&&(!is_int($p['width'])||$p['width']<10||$p['width']>100))$errors[]='Image width invalid.';
