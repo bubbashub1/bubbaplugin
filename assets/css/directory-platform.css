@@ -19,3 +19,17 @@
 .bh-directory-home-note{margin-top:22px;color:#416651;font-size:.9rem}
 @media(max-width:900px){.bh-directory-sections{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:0 12px}.bh-directory-section-link{min-height:92px;padding:13px}.bh-directory-home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.bh-directory-home{padding:18px 12px 42px}.bh-directory-home-intro{padding:24px 20px}.bh-directory-home-grid{grid-template-columns:1fr}.bh-directory-home-card{min-height:150px}}
+
+
+/* Compact, single-page sector filters for the unified Directory. */
+.bh-directory .bh-directory-sectors{display:flex;align-items:stretch;gap:8px;max-width:1400px;margin:18px auto 16px;padding:0 18px;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:thin}
+.bh-directory .bh-directory-sector{display:flex;flex:0 0 auto;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:8px 15px;border:1px solid #d8e6db;border-radius:999px;background:#fff;color:#416651;font:700 .9rem 'Quicksand',Calibri,Arial,sans-serif;cursor:pointer;white-space:nowrap;transition:background .16s ease,border-color .16s ease,color .16s ease}
+.bh-directory .bh-directory-sector:hover,.bh-directory .bh-directory-sector:focus-visible{border-color:#3c8e96;outline:2px solid #3c8e9630;outline-offset:2px}
+.bh-directory .bh-directory-sector[aria-pressed=true]{background:#144400;border-color:#144400;color:#fff}
+.bh-directory .bh-sector-icon{font-size:1.08rem;line-height:1}
+.bh-directory .bh-directory-sector-empty{max-width:1000px;margin:26px auto 50px;padding:36px 24px;text-align:center;border:1px solid #d8e6db;border-radius:22px;background:#fff}
+.bh-directory .bh-sector-empty-icon{display:block;font-size:2.4rem;margin-bottom:10px}
+.bh-directory .bh-directory-sector-empty h2{margin:0 0 10px;color:#144400}
+.bh-directory .bh-directory-sector-empty p{max-width:650px;margin:0 auto 12px;color:#416651;line-height:1.6}
+.bh-directory .bh-directory-sector-note{font-size:.85rem;font-weight:700;color:#0f766e}
+@media(max-width:650px){.bh-directory .bh-directory-sectors{gap:7px;padding:0 12px;margin:14px auto}.bh-directory .bh-directory-sector{min-height:42px;padding:7px 12px;font-size:.82rem}.bh-directory .bh-directory-sector-empty{margin:18px 12px 36px;padding:28px 18px}}
