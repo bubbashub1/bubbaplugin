@@ -1,7 +1,7 @@
 # Bubba Hub Events — Unified Directory Integration
 
 ## Purpose
-Events are one specialist section within the wider Bubba Hub Directory platform. The four planned primary sections are Listings, Events, Businesses and Nurseries. Events have their own records, dates, detail pages, moderation and search filters, while sharing the Directory's navigation, location infrastructure and visual patterns.
+Events are one specialist section within the wider Bubba Hub Directory platform. The six planned primary sections are Listings, Events, Businesses, Childcare & Schools, Places & Days Out, and School Clubs. Events have their own records, dates, detail pages, moderation and search filters, while sharing the Directory's navigation, location infrastructure and visual patterns.
 
 The central architecture is documented in docs/directory-platform-architecture.md.
 
@@ -33,7 +33,7 @@ The central architecture is documented in docs/directory-platform-architecture.m
 
 ## Directory experience
 - Events is a dedicated section within the central Bubba Hub Directory, not a separate disconnected directory platform.
-- The main Directory will eventually offer Listings, Events, Businesses and Nurseries, with a global search and section-specific search.
+- The main Directory offers six sections: Listings, Events, Businesses, Childcare & Schools, Places & Days Out, and School Clubs, with a global search and section-specific search.
 - The Events section supports search/filter by date range, town, region, category, age suitability and free/paid.
 - Provide list and calendar views; sort upcoming occurrences chronologically.
 - Show only approved/published events and scheduled occurrences in public results.
@@ -64,7 +64,7 @@ The central architecture is documented in docs/directory-platform-architecture.m
 - Store dates consistently and display in UK local time; test daylight-saving transitions.
 - No production migration without explicit approval. Apply and test on staging first.
 - Do not modify existing activity rows or change the current Activities API response.
-- Do not add Business or Nursery schemas as part of the Events implementation; those require separate schema audits and designs.
+- Do not add Business, Childcare & Schools, Places & Days Out or School Clubs schemas as part of the Events implementation; each requires a separate schema/content audit and design.
 
 ## Staging acceptance criteria
 - Existing Listings search, listing pages, planner and weekly schedules behave exactly as before.
