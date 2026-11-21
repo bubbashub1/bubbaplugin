@@ -8,7 +8,7 @@ try{
  $exists=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_directory_events'");
  if(!(int)$exists->fetchColumn()){http_response_code(200);echo json_encode(['ok'=>true,'schema_ready'=>false,'events'=>[]]);exit;}
  $town=trim((string)($_GET['town']??''));$category=trim((string)($_GET['category']??''));$limit=max(1,min(100,(int)($_GET['limit']??60)));
- $where=["e.status='published'","x.occurrence_status='scheduled'","x.starts_at>=NOW()"];$params=[];
+ $where=["e.status='published'","x.occurrence_status='scheduled'","x.starts_at>=?"];$params=[(new DateTimeImmutable('now',new DateTimeZone('Europe/London')))->format('Y-m-d H:i:s')];
  if($town!==''){$where[]="e.town LIKE ?";$params[]='%'.$town.'%';}
  if($category!==''){$where[]="e.category=?";$params[]=$category;}
  $sql="SELECT e.id,e.title,e.slug,e.summary,e.description,e.category,e.age_min_months,e.age_max_months,e.booking_url,e.image_path,e.venue_name,e.address,e.town,e.region,e.postcode,x.starts_at,x.ends_at,x.timezone FROM bh_directory_events e INNER JOIN bh_directory_event_occurrences x ON x.event_id=e.id WHERE ".implode(' AND ',$where)." ORDER BY x.starts_at ASC,e.id DESC LIMIT ".$limit;
