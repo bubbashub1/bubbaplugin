@@ -14,6 +14,5 @@ CREATE TABLE IF NOT EXISTS bh_listing_monitor_drafts (
   reviewed_at DATETIME NULL,
   reviewed_by VARCHAR(190) NULL,
   KEY idx_monitor_draft_activity (activity_id,status),
-  KEY idx_monitor_draft_finding (finding_id),
-  CONSTRAINT fk_monitor_draft_activity FOREIGN KEY (activity_id) REFERENCES bh_activities(id) ON DELETE RESTRICT
+  KEY idx_monitor_draft_finding (finding_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
