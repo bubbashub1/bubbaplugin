@@ -98,7 +98,8 @@ Website fetching must also be hardened: allow only public HTTP(S) destinations, 
 
 - Only an authenticated administrator can access the monitor and review actions.
 - Adding suggested changes creates a draft only; the public listing remains unchanged.
-- Final approval updates only accepted fields and records an audit trail.
+- Final approval updates only the saved proposed fields, only after explicit confirmation, and records the administrator, before/after values, source and approval time.
+- Approval is blocked if any affected live field has changed since the draft snapshot was created.
 - A dead website link raises a possible-closure alert but never closes a listing.
 - Explicit permanent-closure wording is shown as strong evidence but still requires administrator confirmation.
 - Temporary closure language is not misclassified as permanent closure.
