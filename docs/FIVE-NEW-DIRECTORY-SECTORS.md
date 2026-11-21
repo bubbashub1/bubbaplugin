@@ -32,13 +32,20 @@ The Leader Hub navigation links to all four new submission tools. They use the e
 
 **Do not run the SQL until a staging backup is available and the schema has been reviewed against the actual staging database.** No database installation has been performed.
 
-## Still to build before the database batch is considered complete
-1. Leader "My Directory entries" management list, edit/resubmit and archive workflows.
-2. End-to-end tests after the consolidated schema is installed: draft, pending, admin approval, public search, owner isolation, validation and mobile layout.
-3. Confirm actual organiser/user linkage on staging. The new API prefers `bh_organisers.user_id`; unique email matching is legacy fallback only.
+## Leader Hub management and wizard work
+- `leader/directory.html` provides one My Directory entries workspace for Events, Businesses, Childcare & Schools, Places & Days Out and School Clubs. Existing Listings remain in My Classes.
+- `api/leader-directory-manage.php` returns only records owned by the authenticated Leader organisation and supports safe archiving of unpublished records. Published records cannot be archived from the Leader interface.
+- `leader/directory-new.html` is now a four-step wizard (Basics, Location, Details, Review) for all four specialist sectors. It saves device-local progress, supports draft creation, and can reopen and resubmit drafts or rejected/returned entries.
+- `api/leader-directory-records.php` supports owner-checked retrieval and updates of drafts/rejected entries. Published and pending entries cannot be overwritten by this route. Submissions receive a `submitted_at` timestamp.
+- Leader Hub navigation and overview now link to all six Directory sectors and the shared management page. The existing Events wizard remains a separate multi-step flow and can link to the Leader's own Listings.
+
+## Still required before database installation is considered complete
+1. Review the consolidated SQL against the actual staging database and take a staging backup before installation.
+2. End-to-end tests after the SQL is installed: create draft, edit draft, submit, admin approval/return/rejection, public search, owner isolation, archive rules, Events-to-Listing ownership, validation and mobile layout.
+3. Confirm actual organiser/user linkage on staging. The APIs prefer `bh_organisers.user_id`; unique email matching is a controlled legacy fallback only.
 
 ## Moderation foundation added
-- `admin/admin-directory-review.html` provides a protected review queue for the four specialist sections.
+- `admin/admin-directory-review.html` provides a protected review queue for the four specialist sections. Only submitted pending records appear; saved drafts stay in the Leader's workspace.
 - `api/admin-directory-review.php` supports approve, reject and return-for-edits decisions, uses admin authentication and CSRF, and writes to the shared review history table.
 - The Admin Approval Centre now links to the new Directory section review queue.
 
