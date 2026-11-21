@@ -28,3 +28,11 @@
 .bhvb-inspector .bhvb-add-controls{display:none}
 @media(max-width:1100px){.bhvb-workspace{grid-template-columns:190px minmax(0,1fr)}.bhvb-inspector{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}.bhvb-inspector-tabs{grid-column:1/-1}}
 @media(max-width:700px){.bhvb-workspace{grid-template-columns:minmax(0,1fr)}.bhvb-elements-panel{display:grid;grid-template-columns:1fr 1fr;gap:10px}.bhvb-elements-heading,.bhvb-elements-tip{grid-column:1/-1}.bhvb-element-group{margin:0}.bhvb-inspector{display:block}}
+
+/* Hierarchical page layers */
+.bhvb-layer-group{display:grid;gap:4px;padding:7px 0;border-bottom:1px solid #edf1ed}
+.bhvb-layer-group-title{padding:3px 8px;color:#829087;font-size:.64rem;font-weight:800;letter-spacing:.09em}
+.bhvb-layer-button{position:relative;padding-left:calc(10px + var(--layer-depth,0)*18px)}
+.bhvb-layer-button[style*="--layer-depth: 1"]{margin-left:12px;width:calc(100% - 12px)}
+.bhvb-layer-button[style*="--layer-depth: 1"]::before{content:"↳";position:absolute;left:6px;color:#91a49a}
+.bhvb-layer-button[style*="--layer-depth: 0"]{font-weight:750}
