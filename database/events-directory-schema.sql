@@ -154,3 +154,18 @@ CREATE TABLE IF NOT EXISTS bh_directory_record_reviews (
  note VARCHAR(2000) NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
  KEY idx_directory_record_review (section_key,record_id,created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- Published-entry changes are staged separately and never overwrite live data until approved.
+CREATE TABLE IF NOT EXISTS bh_directory_record_revisions (
+ id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ section_key ENUM('business','childcare','place','school_club') NOT NULL,
+ record_id BIGINT UNSIGNED NOT NULL, organiser_id BIGINT UNSIGNED NOT NULL,
+ submitted_by_user_id BIGINT UNSIGNED NOT NULL, payload MEDIUMTEXT NOT NULL,
+ status ENUM('pending','approved','rejected','returned_for_edits') NOT NULL DEFAULT 'pending',
+ submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, reviewed_at DATETIME NULL,
+ reviewed_by_user_id BIGINT UNSIGNED NULL, review_note VARCHAR(2000) NULL,
+ KEY idx_directory_revision_queue (status,submitted_at),
+ KEY idx_directory_revision_record (section_key,record_id,status),
+ KEY idx_directory_revision_owner (organiser_id,record_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
