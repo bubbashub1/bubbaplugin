@@ -35,7 +35,7 @@ if ($method === 'GET') {
                 'name' => $filename,
                 'src' => '/images/uploads/visual-builder/' . rawurlencode($filename),
                 'title' => (string)($details['title'] ?? ''),
-                'folder' => (string)($details['folder'] ?? ''),
+                'folder' => (string)($details['folder'] ?? 'Unsorted'),
                 'width' => (int)$info[0],
                 'height' => (int)$info[1],
                 'bytes' => (int)(filesize($path) ?: 0),
@@ -44,13 +44,13 @@ if ($method === 'GET') {
         }
     }
     usort($items, static fn(array $a, array $b): int => $b['modified'] <=> $a['modified']);
+    $folders = array_values(array_unique(array_map(static fn(array $item): string => $item['folder'], $items)));
+    sort($folders, SORT_NATURAL | SORT_FLAG_CASE);
     $query = strtolower(trim((string)($_GET['q'] ?? '')));
     $folder = trim((string)($_GET['folder'] ?? ''));
     if ($query !== '') $items = array_values(array_filter($items, static fn(array $item): bool =>
         str_contains(strtolower($item['name'] . ' ' . $item['title']), $query)));
     if ($folder !== '') $items = array_values(array_filter($items, static fn(array $item): bool => $item['folder'] === $folder));
-    $folders = array_values(array_unique(array_filter(array_map(static fn(array $item): string => $item['folder'], $items))));
-    sort($folders, SORT_NATURAL | SORT_FLAG_CASE);
     $total = count($items);
     bh_vb_media_out(200, ['ok' => true, 'items' => array_slice($items, 0, 120), 'total' => $total, 'folders' => $folders]);
 }
