@@ -7,7 +7,7 @@ This is the first structured-content contract for the native Wix-style builder.
 - Version: `schema_version: 1`
 - Initial blocks: section/container, heading, paragraph and button
 - Layout controls are deliberately constrained to approved values; no arbitrary HTML, JavaScript, event handlers, CSS declarations or unknown properties are accepted.
-- Container nesting is intentionally flat in this stage: each page-level container holds heading, paragraph or button blocks. Containers can be added, reordered and deleted in the private draft. Each has independent background, padding, inner gap, width, minimum height, corner radius, border colour/thickness, horizontal alignment and spacing after.
+- Container nesting is intentionally flat in this stage: each page-level container holds heading, paragraph or button blocks. Containers can be added, reordered and deleted in the private draft. Each has independent background, padding, inner gap, width, minimum height, corner radius, border colour/thickness, horizontal alignment and spacing after. An optional, constrained mobile override object (width, padding, gap, minimum height, radius, border thickness, alignment and spacing after) applies at 600px or narrower and inherits desktop values when absent.
 - Page documents are data, not rendered HTML. The public renderer must escape text and validate link destinations before output.
 
 ## Persistence boundary
@@ -46,4 +46,4 @@ The server must independently enforce the schema and also check:
 
 ## Scope deliberately deferred
 
-Images/media uploads, columns, drag-and-drop, per-device overrides, templates, navigation editing and Bubba Hub data-backed blocks are not part of schema v1. They require their own reviewed component definitions and validation rules.
+Images/media uploads, columns, freeform drag-and-drop, tablet overrides, templates, navigation editing and Bubba Hub data-backed blocks remain out of scope. The optional mobile-only container overrides are a constrained v1 extension, not a general responsive CSS system.
