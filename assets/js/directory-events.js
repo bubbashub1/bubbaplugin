@@ -16,7 +16,7 @@
   async function loadEvents(){
     const list=$('directoryEventsList');if(!list)return;
     loaded=true;list.replaceChildren();
-    list.append(card('Bubba & Me — Baby & Pregnancy Expo','Saturday 9 January 2027 · 10:30am–2:30pm · Acorn Centre, Torquay · Free entry','/expo.html','9 JAN 2027'));
+    list.append(card('Bubba & Me — Baby & Pregnancy Expo','CANCELLED · Planned for Saturday 9 January 2027 · Acorn Centre, Torquay. We’re sorry for any disappointment.','/expo.html','CANCELLED'));
     try{
       for(let page=1;page<=20;page++){
         const res=await fetch('/api/activities.php?post_type=events&per_page=100&page='+page,{cache:'no-store'});
