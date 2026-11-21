@@ -302,9 +302,23 @@ $('mobileOverrideEnabled').addEventListener('change',toggleMobileOverrides);
 function addContainer(){if(!draft)return;draft.sections.push({id:'container-'+Date.now(),type:'section',props:{background:'#ffffff',padding:24,gap:16,width:100,min_height:120,radius:12,border_width:1,border_color:'#dce8df',align:'center',margin_bottom:18},children:[]});renderDraft();draftStatus('New container added. Select it in the canvas or Layers to style it.');}
 function addBlock(type){if(!currentSection||!draft)return;const id='block-'+Date.now();let block;if(type==='heading')block={id,type,props:{text:'New heading',level:2}};else if(type==='paragraph')block={id,type,props:{text:'Add your text here.'}};else block={id,type:'button',props:{text:'Learn more',href:'/index.html'}};currentSection.children.push(block);renderDraft();draftStatus('Element added to selected container. Select it in the preview to edit its content.');}
 function moveContainer(direction){if(!currentSection||!draft)return;const index=draft.sections.indexOf(currentSection),next=index+direction;if(next<0||next>=draft.sections.length)return;[draft.sections[index],draft.sections[next]]=[draft.sections[next],draft.sections[index]];renderDraft();draftStatus('Container moved. Save draft to keep this order.');}
+function duplicateContainer(){
+ if(!currentSection||!draft)return;
+ if(draft.sections.length>=40){draftStatus('This page has reached the 40-container limit.');return;}
+ const clone=JSON.parse(JSON.stringify(currentSection));
+ const suffix=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);
+ clone.id='container-'+suffix;
+ (clone.children||[]).forEach((block,index)=>{block.id='block-'+suffix+'-'+index;});
+ const index=draft.sections.indexOf(currentSection);
+ draft.sections.splice(index+1,0,clone);
+ renderDraft();
+ const node=frame.contentDocument?.querySelector('[data-bh-section-id="'+CSS.escape(clone.id)+'"]');
+ if(node)selectNode(node);
+ draftStatus('Container duplicated with its content and styling. Edit the copy independently, then save the draft.');
+}
 function deleteContainer(){if(!currentSection||!draft||draft.sections.length<2){draftStatus('A page must keep at least one container.');return;}if(!window.confirm('Delete this container and its contents from the private draft?'))return;draft.sections=draft.sections.filter(section=>section!==currentSection);currentSection=null;renderDraft();$('sectionControls').hidden=true;draftStatus('Container removed from the private draft. Save draft to keep the change.');}
 $('pageColumns').addEventListener('change',()=>{if(!draft)return;draft.settings=draft.settings||{};draft.settings.columns=Math.max(1,Math.min(3,Number($('pageColumns').value)||1));renderDraft();draftStatus('Page layout changed to '+draft.settings.columns+' columns. Mobile preview automatically stacks to one column. Save draft when ready.');});
-$('addContainer').addEventListener('click',addContainer);$('addHeading').addEventListener('click',()=>addBlock('heading'));$('addParagraph').addEventListener('click',()=>addBlock('paragraph'));$('addButtonBlock').addEventListener('click',()=>addBlock('button'));$('moveContainerUp').addEventListener('click',()=>moveContainer(-1));$('moveContainerDown').addEventListener('click',()=>moveContainer(1));$('deleteContainer').addEventListener('click',deleteContainer);
+$('addContainer').addEventListener('click',addContainer);$('addHeading').addEventListener('click',()=>addBlock('heading'));$('addParagraph').addEventListener('click',()=>addBlock('paragraph'));$('addButtonBlock').addEventListener('click',()=>addBlock('button'));$('moveContainerUp').addEventListener('click',()=>moveContainer(-1));$('moveContainerDown').addEventListener('click',()=>moveContainer(1));$('duplicateContainer').addEventListener('click',duplicateContainer);$('deleteContainer').addEventListener('click',deleteContainer);
 async function init(){
  try{
   const auth=await fetch('/admin-auth.php?action=check',{credentials:'same-origin',cache:'no-store'});
