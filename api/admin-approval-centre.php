@@ -28,6 +28,17 @@ try{
  $queues[1]['count']=(int)$q->fetchColumn();
  $q=$db->query("SELECT id,title,status FROM bh_activities WHERE status='draft' ORDER BY updated_at DESC,id DESC LIMIT 50");
  foreach($q->fetchAll(PDO::FETCH_ASSOC) as $a){$queues[1]['items'][]=['id'=>(int)$a['id'],'title'=>$a['title'],'status'=>'draft','url'=>'/admin/admin-activities-listings.html'];}
+ // Events directory submissions are reviewed in their dedicated moderation screen.
+ try {
+  $eventTables=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_directory_events'");
+  if((int)$eventTables->fetchColumn()>0){
+   $eventQueue=['key'=>'events','label'=>'Directory events','description'=>'One-off and special events submitted by class leaders.','url'=>'/admin/admin-events.html','count'=>0,'items'=>[]];
+   $eventQueue['count']=(int)$db->query("SELECT COUNT(*) FROM bh_directory_events WHERE status='pending'")->fetchColumn();
+   $eventRows=$db->query("SELECT id,title,status FROM bh_directory_events WHERE status='pending' ORDER BY submitted_at DESC,id DESC LIMIT 50");
+   foreach($eventRows->fetchAll(PDO::FETCH_ASSOC) as $event){$eventQueue['items'][]=['id'=>(int)$event['id'],'title'=>$event['title'],'status'=>'pending','url'=>'/admin/admin-events.html'];}
+   $queues[]=$eventQueue;
+  }
+ } catch(Throwable $ignored) {}
  $history=[];
  $exists=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_admin_approval_reviews'");
  if((int)$exists->fetchColumn()>0){
