@@ -10,7 +10,45 @@ function bh_vb_media_out(int $status, array $payload): never {
     exit;
 }
 
-if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+$method = (string)($_SERVER['REQUEST_METHOD'] ?? '');
+if ($method === 'GET') {
+    $directory = dirname(__DIR__) . '/images/uploads/visual-builder';
+    $items = [];
+    if (is_dir($directory)) {
+        $files = glob($directory . '/*');
+        if (is_array($files)) {
+            foreach ($files as $path) {
+                if (!is_file($path)) continue;
+                $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                if (!in_array($extension, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) continue;
+                $info = @getimagesize($path);
+                if (!$info) continue;
+                $filename = basename($path);
+                $items[] = [
+                    'name' => $filename,
+                    'src' => '/images/uploads/visual-builder/' . rawurlencode($filename),
+                    'width' => (int)$info[0],
+                    'height' => (int)$info[1],
+                    'bytes' => (int)(filesize($path) ?: 0),
+                    'modified' => (int)(filemtime($path) ?: 0),
+                ];
+            }
+        }
+    }
+    usort($items, static fn(array $a, array $b): int => $b['modified'] <=> $a['modified']);
+    $query = strtolower(trim((string)($_GET['q'] ?? '')));
+    if ($query !== '') {
+        $items = array_values(array_filter($items, static fn(array $item): bool => str_contains(strtolower($item['name']), $query)));
+    }
+    $total = count($items);
+    bh_vb_media_out(200, ['ok' => true, 'items' => array_slice($items, 0, 120), 'total' => $total]);
+}
+if ($method !== 'POST') {
+    header('Allow: GET, POST');
+    bh_vb_media_out(405, ['ok' => false, 'error' => 'Use GET to browse or POST to upload images.']);
+}
+
+
     header('Allow: POST');
     bh_vb_media_out(405, ['ok' => false, 'error' => 'Use POST to upload an image.']);
 }

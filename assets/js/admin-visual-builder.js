@@ -412,6 +412,35 @@ function applyEdit(){
  draftStatus('Unsaved draft changes. Save draft when ready.');
 }
 $('imageSource').addEventListener('change',()=>{if(!currentBlock||currentBlock.type!=='image')return;currentBlock.props.src=$('imageSource').value.trim();if(!safeImageSource(currentBlock.props.src)){draftHasValidationError=true;$('saveDraft').disabled=true;draftStatus('Enter a secure https image URL or a site-relative image path.');return;}const n=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');if(n)n.src=currentBlock.props.src;draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Image source changed. Save draft when ready.');});
+
+function applyLibraryImage(src){
+ if(!currentBlock||currentBlock.type!=='image')return;
+ currentBlock.props.src=src;$('imageSource').value=src;
+ const node=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');
+ if(node)node.src=src;
+ draftHasValidationError=false;$('saveDraft').disabled=false;
+ $('mediaLibrary').hidden=true;$('imageUploadStatus').textContent='Library image selected · Save draft to keep it on the page.';
+ draftStatus('Media library image added to the draft. Save draft when ready.');
+}
+async function loadMediaLibrary(){
+ const statusNode=$('mediaLibraryStatus'),grid=$('mediaLibraryGrid');
+ statusNode.textContent='Loading images…';grid.replaceChildren();
+ try{
+  const query=$('mediaLibrarySearch').value.trim();
+  const data=await api('/api/admin-visual-builder-media.php'+(query?'?q='+encodeURIComponent(query):''));
+  statusNode.textContent=data.total?data.total+' image'+(data.total===1?'':'s')+' available'+(data.total>data.items.length?' · showing the 120 most recent matches':'')+'.':'No uploaded images found yet.';
+  data.items.forEach(item=>{
+   const button=document.createElement('button');button.type='button';button.className='bhvb-media-item';button.title='Use this image';
+   const image=document.createElement('img');image.src=item.src;image.alt='';image.loading='lazy';
+   const details=document.createElement('span');details.textContent=item.width+' × '+item.height+' · '+new Date(item.modified*1000).toLocaleDateString('en-GB');
+   button.append(image,details);button.addEventListener('click',()=>applyLibraryImage(item.src));grid.append(button);
+  });
+ }catch(error){statusNode.textContent=error.message;}
+}
+$('browseMediaLibrary').addEventListener('click',()=>{$('mediaLibrary').hidden=!$('mediaLibrary').hidden;if(!$('mediaLibrary').hidden)loadMediaLibrary();});
+$('refreshMediaLibrary').addEventListener('click',loadMediaLibrary);
+$('mediaLibrarySearch').addEventListener('change',loadMediaLibrary);
+
 $('chooseImageFile').addEventListener('click',()=>$('imageFileUpload').click());
 $('imageFileUpload').addEventListener('change',async()=>{const file=$('imageFileUpload').files?.[0];if(!file)return;if(!currentBlock||currentBlock.type!=='image'){ $('imageUploadStatus').textContent='Select an image element in the draft first.';$('imageFileUpload').value='';return;}if(!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type)){ $('imageUploadStatus').textContent='Choose a JPG, PNG, WebP or GIF image.';$('imageFileUpload').value='';return;}if(file.size>8*1024*1024){$('imageUploadStatus').textContent='Images must be 8 MB or smaller.';$('imageFileUpload').value='';return;}const button=$('chooseImageFile');button.disabled=true;$('imageUploadStatus').textContent='Uploading image…';try{const form=new FormData();form.append('image',file);const response=await fetch('/api/admin-visual-builder-media.php',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'X-CSRF-Token':csrf,'Accept':'application/json'},body:form});const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||'Image upload failed.');$('imageSource').value=data.src;currentBlock.props.src=data.src;const node=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');if(node)node.src=data.src;draftHasValidationError=false;$('saveDraft').disabled=false;$('imageUploadStatus').textContent='Uploaded: '+file.name+' · Save draft to keep this image on the page.';draftStatus('Image uploaded and added to the draft. Save draft when ready.');}catch(error){$('imageUploadStatus').textContent=error.message;}finally{button.disabled=false;$('imageFileUpload').value='';}});$('imageAlt').addEventListener('input',()=>{if(currentBlock?.type!=='image')return;currentBlock.props.alt=$('imageAlt').value.slice(0,300);const n=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');if(n)n.alt=currentBlock.props.alt;$('saveDraft').disabled=false;draftStatus('Image alternative text updated. Save draft when ready.');});$('imageFit').addEventListener('change',()=>{if(currentBlock?.type!=='image')return;currentBlock.props.fit=$('imageFit').value;const n=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');if(n)n.style.objectFit=currentBlock.props.fit;$('saveDraft').disabled=false;});
 $('editText').addEventListener('input',applyEdit);$('editHref').addEventListener('change',applyEdit);

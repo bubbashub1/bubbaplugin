@@ -78,3 +78,20 @@
 
 /* Flexible columns and reusable section layouts */
 .bhvb-section-presets{display:grid;gap:7px;padding:10px 0 12px;border-bottom:1px solid #e8eee8}.bhvb-section-presets strong{font-size:.78rem;color:#315d40}.bhvb-section-presets button{border:1px solid #c8d9cc;border-radius:9px;padding:9px 10px;background:#f2f7f3;color:#315d40;text-align:left;font:inherit;font-size:.78rem;font-weight:750;cursor:pointer}.bhvb-section-presets button:hover:not(:disabled){border-color:#82aa94;background:#eaf3ec}.bhvb-section-presets button:disabled{opacity:.45;cursor:not-allowed}#containerColumnWidthsWrap{display:grid;gap:6px;padding:8px 10px;border:1px solid #e1eae3;border-radius:10px;background:#f7faf7}#containerColumnWidthsWrap[hidden]{display:none!important}#containerColumnWidths{width:100%;box-sizing:border-box;padding:9px;border:1px solid #cfd8cf;border-radius:8px;background:#fff;color:#203c2c;font:inherit;font-size:.88rem}
+
+/* Reusable image library */
+.bhvb-media-upload #browseMediaLibrary{background:#f0f6f1;color:#315f47;border:1px solid #cbdccf}
+.bhvb-media-library{display:grid;gap:9px;margin-top:10px;padding:12px;border:1px solid #dce8df;border-radius:13px;background:#f8fbf8}
+.bhvb-media-library[hidden]{display:none!important}
+.bhvb-media-library-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.bhvb-media-library-head strong{font-size:.86rem;color:#315f47}
+.bhvb-media-library-head button{padding:6px 9px;border:1px solid #cbdccf;border-radius:8px;background:#fff;color:#315f47;font:inherit;font-size:.75rem;cursor:pointer}
+.bhvb-media-library>label{font-size:.76rem;color:#405e4b}
+#mediaLibrarySearch{width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid #d4dfd6;border-radius:8px;background:#fff;font:inherit;font-size:.85rem}
+#mediaLibraryStatus{margin:0;color:#617468;font-size:.75rem}
+.bhvb-media-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:360px;overflow:auto}
+.bhvb-media-item{display:grid;gap:5px;min-width:0;padding:6px;border:1px solid #dce8df;border-radius:9px;background:#fff;text-align:left;cursor:pointer}
+.bhvb-media-item:hover{border-color:#76a88a;background:#f0f7f1}
+.bhvb-media-item img{display:block;width:100%;height:88px;object-fit:cover;border-radius:5px;background:#edf2ed}
+.bhvb-media-item span{overflow:hidden;color:#516458;font-size:.68rem;white-space:nowrap;text-overflow:ellipsis}
+@media(max-width:700px){.bhvb-media-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
