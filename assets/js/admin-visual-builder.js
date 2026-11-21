@@ -343,6 +343,46 @@ function renderDraft(){
  $('canvasDimensions').textContent=(page?.title||title)+' · '+device+' · Draft';
  $('saveDraft').disabled=false;$('addContainer').disabled=false;document.querySelectorAll('[data-section-preset]').forEach(button=>button.disabled=false);
 }
+
+const builderUndoStack=[],builderRedoStack=[];
+let historyTimer=null,historyBefore=null,historyApplying=false;
+function historySnapshot(){return draft?JSON.stringify(draft):'';}
+function updateHistoryButtons(){
+ const undo=$('builderUndo'),redo=$('builderRedo');
+ if(undo)undo.disabled=!builderUndoStack.length;
+ if(redo)redo.disabled=!builderRedoStack.length;
+}
+function resetBuilderHistory(){builderUndoStack.length=0;builderRedoStack.length=0;historyBefore=null;clearTimeout(historyTimer);historyTimer=null;updateHistoryButtons();}
+function recordHistory(before,after){
+ if(!before||!after||before===after||historyApplying)return;
+ builderUndoStack.push(before);
+ if(builderUndoStack.length>60)builderUndoStack.shift();
+ builderRedoStack.length=0;updateHistoryButtons();
+}
+function scheduleHistoryCapture(){
+ if(previewMode!=='draft'||!draft||historyApplying)return;
+ if(!historyBefore)historyBefore=historySnapshot();
+ clearTimeout(historyTimer);
+ historyTimer=setTimeout(()=>{
+  const before=historyBefore;historyBefore=null;historyTimer=null;
+  recordHistory(before,historySnapshot());
+ },450);
+}
+function applyHistorySnapshot(source,target,message){
+ if(!source.length)return;
+ const current=historySnapshot();target.push(current);
+ const previous=source.pop();historyApplying=true;
+ try{draft=JSON.parse(previous);currentBlock=null;currentSection=null;inlineEditingNode=null;renderDraft();updateHistoryButtons();draftStatus(message+' Save draft to keep this version.');}
+ finally{historyApplying=false;}
+}
+function undoBuilderChange(){if(historyTimer){clearTimeout(historyTimer);historyTimer=null;recordHistory(historyBefore,historySnapshot());historyBefore=null;}applyHistorySnapshot(builderUndoStack,builderRedoStack,'Last change undone.');}
+function redoBuilderChange(){if(historyTimer){clearTimeout(historyTimer);historyTimer=null;recordHistory(historyBefore,historySnapshot());historyBefore=null;}applyHistorySnapshot(builderRedoStack,builderUndoStack,'Change restored.');}
+document.addEventListener('input',event=>{if(event.target.closest('.bhvb-inspector')||event.target.id==='pageColumns')scheduleHistoryCapture();},true);
+document.addEventListener('change',event=>{if(event.target.closest('.bhvb-inspector')||event.target.id==='pageColumns')scheduleHistoryCapture();},true);
+document.addEventListener('click',event=>{if(event.target.closest('.bhvb-builder-actions,.bhvb-add-controls,[data-bh-add],#duplicateElement,#duplicateContainer,#moveContainerUp,#moveContainerDown,#deleteContainer,[data-section-preset]'))scheduleHistoryCapture();},true);
+$('builderUndo').addEventListener('click',undoBuilderChange);
+$('builderRedo').addEventListener('click',redoBuilderChange);
+
 function convertPage(){
  const doc=frame.contentDocument;
  if(!doc||!doc.querySelector('main')){draftStatus('The selected page has no readable main content to convert.');return;}
@@ -363,7 +403,7 @@ function convertPage(){
  });
  main.querySelectorAll('img').forEach((img,index)=>{const src=img.getAttribute('src')||'';if(safeImageSource(src)){children.push({id:'image-'+(index+1),type:'image',props:{src,alt:(img.getAttribute('alt')||'').slice(0,300),width:100,fit:'cover',radius:0}});}else skipped++;});
  const images=main.querySelectorAll('img').length;
- draft={schema_version:1,page:{title:page.title,slug:page.slug},settings:{max_width:'960px',columns:1},sections:[{id:'main-content',type:'section',props:{padding:24,gap:16},children}]};
+ draft={schema_version:1,page:{title:page.title,slug:page.slug},settings:{max_width:'960px',columns:1},sections:[{id:'main-content',type:'section',props:{padding:24,gap:16},children}]};resetBuilderHistory();
  const message='Conversion preview: '+children.length+' supported text/link blocks. '+skipped+' empty or unsupported items skipped; '+images+' images are not converted. Original layout and styling are not carried over. Review this simplified draft before saving.';
  draftStatus(message);
  renderDraft();
@@ -390,12 +430,12 @@ async function loadDraft(){
   revisionRows=data.revisions||[];
   const select=$('revisionSelect');select.innerHTML=revisionRows.map(r=>'<option value="'+esc(r.id)+'">Revision '+esc(r.id)+' · '+esc(r.created_at)+'</option>').join('');
   $('revisionControls').hidden=!revisionRows.length;
-  if(data.draft){draft=data.draft;renderDraft();draftStatus('Existing unpublished draft loaded. You can edit and save it.');}
-  else{draft=null;previewMode='published';draftStatus('No builder draft exists yet. Prepare a simplified draft from this page to begin.');}
+  if(data.draft){draft=data.draft;resetBuilderHistory();renderDraft();draftStatus('Existing unpublished draft loaded. You can edit and save it.');}
+  else{draft=null;resetBuilderHistory();previewMode='published';draftStatus('No builder draft exists yet. Prepare a simplified draft from this page to begin.');}
  }catch(error){draftStatus(error.message);$('saveDraft').disabled=true;}
 }
 async function loadPage(slug){
- page=pages.find(item=>item.slug===slug)||null;draft=null;previewMode='published';currentBlock=null;currentSection=null;layerNodes=[];
+ page=pages.find(item=>item.slug===slug)||null;draft=null;resetBuilderHistory();previewMode='published';currentBlock=null;currentSection=null;layerNodes=[];
  $('selectedName').textContent='Nothing selected';$('selectedDescription').textContent='Choose a page to begin.';$('selectedDetails').hidden=true;$('editControls').hidden=true;$('sectionControls').hidden=true;
  $('builderLayers').replaceChildren();$('saveDraft').disabled=true;$('prepareDraft').disabled=!page;$('setupDraftStorage').hidden=true;$('revisionControls').hidden=true;
  if(!page){frame.hidden=true;$('canvasEmpty').hidden=false;return;}
@@ -418,14 +458,14 @@ $('setupDraftStorage').addEventListener('click',async()=>{
 $('saveDraft').addEventListener('click',async()=>{
  if(!draft||!page||draftHasValidationError)return;
  $('saveDraft').disabled=true;
- try{const data=await api('/api/admin-visual-page-drafts.php',{action:'save_draft',page_id:page.id,document:draft});draft=data.document||draft;draftStatus(data.message||'Draft saved.');await loadDraft();}
+ try{const data=await api('/api/admin-visual-page-drafts.php',{action:'save_draft',page_id:page.id,document:draft});draft=data.document||draft;resetBuilderHistory();draftStatus(data.message||'Draft saved.');await loadDraft();}
  catch(error){draftStatus(error.message);}
  finally{$('saveDraft').disabled=false;}
 });
 $('restoreRevision').addEventListener('click',async()=>{
  const revisionId=Number($('revisionSelect').value);if(!revisionId||!page)return;
  if(!window.confirm('Restore this previous builder draft? Your current draft will first be saved as a revision. The published page will remain unchanged.'))return;
- try{const data=await api('/api/admin-visual-page-drafts.php',{action:'restore_revision',page_id:page.id,revision_id:revisionId});draft=data.document||null;renderDraft();draftStatus(data.message||'Draft restored.');await loadDraft();}
+ try{const data=await api('/api/admin-visual-page-drafts.php',{action:'restore_revision',page_id:page.id,revision_id:revisionId});draft=data.document||null;resetBuilderHistory();renderDraft();draftStatus(data.message||'Draft restored.');await loadDraft();}
  catch(error){draftStatus(error.message);}
 });
 function applyEdit(){

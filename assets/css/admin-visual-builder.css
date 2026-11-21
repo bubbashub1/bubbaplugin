@@ -206,3 +206,7 @@ body.bh-admin-v2{background:#f4f7f4}
 
 .bhvb-inline-edit-toggle{width:100%;padding:10px 12px;border:1px solid #9bbca7;border-radius:9px;background:#edf6ef;color:#285b40;font:inherit;font-size:.8rem;font-weight:750;cursor:pointer}.bhvb-inline-edit-toggle:hover{background:#e1f0e5;border-color:#6e9d7d}.bhvb-inline-edit-toggle[hidden]{display:none!important}
 .bhvb-canvas-stage iframe [contenteditable="true"]{outline:2px dashed #0f766e!important;outline-offset:4px!important;cursor:text!important;min-width:24px}
+
+/* Draft undo and redo controls */
+.bhvb-history-controls{display:flex;gap:6px;align-items:center}.bhvb-history-controls button{padding:8px 11px;border:1px solid #d8e5da;border-radius:9px;background:#f7faf7;color:#315d40;font-size:.78rem;font-weight:750;cursor:pointer}.bhvb-history-controls button:hover:not(:disabled){background:#eaf4ed;border-color:#9bbca7}.bhvb-history-controls button:disabled{opacity:.42;cursor:not-allowed}
+@media(max-width:760px){.bhvb-history-controls{width:100%}.bhvb-history-controls button{flex:1}}
