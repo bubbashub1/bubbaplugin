@@ -10,7 +10,7 @@ require_once __DIR__.'/db.php';$db=bh_mysql();
 $exists=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_directory_record_reviews'");if(!(int)$exists->fetchColumn())dar(503,['ok'=>false,'error'=>'schema_not_installed','message'=>'The consolidated Directory schema has not been installed.']);
 if($_SERVER['REQUEST_METHOD']==='GET'){
  $_SESSION['bh_directory_review_csrf']??=bin2hex(random_bytes(32));$all=[];
- foreach($map as $key=>$table){$q=$db->query("SELECT id,title,category,summary,description,town,region,status,created_at FROM ".$table." WHERE status IN ('pending','draft') ORDER BY created_at ASC LIMIT 150");foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){$row['section']=$key;$all[]=$row;}}
+ foreach($map as $key=>$table){$q=$db->query("SELECT id,title,category,summary,description,town,region,status,created_at FROM ".$table." WHERE status='pending' ORDER BY created_at ASC LIMIT 150");foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){$row['section']=$key;$all[]=$row;}}
  usort($all,static fn($a,$b)=>strcmp((string)$a['created_at'],(string)$b['created_at']));dar(200,['ok'=>true,'csrf'=>$_SESSION['bh_directory_review_csrf'],'records'=>$all]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')dar(405,['ok'=>false,'error'=>'method_not_allowed']);
