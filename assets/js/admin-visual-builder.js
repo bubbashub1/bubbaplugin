@@ -42,6 +42,29 @@ function updateSelectionDetails(node){
   $('elementRadius').value=Math.max(0,Math.min(48,Number(props.radius)||0));$('elementRadiusValue').textContent=$('elementRadius').value+'px';
  }
 }
+function removeCanvasToolbar(){const doc=frame.contentDocument;doc?.getElementById('bhvb-floating-toolbar')?.remove();}
+function moveSelectedBlock(direction){
+ if(!currentBlock||!currentSection||!draft)return;
+ const items=currentSection.children||[],index=items.findIndex(item=>item.id===currentBlock.id),next=index+direction;
+ if(index<0||next<0||next>=items.length)return;
+ [items[index],items[next]]=[items[next],items[index]];renderDraft();
+ const node=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');if(node)selectNode(node);
+ draftStatus('Element moved '+(direction<0?'up':'down')+'. Save draft to keep this change.');
+}
+function deleteSelectedBlock(){
+ if(!currentBlock||!currentSection||!draft)return;
+ const id=currentBlock.id;currentSection.children=(currentSection.children||[]).filter(item=>item.id!==id);currentBlock=null;renderDraft();
+ $('editControls').hidden=true;$('imageControls').hidden=true;draftStatus('Element removed from the private draft. Save draft to keep the change.');
+}
+function showCanvasToolbar(node){
+ const doc=frame.contentDocument;if(!doc||previewMode!=='draft'||!currentBlock){removeCanvasToolbar();return;}
+ removeCanvasToolbar();const toolbar=doc.createElement('div');toolbar.id='bhvb-floating-toolbar';toolbar.setAttribute('role','toolbar');toolbar.setAttribute('aria-label','Selected element actions');
+ const actions=[['Edit','Edit selected element',()=>{setTab('properties');$('propertiesPanel').scrollIntoView({behavior:'smooth',block:'nearest'});}],['＋','Duplicate element',duplicateSelectedBlock],['↑','Move element up',()=>moveSelectedBlock(-1)],['↓','Move element down',()=>moveSelectedBlock(1)],['×','Delete element',deleteSelectedBlock]];
+ actions.forEach(([label,title,action])=>{const button=doc.createElement('button');button.type='button';button.textContent=label;button.title=title;button.setAttribute('aria-label',title);button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();action();});toolbar.append(button);});
+ doc.body.append(toolbar);
+ const rect=node.getBoundingClientRect(),left=Math.max(8,Math.min(doc.documentElement.clientWidth-toolbar.offsetWidth-8,rect.left)),top=Math.max(8,rect.top-toolbar.offsetHeight-9);
+ toolbar.style.left=left+'px';toolbar.style.top=top+'px';
+}
 function selectNode(node){
  if(!node)return;
  if(inlineEditingNode&&inlineEditingNode!==node){inlineEditingNode.contentEditable='false';inlineEditingNode.removeAttribute('data-bh-inline-editing');inlineEditingNode=null;}
@@ -49,11 +72,13 @@ function selectNode(node){
  try{
   const doc=frame.contentDocument;
   doc?.querySelectorAll('.bhvb-selected-preview').forEach(n=>n.classList.remove('bhvb-selected-preview'));
+  removeCanvasToolbar();
   node.classList.add('bhvb-selected-preview');
   currentBlock=draft&&node.dataset.bhBlockId?findBlock(node.dataset.bhBlockId):null;
   currentSection=draft&&node.dataset.bhSectionId?findSection(node.dataset.bhSectionId):null;
   ['addHeading','addParagraph','addButtonBlock','addImageBlock'].forEach(id=>$(id).disabled=!currentSection||previewMode!=='draft');
   updateSelectionDetails(node);
+  showCanvasToolbar(node);
   installContainerHandles(currentSection?node:null);
   const index=layerNodes.indexOf(node);
   document.querySelectorAll('.bhvb-layer-button').forEach(button=>button.classList.toggle('active',button._bhNode===node));
