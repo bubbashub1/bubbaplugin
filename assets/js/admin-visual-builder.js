@@ -29,6 +29,11 @@ function updateSelectionDetails(node){
   const isButton=currentBlock.type==='button';
   $('editHref').hidden=!isButton;$('editHrefLabel').hidden=!isButton;
   $('editHref').value=isButton?(props.href||''):'';
+  const size=Math.max(10,Math.min(72,Number(props.font_size)||(currentBlock.type==='heading'?32:16)));
+  $('elementFontSize').value=size;$('elementFontSizeValue').textContent=size+'px';
+  $('elementWidth').value=Math.max(10,Math.min(100,Number(props.width)||100));$('elementWidthValue').textContent=$('elementWidth').value+'%';
+  $('elementAlign').value=['left','center','right'].includes(props.align)?props.align:'left';
+  $('elementSpacing').value=Math.max(0,Math.min(80,Number(props.margin_bottom)||0));$('elementSpacingValue').textContent=$('elementSpacing').value+'px';
  }
 }
 function selectNode(node){
@@ -272,9 +277,11 @@ function renderDraft(){
  const sections=(draft.sections||[]).map(section=>{
   const children=(section.children||[]).map(block=>{
    const p=block.props||{},id=esc(block.id);
-   if(block.type==='heading'){const level=Math.max(1,Math.min(4,Number(p.level)||2));return '<h'+level+' draggable="true" data-bh-block-id="'+id+'" style="text-align:'+esc(p.align||'left')+';cursor:grab">'+esc(p.text)+'</h'+level+'>';}
-   if(block.type==='paragraph')return '<p draggable="true" data-bh-block-id="'+id+'" style="text-align:'+esc(p.align||'left')+';cursor:grab">'+esc(p.text)+'</p>';
-   if(block.type==='button'&&safeHref(p.href))return '<p><a class="cta" draggable="true" data-bh-block-id="'+id+'" href="'+esc(p.href)+'" style="cursor:grab">'+esc(p.text)+'</a></p>';
+   const size=Math.max(10,Math.min(72,Number(p.font_size)|| (block.type==='heading'?32:16))),width=Math.max(10,Math.min(100,Number(p.width)||100)),align=['left','center','right'].includes(p.align)?p.align:'left',spacing=Math.max(0,Math.min(80,Number(p.margin_bottom)||0));
+   const elementStyle='font-size:'+size+'px;text-align:'+align+';width:'+width+'%;max-width:100%;margin:0 0 '+spacing+'px;cursor:grab';
+   if(block.type==='heading'){const level=Math.max(1,Math.min(4,Number(p.level)||2));return '<h'+level+' draggable="true" data-bh-block-id="'+id+'" style="'+elementStyle+'">'+esc(p.text)+'</h'+level+'>';}
+   if(block.type==='paragraph')return '<p draggable="true" data-bh-block-id="'+id+'" style="'+elementStyle+'">'+esc(p.text)+'</p>';
+   if(block.type==='button'&&safeHref(p.href))return '<p style="margin:0 0 '+spacing+'px;text-align:'+align+'"><a class="cta" draggable="true" data-bh-block-id="'+id+'" href="'+esc(p.href)+'" style="display:inline-block;font-size:'+size+'px;width:'+width+'%;max-width:100%;cursor:grab">'+esc(p.text)+'</a></p>';
    return '';
   }).join('');
   const p=section.props||{};const w=Math.min(100,Math.max(25,Number(p.width??100))),h=Math.min(800,Math.max(0,Number(p.min_height??0))),rad=Math.min(48,Math.max(0,Number(p.radius??12))),bw=Math.min(8,Math.max(0,Number(p.border_width??0))),al=['left','center','right'].includes(p.align)?p.align:'center',bc=/^#[0-9a-f]{6}$/i.test(p.border_color||'')?p.border_color:'#dce8df';
@@ -387,13 +394,16 @@ function applyEdit(){
  const props=currentBlock.props;
  props.text=nextText;
  if(currentBlock.type==='button')props.href=nextHref;
+ props.font_size=Number($('elementFontSize').value);props.width=Number($('elementWidth').value);props.align=$('elementAlign').value;props.margin_bottom=Number($('elementSpacing').value);
  draftHasValidationError=false;$('saveDraft').disabled=false;
  const node=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');
- if(node){node.textContent=props.text;if(currentBlock.type==='button')node.setAttribute('href',props.href);}
+ if(node){node.textContent=props.text;if(currentBlock.type==='button')node.setAttribute('href',props.href);node.style.fontSize=props.font_size+'px';node.style.width=props.width+'%';node.style.maxWidth='100%';node.style.textAlign=props.align;node.style.marginBottom=props.margin_bottom+'px';if(currentBlock.type==='button'){node.style.display='inline-block';node.parentElement.style.textAlign=props.align;node.parentElement.style.marginBottom=props.margin_bottom+'px';}}
  if(node){$('selectedText').textContent=props.text;$('selectedName').textContent=readableName(node);}
  draftStatus('Unsaved draft changes. Save draft when ready.');
 }
 $('editText').addEventListener('input',applyEdit);$('editHref').addEventListener('change',applyEdit);
+function applyElementStyle(){if(!currentBlock||previewMode!=='draft')return;const p=currentBlock.props;p.font_size=Number($('elementFontSize').value);p.width=Number($('elementWidth').value);p.align=$('elementAlign').value;p.margin_bottom=Number($('elementSpacing').value);$('elementFontSizeValue').textContent=p.font_size+'px';$('elementWidthValue').textContent=p.width+'%';$('elementSpacingValue').textContent=p.margin_bottom+'px';const node=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');if(node){node.style.fontSize=p.font_size+'px';node.style.width=p.width+'%';node.style.maxWidth='100%';node.style.textAlign=p.align;node.style.marginBottom=p.margin_bottom+'px';if(currentBlock.type==='button'){node.style.display='inline-block';node.parentElement.style.textAlign=p.align;node.parentElement.style.marginBottom=p.margin_bottom+'px';}}draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Unsaved element styling. Save draft when ready.');}
+['elementFontSize','elementWidth','elementAlign','elementSpacing'].forEach(id=>$(id).addEventListener('input',applyElementStyle));
 function applySectionEdit(){if(!currentSection||previewMode!=='draft')return;const p=currentSection.props||(currentSection.props={});p.background=$('sectionBackground').value;p.padding=Number($('sectionPadding').value);p.gap=Number($('sectionGap').value);p.width=Number($('containerWidth').value);p.min_height=Number($('containerHeight').value);p.radius=Number($('containerRadius').value);p.border_width=Number($('containerBorderWidth').value);p.border_color=$('containerBorderColor').value;p.align=$('containerAlign').value;p.margin_bottom=Number($('containerSpacing').value);['sectionPadding','sectionGap','containerWidth','containerHeight','containerRadius','containerBorderWidth','containerSpacing'].forEach(id=>{const o=$(id+'Value');if(o)o.textContent=$(id).value+(id==='containerWidth'?'%':'px');});const node=frame.contentDocument?.querySelector('[data-bh-section-id="'+CSS.escape(currentSection.id)+'"]');if(node){node.style.background=p.background;node.style.padding=p.padding+'px';node.style.gap=p.gap+'px';node.style.width=p.width+'%';node.style.minHeight=p.min_height+'px';node.style.borderRadius=p.radius+'px';node.style.border=p.border_width+'px solid '+p.border_color;node.style.alignSelf=p.align==='left'?'flex-start':p.align==='right'?'flex-end':'center';node.style.marginBottom=p.margin_bottom+'px';}draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Unsaved container changes. Save draft when ready.');}
 function applyMobileEdit(){if(!currentSection||previewMode!=='draft'||!$('mobileOverrideEnabled').checked)return;const p=currentSection.props||(currentSection.props={});p.mobile={width:Number($('mobileContainerWidth').value),padding:Number($('mobileContainerPadding').value),gap:Number($('mobileContainerGap').value),min_height:Number($('mobileContainerHeight').value),radius:Number($('mobileContainerRadius').value),border_width:Number($('mobileContainerBorderWidth').value),margin_bottom:Number($('mobileContainerSpacing').value),align:$('mobileContainerAlign').value};['mobileContainerWidth','mobileContainerPadding','mobileContainerGap','mobileContainerHeight','mobileContainerRadius','mobileContainerBorderWidth','mobileContainerSpacing'].forEach(id=>{const o=$(id+'Value');if(o)o.textContent=$(id).value+(id==='mobileContainerWidth'?'%':'px');});updateMobilePreviewStyle();draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Unsaved mobile layout changes. Save draft when ready.');}
 function toggleMobileOverrides(){if(!currentSection||previewMode!=='draft')return;const p=currentSection.props||(currentSection.props={});if($('mobileOverrideEnabled').checked){p.mobile={width:100,padding:16,gap:12,min_height:0,radius:12,border_width:0,margin_bottom:16,align:'center'};populateMobileControls(p.mobile);$('mobileOverrideControls').hidden=false;applyMobileEdit();}else{delete p.mobile;$('mobileOverrideControls').hidden=true;updateMobilePreviewStyle();draftStatus('Mobile overrides removed. The container now inherits its desktop settings.');}}
