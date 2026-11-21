@@ -36,3 +36,10 @@
 .bhvb-layer-button[style*="--layer-depth: 1"]{margin-left:12px;width:calc(100% - 12px)}
 .bhvb-layer-button[style*="--layer-depth: 1"]::before{content:"↳";position:absolute;left:6px;color:#91a49a}
 .bhvb-layer-button[style*="--layer-depth: 0"]{font-weight:750}
+
+/* Drag-and-drop feedback in the Layers panel */
+.bhvb-layer-button[draggable="true"]{cursor:grab;touch-action:pan-y}
+.bhvb-layer-button[draggable="true"]:active{cursor:grabbing}
+.bhvb-layer-button.is-dragging{opacity:.4}
+.bhvb-layer-button.is-drop-target{outline:2px dashed #0f766e;outline-offset:2px;background:#edf7f3}
+.bhvb-layer-group{min-width:0}
