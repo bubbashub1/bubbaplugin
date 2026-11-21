@@ -696,7 +696,7 @@ const bhInitDirectory=async()=>{
       }
       if($("directoryEventsView"))$("directoryEventsView").hidden=!showEvents;
       if($("directoryMapHint"))$("directoryMapHint").hidden=!showMap;
-      for(const [id,active] of [["directoryShowMap",showMap],["directoryShowList",currentView==="grid"],["directoryShowCalendar",currentView==="calendar"],["directoryShowPlanner",currentView==="planner"],["directoryShowEvents",showEvents]]){
+      for(const [id,active] of [["directoryShowMap",showMap],["directoryShowList",currentView==="grid"],["directoryShowCalendar",currentView==="calendar"],["directoryShowPlanner",currentView==="planner"]]){
         const button=$(id);if(button)button.setAttribute("aria-pressed",String(active));
       }
     };
@@ -1148,7 +1148,7 @@ const bhInitDirectory=async()=>{
     $("directoryShowCalendar")?.addEventListener("click",()=>switchDirectoryView("calendar"));
     $("directoryShowPlanner")?.addEventListener("click",()=>switchDirectoryView("planner"));
     $("directoryShowList")?.addEventListener("click",()=>switchDirectoryView("grid"));
-    $("directoryShowEvents")?.addEventListener("click",()=>switchDirectoryView("events"));
+    window.addEventListener("bh:directory-show-events",()=>switchDirectoryView("events"));
     window.__bhDirectoryDesktop = window.innerWidth > 900;
     setupMapModal();
     document.querySelectorAll(".directory-view").forEach(button => button.classList.toggle("active", button.dataset.view === currentView));
