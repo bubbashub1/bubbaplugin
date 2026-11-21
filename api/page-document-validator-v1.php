@@ -81,6 +81,11 @@ function bh_validate_page_document_v1(mixed $document): array {
     if(array_diff(array_keys($p),['text','align']))$errors[]='Unknown paragraph property.';
     if(!array_key_exists('text',$p))$errors[]='Paragraph text is required.';
     if(!is_string($p['text']??null)||mb_strlen($p['text'])>10000)$errors[]='Paragraph text invalid.';
+   }elseif($type==='image'){
+    if(array_diff(array_keys($p),['src','alt']))$errors[]='Unknown image property.';
+    if(!array_key_exists('src',$p)||!array_key_exists('alt',$p))$errors[]='Image source and alternative text are required.';
+    if(!is_string($p['src']??null)||!bh_page_document_safe_image_src_v1($p['src']))$errors[]='Image source invalid.';
+    if(!is_string($p['alt']??null)||mb_strlen($p['alt'])>500)$errors[]='Image alternative text invalid.';
    }elseif($type==='button'){
     if(array_diff(array_keys($p),['text','href']))$errors[]='Unknown button property.';
     if(!array_key_exists('text',$p)||!array_key_exists('href',$p))$errors[]='Button text and link are required.';
@@ -95,6 +100,13 @@ function bh_validate_page_document_v1(mixed $document): array {
  $encoded=json_encode($document,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
  if($encoded===false||strlen($encoded)>500000)$errors[]='Document size exceeds 500 KB.';
  return ['ok'=>!$errors,'errors'=>array_values(array_unique($errors))];
+}
+function bh_page_document_safe_image_src_v1(string $src): bool {
+ if($src===''||strlen($src)>2048||preg_match('/[\\x00-\\x20\\x7f]/',$src)||str_contains($src,'\\')||str_starts_with($src,'//'))return false;
+ if(str_starts_with($src,'/'))return true;
+ if(!preg_match('/^https?:\\/\\//i',$src))return false;
+ $parts=parse_url($src);
+ return is_array($parts)&&isset($parts['host'])&&!isset($parts['user'])&&!isset($parts['pass'])&&filter_var($src,FILTER_VALIDATE_URL)!==false;
 }
 function bh_page_document_safe_href_v1(string $href): bool {
  if($href===''||preg_match('/[\x00-\x20\x7f]/',$href)||str_contains($href,'\\')||str_starts_with($href,'//'))return false;
