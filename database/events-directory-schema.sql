@@ -150,7 +150,7 @@ CREATE TABLE IF NOT EXISTS bh_directory_record_reviews (
  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
  section_key ENUM('business','childcare','place','school_club') NOT NULL,
  record_id BIGINT UNSIGNED NOT NULL, reviewer_user_id BIGINT UNSIGNED NULL,
- decision ENUM('approved','rejected','returned_for_edits') NOT NULL,
+ decision ENUM('approved','rejected','returned_for_edits','revision_approved','revision_rejected','revision_returned_for_edits') NOT NULL,
  note VARCHAR(2000) NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
  KEY idx_directory_record_review (section_key,record_id,created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
