@@ -22,9 +22,10 @@ if(empty($_SESSION['expo_booking_csrf']))$_SESSION['expo_booking_csrf']=bin2hex(
 if($method==='GET'){
  require_once __DIR__.'/turnstile-settings.php';
  $site=trim(bh_turnstile_setting('BUBBAHUB_TURNSTILE_SITE_KEY'));
- $enabled=defined('BUBBAHUB_EXPO_BOOKINGS_ENABLED')&&constant('BUBBAHUB_EXPO_BOOKINGS_ENABLED')===true;
+ $enabled=false; // January 2027 event cancelled; bookings remain closed.
  expoBookingReply(200,['ok'=>true,'bookings_open'=>$enabled,'turnstile_site_key'=>$site,'csrf_token'=>$_SESSION['expo_booking_csrf']]);
 }
+if(($_SERVER['REQUEST_METHOD']??'GET')==='POST')expoBookingReply(410,['ok'=>false,'error'=>'event_cancelled','message'=>'This event has been cancelled and bookings are closed.']);
 if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST'){
  header('Allow: POST');
  expoBookingReply(405,['ok'=>false,'error'=>'method_not_allowed']);
