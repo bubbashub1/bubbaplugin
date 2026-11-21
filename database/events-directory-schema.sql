@@ -148,7 +148,7 @@ CREATE TABLE IF NOT EXISTS bh_directory_school_clubs (
 -- Shared moderation history for the four specialist directory sections.
 CREATE TABLE IF NOT EXISTS bh_directory_record_reviews (
  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
- section_key ENUM('business','childcare','place','school_club') NOT NULL,
+ section_key ENUM('event','business','childcare','place','school_club') NOT NULL,
  record_id BIGINT UNSIGNED NOT NULL, reviewer_user_id BIGINT UNSIGNED NULL,
  decision ENUM('approved','rejected','returned_for_edits','revision_approved','revision_rejected','revision_returned_for_edits') NOT NULL,
  note VARCHAR(2000) NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
