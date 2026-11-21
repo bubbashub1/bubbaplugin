@@ -456,7 +456,11 @@ async function loadMediaLibrary(){
   });
  }catch(error){statusNode.textContent=error.message;}
 }
-$('browseMediaLibrary').addEventListener('click',()=>{$('mediaLibrary').hidden=!$('mediaLibrary').hidden;if(!$('mediaLibrary').hidden)loadMediaLibrary();});
+function closeMediaLibrary(){$('mediaLibrary').hidden=true;$('browseMediaLibrary').focus();}
+$('browseMediaLibrary').addEventListener('click',()=>{$('mediaLibrary').hidden=false;loadMediaLibrary();$('mediaLibrarySearch').focus();});
+$('closeMediaLibrary').addEventListener('click',closeMediaLibrary);
+$('mediaLibrary').addEventListener('click',event=>{if(event.target===$('mediaLibrary'))closeMediaLibrary();});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!$('mediaLibrary').hidden)closeMediaLibrary();});
 $('refreshMediaLibrary').addEventListener('click',loadMediaLibrary);
 $('mediaLibrarySearch').addEventListener('change',loadMediaLibrary);
 $('mediaLibraryFolder').addEventListener('change',loadMediaLibrary);
