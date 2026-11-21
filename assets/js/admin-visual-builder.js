@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const frame=$('pageCanvas');
-let pages=[],page=null,device='desktop',layerNodes=[],draft=null,csrf='',revisionRows=[],currentBlock=null,currentSection=null,previewMode='published',draftHasValidationError=false;
+let pages=[],page=null,device='desktop',layerNodes=[],draft=null,csrf='',revisionRows=[],currentBlock=null,currentSection=null,previewMode='published',draftHasValidationError=false,inlineEditingNode=null;
 function normalizedColumnWidths(value,count){const parts=Array.isArray(value)?value:String(value||'').split(',');const widths=parts.slice(0,count).map(v=>Math.max(10,Math.min(90,Number(v)||0)));if(widths.length!==count||widths.some(v=>!v))return Array(count).fill(100/count);const total=widths.reduce((a,b)=>a+b,0);return widths.map(v=>Math.round(v/total*100));}
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function status(message){$('builderStatus').textContent=message;}
@@ -26,7 +26,7 @@ function updateSelectionDetails(node){
 }
  if(editable){
   const props=currentBlock.props||{};
-  $('editText').value=props.text||'';$('editText').hidden=currentBlock.type==='image';
+  $('editText').value=props.text||'';$('editText').hidden=currentBlock.type==='image';$('inlineEditToggle').hidden=!['heading','paragraph','button'].includes(currentBlock.type);
   $('editText').maxLength=currentBlock.type==='heading'?500:(currentBlock.type==='button'?120:10000);
   const isButton=currentBlock.type==='button';
   $('editHref').hidden=!isButton;$('editHrefLabel').hidden=!isButton;
@@ -44,6 +44,8 @@ function updateSelectionDetails(node){
 }
 function selectNode(node){
  if(!node)return;
+ if(inlineEditingNode&&inlineEditingNode!==node){inlineEditingNode.contentEditable='false';inlineEditingNode.removeAttribute('data-bh-inline-editing');inlineEditingNode=null;}
+ $('inlineEditToggle').hidden=true;$('inlineEditToggle').textContent='Edit directly on page';
  try{
   const doc=frame.contentDocument;
   doc?.querySelectorAll('.bhvb-selected-preview').forEach(n=>n.classList.remove('bhvb-selected-preview'));
@@ -274,7 +276,14 @@ function attachCanvas(){
    draggedBlockId='';
   });
   doc.addEventListener('dragend',()=>{draggedBlockId='';doc.querySelectorAll('.bhvb-dragging,.bhvb-drag-over').forEach(node=>node.classList.remove('bhvb-dragging','bhvb-drag-over'));});
+  doc.addEventListener('input',event=>{
+   const node=event.target.closest('[data-bh-inline-editing="true"]');
+   if(!node||previewMode!=='draft'||!currentBlock)return;
+   const value=node.textContent||'';currentBlock.props.text=value;$('editText').value=value;
+   draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Text edited directly on the page. Save draft when ready.');
+  },true);
   doc.addEventListener('click',event=>{
+   if(event.target.closest('[contenteditable="true"]'))return;
    const node=event.target.closest('h1,h2,h3,h4,p,a,button,img,section,article');
    if(!node||node===doc.body)return;
    event.preventDefault();event.stopPropagation();selectNode(node);
@@ -495,6 +504,7 @@ $('mediaLibraryFolder').addEventListener('change',loadMediaLibrary);
 
 $('chooseImageFile').addEventListener('click',()=>$('imageFileUpload').click());
 $('imageFileUpload').addEventListener('change',async()=>{const file=$('imageFileUpload').files?.[0];if(!file)return;if(!currentBlock||currentBlock.type!=='image'){ $('imageUploadStatus').textContent='Select an image element in the draft first.';$('imageFileUpload').value='';return;}if(!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type)){ $('imageUploadStatus').textContent='Choose a JPG, PNG, WebP or GIF image.';$('imageFileUpload').value='';return;}if(file.size>8*1024*1024){$('imageUploadStatus').textContent='Images must be 8 MB or smaller.';$('imageFileUpload').value='';return;}const button=$('chooseImageFile');button.disabled=true;$('imageUploadStatus').textContent='Uploading image…';try{const form=new FormData();form.append('image',file);const response=await fetch('/api/admin-visual-builder-media.php',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'X-CSRF-Token':csrf,'Accept':'application/json'},body:form});const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||'Image upload failed.');$('imageSource').value=data.src;currentBlock.props.src=data.src;const node=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');if(node)node.src=data.src;draftHasValidationError=false;$('saveDraft').disabled=false;$('imageUploadStatus').textContent='Uploaded: '+file.name+' · Save draft to keep this image on the page.';draftStatus('Image uploaded and added to the draft. Save draft when ready.');}catch(error){$('imageUploadStatus').textContent=error.message;}finally{button.disabled=false;$('imageFileUpload').value='';}});$('imageAlt').addEventListener('input',()=>{if(currentBlock?.type!=='image')return;currentBlock.props.alt=$('imageAlt').value.slice(0,300);const n=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');if(n)n.alt=currentBlock.props.alt;$('saveDraft').disabled=false;draftStatus('Image alternative text updated. Save draft when ready.');});$('imageFit').addEventListener('change',()=>{if(currentBlock?.type!=='image')return;currentBlock.props.fit=$('imageFit').value;const n=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');if(n)n.style.objectFit=currentBlock.props.fit;$('saveDraft').disabled=false;});
+$('inlineEditToggle').addEventListener('click',()=>{if(!currentBlock||previewMode!=='draft'||!['heading','paragraph','button'].includes(currentBlock.type))return;const node=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');if(!node)return;if(inlineEditingNode===node){node.contentEditable='false';node.removeAttribute('data-bh-inline-editing');inlineEditingNode=null;$('inlineEditToggle').textContent='Edit directly on page';draftStatus('Inline editing finished. Save draft to keep your changes.');}else{if(inlineEditingNode){inlineEditingNode.contentEditable='false';inlineEditingNode.removeAttribute('data-bh-inline-editing');}inlineEditingNode=node;node.contentEditable='true';node.dataset.bhInlineEditing='true';node.focus();$('inlineEditToggle').textContent='Finish editing';draftStatus('Click into the text on the page and type. Select Finish editing when done.');}});
 $('editText').addEventListener('input',applyEdit);$('editHref').addEventListener('change',applyEdit);
 function applyElementStyle(){if(!currentBlock||previewMode!=='draft')return;const p=currentBlock.props;p.font_size=Number($('elementFontSize').value);p.padding=Number($('elementPadding').value);p.width=Number($('elementWidth').value);p.align=$('elementAlign').value;p.margin_bottom=Number($('elementSpacing').value);p.color=$('elementTextColor').value;p.background=$('elementBackgroundEnabled').checked?$('elementBackground').value:'';p.radius=Number($('elementRadius').value);$('elementFontSizeValue').textContent=p.font_size+'px';$('elementWidthValue').textContent=p.width+'%';$('elementSpacingValue').textContent=p.margin_bottom+'px';const node=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');if(node){node.style.fontSize=p.font_size+'px';node.style.width=p.width+'%';node.style.maxWidth='100%';node.style.textAlign=p.align;node.style.marginBottom=p.margin_bottom+'px';node.style.color=p.color;node.style.backgroundColor=p.background||'transparent';node.style.borderRadius=p.radius+'px';node.style.padding=p.padding+'px';node.style.boxSizing='border-box';if(currentBlock.type==='image'){node.style.width=p.width+'%';node.style.objectFit=p.fit==='contain'?'contain':'cover';node.style.borderRadius=Math.min(48,Math.max(0,Number(p.radius)||0))+'px';}if(currentBlock.type==='button'){node.style.display='inline-block';node.parentElement.style.textAlign=p.align;node.parentElement.style.marginBottom=p.margin_bottom+'px';}}draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Unsaved element styling. Save draft when ready.');}
 $('elementPaddingValue').textContent=$('elementPadding').value+'px';['elementFontSize','elementWidth','elementAlign','elementSpacing','elementTextColor','elementBackground','elementBackgroundEnabled','elementPadding','elementRadius'].forEach(id=>$(id).addEventListener('input',applyElementStyle));$('elementRadius').addEventListener('input',()=>{$('elementRadiusValue').textContent=$('elementRadius').value+'px';});
