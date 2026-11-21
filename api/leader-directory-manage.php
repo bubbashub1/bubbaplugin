@@ -14,7 +14,7 @@ if(!$org){try{$q=$db->prepare("SELECT COUNT(*) FROM bh_organisers WHERE LOWER(em
 if(!$org)ldm(403,['ok'=>false,'error'=>'organiser_required','message'=>'Your Leader account needs an organisation profile first.']);
 if($_SERVER['REQUEST_METHOD']==='GET'){
  $_SESSION['bh_directory_manage_csrf']??=bin2hex(random_bytes(32));$all=[];
- foreach($map as $section=>$table){$q=$db->prepare("SELECT id,title,category,town,status,created_at,updated_at,review_note FROM ".$table." WHERE organiser_id=? AND (created_by_user_id=? OR created_by_user_id IS NULL) ORDER BY updated_at DESC LIMIT 250");$q->execute([(int)$org,$uid]);foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){$row['section']=$section;$all[]=$row;}}
+ foreach($map as $section=>$table){$q=$db->prepare("SELECT id,title,category,town,status,created_at,updated_at,review_note FROM ".$table." WHERE organiser_id=? ORDER BY updated_at DESC LIMIT 250");$q->execute([(int)$org]);foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){$row['section']=$section;$all[]=$row;}}
  usort($all,static fn($a,$b)=>strcmp((string)$b['updated_at'],(string)$a['updated_at']));
  ldm(200,['ok'=>true,'csrf'=>$_SESSION['bh_directory_manage_csrf'],'records'=>$all]);
 }
@@ -26,7 +26,7 @@ if(!is_array($b)||empty($_SESSION['bh_directory_manage_csrf'])||!is_string($b['c
 $section=(string)($b['section']??'');$id=filter_var($b['record_id']??null,FILTER_VALIDATE_INT);
 if(!isset($map[$section])||!$id||$id<1)ldm(422,['ok'=>false,'error'=>'invalid_record']);
 $table=$map[$section];
-try{$db->beginTransaction();$q=$db->prepare("SELECT id,status FROM ".$table." WHERE id=? AND organiser_id=? AND (created_by_user_id=? OR created_by_user_id IS NULL) FOR UPDATE");$q->execute([$id,(int)$org,$uid]);$row=$q->fetch(PDO::FETCH_ASSOC);
+try{$db->beginTransaction();$q=$db->prepare("SELECT id,status FROM ".$table." WHERE id=? AND organiser_id=? FOR UPDATE");$q->execute([$id,(int)$org]);$row=$q->fetch(PDO::FETCH_ASSOC);
 if(!$row){$db->rollBack();ldm(404,['ok'=>false,'error'=>'record_not_found']);}
 if($row['status']==='published'){ $db->rollBack();ldm(409,['ok'=>false,'error'=>'published_change_requires_review','message'=>'Published entries cannot be changed or removed directly. Please contact Bubba Hub to request an update.']);}
 if($row['status']==='archived'){$db->rollBack();ldm(409,['ok'=>false,'error'=>'already_archived']);}
