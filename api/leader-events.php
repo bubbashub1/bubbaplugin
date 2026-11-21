@@ -31,12 +31,15 @@ if(!is_array($body)||empty($_SESSION['bh_directory_event_csrf'])||!is_string($bo
 foreach(['bh_directory_events','bh_directory_event_occurrences','bh_directory_event_listings'] as $table)if(!le_table($db,$table))le_reply(503,['ok'=>false,'error'=>'events_schema_not_installed','message'=>'The Events database setup has not yet been installed on staging. Your details have not been submitted.']);
 $length=static fn($v)=>function_exists('mb_strlen')?mb_strlen($v):strlen($v);
 $title=trim((string)($body['title']??''));$summary=trim((string)($body['summary']??''));$description=trim((string)($body['description']??''));$category=trim((string)($body['category']??''));$venue=trim((string)($body['venue_name']??''));$town=trim((string)($body['town']??''));$region=trim((string)($body['region']??''));$postcode=trim((string)($body['postcode']??''));$address=trim((string)($body['address']??''));$booking=trim((string)($body['booking_url']??''));$status=($body['intent']??'draft')==='submit'?'pending':'draft';
-$start=trim((string)($body['starts_at']??''));$end=trim((string)($body['ends_at']??''));
-if($title===''||$description===''||$start===''||$venue===''||$town==='')le_reply(422,['ok'=>false,'error'=>'required_fields','message'=>'Add an event title, description, start date and time, venue and town.']);
+$rawOccurrences=is_array($body['occurrences']??null)?array_slice($body['occurrences'],0,40):[['starts_at'=>$body['starts_at']??'','ends_at'=>$body['ends_at']??'']];
+if(!$rawOccurrences)$rawOccurrences=[['starts_at'=>$body['starts_at']??'','ends_at'=>$body['ends_at']??'']];
+if($title===''||$description===''||$venue===''||$town==='')le_reply(422,['ok'=>false,'error'=>'required_fields','message'=>'Add an event name, description, venue and town.']);
 if($length($title)>190||$length($summary)>500||$length($description)>20000||$length($venue)>190||$length($town)>120||$length($region)>120||$length($postcode)>20||$length($address)>500)le_reply(422,['ok'=>false,'error'=>'field_too_long','message'=>'One or more fields are too long.']);
 $parse=static function(string $v):?string{$d=DateTime::createFromFormat('Y-m-d\\TH:i',$v,new DateTimeZone('Europe/London'));return $d?$d->format('Y-m-d H:i:s'):null;};
-$starts=$parse($start);$ends=$end!==''?$parse($end):null;
-if(!$starts||($end!==''&&!$ends)||($ends&&$ends<=$starts))le_reply(422,['ok'=>false,'error'=>'invalid_event_dates','message'=>'Check the event start and end date/time. The end must be after the start.']);
+$occurrences=[];$seen=[];
+foreach($rawOccurrences as $occ){if(!is_array($occ))continue;$sv=trim((string)($occ['starts_at']??''));$ev=trim((string)($occ['ends_at']??''));if($sv==='')continue;$s=$parse($sv);$e=$ev!==''?$parse($ev):null;if(!$s||($ev!==''&&!$e)||($e&&$e<=$s))le_reply(422,['ok'=>false,'error'=>'invalid_event_dates','message'=>'Check each event date and time. Every end must be after its start.']);if(isset($seen[$s]))continue;$seen[$s]=true;$occurrences[]=['start'=>$s,'end'=>$e];}
+if(!$occurrences)le_reply(422,['ok'=>false,'error'=>'required_event_date','message'=>'Add at least one event date and start time.']);
+$starts=$occurrences[0]['start'];
 if($booking!==''&&(!filter_var($booking,FILTER_VALIDATE_URL)||!in_array(strtolower((string)parse_url($booking,PHP_URL_SCHEME)),['http','https'],true)))le_reply(422,['ok'=>false,'error'=>'invalid_booking_url','message'=>'Enter a valid https:// or http:// booking link.']);
 $ageMin=($body['age_min_months']??'')===''?null:(int)$body['age_min_months'];$ageMax=($body['age_max_months']??'')===''?null:(int)$body['age_max_months'];
 if(($ageMin!==null&&($ageMin<0||$ageMin>216))||($ageMax!==null&&($ageMax<0||$ageMax>216))||($ageMin!==null&&$ageMax!==null&&$ageMax<$ageMin))le_reply(422,['ok'=>false,'error'=>'invalid_age_range','message'=>'Check the age range.']);
@@ -48,7 +51,7 @@ try{
  $q=$db->prepare("INSERT INTO bh_directory_events (organiser_id,created_by_user_id,title,slug,summary,description,category,age_min_months,age_max_months,booking_url,venue_name,address,town,region,postcode,status,submitted_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
  $q->execute([$oid,$uid,$title,$slug,$summary?:null,$description,$category?:null,$ageMin,$ageMax,$booking?:null,$venue,$address?:null,$town,$region?:null,$postcode?:null,$status,$status==='pending'?date('Y-m-d H:i:s'):null]);
  $eventId=(int)$db->lastInsertId();
- $q=$db->prepare("INSERT INTO bh_directory_event_occurrences (event_id,starts_at,ends_at,timezone) VALUES (?,?,?,'Europe/London')");$q->execute([$eventId,$starts,$ends]);
+ $q=$db->prepare("INSERT INTO bh_directory_event_occurrences (event_id,starts_at,ends_at,timezone) VALUES (?,?,?,'Europe/London')");foreach($occurrences as $occurrence)$q->execute([$eventId,$occurrence['start'],$occurrence['end']]);
  if($linked){$q=$db->prepare("INSERT INTO bh_directory_event_listings (event_id,activity_id) VALUES (?,?)");foreach($linked as $id)$q->execute([$eventId,$id]);}
  $db->commit();
  le_reply(201,['ok'=>true,'event_id'=>$eventId,'status'=>$status,'message'=>$status==='pending'?'Your event has been sent to Bubba Hub for review.':'Your event draft has been saved.']);
