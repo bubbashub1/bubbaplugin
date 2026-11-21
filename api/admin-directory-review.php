@@ -5,6 +5,7 @@ ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');
 $secure=!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off';session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);session_name('BUBBAHUB_ADMINSESSID');session_start();
 function dar(int $c,array $d):never{http_response_code($c);echo json_encode($d,JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);exit;}
 $map=[
+'event'=>['bh_directory_events',['title','summary','description','category','age_min_months','age_max_months','booking_url','venue_name','address','town','region','postcode']],
 'business'=>['bh_directory_businesses',['title','category','summary','description','town','region','address','postcode','website_url','contact_email','contact_phone']],
 'childcare'=>['bh_directory_childcare',['title','category','summary','description','age_min','age_max','town','region','address','postcode','website_url','registration_body','registration_reference','verification_url','verified_on']],
 'place'=>['bh_directory_places',['title','category','summary','description','town','region','address','postcode','website_url','facilities']],
@@ -37,10 +38,27 @@ try{
   if(!$rev||$rev['status']!=='pending'){$db->rollBack();dar(409,['ok'=>false,'error'=>'revision_not_reviewable']);}
   if($decision==='approved'){
    $payload=json_decode((string)$rev['payload'],true);if(!is_array($payload))throw new RuntimeException('Invalid revision payload');
-   $sets=[];$values=[];foreach($fields as $field){if(!array_key_exists($field,$payload))continue;$sets[]=$field."=?";$values[]=$payload[$field];}
-   if(!$sets)throw new RuntimeException('Empty revision payload');
-   $q=$db->prepare("UPDATE ".$table." SET ".implode(',',$sets)." WHERE id=? AND status='published'");$q->execute(array_merge($values,[(int)$rev['record_id']]));
-   if($q->rowCount()<1){$check=$db->prepare("SELECT status FROM ".$table." WHERE id=?");$check->execute([(int)$rev['record_id']]);if($check->fetchColumn()!=='published')throw new RuntimeException('Published record no longer exists');}
+   if($section==='event'){
+    $q=$db->prepare("SELECT organiser_id,status FROM bh_directory_events WHERE id=? FOR UPDATE");$q->execute([(int)$rev['record_id']]);$eventOwner=$q->fetch(PDO::FETCH_ASSOC);
+    if(!$eventOwner||$eventOwner['status']!=='published')throw new RuntimeException('Published event no longer exists');
+    $sets=[];$values=[];foreach($fields as $field){if(array_key_exists($field,$payload)){$sets[]=$field."=?";$values[]=$payload[$field];}}
+    if(!$sets)throw new RuntimeException('Empty event revision payload');
+    $q=$db->prepare("UPDATE bh_directory_events SET ".implode(',',$sets).",reviewed_at=NOW(),reviewed_by_user_id=? WHERE id=? AND status='published'");$q->execute(array_merge($values,[(int)($_SESSION['bh_user_id']??0)?:null,(int)$rev['record_id']]));
+    $occurrences=$payload['occurrences']??null;$listingIds=$payload['listing_ids']??null;
+    if(!is_array($occurrences)||!count($occurrences)||!is_array($listingIds))throw new RuntimeException('Event dates or links missing from revision');
+    $db->prepare("DELETE FROM bh_directory_event_occurrences WHERE event_id=?")->execute([(int)$rev['record_id']]);
+    $q=$db->prepare("INSERT INTO bh_directory_event_occurrences (event_id,starts_at,ends_at,timezone,occurrence_status) VALUES (?,?,?,'Europe/London','scheduled')");
+    foreach($occurrences as $occ){if(!is_array($occ)||empty($occ['start']))throw new RuntimeException('Invalid event occurrence');$q->execute([(int)$rev['record_id'],$occ['start'],$occ['end']??null]);}
+    $ids=array_values(array_unique(array_filter(array_map('intval',$listingIds),static fn($v)=>$v>0)));
+    if($ids){$marks=implode(',',array_fill(0,count($ids),'?'));$check=$db->prepare("SELECT id FROM bh_activities WHERE organiser_id=? AND id IN ($marks)");$check->execute(array_merge([(int)$eventOwner['organiser_id']],$ids));if(count($check->fetchAll(PDO::FETCH_COLUMN))!==count($ids))throw new RuntimeException('One or more linked listings are no longer owned by this organiser');}
+    $db->prepare("DELETE FROM bh_directory_event_listings WHERE event_id=?")->execute([(int)$rev['record_id']]);
+    if($ids){$q=$db->prepare("INSERT INTO bh_directory_event_listings (event_id,activity_id) VALUES (?,?)");foreach($ids as $activityId)$q->execute([(int)$rev['record_id'],$activityId]);}
+   }else{
+    $sets=[];$values=[];foreach($fields as $field){if(!array_key_exists($field,$payload))continue;$sets[]=$field."=?";$values[]=$payload[$field];}
+    if(!$sets)throw new RuntimeException('Empty revision payload');
+    $q=$db->prepare("UPDATE ".$table." SET ".implode(',',$sets)." WHERE id=? AND status='published'");$q->execute(array_merge($values,[(int)$rev['record_id']]));
+    if($q->rowCount()<1){$check=$db->prepare("SELECT status FROM ".$table." WHERE id=?");$check->execute([(int)$rev['record_id']]);if($check->fetchColumn()!=='published')throw new RuntimeException('Published record no longer exists');}
+   }
   }
   $q=$db->prepare("UPDATE bh_directory_record_revisions SET status=?,reviewed_at=NOW(),reviewed_by_user_id=?,review_note=? WHERE id=?");$q->execute([$decision,(int)($_SESSION['bh_user_id']??0)?:null,$note?:null,(int)$rev['id']]);
   $q=$db->prepare("INSERT INTO bh_directory_record_reviews (section_key,record_id,reviewer_user_id,decision,note) VALUES (?,?,?,?,?)");$q->execute([$section,(int)$rev['record_id'],(int)($_SESSION['bh_user_id']??0)?:null,'revision_'.$decision,$note?:null]);
