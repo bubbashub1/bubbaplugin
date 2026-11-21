@@ -3,7 +3,7 @@ window.bhInitPlanner = async function(root=document){
   if(root.dataset)root.dataset.bhPlannerInitialized="true";
   try {
   const $=id=>root.querySelector(`[id="${id}"]`);
-  const results=$("results"),count=$("count"),intro=$("plannerIntro"),controls=$("dayControls"),statusNote=$("plannerSyncNote"),exportBtn=$("exportCalendar"),printBtn=$("printCalendar");
+  const results=$("plannerResults"),count=$("count"),intro=$("plannerIntro"),controls=$("dayControls"),statusNote=$("plannerSyncNote"),exportBtn=$("exportCalendar"),printBtn=$("printCalendar");
   const days=[
     {name:"Monday",short:"Mon",num:1},{name:"Tuesday",short:"Tue",num:2},{name:"Wednesday",short:"Wed",num:3},
     {name:"Thursday",short:"Thu",num:4},{name:"Friday",short:"Fri",num:5},{name:"Saturday",short:"Sat",num:6},{name:"Sunday",short:"Sun",num:7}
