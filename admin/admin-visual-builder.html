@@ -52,6 +52,18 @@
 <label for="containerBorderColor">Border colour</label><input id="containerBorderColor" type="color" value="#dce8df">
 <label for="containerAlign">Horizontal position</label><select id="containerAlign"><option value="left">Left</option><option value="center" selected>Centre</option><option value="right">Right</option></select>
 <label for="containerSpacing">Space after container <output id="containerSpacingValue">18px</output></label><input id="containerSpacing" type="range" min="0" max="96" step="2" value="18">
+<label class="bhvb-mobile-toggle" for="mobileOverrideEnabled"><input id="mobileOverrideEnabled" type="checkbox"> Use separate mobile layout settings</label>
+<div id="mobileOverrideControls" class="bhvb-mobile-controls" hidden>
+<label for="mobileContainerWidth">Mobile width <output id="mobileContainerWidthValue">100%</output></label><input id="mobileContainerWidth" type="range" min="25" max="100" step="5" value="100">
+<label for="mobileContainerPadding">Mobile padding <output id="mobileContainerPaddingValue">16px</output></label><input id="mobileContainerPadding" type="range" min="0" max="96" step="4" value="16">
+<label for="mobileContainerGap">Mobile inner spacing <output id="mobileContainerGapValue">12px</output></label><input id="mobileContainerGap" type="range" min="0" max="64" step="4" value="12">
+<label for="mobileContainerHeight">Mobile minimum height <output id="mobileContainerHeightValue">0px</output></label><input id="mobileContainerHeight" type="range" min="0" max="800" step="20" value="0">
+<label for="mobileContainerRadius">Mobile corner radius <output id="mobileContainerRadiusValue">12px</output></label><input id="mobileContainerRadius" type="range" min="0" max="48" step="2" value="12">
+<label for="mobileContainerBorderWidth">Mobile border thickness <output id="mobileContainerBorderWidthValue">0px</output></label><input id="mobileContainerBorderWidth" type="range" min="0" max="8" step="1" value="0">
+<label for="mobileContainerAlign">Mobile horizontal position</label><select id="mobileContainerAlign"><option value="left">Left</option><option value="center" selected>Centre</option><option value="right">Right</option></select>
+<label for="mobileContainerSpacing">Mobile space after <output id="mobileContainerSpacingValue">16px</output></label><input id="mobileContainerSpacing" type="range" min="0" max="96" step="2" value="16">
+<p class="bhvb-edit-help">These settings only apply at 600px viewport width or narrower. Desktop settings remain unchanged.</p>
+</div>
 <div class="bhvb-container-actions"><button type="button" id="moveContainerUp">Move up</button><button type="button" id="moveContainerDown">Move down</button><button type="button" id="deleteContainer">Delete container</button></div>
 <p class="bhvb-edit-help">Each container has independent layout and style settings. Changes remain in this private draft.</p>
 </div>
