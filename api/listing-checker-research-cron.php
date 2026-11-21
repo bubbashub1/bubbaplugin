@@ -39,7 +39,8 @@ try{
  $runtime=max(30,min(240,(int)$get('max_runtime_seconds','180')));$deadline=microtime(true)+$runtime;
  $query='SELECT '.implode(',',$select).' FROM bh_activities a'.$join.' WHERE NOT EXISTS (SELECT 1 FROM bh_listing_check_findings rf WHERE rf.check_type=\'health\' AND rf.activity_id=a.id AND rf.finding_type IN (\'auto_research_suggestions\',\'auto_research_no_suggestions\')) ORDER BY a.id LIMIT 5000';
  $rows=$db->query($query)->fetchAll(PDO::FETCH_ASSOC);
- $run=$db->prepare("INSERT INTO bh_listing_check_runs(check_type,status,started_at) VALUES('discovery','running',NOW())");$run->execute();$runId=(int)$db->lastInsertId();
+ // Keep research runs distinct from genuine new-listing discovery in admin history.
+ $run=$db->prepare("INSERT INTO bh_listing_check_runs(check_type,status,started_at) VALUES('research','running',NOW())");$run->execute();$runId=(int)$db->lastInsertId();
  if($manual){$clear=$db->prepare("INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES('research_run_now','0') ON DUPLICATE KEY UPDATE setting_value='0'");$clear->execute();}
  $missing=[];$keys=['description'=>['description','short_description'],'website'=>['website','organiser_website'],'booking_url'=>['booking_url'],'contact_email'=>['contact_email','organiser_email'],'contact_phone'=>['contact_phone','organiser_phone'],'age_range'=>['age_range'],'category'=>['category'],'town'=>['town'],'postcode'=>['postcode'],'facebook_url'=>['facebook_url'],'instagram_url'=>['instagram_url']];
  foreach($rows as $row){$want=[];foreach($keys as $field=>$sources){$supported=array_filter($sources,static fn($k)=>array_key_exists($k,$row));if(!$supported)continue;$present=false;foreach($supported as $k)if(trim((string)($row[$k]??''))!=='')$present=true;if(!$present)$want[]=$field;}if($want&&count($missing)<$limit)$missing[]=['row'=>$row,'fields'=>$want];}
