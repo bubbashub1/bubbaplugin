@@ -75,3 +75,6 @@
 .bhvb-inspector-note{background:#f2f7f3;border-radius:12px}
 @media(max-width:1100px){.bhvb-workspace{grid-template-columns:200px minmax(0,1fr)}}
 @media(max-width:700px){.bhvb-shell{padding:16px 10px 36px}.bhvb-elements-panel{padding:12px}.bhvb-canvas-stage{padding:8px}}
+
+/* Flexible columns and reusable section layouts */
+.bhvb-section-presets{display:grid;gap:7px;padding:10px 0 12px;border-bottom:1px solid #e8eee8}.bhvb-section-presets strong{font-size:.78rem;color:#315d40}.bhvb-section-presets button{border:1px solid #c8d9cc;border-radius:9px;padding:9px 10px;background:#f2f7f3;color:#315d40;text-align:left;font:inherit;font-size:.78rem;font-weight:750;cursor:pointer}.bhvb-section-presets button:hover:not(:disabled){border-color:#82aa94;background:#eaf3ec}.bhvb-section-presets button:disabled{opacity:.45;cursor:not-allowed}#containerColumnWidthsWrap{display:grid;gap:6px;padding:8px 10px;border:1px solid #e1eae3;border-radius:10px;background:#f7faf7}#containerColumnWidthsWrap[hidden]{display:none!important}#containerColumnWidths{width:100%;box-sizing:border-box;padding:9px;border:1px solid #cfd8cf;border-radius:8px;background:#fff;color:#203c2c;font:inherit;font-size:.88rem}
