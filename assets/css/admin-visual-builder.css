@@ -203,3 +203,6 @@ body.bh-admin-v2{background:#f4f7f4}
  .bhvb-device-switch{width:100%}
  .bhvb-device-switch button{flex:1}
 }
+
+.bhvb-inline-edit-toggle{width:100%;padding:10px 12px;border:1px solid #9bbca7;border-radius:9px;background:#edf6ef;color:#285b40;font:inherit;font-size:.8rem;font-weight:750;cursor:pointer}.bhvb-inline-edit-toggle:hover{background:#e1f0e5;border-color:#6e9d7d}.bhvb-inline-edit-toggle[hidden]{display:none!important}
+.bhvb-canvas-stage iframe [contenteditable="true"]{outline:2px dashed #0f766e!important;outline-offset:4px!important;cursor:text!important;min-width:24px}
