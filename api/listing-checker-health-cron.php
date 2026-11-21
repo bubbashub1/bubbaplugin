@@ -160,3 +160,9 @@ try{
 }catch(Throwable $e){if($runId){$s=$db->prepare("UPDATE bh_listing_check_runs SET status='failed',finished_at=NOW(),summary_json=? WHERE id=?");$s->execute([json_encode(['error'=>$e->getMessage()]),$runId]);}error_log('Listing checker: '.$e->getMessage());fwrite(STDERR,"Worker failed; see PHP error log
 ");exit(1);}
 finally{$db->query("SELECT RELEASE_LOCK('bh_listing_checker_health')");}
+
+// The existing hosting cron invokes this health worker every four hours.
+// Run missing-information research after a successful health batch so the existing
+// single scheduled task services both workers; research remains independently
+// enabled/paused/windowed and writes suggestions only for admin review.
+require __DIR__.'/listing-checker-research-cron.php';
