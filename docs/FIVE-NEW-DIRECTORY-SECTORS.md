@@ -33,10 +33,14 @@ The Leader Hub navigation links to all four new submission tools. They use the e
 **Do not run the SQL until a staging backup is available and the schema has been reviewed against the actual staging database.** No database installation has been performed.
 
 ## Still to build before the database batch is considered complete
-1. Admin moderation UI/API for the four specialist section types, including return-for-edits/reject/approve and review audit history.
-2. Leader "My Directory entries" management list, edit/resubmit and archive/cancel workflows.
-3. End-to-end tests after the consolidated schema is installed: draft, pending, admin approval, public search, owner isolation, validation and mobile layout.
-4. Confirm actual organiser/user linkage on staging. The new API prefers `bh_organisers.user_id`; unique email matching is legacy fallback only.
+1. Leader "My Directory entries" management list, edit/resubmit and archive workflows.
+2. End-to-end tests after the consolidated schema is installed: draft, pending, admin approval, public search, owner isolation, validation and mobile layout.
+3. Confirm actual organiser/user linkage on staging. The new API prefers `bh_organisers.user_id`; unique email matching is legacy fallback only.
+
+## Moderation foundation added
+- `admin/admin-directory-review.html` provides a protected review queue for the four specialist sections.
+- `api/admin-directory-review.php` supports approve, reject and return-for-edits decisions, uses admin authentication and CSRF, and writes to the shared review history table.
+- The Admin Approval Centre now links to the new Directory section review queue.
 
 ## Safety and scope
 - All commits are on `staging-site`.
