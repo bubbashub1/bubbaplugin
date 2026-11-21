@@ -43,3 +43,4 @@
 .bhvb-layer-button.is-dragging{opacity:.4}
 .bhvb-layer-button.is-drop-target{outline:2px dashed #0f766e;outline-offset:2px;background:#edf7f3}
 .bhvb-layer-group{min-width:0}
+\n.bhvb-edit-controls input[type=url],.bhvb-edit-controls input[type=text]{width:100%;box-sizing:border-box;padding:10px;border:1px solid #cfd8cf;border-radius:8px;background:#fff;color:#203c2c;font:inherit;font-size:.88rem}\n
