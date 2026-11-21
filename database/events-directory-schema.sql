@@ -70,3 +70,87 @@ CREATE TABLE IF NOT EXISTS bh_directory_event_reviews (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_event_review_history (event_id,created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ---------------------------------------------------------------------------
+-- Bubba Hub Directory sectors: Businesses, Childcare & Schools,
+-- Places & Days Out, and School Clubs.
+-- Together with the Events tables above, this is the consolidated five-sector
+-- staging installation. Listings continue using the existing bh_activities.
+-- All new records belong to an existing bh_organisers profile and are moderated.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS bh_directory_businesses (
+ id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ organiser_id BIGINT UNSIGNED NOT NULL, created_by_user_id BIGINT UNSIGNED NULL,
+ title VARCHAR(190) NOT NULL, category VARCHAR(120) NOT NULL, summary VARCHAR(500) NULL,
+ description MEDIUMTEXT NOT NULL, town VARCHAR(120) NOT NULL, region VARCHAR(120) NULL,
+ address VARCHAR(500) NULL, postcode VARCHAR(20) NULL, website_url VARCHAR(1000) NULL,
+ contact_email VARCHAR(190) NULL, contact_phone VARCHAR(60) NULL,
+ status ENUM('draft','pending','published','rejected','archived') NOT NULL DEFAULT 'draft',
+ submitted_at DATETIME NULL, reviewed_at DATETIME NULL, reviewed_by_user_id BIGINT UNSIGNED NULL,
+ review_note VARCHAR(2000) NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ KEY idx_business_owner_status (organiser_id,status), KEY idx_business_town_category (town,category),
+ KEY idx_business_title (title)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS bh_directory_childcare (
+ id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ organiser_id BIGINT UNSIGNED NOT NULL, created_by_user_id BIGINT UNSIGNED NULL,
+ title VARCHAR(190) NOT NULL, category VARCHAR(120) NOT NULL, summary VARCHAR(500) NULL,
+ description MEDIUMTEXT NOT NULL, age_min SMALLINT UNSIGNED NULL, age_max SMALLINT UNSIGNED NULL,
+ town VARCHAR(120) NOT NULL, region VARCHAR(120) NULL, address VARCHAR(500) NULL,
+ postcode VARCHAR(20) NULL, website_url VARCHAR(1000) NULL, registration_body VARCHAR(120) NULL,
+ registration_reference VARCHAR(120) NULL, verification_url VARCHAR(1000) NULL, verified_on DATE NULL,
+ status ENUM('draft','pending','published','rejected','archived') NOT NULL DEFAULT 'draft',
+ submitted_at DATETIME NULL, reviewed_at DATETIME NULL, reviewed_by_user_id BIGINT UNSIGNED NULL,
+ review_note VARCHAR(2000) NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ KEY idx_childcare_owner_status (organiser_id,status), KEY idx_childcare_town_category (town,category),
+ KEY idx_childcare_title (title), KEY idx_childcare_verification (verified_on)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS bh_directory_places (
+ id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ organiser_id BIGINT UNSIGNED NOT NULL, created_by_user_id BIGINT UNSIGNED NULL,
+ title VARCHAR(190) NOT NULL, category VARCHAR(120) NOT NULL, summary VARCHAR(500) NULL,
+ description MEDIUMTEXT NOT NULL, town VARCHAR(120) NOT NULL, region VARCHAR(120) NULL,
+ address VARCHAR(500) NULL, postcode VARCHAR(20) NULL, website_url VARCHAR(1000) NULL,
+ facilities MEDIUMTEXT NULL,
+ status ENUM('draft','pending','published','rejected','archived') NOT NULL DEFAULT 'draft',
+ submitted_at DATETIME NULL, reviewed_at DATETIME NULL, reviewed_by_user_id BIGINT UNSIGNED NULL,
+ review_note VARCHAR(2000) NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ KEY idx_places_owner_status (organiser_id,status), KEY idx_places_town_category (town,category),
+ KEY idx_places_title (title)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS bh_directory_school_clubs (
+ id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ organiser_id BIGINT UNSIGNED NOT NULL, created_by_user_id BIGINT UNSIGNED NULL,
+ title VARCHAR(190) NOT NULL, category VARCHAR(120) NOT NULL, summary VARCHAR(500) NULL,
+ description MEDIUMTEXT NOT NULL, age_min TINYINT UNSIGNED NOT NULL DEFAULT 3,
+ age_max TINYINT UNSIGNED NULL, school_name VARCHAR(190) NOT NULL,
+ collection_arrangements MEDIUMTEXT NOT NULL, days_times MEDIUMTEXT NOT NULL,
+ holiday_provision VARCHAR(500) NULL, price_details VARCHAR(500) NULL,
+ town VARCHAR(120) NOT NULL, region VARCHAR(120) NULL, address VARCHAR(500) NULL,
+ postcode VARCHAR(20) NULL, website_url VARCHAR(1000) NULL, registration_details MEDIUMTEXT NULL,
+ verification_url VARCHAR(1000) NULL, verified_on DATE NULL,
+ status ENUM('draft','pending','published','rejected','archived') NOT NULL DEFAULT 'draft',
+ submitted_at DATETIME NULL, reviewed_at DATETIME NULL, reviewed_by_user_id BIGINT UNSIGNED NULL,
+ review_note VARCHAR(2000) NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ KEY idx_school_clubs_owner_status (organiser_id,status), KEY idx_school_clubs_town_type (town,category),
+ KEY idx_school_clubs_title (title), KEY idx_school_clubs_school (school_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Shared moderation history for the four specialist directory sections.
+CREATE TABLE IF NOT EXISTS bh_directory_record_reviews (
+ id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ section_key ENUM('business','childcare','place','school_club') NOT NULL,
+ record_id BIGINT UNSIGNED NOT NULL, reviewer_user_id BIGINT UNSIGNED NULL,
+ decision ENUM('approved','rejected','returned_for_edits') NOT NULL,
+ note VARCHAR(2000) NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ KEY idx_directory_record_review (section_key,record_id,created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
