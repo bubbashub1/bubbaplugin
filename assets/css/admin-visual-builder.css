@@ -222,3 +222,12 @@ body.bh-admin-v2{background:#f4f7f4}
 [data-bh-block-id]:hover{outline:1px dashed rgba(15,118,110,.55);outline-offset:3px}
 [data-bh-block-id]:focus-visible{outline:2px solid #0f766e;outline-offset:4px}
 #bhvb-floating-toolbar{transition:top .08s ease,left .08s ease}
+
+
+/* Elementor-style canvas drop insertion markers */
+.bhvb-drop-before,.bhvb-drop-after{position:relative!important;outline:0!important}
+.bhvb-drop-before::before,.bhvb-drop-after::after{content:"";position:absolute;left:0;right:0;height:4px;border-radius:4px;background:#0f8b83;box-shadow:0 0 0 2px rgba(15,139,131,.12);z-index:2147482999;pointer-events:none}
+.bhvb-drop-before::before{top:-7px}
+.bhvb-drop-after::after{bottom:-7px}
+.bhvb-drag-over{outline:2px dashed #0f8b83!important;outline-offset:5px!important;background-color:rgba(15,139,131,.045)!important}
+.bhvb-dragging{opacity:.28!important;filter:grayscale(.4)}
