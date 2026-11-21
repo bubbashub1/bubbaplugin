@@ -123,6 +123,34 @@ function findBlock(id){
  return null;
 }
 function findSection(id){return (draft?.sections||[]).find(section=>section.id===id)||null;}
+let duplicateSequence=0;
+function freshBuilderId(prefix){duplicateSequence++;return prefix+'-copy-'+Date.now()+'-'+duplicateSequence;}
+function duplicateSelectedBlock(){
+ if(!currentBlock||!draft)return;
+ for(const section of draft.sections||[]){
+  const index=(section.children||[]).findIndex(item=>item.id===currentBlock.id);
+  if(index<0)continue;
+  const copy=JSON.parse(JSON.stringify(currentBlock));copy.id=freshBuilderId('block');
+  section.children.splice(index+1,0,copy);currentSection=section;currentBlock=copy;
+  renderDraft();
+  const node=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(copy.id)+'"]');
+  if(node)selectNode(node);
+  draftStatus('Element duplicated. Edit the copy independently, then save your draft.');
+  return;
+ }
+}
+function duplicateSelectedContainer(){
+ if(!currentSection||!draft)return;
+ const index=draft.sections.indexOf(currentSection);if(index<0)return;
+ const copy=JSON.parse(JSON.stringify(currentSection));copy.id=freshBuilderId('container');
+ (copy.children||[]).forEach(block=>{block.id=freshBuilderId('block');});
+ draft.sections.splice(index+1,0,copy);currentSection=copy;currentBlock=null;
+ renderDraft();
+ const node=frame.contentDocument?.querySelector('[data-bh-section-id="'+CSS.escape(copy.id)+'"]');
+ if(node)selectNode(node);
+ draftStatus('Container duplicated with all its content and styling. Edit the copy, then save your draft.');
+}
+
 function populateMobileControls(m){
  const set=(id,v)=>{if($(id))$(id).value=v;};
  set('mobileContainerWidth',Number.isInteger(m.width)?m.width:100);
@@ -489,7 +517,7 @@ function moveContainer(direction){if(!currentSection||!draft)return;const index=
 function deleteContainer(){if(!currentSection||!draft||draft.sections.length<2){draftStatus('A page must keep at least one container.');return;}if(!window.confirm('Delete this container and its contents from the private draft?'))return;draft.sections=draft.sections.filter(section=>section!==currentSection);currentSection=null;renderDraft();$('sectionControls').hidden=true;draftStatus('Container removed from the private draft. Save draft to keep the change.');}
 $('pageColumns').addEventListener('change',()=>{if(!draft)return;draft.settings=draft.settings||{};draft.settings.columns=Math.max(1,Math.min(3,Number($('pageColumns').value)||1));renderDraft();draftStatus('Page layout changed to '+draft.settings.columns+' columns. Mobile preview automatically stacks to one column. Save draft when ready.');});
 document.querySelectorAll('[data-bh-add]').forEach(button=>button.addEventListener('click',()=>$(button.dataset.bhAdd)?.click()));
-$('addContainer').addEventListener('click',addContainer);document.querySelectorAll('[data-section-preset]').forEach(button=>button.addEventListener('click',()=>addSectionPreset(button.dataset.sectionPreset)));$('addHeading').addEventListener('click',()=>addBlock('heading'));$('addParagraph').addEventListener('click',()=>addBlock('paragraph'));$('addButtonBlock').addEventListener('click',()=>addBlock('button'));$('addImageBlock').addEventListener('click',()=>addBlock('image'));$('moveContainerUp').addEventListener('click',()=>moveContainer(-1));$('moveContainerDown').addEventListener('click',()=>moveContainer(1));$('deleteContainer').addEventListener('click',deleteContainer);
+$('duplicateElement').addEventListener('click',duplicateSelectedBlock);$('duplicateContainer').addEventListener('click',duplicateSelectedContainer);$('addContainer').addEventListener('click',addContainer);document.querySelectorAll('[data-section-preset]').forEach(button=>button.addEventListener('click',()=>addSectionPreset(button.dataset.sectionPreset)));$('addHeading').addEventListener('click',()=>addBlock('heading'));$('addParagraph').addEventListener('click',()=>addBlock('paragraph'));$('addButtonBlock').addEventListener('click',()=>addBlock('button'));$('addImageBlock').addEventListener('click',()=>addBlock('image'));$('moveContainerUp').addEventListener('click',()=>moveContainer(-1));$('moveContainerDown').addEventListener('click',()=>moveContainer(1));$('deleteContainer').addEventListener('click',deleteContainer);
 async function init(){
  try{
   const auth=await fetch('/admin-auth.php?action=check',{credentials:'same-origin',cache:'no-store'});

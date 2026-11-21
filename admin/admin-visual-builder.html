@@ -50,7 +50,7 @@
 <div class="bhvb-edit-controls" id="editControls" hidden>
 <label for="editText">Text</label><textarea id="editText" rows="3" maxlength="10000"></textarea>
 <label for="editHref" id="editHrefLabel" hidden>Button / link destination</label><input id="editHref" type="text" maxlength="2048" hidden>
-<strong>Element styling</strong>
+<div class="bhvb-container-actions"><button type="button" id="duplicateElement">Duplicate element</button></div><strong>Element styling</strong>
 <label for="elementFontSize">Text size <output id="elementFontSizeValue">16px</output></label><input id="elementFontSize" type="range" min="10" max="72" step="1" value="16">
 <label for="elementWidth">Element width <output id="elementWidthValue">100%</output></label><input id="elementWidth" type="range" min="10" max="100" step="5" value="100">
 <label for="elementAlign">Text alignment</label><select id="elementAlign"><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select>
@@ -88,7 +88,7 @@
 <label for="mobileContainerSpacing">Mobile space after <output id="mobileContainerSpacingValue">16px</output></label><input id="mobileContainerSpacing" type="range" min="0" max="96" step="2" value="16">
 <p class="bhvb-edit-help">These settings only apply at 600px viewport width or narrower. Desktop settings remain unchanged.</p>
 </div>
-<div class="bhvb-container-actions"><button type="button" id="moveContainerUp">Move up</button><button type="button" id="moveContainerDown">Move down</button><button type="button" id="deleteContainer">Delete container</button></div>
+<div class="bhvb-container-actions"><button type="button" id="moveContainerUp">Move up</button><button type="button" id="moveContainerDown">Move down</button><button type="button" id="duplicateContainer">Duplicate container</button><button type="button" id="deleteContainer">Delete container</button></div>
 <p class="bhvb-edit-help">Each container has independent layout and style settings. Changes remain in this private draft.</p>
 </div>
 </section>
