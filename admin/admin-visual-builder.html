@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8"><base href="/"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Visual Builder · Admin · Bubba Hub</title>
+<link rel="stylesheet" href="/assets/css/styles.css">
+<link rel="stylesheet" href="/assets/css/admin-settings.css">
+<link rel="stylesheet" href="/assets/css/admin-support-v2.css">
+<link rel="stylesheet" href="/assets/css/admin-visual-builder.css">
+</head>
+<body class="bh-admin-v2">
+<header class="site-header">
+<a class="brand" href="/index.html"><img class="brand-logo" src="/images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a>
+<nav class="main-nav"><a href="/directory.html">Find activities</a><a href="/my-hub.html">My Hub</a><a href="/admin.html">Admin</a></nav>
+<a class="button button-soft" href="/account.html">My account</a>
+</header>
+<main class="bhvb-shell">
+<div class="bhvb-heading"><div><a href="/admin.html">← Admin dashboard</a><span class="eyebrow">Website management</span><h1>Visual Builder</h1><p>Choose a published page, prepare a simplified structured draft, then edit supported text and links. Saving keeps changes private; publishing is not available.</p></div><span class="bhvb-status" id="builderStatus" role="status">Checking admin access…</span></div>
+<section class="bhvb-toolbar" aria-label="Builder toolbar">
+<label class="bhvb-page-picker">Page<select id="builderPage" disabled><option value="">Loading pages…</option></select></label>
+<div class="bhvb-device-switch" role="group" aria-label="Preview size">
+<button type="button" data-device="desktop" class="active" aria-pressed="true">Desktop</button>
+<button type="button" data-device="tablet" aria-pressed="false">Tablet</button>
+<button type="button" data-device="mobile" aria-pressed="false">Mobile</button>
+</div>
+<span class="bhvb-readonly"><span aria-hidden="true">●</span> Draft-only editor</span>
+</section>
+<div class="bhvb-workspace">
+<section class="bhvb-canvas-panel" aria-label="Page preview">
+<div class="bhvb-canvas-top"><strong>Page canvas</strong><span id="canvasDimensions">Responsive preview</span></div>
+<div class="bhvb-canvas-stage" id="canvasStage">
+<div class="bhvb-canvas-empty" id="canvasEmpty">Select a published page to preview it here.</div>
+<iframe id="pageCanvas" title="Selected Bubba Hub page preview" sandbox="allow-same-origin" loading="lazy" hidden></iframe>
+</div>
+</section>
+<aside class="bhvb-inspector">
+<div class="bhvb-inspector-tabs" role="tablist" aria-label="Inspector panels"><button type="button" class="active" id="propertiesTab" role="tab" aria-selected="true" aria-controls="propertiesPanel">Properties</button><button type="button" id="layersTab" role="tab" aria-selected="false" aria-controls="layersPanel">Layers</button></div>
+<section class="bhvb-inspector-section" id="propertiesPanel" role="tabpanel" aria-labelledby="propertiesTab"><span class="eyebrow">Selected element</span><h2 id="selectedName">Nothing selected</h2><p id="selectedDescription">Click a heading, paragraph, image, button or section in the preview to inspect it.</p><dl id="selectedDetails" hidden><dt>Element</dt><dd id="selectedTag">—</dd><dt>Text / alternative text</dt><dd id="selectedText">—</dd></dl>
+<div class="bhvb-edit-controls" id="editControls" hidden>
+<label for="editText">Text</label><textarea id="editText" rows="3" maxlength="10000"></textarea>
+<label for="editHref" id="editHrefLabel" hidden>Button / link destination</label><input id="editHref" type="text" maxlength="2048" hidden>
+<p class="bhvb-edit-help">Changes are only in this private draft preview until you save the draft. The published page is not affected.</p>
+</div>
+<div class="bhvb-edit-controls bhvb-section-controls" id="sectionControls" hidden><strong>Container settings</strong>
+<label for="sectionBackground">Section background</label><input id="sectionBackground" type="color" value="#ffffff">
+<label for="sectionPadding">Section padding <output id="sectionPaddingValue">24px</output></label><input id="sectionPadding" type="range" min="0" max="96" step="4" value="24">
+<label for="sectionGap">Space between elements <output id="sectionGapValue">16px</output></label><input id="sectionGap" type="range" min="0" max="64" step="4" value="16">
+<label for="containerWidth">Width <output id="containerWidthValue">100%</output></label><input id="containerWidth" type="range" min="25" max="100" step="5" value="100">
+<label for="containerHeight">Minimum height <output id="containerHeightValue">0px</output></label><input id="containerHeight" type="range" min="0" max="800" step="20" value="0">
+<label for="containerRadius">Corner radius <output id="containerRadiusValue">12px</output></label><input id="containerRadius" type="range" min="0" max="48" step="2" value="12">
+<label for="containerBorderWidth">Border thickness <output id="containerBorderWidthValue">0px</output></label><input id="containerBorderWidth" type="range" min="0" max="8" step="1" value="0">
+<label for="containerBorderColor">Border colour</label><input id="containerBorderColor" type="color" value="#dce8df">
+<label for="containerAlign">Horizontal position</label><select id="containerAlign"><option value="left">Left</option><option value="center" selected>Centre</option><option value="right">Right</option></select>
+<label for="containerSpacing">Space after container <output id="containerSpacingValue">18px</output></label><input id="containerSpacing" type="range" min="0" max="96" step="2" value="18">
+<label class="bhvb-mobile-toggle" for="mobileOverrideEnabled"><input id="mobileOverrideEnabled" type="checkbox"> Use separate mobile layout settings</label>
+<div id="mobileOverrideControls" class="bhvb-mobile-controls" hidden>
+<label for="mobileContainerWidth">Mobile width <output id="mobileContainerWidthValue">100%</output></label><input id="mobileContainerWidth" type="range" min="25" max="100" step="5" value="100">
+<label for="mobileContainerPadding">Mobile padding <output id="mobileContainerPaddingValue">16px</output></label><input id="mobileContainerPadding" type="range" min="0" max="96" step="4" value="16">
+<label for="mobileContainerGap">Mobile inner spacing <output id="mobileContainerGapValue">12px</output></label><input id="mobileContainerGap" type="range" min="0" max="64" step="4" value="12">
+<label for="mobileContainerHeight">Mobile minimum height <output id="mobileContainerHeightValue">0px</output></label><input id="mobileContainerHeight" type="range" min="0" max="800" step="20" value="0">
+<label for="mobileContainerRadius">Mobile corner radius <output id="mobileContainerRadiusValue">12px</output></label><input id="mobileContainerRadius" type="range" min="0" max="48" step="2" value="12">
+<label for="mobileContainerBorderWidth">Mobile border thickness <output id="mobileContainerBorderWidthValue">0px</output></label><input id="mobileContainerBorderWidth" type="range" min="0" max="8" step="1" value="0">
+<label for="mobileContainerAlign">Mobile horizontal position</label><select id="mobileContainerAlign"><option value="left">Left</option><option value="center" selected>Centre</option><option value="right">Right</option></select>
+<label for="mobileContainerSpacing">Mobile space after <output id="mobileContainerSpacingValue">16px</output></label><input id="mobileContainerSpacing" type="range" min="0" max="96" step="2" value="16">
+<p class="bhvb-edit-help">These settings only apply at 600px viewport width or narrower. Desktop settings remain unchanged.</p>
+</div>
+<div class="bhvb-container-actions"><button type="button" id="moveContainerUp">Move up</button><button type="button" id="moveContainerDown">Move down</button><button type="button" id="deleteContainer">Delete container</button></div>
+<p class="bhvb-edit-help">Each container has independent layout and style settings. Changes remain in this private draft.</p>
+</div>
+</section>
+<section class="bhvb-layers-panel" id="layersPanel" role="tabpanel" aria-labelledby="layersTab" hidden><p class="bhvb-layers-empty">Choose a page to see its editable elements.</p><div id="builderLayers" class="bhvb-layer-list"></div></section>
+<div class="bhvb-builder-actions">
+<div class="bhvb-add-controls"><strong>Add to page</strong>
+<button type="button" id="addContainer" disabled>Add container</button>
+<button type="button" id="addHeading" disabled>Add heading to selected container</button>
+<button type="button" id="addParagraph" disabled>Add text to selected container</button>
+<button type="button" id="addButtonBlock" disabled>Add button to selected container</button></div>
+<button type="button" id="prepareDraft" disabled>Prepare draft from page</button>
+<button type="button" id="saveDraft" disabled>Save draft</button>
+<button type="button" id="setupDraftStorage" hidden>Set up draft storage</button>
+<p id="draftStatus" role="status">Choose a page to begin. Existing page content will not be changed.</p>
+<div id="revisionControls" hidden><label for="revisionSelect">Previous drafts</label><select id="revisionSelect"></select><button type="button" id="restoreRevision">Restore selected draft</button></div>
+</div>
+<div class="bhvb-inspector-note"><strong>Draft-only editing</strong><p>Prepare a structured draft to review supported text and links. Some complex page layouts and images are not converted yet. Nothing can publish from this screen.</p></div>
+</aside>
+</div>
+<p class="bhvb-footer-note">Your live page is not modified by this preview. System pages and application features remain protected.</p>
+</main>
+<script src="/assets/js/admin-visual-builder.js" defer></script>
+</body>
+</html>

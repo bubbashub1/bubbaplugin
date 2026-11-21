@@ -29,7 +29,47 @@
   };
   const setMessage = (id, message) => { const node=$(id); if(node) node.innerHTML='<p class="explore-loading">'+esc(message)+'</p>'; };
 
+  // Published Site Manager visibility is optional; defaults keep every section visible.
+  async function applyHomepageSectionVisibility() {
+    try {
+      const response = await fetch("/api/site-design.php", {headers:{Accept:"application/json"}, cache:"default"});
+      if (!response.ok) return;
+      const payload = await response.json();
+      const settings = payload?.published?.homepage_sections;
+      if (!settings || typeof settings !== "object") return;
+      document.querySelectorAll("[data-bh-home-section]").forEach(section => {
+        const key = section.dataset.bhHomeSection;
+        if (!Object.prototype.hasOwnProperty.call(settings, key)) return;
+        const visible = settings[key] !== false;
+        section.hidden = !visible;
+        if (visible) section.style.removeProperty("display");
+        else section.style.setProperty("display", "none", "important");
+      });
+      const allowed = ["ticker","categories","quick_links","latest","regions","cta"];
+      const requested = payload?.published?.homepage_order;
+      const order = Array.isArray(requested) && requested.length === allowed.length &&
+        new Set(requested).size === allowed.length && requested.every(key => allowed.includes(key))
+        ? requested : allowed;
+      const main = document.querySelector(".bh-explore-main");
+      const first = main?.querySelector("[data-bh-home-section]");
+      if (main && first) {
+        const marker = document.createComment("Bubba Hub homepage section order");
+        main.insertBefore(marker, first);
+        const fragment = document.createDocumentFragment();
+        order.forEach(key => {
+          const section = main.querySelector('[data-bh-home-section="' + key + '"]');
+          if (section) fragment.appendChild(section);
+        });
+        main.insertBefore(fragment, marker);
+        marker.remove();
+      }
+    } catch (_) {
+      // A missing settings table or unavailable endpoint must not affect the homepage.
+    }
+  }
+
   async function init() {
+    void applyHomepageSectionVisibility();
     const tickerToggle=$("exploreTickerToggle");
     tickerToggle?.addEventListener("click",()=>{
       const ticker=document.querySelector(".explore-news-ticker");

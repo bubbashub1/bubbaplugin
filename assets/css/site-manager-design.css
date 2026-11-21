@@ -1,0 +1,27 @@
+/* Site Manager token integration.
+   Rules activate only after a valid published snapshot has loaded. This keeps
+   existing pages visually unchanged before first publication and on API errors. */
+:root{
+ --bh-heading-font:'Quicksand',Calibri,Arial,sans-serif;
+ --bh-body-font:'Quicksand',Calibri,Arial,sans-serif;
+ --bh-button-radius:999px;
+ --bh-section-gap:24px;
+}
+body.bh-site-manager-design-active{
+ font-family:var(--bh-body-font,'Quicksand',Calibri,Arial,sans-serif)!important;
+ background-color:var(--bh-bg,#f7f8f4)!important;
+ color:var(--bh-text,#263b33)!important;
+}
+body.bh-site-manager-design-active :where(h1,h2,h3,h4,.page-title,.section-title){
+ font-family:var(--bh-heading-font,'Quicksand',Calibri,Arial,sans-serif)!important;
+}
+body.bh-site-manager-design-active :where(.button,.btn,button.button-primary,button.btn-primary){
+ border-radius:var(--bh-button-radius,999px)!important;
+}
+/* Main reusable content cards; specialised map/modal shapes remain unchanged. */
+body.bh-site-manager-design-active :where(.card,.feature-card,.activity-card,.bh-card,.home-activity-card,.home-category-card,.hub-panel,.admin-panel,.subscription-card,.pricing-card,.support-card,.calendar-panel){
+ border-radius:var(--bh-radius,16px)!important;
+}
+/* Explicit spacing utility used by page sections. */
+body.bh-site-manager-design-active .section-gap{margin-top:var(--bh-section-gap,24px)!important;}
+/* Components opt in through shared design tokens; no broad layout or sizing overrides. */
