@@ -75,7 +75,7 @@ function selectNode(node){
   removeCanvasToolbar();
   node.classList.add('bhvb-selected-preview');
   currentBlock=draft&&node.dataset.bhBlockId?findBlock(node.dataset.bhBlockId):null;
-  currentSection=draft&&node.dataset.bhSectionId?findSection(node.dataset.bhSectionId):null;
+  const sectionNode=node.closest('[data-bh-section-id]');currentSection=draft&&sectionNode?findSection(sectionNode.dataset.bhSectionId):null;
   ['addHeading','addParagraph','addButtonBlock','addImageBlock'].forEach(id=>$(id).disabled=!currentSection||previewMode!=='draft');
   updateSelectionDetails(node);
   showCanvasToolbar(node);
@@ -308,6 +308,7 @@ function attachCanvas(){
    draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Text edited directly on the page. Save draft when ready.');
   },true);
   doc.addEventListener('click',event=>{
+   if(event.target.closest('#bhvb-floating-toolbar,.bhvb-canvas-handle'))return;
    if(event.target.closest('[contenteditable="true"]'))return;
    const node=event.target.closest('h1,h2,h3,h4,p,a,button,img,section,article');
    if(!node||node===doc.body)return;
