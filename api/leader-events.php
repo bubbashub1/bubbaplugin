@@ -30,7 +30,15 @@ $oid=(int)$org['id'];
 if($_SERVER['REQUEST_METHOD']==='GET'){
  $_SESSION['bh_directory_event_csrf']??=bin2hex(random_bytes(32));
  $listings=[];try{$q=$db->prepare("SELECT id,title FROM bh_activities WHERE organiser_id=? AND status IN ('published','pending','draft') ORDER BY title");$q->execute([$oid]);$listings=$q->fetchAll(PDO::FETCH_ASSOC);}catch(Throwable $e){}
- le_reply(200,['ok'=>true,'csrf'=>$_SESSION['bh_directory_event_csrf'],'organisation'=>$org,'listings'=>$listings,'schema_ready'=>le_table($db,'bh_directory_events')&&le_table($db,'bh_directory_event_occurrences')&&le_table($db,'bh_directory_event_listings')]);
+ $event=null;$eventId=filter_var($_GET['id']??null,FILTER_VALIDATE_INT);
+ if($eventId&&le_table($db,'bh_directory_events')){
+  $q=$db->prepare("SELECT * FROM bh_directory_events WHERE id=? AND organiser_id=? AND status='published' LIMIT 1");$q->execute([$eventId,$oid]);$event=$q->fetch(PDO::FETCH_ASSOC)?:null;
+  if($event){
+   $q=$db->prepare("SELECT starts_at,ends_at FROM bh_directory_event_occurrences WHERE event_id=? AND occurrence_status='scheduled' ORDER BY starts_at");$q->execute([$eventId]);$event['occurrences']=$q->fetchAll(PDO::FETCH_ASSOC);
+   $q=$db->prepare("SELECT activity_id FROM bh_directory_event_listings WHERE event_id=?");$q->execute([$eventId]);$event['listing_ids']=array_map('intval',$q->fetchAll(PDO::FETCH_COLUMN));
+  }
+ }
+ le_reply(200,['ok'=>true,'csrf'=>$_SESSION['bh_directory_event_csrf'],'organisation'=>$org,'listings'=>$listings,'event'=>$event,'schema_ready'=>le_table($db,'bh_directory_events')&&le_table($db,'bh_directory_event_occurrences')&&le_table($db,'bh_directory_event_listings')&&le_table($db,'bh_directory_record_revisions')]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')le_reply(405,['ok'=>false,'error'=>'method_not_allowed']);
 $host=strtolower(explode(':',(string)($_SERVER['HTTP_HOST']??''))[0]);$origin=(string)($_SERVER['HTTP_ORIGIN']??'');
@@ -54,6 +62,21 @@ $ageMin=($body['age_min_months']??'')===''?null:(int)$body['age_min_months'];$ag
 if(($ageMin!==null&&($ageMin<0||$ageMin>216))||($ageMax!==null&&($ageMax<0||$ageMax>216))||($ageMin!==null&&$ageMax!==null&&$ageMax<$ageMin))le_reply(422,['ok'=>false,'error'=>'invalid_age_range','message'=>'Check the age range.']);
 $linked=array_values(array_unique(array_filter(array_map('intval',is_array($body['listing_ids']??null)?$body['listing_ids']:[]),fn($v)=>$v>0)));
 if($linked){$marks=implode(',',array_fill(0,count($linked),'?'));$q=$db->prepare("SELECT id FROM bh_activities WHERE organiser_id=? AND id IN ($marks)");$q->execute(array_merge([$oid],$linked));if(count($q->fetchAll(PDO::FETCH_COLUMN))!==count($linked))le_reply(403,['ok'=>false,'error'=>'listing_link_not_owned','message'=>'You can only link events to your own listings.']);}
+$recordId=filter_var($body['record_id']??null,FILTER_VALIDATE_INT);
+if($recordId){
+ if(!le_table($db,'bh_directory_record_revisions'))le_reply(503,['ok'=>false,'error'=>'revision_schema_not_installed','message'=>'Published event changes are not enabled until the Directory update is installed.']);
+ try{
+  $db->beginTransaction();
+  $q=$db->prepare("SELECT id FROM bh_directory_events WHERE id=? AND organiser_id=? AND status='published' FOR UPDATE");$q->execute([$recordId,$oid]);
+  if(!$q->fetchColumn()){$db->rollBack();le_reply(404,['ok'=>false,'error'=>'published_event_not_found']);}
+  $q=$db->prepare("SELECT COUNT(*) FROM bh_directory_record_revisions WHERE section_key='event' AND record_id=? AND status='pending'");$q->execute([$recordId]);
+  if((int)$q->fetchColumn()>0){$db->rollBack();le_reply(409,['ok'=>false,'error'=>'revision_already_pending','message'=>'A change request for this event is already awaiting review.']);}
+  $revision=['title'=>$title,'summary'=>$summary?:null,'description'=>$description,'category'=>$category?:null,'age_min_months'=>$ageMin,'age_max_months'=>$ageMax,'booking_url'=>$booking?:null,'venue_name'=>$venue,'address'=>$address?:null,'town'=>$town,'region'=>$region?:null,'postcode'=>$postcode,'occurrences'=>$occurrences,'listing_ids'=>$linked];
+  $q=$db->prepare("INSERT INTO bh_directory_record_revisions (section_key,record_id,organiser_id,submitted_by_user_id,payload,status) VALUES ('event',?,?,?,?, 'pending')");
+  $q->execute([$recordId,$oid,$uid,json_encode($revision,JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE)]);
+  $db->commit();le_reply(200,['ok'=>true,'event_id'=>$recordId,'status'=>'pending_revision','message'=>'Your requested event changes have been sent to Bubba Hub. The published event remains unchanged until approved.']);
+ }catch(Throwable $e){if($db->inTransaction())$db->rollBack();error_log('Leader event revision: '.$e->getMessage());le_reply(500,['ok'=>false,'error'=>'event_revision_failed','message'=>'The change request could not be saved. Please try again.']);}
+}
 $base=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-',$title),'-'));if($base==='')$base='event';$slug=$base.'-'.bin2hex(random_bytes(3));
 try{
  $db->beginTransaction();
