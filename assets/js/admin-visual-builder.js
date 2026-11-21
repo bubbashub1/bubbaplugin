@@ -168,7 +168,7 @@ function buildLayers(doc){
 function attachCanvas(){
  try{
   const doc=frame.contentDocument;if(!doc||!doc.body)throw new Error('Page not ready');
-  const style=doc.createElement('style');style.textContent='.bhvb-selected-preview{outline:3px solid #0f8b83!important;outline-offset:2px!important;cursor:pointer!important}.bhvb-canvas-handle{opacity:.96}.bhvb-canvas-handle:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}';doc.head.appendChild(style);
+  const style=doc.createElement('style');style.textContent='.bhvb-selected-preview{outline:3px solid #0f8b83!important;outline-offset:2px!important;cursor:pointer!important}.bhvb-canvas-handle{opacity:.96}.bhvb-canvas-handle:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.bhvb-dragging{opacity:.35!important}.bhvb-drag-over{outline:2px dashed #0f766e!important;outline-offset:3px!important}';doc.head.appendChild(style);
   buildLayers(doc);
   let draggedBlockId='';
   doc.addEventListener('dragstart',event=>{
