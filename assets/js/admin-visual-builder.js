@@ -144,7 +144,7 @@ function buildLayers(doc){
  const addLayer=(node,parent,depth=0)=>{
   if(!node||layerNodes.length>=120)return;
   layerNodes.push(node);
-  const button=document.createElement('button');button.type='button';button.className='bhvb-layer-button';button.style.setProperty('--layer-depth',String(depth));button.textContent=readableName(node);button.setAttribute('aria-label','Select '+readableName(node));button._bhNode=node;button.addEventListener('click',()=>selectNode(node));parent.append(button);
+  const button=document.createElement('button');button.type='button';button.className='bhvb-layer-button';button.style.setProperty('--layer-depth',String(depth));button.textContent=readableName(node);button.setAttribute('aria-label','Select '+readableName(node));button._bhNode=node;button.draggable=previewMode==='draft'&&(!!node.dataset.bhSectionId||!!node.dataset.bhBlockId);if(node.dataset.bhSectionId){button.dataset.sectionId=node.dataset.bhSectionId;button.dataset.layerType='section';}if(node.dataset.bhBlockId){button.dataset.blockId=node.dataset.bhBlockId;button.dataset.sectionId=node.closest('[data-bh-section-id]')?.dataset.bhSectionId||'';button.dataset.layerType='block';}button.addEventListener('click',()=>selectNode(node));parent.append(button);
  };
  const sections=[...main.querySelectorAll(':scope > section')];
  const sectionSet=new Set(sections);
@@ -164,6 +164,40 @@ function buildLayers(doc){
   }
  });
  if(!layerNodes.length){const empty=document.createElement('p');empty.className='bhvb-layers-empty';empty.textContent='No supported content elements were found on this page.';list.append(empty);}
+ if(previewMode==='draft'){
+  let dragged=null;
+  list.querySelectorAll('.bhvb-layer-button[draggable="true"]').forEach(button=>{
+   button.addEventListener('dragstart',event=>{
+    dragged={type:button.dataset.layerType,blockId:button.dataset.blockId||'',sectionId:button.dataset.sectionId||''};
+    button.classList.add('is-dragging');
+    event.dataTransfer.effectAllowed='move';
+    event.dataTransfer.setData('text/plain',button.dataset.blockId||button.dataset.sectionId||'');
+   });
+   button.addEventListener('dragover',event=>{
+    if(!dragged)return;
+    event.preventDefault();event.dataTransfer.dropEffect='move';
+    list.querySelectorAll('.bhvb-layer-button.is-drop-target').forEach(item=>item.classList.remove('is-drop-target'));
+    button.classList.add('is-drop-target');
+   });
+   button.addEventListener('drop',event=>{
+    if(!dragged)return;
+    event.preventDefault();event.stopPropagation();
+    const targetType=button.dataset.layerType,targetBlock=button.dataset.blockId||'',targetSection=button.dataset.sectionId||'';
+    const after=event.clientY>button.getBoundingClientRect().top+button.getBoundingClientRect().height/2;
+    const source={...dragged};dragged=null;
+    list.querySelectorAll('.is-dragging,.is-drop-target').forEach(item=>item.classList.remove('is-dragging','is-drop-target'));
+    if(source.type==='section'&&targetType==='section'&&source.sectionId!==targetSection){
+     const from=(draft.sections||[]).findIndex(item=>item.id===source.sectionId),to=(draft.sections||[]).findIndex(item=>item.id===targetSection);
+     if(from>=0&&to>=0){const [section]=draft.sections.splice(from,1);let index=to+(after?1:0);if(from<to)index--;draft.sections.splice(Math.max(0,Math.min(draft.sections.length,index)),0,section);currentSection=section;currentBlock=null;renderDraft();draftStatus('Container reordered. Save draft to keep this change.');}
+    }else if(source.type==='block'&&targetType==='section'){
+     if(source.blockId!==targetBlock)moveDraftBlock(source.blockId,targetSection,'',false);
+    }else if(source.type==='block'&&targetType==='block'&&source.blockId!==targetBlock){
+     moveDraftBlock(source.blockId,targetSection,targetBlock,after);
+    }
+   });
+   button.addEventListener('dragend',()=>{dragged=null;list.querySelectorAll('.is-dragging,.is-drop-target').forEach(item=>item.classList.remove('is-dragging','is-drop-target'));});
+  });
+ }
 }
 function attachCanvas(){
  try{
