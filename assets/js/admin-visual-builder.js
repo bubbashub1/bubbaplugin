@@ -43,7 +43,7 @@ function selectNode(node){
   updateSelectionDetails(node);
   installContainerHandles(currentSection?node:null);
   const index=layerNodes.indexOf(node);
-  document.querySelectorAll('.bhvb-layer-button').forEach((button,i)=>button.classList.toggle('active',i===index));
+  document.querySelectorAll('.bhvb-layer-button').forEach(button=>button.classList.toggle('active',button._bhNode===node));
  }catch(error){$('selectedName').textContent='Preview unavailable';$('selectedDescription').textContent='The page could not be inspected safely.';}
 }
 function installContainerHandles(node){
@@ -122,12 +122,32 @@ function mobileOverridesCss(){
 function updateMobilePreviewStyle(){const style=frame.contentDocument?.getElementById('bhvb-mobile-overrides');if(style)style.textContent=mobileOverridesCss();}
 function buildLayers(doc){
  const list=$('builderLayers');list.replaceChildren();layerNodes=[];
- const nodes=[...doc.querySelectorAll('main h1,main h2,main h3,main h4,main p,main a,main button,main img,main section,main article')].slice(0,120);
- layerNodes=nodes;
- if(!nodes.length){const empty=document.createElement('p');empty.className='bhvb-layers-empty';empty.textContent='No supported content elements were found on this page.';list.append(empty);return;}
- nodes.forEach(node=>{
-  const button=document.createElement('button');button.type='button';button.className='bhvb-layer-button';button.textContent=readableName(node);button.setAttribute('aria-label','Select '+readableName(node));button.addEventListener('click',()=>selectNode(node));list.append(button);
+ const main=doc.querySelector('main');
+ if(!main){const empty=document.createElement('p');empty.className='bhvb-layers-empty';empty.textContent='No supported content elements were found on this page.';list.append(empty);return;}
+ const supported='h1,h2,h3,h4,p,a,button,img,section,article';
+ const addLayer=(node,parent,depth=0)=>{
+  if(!node||layerNodes.length>=120)return;
+  layerNodes.push(node);
+  const button=document.createElement('button');button.type='button';button.className='bhvb-layer-button';button.style.setProperty('--layer-depth',String(depth));button.textContent=readableName(node);button.setAttribute('aria-label','Select '+readableName(node));button._bhNode=node;button.addEventListener('click',()=>selectNode(node));parent.append(button);
+ };
+ const sections=[...main.querySelectorAll(':scope > section')];
+ const sectionSet=new Set(sections);
+ [...main.children].forEach(node=>{
+  if(layerNodes.length>=120)return;
+  if(sectionSet.has(node)){
+   const group=document.createElement('div');group.className='bhvb-layer-group';
+   const heading=document.createElement('div');heading.className='bhvb-layer-group-title';heading.textContent='CONTAINER';group.append(heading);
+   addLayer(node,group,0);
+   const children=[...node.querySelectorAll(supported)].filter(child=>child!==node&&!child.closest('section section'));
+   children.forEach(child=>addLayer(child,group,1));
+   list.append(group);
+  }else if(node.matches(supported)){
+   addLayer(node,list,0);
+  }else{
+   [...node.querySelectorAll(supported)].forEach(child=>addLayer(child,list,0));
+  }
  });
+ if(!layerNodes.length){const empty=document.createElement('p');empty.className='bhvb-layers-empty';empty.textContent='No supported content elements were found on this page.';list.append(empty);}
 }
 function attachCanvas(){
  try{
