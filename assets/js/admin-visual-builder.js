@@ -65,10 +65,18 @@ function startCanvasTextEditing(node){
  try{const selection=node.ownerDocument.defaultView.getSelection(),range=node.ownerDocument.createRange();range.selectNodeContents(node);range.collapse(false);selection.removeAllRanges();selection.addRange(range);}catch(error){}
  draftStatus('Edit the text directly on the page. Select Finish editing when done, then save your draft.');
 }
+function startCanvasImageEditing(){
+ if(!currentBlock||currentBlock.type!=='image'||previewMode!=='draft')return;
+ setTab('properties');
+ $('propertiesPanel').scrollIntoView({behavior:'smooth',block:'nearest'});
+ $('imageControls').hidden=false;
+ $('imageUploadStatus').textContent='Choose an image from your library, or close the library to upload a replacement from your device.';
+ $('browseMediaLibrary').click();
+}
 function showCanvasToolbar(node){
  const doc=frame.contentDocument;if(!doc||previewMode!=='draft'||!currentBlock){removeCanvasToolbar();return;}
  removeCanvasToolbar();const toolbar=doc.createElement('div');toolbar.id='bhvb-floating-toolbar';toolbar.setAttribute('role','toolbar');toolbar.setAttribute('aria-label','Selected element actions');
- const actions=[['Edit','Edit selected element on the page',()=>{if(currentBlock&&['heading','paragraph','button'].includes(currentBlock.type)){startCanvasTextEditing(node);}else{setTab('properties');$('propertiesPanel').scrollIntoView({behavior:'smooth',block:'nearest'});}}],['＋','Duplicate element',duplicateSelectedBlock],['↑','Move element up',()=>moveSelectedBlock(-1)],['↓','Move element down',()=>moveSelectedBlock(1)],['×','Delete element',deleteSelectedBlock]];
+ const actions=[['Edit','Edit selected element on the page',()=>{if(currentBlock&&['heading','paragraph','button'].includes(currentBlock.type)){startCanvasTextEditing(node);}else if(currentBlock?.type==='image'){startCanvasImageEditing();}else{setTab('properties');$('propertiesPanel').scrollIntoView({behavior:'smooth',block:'nearest'});}}],['＋','Duplicate element',duplicateSelectedBlock],['↑','Move element up',()=>moveSelectedBlock(-1)],['↓','Move element down',()=>moveSelectedBlock(1)],['×','Delete element',deleteSelectedBlock]];
  actions.forEach(([label,title,action])=>{const button=doc.createElement('button');button.type='button';button.textContent=label;button.title=title;button.setAttribute('aria-label',title);button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();if(title!=='Edit selected element')scheduleHistoryCapture();action();});toolbar.append(button);});
  doc.body.append(toolbar);
  const reposition=()=>{
