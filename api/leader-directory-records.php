@@ -24,7 +24,7 @@ $q=$db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");
 $intent=($in['intent']??'draft')==='submit'?'pending':'draft';$recordId=filter_var($in['record_id']??null,FILTER_VALIDATE_INT);
 try{
  if($recordId&&$recordId>0){
-  $q=$db->prepare("SELECT status FROM ".$table." WHERE id=? AND organiser_id=? AND (created_by_user_id=? OR created_by_user_id IS NULL) LIMIT 1");$q->execute([$recordId,(int)$org]);$current=$q->fetchColumn();
+  $q=$db->prepare("SELECT status FROM ".$table." WHERE id=? AND organiser_id=? LIMIT 1");$q->execute([$recordId,(int)$org]);$current=$q->fetchColumn();
   if(!$current)ldr(404,['ok'=>false,'error'=>'record_not_found']);if(!in_array($current,['draft','rejected'],true))ldr(409,['ok'=>false,'error'=>'record_not_editable','message'=>'Only drafts and returned entries can be edited here.']);
   $sets=[];foreach(array_keys($clean) as $f)$sets[]="`".$f."`=?";$sets[]="status=?";$sets[]="submitted_at=?";$sets[]="reviewed_at=NULL";$sets[]="reviewed_by_user_id=NULL";$sets[]="review_note=NULL";
   $q=$db->prepare("UPDATE ".$table." SET ".implode(',',$sets)." WHERE id=? AND organiser_id=?");$q->execute(array_merge(array_values($clean),[$intent,$intent==='pending'?date('Y-m-d H:i:s'):null,$recordId,(int)$org]));
