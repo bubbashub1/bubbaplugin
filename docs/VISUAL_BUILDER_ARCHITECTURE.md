@@ -176,3 +176,8 @@ The draft inspector now supports selecting a converted section and changing its 
 ## Stage 3 — independent page containers
 
 The Visual Builder treats each top-level section as an editable container. Administrators can add containers, add headings/text/buttons to the selected container, move containers up/down, and delete a container (a page must retain at least one). Each container has constrained settings for background, padding, inner gap, width percentage, minimum height, corner radius, border thickness/colour, horizontal alignment and spacing after. Values are stored in the structured draft and independently validated by the server. This remains draft-only; it does not change the public renderer or Page Manager content.
+
+
+## Responsive container overrides — first mobile slice
+
+The structured v1 draft model now permits an optional `mobile` property on a container. It supports constrained width, padding, inner gap, minimum height, corner radius, border thickness, horizontal alignment and space after. The editor exposes a separate toggle and controls; values are validated server-side and apply only inside the draft preview at 600px or narrower. Existing documents remain valid and inherit their desktop settings until the override is explicitly enabled. This does not affect public rendering, legacy Page Manager content or any live page. Tablet overrides and public renderer integration remain deferred.
