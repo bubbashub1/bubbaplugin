@@ -134,6 +134,54 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 96
+            },
+            "mobile": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "width": {
+                  "type": "integer",
+                  "minimum": 25,
+                  "maximum": 100
+                },
+                "padding": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 96
+                },
+                "gap": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 64
+                },
+                "min_height": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 800
+                },
+                "radius": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 48
+                },
+                "border_width": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 8
+                },
+                "margin_bottom": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 96
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right"
+                  ]
+                }
+              }
             }
           }
         },
