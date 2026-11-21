@@ -11,6 +11,8 @@ header('X-Content-Type-Options: nosniff');
 function expoResponse(int $code, array $body): never {
  http_response_code($code); echo json_encode($body, JSON_UNESCAPED_SLASHES); exit;
 }
+// January 2027 event cancelled: permanently close public exhibitor applications.
+expoResponse(410,['ok'=>false,'error'=>'event_cancelled','message'=>'This event has been cancelled and applications are closed.']);
 // WordPress configuration contains the existing BUBBAHUB Turnstile constants.
 // Load it through WordPress's supported bootstrap rather than directly
 // requiring wp-config.php (which itself loads wp-settings.php).
