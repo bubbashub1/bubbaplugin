@@ -28,11 +28,11 @@ Family support, pregnancy support, feeding support, SEND services and similar pr
 
 ## Data and architecture principles
 
-- This is one directory platform, not one giant table and not four disconnected websites.
+- This is one directory platform, not one giant table and not six disconnected websites.
 - Keep each directory type's data model appropriate to its purpose. Do not force childcare, school club, event, business and activity fields into one generic record.
 - Preserve the existing activity, organiser, venue, session, planner, booking and account data and APIs. Existing bh_activities remains the source of truth for Listings.
 - Events remain distinct from activities and weekly activity sessions. Use event records, explicit event occurrences and a relationship table for links to activities.
-- Business and Childcare & Schools records should be designed only after inspecting the live/staging schema and existing organisation ownership model. Avoid duplicate provider identities where a business also operates a nursery.
+- Business and Childcare & Schools records should be designed only after inspecting the live/staging schema and existing organisation ownership model. Avoid duplicate provider identities where a business also operates a nursery or school setting.
 - Reuse existing organisers/accounts, venues, region/town data, categories, media handling and shared UI where compatible. Do not create parallel tables or taxonomies without schema review.
 - A venue is a shared location/place record, not automatically a public directory listing. The future Places & Days Out section needs its own curated content and visitor-facing fields.
 - Prefer shared components and service helpers over copied implementations. Keep section-specific APIs and permissions explicit.
@@ -46,7 +46,7 @@ Family support, pregnancy support, feeding support, SEND services and similar pr
 
 - A class leader can manage their own Listings and submit Events linked only to Listings owned by their organiser profile.
 - Business owners manage their own Business profile(s) subject to admin verification and approval.
-- Childcare & Schools managers manage their own Nursery profile(s) subject to appropriate verification and admin approval.
+- Childcare & Schools managers manage their own setting profile(s) subject to appropriate verification and admin approval.
 - Admins can review, approve, request changes, reject, suspend, archive and edit all directory types.
 - Families can browse, save and plan around public records; they do not gain edit rights through a save or relationship.
 - Do not assume every directory type has the same owner role. Model and test permissions per type.
@@ -78,10 +78,10 @@ Do not expose filters that cannot be supported by reliable structured data.
 - No production changes.
 
 ### Stage 1 — Shared Directory shell
-- Build the central Directory landing/navigation experience.
+- Build the central Directory landing/navigation experience for all six sections.
 - Add section routes and consistent page shell.
 - Preserve the current Listings experience and its search/map/planner integration.
-- Do not show unfinished Business or Nursery sections as live; use staged/disabled navigation until implemented.
+- Show unfinished sections as clearly labelled introductions until their searchable data and workflows are ready; do not imply that placeholder sections are live directories.
 - Ensure mobile and desktop behaviour.
 
 ### Stage 2 — Events
@@ -94,19 +94,26 @@ Do not expose filters that cannot be supported by reliable structured data.
 - Audit existing organiser/provider records before designing tables.
 - Build business profiles, categories, location/contact details, ownership verification, approval and search.
 
-### Stage 4 — Nurseries
-- Build specialist childcare and school profiles and structured childcare filters.
+### Stage 4 — Childcare & Schools
+- Build specialist profiles for nurseries, childminders, preschools and schools.
+- Add setting-specific fields, age ranges, opening hours, availability and childcare information.
 - Include clear data sources and last-checked dates for inspection/factual claims.
 - Add approval and management workflows.
 
+### Stage 5 — Places & Days Out
+- Build curated destination profiles, distinct from venue records used for classes/events.
+- Include visitor facilities, accessibility, age suitability, opening/seasonal information and location.
+- Add source and last-checked dates for changeable visitor details.
+
+### Stage 6 — School Clubs
+- Build profiles for breakfast clubs, after-school clubs, wraparound care and holiday clubs for children aged 3+.
+- Include age eligibility, school collection arrangements, operating days/times, holiday dates, costs and contact/booking.
+- Capture appropriate registration and safeguarding information for provider verification.
+
 ### Stage 7 — Unified discovery
-- Combine approved records across all four sections in global search.
+- Combine approved records across all six sections in global search.
 - Add cross-links, family saves/planner integration and relevant map/list views.
 - Measure performance and avoid loading all directory datasets unnecessarily.
-
-### Future — Places & Days Out
-- Consider as a fifth section after the four core directories are established.
-- Reuse shared location infrastructure but maintain curated destination content and visitor-specific information.
 
 ## Acceptance criteria
 
