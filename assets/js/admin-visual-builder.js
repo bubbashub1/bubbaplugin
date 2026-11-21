@@ -268,7 +268,7 @@ function buildLayers(doc){
 function attachCanvas(){
  try{
   const doc=frame.contentDocument;if(!doc||!doc.body)throw new Error('Page not ready');
-  const style=doc.createElement('style');style.textContent='.bhvb-selected-preview{outline:3px solid #0f8b83!important;outline-offset:2px!important;cursor:pointer!important}.bhvb-canvas-handle{opacity:.96}.bhvb-canvas-handle:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.bhvb-dragging{opacity:.35!important}.bhvb-drag-over{outline:2px dashed #0f766e!important;outline-offset:3px!important}';doc.head.appendChild(style);
+  const style=doc.createElement('style');style.textContent='.bhvb-selected-preview{outline:3px solid #0f8b83!important;outline-offset:2px!important;cursor:pointer!important}.bhvb-canvas-handle{opacity:.96}.bhvb-canvas-handle:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.bhvb-dragging{opacity:.35!important}.bhvb-drag-over{outline:2px dashed #0f766e!important;outline-offset:3px!important}#bhvb-floating-toolbar{position:fixed;z-index:2147483000;display:flex;align-items:center;gap:3px;padding:5px;border:1px solid #cbded2;border-radius:10px;background:#fff;box-shadow:0 5px 20px rgba(25,60,42,.2);font:600 12px/1.2 Arial,sans-serif;white-space:nowrap}#bhvb-floating-toolbar button{min-width:30px;min-height:28px;padding:5px 8px;border:0;border-radius:6px;background:#f1f6f2;color:#28563e;font:700 12px/1.2 Arial,sans-serif;cursor:pointer}#bhvb-floating-toolbar button:hover{background:#dfeee4;color:#17452e}#bhvb-floating-toolbar button:last-child{background:#fff1f1;color:#9a3838}#bhvb-floating-toolbar button:last-child:hover{background:#ffe2e2}';doc.head.appendChild(style);
   buildLayers(doc);
   let draggedBlockId='';
   doc.addEventListener('dragstart',event=>{
