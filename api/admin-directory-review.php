@@ -46,7 +46,7 @@ try{
     $q=$db->prepare("UPDATE bh_directory_events SET ".implode(',',$sets).",reviewed_at=NOW(),reviewed_by_user_id=? WHERE id=? AND status='published'");$q->execute(array_merge($values,[(int)($_SESSION['bh_user_id']??0)?:null,(int)$rev['record_id']]));
     $occurrences=$payload['occurrences']??null;$listingIds=$payload['listing_ids']??null;
     if(!is_array($occurrences)||!count($occurrences)||!is_array($listingIds))throw new RuntimeException('Event dates or links missing from revision');
-    $db->prepare("DELETE FROM bh_directory_event_occurrences WHERE event_id=?")->execute([(int)$rev['record_id']]);
+    $db->prepare("DELETE FROM bh_directory_event_occurrences WHERE event_id=? AND occurrence_status='scheduled'")->execute([(int)$rev['record_id']]);
     $q=$db->prepare("INSERT INTO bh_directory_event_occurrences (event_id,starts_at,ends_at,timezone,occurrence_status) VALUES (?,?,?,'Europe/London','scheduled')");
     foreach($occurrences as $occ){if(!is_array($occ)||empty($occ['start']))throw new RuntimeException('Invalid event occurrence');$q->execute([(int)$rev['record_id'],$occ['start'],$occ['end']??null]);}
     $ids=array_values(array_unique(array_filter(array_map('intval',$listingIds),static fn($v)=>$v>0)));
