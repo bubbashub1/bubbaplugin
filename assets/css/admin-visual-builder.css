@@ -210,3 +210,7 @@ body.bh-admin-v2{background:#f4f7f4}
 /* Draft undo and redo controls */
 .bhvb-history-controls{display:flex;gap:6px;align-items:center}.bhvb-history-controls button{padding:8px 11px;border:1px solid #d8e5da;border-radius:9px;background:#f7faf7;color:#315d40;font-size:.78rem;font-weight:750;cursor:pointer}.bhvb-history-controls button:hover:not(:disabled){background:#eaf4ed;border-color:#9bbca7}.bhvb-history-controls button:disabled{opacity:.42;cursor:not-allowed}
 @media(max-width:760px){.bhvb-history-controls{width:100%}.bhvb-history-controls button{flex:1}}
+
+
+/* Floating contextual toolbar inside the page canvas */
+#bhvb-floating-toolbar{position:fixed;z-index:2147483000;display:flex;align-items:center;gap:3px;padding:5px;border:1px solid #cbded2;border-radius:10px;background:#fff;box-shadow:0 5px 20px rgba(25,60,42,.2);font:600 12px/1.2 Arial,sans-serif;white-space:nowrap}#bhvb-floating-toolbar button{min-width:30px;min-height:28px;padding:5px 8px;border:0;border-radius:6px;background:#f1f6f2;color:#28563e;font:700 12px/1.2 Arial,sans-serif;cursor:pointer}#bhvb-floating-toolbar button:hover{background:#dfeee4;color:#17452e}#bhvb-floating-toolbar button:last-child{background:#fff1f1;color:#9a3838}#bhvb-floating-toolbar button:last-child:hover{background:#ffe2e2}@media(max-width:480px){#bhvb-floating-toolbar{gap:2px;padding:4px}#bhvb-floating-toolbar button{min-width:27px;padding:5px 6px}}
