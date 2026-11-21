@@ -19,9 +19,9 @@ Use plain language and a small number of views:
 
 Alerts are dashboard-only. No email alerts are required.
 
-## Shared six-directory foundation
+## First release scope
 
-Build the first working version for activities only. Keep the implementation modular enough that other directories can be added later, but do not spend time mapping their tables, fields, search phrases or matching rules now. That future mapping is deliberately deferred until the activity monitor is proven useful.
+Build the first working version for the activities directory only. Keep the implementation modular enough that other directories can be added later, but do not spend time mapping their tables, fields, search phrases or matching rules now. That future mapping is deliberately deferred until the activity monitor is proven useful.
 
 ## Alert workflow
 
@@ -31,13 +31,13 @@ Use the same workflow for all directory types:
 
 - A change alert opens a compact comparison pop-up showing the current value, suggested value and evidence/source.
 - **Add suggested changes** copies the suggestion into a saved review draft; it must not change the public listing.
-- **Edit changes** lets an authorised reviewer adjust the proposed values.
+- **Edit changes** lets the administrator adjust the proposed values.
 - **Review listing** shows the complete listing with proposed changes clearly highlighted.
-- The reviewer can accept/reject individual fields, save for later, or approve the final update.
+- The administrator can accept/reject individual fields, save for later, or approve the final update.
 - Only the final explicit approval updates the live listing.
 - Record who approved it, when, and exactly which fields changed.
 - A suspected closure is a separate alert and must never close/unpublish a listing automatically. Require explicit confirmation in the review flow.
-- New discoveries remain candidates until a person reviews them and chooses to create/add a listing.
+- New discoveries remain candidates until the administrator reviews them and chooses to create/add a listing.
 
 ## Access and future team support
 
@@ -55,14 +55,30 @@ Inspect and selectively reuse:
 - `database/listing-checker-schema.sql` — existing settings, discovery terms, run history, queue and findings tables.
 - Existing discovery/check cron workers and source-evidence data — audit before reuse; improve matching and change detection rather than duplicating functioning infrastructure.
 
-The existing findings table is activity-oriented today. Extend the model in a backward-compatible way (or add shared monitor tables) so findings can reference any directory type and source record. Preserve all existing rows and legacy scan history.
+The existing findings table is activity-oriented today. Extend the model in a backward-compatible way (or add monitor tables) so the first release works safely with activities. Preserve all existing rows and legacy scan history.
+
+## Closure and website monitoring rules
+
+A website problem can alert the administrator to a possible closure, but it must never close or unpublish a listing automatically.
+
+Classify website/source outcomes separately:
+
+- **Possible closure — dead link:** the saved website URL is broken, returns a persistent not-found/gone response (such as HTTP 404/410), the domain no longer resolves, or the domain appears to have expired. Save the exact URL, technical result, check time and evidence. A dead link is a reason to investigate, not proof that the business has closed.
+- **Closure indicated — explicit announcement:** an official website or public business-controlled source clearly says the business has permanently closed, has ceased trading, or announces a permanent closure. Save the relevant wording/snippet, source URL and check time. This is stronger evidence, but still requires the administrator to confirm.
+- **Temporary closure:** wording such as closed today, closed for holidays, seasonal break, temporarily closed, or a temporary pause must not be treated as a permanent closure. Record it as a temporary status/change where useful.
+- **Unable to verify:** timeouts, connection failures, TLS/certificate problems, bot protection, access denied/rate limiting, server errors (5xx), and other transient access problems are not closure evidence. Keep these distinct from possible closure.
+- **Repeated dead-link evidence:** repeat checks can increase an alert's priority, but retain each check result and timestamp so the administrator can see the pattern. Do not silently convert repeated technical failures into a confirmed closure.
+- **Other official evidence:** where practical, check another public business-controlled source (for example an official social page) before raising confidence. Do not infer closure from unrelated third-party comments or search snippets alone.
+- **Human decision required:** every closure alert opens the evidence for review. Only an explicit administrator action may change a listing's status; no scan, rule, timeout or source response may unpublish or delete a listing.
+
+Website fetching must also be hardened: allow only public HTTP(S) destinations, validate every redirect, block localhost/private/reserved IP ranges and unsafe schemes, verify TLS, and enforce strict connection, response-size and redirect limits.
 
 ## Safety and reliability
 
 - No automatic live edits, closures, deletions or new public listings.
-- Keep source URL, check time, evidence/snippet and confidence with each finding.
-- Treat unavailable or blocked sources as **not checked**, not as proof that a listing has closed.
-- Deduplicate repeat alerts for the same underlying change.
+- Keep source URL, check time, evidence/snippet, technical result and confidence with each finding.
+- Distinguish **possible closure**, **closure indicated**, **temporary closure** and **unable to verify**.
+- Deduplicate repeat alerts for the same underlying change while retaining the check history.
 - Make scans resumable and rate-limited; keep the schedule configurable.
 - Use UK time for any schedule display.
 - Keep the monitoring dashboard useful on desktop and mobile.
@@ -70,18 +86,23 @@ The existing findings table is activity-oriented today. Extend the model in a ba
 ## Delivery sequence
 
 1. Audit the existing activity tables, APIs, workers, review data and admin authentication.
-2. Design the shared schema and directory adapters; preserve existing checker data.
+2. Design the activity-first schema and service boundaries; preserve existing checker data.
 3. Build the simple combined dashboard and alert detail pop-up.
 4. Build save-to-review-draft and full-listing review/approval flow.
-5. Test the activity directory end-to-end on staging.
-6. Retire/redirect the old confusing screens only after the replacement is tested and data is verified.
-7. Only when requested later, map the other five directories and add team assignment.
+5. Add safe website checking and evidence-based change/closure classification.
+6. Test the activity directory end-to-end on staging.
+7. Retire/redirect the old confusing screens only after the replacement is tested and data is verified.
+8. Only when requested later, map the other five directories and add team assignment.
 
 ## Acceptance checks
 
 - Only an authenticated administrator can access the monitor and review actions.
 - Adding suggested changes creates a draft only; the public listing remains unchanged.
 - Final approval updates only accepted fields and records an audit trail.
-- A suspected closure never closes a listing without explicit confirmation.
+- A dead website link raises a possible-closure alert but never closes a listing.
+- Explicit permanent-closure wording is shown as strong evidence but still requires administrator confirmation.
+- Temporary closure language is not misclassified as permanent closure.
+- Timeouts, blocks, TLS problems and 5xx responses are classified as unable to verify.
+- Repeated dead-link checks retain their individual evidence and timestamps.
 - Existing activities, venues, findings and scan history remain intact.
 - The activity monitor is modular enough to support later directory adapters without requiring a rebuild.
