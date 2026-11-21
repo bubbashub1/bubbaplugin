@@ -423,6 +423,7 @@ function toggleMobileOverrides(){if(!currentSection||previewMode!=='draft')retur
 const bhPalettes={meadow:{background:'#e4f0e6',color:'#244d37',border:'#9fb7a5'},coastal:{background:'#e0f2f1',color:'#164e4b',border:'#8dbdb7'},sunshine:{background:'#fff4d9',color:'#614b20',border:'#e6c77d'},blush:{background:'#f8edf2',color:'#70465b',border:'#d9b8c8'},neutral:{background:'#f4f1e9',color:'#4c493f',border:'#d6cfbd'}};
 $('sectionPalette').addEventListener('change',()=>{if(!currentSection||previewMode!=='draft')return;const v=bhPalettes[$('sectionPalette').value];if(!v)return;$('sectionBackground').value=v.background;$('sectionTextColor').value=v.color;$('containerBorderColor').value=v.border;$('sectionGradient').value='';applySectionEdit();currentSection.props.palette=$('sectionPalette').value;draftStatus('Colour theme applied. Save draft when ready.');});
 $('sectionGradient').addEventListener('change',()=>{if(!currentSection||previewMode!=='draft')return;currentSection.props.gradient=$('sectionGradient').value;applySectionEdit();});
+$('sectionBackground').addEventListener('input',()=>{if($('sectionGradient').value){$('sectionGradient').value='';if(currentSection)currentSection.props.gradient='';applySectionEdit();}});
 
 $('mobileOverrideEnabled').addEventListener('change',toggleMobileOverrides);
 ['mobileContainerWidth','mobileContainerPadding','mobileContainerGap','mobileContainerHeight','mobileContainerRadius','mobileContainerBorderWidth','mobileContainerSpacing','mobileContainerAlign'].forEach(id=>$(id).addEventListener('input',applyMobileEdit));
