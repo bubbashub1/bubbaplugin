@@ -14,7 +14,7 @@ $exists=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_S
 if(!(int)$exists->fetchColumn())aer(503,['ok'=>false,'error'=>'events_schema_not_installed','message'=>'Events database setup is not installed on staging yet.']);
 if($_SERVER['REQUEST_METHOD']==='GET'){
  $_SESSION['bh_admin_events_csrf']??=bin2hex(random_bytes(32));
- $rows=$db->query("SELECT e.id,e.title,e.summary,e.description,e.category,e.venue_name,e.town,e.region,e.status,e.submitted_at,e.created_at,o.organisation_name FROM bh_directory_events e LEFT JOIN bh_organisers o ON o.id=e.organiser_id WHERE e.status IN ('pending','draft') ORDER BY CASE e.status WHEN 'pending' THEN 0 ELSE 1 END,e.submitted_at,e.id DESC LIMIT 200")->fetchAll(PDO::FETCH_ASSOC);
+ $rows=$db->query("SELECT e.id,e.title,e.summary,e.description,e.category,e.venue_name,e.town,e.region,e.status,e.submitted_at,e.created_at,o.organisation_name,(SELECT MIN(x.starts_at) FROM bh_directory_event_occurrences x WHERE x.event_id=e.id AND x.occurrence_status='scheduled') AS starts_at,(SELECT MAX(x.ends_at) FROM bh_directory_event_occurrences x WHERE x.event_id=e.id AND x.occurrence_status='scheduled') AS ends_at FROM bh_directory_events e LEFT JOIN bh_organisers o ON o.id=e.organiser_id WHERE e.status IN ('pending','draft') ORDER BY CASE e.status WHEN 'pending' THEN 0 ELSE 1 END,e.submitted_at,e.id DESC LIMIT 200")->fetchAll(PDO::FETCH_ASSOC);
  aer(200,['ok'=>true,'csrf'=>$_SESSION['bh_admin_events_csrf'],'events'=>$rows]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')aer(405,['ok'=>false,'error'=>'method_not_allowed']);
