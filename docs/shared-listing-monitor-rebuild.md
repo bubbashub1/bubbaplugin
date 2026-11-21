@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Replace the confusing Listing Health Check experience with one simple, shared monitoring workflow that can eventually cover all six Bubba Hub directories. Reuse and adapt existing Listing Checker infrastructure where it is sound; do not discard useful work or migrate/delete existing listing data.
+Replace the confusing Listing Health Check experience with one simple monitoring workflow, initially for the activities directory and the existing single administrator. Keep the design extensible, but defer mapping and enabling the other five directories until the activity monitor is working well. Reuse and adapt existing Listing Checker infrastructure where it is sound; do not discard useful work or migrate/delete existing listing data.
 
 ## User experience
 
@@ -10,24 +10,18 @@ The main screen should answer three questions immediately:
 
 1. What has changed?
 2. What needs checking?
-3. Who is looking after it?
+3. What do I need to do next?
 
 Use plain language and a small number of views:
-- **Overview** — counts for new discoveries, possible changes, possible closures, and items assigned to the team.
-- **Needs attention** — one combined queue with simple filters for directory, alert type, status, and assigned person.
-- **Directory settings** — advanced configuration kept out of the everyday workflow.
+- **Overview** — counts for new discoveries, possible changes, possible closures, and items needing your review.
+- **Needs attention** — one clear queue with simple filters for alert type and status.
+- **Settings** — essential monitoring choices only; technical worker controls stay out of the everyday workflow.
 
 Alerts are dashboard-only. No email alerts are required.
 
 ## Shared six-directory foundation
 
-Build a single monitoring and review engine with directory-specific configuration. Each monitored item/finding must identify its directory type and source listing. Directory configuration can define:
-- display name and enabled state;
-- search phrases, geographic coverage and permitted source types;
-- listing identity/matching rules;
-- fields that can be monitored and reviewed.
-
-Do not hard-code the engine to activities or assume all six directories have identical fields. Start with the existing activities/listings integration, then enable other directories one at a time after their data models and fields are mapped.
+Build the first working version for activities only. Keep the implementation modular enough that other directories can be added later, but do not spend time mapping their tables, fields, search phrases or matching rules now. That future mapping is deliberately deferred until the activity monitor is proven useful.
 
 ## Alert workflow
 
@@ -45,17 +39,12 @@ Use the same workflow for all directory types:
 - A suspected closure is a separate alert and must never close/unpublish a listing automatically. Require explicit confirmation in the review flow.
 - New discoveries remain candidates until a person reviews them and chooses to create/add a listing.
 
-## Team assignment
+## Access and future team support
 
-Every alert/review item can be assigned to an existing authorised Bubba Hub admin/team member.
-
-- Provide a simple **Assign to** control using the existing admin/team account directory; do not create a separate set of duplicate staff accounts.
-- Show the assignee and assignment status clearly on the alert.
-- Support unassigned, assigned, in progress, waiting for information, and completed states.
-- Allow reassignment by authorised admins and retain an assignment history (who assigned/reassigned it and when).
-- Assignment does not grant extra permissions: only users who already have the relevant admin permission may edit, approve or publish.
-- Keep optional notes/activity history with the item so the team can hand work over without losing context.
-- Keep the everyday screen uncluttered; due dates and advanced workflow controls can be added only if they remain genuinely simple.
+- Version one is restricted to the existing Bubba Hub admin login. There is currently one administrator using this workflow.
+- Do not build staff assignment, a team directory, reassignment, or team-specific permissions in this phase.
+- Keep review records and workflow code structured so assignment can be added later without redesigning the monitor.
+- Reuse the existing admin session and security checks; do not create duplicate accounts or a new login system.
 
 ## Existing repository work to adopt
 
@@ -80,21 +69,19 @@ The existing findings table is activity-oriented today. Extend the model in a ba
 
 ## Delivery sequence
 
-1. Audit existing tables, APIs, workers, directory data models and admin/team permissions.
+1. Audit the existing activity tables, APIs, workers, review data and admin authentication.
 2. Design the shared schema and directory adapters; preserve existing checker data.
 3. Build the simple combined dashboard and alert detail pop-up.
 4. Build save-to-review-draft and full-listing review/approval flow.
-5. Add assignment, reassignment and activity history using existing team accounts.
-6. Test the activity directory end-to-end on staging.
-7. Map and enable the remaining five directories one at a time.
-8. Retire/redirect the old confusing screens only after the replacement is tested and data is verified.
+5. Test the activity directory end-to-end on staging.
+6. Retire/redirect the old confusing screens only after the replacement is tested and data is verified.
+7. Only when requested later, map the other five directories and add team assignment.
 
 ## Acceptance checks
 
-- A finding can be assigned and reassigned to an existing team member.
-- A team member can see what is assigned to them.
+- Only an authenticated administrator can access the monitor and review actions.
 - Adding suggested changes creates a draft only; the public listing remains unchanged.
 - Final approval updates only accepted fields and records an audit trail.
 - A suspected closure never closes a listing without explicit confirmation.
 - Existing activities, venues, findings and scan history remain intact.
-- The same core workflow works for all six directory types without duplicating the monitoring engine.
+- The activity monitor is modular enough to support later directory adapters without requiring a rebuild.
