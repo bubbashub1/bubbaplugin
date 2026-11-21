@@ -1,5 +1,5 @@
 /* Shared section navigation for the unified Bubba Hub Directory. */
-.bh-directory-sections{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:22px auto 18px;max-width:1400px}
+.bh-directory-sections{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px auto 18px;max-width:1400px}
 .bh-directory-section-link{display:flex;flex-direction:column;gap:5px;min-width:0;padding:16px 18px;border:1px solid #d5e3d8;border-radius:17px;background:#fff;color:#174e3b;text-decoration:none;transition:transform .16s ease,border-color .16s ease,background .16s ease}
 .bh-directory-section-link:hover{transform:translateY(-2px);border-color:#679483}
 .bh-directory-section-link[aria-current=page]{background:#e5f1df;border-color:#679483;box-shadow:inset 0 0 0 1px #679483}
