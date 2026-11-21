@@ -13,7 +13,7 @@ if($recordId&&$recordId>0&&$schemaReady){
  if(!$orgGet){try{$oq=$db->prepare("SELECT COUNT(*) FROM bh_organisers WHERE LOWER(email)=LOWER(?)");$oq->execute([$u['email']]);if((int)$oq->fetchColumn()===1){$oq=$db->prepare("SELECT id FROM bh_organisers WHERE LOWER(email)=LOWER(?) LIMIT 1");$oq->execute([$u['email']]);$orgGet=$oq->fetchColumn();}}catch(Throwable $ignored){}}
  if(!$orgGet)ldr(403,['ok'=>false,'error'=>'organiser_required','message'=>'Your Leader account needs an organisation profile first.']);
  [$editTable,$editFields]=$map[$type];$select=implode(',',array_map(static fn($f)=>'`'.$f.'`',$editFields));
- $oq=$db->prepare("SELECT id,status,".$select." FROM ".$editTable." WHERE id=? AND organiser_id=? AND (created_by_user_id=? OR created_by_user_id IS NULL) LIMIT 1");$oq->execute([$recordId,(int)$orgGet,(int)$u['id']]);$existing=$oq->fetch(PDO::FETCH_ASSOC);
+ $oq=$db->prepare("SELECT id,status,".$select." FROM ".$editTable." WHERE id=? AND organiser_id=? LIMIT 1");$oq->execute([$recordId,(int)$orgGet]);$existing=$oq->fetch(PDO::FETCH_ASSOC);
  if(!$existing)ldr(404,['ok'=>false,'error'=>'record_not_found']);if(!in_array($existing['status'],['draft','rejected'],true))ldr(409,['ok'=>false,'error'=>'record_not_editable','message'=>'Only drafts and returned entries can be edited here.']);
 }
 ldr(200,['ok'=>true,'csrf'=>$_SESSION['bh_directory_records_csrf'],'schema_ready'=>$schemaReady,'record'=>$existing]);}
@@ -24,7 +24,7 @@ $q=$db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");
 $intent=($in['intent']??'draft')==='submit'?'pending':'draft';$recordId=filter_var($in['record_id']??null,FILTER_VALIDATE_INT);
 try{
  if($recordId&&$recordId>0){
-  $q=$db->prepare("SELECT status FROM ".$table." WHERE id=? AND organiser_id=? AND (created_by_user_id=? OR created_by_user_id IS NULL) LIMIT 1");$q->execute([$recordId,(int)$org,$uid]);$current=$q->fetchColumn();
+  $q=$db->prepare("SELECT status FROM ".$table." WHERE id=? AND organiser_id=? AND (created_by_user_id=? OR created_by_user_id IS NULL) LIMIT 1");$q->execute([$recordId,(int)$org]);$current=$q->fetchColumn();
   if(!$current)ldr(404,['ok'=>false,'error'=>'record_not_found']);if(!in_array($current,['draft','rejected'],true))ldr(409,['ok'=>false,'error'=>'record_not_editable','message'=>'Only drafts and returned entries can be edited here.']);
   $sets=[];foreach(array_keys($clean) as $f)$sets[]="`".$f."`=?";$sets[]="status=?";$sets[]="submitted_at=?";$sets[]="reviewed_at=NULL";$sets[]="reviewed_by_user_id=NULL";$sets[]="review_note=NULL";
   $q=$db->prepare("UPDATE ".$table." SET ".implode(',',$sets)." WHERE id=? AND organiser_id=?");$q->execute(array_merge(array_values($clean),[$intent,$intent==='pending'?date('Y-m-d H:i:s'):null,$recordId,(int)$org]));
