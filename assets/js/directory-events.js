@@ -42,8 +42,7 @@
     }
   }
   function init(){
-    const button=$('directoryShowEvents');if(!button)return;
-    button.addEventListener('click',()=>{if(!loaded)void loadEvents();});
+    window.addEventListener('bh:directory-show-events',()=>{if(!loaded)void loadEvents();});
     if(new URLSearchParams(location.search).get('view')==='events')void loadEvents();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
