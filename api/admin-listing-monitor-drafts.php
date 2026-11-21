@@ -20,6 +20,16 @@ try {
  $_SESSION['bh_listing_monitor_csrf']??=bin2hex(random_bytes(32));
  $method=$_SERVER['REQUEST_METHOD']??'GET';
  if($method==='GET'){
+  if(isset($_GET['draft_id'])){
+   $draftId=max(0,(int)$_GET['draft_id']);
+   $q=$db->prepare('SELECT * FROM bh_listing_monitor_drafts WHERE id=?');$q->execute([$draftId]);$draft=$q->fetch(PDO::FETCH_ASSOC);
+   if(!$draft) bh_lm_reply(404,['ok'=>false,'error'=>'Review draft not found.']);
+   $q=$db->prepare('SELECT * FROM bh_activities WHERE id=?');$q->execute([(int)$draft['activity_id']]);$activity=$q->fetch(PDO::FETCH_ASSOC);
+   if(!$activity) bh_lm_reply(404,['ok'=>false,'error'=>'The activity for this draft could not be found.']);
+   $draft['original_snapshot']=json_decode((string)$draft['original_snapshot'],true)?:[];
+   $draft['proposed_changes']=json_decode((string)$draft['proposed_changes'],true)?:[];
+   bh_lm_reply(200,['ok'=>true,'csrf'=>$_SESSION['bh_listing_monitor_csrf'],'draft'=>$draft,'activity'=>$activity]);
+  }
   if(isset($_GET['drafts'])){
    $q=$db->query("SELECT d.id,d.finding_id,d.activity_id,d.status,d.created_at,d.updated_at,a.title FROM bh_listing_monitor_drafts d INNER JOIN bh_activities a ON a.id=d.activity_id ORDER BY d.updated_at DESC LIMIT 100");
    bh_lm_reply(200,['ok'=>true,'csrf'=>$_SESSION['bh_listing_monitor_csrf'],'drafts'=>$q->fetchAll(PDO::FETCH_ASSOC)]);
