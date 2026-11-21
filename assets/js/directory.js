@@ -1161,7 +1161,7 @@ const bhInitDirectory=async()=>{
     if(hint){hint.hidden=false;hint.textContent=activitiesLoaded?"The directory controls could not be started. Please refresh the page.":"We could not connect to the activity listings. Please try again shortly.";}
     if(results){
       results.hidden=false;
-      results.innerHTML='<div class="admin-panel" role="alert"><h3>${activitiesLoaded?"Directory temporarily unavailable":"Activities temporarily unavailable"}</h3><p>${activitiesLoaded?"The directory could not finish setting up its filters and views. Please refresh the page.":"We could not connect to the activity listings. Please try again shortly."}</p><button type="button" class="button button-primary" id="directoryRetry">Try again</button></div>';
+      results.innerHTML=`<div class="admin-panel" role="alert"><h3>${activitiesLoaded?"Directory temporarily unavailable":"Activities temporarily unavailable"}</h3><p>${activitiesLoaded?"The directory could not finish setting up its filters and views. Please refresh the page.":"We could not connect to the activity listings. Please try again shortly."}</p><button type="button" class="button button-primary" id="directoryRetry">Try again</button></div>`;
       document.getElementById("directoryRetry")?.addEventListener("click",()=>location.reload());
     }
   }
