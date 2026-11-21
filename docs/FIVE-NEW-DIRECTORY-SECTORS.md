@@ -56,10 +56,19 @@ The Leader Hub navigation links to all four new submission tools. They use the e
 
 
 ## Published-entry revision workflow
-- The consolidated SQL adds `bh_directory_record_revisions`, storing a submitted snapshot separately from the published record.
+- The consolidated SQL adds `bh_directory_record_revisions`, storing a submitted snapshot separately from the published record. Its `section_key` supports Events as well as the four specialist sectors.
 - A Leader can open a published specialist entry using **Request changes**. The wizard submits a revision; it does not overwrite the published row.
 - Only one pending revision per entry is allowed. Published entries cannot be saved as drafts.
 - Admin approval applies the whitelisted payload; returning or rejecting leaves the live record unchanged.
 - The public directory continues reading only published records, so pending revisions are not exposed.
-- This workflow covers Businesses, Childcare & Schools, Places & Days Out and School Clubs. Events retain separate moderation and still need published-event revisions.
+- This workflow covers all five new sections, including Events. Published event revisions store the proposed event details, all scheduled dates and linked Listing IDs together. The live event, dates and links remain unchanged until an admin approves the complete revision. The shared review queue displays current versus proposed event details, dates and Listing links.
 - No SQL has been executed and no live deployment has been made.
+
+
+## Published Events revision workflow
+- Leaders can use **My Directory entries → Request changes** on a published Event.
+- The Event wizard loads the published event, including its scheduled dates and links to the Leader's own Listings.
+- Submitting creates a pending revision snapshot; it does not edit the published event.
+- The shared Admin Directory review queue shows current and proposed event details, dates and linked Listing IDs.
+- Approval updates the event and replaces its scheduled occurrences and Listing links in one database transaction. Rejection or return-for-edits leaves the live event unchanged.
+- Only one pending revision per published event is allowed.
