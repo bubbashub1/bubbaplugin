@@ -1,0 +1,31 @@
+/* One consistent card-and-filter system for all six directory sectors. */
+.bh-universal-directory{margin:26px auto 34px;padding:clamp(18px,2.5vw,30px);background:#fff;border:1px solid #e1ebe2;border-radius:24px;box-shadow:0 12px 34px rgba(23,78,59,.07)}
+.bh-universal-heading h2{margin:5px 0 7px;color:#174e3b;font-size:clamp(1.45rem,2.5vw,2rem);letter-spacing:-.03em}
+.bh-universal-heading p{margin:0;color:#416651;line-height:1.55}
+.bh-universal-eyebrow{font-size:.76rem;font-weight:800;letter-spacing:.08em;color:#0f766e}
+.bh-universal-filters{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:11px;margin:20px 0 16px}
+.bh-universal-filters label,.bh-universal-resultbar label{display:flex;flex-direction:column;gap:6px;min-width:0;color:#174e3b;font-size:.82rem;font-weight:700}
+.bh-universal-filters input,.bh-universal-filters select,.bh-universal-resultbar select{width:100%;min-width:0;box-sizing:border-box;min-height:48px;padding:10px 12px;border:1px solid #dce8df;border-radius:13px;background:#fff;color:#174e3b;font:600 .92rem Quicksand,Calibri,Arial,sans-serif}
+.bh-universal-filters :is(input,select):focus,.bh-universal-resultbar select:focus{outline:3px solid #3c8e9630;border-color:#3c8e96}
+.bh-universal-resultbar{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:10px 0 14px}
+.bh-universal-resultbar p{margin:0;color:#416651;font-weight:700;font-size:.9rem}
+.bh-universal-resultbar label{flex-direction:row;align-items:center;white-space:nowrap}
+.bh-universal-resultbar select{min-height:38px;width:auto}
+.bh-universal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,255px),1fr));gap:16px}
+.bh-universal-card{display:flex;min-width:0;flex-direction:column;overflow:hidden;border:1px solid #e1ebe2;border-radius:20px;background:#fff;box-shadow:0 6px 20px rgba(23,78,59,.055);transition:transform .18s ease,border-color .18s ease}
+.bh-universal-card:hover{transform:translateY(-2px);border-color:#9fb7a5}
+.bh-universal-image{height:158px;background:#edf6ee;overflow:hidden}
+.bh-universal-image img{width:100%;height:100%;object-fit:cover;display:block}
+.bh-universal-placeholder{height:100%;display:grid;place-items:center;color:#416651;font-weight:800;background:linear-gradient(135deg,#edf6ee,#d8e6db)}
+.bh-universal-card-body{display:flex;flex:1;flex-direction:column;align-items:flex-start;padding:17px}
+.bh-universal-tag{display:inline-flex;padding:5px 9px;border-radius:999px;background:#edf6ee;color:#174e3b;font-size:.72rem;font-weight:800}
+.bh-universal-card h3{margin:10px 0 6px;color:#174e3b;font-size:1.08rem;line-height:1.3}
+.bh-universal-meta{margin:0 0 8px;color:#0f766e;font-size:.8rem;font-weight:700;line-height:1.45}
+.bh-universal-summary{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin:0 0 15px;color:#496457;font-size:.88rem;line-height:1.5}
+.bh-universal-card-link{margin-top:auto;padding-top:12px;color:#0f766e;font-weight:800;font-size:.9rem;text-decoration:none}
+.bh-universal-card-link:hover{text-decoration:underline}
+.bh-universal-empty{grid-column:1/-1;padding:28px;border-radius:18px;background:#f4f8f7;color:#416651;text-align:center}
+.bh-universal-empty h3{margin:0 0 7px;color:#174e3b}
+.bh-universal-empty p{margin:0}
+@media(max-width:850px){.bh-universal-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.bh-universal-directory{padding:16px;border-radius:19px}.bh-universal-filters{grid-template-columns:1fr}.bh-universal-resultbar{align-items:stretch;flex-direction:column}.bh-universal-resultbar label{justify-content:space-between}.bh-universal-resultbar select{flex:1}}
