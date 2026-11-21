@@ -60,7 +60,7 @@ function showCanvasToolbar(node){
  const doc=frame.contentDocument;if(!doc||previewMode!=='draft'||!currentBlock){removeCanvasToolbar();return;}
  removeCanvasToolbar();const toolbar=doc.createElement('div');toolbar.id='bhvb-floating-toolbar';toolbar.setAttribute('role','toolbar');toolbar.setAttribute('aria-label','Selected element actions');
  const actions=[['Edit','Edit selected element',()=>{setTab('properties');$('propertiesPanel').scrollIntoView({behavior:'smooth',block:'nearest'});}],['＋','Duplicate element',duplicateSelectedBlock],['↑','Move element up',()=>moveSelectedBlock(-1)],['↓','Move element down',()=>moveSelectedBlock(1)],['×','Delete element',deleteSelectedBlock]];
- actions.forEach(([label,title,action])=>{const button=doc.createElement('button');button.type='button';button.textContent=label;button.title=title;button.setAttribute('aria-label',title);button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();action();});toolbar.append(button);});
+ actions.forEach(([label,title,action])=>{const button=doc.createElement('button');button.type='button';button.textContent=label;button.title=title;button.setAttribute('aria-label',title);button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();if(title!=='Edit selected element')scheduleHistoryCapture();action();});toolbar.append(button);});
  doc.body.append(toolbar);
  const rect=node.getBoundingClientRect(),left=Math.max(8,Math.min(doc.documentElement.clientWidth-toolbar.offsetWidth-8,rect.left)),top=Math.max(8,rect.top-toolbar.offsetHeight-9);
  toolbar.style.left=left+'px';toolbar.style.top=top+'px';
