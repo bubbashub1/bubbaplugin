@@ -8,7 +8,7 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 require_once __DIR__.'/db.php';
 $db=bh_mysql();
 $required=['bh_listing_checker_settings','bh_listing_check_queue','bh_listing_check_runs','bh_listing_check_findings'];
-foreach($required as $table){$q=$db->prepare('SHOW TABLES LIKE ?');$q->execute([$table]);if(!$q->fetchColumn()){fwrite(STDERR,"Migration required: apply database/listing-checker-schema.sql
+foreach($required as $table){$q=$db->query('SHOW TABLES LIKE '.$db->quote($table));if(!$q->fetchColumn()){fwrite(STDERR,"Migration required: apply database/listing-checker-schema.sql
 ");exit(2);}}
 $settings=[];foreach($db->query('SELECT setting_key,setting_value FROM bh_listing_checker_settings')->fetchAll(PDO::FETCH_ASSOC) as $r)$settings[$r['setting_key']]=$r['setting_value'];
 $get=static fn($k,$d='')=>(string)($settings[$k]??$d);
