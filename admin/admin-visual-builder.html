@@ -38,8 +38,10 @@
 <div class="bhvb-inspector-tabs" role="tablist" aria-label="Inspector panels"><button type="button" class="active" id="propertiesTab" role="tab" aria-selected="true" aria-controls="propertiesPanel">Properties</button><button type="button" id="layersTab" role="tab" aria-selected="false" aria-controls="layersPanel">Layers</button></div>
 <section class="bhvb-inspector-section" id="propertiesPanel" role="tabpanel" aria-labelledby="propertiesTab"><span class="eyebrow">Selected element</span><h2 id="selectedName">Nothing selected</h2><p id="selectedDescription">Click a heading, paragraph, image, button or section in the preview to inspect it.</p><dl id="selectedDetails" hidden><dt>Element</dt><dd id="selectedTag">—</dd><dt>Text / alternative text</dt><dd id="selectedText">—</dd></dl>
 <div class="bhvb-edit-controls" id="editControls" hidden>
-<label for="editText">Text</label><textarea id="editText" rows="3" maxlength="10000"></textarea>
+<label for="editText" id="editTextLabel">Text</label><textarea id="editText" rows="3" maxlength="10000"></textarea>
 <label for="editHref" id="editHrefLabel" hidden>Button / link destination</label><input id="editHref" type="text" maxlength="2048" hidden>
+<label for="editImageSrc" id="editImageSrcLabel" hidden>Image URL</label><input id="editImageSrc" type="url" maxlength="2048" placeholder="https://… or /images/…" hidden>
+<label for="editImageAlt" id="editImageAltLabel" hidden>Image alternative text</label><input id="editImageAlt" type="text" maxlength="500" placeholder="Describe the image" hidden>
 <p class="bhvb-edit-help">Changes are only in this private draft preview until you save the draft. The published page is not affected.</p>
 </div>
 <div class="bhvb-edit-controls bhvb-section-controls" id="sectionControls" hidden><strong>Container settings</strong>
@@ -75,7 +77,8 @@
 <button type="button" id="addContainer" disabled>Add container</button>
 <button type="button" id="addHeading" disabled>Add heading to selected container</button>
 <button type="button" id="addParagraph" disabled>Add text to selected container</button>
-<button type="button" id="addButtonBlock" disabled>Add button to selected container</button></div>
+<button type="button" id="addButtonBlock" disabled>Add button to selected container</button>
+<button type="button" id="addImageBlock" disabled>Add image to selected container</button></div>
 <button type="button" id="prepareDraft" disabled>Prepare draft from page</button>
 <button type="button" id="saveDraft" disabled>Save draft</button>
 <button type="button" id="setupDraftStorage" hidden>Set up draft storage</button>
