@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8"><base href="/"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Listing Monitor · Admin · Bubba Hub</title>
+<link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/admin-settings.css"><link rel="stylesheet" href="/assets/css/admin-support-v2.css">
+<style>
+.bh-monitor{max-width:1180px;margin:0 auto;padding:28px 20px 64px;color:#244333}
+.bh-monitor-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap}
+.bh-monitor-head h1{margin:.25rem 0}.bh-monitor-sub{color:#617267;max-width:680px}
+.bh-monitor-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:24px 0}
+.bh-monitor-stat,.bh-monitor-panel{background:#fff;border:1px solid #dce8dd;border-radius:14px;padding:18px}
+.bh-monitor-stat strong{display:block;font-size:30px;line-height:1.2;color:#205d45}.bh-monitor-stat span{font-size:13px;color:#617267}
+.bh-monitor-panel{margin:18px 0}.bh-monitor-panel h2{margin:0 0 6px}.bh-monitor-muted{font-size:13px;color:#617267}
+.bh-monitor-list{list-style:none;padding:0;margin:12px 0 0}.bh-monitor-list li{padding:13px 0;border-top:1px solid #e8eee8;display:flex;justify-content:space-between;gap:16px;align-items:center}
+.bh-monitor-list li:first-child{border-top:0}.bh-monitor-item-title{font-weight:700}.bh-monitor-tag{display:inline-block;border-radius:99px;background:#eef4ee;padding:4px 9px;font-size:12px;color:#365a43}
+.bh-monitor-empty{padding:22px 8px;color:#617267;text-align:center}.bh-monitor-error{color:#9c302c}
+.bh-monitor-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+@media(max-width:760px){.bh-monitor-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.bh-monitor-list li{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body class="bh-admin-v2">
+<header class="site-header"><a class="brand" href="/index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="/directory.html">Find activities</a><a href="/my-hub.html">My Hub</a><a href="/leader.html">Class Leaders</a><a href="/admin/">Admin</a></nav><a class="button button-soft" href="/account.html">My account</a></header>
+<main class="bh-monitor">
+<p><a href="/admin/admin-activities.html">← Back to activities &amp; listings</a></p>
+<div class="bh-monitor-head"><div><span class="eyebrow">Your activity directory</span><h1>Listing Monitor</h1><p class="bh-monitor-sub">A simple place to see listing checks and findings that need your attention. Nothing on this screen changes a public listing.</p></div><button class="button button-soft" type="button" data-admin-logout>Sign out</button></div>
+<section class="bh-monitor-stats" aria-label="Monitor overview">
+<div class="bh-monitor-stat"><strong id="stat-total">—</strong><span>Activities in directory</span></div>
+<div class="bh-monitor-stat"><strong id="stat-attention">—</strong><span>Findings to review</span></div>
+<div class="bh-monitor-stat"><strong id="stat-discoveries">—</strong><span>New discoveries</span></div>
+<div class="bh-monitor-stat"><strong id="stat-closures">—</strong><span>Possible closures</span></div>
+</section>
+<section class="bh-monitor-panel"><h2>Needs your attention</h2><p class="bh-monitor-muted" id="monitor-status" role="status">Loading your latest findings…</p><ul class="bh-monitor-list" id="monitor-findings"><li class="bh-monitor-empty">Loading…</li></ul><div class="bh-monitor-actions"><a class="button button-primary" href="/admin/admin-listing-review.html">Open review queue</a><a class="button button-soft" href="/admin/admin-listing-checker-settings.html">Monitoring settings</a></div></section>
+<section class="bh-monitor-panel"><h2>What happens next?</h2><p class="bh-monitor-muted">The replacement workflow is being built in stages. The next step is to add a clear change pop-up and a saved review draft, so you can check suggested updates before anything is approved.</p><p class="bh-monitor-muted">A broken website may raise a possible-closure alert. Temporary website errors are treated as unable to verify. No listing is automatically closed, edited or removed.</p></section>
+</main>
+<footer class="site-footer"><div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div></footer>
+<script>
+(()=>{const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const human=v=>String(v||'Finding').replace(/[_-]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+async function load(){try{const [healthRes,reviewRes]=await Promise.all([fetch('/api/admin-listing-health.php',{credentials:'same-origin',cache:'no-store'}),fetch('/api/admin-listing-review.php?status=new&limit=100',{credentials:'same-origin',cache:'no-store'})]);if(healthRes.status===401||reviewRes.status===401){location.replace('/admin-login.html?next='+encodeURIComponent(location.pathname));return;}const [health,review]=await Promise.all([healthRes.json(),reviewRes.json()]);if(!healthRes.ok||!health.ok)throw Error(health.error||'Could not load activity totals.');if(!reviewRes.ok||!review.ok)throw Error(review.error||'Could not load findings.');const items=review.items||[];$('stat-total').textContent=health.totals?.listings??'—';$('stat-attention').textContent=review.counts?.new??items.length;$('stat-discoveries').textContent=items.filter(x=>String(x.check_type)==='discovery'||/discover|new_listing/i.test(x.finding_type||'')).length;$('stat-closures').textContent=items.filter(x=>/clos|website_down|dead_link/i.test(x.finding_type||'')).length;const rows=items.slice(0,12);$('monitor-findings').innerHTML=rows.length?rows.map(x=>{const name=x.activity_title||x.candidate?.name||x.candidate?.title||'New activity to check';const detail=[x.activity_town,x.activity_region].filter(Boolean).join(', ');return '<li><div><div class="bh-monitor-item-title">'+esc(name)+'</div><div class="bh-monitor-muted">'+esc(human(x.finding_type))+(detail?' · '+esc(detail):'')+' · '+esc(x.checked_at||'Recently checked')+'</div></div><span class="bh-monitor-tag">'+esc(x.check_type==='discovery'?'Discovery':'Review needed')+'</span></li>';}).join(''):'<li class="bh-monitor-empty">You’re all caught up. There are no new findings waiting for review.</li>';$('monitor-status').textContent=items.length?'Here are the latest findings awaiting review.':'No new findings are waiting for review.';}catch(e){$('monitor-status').textContent=e.message;$('monitor-status').className='bh-monitor-error';$('monitor-findings').innerHTML='<li class="bh-monitor-empty">The monitor could not load. Please try again or use the existing review queue.</li>';}}
+document.addEventListener('click',e=>{if(e.target.closest('[data-admin-logout]'))fetch('/api/admin-logout.php',{method:'POST',credentials:'same-origin'}).finally(()=>location.href='/admin-login.html');});load();
+})();
+</script>
+</body></html>
