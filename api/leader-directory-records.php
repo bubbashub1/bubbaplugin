@@ -12,7 +12,7 @@ if($recordId&&$recordId>0&&$schemaReady){
  $orgGet=null;try{$oq=$db->prepare("SELECT id FROM bh_organisers WHERE user_id=? LIMIT 1");$oq->execute([(int)$u['id']]);$orgGet=$oq->fetchColumn();}catch(Throwable $ignored){}
  if(!$orgGet){try{$oq=$db->prepare("SELECT COUNT(*) FROM bh_organisers WHERE LOWER(email)=LOWER(?)");$oq->execute([$u['email']]);if((int)$oq->fetchColumn()===1){$oq=$db->prepare("SELECT id FROM bh_organisers WHERE LOWER(email)=LOWER(?) LIMIT 1");$oq->execute([$u['email']]);$orgGet=$oq->fetchColumn();}}catch(Throwable $ignored){}}
  if(!$orgGet)ldr(403,['ok'=>false,'error'=>'organiser_required','message'=>'Your Leader account needs an organisation profile first.']);
- [$editTable,$editFields]=$map[$type];$select=implode(',',array_map(static fn($f)=>'\x60'.$f.'\x60',$editFields));
+ [$editTable,$editFields]=$map[$type];$select=implode(',',array_map(static fn($f)=>'`'.$f.'`',$editFields));
  $oq=$db->prepare("SELECT id,status,".$select." FROM ".$editTable." WHERE id=? AND organiser_id=? AND (created_by_user_id=? OR created_by_user_id IS NULL) LIMIT 1");$oq->execute([$recordId,(int)$orgGet,(int)$u['id']]);$existing=$oq->fetch(PDO::FETCH_ASSOC);
  if(!$existing)ldr(404,['ok'=>false,'error'=>'record_not_found']);if(!in_array($existing['status'],['draft','rejected'],true))ldr(409,['ok'=>false,'error'=>'record_not_editable','message'=>'Only drafts and returned entries can be edited here.']);
 }
