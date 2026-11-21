@@ -54,6 +54,39 @@ try {
  $input=json_decode((string)file_get_contents('php://input'),true);
  if(!is_array($input)||!hash_equals((string)$_SESSION['bh_listing_monitor_csrf'],(string)($input['csrf']??''))) bh_lm_reply(403,['ok'=>false,'error'=>'Security check failed. Refresh and try again.']);
  $action=(string)($input['action']??'');
+ if($action==='approve_draft'){
+  $draftId=max(0,(int)($input['draft_id']??0));
+  if($draftId<1||empty($input['confirm'])) bh_lm_reply(422,['ok'=>false,'error'=>'Explicit approval confirmation is required.']);
+  $allowed=['title','description','short_description','website','booking_url','facebook_url','instagram_url','contact_email','phone','town','region','postcode','category','age_range','price','price_details','opening_times','session_information'];
+  try{
+   $db->beginTransaction();
+   $q=$db->prepare("SELECT * FROM bh_listing_monitor_drafts WHERE id=? FOR UPDATE");$q->execute([$draftId]);$draft=$q->fetch(PDO::FETCH_ASSOC);
+   if(!$draft||$draft['status']!=='draft') throw new RuntimeException('This draft is no longer awaiting approval.');
+   $before=json_decode((string)$draft['original_snapshot'],true);$changes=json_decode((string)$draft['proposed_changes'],true);
+   if(!is_array($before)||!is_array($changes)||!$changes) throw new RuntimeException('The saved draft is incomplete.');
+   $q=$db->prepare('SELECT * FROM bh_activities WHERE id=? FOR UPDATE');$q->execute([(int)$draft['activity_id']]);$activity=$q->fetch(PDO::FETCH_ASSOC);
+   if(!$activity) throw new RuntimeException('The activity could not be found.');
+   foreach($changes as $field=>$value){
+    if(!in_array($field,$allowed,true)||!array_key_exists($field,$activity)||!array_key_exists($field,$before)) throw new RuntimeException('The draft contains a field that cannot be approved.');
+    if((string)($activity[$field]??'')!==(string)($before[$field]??'')) throw new RuntimeException('This activity has changed since the draft was created. Recheck the latest details before approving.');
+    if(!is_scalar($value)&&$value!==null) throw new RuntimeException('The draft contains an invalid field value.');
+    $text=$value===null?'':trim((string)$value);
+    if(strlen($text)>12000) throw new RuntimeException('A draft field is too long.');
+    if(str_ends_with($field,'_url')||in_array($field,['website','booking_url'],true)){
+     if($text!==''&&(!filter_var($text,FILTER_VALIDATE_URL)||!in_array(strtolower((string)parse_url($text,PHP_URL_SCHEME)),['http','https'],true))) throw new RuntimeException('A website or social link is not a valid HTTP or HTTPS URL.');
+    }
+    $changes[$field]=$text;
+   }
+   $sets=[];$params=[];foreach($changes as $field=>$value){$sets[]='`'.$field.'`=?';$params[]=$value;}
+   $params[]=(int)$draft['activity_id'];$q=$db->prepare('UPDATE bh_activities SET '.implode(',',$sets).' WHERE id=?');$q->execute($params);
+   $actor=trim((string)($_SESSION['bh_admin_username']??'admin'));if($actor==='')$actor='admin';
+   $q=$db->prepare('INSERT INTO bh_listing_monitor_audit(draft_id,activity_id,admin_username,before_values,approved_values,source_url) VALUES(?,?,?,?,?,?)');
+   $q->execute([$draftId,(int)$draft['activity_id'],$actor,json_encode($before,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),json_encode($changes,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),$draft['source_url']]);
+   $q=$db->prepare("UPDATE bh_listing_monitor_drafts SET status='approved',reviewed_at=NOW(),reviewed_by=? WHERE id=?");$q->execute([$actor,$draftId]);
+   $db->commit();
+   bh_lm_reply(200,['ok'=>true,'message'=>'Approved changes have been saved to the activity. The approval has been recorded.']);
+  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();if($e instanceof RuntimeException)bh_lm_reply(409,['ok'=>false,'error'=>$e->getMessage()]);throw $e;}
+ }
  if($action!=='save_draft') bh_lm_reply(422,['ok'=>false,'error'=>'Unknown review action.']);
  $findingId=max(0,(int)($input['finding_id']??0));$changes=$input['changes']??[];
  if($findingId<1||!is_array($changes)||!$changes) bh_lm_reply(422,['ok'=>false,'error'=>'Select at least one suggested change first.']);
