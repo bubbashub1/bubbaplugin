@@ -22,6 +22,11 @@ $bad=$valid;$bad['sections'][0]['props']['background']='url(javascript:alert(1))
 $bad=$valid;$bad['sections'][0]['props']['padding']=97;assert_test(!bh_validate_page_document_v1($bad)['ok'],'section padding upper bound');
 $bad=$valid;$bad['sections'][0]['props']['gap']=-1;assert_test(!bh_validate_page_document_v1($bad)['ok'],'section gap lower bound');
 $validContainer=$valid;$validContainer['sections'][0]['props']=['background'=>'#f4f8f7','padding'=>32,'gap'=>20,'width'=>80,'min_height'=>240,'radius'=>16,'border_width'=>2,'border_color'=>'#3c8e96','align'=>'center','margin_bottom'=>24];assert_test(bh_validate_page_document_v1($validContainer)['ok'],'valid independent container layout properties');
+$validMobile=$validContainer;$validMobile['sections'][0]['props']['mobile']=['width'=>100,'padding'=>16,'gap'=>12,'min_height'=>0,'radius'=>12,'border_width'=>0,'margin_bottom'=>16,'align'=>'center'];assert_test(bh_validate_page_document_v1($validMobile)['ok'],'valid mobile container overrides');
+$badMobile=$validMobile;$badMobile['sections'][0]['props']['mobile']['width']=101;assert_test(!bh_validate_page_document_v1($badMobile)['ok'],'mobile width upper bound');
+$badMobile=$validMobile;$badMobile['sections'][0]['props']['mobile']['padding']=97;assert_test(!bh_validate_page_document_v1($badMobile)['ok'],'mobile padding upper bound');
+$badMobile=$validMobile;$badMobile['sections'][0]['props']['mobile']['evil']='x';assert_test(!bh_validate_page_document_v1($badMobile)['ok'],'unknown mobile property rejected');
+$badMobile=$validMobile;$badMobile['sections'][0]['props']['mobile']['align']='stretch';assert_test(!bh_validate_page_document_v1($badMobile)['ok'],'invalid mobile alignment rejected');
 $bad=$valid;$bad['sections'][0]['props']['width']=101;assert_test(!bh_validate_page_document_v1($bad)['ok'],'container width upper bound');
 $bad=$valid;$bad['sections'][0]['props']['min_height']=801;assert_test(!bh_validate_page_document_v1($bad)['ok'],'container height upper bound');
 $bad=$valid;$bad['sections'][0]['props']['border_color']='url(javascript:alert(1))';assert_test(!bh_validate_page_document_v1($bad)['ok'],'unsafe container border colour rejected');
