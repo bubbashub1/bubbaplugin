@@ -61,7 +61,7 @@ function installContainerHandles(node){
  resize.style.cssText+=';right:5px;bottom:5px;width:28px;height:28px;cursor:nwse-resize;';
  const start=(event,mode)=>{
   if(event.button!==0&&event.pointerType!=='touch')return;
-  event.preventDefault();event.stopPropagation();handle.setPointerCapture?.(event.pointerId);
+  event.preventDefault();event.stopPropagation();event.currentTarget.setPointerCapture?.(event.pointerId);
   const startX=event.clientX,startY=event.clientY,startWidth=node.getBoundingClientRect().width,startHeight=node.getBoundingClientRect().height,parentWidth=node.parentElement?.getBoundingClientRect().width||960;
   let moved=false,done=false;
   const onMove=e=>{
