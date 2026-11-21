@@ -3,7 +3,7 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');header('X-Content-Type-Options: nosniff');
 ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');if(session_status()!==PHP_SESSION_ACTIVE){session_name('BUBBAHUBSESSID');session_start();}
 function ldm(int $c,array $d):never{http_response_code($c);echo json_encode($d,JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);exit;}
-$map=['business'=>'bh_directory_businesses','childcare'=>'bh_directory_childcare','place'=>'bh_directory_places','school_club'=>'bh_directory_school_clubs'];
+$map=['event'=>'bh_directory_events','business'=>'bh_directory_businesses','childcare'=>'bh_directory_childcare','place'=>'bh_directory_places','school_club'=>'bh_directory_school_clubs'];
 require_once __DIR__.'/db.php';$db=bh_mysql();
 if(empty($_SESSION['bh_user_id']))ldm(401,['ok'=>false,'error'=>'login_required','message'=>'Sign in with your Leader account to continue.']);
 $q=$db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");$q->execute([(int)$_SESSION['bh_user_id']]);$u=$q->fetch(PDO::FETCH_ASSOC);
