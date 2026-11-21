@@ -7,8 +7,8 @@ ini_set('session.use_only_cookies', '1');
 session_name('BUBBAHUB_ADMINSESSID');
 session_start();
 function defaults():array{return [
-'main'=>[['label'=>'Find activities','url'=>'directory.html'],['label'=>'My Hub','url'=>'my-hub.html'],['label'=>'Support & Guidance','url'=>'help-support.html'],['label'=>'Class Leaders','url'=>'leader.html'],['label'=>'Account','url'=>'account.html']],
-'footer_main'=>[['label'=>'Find activities','url'=>'directory.html'],['label'=>'My Hub','url'=>'my-hub.html'],['label'=>'Support & Guidance','url'=>'help-support.html'],['label'=>'Class Leaders','url'=>'leader.html'],['label'=>'Account','url'=>'account.html']],
+'main'=>[['label'=>'Find activities','url'=>'directory.html'],['label'=>'My Hub','url'=>'my-hub.html'],['label'=>'Support & Guidance','url'=>'help-support.html'],['label'=>'Leader Hub','url'=>'leader.html'],['label'=>'Account','url'=>'account.html']],
+'footer_main'=>[['label'=>'Find activities','url'=>'directory.html'],['label'=>'My Hub','url'=>'my-hub.html'],['label'=>'Support & Guidance','url'=>'help-support.html'],['label'=>'Leader Hub','url'=>'leader.html'],['label'=>'Account','url'=>'account.html']],
 'footer_tools'=>[['label'=>'Events','url'=>'events.html'],['label'=>'Venues','url'=>'venues.html'],['label'=>'Planner','url'=>'planner.html'],['label'=>'Calendar','url'=>'calendar.html'],['label'=>'Admin','url'=>'admin/admin.html']],
 'footer_legal'=>[['label'=>'Privacy','url'=>'privacy.html'],['label'=>'Terms & Conditions','url'=>'terms.html'],['label'=>'Contact Bubba Hub','url'=>'mailto:contact@bubbahub.co.uk']]
 ];}
