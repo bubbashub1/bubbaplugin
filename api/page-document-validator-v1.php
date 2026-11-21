@@ -44,7 +44,21 @@ function bh_validate_page_document_v1(mixed $document): array {
    elseif($key==='border_color'&&(!is_string($value)||!preg_match('/^#[0-9a-fA-F]{6}$/',$value)))$errors[]='Invalid container border colour.';
    elseif($key==='align'&&!in_array($value,['left','center','right'],true))$errors[]='Invalid container alignment.';
    elseif($key==='margin_bottom'&&(!is_int($value)||$value<0||$value>96))$errors[]='Invalid container spacing.';
-   elseif(!in_array($key,['background','padding','gap','width','min_height','radius','border_width','border_color','align','margin_bottom'],true))$errors[]='Unknown section property.';
+   elseif($key==='mobile'){
+    $mobileAllowed=['width','padding','gap','min_height','radius','border_width','margin_bottom','align'];
+    if(!is_array($value)||array_diff(array_keys($value),$mobileAllowed))$errors[]='Invalid mobile layout properties.';
+    else foreach($value as $mobileKey=>$mobileValue){
+     if($mobileKey==='width'&&(!is_int($mobileValue)||$mobileValue<25||$mobileValue>100))$errors[]='Invalid mobile container width.';
+     elseif($mobileKey==='padding'&&(!is_int($mobileValue)||$mobileValue<0||$mobileValue>96))$errors[]='Invalid mobile container padding.';
+     elseif($mobileKey==='gap'&&(!is_int($mobileValue)||$mobileValue<0||$mobileValue>64))$errors[]='Invalid mobile container gap.';
+     elseif($mobileKey==='min_height'&&(!is_int($mobileValue)||$mobileValue<0||$mobileValue>800))$errors[]='Invalid mobile container minimum height.';
+     elseif($mobileKey==='radius'&&(!is_int($mobileValue)||$mobileValue<0||$mobileValue>48))$errors[]='Invalid mobile container radius.';
+     elseif($mobileKey==='border_width'&&(!is_int($mobileValue)||$mobileValue<0||$mobileValue>8))$errors[]='Invalid mobile container border width.';
+     elseif($mobileKey==='margin_bottom'&&(!is_int($mobileValue)||$mobileValue<0||$mobileValue>96))$errors[]='Invalid mobile container spacing.';
+     elseif($mobileKey==='align'&&!in_array($mobileValue,['left','center','right'],true))$errors[]='Invalid mobile container alignment.';
+    }
+   }
+   elseif(!in_array($key,['background','padding','gap','width','min_height','radius','border_width','border_color','align','margin_bottom','mobile'],true))$errors[]='Unknown section property.';
   }
   if(!array_key_exists('children',$section))$errors[]='Section children are required.';
   $children=$section['children']??null;
