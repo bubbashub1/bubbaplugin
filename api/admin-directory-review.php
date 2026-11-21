@@ -18,7 +18,7 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
  $_SESSION['bh_directory_review_csrf']??=bin2hex(random_bytes(32));$all=[];
  foreach($map as $key=>$spec){$q=$db->query("SELECT id,title,category,summary,description,town,region,status,created_at FROM ".$spec[0]." WHERE status='pending' ORDER BY created_at ASC LIMIT 150");foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){$row['section']=$key;$row['kind']='submission';$all[]=$row;}}
  if($has('bh_directory_record_revisions')){
-  foreach($map as $key=>$spec){$q=$db->prepare("SELECT r.id AS revision_id,r.record_id,r.submitted_at,r.payload,t.title,t.category,t.summary,t.description,t.town,t.region FROM bh_directory_record_revisions r JOIN ".$spec[0]." t ON t.id=r.record_id WHERE r.section_key=? AND r.status='pending' ORDER BY r.submitted_at ASC LIMIT 150");$q->execute([$key]);foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){$row['section']=$key;$row['kind']='revision';$row['proposed']=json_decode((string)$row['payload'],true)?:[];unset($row['payload']);$all[]=$row;}}
+  foreach($map as $key=>$spec){$q=$db->prepare("SELECT r.id AS revision_id,r.record_id,r.submitted_at,r.payload,t.* FROM bh_directory_record_revisions r JOIN ".$spec[0]." t ON t.id=r.record_id WHERE r.section_key=? AND r.status='pending' ORDER BY r.submitted_at ASC LIMIT 150");$q->execute([$key]);foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){$row['section']=$key;$row['kind']='revision';$row['proposed']=json_decode((string)$row['payload'],true)?:[];unset($row['payload']);$all[]=$row;}}
  }
  usort($all,static fn($a,$b)=>strcmp((string)($a['submitted_at']??$a['created_at']??''),(string)($b['submitted_at']??$b['created_at']??'')));
  dar(200,['ok'=>true,'csrf'=>$_SESSION['bh_directory_review_csrf'],'records'=>$all]);
