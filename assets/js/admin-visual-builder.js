@@ -180,10 +180,12 @@ function renderDraft(){
   return '<section data-bh-section-id="'+esc(section.id)+'" style="display:flex;flex-direction:column;width:'+w+'%;min-height:'+h+'px;align-self:'+(al==='left'?'flex-start':al==='right'?'flex-end':'center')+';margin:0 0 '+Math.min(96,Math.max(0,Number(p.margin_bottom??18)))+'px;padding:'+Math.min(96,Math.max(0,Number(p.padding??24)))+'px;gap:'+Math.min(64,Math.max(0,Number(p.gap??16)))+'px;background:'+( /^#[0-9a-f]{6}$/i.test(p.background||'')?p.background:'#ffffff')+';border:'+bw+'px solid '+bc+';border-radius:'+rad+'px">'+children+'</section>';
  }).join('');
  const mobileCss=mobileOverridesCss();
+ const columns=Math.max(1,Math.min(3,Number(draft.settings?.columns)||1));
+ $('pageColumns').value=String(columns);$('pageColumns').disabled=false;
  const title=esc(draft.page?.title||page?.title||'Draft preview');
  const hasPageHeading=(draft.sections||[]).some(section=>(section.children||[]).some(block=>block.type==='heading'&&Number(block.props?.level)===1));
- const titleMarkup=hasPageHeading?'':'<h1>'+title+'</h1>';
- frame.srcdoc='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="/"><style>*{box-sizing:border-box}body{margin:0;padding:32px;background:#f4f8f7;color:#17221c;font:16px Calibri,Arial,sans-serif}main{max-width:960px;margin:auto}h1,h2,h3,h4{font-family:Quicksand,Arial,sans-serif;color:#244d37}section{margin:0 0 18px;border-radius:14px}p{line-height:1.7}.cta{display:inline-block;padding:12px 20px;background:#416651;color:white;border-radius:999px;text-decoration:none;font-weight:700}@media(max-width:600px){body{padding:14px}}</style><style id="bhvb-mobile-overrides">'+mobileCss+'</style></head><body><main>'+titleMarkup+sections+'</main></body></html>';
+ const titleMarkup=hasPageHeading?'':'<h1 style="grid-column:1/-1">'+title+'</h1>';
+ frame.srcdoc='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="/"><style>*{box-sizing:border-box}body{margin:0;padding:32px;background:#f4f8f7;color:#17221c;font:16px Calibri,Arial,sans-serif}main{max-width:960px;margin:auto;display:grid;grid-template-columns:repeat('+columns+',minmax(0,1fr));gap:18px;align-items:start}h1,h2,h3,h4{font-family:Quicksand,Arial,sans-serif;color:#244d37}section{margin:0 0 18px;border-radius:14px}p{line-height:1.7}.cta{display:inline-block;padding:12px 20px;background:#416651;color:white;border-radius:999px;text-decoration:none;font-weight:700}@media(max-width:600px){body{padding:14px}main{grid-template-columns:1fr!important;gap:12px!important}}</style><style id="bhvb-mobile-overrides">'+mobileCss+'</style></head><body><main>'+titleMarkup+sections+'</main></body></html>';
  $('canvasEmpty').hidden=true;frame.hidden=false;
  $('canvasDimensions').textContent=(page?.title||title)+' · '+device+' · Draft';
  $('saveDraft').disabled=false;$('addContainer').disabled=false;
@@ -207,7 +209,7 @@ function convertPage(){
   else skipped++;
  });
  const images=main.querySelectorAll('img').length;
- draft={schema_version:1,page:{title:page.title,slug:page.slug},settings:{max_width:'960px'},sections:[{id:'main-content',type:'section',props:{padding:24,gap:16},children}]};
+ draft={schema_version:1,page:{title:page.title,slug:page.slug},settings:{max_width:'960px',columns:1},sections:[{id:'main-content',type:'section',props:{padding:24,gap:16},children}]};
  const message='Conversion preview: '+children.length+' supported text/link blocks. '+skipped+' empty or unsupported items skipped; '+images+' images are not converted. Original layout and styling are not carried over. Review this simplified draft before saving.';
  draftStatus(message);
  renderDraft();
@@ -301,6 +303,7 @@ function addContainer(){if(!draft)return;draft.sections.push({id:'container-'+Da
 function addBlock(type){if(!currentSection||!draft)return;const id='block-'+Date.now();let block;if(type==='heading')block={id,type,props:{text:'New heading',level:2}};else if(type==='paragraph')block={id,type,props:{text:'Add your text here.'}};else block={id,type:'button',props:{text:'Learn more',href:'/index.html'}};currentSection.children.push(block);renderDraft();draftStatus('Element added to selected container. Select it in the preview to edit its content.');}
 function moveContainer(direction){if(!currentSection||!draft)return;const index=draft.sections.indexOf(currentSection),next=index+direction;if(next<0||next>=draft.sections.length)return;[draft.sections[index],draft.sections[next]]=[draft.sections[next],draft.sections[index]];renderDraft();draftStatus('Container moved. Save draft to keep this order.');}
 function deleteContainer(){if(!currentSection||!draft||draft.sections.length<2){draftStatus('A page must keep at least one container.');return;}if(!window.confirm('Delete this container and its contents from the private draft?'))return;draft.sections=draft.sections.filter(section=>section!==currentSection);currentSection=null;renderDraft();$('sectionControls').hidden=true;draftStatus('Container removed from the private draft. Save draft to keep the change.');}
+$('pageColumns').addEventListener('change',()=>{if(!draft)return;draft.settings=draft.settings||{};draft.settings.columns=Math.max(1,Math.min(3,Number($('pageColumns').value)||1));renderDraft();draftStatus('Page layout changed to '+draft.settings.columns+' columns. Mobile preview automatically stacks to one column. Save draft when ready.');});
 $('addContainer').addEventListener('click',addContainer);$('addHeading').addEventListener('click',()=>addBlock('heading'));$('addParagraph').addEventListener('click',()=>addBlock('paragraph'));$('addButtonBlock').addEventListener('click',()=>addBlock('button'));$('moveContainerUp').addEventListener('click',()=>moveContainer(-1));$('moveContainerDown').addEventListener('click',()=>moveContainer(1));$('deleteContainer').addEventListener('click',deleteContainer);
 async function init(){
  try{

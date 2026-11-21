@@ -20,7 +20,8 @@ function bh_validate_page_document_v1(mixed $document): array {
   foreach($settings as $key=>$value){
    if($key==='max_width'&&!in_array($value,['960px','1100px','1200px'],true))$errors[]='Invalid max_width.';
    elseif($key==='background'&&(!is_string($value)||!preg_match('/^#[0-9a-fA-F]{6}$/',$value)))$errors[]='Invalid background colour.';
-   elseif(!in_array($key,['max_width','background'],true))$errors[]='Unknown settings property.';
+   elseif($key==='columns'&&(!is_int($value)||$value<1||$value>3))$errors[]='Invalid page column count.';
+   elseif(!in_array($key,['max_width','background','columns'],true))$errors[]='Unknown settings property.';
   }
  }
  $sections=$document['sections']??null;
