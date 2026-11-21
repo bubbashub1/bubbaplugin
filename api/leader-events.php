@@ -15,7 +15,16 @@ $q=$db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");
 if(!$user||$user['status']!=='active'||$user['role']!=='leader')le_reply(403,['ok'=>false,'error'=>'leader_account_required']);
 $org=null;
 try{$q=$db->prepare("SELECT id,organisation_name FROM bh_organisers WHERE user_id=? LIMIT 1");$q->execute([$uid]);$org=$q->fetch(PDO::FETCH_ASSOC)?:null;}catch(Throwable $e){}
-if(!$org){$q=$db->prepare("SELECT id,organisation_name FROM bh_organisers WHERE LOWER(email)=LOWER(?) LIMIT 1");$q->execute([$user['email']]);$org=$q->fetch(PDO::FETCH_ASSOC)?:null;}
+if(!$org){
+ // Legacy reconciliation only: use email only when it identifies exactly one organiser.
+ // Ambiguous matches must never attach a Leader to an arbitrary organisation.
+ $q=$db->prepare("SELECT COUNT(*) FROM bh_organisers WHERE LOWER(email)=LOWER(?)");
+ $q->execute([$user['email']]);
+ if((int)$q->fetchColumn()===1){
+  $q=$db->prepare("SELECT id,organisation_name FROM bh_organisers WHERE LOWER(email)=LOWER(?) LIMIT 1");
+  $q->execute([$user['email']]);$org=$q->fetch(PDO::FETCH_ASSOC)?:null;
+ }
+}
 if(!$org)le_reply(403,['ok'=>false,'error'=>'organiser_required','message'=>'Your leader account is not linked to an organisation yet.']);
 $oid=(int)$org['id'];
 if($_SERVER['REQUEST_METHOD']==='GET'){
