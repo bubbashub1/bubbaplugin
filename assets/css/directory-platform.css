@@ -1,0 +1,21 @@
+/* Shared navigation for the six Bubba Hub directory sections. */
+.bh-directory-sections{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px auto 18px;max-width:1400px;padding:0 18px}
+.bh-directory-section-link{display:flex;flex-direction:column;gap:6px;min-height:100px;padding:16px 18px;border:1px solid #d8e6db;border-radius:16px;background:#fff;color:#144400;text-decoration:none;transition:border-color .18s ease,transform .18s ease}
+.bh-directory-section-link:hover,.bh-directory-section-link:focus-visible{border-color:#3c8e96;transform:translateY(-2px);outline:3px solid #3c8e9630}
+.bh-directory-section-link strong{font-size:1rem;font-weight:800}
+.bh-directory-section-link span{font-size:.88rem;line-height:1.4;color:#416651}
+.bh-directory-section-link[aria-current=page]{background:#edf6ee;border-color:#416651}
+.bh-directory-section-status{font-size:.75rem!important;font-weight:700;color:#0f766e!important}
+.bh-directory-home{max-width:1280px;margin:0 auto;padding:28px 20px 60px}
+.bh-directory-home-intro{padding:34px 28px;border-radius:22px;background:#edf6ee;color:#144400}
+.bh-directory-home-intro h1{margin:0 0 10px;font-size:clamp(2rem,4vw,3rem)}
+.bh-directory-home-intro p{max-width:760px;margin:0;font-size:1.05rem;line-height:1.65}
+.bh-directory-home-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:24px}
+.bh-directory-home-card{display:flex;flex-direction:column;gap:9px;min-height:190px;padding:22px;border:1px solid #d8e6db;border-radius:20px;background:#fff;color:#144400;text-decoration:none;box-shadow:0 5px 18px #1444000a}
+.bh-directory-home-card:hover,.bh-directory-home-card:focus-visible{border-color:#3c8e96;outline:3px solid #3c8e9630}
+.bh-directory-home-card h2{margin:0;font-size:1.25rem}
+.bh-directory-home-card p{margin:0;color:#416651;line-height:1.5}
+.bh-directory-home-card .bh-directory-home-link{margin-top:auto;color:#0f766e;font-weight:800}
+.bh-directory-home-note{margin-top:22px;color:#416651;font-size:.9rem}
+@media(max-width:900px){.bh-directory-sections{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:0 12px}.bh-directory-section-link{min-height:92px;padding:13px}.bh-directory-home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.bh-directory-home{padding:18px 12px 42px}.bh-directory-home-intro{padding:24px 20px}.bh-directory-home-grid{grid-template-columns:1fr}.bh-directory-home-card{min-height:150px}}
