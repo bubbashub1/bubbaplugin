@@ -275,7 +275,7 @@ function safeHref(value){
  if(/^tel:\\+?[0-9().-]{3,32}$/i.test(href))return true;
  return href.startsWith('/')||((href.startsWith('#')||href.startsWith('?'))&&href.length>1);
 }
-function safeImageSource(value){const src=String(value||'').trim();if(!src||/[\\u0000-\\u0020\\u007f\\\\]/.test(src)||src.startsWith('//'))return false;if(src.startsWith('/'))return !src.startsWith('/\\\\');try{const u=new URL(src);return u.protocol==='https:'&&!!u.hostname&&!u.username&&!u.password;}catch(error){return false;}}
+function safeImageSource(value){const src=String(value||'').trim();if(!src||/[\u0000-\u0020\u007f\\]/.test(src)||src.startsWith('//'))return false;if(src.startsWith('/'))return !src.startsWith('/\\');try{const u=new URL(src);return u.protocol==='https:'&&!!u.hostname&&!u.username&&!u.password;}catch(error){return false;}}
 function renderDraft(){
  if(!draft)return;
  previewMode='draft';
