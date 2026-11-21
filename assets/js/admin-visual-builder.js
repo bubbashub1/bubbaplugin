@@ -47,7 +47,7 @@ function selectNode(node){
   node.classList.add('bhvb-selected-preview');
   currentBlock=draft&&node.dataset.bhBlockId?findBlock(node.dataset.bhBlockId):null;
   currentSection=draft&&node.dataset.bhSectionId?findSection(node.dataset.bhSectionId):null;
-  ['addHeading','addParagraph','addButtonBlock'].forEach(id=>$(id).disabled=!currentSection||previewMode!=='draft');
+  ['addHeading','addParagraph','addButtonBlock','addImageBlock'].forEach(id=>$(id).disabled=!currentSection||previewMode!=='draft');
   updateSelectionDetails(node);
   installContainerHandles(currentSection?node:null);
   const index=layerNodes.indexOf(node);
