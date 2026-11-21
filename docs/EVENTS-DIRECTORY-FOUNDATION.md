@@ -22,13 +22,25 @@ Create a genuine one-off and recurring Events directory without repurposing the 
 - Store event date-times in the `Europe/London` timezone. Test GMT/BST transitions and events spanning midnight before release.
 - Latitude/longitude are optional; do not geocode or publish an unverified location automatically.
 
+## Delivery status (staging-site)
+- [x] Schema proposal created; not installed.
+- [x] Leader create/draft/submit endpoint created with session authentication, CSRF, same-origin checks, field validation and server-resolved organiser ownership.
+- [x] Linked Listings selector and server-side check that every linked activity belongs to the same organiser.
+- [x] Admin review queue and approve/reject/return-for-edits actions with review history.
+- [x] Public Events feed limited to published events with future scheduled occurrences.
+- [x] Public Events page keeps one-off events separate from regular Listings sessions.
+- [x] Leader Hub navigation includes Add an Event.
+- [ ] Draft editing, event owner management list, cancellation/rescheduling controls and rate limiting.
+- [ ] Schema review against the actual staging database, backup and explicit approval before installation.
+- [ ] End-to-end tests after schema installation, including cross-Leader ownership attempts, public visibility, cancellation, multiple occurrences, mobile layout and GMT/BST.
+
 ## Delivery sequence
-1. Review and approve this schema against the live staging database structure.
-2. Run the migration on staging only, after a backup and explicit approval.
-3. Add authenticated leader create/edit/submit endpoints with CSRF, ownership checks, validation and rate limiting.
-4. Add an admin review queue and approve/reject/return actions with audit history.
-5. Connect the public Events page to published event occurrences, keeping the existing regular Listings sessions clearly separate.
-6. Test leader ownership, public visibility, cancellation, recurring dates, filters, mobile layout and GMT/BST.
+1. Review the schema against the staging database and confirm the exact organiser/user linkage.
+2. Obtain explicit approval, take a staging backup and install the schema on staging only.
+3. Build the Leader's My Events list and safe draft editing, resubmission and cancellation/rescheduling.
+4. Run end-to-end tests with at least two distinct Leader accounts; verify one Leader cannot read, change or link another Leader's records.
+5. Test GMT/BST boundaries, event dates spanning midnight, public filters and mobile presentation.
+6. Only after staging sign-off, prepare a separate production migration and deployment plan.
 
 ## Safety
 This document and `database/events-directory-schema.sql` are a code-level foundation only. No database migration is executed by deployment, and no production schema or data is changed.
