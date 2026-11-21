@@ -33,6 +33,7 @@ jobs:
             api/admin-listing-review.php \
             api/listing-checker-health-cron.php \
             api/listing-checker-discovery-cron.php \
+            api/listing-checker-research-cron.php \
             api/listing-checker-preflight.php
           do
             php -l "$file"
