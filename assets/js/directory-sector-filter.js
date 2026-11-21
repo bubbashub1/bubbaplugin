@@ -31,8 +31,8 @@
         emptyIcon.textContent=sectors[key].icon;
         emptyText.textContent='We are preparing this searchable section, including its own filters and listing cards. It will appear here when its data and directory tools are ready.';
       }else if(triggerView){
-        const target=document.getElementById(key==='events'?'directoryShowEvents':'directoryShowList');
-        if(target)target.click();
+        if(key==='events')window.dispatchEvent(new CustomEvent('bh:directory-show-events'));
+        else document.getElementById('directoryShowList')?.click();
       }
       if(updateUrl){
         const url=new URL(window.location.href);
@@ -46,8 +46,6 @@
       const control=document.getElementById(id);
       if(control)control.addEventListener('click',()=>activate('listings',true,false));
     });
-    const eventControl=document.getElementById('directoryShowEvents');
-    if(eventControl)eventControl.addEventListener('click',()=>activate('events',true,false));
     const initial=new URLSearchParams(window.location.search).get('sector')||'listings';
     activate(initial,false,true);
   }
