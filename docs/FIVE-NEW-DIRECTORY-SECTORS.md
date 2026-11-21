@@ -53,3 +53,13 @@ The Leader Hub navigation links to all four new submission tools. They use the e
 - All commits are on `staging-site`.
 - No SQL has been executed.
 - No live data, production schema or production deployment has been changed.
+
+
+## Published-entry revision workflow
+- The consolidated SQL adds `bh_directory_record_revisions`, storing a submitted snapshot separately from the published record.
+- A Leader can open a published specialist entry using **Request changes**. The wizard submits a revision; it does not overwrite the published row.
+- Only one pending revision per entry is allowed. Published entries cannot be saved as drafts.
+- Admin approval applies the whitelisted payload; returning or rejecting leaves the live record unchanged.
+- The public directory continues reading only published records, so pending revisions are not exposed.
+- This workflow covers Businesses, Childcare & Schools, Places & Days Out and School Clubs. Events retain separate moderation and still need published-event revisions.
+- No SQL has been executed and no live deployment has been made.
