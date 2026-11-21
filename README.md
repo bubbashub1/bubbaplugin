@@ -82,6 +82,14 @@ mysql -u YOUR_DATABASE_USER -p YOUR_DATABASE_NAME < database/listing-checker-sea
 
 This creates checker configuration, editable discovery terms, run/queue tracking and review-finding tables. It does not modify activity, organiser or venue records. The admin page is available at `/admin/admin-listing-checker-settings.html`.
 
+The Listing Monitor review-draft workflow also requires its additive migration before opening the new monitor:
+
+```sh
+mysql -u YOUR_DATABASE_USER -p YOUR_DATABASE_NAME < database/migrations/20261121_create_listing_monitor_drafts.sql
+```
+
+This creates a separate draft table only. Suggested values and original field snapshots are stored there; the migration does not update `bh_activities` or publish any changes. The new admin page is `/admin/admin-listing-monitor.html`.
+
 The settings page stores the desired schedule (default every 4 hours, batch size 30, Europe/London) and discovery terms. The structured search editor lets an administrator set a phrase, directory category, source scope (general web, publicly indexed Facebook or publicly indexed Instagram), extra keywords, region scope and a per-term repeat interval (4 hours to monthly). The discovery worker only processes terms that are due for their own interval. Bing RSS remains the search provider; the social options apply public search operators, not direct platform API access, and cannot see private groups or content blocked from indexing. **It does not itself start scheduled work**: the CLI workers and hosting cron entries must be implemented and configured before those saved schedules take effect.
 
 
