@@ -4,6 +4,8 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 function reply(int $code,array $data):never{http_response_code($code);echo json_encode($data);exit;}
+// Bubba & Me January 2027 was cancelled: close public prize submissions.
+reply(410,['ok'=>false,'error'=>'event_cancelled','message'=>'This event has been cancelled and submissions are closed.']);
 if(($_SERVER['REQUEST_METHOD']??'')!=='POST')reply(405,['ok'=>false,'error'=>'method_not_allowed']);
 if((int)($_SERVER['CONTENT_LENGTH']??0)>12000)reply(413,['ok'=>false,'error'=>'too_large']);
 $origin=(string)($_SERVER['HTTP_ORIGIN']??'');
