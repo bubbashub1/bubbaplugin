@@ -422,24 +422,44 @@ function applyLibraryImage(src){
  $('mediaLibrary').hidden=true;$('imageUploadStatus').textContent='Library image selected · Save draft to keep it on the page.';
  draftStatus('Media library image added to the draft. Save draft when ready.');
 }
+async function saveMediaDetails(name,title,folder,button){
+ button.disabled=true;
+ try{
+  const form=new FormData();form.append('action','metadata');form.append('name',name);form.append('title',title);form.append('folder',folder);
+  const response=await fetch('/api/admin-visual-builder-media.php',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'X-CSRF-Token':csrf,'Accept':'application/json'},body:form});
+  const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||'Could not save image details.');
+  $('mediaLibraryStatus').textContent='Image details saved.';loadMediaLibrary();
+ }catch(error){$('mediaLibraryStatus').textContent=error.message;button.disabled=false;}
+}
 async function loadMediaLibrary(){
- const statusNode=$('mediaLibraryStatus'),grid=$('mediaLibraryGrid');
+ const statusNode=$('mediaLibraryStatus'),grid=$('mediaLibraryGrid'),folderSelect=$('mediaLibraryFolder');
  statusNode.textContent='Loading images…';grid.replaceChildren();
  try{
-  const query=$('mediaLibrarySearch').value.trim();
-  const data=await api('/api/admin-visual-builder-media.php'+(query?'?q='+encodeURIComponent(query):''));
-  statusNode.textContent=data.total?data.total+' image'+(data.total===1?'':'s')+' available'+(data.total>data.items.length?' · showing the 120 most recent matches':'')+'.':'No uploaded images found yet.';
+  const query=$('mediaLibrarySearch').value.trim(),folder=folderSelect.value;
+  const params=new URLSearchParams();if(query)params.set('q',query);if(folder)params.set('folder',folder);
+  const data=await api('/api/admin-visual-builder-media.php'+(params.toString()?'?'+params.toString():''));
+  const currentFolder=folderSelect.value;folderSelect.replaceChildren();
+  const allOption=document.createElement('option');allOption.value='';allOption.textContent='All folders';folderSelect.append(allOption);
+  (data.folders||[]).forEach(value=>{const option=document.createElement('option');option.value=value;option.textContent=value;folderSelect.append(option);});
+  folderSelect.value=currentFolder;
+  statusNode.textContent=data.total?data.total+' image'+(data.total===1?'':'s')+' found'+(data.total>data.items.length?' · showing the 120 most recent matches':'')+'.':'No uploaded images found yet.';
   data.items.forEach(item=>{
-   const button=document.createElement('button');button.type='button';button.className='bhvb-media-item';button.title='Use this image';
+   const card=document.createElement('div');card.className='bhvb-media-item';
+   const choose=document.createElement('button');choose.type='button';choose.className='bhvb-media-choose';choose.title='Use this image';
    const image=document.createElement('img');image.src=item.src;image.alt='';image.loading='lazy';
    const details=document.createElement('span');details.textContent=item.width+' × '+item.height+' · '+new Date(item.modified*1000).toLocaleDateString('en-GB');
-   button.append(image,details);button.addEventListener('click',()=>applyLibraryImage(item.src));grid.append(button);
+   choose.append(image,details);choose.addEventListener('click',()=>applyLibraryImage(item.src));
+   const title=document.createElement('input');title.type='text';title.maxLength=120;title.placeholder='Image title';title.value=item.title||'';title.setAttribute('aria-label','Image title');
+   const folderInput=document.createElement('input');folderInput.type='text';folderInput.maxLength=40;folderInput.placeholder='Folder (e.g. Homepage)';folderInput.value=item.folder||'';folderInput.setAttribute('aria-label','Image folder');
+   const save=document.createElement('button');save.type='button';save.className='bhvb-media-save';save.textContent='Save details';save.addEventListener('click',()=>saveMediaDetails(item.name,title.value,folderInput.value,save));
+   card.append(choose,title,folderInput,save);grid.append(card);
   });
  }catch(error){statusNode.textContent=error.message;}
 }
 $('browseMediaLibrary').addEventListener('click',()=>{$('mediaLibrary').hidden=!$('mediaLibrary').hidden;if(!$('mediaLibrary').hidden)loadMediaLibrary();});
 $('refreshMediaLibrary').addEventListener('click',loadMediaLibrary);
 $('mediaLibrarySearch').addEventListener('change',loadMediaLibrary);
+$('mediaLibraryFolder').addEventListener('change',loadMediaLibrary);
 
 $('chooseImageFile').addEventListener('click',()=>$('imageFileUpload').click());
 $('imageFileUpload').addEventListener('change',async()=>{const file=$('imageFileUpload').files?.[0];if(!file)return;if(!currentBlock||currentBlock.type!=='image'){ $('imageUploadStatus').textContent='Select an image element in the draft first.';$('imageFileUpload').value='';return;}if(!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type)){ $('imageUploadStatus').textContent='Choose a JPG, PNG, WebP or GIF image.';$('imageFileUpload').value='';return;}if(file.size>8*1024*1024){$('imageUploadStatus').textContent='Images must be 8 MB or smaller.';$('imageFileUpload').value='';return;}const button=$('chooseImageFile');button.disabled=true;$('imageUploadStatus').textContent='Uploading image…';try{const form=new FormData();form.append('image',file);const response=await fetch('/api/admin-visual-builder-media.php',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'X-CSRF-Token':csrf,'Accept':'application/json'},body:form});const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||'Image upload failed.');$('imageSource').value=data.src;currentBlock.props.src=data.src;const node=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');if(node)node.src=data.src;draftHasValidationError=false;$('saveDraft').disabled=false;$('imageUploadStatus').textContent='Uploaded: '+file.name+' · Save draft to keep this image on the page.';draftStatus('Image uploaded and added to the draft. Save draft when ready.');}catch(error){$('imageUploadStatus').textContent=error.message;}finally{button.disabled=false;$('imageFileUpload').value='';}});$('imageAlt').addEventListener('input',()=>{if(currentBlock?.type!=='image')return;currentBlock.props.alt=$('imageAlt').value.slice(0,300);const n=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');if(n)n.alt=currentBlock.props.alt;$('saveDraft').disabled=false;draftStatus('Image alternative text updated. Save draft when ready.');});$('imageFit').addEventListener('change',()=>{if(currentBlock?.type!=='image')return;currentBlock.props.fit=$('imageFit').value;const n=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');if(n)n.style.objectFit=currentBlock.props.fit;$('saveDraft').disabled=false;});
