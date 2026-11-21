@@ -7,6 +7,7 @@ const bhInitDirectory=async()=>{
     }[char]));
   };
 
+  let activitiesLoaded = false;
   try {
     let activities;
     try {
@@ -18,6 +19,7 @@ const bhInitDirectory=async()=>{
         throw liveError;
       }
     }
+    activitiesLoaded = true;
     /* The Hero and Advanced Filters are shared async components. Wait for them
        before binding Directory controls so the same filter UI is actually wired. */
     // Shared UI must never prevent directory results from rendering indefinitely.
@@ -1095,10 +1097,10 @@ const bhInitDirectory=async()=>{
     if ($("clear")) $("clear").onclick = () => {
       ["search", "category", "area", "town", "day", "maxPrice", "sessionLength", "sen", "termTime"].forEach(id => { if ($(id)) $(id).value = ""; });
       document.querySelectorAll(".accessibility-option").forEach(el => el.checked = false);
-      $("ageMin").value = 0;
-      $("ageMax").value = 9;
+      if ($("ageMin")) $("ageMin").value = 0;
+      if ($("ageMax")) $("ageMax").value = 9;
       if ($("ageRange")) $("ageRange").value = "";
-      $("free").checked = false;
+      if ($("free")) $("free").checked = false;
       if ($("bookingRequired")) $("bookingRequired").checked = false;
       homeLocation = null;
       setNearbyStatus("");
@@ -1156,10 +1158,10 @@ const bhInitDirectory=async()=>{
     console.error("Directory initialisation failed",error);
     const results=$("results"), mapView=$("mapView"), hint=$("directoryMapHint");
     if(mapView)mapView.hidden=true;
-    if(hint){hint.hidden=false;hint.textContent="Activities could not be loaded. Please try again.";}
+    if(hint){hint.hidden=false;hint.textContent=activitiesLoaded?"The directory controls could not be started. Please refresh the page.":"We could not connect to the activity listings. Please try again shortly.";}
     if(results){
       results.hidden=false;
-      results.innerHTML='<div class="admin-panel" role="alert"><h3>Activities temporarily unavailable</h3><p>We could not load the directory. Please refresh the page or try again shortly.</p><button type="button" class="button button-primary" id="directoryRetry">Try again</button></div>';
+      results.innerHTML='<div class="admin-panel" role="alert"><h3>${activitiesLoaded?"Directory temporarily unavailable":"Activities temporarily unavailable"}</h3><p>${activitiesLoaded?"The directory could not finish setting up its filters and views. Please refresh the page.":"We could not connect to the activity listings. Please try again shortly."}</p><button type="button" class="button button-primary" id="directoryRetry">Try again</button></div>';
       document.getElementById("directoryRetry")?.addEventListener("click",()=>location.reload());
     }
   }
