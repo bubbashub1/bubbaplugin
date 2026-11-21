@@ -42,7 +42,7 @@ function updateSelectionDetails(node){
   $('elementRadius').value=Math.max(0,Math.min(48,Number(props.radius)||0));$('elementRadiusValue').textContent=$('elementRadius').value+'px';
  }
 }
-function removeCanvasToolbar(){const doc=frame.contentDocument;doc?.getElementById('bhvb-floating-toolbar')?.remove();}
+function removeCanvasToolbar(){const doc=frame.contentDocument,toolbar=doc?.getElementById('bhvb-floating-toolbar');if(!toolbar)return;const view=doc.defaultView;if(toolbar._reposition){view?.removeEventListener('scroll',toolbar._reposition,true);view?.removeEventListener('resize',toolbar._reposition);view?.visualViewport?.removeEventListener('resize',toolbar._reposition);}toolbar.remove();}
 function moveSelectedBlock(direction){
  if(!currentBlock||!currentSection||!draft)return;
  const items=currentSection.children||[],index=items.findIndex(item=>item.id===currentBlock.id),next=index+direction;
@@ -62,8 +62,15 @@ function showCanvasToolbar(node){
  const actions=[['Edit','Edit selected element',()=>{setTab('properties');$('propertiesPanel').scrollIntoView({behavior:'smooth',block:'nearest'});}],['＋','Duplicate element',duplicateSelectedBlock],['↑','Move element up',()=>moveSelectedBlock(-1)],['↓','Move element down',()=>moveSelectedBlock(1)],['×','Delete element',deleteSelectedBlock]];
  actions.forEach(([label,title,action])=>{const button=doc.createElement('button');button.type='button';button.textContent=label;button.title=title;button.setAttribute('aria-label',title);button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();if(title!=='Edit selected element')scheduleHistoryCapture();action();});toolbar.append(button);});
  doc.body.append(toolbar);
- const rect=node.getBoundingClientRect(),left=Math.max(8,Math.min(doc.documentElement.clientWidth-toolbar.offsetWidth-8,rect.left)),top=Math.max(8,rect.top-toolbar.offsetHeight-9);
- toolbar.style.left=left+'px';toolbar.style.top=top+'px';
+ const reposition=()=>{
+  if(!toolbar.isConnected||!node.isConnected)return;
+  const rect=node.getBoundingClientRect(),width=toolbar.offsetWidth,height=toolbar.offsetHeight,viewportWidth=doc.documentElement.clientWidth,viewportHeight=doc.documentElement.clientHeight;
+  const left=Math.max(8,Math.min(viewportWidth-width-8,rect.left));
+  let top=rect.top-height-9;if(top<8)top=Math.min(viewportHeight-height-8,rect.bottom+9);
+  toolbar.style.left=Math.max(8,left)+'px';toolbar.style.top=Math.max(8,top)+'px';
+ };
+ toolbar._reposition=reposition;reposition();
+ doc.defaultView?.addEventListener('scroll',reposition,true);doc.defaultView?.addEventListener('resize',reposition);doc.defaultView?.visualViewport?.addEventListener('resize',reposition);
 }
 function selectNode(node){
  if(!node)return;
@@ -71,9 +78,9 @@ function selectNode(node){
  $('inlineEditToggle').hidden=true;$('inlineEditToggle').textContent='Edit directly on page';
  try{
   const doc=frame.contentDocument;
-  doc?.querySelectorAll('.bhvb-selected-preview').forEach(n=>n.classList.remove('bhvb-selected-preview'));
+  doc?.querySelectorAll('.bhvb-selected-preview').forEach(n=>{n.classList.remove('bhvb-selected-preview');n.removeAttribute('data-bh-builder-label');});
   removeCanvasToolbar();
-  node.classList.add('bhvb-selected-preview');
+  node.classList.add('bhvb-selected-preview');node.setAttribute('data-bh-builder-label',node.dataset.bhSectionId?'Container':(node.tagName==='IMG'?'Image':node.tagName==='A'||node.tagName==='BUTTON'?'Button / link':node.tagName.toLowerCase()));
   currentBlock=draft&&node.dataset.bhBlockId?findBlock(node.dataset.bhBlockId):null;
   const sectionNode=node.closest('[data-bh-section-id]');currentSection=draft&&sectionNode?findSection(sectionNode.dataset.bhSectionId):null;
   ['addHeading','addParagraph','addButtonBlock','addImageBlock'].forEach(id=>$(id).disabled=!currentSection||previewMode!=='draft');
