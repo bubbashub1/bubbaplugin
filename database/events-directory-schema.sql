@@ -159,7 +159,7 @@ CREATE TABLE IF NOT EXISTS bh_directory_record_reviews (
 -- Published-entry changes are staged separately and never overwrite live data until approved.
 CREATE TABLE IF NOT EXISTS bh_directory_record_revisions (
  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
- section_key ENUM('business','childcare','place','school_club') NOT NULL,
+ section_key ENUM('event','business','childcare','place','school_club') NOT NULL,
  record_id BIGINT UNSIGNED NOT NULL, organiser_id BIGINT UNSIGNED NOT NULL,
  submitted_by_user_id BIGINT UNSIGNED NOT NULL, payload MEDIUMTEXT NOT NULL,
  status ENUM('pending','approved','rejected','returned_for_edits') NOT NULL DEFAULT 'pending',
