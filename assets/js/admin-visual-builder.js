@@ -356,7 +356,7 @@ function createDraftBlock(type,widget){
 }
 function insertDraftBlock(type,sectionId,targetBlockId='',after=false){
  if(!draft||previewMode!=='draft')return false;
- const section=findSection(sectionId),block=createDraftBlock(type);if(!section||!block)return false;
+ const section=findSection(sectionId);let block=null;if(type.startsWith('library_widget:')){const key=type.slice('library_widget:'.length),widget=visualWidgetLibrary.find(w=>w.widget_key===key&&w.enabled);block=createDraftBlock('library_widget',widget);}else block=createDraftBlock(type);if(!section||!block)return false;
  const items=section.children||(section.children=[]);
  const index=targetBlockId?items.findIndex(item=>item.id===targetBlockId):-1;
  items.splice(index<0?items.length:index+(after?1:0),0,block);
