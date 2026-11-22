@@ -2,6 +2,8 @@
 const rows=document.getElementById('listingRows'),search=document.getElementById('listingSearch'),filter=document.getElementById('listingStatus'),message=document.getElementById('listingMessage'),retry=document.getElementById('retryListings'),count=document.getElementById('listingCount');
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let all=[],csrf="",reviewHealthById=new Map(),openFindingByActivity=new Map(),reviewStatusReady=false;let invitationById=new Map(),invitationLoaded=false; const selected=new Set(); const selectedCount=document.getElementById("selectedCount"); const selectAll=document.getElementById("selectAllListings"); const bulkButtons=["bulkEdit","bulkAssign","bulkDelete","bulkRestore","bulkPublish","bulkDraft","bulkCategory","bulkTags","bulkClaim"].map(id=>document.getElementById(id)); function syncSelection(){selectedCount.textContent=selected.size+" selected";bulkButtons.forEach(b=>b.disabled=!selected.size);const visible=[...rows.querySelectorAll("[data-select-id]")];selectAll.checked=visible.length>0&&visible.every(x=>x.checked);selectAll.indeterminate=visible.some(x=>x.checked)&&!selectAll.checked;}
+let currentPage=1,pageSize=30;
+const pageSizeSelect=document.getElementById('listingPageSize'),pageInfo=document.getElementById('listingPageInfo'),prevPage=document.getElementById('listingPrev'),nextPage=document.getElementById('listingNext');
 function render(){
  const q=search.value.trim().toLowerCase(),status=filter.value;
  const reviewFilter=status.startsWith('review_'),reviewWanted=reviewFilter?status.slice(7):'';
@@ -13,8 +15,11 @@ function render(){
   if(reviewStatusReady&&health){if((health.missing||[]).length)reviewState='red';else if(Number(health.issue_count||0)>0||finding)reviewState='orange';else reviewState='green';}
   return lifecycleMatch&&(!reviewFilter||reviewState===reviewWanted)&&[a.title,a.organisation_name,a.town,a.category,a.region].join(' ').toLowerCase().includes(q);
 });
- count.textContent=list.length+' of '+all.length+' listings';
- rows.innerHTML=list.map(a=>{
+ const pageCount=Math.max(1,Math.ceil(list.length/pageSize));currentPage=Math.min(currentPage,pageCount);const start=(currentPage-1)*pageSize;const pageItems=list.slice(start,start+pageSize);
+ count.textContent=list.length+' matching · '+all.length+' total listings';
+ pageInfo.textContent='Page '+currentPage+' of '+pageCount+' · Showing '+(list.length?start+1:0)+'–'+Math.min(start+pageSize,list.length);
+ prevPage.disabled=currentPage<=1;nextPage.disabled=currentPage>=pageCount;
+ rows.innerHTML=pageItems.map(a=>{
   const rawStatus=(a.status==='publish'?'published':a.status)||'unknown';
   const statusLabel=rawStatus.charAt(0).toUpperCase()+rawStatus.slice(1);
   const statusClass=['published','draft','pending'].includes(rawStatus)?rawStatus:'other';
@@ -108,7 +113,7 @@ document.getElementById('bulkEdit').addEventListener('click',()=>{const ids=[...
 document.getElementById('bulkAssign').addEventListener('click',async()=>{try{const r=await fetch('/api/admin-activities.php?action=leaders',{credentials:'same-origin'}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load leaders');if(!d.data?.length)throw Error('No active leaders available');csrf=d.csrf;assigningIds=[...selected];document.getElementById('assignListingTitle').textContent='Assign '+assigningIds.length+' selected listings to one leader. Their organiser storefronts will change.';document.getElementById('assignLeaderSelect').innerHTML='<option value="">Choose a leader</option>'+d.data.map(o=>'<option value="'+escape(o.id)+'">'+escape(o.organisation_name+' — '+o.email)+'</option>').join('');document.getElementById('assignLeaderError').textContent='';dialog.showModal();}catch(err){message.textContent=err.message;}});
 document.getElementById('bulkDelete').addEventListener('click',async e=>{const ids=[...selected];if(!confirm('Close '+ids.length+' selected listings? They will disappear from the directory; session and venue records will be retained.'))return;const btn=e.currentTarget;btn.disabled=true;let done=0;try{for(const id of ids){await action({action:'delete',id});done++;selected.delete(id);}await load();message.textContent=done+' listing(s) closed.';}catch(err){await load();message.textContent=done+' closed before error: '+err.message;}finally{btn.disabled=false;syncSelection();}});
 document.getElementById('viewActive').addEventListener('click',()=>{filter.value='';selected.clear();render();});document.getElementById('viewClosed').addEventListener('click',()=>{filter.value='archived';selected.clear();render();});document.getElementById('bulkRestore').addEventListener('click',async e=>{const ids=[...selected].filter(id=>all.some(a=>Number(a.id)===id&&a.status==='archived'));if(!ids.length||!confirm('Restore '+ids.length+' closed listings as published?'))return;const btn=e.currentTarget;btn.disabled=true;let done=0;try{for(const id of ids){await action({action:'restore',id});selected.delete(id);done++;}await load();message.textContent=done+' listings restored.';}catch(err){await load();message.textContent=done+' restored before error: '+err.message;}finally{btn.disabled=false;syncSelection();}});
-search.addEventListener('input',render);filter.addEventListener('change',render);retry.addEventListener('click',load);
+search.addEventListener('input',()=>{currentPage=1;render();});filter.addEventListener('change',()=>{currentPage=1;render();});pageSizeSelect.addEventListener('change',()=>{pageSize=Number(pageSizeSelect.value)||30;currentPage=1;render();});prevPage.addEventListener('click',()=>{if(currentPage>1){currentPage--;render();}});nextPage.addEventListener('click',()=>{currentPage++;render();});retry.addEventListener('click',load);
 document.querySelector('[data-admin-logout]').addEventListener('click',async()=>{await fetch('/admin-auth.php?action=logout',{method:'POST',credentials:'same-origin'});location.href='/admin-login.html';});
 await load();
 })();
