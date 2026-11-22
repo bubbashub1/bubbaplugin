@@ -125,8 +125,6 @@ try {
   'Postcode'=>['postcode','venue_postcode'],
   'Image'=>['image_path']
  ];
- // Fields excluded in Listing Monitor settings do not count as missing or affect the completeness score.
- foreach($excludedFields as $excludedLabel) unset($fieldMap[$excludedLabel]);
  // A health dimension is assessed only when at least one real source column supports it.
  $availableAliases=[];
  $activityAliasColumns=['description'=>'description','short_description'=>'short_description','activity_website'=>'website','booking_url'=>'booking_url','contact_email'=>'contact_email','activity_phone'=>'contact_phone','facebook_url'=>'facebook_url','instagram_url'=>'instagram_url','town'=>'town','region'=>'region','postcode'=>'postcode','image_path'=>'image_path','age_range'=>'age_range','category'=>'category'];
@@ -142,6 +140,9 @@ try {
   $supported=array_values(array_filter($keys,static fn($key)=>in_array($key,$availableAliases,true)));
   if($supported) $fieldMap[$label]=$supported; else unset($fieldMap[$label]);
  }
+ // Keep supported fields available for display even when excluded from the completeness score.
+ $displayFieldMap=$fieldMap;
+ foreach($excludedFields as $excludedLabel) unset($fieldMap[$excludedLabel]);
  $has=static function(array $row,array $keys): bool { foreach($keys as $key) if(trim((string)($row[$key]??''))!=='') return true; return false; };
  $missingCounts=array_fill_keys(array_keys($fieldMap),0);
  foreach($rows as &$row){
@@ -150,14 +151,15 @@ try {
   $completeDetails=[];
   foreach($fieldMap as $label=>$keys){
    if(!$has($row,$keys)){ $missing[]=$label; $missingCounts[$label]++; }
-   else {
-    $complete[]=$label;
-    foreach($keys as $key){
-     $value=trim((string)($row[$key]??''));
-     if($value!==''){
-      $completeDetails[]=['label'=>$label,'value'=>mb_substr(preg_replace('/\\s+/u',' ',$value)??$value,0,180)];
-      break;
-     }
+   else $complete[]=$label;
+  }
+  foreach($displayFieldMap as $label=>$keys){
+   if(!$has($row,$keys)) continue;
+   foreach($keys as $key){
+    $value=trim((string)($row[$key]??''));
+    if($value!==''){
+     $completeDetails[]=['label'=>$label,'value'=>mb_substr(preg_replace('/\\s+/u',' ',$value)??$value,0,180)];
+     break;
     }
    }
   }
