@@ -8,6 +8,13 @@ on:
       - 'api/auth.php'
       - 'api/lib/business-storefront.php'
       - 'api/admin-directory-businesses.php'
+      - 'api/admin-directory-sectors.php'
+      - 'api/admin-directory-review.php'
+      - 'api/leader-directory-records.php'
+      - 'api/leader-directory-manage.php'
+      - 'api/directory-sector.php'
+      - 'admin/admin-directory-sectors.html'
+      - 'admin/admin-directory-businesses.html'
       - 'admin/admin-directory-businesses.html'
       - 'api/organiser-terms.php'
       - 'api/activities.php'
@@ -44,6 +51,11 @@ jobs:
           php -l api/auth.php
           php -l api/lib/business-storefront.php
           php -l api/admin-directory-businesses.php
+          php -l api/admin-directory-sectors.php
+          php -l api/admin-directory-review.php
+          php -l api/leader-directory-records.php
+          php -l api/leader-directory-manage.php
+          php -l api/directory-sector.php
           php -l api/organiser-terms.php
           php -l api/activities.php
 
@@ -128,4 +140,17 @@ jobs:
               assert '/assets/js/directory-universal.js' not in page, f"{path} must not inject universal Activities results"
           assert "sectorDetails(x)" in sector_client, "Sector-specific public details are not rendered"
           print("Specialist directory card and separation checks passed")
+          admin_business_api = Path("api/admin-directory-businesses.php").read_text()
+          leader_records = Path("api/leader-directory-records.php").read_text()
+          leader_manage = Path("api/leader-directory-manage.php").read_text()
+          review_api = Path("api/admin-directory-review.php").read_text()
+          sector_admin = Path("api/admin-directory-sectors.php").read_text()
+          assert "upgrade_family_directory_workflow" in admin_business_api, "Missing safe Leader workflow schema upgrade"
+          for field in ("organiser_id", "created_by_user_id", "submitted_at", "review_note", "holiday_provision", "registration_details", "bh_directory_record_reviews", "bh_directory_record_revisions"):
+              assert field in admin_business_api, f"Schema upgrade is missing {field}"
+          assert "status='pending'" in leader_records and "bh_directory_record_revisions" in leader_records, "Leader submission and revision lifecycle missing"
+          assert "if(!$tableExists($table))continue" in leader_manage, "Leader workspace must skip uninstalled optional sections"
+          assert "if(!$has($spec[0]))continue" in review_api, "Admin review must skip uninstalled optional sections"
+          assert "age_min" in sector_admin and "holiday_provision" in sector_admin and "registration_details" in sector_admin, "Admin editor missing Leader-specific fields"
+          print("Leader submission schema and moderation compatibility checks passed")
           PY
