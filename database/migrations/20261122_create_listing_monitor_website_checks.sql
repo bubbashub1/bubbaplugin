@@ -17,4 +17,7 @@ CREATE TABLE IF NOT EXISTS bh_listing_monitor_website_history (
 
 INSERT IGNORE INTO bh_listing_checker_settings (setting_key, setting_value) VALUES
   ('website_monitor_enabled','0'),
-  ('website_monitor_paused','0');
+  ('website_monitor_paused','0'),
+  ('website_monitor_interval_hours','4'),
+  ('website_monitor_batch_size','30'),
+  ('website_monitor_max_runtime_seconds','240');
