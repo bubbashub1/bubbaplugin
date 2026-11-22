@@ -14,6 +14,7 @@ function updateSelectionDetails(node){
  $('selectedDetails').hidden=false;$('selectedTag').textContent=node.tagName.toLowerCase();
  $('selectedText').textContent=String(node.getAttribute('alt')||node.innerText||node.textContent||'').trim().replace(/\s+/g,' ').slice(0,240)||'No text content';
  const editable=previewMode==='draft'&&currentBlock;
+ $('deleteElement').disabled=!editable;
  $('imageControls').hidden=!(editable&&currentBlock.type==='image');
  $('editControls').hidden=!editable;
  const sectionEditable=previewMode==='draft'&&currentSection;
