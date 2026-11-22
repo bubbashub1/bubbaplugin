@@ -20,6 +20,6 @@ $('businessSort')?.addEventListener('change',render);
 form?.addEventListener('submit',event=>{if(active){event.preventDefault();render()}});
 window.addEventListener('bh:directory-sector-change',event=>setActive(event.detail?.sector==='businesses'));
 window.addEventListener('bh:directory-listings-filters-ready',()=>{listingsFiltersReady=true;captureListingsFilters();if(active){syncSharedFilters();render()}});
-if(new URLSearchParams(location.search).get('sector')==='businesses')setActive(true);
+const initialParams=new URLSearchParams(location.search);if(initialParams.get('sector')==='businesses'){if(field.keyword&&!field.keyword.value&&initialParams.get('keyword'))field.keyword.value=initialParams.get('keyword');setActive(true)}
 load();
 })();
