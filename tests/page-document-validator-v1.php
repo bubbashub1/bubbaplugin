@@ -6,6 +6,8 @@ function assert_test(bool $pass,string $name):void{if(!$pass){fwrite(STDERR,"FAI
 ");exit(1);}echo "PASS: $name
 ";}
 assert_test(bh_validate_page_document_v1($valid)['ok'],'valid document');
+$bad=$valid;$bad['sections']=array_fill(0,41,$valid['sections'][0]);assert_test(!bh_validate_page_document_v1($bad)['ok'],'section count limit');
+$bad=$valid;$bad['sections'][0]['children']=array_fill(0,81,$valid['sections'][0]['children'][0]);assert_test(!bh_validate_page_document_v1($bad)['ok'],'child count limit');
 $bad=$valid;$bad['schema_version']=2;assert_test(!bh_validate_page_document_v1($bad)['ok'],'unsupported version');
 $bad=$valid;$bad['sections'][0]['children'][0]['props']['level']=9;assert_test(!bh_validate_page_document_v1($bad)['ok'],'invalid heading level');
 $bad=$valid;$bad['sections'][0]['children'][1]['id']='h1';assert_test(!bh_validate_page_document_v1($bad)['ok'],'duplicate ID');
