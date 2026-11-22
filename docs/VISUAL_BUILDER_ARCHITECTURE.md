@@ -181,3 +181,8 @@ The Visual Builder treats each top-level section as an editable container. Admin
 ## Responsive container overrides — first mobile slice
 
 The structured v1 draft model now permits an optional `mobile` property on a container. It supports constrained width, padding, inner gap, minimum height, corner radius, border thickness, horizontal alignment and space after. The editor exposes a separate toggle and controls; values are validated server-side and apply only inside the draft preview at 600px or narrower. Existing documents remain valid and inherit their desktop settings until the override is explicitly enabled. This does not affect public rendering, legacy Page Manager content or any live page. Tablet overrides and public renderer integration remain deferred.
+
+
+## Stage 3 — duplicate containers
+
+The editor now duplicates a selected draft container immediately after the original. The copy retains layout styling, optional mobile overrides and block content, but remaps the container and every child block ID to prevent collisions. The copy is reselected in the draft canvas. Container and block counts are capped at 40 sections and 80 children per section in the editor; the v1 server validator remains the final save-time authority. A small pure helper is covered by Node tests. Duplication remains private-draft only.
