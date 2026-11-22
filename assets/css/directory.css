@@ -1146,12 +1146,3 @@
   .bh-directory .directory-results-heading h1{font-size:31px}
   .bh-directory .activity-card h3{font-size:20px}
 }
-
-/* Businesses view follows the Listings directory layout and card styling. */
-.bh-directory .bh-business-filters{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:10px;margin:14px 0 18px}
-.bh-directory .bh-business-filters label{display:flex;flex-direction:column;gap:6px;min-width:0;color:#416651;font-size:13px;font-weight:800}
-.bh-directory .bh-business-filters input,.bh-directory .bh-business-filters select{width:100%;min-width:0;min-height:44px;padding:9px 12px;border:1px solid #d8e6db;border-radius:12px;background:#fff;color:#174e3b;font:600 14px Quicksand,Calibri,sans-serif}
-.bh-directory .business-linked-count{align-self:center;color:#416651;font-size:12px;font-weight:700}
-.bh-directory #directoryBusinessesView[hidden],.bh-directory .directory-results-column[hidden]{display:none!important}
-@media(max-width:760px){.bh-directory .bh-business-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:520px){.bh-directory .bh-business-filters{grid-template-columns:1fr}}
