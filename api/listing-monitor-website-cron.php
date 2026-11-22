@@ -42,9 +42,9 @@ function bh_lm_fetch(string $url): array {
   $ips=bh_lm_public_host($host);$resolve=[];
   foreach($ips as $ip){if(str_contains($ip,':'))continue;$resolve[]=$host.':'.$port.':'.$ip;}
   if(!$resolve)throw new RuntimeException('No safe IPv4 address available for website check.');
-  $body='';$ch=curl_init($url);
-  curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>false,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>6,CURLOPT_TIMEOUT=>15,CURLOPT_MAXREDIRS=>0,CURLOPT_USERAGENT=>'BubbaHub-ListingMonitor/1.0 (+https://bubbahub.co.uk)',CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_PROTOCOLS=>CURLPROTO_HTTP|CURLPROTO_HTTPS,CURLOPT_RESOLVE=>$resolve,CURLOPT_WRITEFUNCTION=>static function($ch,string $chunk)use(&$body):int{if(strlen($body)+strlen($chunk)>1048576)return 0;$body.=$chunk;return strlen($chunk);}]);
-  $ok=curl_exec($ch);$status=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$error=curl_error($ch);$location=(string)curl_getinfo($ch,CURLINFO_REDIRECT_URL);curl_close($ch);
+  $body='';$redirectLocation='';$ch=curl_init($url);
+  curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>false,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>6,CURLOPT_TIMEOUT=>15,CURLOPT_MAXREDIRS=>0,CURLOPT_USERAGENT=>'BubbaHub-ListingMonitor/1.0 (+https://bubbahub.co.uk)',CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_PROTOCOLS=>CURLPROTO_HTTP|CURLPROTO_HTTPS,CURLOPT_RESOLVE=>$resolve,CURLOPT_HEADERFUNCTION=>static function($ch,string $line)use(&$redirectLocation):int{if(stripos($line,'Location:')===0)$redirectLocation=trim(substr($line,9));return strlen($line);},CURLOPT_WRITEFUNCTION=>static function($ch,string $chunk)use(&$body):int{if(strlen($body)+strlen($chunk)>1048576)return 0;$body.=$chunk;return strlen($chunk);}]);
+  $ok=curl_exec($ch);$status=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$error=curl_error($ch);$location=$redirectLocation;curl_close($ch);
   if($ok===false&&$status===0)throw new RuntimeException('Website could not be reached: '.($error?:'connection failed'));
   if(in_array($status,[301,302,303,307,308],true)){
    if($hop===3)throw new RuntimeException('Website redirected too many times.');
