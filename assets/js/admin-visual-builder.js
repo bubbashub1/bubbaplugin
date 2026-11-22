@@ -104,6 +104,7 @@ function selectNode(node){
   updateSelectionDetails(node);
   showCanvasToolbar(node);
   installContainerHandles(currentSection?node:null);
+  installElementResizeHandle(currentBlock?node:null);
   const index=layerNodes.indexOf(node);
   document.querySelectorAll('.bhvb-layer-button').forEach(button=>button.classList.toggle('active',button._bhNode===node));
  }catch(error){$('selectedName').textContent='Preview unavailable';$('selectedDescription').textContent='The page could not be inspected safely.';}
@@ -152,6 +153,39 @@ function installContainerHandles(node){
  };
  move.addEventListener('pointerdown',event=>start(event,'move'));
  resize.addEventListener('pointerdown',event=>start(event,'resize'));
+}
+function installElementResizeHandle(node){
+ const doc=frame.contentDocument;
+ if(!doc||!node||!node.dataset.bhBlockId||previewMode!=='draft'||!currentBlock)return;
+ doc.querySelectorAll('.bhvb-element-resize-handle').forEach(handle=>handle.remove());
+ if(!['heading','paragraph','image','button'].includes(currentBlock.type))return;
+ const handle=doc.createElement('button');
+ handle.type='button';handle.className='bhvb-canvas-handle bhvb-element-resize-handle';
+ handle.textContent='↔';handle.title='Drag to resize this element';handle.setAttribute('aria-label','Drag to resize this element');
+ handle.style.cssText='position:absolute;z-index:25;right:-8px;top:50%;transform:translateY(-50%);width:26px;height:30px;border:2px solid #fff;border-radius:7px;background:#0f766e;color:#fff;box-shadow:0 1px 5px #0005;font:700 14px/1 Arial;touch-action:none;cursor:ew-resize;padding:0;display:grid;place-items:center;';
+ const priorPosition=node.style.position;
+ if(!priorPosition||priorPosition==='static')node.style.position='relative';
+ node.appendChild(handle);
+ handle.addEventListener('pointerdown',event=>{
+  if(event.button!==0&&event.pointerType!=='touch')return;
+  event.preventDefault();event.stopPropagation();
+  scheduleHistoryCapture();
+  const startX=event.clientX,startWidth=node.getBoundingClientRect().width,parentWidth=node.parentElement?.getBoundingClientRect().width||960;
+  const onMove=e=>{
+   const width=Math.max(10,Math.min(100,Math.round((startWidth+e.clientX-startX)/parentWidth*100)));
+   currentBlock.props=currentBlock.props||{};currentBlock.props.width=width;
+   node.style.width=width+'%';node.style.maxWidth='100%';node.style.boxSizing='border-box';
+   const control=$('elementWidth');if(control)control.value=width;
+   const value=$('elementWidthValue');if(value)value.textContent=width+'%';
+   $('saveDraft').disabled=false;
+   draftStatus('Element width · '+width+'%. Release to finish, then save your draft.');
+  };
+  const onEnd=()=>{
+   doc.removeEventListener('pointermove',onMove,true);doc.removeEventListener('pointerup',onEnd,true);doc.removeEventListener('pointercancel',onEnd,true);
+   scheduleHistoryCapture();
+  };
+  doc.addEventListener('pointermove',onMove,true);doc.addEventListener('pointerup',onEnd,true);doc.addEventListener('pointercancel',onEnd,true);
+ });
 }
 function moveDraftBlock(blockId,targetSectionId,targetBlockId,after){
  if(!draft)return false;
