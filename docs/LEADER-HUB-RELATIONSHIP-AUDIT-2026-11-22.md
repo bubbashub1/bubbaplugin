@@ -97,3 +97,12 @@ The codebase contains two booking paths which must remain distinct until runtime
 The follow-up read-only diagnostic adds the four booking tables to its fixed schema allowlist and reports aggregate row totals and referential-integrity counts for legacy session bookings, booking sources, dated slots and slot reservations. It does not return booking rows, user details, child information or contact data, and performs no writes or DDL.
 
 **Next decision gate:** run the updated diagnostic on staging, then document a record-preserving mapping between legacy session bookings and dated slot reservations only if runtime data shows both models are populated. No booking migration or timetable rewrite is authorised by this audit.
+
+
+## Session attribution follow-up
+
+The staging diagnostic confirms `bh_sessions` has `venue_id` but no `activity_id` or `schedule_id`. The current Leader Hub API loads each activity's venues through legacy `bh_venues.activity_id`, then loads every session attached to each venue. The admin timetable editor likewise validates a session against the activity's legacy venue list. This means timetable ownership is currently inferred through the venue, not stored on the session.
+
+The schema also contains `bh_activity_venues`, which can link one venue to multiple activities. A session attached to a venue shared by multiple activities cannot be safely attributed to one activity from `bh_sessions` alone. The follow-up diagnostic therefore reports aggregate counts for sessions on legacy-owned venues, unassigned venues, join-linked venues, venues linked to multiple activities, and any mismatch between legacy ownership and join links.
+
+The next staging diagnostic result is a decision gate. Do not assign, copy, split, or migrate any session until the counts and actual ownership model are reviewed. In particular, a session attached to a shared venue must not be duplicated across activities or shown to the wrong leader by inference.
