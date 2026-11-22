@@ -132,8 +132,13 @@ try {
  $missingCounts=array_fill_keys(array_keys($fieldMap),0);
  foreach($rows as &$row){
   $missing=[];
-  foreach($fieldMap as $label=>$keys) if(!$has($row,$keys)){ $missing[]=$label; $missingCounts[$label]++; }
+  $complete=[];
+  foreach($fieldMap as $label=>$keys){
+   if(!$has($row,$keys)){ $missing[]=$label; $missingCounts[$label]++; }
+   else { $complete[]=$label; }
+  }
   $row['missing']=$missing;
+  $row['complete']=$complete;
   $row['health_assessable_fields']=count($fieldMap);
   $row['health_score']=count($fieldMap)>0 ? (int)round((count($fieldMap)-count($missing))/count($fieldMap)*100) : null;
   $row['suggested_description']='';
