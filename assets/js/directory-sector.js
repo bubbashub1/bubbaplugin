@@ -5,7 +5,7 @@ let timer,requestId=0,businessCategoriesLoaded=false;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const safeUrl=value=>{const v=String(value||"").trim();return /^https?:\/\//i.test(v)?v:""};
 function businessCard(x){
- const logo=safeUrl(x.logo_url),website=safeUrl(x.website),email=String(x.contact_email||"").trim(),phone=String(x.contact_phone||"").trim(),place=[x.town,x.region].filter(Boolean).join(" · "),count=Number(x.linked_listing_count)||0;
+ const logo=safeImage(x.logo_url),website=safeUrl(x.website),email=String(x.contact_email||"").trim(),phone=String(x.contact_phone||"").trim(),place=[x.town,x.region].filter(Boolean).join(" · "),count=Number(x.linked_listing_count)||0;
  return '<article class="bh-sector-card">'+(logo?'<img class="bh-business-logo" src="'+esc(logo)+'" alt="" loading="lazy">':'')+'<h2>'+esc(x.title)+'</h2>'+(x.summary||x.description?'<p>'+esc(x.summary||x.description)+'</p>':'')+'<p class="bh-sector-meta">'+esc([x.category,place].filter(Boolean).join(" · "))+'</p>'+(count?'<p class="bh-sector-meta">'+count+' related '+(count===1?'activity':'activities')+'</p>':'')+(website?'<p><a href="'+esc(website)+'" target="_blank" rel="noopener noreferrer">Visit website ↗</a></p>':'')+(email?'<p><a href="mailto:'+esc(email)+'">Email business</a></p>':'')+(phone?'<p><a href="tel:'+esc(phone)+'">'+esc(phone)+'</a></p>':'')+'</article>';
 }
 async function load(){
