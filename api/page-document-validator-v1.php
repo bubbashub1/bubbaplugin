@@ -61,7 +61,7 @@ function bh_validate_page_document_v1(mixed $document): array {
    elseif($key==='gradient'&&!in_array($value,['','meadow','coastal','sunset','berry','sand'],true))$errors[]='Invalid container background style.';
    elseif($key==='columns'&&(!is_int($value)||$value<1||$value>4))$errors[]='Invalid container column count.';
    elseif($key==='column_widths'){
-    if(!is_array($value)||count($value)<1||count($value)>4)$errors[]='Invalid container column widths.';
+    if(!is_array($value)||count($value)!==$sectionColumnCount)$errors[]='Container column widths must match the configured column count.';
     else foreach($value as $columnWidth)if(!is_numeric($columnWidth)||$columnWidth<10||$columnWidth>100)$errors[]='Invalid container column width.';
    }
    elseif($key==='mobile'){
