@@ -91,3 +91,11 @@ This document and `database/events-directory-schema.sql` are a code-level founda
 - The hero search heading and submit label switch between Activities and Businesses when the directory selector changes; the Activities heading and search behaviour are restored when switching back.
 - Businesses styling is placed in `directory-platform.css`, which is loaded by the directory page. The page cache-busts the updated stylesheet and scripts.
 - Organiser options for the admin editor are served by the Businesses API itself, avoiding a GET to the legacy organiser-profile API that can run a schema ALTER on older installations.
+
+### Admin and filter validation refinements
+
+- The admin Listing picker now loads all published Listings through the existing paginated Activities API and includes a title search. Selected links remain selected while the picker is filtered.
+- Organiser lookup is read-only and no longer invokes the legacy organiser profile endpoint's opportunistic schema alteration.
+- Admin sign-out returns to the admin login page.
+- Listings filters are snapshotted when the existing Activities directory finishes initializing and restored when leaving Businesses, preventing the new sector from permanently replacing the Listings category/region/town choices.
+- JavaScript syntax checks passed for the directory controller, sector selector, Businesses controller and admin screen inline script. The latest PHP/security workflow also passed on the earlier commit; it will rerun against this final set of changes.
