@@ -39,7 +39,15 @@ try {
   $finding['candidate']=json_decode((string)$finding['candidate_json'],true)?:[];unset($finding['candidate_json']);
   $safeFields=['title','description','short_description','website','booking_url','facebook_url','instagram_url','contact_email','phone','town','region','postcode','category','age_range','price','price_details','opening_times','session_information'];
   $editable=[];foreach($safeFields as $field)if(array_key_exists($field,$activity))$editable[$field]=['current'=>$activity[$field],'suggested'=>$finding['candidate'][$field]??null];
-  bh_lm_reply(200,['ok'=>true,'csrf'=>$_SESSION['bh_listing_monitor_csrf'],'finding'=>$finding,'activity'=>['id'=>$activity['id'],'title'=>$activity['title']??'Activity'],'fields'=>$editable]);
+  // Missing-image findings are evidence that the listing has no image; they do not contain a replacement image.
+  // Expose the current image state separately so the review screen can explain this without inventing a suggestion.
+  $imageReview=null;
+  if((string)$finding['finding_type']==='missing_image'){
+   $currentImage=trim((string)($activity['image_path']??''));
+   $candidateImage=trim((string)($finding['candidate']['image_path']??$finding['candidate']['image_url']??''));
+   $imageReview=['current'=>$currentImage,'suggested'=>$candidateImage,'has_suggestion'=>$candidateImage!==''];
+  }
+  bh_lm_reply(200,['ok'=>true,'csrf'=>$_SESSION['bh_listing_monitor_csrf'],'finding'=>$finding,'activity'=>['id'=>$activity['id'],'title'=>$activity['title']??'Activity'],'fields'=>$editable,'image_review'=>$imageReview]);
  }
  if($method!=='POST') bh_lm_reply(405,['ok'=>false,'error'=>'Method not allowed']);
  $origin=(string)($_SERVER['HTTP_ORIGIN']??'');$host=(string)($_SERVER['HTTP_HOST']??'');
