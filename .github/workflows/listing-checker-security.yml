@@ -95,8 +95,13 @@ jobs:
           grep -q "possible_closure" api/listing-monitor-website-cron.php
           grep -q "closure_indicated" api/listing-monitor-website-cron.php
           grep -q "temporary_closure" api/listing-monitor-website-cron.php
-          grep -q "bh_listing_monitor_website_state" database/migrations/20261122_create_listing_monitor_website_checks.sql
           grep -q "bh_listing_monitor_website_history" database/migrations/20261122_create_listing_monitor_website_checks.sql
+          ! grep -q "bh_listing_monitor_website_state" database/migrations/20261122_create_listing_monitor_website_checks.sql
+          ! grep -q "bh_listing_monitor_audit" database/migrations/20261121_create_listing_monitor_drafts.sql
+          grep -q "website_monitor_enabled','0'" database/migrations/20261122_create_listing_monitor_website_checks.sql
+          grep -q "website_monitor_enabled" api/listing-monitor-website-cron.php
+          ! grep -q "bh_listing_check_queue" api/listing-monitor-website-cron.php
+          ! grep -q "bh_listing_check_runs" api/listing-monitor-website-cron.php
           ! grep -Eq "UPDATE[[:space:]]+bh_activities|DELETE[[:space:]]+FROM[[:space:]]+bh_activities" api/listing-monitor-website-cron.php
       - name: Run Listing Monitor offline rule tests
         run: php tests/listing-monitor-website-rules.php
