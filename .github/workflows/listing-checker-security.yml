@@ -33,7 +33,9 @@ jobs:
             api/admin-listing-review.php \
             api/listing-checker-health-cron.php \
             api/listing-checker-discovery-cron.php \
-            api/listing-checker-preflight.php
+            api/listing-checker-preflight.php \
+            api/admin-listing-monitor-drafts.php \
+            api/listing-monitor-website-cron.php
           do
             php -l "$file"
           done
@@ -71,3 +73,19 @@ jobs:
           grep -q "DATE_ADD(last_searched_at, INTERVAL frequency_hours HOUR)" api/listing-checker-discovery-cron.php
           test -f database/listing-checker-search-settings-migration.sql
           grep -q "columnsFor('bh_activity_schedules')" api/listing-checker-health-cron.php
+          grep -q "bh_admin_authenticated" api/admin-listing-monitor-drafts.php
+          grep -q "hash_equals" api/admin-listing-monitor-drafts.php
+          grep -q "approve_draft" api/admin-listing-monitor-drafts.php
+          grep -q "original_snapshot" api/admin-listing-monitor-drafts.php
+          grep -q "PHP_SAPI !== 'cli'" api/listing-monitor-website-cron.php
+          grep -q "GET_LOCK" api/listing-monitor-website-cron.php
+          grep -q "CURLOPT_SSL_VERIFYPEER=>true" api/listing-monitor-website-cron.php
+          grep -q "CURLOPT_RESOLVE" api/listing-monitor-website-cron.php
+          grep -q "bodyTooLarge" api/listing-monitor-website-cron.php
+          grep -q "unable_to_verify" api/listing-monitor-website-cron.php
+          grep -q "possible_closure" api/listing-monitor-website-cron.php
+          grep -q "closure_indicated" api/listing-monitor-website-cron.php
+          grep -q "temporary_closure" api/listing-monitor-website-cron.php
+          grep -q "bh_listing_monitor_website_state" database/migrations/20261122_create_listing_monitor_website_checks.sql
+          grep -q "bh_listing_monitor_website_history" database/migrations/20261122_create_listing_monitor_website_checks.sql
+          ! grep -Eq "UPDATE[[:space:]]+bh_activities|DELETE[[:space:]]+FROM[[:space:]]+bh_activities" api/listing-monitor-website-cron.php
