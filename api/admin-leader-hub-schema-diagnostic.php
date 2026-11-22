@@ -244,6 +244,7 @@ try {
         'row_counts' => $rowCounts,
         'relationship_integrity_counts' => $integrity,
         'booking_integrity_counts' => $bookingIntegrity,
+        'venue_relationship_coverage_counts' => $venueRelationshipCoverage,
         'session_attribution_counts' => $sessionAttribution,
         'foreign_keys' => $foreignKeys,
         'relationship_hints' => $relationships,
