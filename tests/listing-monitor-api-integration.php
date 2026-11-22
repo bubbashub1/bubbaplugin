@@ -105,6 +105,11 @@ try {
         foreach (($http_response_header ?? []) as $header) {
             if (preg_match('/^HTTP\/\S+\s+(\d+)/', $header, $match)) { $status = (int)$match[1]; }
         }
+        if ($status !== 200 && $status !== 401 && $status !== 403 && $status !== 409 && $status !== 413 && $status !== 422) {
+            fwrite(STDOUT, "DEBUG HTTP {$status} {$query}: " . substr((string)$raw, 0, 500) . "\\n");
+        } elseif ($status >= 500) {
+            fwrite(STDOUT, "DEBUG SERVER {$status} {$query}: " . substr((string)$raw, 0, 500) . "\\n");
+        }
         return ['status' => $status, 'json' => json_decode((string)$raw, true), 'raw' => (string)$raw];
     };
 
