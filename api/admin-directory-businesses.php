@@ -82,6 +82,20 @@ if (($b['action']??'')==='install_business_directory_schema') {
   business_reply(500,['ok'=>false,'error'=>'business_schema_install_failed','message'=>'The Businesses schema could not be installed. No directory records were created.']);
  }
 }
+if (($b['action']??'')==='install_family_directory_schemas') {
+ foreach (['bh_organisers','bh_users','bh_activities'] as $requiredTable) if (!$exists($requiredTable)) business_reply(503,['ok'=>false,'error'=>'directory_prerequisite_missing','message'=>'Required Bubba Hub table '.$requiredTable.' is missing. No directory schema was installed.']);
+ try {
+  $base="id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,title VARCHAR(190) NOT NULL,category VARCHAR(120) NOT NULL,summary VARCHAR(500) NULL,description MEDIUMTEXT NULL,town VARCHAR(120) NOT NULL,region VARCHAR(120) NULL,address VARCHAR(500) NULL,postcode VARCHAR(20) NULL,website_url VARCHAR(1000) NULL,contact_email VARCHAR(190) NULL,contact_phone VARCHAR(60) NULL,status ENUM('draft','published','archived') NOT NULL DEFAULT 'draft',reviewed_at DATETIME NULL,reviewed_by_user_id BIGINT UNSIGNED NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY(id),KEY idx_status(status),KEY idx_category(category),KEY idx_town(town),KEY idx_region(region)";
+  $db->exec("CREATE TABLE IF NOT EXISTS bh_directory_childcare ($base,registration_body VARCHAR(190) NULL,registration_reference VARCHAR(190) NULL,verification_url VARCHAR(1000) NULL,verified_on DATE NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+  $db->exec("CREATE TABLE IF NOT EXISTS bh_directory_places ($base,facilities TEXT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+  $db->exec("CREATE TABLE IF NOT EXISTS bh_directory_school_clubs ($base,school_name VARCHAR(190) NULL,age_min TINYINT UNSIGNED NULL,age_max TINYINT UNSIGNED NULL,days_times VARCHAR(500) NULL,collection_arrangements TEXT NULL,price_details VARCHAR(500) NULL,verification_url VARCHAR(1000) NULL,verified_on DATE NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+  foreach (['bh_directory_childcare','bh_directory_places','bh_directory_school_clubs'] as $table) if (!$exists($table)) throw new RuntimeException($table.' was not created.');
+  business_reply(200,['ok'=>true,'installed'=>true,'message'=>'Childcare & Schools, Places & Days Out and School Clubs tables are installed. Existing Activities, businesses and organiser records were not changed.']);
+ } catch(Throwable $e) {
+  error_log('Family directory schema install: '.$e->getMessage());
+  business_reply(500,['ok'=>false,'error'=>'family_directory_schema_install_failed','message'=>'The three directory tables could not be installed. No existing directory records were changed.']);
+ }
+}
 if(!$exists('bh_directory_businesses')||!$exists('bh_directory_business_listings'))business_reply(503,['ok'=>false,'error'=>'business_schema_not_installed','message'=>'The Businesses directory schema has not been installed on staging. No records have been changed.']);
 if (($b['action']??'')==='create_missing_leader_storefronts') {
  require_once __DIR__.'/lib/business-storefront.php'; $db->beginTransaction();
