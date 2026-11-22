@@ -62,8 +62,10 @@ function bh_lm_fetch(string $url): array {
 try{
  $columns=$db->query('SHOW COLUMNS FROM bh_activities')->fetchAll(PDO::FETCH_COLUMN);
  if(!in_array('id',$columns,true)||!in_array('website',$columns,true))throw new RuntimeException('Activity website field is unavailable.');
- $batch=max(1,min(30,(int)$get('batch_size','30')));
- $interval=max(1,min(24,(int)$get('interval_hours','4')));
+ $batch=max(1,min(30,(int)$get('website_monitor_batch_size','30')));
+ $interval=max(1,min(24,(int)$get('website_monitor_interval_hours','4')));
+ $runtime=max(30,min(600,(int)$get('website_monitor_max_runtime_seconds','240')));
+ $deadline=microtime(true)+$runtime;
  // A changed URL is immediately due because the history match includes website_url.
  $sql="SELECT a.id AS activity_id,a.website AS website_url
        FROM bh_activities a
@@ -82,7 +84,9 @@ try{
  $resolve=$db->prepare("UPDATE bh_listing_check_findings SET review_status='resolved',reviewed_at=NOW() WHERE check_type='health' AND activity_id=? AND finding_type IN ('website_possible_closure','website_closure_indicated','website_temporary_closure','website_unable_to_verify') AND review_status IN ('new','follow_up')");
  $recent=$db->prepare('SELECT outcome FROM bh_listing_monitor_website_history WHERE activity_id=? AND website_url=? ORDER BY checked_at DESC,id DESC LIMIT 3');
  $counts=['healthy'=>0,'possible_closure'=>0,'closure_indicated'=>0,'temporary_closure'=>0,'unable_to_verify'=>0];
+ $processed=0;
  foreach($items as $item){
+  if(microtime(true)>$deadline)break;
   $id=(int)$item['activity_id'];$url=trim((string)$item['website_url']);$status=null;$evidence='';$outcome='unable_to_verify';$finalUrl=$url;
   try{
    $result=bh_lm_fetch($url);$status=$result['status'];$finalUrl=$result['url'];$classification=bh_lm_classify_response($status,$result['body']);$outcome=$classification['outcome'];$evidence=$classification['evidence'];
@@ -93,6 +97,7 @@ try{
   $consecutive=$dead?1:0;
   if($dead){foreach($previous as $prior){if(!in_array($prior,['possible_closure','closure_indicated'],true))break;$consecutive++;}}
   $history->execute([$id,$url,$outcome,$status,$evidence]);
+  $processed++;
   if($outcome==='healthy'){$resolve->execute([$id]);}
   if(in_array($outcome,['possible_closure','closure_indicated','temporary_closure','unable_to_verify'],true)){
    $type='website_'.$outcome;
@@ -104,6 +109,6 @@ try{
    else $insert->execute([$id,$json,$type,$confidence,$url]);
   }
  }
- echo json_encode(['checked'=>count($items),'results'=>$counts,'interval_hours'=>$interval,'message'=>'Website checks append private history and reuse the existing findings queue. No activity listings were edited or unpublished.'],JSON_UNESCAPED_SLASHES)."\n";
+ echo json_encode(['checked'=>$processed,'due_found'=>count($items),'results'=>$counts,'interval_hours'=>$interval,'runtime_limit_seconds'=>$runtime,'message'=>'Website checks append private history and reuse the existing findings table. No activity listings were edited or unpublished.'],JSON_UNESCAPED_SLASHES)."\n";
 }catch(Throwable $e){error_log('Listing Monitor website worker: '.$e->getMessage());fwrite(STDERR,'Website monitor failed: '.$e->getMessage()."\n");exit(1);}
 finally{$db->query("SELECT RELEASE_LOCK('bh_listing_monitor_websites')");}
