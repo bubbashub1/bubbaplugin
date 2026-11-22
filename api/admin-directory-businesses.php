@@ -46,11 +46,11 @@ $id=isset($b['id'])?(int)$b['id']:0;$publish=($b['publish']??false)===true;
 try{
  $db->beginTransaction();
  if($id>0){$s=$db->prepare("SELECT id FROM bh_directory_businesses WHERE id=? FOR UPDATE");$s->execute([$id]);if(!$s->fetchColumn()){$db->rollBack();business_reply(404,['ok'=>false,'error'=>'business_not_found']);}
-  $sql="UPDATE bh_directory_businesses SET organiser_id=?,title=?,category=?,summary=?,description=?,town=?,region=?,address=?,postcode=?,website_url=?,contact_email=?,contact_phone=?,status=? WHERE id=?";
-  $db->prepare($sql)->execute([$organiserId,$title,$category,$summary?:null,$description?:null,$town,$values['region'],$values['address'],$values['postcode'],$values['website_url'],$values['contact_email'],$values['contact_phone'],$publish?'published':'draft',$id]);
+  $sql="UPDATE bh_directory_businesses SET organiser_id=?,title=?,category=?,summary=?,description=?,town=?,region=?,address=?,postcode=?,website_url=?,contact_email=?,contact_phone=?,status=?,reviewed_at=?,reviewed_by_user_id=? WHERE id=?";
+  $db->prepare($sql)->execute([$organiserId,$title,$category,$summary?:null,$description?:null,$town,$values['region'],$values['address'],$values['postcode'],$values['website_url'],$values['contact_email'],$values['contact_phone'],$publish?'published':'draft',$publish?date('Y-m-d H:i:s'):null,$publish?((int)($_SESSION['bh_user_id']??0)?:null):null,$id]);
  }else{
-  $sql="INSERT INTO bh_directory_businesses (organiser_id,created_by_user_id,title,category,summary,description,town,region,address,postcode,website_url,contact_email,contact_phone,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-  $db->prepare($sql)->execute([$organiserId,(int)($_SESSION['bh_user_id']??0)?:null,$title,$category,$summary?:null,$description?:null,$town,$values['region'],$values['address'],$values['postcode'],$values['website_url'],$values['contact_email'],$values['contact_phone'],$publish?'published':'draft']);$id=(int)$db->lastInsertId();
+  $sql="INSERT INTO bh_directory_businesses (organiser_id,created_by_user_id,title,category,summary,description,town,region,address,postcode,website_url,contact_email,contact_phone,status,reviewed_at,reviewed_by_user_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+  $db->prepare($sql)->execute([$organiserId,(int)($_SESSION['bh_user_id']??0)?:null,$title,$category,$summary?:null,$description?:null,$town,$values['region'],$values['address'],$values['postcode'],$values['website_url'],$values['contact_email'],$values['contact_phone'],$publish?'published':'draft',$publish?date('Y-m-d H:i:s'):null,$publish?((int)($_SESSION['bh_user_id']??0)?:null):null]);$id=(int)$db->lastInsertId();
  }
  $db->prepare("DELETE FROM bh_directory_business_listings WHERE business_id=?")->execute([$id]);
  if($activityIds){$s=$db->prepare("INSERT INTO bh_directory_business_listings (business_id,activity_id) VALUES (?,?)");foreach($activityIds as $activityId)$s->execute([$id,$activityId]);}
