@@ -386,3 +386,15 @@ body.bhvb-fullscreen-editor .bhvb-editor-canvas{height:100%;min-height:0;overflo
  body.bhvb-fullscreen-editor .bhvb-editor-body{height:0;min-height:0;grid-template-rows:minmax(0,1fr) minmax(0,1fr)}
  body.bhvb-fullscreen-editor .bhvb-editor-left{height:100%;max-height:100%;overflow-y:auto}
 }
+
+/* Expandable widget categories in the Elements library */
+.bhvb-element-accordion{margin:0 0 12px;border:1px solid #e3ebe4;border-radius:13px;background:#fff;overflow:hidden}
+.bhvb-element-accordion>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;padding:10px 12px;list-style:none;cursor:pointer;color:#315d40;font-size:.82rem;font-weight:800;background:#f5f8f5}
+.bhvb-element-accordion>summary::-webkit-details-marker{display:none}
+.bhvb-element-accordion>summary::after{content:"＋";flex:0 0 auto;color:#3c8e96;font-size:1rem;font-weight:700}
+.bhvb-element-accordion[open]>summary::after{content:"−"}
+.bhvb-element-accordion>summary:focus-visible{outline:3px solid #3c8e96;outline-offset:-3px}
+.bhvb-accordion-count{margin-left:auto;color:#829087;font-size:.68rem;font-weight:650}
+.bhvb-element-accordion .bhvb-element-group{margin:0;padding:9px;gap:7px}
+.bhvb-element-accordion .bhvb-element-group button{min-height:58px}
+@media(max-width:700px){.bhvb-element-accordion{margin-bottom:8px}.bhvb-element-accordion>summary{min-height:40px}}
