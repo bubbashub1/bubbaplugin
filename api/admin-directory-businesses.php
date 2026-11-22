@@ -96,6 +96,46 @@ if (($b['action']??'')==='install_family_directory_schemas') {
   business_reply(500,['ok'=>false,'error'=>'family_directory_schema_install_failed','message'=>'The three directory tables could not be installed. No existing directory records were changed.']);
  }
 }
+if (($b['action']??'')==='upgrade_family_directory_workflow') {
+ $tables=['bh_directory_businesses','bh_directory_childcare','bh_directory_places','bh_directory_school_clubs'];
+ foreach($tables as $table)if(!$exists($table))business_reply(503,['ok'=>false,'error'=>'directory_schema_missing','message'=>'Install all four Directory tables before enabling Leader submissions. No changes were made.']);
+ $hasColumn=static function(string $table,string $column)use($db):bool{$q=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=? AND COLUMN_NAME=?");$q->execute([$table,$column]);return (int)$q->fetchColumn()>0;};
+ $hasIndex=static function(string $table,string $index)use($db):bool{$q=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=? AND INDEX_NAME=?");$q->execute([$table,$index]);return (int)$q->fetchColumn()>0;};
+ $addColumn=static function(string $table,string $column,string $definition)use($db,$hasColumn):void{if(!$hasColumn($table,$column))$db->exec("ALTER TABLE ".$table." ADD COLUMN ".$column." ".$definition);};
+ try{
+  $additions=[
+   'bh_directory_businesses'=>['submitted_at'=>'DATETIME NULL','review_note'=>'VARCHAR(2000) NULL'],
+   'bh_directory_childcare'=>['organiser_id'=>'BIGINT UNSIGNED NULL','created_by_user_id'=>'BIGINT UNSIGNED NULL','age_min'=>'SMALLINT UNSIGNED NULL','age_max'=>'SMALLINT UNSIGNED NULL','submitted_at'=>'DATETIME NULL','review_note'=>'VARCHAR(2000) NULL'],
+   'bh_directory_places'=>['organiser_id'=>'BIGINT UNSIGNED NULL','created_by_user_id'=>'BIGINT UNSIGNED NULL','submitted_at'=>'DATETIME NULL','review_note'=>'VARCHAR(2000) NULL'],
+   'bh_directory_school_clubs'=>['organiser_id'=>'BIGINT UNSIGNED NULL','created_by_user_id'=>'BIGINT UNSIGNED NULL','holiday_provision'=>'VARCHAR(500) NULL','registration_details'=>'MEDIUMTEXT NULL','submitted_at'=>'DATETIME NULL','review_note'=>'VARCHAR(2000) NULL']
+  ];
+  foreach($additions as $table=>$columns)foreach($columns as $column=>$definition)$addColumn($table,$column,$definition);
+  foreach($tables as $table)$db->exec("ALTER TABLE ".$table." MODIFY COLUMN status ENUM('draft','pending','published','rejected','archived') NOT NULL DEFAULT 'draft'");
+  foreach(['bh_directory_childcare'=>'idx_childcare_owner_status','bh_directory_places'=>'idx_places_owner_status','bh_directory_school_clubs'=>'idx_school_clubs_owner_status'] as $table=>$index)if(!$hasIndex($table,$index))$db->exec("ALTER TABLE ".$table." ADD INDEX ".$index." (organiser_id,status)");
+  $db->exec("CREATE TABLE IF NOT EXISTS bh_directory_record_reviews (
+   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+   section_key ENUM('event','business','childcare','place','school_club') NOT NULL,
+   record_id BIGINT UNSIGNED NOT NULL,reviewer_user_id BIGINT UNSIGNED NULL,
+   decision ENUM('approved','rejected','returned_for_edits','revision_approved','revision_rejected','revision_returned_for_edits') NOT NULL,
+   note VARCHAR(2000) NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   KEY idx_directory_record_review (section_key,record_id,created_at)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+  $db->exec("CREATE TABLE IF NOT EXISTS bh_directory_record_revisions (
+   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+   section_key ENUM('event','business','childcare','place','school_club') NOT NULL,
+   record_id BIGINT UNSIGNED NOT NULL,organiser_id BIGINT UNSIGNED NOT NULL,
+   submitted_by_user_id BIGINT UNSIGNED NOT NULL,payload MEDIUMTEXT NOT NULL,
+   status ENUM('pending','approved','rejected','returned_for_edits') NOT NULL DEFAULT 'pending',
+   submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,reviewed_at DATETIME NULL,
+   reviewed_by_user_id BIGINT UNSIGNED NULL,review_note VARCHAR(2000) NULL,
+   KEY idx_directory_revision_queue (status,submitted_at),
+   KEY idx_directory_revision_record (section_key,record_id,status),
+   KEY idx_directory_revision_owner (organiser_id,record_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+  if(!$exists('bh_directory_record_reviews')||!$exists('bh_directory_record_revisions'))throw new RuntimeException('Directory review tables were not created.');
+  business_reply(200,['ok'=>true,'upgraded'=>true,'message'=>'Leader submissions and Directory review fields are ready. Existing directory records and publication statuses were preserved.']);
+ }catch(Throwable $e){error_log('Directory workflow schema upgrade: '.$e->getMessage());business_reply(500,['ok'=>false,'error'=>'directory_workflow_upgrade_failed','message'=>'The Directory workflow upgrade could not be completed. Check the staging database before retrying.']);}
+}
 if(!$exists('bh_directory_businesses')||!$exists('bh_directory_business_listings'))business_reply(503,['ok'=>false,'error'=>'business_schema_not_installed','message'=>'The Businesses directory schema has not been installed on staging. No records have been changed.']);
 if (($b['action']??'')==='create_missing_leader_storefronts') {
  require_once __DIR__.'/lib/business-storefront.php'; $db->beginTransaction();

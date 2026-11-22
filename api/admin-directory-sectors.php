@@ -11,9 +11,9 @@ function sector_reply(int $code,array $data):never{http_response_code($code);ech
 if(empty($_SESSION['bh_admin_authenticated']))sector_reply(401,['ok'=>false,'message'=>'Please sign in to the admin area.']);
 require_once __DIR__.'/db.php'; $db=bh_mysql();
 $sectors=[
- 'childcare'=>['table'=>'bh_directory_childcare','label'=>'Childcare & Schools','extra'=>['registration_body','registration_reference','verification_url','verified_on']],
+ 'childcare'=>['table'=>'bh_directory_childcare','label'=>'Childcare & Schools','extra'=>['age_min','age_max','registration_body','registration_reference','verification_url','verified_on']],
  'places'=>['table'=>'bh_directory_places','label'=>'Places & Days Out','extra'=>['facilities']],
- 'clubs'=>['table'=>'bh_directory_school_clubs','label'=>'School Clubs','extra'=>['school_name','age_min','age_max','days_times','collection_arrangements','price_details','verification_url','verified_on']]
+ 'clubs'=>['table'=>'bh_directory_school_clubs','label'=>'School Clubs','extra'=>['school_name','age_min','age_max','days_times','collection_arrangements','holiday_provision','price_details','registration_details','verification_url','verified_on']]
 ];
 $key=(string)($_GET['sector']??''); if($_SERVER['REQUEST_METHOD']==='POST'){ $raw=(string)file_get_contents('php://input');if(strlen($raw)>100000)sector_reply(413,['ok'=>false,'message'=>'Request too large.']);$input=json_decode($raw,true);if(!is_array($input))sector_reply(400,['ok'=>false,'message'=>'Invalid request.']);$key=(string)($input['sector']??'');}
 if(!isset($sectors[$key]))sector_reply(422,['ok'=>false,'message'=>'Choose a valid directory section.']);
@@ -41,13 +41,13 @@ $host=strtolower(explode(':',(string)($_SERVER['HTTP_HOST']??''))[0]);$origin=(s
 if(!$origin||parse_url($origin,PHP_URL_SCHEME)!=='https'||strtolower((string)parse_url($origin,PHP_URL_HOST))!==$host)sector_reply(403,['ok'=>false,'message'=>'Invalid request origin.']);
 if(empty($_SESSION['bh_admin_sector_csrf'])||!is_string($input['csrf']??null)||!hash_equals($_SESSION['bh_admin_sector_csrf'],$input['csrf']))sector_reply(403,['ok'=>false,'message'=>'Your session expired. Refresh the page and try again.']);
 $common=['title'=>190,'category'=>120,'summary'=>500,'description'=>100000,'town'=>120,'region'=>120,'address'=>500,'postcode'=>20,'website_url'=>1000,'contact_email'=>190,'contact_phone'=>60];
-$limits=['registration_body'=>190,'registration_reference'=>190,'verification_url'=>1000,'verified_on'=>10,'facilities'=>10000,'school_name'=>190,'age_min'=>2,'age_max'=>2,'days_times'=>500,'collection_arrangements'=>5000,'price_details'=>500];
+$limits=['registration_body'=>190,'registration_reference'=>190,'verification_url'=>1000,'verified_on'=>10,'facilities'=>10000,'school_name'=>190,'age_min'=>3,'age_max'=>3,'days_times'=>500,'collection_arrangements'=>5000,'holiday_provision'=>500,'price_details'=>500,'registration_details'=>10000];
 $allowed=array_merge(array_keys($common),$sectors[$key]['extra']);
 $id=(int)($input['id']??0);$values=[];
 foreach($allowed as $field){
  $max=$common[$field]??$limits[$field]??10000;
  $v=$input[$field]??null;
- if(in_array($field,['age_min','age_max'],true)){if($v===''||$v===null){$values[$field]=null;continue;}$n=filter_var($v,FILTER_VALIDATE_INT);if($n===false||$n<0||$n>18)sector_reply(422,['ok'=>false,'message'=>'Age values must be between 0 and 18.']);$values[$field]=$n;continue;}
+ if(in_array($field,['age_min','age_max'],true)){if($v===''||$v===null){$values[$field]=null;continue;}$n=filter_var($v,FILTER_VALIDATE_INT);$maxAge=$key==='childcare'?240:18;if($n===false||$n<0||$n>$maxAge)sector_reply(422,['ok'=>false,'message'=>$key==='childcare'?'Childcare ages must be between 0 and 240 months.':'School Club ages must be between 0 and 18 years.']);if($key==='clubs'&&$field==='age_min'&&$n<3)sector_reply(422,['ok'=>false,'message'=>'School Clubs must be for children aged 3 or over.']);$values[$field]=$n;continue;}
  $v=trim((string)($v??''));if(mb_strlen($v)>$max)sector_reply(422,['ok'=>false,'message'=>'The '.$field.' field is too long.']);
  if(in_array($field,['title','category','town'],true)&&$v==='')sector_reply(422,['ok'=>false,'message'=>'Please complete the title, category and town fields.']);
  if(in_array($field,['website_url','verification_url'],true)&&$v!==''&&(!filter_var($v,FILTER_VALIDATE_URL)||!in_array(strtolower((string)parse_url($v,PHP_URL_SCHEME)),['http','https'],true)))sector_reply(422,['ok'=>false,'message'=>'Enter a valid website URL including https://.']);
@@ -55,6 +55,7 @@ foreach($allowed as $field){
  if($field==='verified_on'&&$v!==''&&!preg_match('/^\d{4}-\d{2}-\d{2}$/',$v))sector_reply(422,['ok'=>false,'message'=>'Enter the verification date as YYYY-MM-DD.']);
  $values[$field]=$v===''?null:$v;
 }
+if($key==='clubs'&&($values['age_min']??null)===null)sector_reply(422,['ok'=>false,'message'=>'Enter the minimum age for this School Club.']);
 if(isset($values['age_min'],$values['age_max'])&&$values['age_min']!==null&&$values['age_max']!==null&&$values['age_min']>$values['age_max'])sector_reply(422,['ok'=>false,'message'=>'Minimum age cannot be greater than maximum age.']);
 $status=($input['publish']??false)===true?'published':'draft';
 try{
