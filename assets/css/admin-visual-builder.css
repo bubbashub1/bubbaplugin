@@ -398,3 +398,14 @@ body.bhvb-fullscreen-editor .bhvb-editor-canvas{height:100%;min-height:0;overflo
 .bhvb-element-accordion .bhvb-element-group{margin:0;padding:9px;gap:7px}
 .bhvb-element-accordion .bhvb-element-group button{min-height:58px}
 @media(max-width:700px){.bhvb-element-accordion{margin-bottom:8px}.bhvb-element-accordion>summary{min-height:40px}}
+
+
+/* Elementor-inspired Tabs widget controls in the Visual Builder inspector. */
+.bhvb-library-widget-controls{margin:0 0 18px;padding:14px;border:1px solid #d8e6db;border-radius:10px;background:#f7faf7}
+.bhvb-library-widget-controls>strong{display:block;margin-bottom:6px;color:#244d37}
+.bhvb-tab-editor-item{min-width:0;margin:12px 0;padding:12px;border:1px solid #d8e6db;border-radius:8px;background:#fff}
+.bhvb-tab-editor-item legend{padding:0 6px;color:#416651;font-weight:700}
+.bhvb-tab-editor-item input,.bhvb-tab-editor-item textarea{width:100%;max-width:100%;box-sizing:border-box}
+.bhvb-tab-editor-item textarea{min-height:82px;resize:vertical}
+.bhvb-tab-editor-item .bhvb-container-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.bhvb-library-widget-controls>#bhvbAddTab{width:100%;margin-top:8px}
