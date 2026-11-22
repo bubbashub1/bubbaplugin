@@ -16,7 +16,10 @@
 ## Before deployment
 
 - [ ] Confirm the feature branch and draft PR are still the intended source.
-- [ ] Confirm PHP lint, security guards, offline rule tests, MySQL integration and API integration are green on the exact code commit.
+- [x] PHP lint, security guards and offline rule tests passed on `0bf2f33bc2d71f0a76eaf191705a599665e566f3`.
+- [x] Disposable MySQL 8.0 integration tests passed 14/14.
+- [x] Admin API HTTP integration tests passed 14/14.
+- [ ] Redeploy this exact feature-branch commit to staging before browser validation.
 - [ ] Confirm a fresh staging backup exists and can be restored.
 - [ ] Confirm the staging environment's private DB configuration resolves to the staging DB, not the live DB.
 - [ ] Confirm the two revised migration files have not already been applied; check table existence first.
