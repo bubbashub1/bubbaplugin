@@ -361,6 +361,7 @@ function attachCanvas(){
    blockNode.classList.add('bhvb-dragging');
   });
   doc.addEventListener('dragover',event=>{
+   if(event.dataTransfer?.types?.includes('application/x-bhvb-widget'))draggedNewType='pending';
    if(previewMode!=='draft'||(!draggedBlockId&&!draggedNewType))return;
    const targetBlock=event.target.closest('[data-bh-block-id]');
    const targetSection=event.target.closest('[data-bh-section-id]');
@@ -372,6 +373,7 @@ function attachCanvas(){
    }
   });
   doc.addEventListener('drop',event=>{
+   if(event.dataTransfer?.types?.includes('application/x-bhvb-widget'))draggedNewType=event.dataTransfer.getData('application/x-bhvb-widget')||'';
    if(previewMode!=='draft'||(!draggedBlockId&&!draggedNewType))return;
    const targetBlock=event.target.closest('[data-bh-block-id]');
    const targetSection=event.target.closest('[data-bh-section-id]');
@@ -681,7 +683,7 @@ document.querySelectorAll('[data-bh-add]').forEach(button=>{
  button.draggable=true;button.addEventListener('dragstart',event=>{
   const map={addHeading:'heading',addParagraph:'paragraph',addButtonBlock:'button',addImageBlock:'image'};
   const type=map[button.dataset.bhAdd];if(!type||previewMode!=='draft'||!draft){event.preventDefault();return;}
-  event.dataTransfer.effectAllowed='copy';event.dataTransfer.setData('text/plain','bhvb-new:'+type);
+  event.dataTransfer.effectAllowed='copy';event.dataTransfer.setData('application/x-bhvb-widget',type);event.dataTransfer.setData('text/plain','New '+type);
   button.classList.add('is-dragging');
  });
  button.addEventListener('dragend',()=>button.classList.remove('is-dragging'));
