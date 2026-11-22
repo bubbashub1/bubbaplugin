@@ -12,8 +12,8 @@ $secure=!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off';
 session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);
 session_name('BUBBAHUB_ADMINSESSID');
 session_start();
+require_once __DIR__.'/admin-session-guard.php';
 function bh_lm_reply(int $status,array $data): never { http_response_code($status); echo json_encode($data,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE); exit; }
-if(empty($_SESSION['bh_admin_authenticated'])) bh_lm_reply(401,['ok'=>false,'error'=>'Admin login required.']);
 try {
  require_once __DIR__.'/db.php'; $db=bh_mysql();
  foreach(['bh_listing_monitor_drafts','bh_listing_check_findings','bh_activities'] as $table){$q=$db->prepare('SHOW TABLES LIKE ?');$q->execute([$table]);if(!$q->fetchColumn())bh_lm_reply(503,['ok'=>false,'error'=>'Listing Monitor database migration is required.']);}
