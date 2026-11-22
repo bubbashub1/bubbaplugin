@@ -11,9 +11,10 @@ function business_reply(int $code,array $data):never{http_response_code($code);e
 if(empty($_SESSION['bh_admin_authenticated']))business_reply(401,['ok'=>false,'error'=>'admin_login_required']);
 require_once __DIR__.'/db.php'; $db=bh_mysql();
 $exists=static function(string $table)use($db):bool{$q=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?");$q->execute([$table]);return (int)$q->fetchColumn()>0;};
-if(!$exists('bh_directory_businesses')||!$exists('bh_directory_business_listings'))business_reply(503,['ok'=>false,'error'=>'business_schema_not_installed','message'=>'The Businesses directory schema has not been installed on staging. No records have been changed.']);
+
 if($_SERVER['REQUEST_METHOD']==='GET'){
  $_SESSION['bh_admin_business_csrf']??=bin2hex(random_bytes(32));$action=(string)($_GET['action']??'list');
+ if(($action==='list'||$action==='get')&&(!$exists('bh_directory_businesses')||!$exists('bh_directory_business_listings')))business_reply(503,['ok'=>false,'error'=>'business_schema_not_installed','message'=>'Install the Businesses directory tables before loading storefront records.']);
  if($action==='organisers'){
   $s=$db->query("SELECT id,organisation_name,email,phone FROM bh_organisers ORDER BY organisation_name,id LIMIT 500");
   business_reply(200,['ok'=>true,'csrf'=>$_SESSION['bh_admin_business_csrf'],'organisers'=>$s->fetchAll(PDO::FETCH_ASSOC)]);
@@ -36,6 +37,52 @@ if(!$origin||parse_url($origin,PHP_URL_SCHEME)!=='https'||strtolower((string)par
 $raw=(string)file_get_contents('php://input');if(strlen($raw)>100000)business_reply(413,['ok'=>false,'error'=>'request_too_large']);
 
 $b=json_decode($raw,true);if(!is_array($b)||empty($_SESSION['bh_admin_business_csrf'])||!is_string($b['csrf']??null)||!hash_equals($_SESSION['bh_admin_business_csrf'],$b['csrf']))business_reply(403,['ok'=>false,'error'=>'invalid_csrf']);
+if (($b['action']??'')==='install_business_directory_schema') {
+ foreach (['bh_organisers','bh_users','bh_activities'] as $requiredTable) if (!$exists($requiredTable)) business_reply(503,['ok'=>false,'error'=>'business_prerequisite_missing','message'=>'Required Bubba Hub table '.$requiredTable.' is missing. No schema was installed.']);
+ try {
+  $db->exec("CREATE TABLE IF NOT EXISTS bh_directory_businesses (
+   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+   organiser_id BIGINT UNSIGNED NULL,
+   created_by_user_id BIGINT UNSIGNED NULL,
+   title VARCHAR(190) NOT NULL,
+   category VARCHAR(120) NOT NULL,
+   summary VARCHAR(500) NULL,
+   description MEDIUMTEXT NULL,
+   town VARCHAR(120) NOT NULL,
+   region VARCHAR(120) NULL,
+   address VARCHAR(500) NULL,
+   postcode VARCHAR(20) NULL,
+   website_url VARCHAR(1000) NULL,
+   contact_email VARCHAR(190) NULL,
+   contact_phone VARCHAR(60) NULL,
+   status ENUM('draft','published','archived') NOT NULL DEFAULT 'draft',
+   reviewed_at DATETIME NULL,
+   reviewed_by_user_id BIGINT UNSIGNED NULL,
+   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   PRIMARY KEY (id),
+   UNIQUE KEY uq_business_organiser (organiser_id),
+   KEY idx_business_status (status),
+   KEY idx_business_category (category),
+   KEY idx_business_town (town),
+   KEY idx_business_region (region),
+   KEY idx_business_created_by (created_by_user_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+  $db->exec("CREATE TABLE IF NOT EXISTS bh_directory_business_listings (
+   business_id BIGINT UNSIGNED NOT NULL,
+   activity_id BIGINT UNSIGNED NOT NULL,
+   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (business_id,activity_id),
+   KEY idx_business_listing_activity (activity_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+  if (!$exists('bh_directory_businesses') || !$exists('bh_directory_business_listings')) throw new RuntimeException('Business directory tables were not created.');
+  business_reply(200,['ok'=>true,'installed'=>true,'message'=>'Businesses directory tables are installed. No existing activities or organiser records were changed.']);
+ } catch(Throwable $e) {
+  error_log('Businesses schema install: '.$e->getMessage());
+  business_reply(500,['ok'=>false,'error'=>'business_schema_install_failed','message'=>'The Businesses schema could not be installed. No directory records were created.']);
+ }
+}
+if(!$exists('bh_directory_businesses')||!$exists('bh_directory_business_listings'))business_reply(503,['ok'=>false,'error'=>'business_schema_not_installed','message'=>'The Businesses directory schema has not been installed on staging. No records have been changed.']);
 if (($b['action']??'')==='create_missing_leader_storefronts') {
  require_once __DIR__.'/lib/business-storefront.php'; $db->beginTransaction();
  try {
