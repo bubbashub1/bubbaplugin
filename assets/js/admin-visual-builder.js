@@ -423,7 +423,7 @@ function attachCanvas(){
     const tabTrigger=event.target.closest('[data-bh-tab-trigger]');
    if(tabTrigger){
     const widget=tabTrigger.closest('[data-bh-tabs-widget]');
-    if(widget){event.preventDefault();event.stopPropagation();const index=Number(tabTrigger.dataset.bhTabTrigger);const block=findBlock(widget.dataset.bhTabsWidget);if(block?.props?.settings){block.props.settings.active_tab=index;const outer=doc.querySelector('[data-bh-block-id="'+CSS.escape(block.id)+'"]');if(outer)outer.innerHTML=renderTabsWidgetMarkup(block.props,block.id);}}
+    if(widget){event.preventDefault();event.stopPropagation();const index=Number(tabTrigger.dataset.bhTabTrigger);const block=findBlock(widget.dataset.bhTabsWidget);if(block?.props?.settings){block.props.settings.active_tab=index;const outer=doc.querySelector('[data-bh-block-id="'+CSS.escape(block.id)+'"]');if(outer){outer.innerHTML=renderTabsWidgetMarkup(block.props,block.id);selectNode(outer);}}}
     return;
    }
    if(event.target.closest('#bhvb-floating-toolbar,.bhvb-canvas-handle'))return;
