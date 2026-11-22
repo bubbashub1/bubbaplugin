@@ -14,6 +14,9 @@ on:
       - 'assets/js/directory-businesses.js'
       - 'assets/js/directory-sector.js'
       - 'businesses.html'
+      - 'childcare-schools.html'
+      - 'places-days-out.html'
+      - 'school-clubs.html'
       - 'organiser.html'
       - '.github/workflows/business-storefront-checks.yml'
   workflow_dispatch:
@@ -116,4 +119,13 @@ jobs:
           assert "b.postcode LIKE ?" in feed and "b.address LIKE ?" in feed, "Business keyword search should include postcode and address"
           assert "b.town LIKE ? OR b.postcode LIKE ?" in feed, "Town filter should support partial town/postcode matches"
           print("Public Businesses page and search wiring checks passed")
+          for field in ("registration_body", "registration_reference", "verified_on", "facilities", "school_name", "age_min", "age_max", "days_times", "collection_arrangements", "price_details", "verification_url"):
+              assert field in sector_client, f"Public sector card is missing {field}"
+          for path, sector in (("childcare-schools.html", 'data-sector="childcare"'), ("places-days-out.html", 'data-sector="place"'), ("school-clubs.html", 'data-sector="school_club"')):
+              page = Path(path).read_text()
+              assert sector in page, f"{path} has the wrong sector key"
+              assert '/assets/js/directory-sector.js' in page, f"{path} is missing its sector client"
+              assert '/assets/js/directory-universal.js' not in page, f"{path} must not inject universal Activities results"
+          assert "sectorDetails(x)" in sector_client, "Sector-specific public details are not rendered"
+          print("Specialist directory card and separation checks passed")
           PY
