@@ -366,7 +366,7 @@ function attachCanvas(){
    const targetBlock=event.target.closest('[data-bh-block-id]');
    const targetSection=event.target.closest('[data-bh-section-id]');
    if(targetBlock||targetSection){
-    event.preventDefault();event.dataTransfer.dropEffect='move';
+    event.preventDefault();event.dataTransfer.dropEffect=draggedNewType?'copy':'move';
     doc.querySelectorAll('.bhvb-drag-over,.bhvb-drop-before,.bhvb-drop-after').forEach(node=>node.classList.remove('bhvb-drag-over','bhvb-drop-before','bhvb-drop-after'));
     if(targetBlock){const rect=targetBlock.getBoundingClientRect();targetBlock.classList.add(event.clientY>rect.top+rect.height/2?'bhvb-drop-after':'bhvb-drop-before');}
     else targetSection.classList.add('bhvb-drag-over');
