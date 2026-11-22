@@ -93,7 +93,7 @@ The shared manager provides:
 - Sector-specific fields displayed only for the selected section.
 - Server-side fixed table and field allowlists, admin-session authentication, same-origin HTTPS POST checks and a per-session CSRF token.
 
-PR #1104 must be merged only after its checks pass and the code review is complete. Automated PHP lint/security checks are not a substitute for browser and database testing.
+PR #1104 was merged into `staging-site` as commit `32a5bfa6e29d3d80686fc6b40b1da025929862f8`. Its PHP lint/security workflow passed. The staging deployment workflow was queued after the merge; deployment completion and browser/database verification are not confirmed by this review. Automated checks are not a substitute for browser and database testing.
 
 ## 5. Important compatibility findings — not yet resolved
 
