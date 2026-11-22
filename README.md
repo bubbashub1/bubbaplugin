@@ -82,13 +82,18 @@ mysql -u YOUR_DATABASE_USER -p YOUR_DATABASE_NAME < database/listing-checker-sea
 
 This creates checker configuration, editable discovery terms, run/queue tracking and review-finding tables. It does not modify activity, organiser or venue records. The admin page is available at `/admin/admin-listing-checker-settings.html`.
 
-The Listing Monitor review-draft workflow also requires its additive migration before opening the new monitor:
+The Listing Monitor is being built on top of the existing `bh_listing_check_findings` and `bh_listing_checker_settings` tables. Its two additive migrations create only:
+- `bh_listing_monitor_drafts` — private admin drafts; an approved row retains the original snapshot, approved values, source, reviewer and approval timestamp as its audit record.
+- `bh_listing_monitor_website_history` — append-only website-check evidence. The latest matching URL timestamp is used to determine when a website is due, so no separate state table is needed.
+
+Apply both migrations to staging only after the feature branch has passed tests and the staging backup/database target has been confirmed:
 
 ```sh
 mysql -u YOUR_DATABASE_USER -p YOUR_DATABASE_NAME < database/migrations/20261121_create_listing_monitor_drafts.sql
+mysql -u YOUR_DATABASE_USER -p YOUR_DATABASE_NAME < database/migrations/20261122_create_listing_monitor_website_checks.sql
 ```
 
-This creates a separate draft table only. Suggested values and original field snapshots are stored there; the migration does not update `bh_activities` or publish any changes. The new admin page is `/admin/admin-listing-monitor.html`.
+The monitor deliberately does not share `bh_listing_check_queue` or `bh_listing_check_runs`: the existing health worker relies on those tables for its own schedule and interval calculations. It also does not use the organiser-submission revision table. Website monitoring has its own separate settings, defaulted to disabled, and its CLI worker is not scheduled or enabled during testing. The new admin page is `/admin/admin-listing-monitor.html`.
 
 The settings page stores the desired schedule (default every 4 hours, batch size 30, Europe/London) and discovery terms. The structured search editor lets an administrator set a phrase, directory category, source scope (general web, publicly indexed Facebook or publicly indexed Instagram), extra keywords, region scope and a per-term repeat interval (4 hours to monthly). The discovery worker only processes terms that are due for their own interval. Bing RSS remains the search provider; the social options apply public search operators, not direct platform API access, and cannot see private groups or content blocked from indexing. **It does not itself start scheduled work**: the CLI workers and hosting cron entries must be implemented and configured before those saved schedules take effect.
 
