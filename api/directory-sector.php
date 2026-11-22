@@ -14,7 +14,10 @@ try{
  if($search!==''){$where[]="(title LIKE ? OR summary LIKE ? OR description LIKE ?)";$like='%'.$search.'%';array_push($params,$like,$like,$like);}
  if($town!==''){$where[]="(town LIKE ? OR postcode LIKE ?)";$like='%'.$town.'%';array_push($params,$like,$like);}
  if($category!==''){$where[]="category=?";$params[]=$category;}
- $extra=$type==='business'?",website_url":($type==='childcare'?",website_url,registration_body,registration_reference,verification_url,verified_on":($type==='place'?",website_url,facilities":",website_url,school_name,age_min,age_max,days_times,collection_arrangements,price_details,verification_url,verified_on"));
+ $columns=$db->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='".$table."'")->fetchAll(PDO::FETCH_COLUMN);
+ $extraFields=$type==='business'?['website_url']:($type==='childcare'?['website_url','age_min','age_max','registration_body','registration_reference','verification_url','verified_on']:($type==='place'?['website_url','facilities']:['website_url','school_name','age_min','age_max','days_times','collection_arrangements','holiday_provision','price_details','registration_details','verification_url','verified_on']));
+ $extraFields=array_values(array_filter($extraFields,static fn($field)=>in_array($field,$columns,true)));
+ $extra=$extraFields?','.implode(',',$extraFields):'';
  $sql="SELECT id,title,category,summary,description,town,region,postcode".$extra." FROM ".$table." WHERE ".implode(' AND ',$where)." ORDER BY title LIMIT 100";
  $q=$db->prepare($sql);$q->execute($params);
  echo json_encode(['ok'=>true,'schema_ready'=>true,'records'=>$q->fetchAll(PDO::FETCH_ASSOC)],JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);
