@@ -27,10 +27,8 @@ $check = static function (string $name, bool $condition) use (&$passed, &$failed
 };
 
 $tables = [
-    'bh_listing_monitor_audit',
     'bh_listing_monitor_drafts',
     'bh_listing_monitor_website_history',
-    'bh_listing_monitor_website_state',
     'bh_listing_check_findings',
     'bh_listing_check_queue',
     'bh_listing_check_runs',
@@ -86,10 +84,9 @@ $check('test activity fixture created', $activityId > 0);
 
 $history = $db->prepare('INSERT INTO bh_listing_monitor_website_history(activity_id,website_url,outcome,http_status,evidence) VALUES(?,?,?,?,?)');
 $history->execute([$activityId, $originalWebsite, 'possible_closure', 404, 'HTTP 404']);
-$state = $db->prepare('INSERT INTO bh_listing_monitor_website_state(activity_id,website_url,last_outcome,consecutive_dead_checks) VALUES(?,?,?,1)');
-$state->execute([$activityId, $originalWebsite, 'possible_closure']);
-$check('website state and history accept worker records', (int)$db->query('SELECT COUNT(*) FROM bh_listing_monitor_website_history')->fetchColumn() === 1
-    && (int)$db->query('SELECT COUNT(*) FROM bh_listing_monitor_website_state')->fetchColumn() === 1);
+$check('website history accepts repeated private check records', (int)$db->query('SELECT COUNT(*) FROM bh_listing_monitor_website_history')->fetchColumn() === 1);
+$history->execute([$activityId, $originalWebsite, 'unable_to_verify', 503, 'Temporary server error']);
+$check('website history appends a second check without a separate state table', (int)$db->query('SELECT COUNT(*) FROM bh_listing_monitor_website_history')->fetchColumn() === 2);
 
 $insertFinding = $db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,candidate_json,finding_type,confidence,source_url,checked_at,review_status) VALUES('health',?,?,?,?,?,NOW(),'new')");
 $insertFinding->execute([$activityId, json_encode(['website' => $originalWebsite]), 'website_possible_closure', 70, $originalWebsite]);
@@ -130,15 +127,17 @@ $liveActivity = $live->fetch();
 $stale = (string)$liveActivity['title'] !== (string)$snapshot['title'];
 if (!$stale) {
     $db->prepare('UPDATE bh_activities SET title=? WHERE id=?')->execute([$proposed['title'], $activityId]);
-    $db->prepare('INSERT INTO bh_listing_monitor_audit(draft_id,activity_id,admin_username,before_values,approved_values,source_url) VALUES(?,?,?,?,?,?)')
-        ->execute([$draftId, $activityId, 'test-admin', json_encode($snapshot), json_encode($proposed), $originalWebsite]);
     $db->prepare("UPDATE bh_listing_monitor_drafts SET status='approved',reviewed_at=NOW(),reviewed_by=? WHERE id=?")
         ->execute(['test-admin', $draftId]);
 }
 $db->commit();
 $approved = $db->query("SELECT title FROM bh_activities WHERE id={$activityId}")->fetchColumn();
-$auditCount = (int)$db->query("SELECT COUNT(*) FROM bh_listing_monitor_audit WHERE draft_id={$draftId}")->fetchColumn();
-$check('explicit approval updates only the proposed field and writes audit', $approved === 'Updated activity title' && $auditCount === 1);
+$approvedDraft = $db->query("SELECT status,reviewed_by,original_snapshot,proposed_changes FROM bh_listing_monitor_drafts WHERE id={$draftId}")->fetch();
+$check('explicit approval updates only the proposed field and retains the full approval record',
+    $approved === 'Updated activity title' && $approvedDraft['status'] === 'approved'
+    && $approvedDraft['reviewed_by'] === 'test-admin'
+    && json_decode($approvedDraft['original_snapshot'], true) === $snapshot
+    && json_decode($approvedDraft['proposed_changes'], true) === $proposed);
 
 $staleDraft = $db->prepare("INSERT INTO bh_listing_monitor_drafts(finding_id,activity_id,status,original_snapshot,proposed_changes) VALUES(?,?,'draft',?,?)");
 $staleDraft->execute([$findingId, $activityId, json_encode(['title' => 'Old title']), json_encode(['title' => 'Must not overwrite'])]);
@@ -153,7 +152,8 @@ if (!$staleDetected) {
 $db->rollBack();
 $check('stale snapshot is detected and blocks a listing update', $staleDetected
     && $db->query("SELECT title FROM bh_activities WHERE id={$activityId}")->fetchColumn() === 'Updated activity title');
-$check('stale approval creates no audit row', (int)$db->query("SELECT COUNT(*) FROM bh_listing_monitor_audit WHERE draft_id={$staleId}")->fetchColumn() === 0);
+$check('stale approval leaves the draft unapproved and creates no approval record',
+    $db->query("SELECT status FROM bh_listing_monitor_drafts WHERE id={$staleId}")->fetchColumn() === 'draft');
 
 $final = $db->query("SELECT title,description,website FROM bh_activities WHERE id={$activityId}")->fetch();
 $check('website worker leaves all public activity fields untouched', $final['title'] === 'Updated activity title'
