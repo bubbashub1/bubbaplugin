@@ -1,6 +1,6 @@
 # Listing Monitor — controlled staging validation
 
-**Status:** staging code deployed; migrations remain unapplied pending the agreed staging-only database step.
+**Status:** an earlier version of this branch was deployed to staging. The database-reuse refactor is now on the feature branch and must pass CI and be redeployed to staging before browser validation. Migrations remain unapplied.
 
 ## Safety boundaries
 
