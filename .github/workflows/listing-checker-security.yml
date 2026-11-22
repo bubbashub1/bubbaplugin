@@ -77,8 +77,10 @@ jobs:
           grep -q "DATE_ADD(last_searched_at, INTERVAL frequency_hours HOUR)" api/listing-checker-discovery-cron.php
           test -f database/listing-checker-search-settings-migration.sql
           grep -q "columnsFor('bh_activity_schedules')" api/listing-checker-health-cron.php
+          grep -q "admin-session-guard.php" api/admin-listing-monitor-drafts.php
           grep -q "bh_admin_authenticated" api/admin-listing-monitor-drafts.php
           grep -q "hash_equals" api/admin-listing-monitor-drafts.php
+          grep -q "65537" api/admin-listing-monitor-drafts.php
           grep -q "approve_draft" api/admin-listing-monitor-drafts.php
           grep -q "original_snapshot" api/admin-listing-monitor-drafts.php
           grep -q "PHP_SAPI !== 'cli'" api/listing-monitor-website-cron.php
