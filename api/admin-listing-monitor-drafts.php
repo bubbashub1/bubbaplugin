@@ -6,12 +6,6 @@ header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('Referrer-Policy: same-origin');
 header("Content-Security-Policy: default-src 'none'; frame-ancestors 'none'; base-uri 'none'");
-ini_set('session.use_strict_mode','1');
-ini_set('session.use_only_cookies','1');
-$secure=!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off';
-session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);
-session_name('BUBBAHUB_ADMINSESSID');
-session_start();
 require_once __DIR__.'/admin-session-guard.php';
 function bh_lm_reply(int $status,array $data): never { http_response_code($status); echo json_encode($data,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE); exit; }
 try {
