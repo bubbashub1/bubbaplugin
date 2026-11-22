@@ -106,3 +106,12 @@ The staging diagnostic confirms `bh_sessions` has `venue_id` but no `activity_id
 The schema also contains `bh_activity_venues`, which can link one venue to multiple activities. A session attached to a venue shared by multiple activities cannot be safely attributed to one activity from `bh_sessions` alone. The follow-up diagnostic therefore reports aggregate counts for sessions on legacy-owned venues, unassigned venues, join-linked venues, venues linked to multiple activities, and any mismatch between legacy ownership and join links.
 
 The next staging diagnostic result is a decision gate. Do not assign, copy, split, or migrate any session until the counts and actual ownership model are reviewed. In particular, a session attached to a shared venue must not be duplicated across activities or shown to the wrong leader by inference.
+
+
+## Full venue relationship coverage follow-up
+
+The next diagnostic revision compares the two venue ownership/link models across every venue, rather than limiting the view to venues referenced by timetable sessions. It reports aggregate counts for total venues; distinct venues with legacy owners; distinct venues represented in the activity/venue join; venues in both, legacy-only, join-only, or neither; venues linked to multiple activities; and venues whose legacy owner is absent from their join links. It also repeats join-table orphan counts for clarity.
+
+The mismatch metric is deliberately defined as a venue that has a non-null legacy owner and at least one join link, but none of those join links matches the legacy activity owner. A venue with both a matching link and additional links is not counted as a mismatch; it is still visible in the multiple-activity count. These definitions avoid treating a shared venue as automatically invalid.
+
+All metrics are schema-guarded and aggregate-only. The endpoint does not return venue IDs, activity IDs, names, addresses, or other listing values. It performs no writes, DDL, backfill, or migration. Run the diagnostic on staging and compare the all-venue totals with the earlier session-only attribution result before designing any compatibility or migration work.
