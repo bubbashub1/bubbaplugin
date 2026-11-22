@@ -86,7 +86,8 @@ try {
         }
         if ($session !== null) { $headers[] = 'Cookie: BUBBAHUB_ADMINSESSID=' . $session; }
         foreach ($extraHeaders as $extraHeader) {
-            $headerName = strtolower(trim(strtok($extraHeader, ':') ?: ''));\n            $headers = array_values(array_filter($headers, static fn(string $header): bool => strtolower(trim(strtok($header, ':') ?: '')) !== $headerName));
+            $headerName = strtolower(trim(strtok($extraHeader, ':') ?: ''));
+            $headers = array_values(array_filter($headers, static fn(string $header): bool => strtolower(trim(strtok($header, ':') ?: '')) !== $headerName));
             $headers[] = $extraHeader;
         }
         $options = [
