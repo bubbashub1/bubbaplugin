@@ -372,3 +372,17 @@ body.bh-admin-v2.bhvb-fullscreen-editor{margin:0!important;padding:0!important;o
  .bhvb-editor-topbar .bhvb-page-picker select{min-width:120px;max-width:150px}
  .bhvb-editor-canvas .bhvb-canvas-stage{padding:8px}
 }
+
+/* Full-height independent editor panels */
+html:has(body.bhvb-fullscreen-editor),
+body.bhvb-fullscreen-editor{height:100%;min-height:100%;overflow:hidden}
+body.bhvb-fullscreen-editor .bhvb-shell{height:100vh;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+body.bhvb-fullscreen-editor .bhvb-editor-topbar{flex:0 0 auto;position:relative;z-index:20}
+body.bhvb-fullscreen-editor .bhvb-editor-body{flex:1 1 auto;min-height:0;height:0;overflow:hidden}
+body.bhvb-fullscreen-editor .bhvb-editor-left{height:100%;min-height:0;max-height:100%;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+body.bhvb-fullscreen-editor .bhvb-editor-panel-content{min-height:100%;overflow:visible}
+body.bhvb-fullscreen-editor .bhvb-editor-canvas{height:100%;min-height:0;overflow:auto}
+@media(max-width:650px){
+ body.bhvb-fullscreen-editor .bhvb-editor-body{height:0;min-height:0;grid-template-rows:minmax(0,1fr) minmax(0,1fr)}
+ body.bhvb-fullscreen-editor .bhvb-editor-left{height:100%;max-height:100%;overflow-y:auto}
+}
