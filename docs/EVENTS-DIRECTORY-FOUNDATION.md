@@ -37,7 +37,7 @@ The Businesses directory is a separate public directory of businesses and family
 
 - [x] Existing organiser-profile fields and activity-to-organiser relationship reviewed.
 - [x] Schema proposal updated to allow standalone business records, optional organiser-profile reuse and many-to-many links to existing Listings.
-- [ ] Admin-only business management screen and create/edit workflow.
+- [x] Admin-only business management screen and create/edit workflow added; it fails closed until the staging schema exists.
 - [ ] Read-only public Businesses feed with keyword, category, region and town filters.
 - [ ] Confirm linked organiser contact fallback and business-specific overrides.
 - [ ] Validate duplicate detection and multiple business-to-listing links.
@@ -66,3 +66,12 @@ The Businesses directory is a separate public directory of businesses and family
 
 ## Safety
 This document and `database/events-directory-schema.sql` are a code-level foundation only. No database migration is executed by deployment, and no production schema or data is changed.
+
+### Admin Businesses screen
+
+- Route: `/admin/admin-directory-businesses.html`.
+- API: `/api/admin-directory-businesses.php` (admin session required; CSRF and same-origin checks on writes).
+- Supports standalone business records, optional organiser-profile links, and multiple existing Listing links.
+- Saves as draft by default. Publishing is an explicit admin action.
+- Both the page and API require the new Businesses schema; the API returns a clear schema-not-installed response and performs no writes when the tables are absent.
+- This screen has not yet been browser-tested because the schema is intentionally not installed.
