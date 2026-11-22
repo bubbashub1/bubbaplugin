@@ -95,12 +95,12 @@ The shared manager provides:
 - Sector-specific fields displayed only for the selected section, including childcare age ranges and School Club holiday/registration details.
 - Server-side fixed table and field allowlists, admin-session authentication, same-origin HTTPS POST checks and a per-session CSRF token.
 
-PR #1104 was merged and its staging deployment succeeded. PR #1106 fixed the Businesses public API connection and search. PR #1107 added the specialist public-card details. PR #1108 added an additive schema upgrade and aligned the existing Leader submission and Admin review APIs. All associated PHP/security and storefront checks passed, and the staging deployment completed for PRs #1106 and #1107. PR #1108 is merged; its deployment and the admin-triggered database upgrade must be confirmed separately. Automated checks are not a substitute for browser and database testing.
+PR #1104 was merged and its staging deployment succeeded. PR #1106 fixed the Businesses public API connection and search. PR #1107 added the specialist public-card details. PR #1108 added an additive schema upgrade and aligned the existing Leader submission and Admin review APIs. All associated PHP/security and storefront checks passed, and the staging deployment completed for PRs #1106 and #1107. PR #1108 is merged and its staging deployment succeeded. The admin-triggered database upgrade is the remaining activation step. Automated checks are not a substitute for browser and database testing.
 
 ## 5. Compatibility fixes and remaining limitations
 
 ### A. Leader submission schema upgrade — code merged, staging action still required
-PR #1108 adds **Admin → Businesses → Enable Leader submissions & approval**. After the staging deployment completes, an administrator must run this confirmed action once.
+PR #1108 adds **Admin → Businesses → Enable Leader submissions & approval**. The PR #1108 staging deployment has completed successfully. An administrator must now run this confirmed action once.
 It safely:
 - Adds organiser ownership and creator columns to Childcare, Places and School Clubs.
 - Adds childcare age ranges, School Club holiday provision and registration/safeguarding details.
@@ -180,10 +180,9 @@ The current staging source of truth is this document. PR #1108 has now reconcile
 
 ## 8. Next implementation order
 
-1. Confirm PR #1108 deployment has completed on staging.
-2. In Admin → Businesses, run **Enable Leader submissions & approval** and confirm success.
-3. Complete one full Leader-to-admin review cycle for Business, Childcare, Places and School Clubs.
-4. Verify Businesses in both the standalone page and universal directory search.
-5. Test public sector cards, filters, canonical routes, mobile layout and empty/error states.
-6. Reconcile historical documents and record verified staging results.
-7. Obtain explicit approval before any production deployment or live database changes.
+1. In Admin → Businesses, run **Enable Leader submissions & approval** and confirm success.
+2. Complete one full Leader-to-admin review cycle for Business, Childcare, Places and School Clubs.
+3. Verify Businesses in both the standalone page and universal directory search.
+4. Test public sector cards, filters, canonical routes, mobile layout and empty/error states.
+5. Reconcile historical documents and record verified staging results.
+6. Obtain explicit approval before any production deployment or live database changes.
