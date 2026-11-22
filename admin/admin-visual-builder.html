@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="/assets/css/styles.css">
 <link rel="stylesheet" href="/assets/css/admin-settings.css">
 <link rel="stylesheet" href="/assets/css/admin-support-v2.css">
-<link rel="stylesheet" href="/assets/css/admin-visual-builder.css">
+<link rel="stylesheet" href="/assets/css/admin-visual-builder.css?v=20261122-workspace-refresh">
 </head>
 <body class="bh-admin-v2">
 <header class="site-header">
@@ -18,6 +18,8 @@
 <div class="bhvb-heading"><div><a href="/admin.html">← Admin dashboard</a><span class="eyebrow">Website management</span><h1>Visual Builder</h1><p>Choose a published page, prepare a simplified structured draft, then edit supported text and links. Saving keeps changes private; publishing is not available.</p></div><span class="bhvb-status" id="builderStatus" role="status">Checking admin access…</span></div>
 <section class="bhvb-toolbar" aria-label="Builder toolbar">
 <label class="bhvb-page-picker">Page<select id="builderPage" disabled><option value="">Loading pages…</option></select></label>
+<label class="bhvb-page-picker">Page layout<select id="pageColumns" disabled><option value="1">1 column</option><option value="2">2 columns</option><option value="3">3 columns</option></select></label>
+<div class="bhvb-history-controls" role="group" aria-label="Draft history"><button type="button" id="builderUndo" disabled title="Undo last draft change">↶ Undo</button><button type="button" id="builderRedo" disabled title="Redo last undone change">↷ Redo</button></div>
 <div class="bhvb-device-switch" role="group" aria-label="Preview size">
 <button type="button" data-device="desktop" class="active" aria-pressed="true">Desktop</button>
 <button type="button" data-device="tablet" aria-pressed="false">Tablet</button>
@@ -26,6 +28,17 @@
 <span class="bhvb-readonly"><span aria-hidden="true">●</span> Draft-only editor</span>
 </section>
 <div class="bhvb-workspace">
+<aside class="bhvb-elements-panel" aria-label="Element library">
+<div class="bhvb-elements-heading"><span class="eyebrow">Build your page</span><h2>Elements</h2><p>Choose an element to add it to your selected container.</p></div>
+<details class="bhvb-element-accordion" open><summary>Layout <span class="bhvb-accordion-count">1 widget</span></summary><div class="bhvb-element-group"><button type="button" data-bh-add="addContainer"><span>▦</span><span><b>Container</b><small>New section or content area</small></span></button></div></details>
+<details class="bhvb-element-accordion" hidden><summary>Basic elements <span class="bhvb-accordion-count">5 widgets</span></summary><div class="bhvb-element-group">
+<button type="button" data-bh-add="addHeading"><span>H</span><span><b>Heading</b><small>Add a title or heading</small></span></button>
+<button type="button" data-bh-add="addParagraph"><span>¶</span><span><b>Text</b><small>Add a paragraph</small></span></button>
+<button type="button" data-bh-add="addButtonBlock"><span>▱</span><span><b>Button</b><small>Add a clickable link</small></span></button><button type="button" data-bh-add="addImageBlock"><span>▧</span><span><b>Image</b><small>Add an image to your page</small></span></button>
+<button type="button" id="addDirectorySearch" data-bh-add="addDirectorySearch" hidden disabled><span>⌕</span><span><b>Search widget</b><small>Search Bubba Hub directories</small></span></button>
+</div></details>
+<div class="bhvb-elements-tip">Select a container on the canvas first to add headings, text and buttons inside it.</div><p class="bhvb-elements-tip"><a href="/admin/admin-widget-library.html">Manage the Widget Library →</a></p>
+</aside>
 <section class="bhvb-canvas-panel" aria-label="Page preview">
 <div class="bhvb-canvas-top"><strong>Page canvas</strong><span id="canvasDimensions">Responsive preview</span></div>
 <div class="bhvb-canvas-stage" id="canvasStage">
@@ -37,14 +50,42 @@
 <div class="bhvb-inspector-tabs" role="tablist" aria-label="Inspector panels"><button type="button" class="active" id="propertiesTab" role="tab" aria-selected="true" aria-controls="propertiesPanel">Properties</button><button type="button" id="layersTab" role="tab" aria-selected="false" aria-controls="layersPanel">Layers</button></div>
 <section class="bhvb-inspector-section" id="propertiesPanel" role="tabpanel" aria-labelledby="propertiesTab"><span class="eyebrow">Selected element</span><h2 id="selectedName">Nothing selected</h2><p id="selectedDescription">Click a heading, paragraph, image, button or section in the preview to inspect it.</p><dl id="selectedDetails" hidden><dt>Element</dt><dd id="selectedTag">—</dd><dt>Text / alternative text</dt><dd id="selectedText">—</dd></dl>
 <div class="bhvb-edit-controls" id="editControls" hidden>
-<label for="editText">Text</label><textarea id="editText" rows="3" maxlength="10000"></textarea>
+<div id="libraryWidgetControls" class="bhvb-library-widget-controls" hidden></div><label for="editText">Text</label><button type="button" id="inlineEditToggle" class="bhvb-inline-edit-toggle" hidden>Edit directly on page</button><textarea id="editText" rows="3" maxlength="10000"></textarea>
 <label for="editHref" id="editHrefLabel" hidden>Button / link destination</label><input id="editHref" type="text" maxlength="2048" hidden>
-<p class="bhvb-edit-help">Changes are only in this private draft preview until you save the draft. The published page is not affected.</p>
+<div class="bhvb-container-actions"><button type="button" id="duplicateElement">Duplicate element</button><button type="button" id="deleteElement" disabled>Delete element</button></div><strong>Element styling</strong>
+<label for="elementColumn" id="elementColumnLabel">Place in column</label><select id="elementColumn"><option value="1">Column 1</option></select>
+<label for="elementFontSize">Text size <output id="elementFontSizeValue">16px</output></label><input id="elementFontSize" type="range" min="10" max="72" step="1" value="16">
+<label for="elementWidth">Element width <output id="elementWidthValue">100%</output></label><input id="elementWidth" type="range" min="10" max="100" step="5" value="100">
+<label for="elementAlign">Text alignment</label><select id="elementAlign"><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select>
+<label for="elementSpacing">Space after element <output id="elementSpacingValue">0px</output></label><input id="elementSpacing" type="range" min="0" max="80" step="2" value="0">
+<label for="elementTextColor">Text colour</label><input id="elementTextColor" type="color" value="#222222">
+<label for="elementBackground">Background colour</label><input id="elementBackground" type="color" value="#ffffff"><label class="bhvb-mobile-toggle" for="elementBackgroundEnabled"><input id="elementBackgroundEnabled" type="checkbox"> Apply background colour</label>
+<label for="elementPadding">Inner padding <output id="elementPaddingValue">0px</output></label><input id="elementPadding" type="range" min="0" max="48" step="2" value="0">
+<label for="elementRadius">Corner radius <output id="elementRadiusValue">0px</output></label><input id="elementRadius" type="range" min="0" max="48" step="2" value="0">
+<p class="bhvb-edit-help">Changes are only in this private draft preview until you save the draft. The published page is not affected.</p></div><div class="bhvb-edit-controls" id="searchControls" hidden>
+<strong>Directory search settings</strong>
+<label for="searchWidgetScope">Directory</label>
+<select id="searchWidgetScope">
+<option value="all">All directories</option><option value="activities">Activities / Classes</option><option value="businesses">Businesses</option><option value="childcare">Childcare</option><option value="events">Events</option><option value="places">Places</option><option value="school_clubs">School Clubs</option>
+</select>
+<label for="searchWidgetLabel">Label</label><input id="searchWidgetLabel" type="text" maxlength="100" placeholder="Search Bubba Hub">
+<label for="searchWidgetPlaceholder">Search placeholder</label><input id="searchWidgetPlaceholder" type="text" maxlength="150" placeholder="What are you looking for?">
+<label class="bhvb-mobile-toggle" for="searchWidgetFilters"><input id="searchWidgetFilters" type="checkbox" checked> Show filter options</label>
+<div id="searchWidgetFieldSettings" class="bhvb-search-field-settings"><p class="bhvb-edit-help">Loading searchable fields and filters…</p></div><p class="bhvb-edit-help">These field choices apply to this widget on this page only. Save the page draft to keep your changes.</p>
+</div>
+<div class="bhvb-edit-controls" id="imageControls" hidden><strong>Image settings</strong><label for="imageSource">Image URL or site image path</label><input id="imageSource" type="url" maxlength="2048" placeholder="/images/home/hero-family-art.svg"><div class="bhvb-media-upload"><input id="imageFileUpload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden><button type="button" id="chooseImageFile">Upload from device</button><button type="button" id="browseMediaLibrary">Browse media library</button><span id="imageUploadStatus" class="bhvb-upload-status" role="status">JPG, PNG, WebP or GIF · max 8 MB</span></div><label for="imageAlt">Alternative text</label><input id="imageAlt" type="text" maxlength="300" placeholder="Describe the image"><label for="imageFit">Image fit</label><select id="imageFit"><option value="cover">Fill / cover</option><option value="contain">Fit / contain</option></select><p class="bhvb-edit-help">Upload an image from your computer, or paste a secure https URL or existing Bubba Hub image path. Uploads are stored in the site's image library.</p>
 </div>
 <div class="bhvb-edit-controls bhvb-section-controls" id="sectionControls" hidden><strong>Container settings</strong>
-<label for="sectionBackground">Section background</label><input id="sectionBackground" type="color" value="#ffffff">
+<label for="sectionBackground">Container background</label><input id="sectionBackground" type="color" value="#ffffff">
+<div class="bhvb-background-image-controls"><label>Background image</label><div class="bhvb-background-image-actions"><button type="button" id="chooseSectionBackground">Choose from image library</button><button type="button" id="clearSectionBackground">Remove image</button></div><input id="sectionBackgroundImage" type="text" readonly placeholder="No background image selected"><p id="backgroundImageStatus" class="bhvb-edit-help">Choose an image, then adjust its overlay below.</p></div>
+<label for="sectionBackgroundPosition">Image position</label><select id="sectionBackgroundPosition"><option value="center center">Centre</option><option value="center top">Top</option><option value="center bottom">Bottom</option><option value="left center">Left</option><option value="right center">Right</option></select>
+<label for="sectionOverlayColor">Overlay colour</label><input id="sectionOverlayColor" type="color" value="#000000"><label for="sectionOverlayOpacity">Overlay strength <output id="sectionOverlayOpacityValue">0%</output></label><input id="sectionOverlayOpacity" type="range" min="0" max="90" step="5" value="0">
+<label for="sectionPalette">Colour theme</label><select id="sectionPalette"><option value="custom">Custom colours</option><option value="meadow">Bubba Meadow · green</option><option value="coastal">Coastal · teal</option><option value="sunshine">Sunshine · warm</option><option value="blush">Soft blush · rose</option><option value="neutral">Warm neutral</option></select>
+<label for="sectionGradient">Background style</label><select id="sectionGradient"><option value="">Solid colour</option><option value="meadow">Meadow green gradient</option><option value="coastal">Coastal teal gradient</option><option value="sunset">Soft sunset gradient</option><option value="berry">Berry gradient</option><option value="sand">Warm sand gradient</option></select>
+<p class="bhvb-edit-help">Choose a palette to coordinate the container background, text and border, or add a soft gradient.</p>
+<label for="sectionTextColor">Default text colour in container</label><input id="sectionTextColor" type="color" value="#222222">
 <label for="sectionPadding">Section padding <output id="sectionPaddingValue">24px</output></label><input id="sectionPadding" type="range" min="0" max="96" step="4" value="24">
-<label for="sectionGap">Space between elements <output id="sectionGapValue">16px</output></label><input id="sectionGap" type="range" min="0" max="64" step="4" value="16">
+<label for="sectionGap">Space between elements <output id="sectionGapValue">16px</output></label><input id="sectionGap" type="range" min="0" max="64" step="4" value="16"><label for="containerColumns">Columns in this container</label><select id="containerColumns"><option value="1">1 column</option><option value="2">2 equal columns</option><option value="3">3 equal columns</option><option value="4">4 equal columns</option></select><div id="containerColumnWidthsWrap" hidden><label for="containerColumnWidths">Column widths (%)</label><input id="containerColumnWidths" type="text" inputmode="numeric" maxlength="15" value="50, 50" placeholder="e.g. 30, 70"><p class="bhvb-edit-help">Enter one width per column, separated by commas. Values are proportionally balanced to 100% (minimum 10 each).</p></div><p class="bhvb-edit-help">Add headings, text, images or buttons to this container. They will flow across its columns from left to right. On mobile, columns stack into one.</p>
 <label for="containerWidth">Width <output id="containerWidthValue">100%</output></label><input id="containerWidth" type="range" min="25" max="100" step="5" value="100">
 <label for="containerHeight">Minimum height <output id="containerHeightValue">0px</output></label><input id="containerHeight" type="range" min="0" max="800" step="20" value="0">
 <label for="containerRadius">Corner radius <output id="containerRadiusValue">12px</output></label><input id="containerRadius" type="range" min="0" max="48" step="2" value="12">
@@ -64,28 +105,29 @@
 <label for="mobileContainerSpacing">Mobile space after <output id="mobileContainerSpacingValue">16px</output></label><input id="mobileContainerSpacing" type="range" min="0" max="96" step="2" value="16">
 <p class="bhvb-edit-help">These settings only apply at 600px viewport width or narrower. Desktop settings remain unchanged.</p>
 </div>
-<div class="bhvb-container-actions"><button type="button" id="moveContainerUp">Move up</button><button type="button" id="moveContainerDown">Move down</button><button type="button" id="deleteContainer">Delete container</button></div>
+<div class="bhvb-container-actions"><button type="button" id="moveContainerUp">Move up</button><button type="button" id="moveContainerDown">Move down</button><button type="button" id="duplicateContainer">Duplicate container</button><button type="button" id="deleteContainer">Delete container</button></div>
 <p class="bhvb-edit-help">Each container has independent layout and style settings. Changes remain in this private draft.</p>
 </div>
 </section>
 <section class="bhvb-layers-panel" id="layersPanel" role="tabpanel" aria-labelledby="layersTab" hidden><p class="bhvb-layers-empty">Choose a page to see its editable elements.</p><div id="builderLayers" class="bhvb-layer-list"></div></section>
 <div class="bhvb-builder-actions">
 <div class="bhvb-add-controls"><strong>Add to page</strong>
-<button type="button" id="addContainer" disabled>Add container</button>
+<button type="button" id="addContainer" disabled>Add container</button><div class="bhvb-section-presets"><strong>Quick section layouts</strong><button type="button" data-section-preset="split" disabled>Two-column feature</button><button type="button" data-section-preset="features" disabled>Three feature columns</button><button type="button" data-section-preset="callout" disabled>Call to action</button></div>
 <button type="button" id="addHeading" disabled>Add heading to selected container</button>
 <button type="button" id="addParagraph" disabled>Add text to selected container</button>
-<button type="button" id="addButtonBlock" disabled>Add button to selected container</button></div>
+<button type="button" id="addButtonBlock" disabled>Add button to selected container</button><button type="button" id="addImageBlock" disabled>Add image to selected container</button></div>
 <button type="button" id="prepareDraft" disabled>Prepare draft from page</button>
 <button type="button" id="saveDraft" disabled>Save draft</button>
 <button type="button" id="setupDraftStorage" hidden>Set up draft storage</button>
 <p id="draftStatus" role="status">Choose a page to begin. Existing page content will not be changed.</p>
 <div id="revisionControls" hidden><label for="revisionSelect">Previous drafts</label><select id="revisionSelect"></select><button type="button" id="restoreRevision">Restore selected draft</button></div>
 </div>
-<div class="bhvb-inspector-note"><strong>Draft-only editing</strong><p>Prepare a structured draft to review supported text and links. Some complex page layouts and images are not converted yet. Nothing can publish from this screen.</p></div>
+<div class="bhvb-inspector-note"><strong>Draft-only editing</strong><p>Prepare a structured draft to review supported text and links. Some complex page layouts are not converted yet. Image blocks can be added using an existing image URL or Bubba Hub image path. Nothing can publish from this screen.</p></div>
 </aside>
+<div id="mediaLibrary" class="bhvb-media-library" role="dialog" aria-modal="true" aria-labelledby="mediaLibraryTitle" aria-describedby="mediaLibraryStatus" hidden><div class="bhvb-media-library-dialog"><div class="bhvb-media-library-head"><div><span class="eyebrow">Image collection</span><strong id="mediaLibraryTitle">Site media library</strong></div><div class="bhvb-media-library-actions"><button type="button" id="refreshMediaLibrary">Refresh</button><button type="button" id="closeMediaLibrary" aria-label="Close media library">✕</button></div></div><label for="mediaLibrarySearch">Find an uploaded image</label><input id="mediaLibrarySearch" type="search" maxlength="80" placeholder="Search file names or titles"><label for="mediaLibraryFolder">Folder</label><select id="mediaLibraryFolder"><option value="">All folders</option></select><p class="bhvb-edit-help">Give images a title and type a folder name, then save. Existing images start in Unsorted.</p><p id="mediaLibraryStatus" role="status">Loading images…</p><div id="mediaLibraryGrid" class="bhvb-media-grid"></div></div></div>
 </div>
 <p class="bhvb-footer-note">Your live page is not modified by this preview. System pages and application features remain protected.</p>
 </main>
-<script src="/assets/js/admin-visual-builder.js" defer></script>
+<script src="/assets/js/admin-visual-builder.js?v=20261122-search-widget-advanced-fields" defer></script>
 </body>
 </html>

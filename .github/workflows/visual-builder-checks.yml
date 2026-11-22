@@ -1,0 +1,59 @@
+name: Visual Builder checks
+
+on:
+  pull_request:
+    paths:
+      - 'admin/admin-visual-builder.html'
+      - 'admin/admin-widget-library.html'
+      - 'api/admin-visual-*.php'
+      - 'api/page-document-validator-v1.php'
+      - 'assets/js/admin-visual-builder.js'
+      - 'assets/css/admin-visual-builder.css'
+      - 'schemas/page-document-v1.schema.json'
+      - 'tests/page-document-validator-v1.php'
+      - '.github/workflows/visual-builder-checks.yml'
+  push:
+    branches:
+      - staging/visual-builder-columns-20261121
+    paths:
+      - 'admin/admin-visual-builder.html'
+      - 'admin/admin-widget-library.html'
+      - 'api/admin-visual-*.php'
+      - 'api/page-document-validator-v1.php'
+      - 'assets/js/admin-visual-builder.js'
+      - 'assets/css/admin-visual-builder.css'
+      - 'schemas/page-document-v1.schema.json'
+      - 'tests/page-document-validator-v1.php'
+      - '.github/workflows/visual-builder-checks.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  visual-builder:
+    name: Validate Visual Builder code and document contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring
+          tools: none
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check JavaScript syntax
+        run: node --check assets/js/admin-visual-builder.js
+      - name: Check PHP syntax
+        run: |
+          php -l api/admin-visual-page-drafts.php
+          php -l api/admin-visual-widgets.php
+          php -l api/admin-visual-builder-media.php
+          php -l api/page-document-validator-v1.php
+          php -l tests/page-document-validator-v1.php
+      - name: Run document validator regression tests
+        run: php tests/page-document-validator-v1.php
