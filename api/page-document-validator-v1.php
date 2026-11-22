@@ -119,7 +119,22 @@ function bh_validate_page_document_v1(mixed $document): array {
     if(!is_string($p['placeholder']??null)||mb_strlen($p['placeholder'])>150)$errors[]='Directory search placeholder invalid.';
     if(!in_array($p['search_scope']??'all',['all','activities','businesses','childcare','events','places','school_clubs'],true))$errors[]='Directory search scope invalid.';
     if(isset($p['show_filters'])&&!is_bool($p['show_filters']))$errors[]='Directory search filter setting invalid.';
-    foreach(['search_fields','filter_fields'] as $fieldList){if(isset($p[$fieldList])){if(!is_array($p[$fieldList])||count($p[$fieldList])>80)$errors[]='Directory search field list invalid.';else foreach($p[$fieldList] as $field)if(!is_string($field)||!preg_match('/^[a-z][a-z0-9_]{0,63}$/',$field))$errors[]='Directory search field name invalid.';}}
+    foreach(['search_fields','filter_fields'] as $fieldList){
+     if(!isset($p[$fieldList]))continue;
+     $fieldConfig=$p[$fieldList];
+     if(!is_array($fieldConfig)||count($fieldConfig)>80){$errors[]='Directory search field list invalid.';continue;}
+     $directoryKeys=['activities','businesses','childcare','events','places','school_clubs'];
+     $isDirectoryMap=(bool)array_intersect(array_keys($fieldConfig),$directoryKeys);
+     $fieldGroups=$isDirectoryMap?$fieldConfig:['default'=>$fieldConfig];
+     $totalFields=0;
+     foreach($fieldGroups as $directoryKey=>$fields){
+      if($isDirectoryMap&&!in_array($directoryKey,$directoryKeys,true)){$errors[]='Directory search field group invalid.';continue;}
+      if(!is_array($fields)){$errors[]='Directory search field group invalid.';continue;}
+      $totalFields+=count($fields);
+      foreach($fields as $field)if(!is_string($field)||!preg_match('/^[a-z][a-z0-9_]{0,63}$/',$field))$errors[]='Directory search field name invalid.';
+     }
+     if($totalFields>80)$errors[]='Directory search field list invalid.';
+    }
     if(isset($p['font_size'])&&(!is_int($p['font_size'])||$p['font_size']<10||$p['font_size']>72))$errors[]='Directory search size invalid.';
     if(isset($p['width'])&&(!is_int($p['width'])||$p['width']<10||$p['width']>100))$errors[]='Directory search width invalid.';
     if(isset($p['align'])&&!in_array($p['align'],['left','center','right'],true))$errors[]='Directory search alignment invalid.';
