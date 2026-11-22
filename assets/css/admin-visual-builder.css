@@ -409,3 +409,5 @@ body.bhvb-fullscreen-editor .bhvb-editor-canvas{height:100%;min-height:0;overflo
 .bhvb-tab-editor-item textarea{min-height:82px;resize:vertical}
 .bhvb-tab-editor-item .bhvb-container-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .bhvb-library-widget-controls>#bhvbAddTab{width:100%;margin-top:8px}
+
+.bhvb-accordion-option{display:flex;align-items:center;gap:8px;margin:10px 0;color:#315d40;font-size:.85rem}.bhvb-accordion-option input{width:auto}
