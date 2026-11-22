@@ -38,7 +38,8 @@ jobs:
             api/admin-listing-monitor-drafts.php \
             api/listing-monitor-website-cron.php \
             api/listing-monitor-website-rules.php \
-            tests/listing-monitor-website-rules.php
+            tests/listing-monitor-website-rules.php \\
+            tests/listing-monitor-database-integration.php
           do
             php -l "$file"
           done
@@ -94,3 +95,35 @@ jobs:
           ! grep -Eq "UPDATE[[:space:]]+bh_activities|DELETE[[:space:]]+FROM[[:space:]]+bh_activities" api/listing-monitor-website-cron.php
       - name: Run Listing Monitor offline rule tests
         run: php tests/listing-monitor-website-rules.php
+
+  mysql-integration:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up PHP with MySQL driver
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql
+          coverage: none
+      - name: Create disposable test database
+        run: mysql -h 127.0.0.1 -uroot -proot -e "CREATE DATABASE listing_monitor_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+      - name: Run Listing Monitor database integration tests
+        env:
+          LISTING_MONITOR_TEST_DSN: mysql:host=127.0.0.1;port=3306;dbname=listing_monitor_test;charset=utf8mb4
+          LISTING_MONITOR_TEST_USER: root
+          LISTING_MONITOR_TEST_PASSWORD: root
+        run: php tests/listing-monitor-database-integration.php
