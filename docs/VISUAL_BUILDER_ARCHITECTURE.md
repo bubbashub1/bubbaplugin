@@ -186,3 +186,8 @@ The structured v1 draft model now permits an optional `mobile` property on a con
 ## Stage 3 — duplicate containers
 
 The editor now duplicates a selected draft container immediately after the original. The copy retains layout styling, optional mobile overrides and block content, but remaps the container and every child block ID to prevent collisions. The copy is reselected in the draft canvas. Container and block counts are capped at 40 sections and 80 children per section in the editor; the v1 server validator remains the final save-time authority. A small pure helper is covered by Node tests. Duplication remains private-draft only.
+
+
+## Branch synchronization audit — 22 November 2026
+
+The `staging-site` base now diverges from this feature branch. The current compare reports 136 commits ahead and 130 behind, with the common ancestor still `dd7dc6c2e9a5e5fc72e2f5573b547ca85d12ee8b`. GitHub's pull-request mergeability indicator has fluctuated after updates. No merge, force-update or automatic synchronization was attempted. Before staging deployment, reconcile this drift through a reviewed merge commit and re-run the full checks; avoid blindly rebasing or overwriting either branch.
