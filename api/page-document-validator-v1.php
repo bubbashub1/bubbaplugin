@@ -165,7 +165,7 @@ function bh_validate_page_document_v1(mixed $document): array {
       else foreach($items as $tab){
        if(!is_array($tab)||array_diff(array_keys($tab),['title','content'])||!is_string($tab['title']??null)||trim($tab['title'])===''||mb_strlen($tab['title'])>100||!is_string($tab['content']??null)||mb_strlen($tab['content'])>5000)$errors[]='A tab title or content is invalid.';
       }
-      if(isset($tabSettings['active_tab'])&&(!is_int($tabSettings['active_tab'])||$tabSettings['active_tab']<0||$tabSettings['active_tab']>=count($items)))$errors[]='Active tab selection is invalid.';
+      if(isset($tabSettings['active_tab'])&&(!is_int($tabSettings['active_tab'])||$tabSettings['active_tab']<0||!is_array($items)||$tabSettings['active_tab']>=count($items)))$errors[]='Active tab selection is invalid.';
       if(isset($tabSettings['tab_style'])&&!in_array($tabSettings['tab_style'],['classic','pills','underline'],true))$errors[]='Tabs appearance is invalid.';
      }
     }
