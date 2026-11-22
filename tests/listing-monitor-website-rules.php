@@ -13,7 +13,7 @@ $expect = static function (int $status, string $body, string $outcome): bool {
 };
 
 $check('200 ordinary page is healthy', $expect(200, '<html><body>Welcome to our classes</body></html>', 'healthy'));
-$check('301 final response is healthy if presented without redirect', $expect(301, '', 'healthy'));
+$check('unhandled redirect response is unable to verify', $expect(301, '', 'unable_to_verify'));
 $check('404 is possible closure, not confirmed closure', $expect(404, 'Not found', 'possible_closure'));
 $check('410 is possible closure', $expect(410, 'Gone', 'possible_closure'));
 $check('explicit permanent closure is indicated', $expect(200, '<p>We have permanently closed our business.</p>', 'closure_indicated'));
