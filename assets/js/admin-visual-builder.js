@@ -18,7 +18,7 @@ function updateSelectionDetails(node){
  $('imageControls').hidden=!(editable&&currentBlock.type==='image');
  $('searchControls').hidden=!(editable&&currentBlock.type==='directory_search');
  $('editControls').hidden=!editable;
- $('libraryWidgetControls').hidden=!(editable&&currentBlock.type==='library_widget'&&['tabs','accordion'].includes(currentBlock.props?.widget_type));
+ $('libraryWidgetControls').hidden=!(editable&&currentBlock.type==='library_widget'&&true);
  const sectionEditable=previewMode==='draft'&&currentSection;
  $('sectionControls').hidden=!sectionEditable;
  if(sectionEditable){const p=currentSection.props||{};const set=(id,v)=>{if($(id))$(id).value=v;};set('sectionBackground',/^#[0-9a-f]{6}$/i.test(p.background||'')?p.background:'#ffffff');set('sectionBackgroundImage',p.background_image||'');set('sectionOverlayColor',/^#[0-9a-f]{6}$/i.test(p.overlay_color||'')?p.overlay_color:'#000000');set('sectionOverlayOpacity',Math.max(0,Math.min(90,(Number.isFinite(Number(p.overlay_opacity))?Number(p.overlay_opacity):0)*100)));set('sectionBackgroundPosition',p.background_position||'center center');if($('sectionOverlayOpacityValue'))$('sectionOverlayOpacityValue').textContent=Math.round((Number(p.overlay_opacity)||0)*100)+'%';set('sectionPalette',p.palette||'custom');set('sectionGradient',p.gradient||'');set('sectionTextColor',/^#[0-9a-f]{6}$/i.test(p.color||'')?p.color:'#222222');set('sectionPadding',Number.isInteger(p.padding)?p.padding:24);set('sectionGap',Number.isInteger(p.gap)?p.gap:16);set('containerColumns',Math.max(1,Math.min(4,Number(p.columns)||1)));set('containerColumnWidths',normalizedColumnWidths(p.column_widths,Math.max(1,Math.min(4,Number(p.columns)||1))).join(', '));$('containerColumnWidthsWrap').hidden=Number(p.columns||1)<=1;set('containerWidth',Number.isInteger(p.width)?p.width:100);set('containerHeight',Number.isInteger(p.min_height)?p.min_height:0);set('containerRadius',Number.isInteger(p.radius)?p.radius:12);set('containerBorderWidth',Number.isInteger(p.border_width)?p.border_width:0);set('containerBorderColor',/^#[0-9a-f]{6}$/i.test(p.border_color||'')?p.border_color:'#dce8df');set('containerAlign',p.align||'center');set('containerSpacing',Number.isInteger(p.margin_bottom)?p.margin_bottom:18);['sectionPadding','sectionGap','containerWidth','containerHeight','containerRadius','containerBorderWidth','containerSpacing'].forEach(id=>{const o=$(id+'Value');if(o)o.textContent=$(id).value+(id==='containerWidth'?'%':'px');});
@@ -494,7 +494,23 @@ function renderLibraryWidgetControls(){
  const host=$('libraryWidgetControls');if(!host)return;
  const isTabs=previewMode==='draft'&&currentBlock?.type==='library_widget'&&currentBlock.props?.widget_type==='tabs';
  const isAccordion=previewMode==='draft'&&currentBlock?.type==='library_widget'&&currentBlock.props?.widget_type==='accordion';
- host.hidden=!(isTabs||isAccordion);if(!isTabs&&!isAccordion){host.replaceChildren();return;}
+ const isLibrary=previewMode==='draft'&&currentBlock?.type==='library_widget';
+ host.hidden=!isLibrary;if(!isLibrary){host.replaceChildren();return;}
+ if(!isTabs&&!isAccordion){
+  const settings=currentBlock.props.settings||(currentBlock.props.settings={});
+  const title=document.createElement('strong');title.textContent=currentBlock.props.name+' settings';host.replaceChildren(title);
+  const help=document.createElement('p');help.className='bhvb-edit-help';help.textContent='Edit the settings for this widget. Changes are kept in your private page draft.';host.append(help);
+  Object.keys(settings).forEach(key=>{
+   const value=settings[key],label=document.createElement('label');label.textContent=key.replaceAll('_',' ').replace(/\\b\\w/g,c=>c.toUpperCase());label.style.display='block';label.style.marginTop='10px';
+   let input;
+   if(Array.isArray(value)){input=document.createElement('textarea');input.rows=4;input.value=value.map(item=>typeof item==='object'?(item.label||item.value||''):String(item)).join('\\n');input.dataset.widgetSettingType='array';}
+   else if(typeof value==='boolean'){input=document.createElement('input');input.type='checkbox';input.checked=value;input.dataset.widgetSettingType='boolean';}
+   else if(typeof value==='number'){input=document.createElement('input');input.type='number';input.value=String(value);input.dataset.widgetSettingType='number';}
+   else {input=document.createElement(key==='caption'||key==='help_text'?'textarea':'input');if(input.tagName==='TEXTAREA')input.rows=3;input.value=String(value??'');input.dataset.widgetSettingType='string';}
+   input.dataset.widgetSetting=key;input.style.width='100%';input.style.maxWidth='100%';input.style.boxSizing='border-box';label.append(input);host.append(label);
+  });
+  return;
+ }
  if(isAccordion){
   const settings=currentBlock.props.settings||(currentBlock.props.settings={});
   if(!Array.isArray(settings.items)||!settings.items.length)settings.items=[{title:'Question 1',content:''}];
@@ -778,6 +794,12 @@ $('editText').addEventListener('input',applyEdit);$('editHref').addEventListener
 $('libraryWidgetControls').addEventListener('input',event=>{
  if(!currentBlock||previewMode!=='draft')return;
  if(currentBlock.props?.widget_type==='accordion'){const st=currentBlock.props.settings||(currentBlock.props.settings={});if(event.target.id==='bhvbAccordionLabel')st.label=event.target.value.slice(0,100);const ix=Number(event.target.dataset.accordionIndex),field=event.target.dataset.accordionField;if(field&&Number.isInteger(ix)&&st.items?.[ix])st.items[ix][field]=event.target.value;else if(event.target.id!=='bhvbAccordionLabel')return;draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Unsaved Accordion changes. Keep typing; the preview refreshes when you leave the field.');return;}
+ if(currentBlock.type==='library_widget'&&!['tabs','accordion'].includes(currentBlock.props?.widget_type)){
+  const target=event.target,key=target.dataset.widgetSetting;if(!key)return;
+  const settings=currentBlock.props.settings||(currentBlock.props.settings={}),kind=target.dataset.widgetSettingType;
+  settings[key]=kind==='boolean'?target.checked:kind==='number'?Number(target.value):kind==='array'?target.value.split(/\\r?\\n/).map(v=>v.trim()).filter(Boolean):target.value;
+  draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Unsaved '+(currentBlock.props.name||'widget')+' settings. Save draft when ready.');return;
+ }
  if(currentBlock.props?.widget_type!=='tabs')return;
  const target=event.target,index=Number(target.dataset.tabIndex),field=target.dataset.tabField;
  if(field&&Number.isInteger(index)&&currentBlock.props.settings?.items?.[index]){
@@ -786,6 +808,7 @@ $('libraryWidgetControls').addEventListener('input',event=>{
  }
 });
 $('libraryWidgetControls').addEventListener('change',event=>{
+ if(currentBlock?.type==='library_widget'&&!['tabs','accordion'].includes(currentBlock.props?.widget_type)&&event.target.dataset.widgetSetting){draftStatus('Widget settings updated. Save draft to keep your changes.');return;}
  if(currentBlock?.props?.widget_type==='accordion'){refreshAccordionWidgetPreview();return;}
  if(currentBlock?.props?.widget_type==='tabs'&&(event.target.dataset.tabField||event.target.id==='bhvbTabStyle')){refreshTabsWidgetPreview();}
  if(event.target.id==='bhvbTabStyle'&&currentBlock?.props?.widget_type==='tabs'){
