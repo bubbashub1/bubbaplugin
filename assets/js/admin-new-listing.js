@@ -1011,6 +1011,6 @@ if(savedSessions.length!==body.sessions.length||unmatched.length){
  status.textContent='✓ Timetable verified: '+savedSessions.length+' sessions match the editor, including class names, venues, dates and times.';
  status.classList.remove('is-error');
 }
-if(!original){original={id:d.id};location.href='/admin/admin-activities-add-listing.html?id='+encodeURIComponent(d.id);}
+original={id:d.id||body.id};status.textContent='✓ Listing saved. Returning to Activities & Listings…';location.replace('/admin/admin-activities-listings.html');
 }catch(err){status.textContent=err.message;status.classList.add('is-error');}finally{button.disabled=false;}}catch(err){console.error('Listing preparation failed',err);status.textContent='Could not prepare listing: '+(err?.message||'Unknown error')+'. Please review the form and try again.';status.classList.add('is-error');button.disabled=false;}});
 });

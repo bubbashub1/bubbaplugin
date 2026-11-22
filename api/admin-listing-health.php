@@ -18,6 +18,32 @@ if(($_SERVER['REQUEST_METHOD']??'GET')!=='GET') bh_health_reply(405,['ok'=>false
 try {
  require_once __DIR__.'/db.php';
  $db=bh_mysql();
+ // Listing Monitor completeness exclusions are independent of the legacy checker controls.
+ $excludedFields=[];
+ try {
+  if($db->query('SHOW TABLES LIKE '.$db->quote('bh_listing_checker_settings'))->fetchColumn()){
+   $settingStmt=$db->prepare('SELECT setting_value FROM bh_listing_checker_settings WHERE setting_key=? LIMIT 1');
+   $settingStmt->execute(['monitor_completeness_excluded_fields']);
+   $savedExcluded=$settingStmt->fetchColumn();
+   $decodedExcluded=is_string($savedExcluded)?json_decode($savedExcluded,true):[];
+   if(is_array($decodedExcluded)) $excludedFields=array_values(array_intersect(['Description','Website','Booking link','Email','Telephone','Facebook','Instagram','Age range','Category','Location','Postcode','Image'],array_map('strval',$decodedExcluded)));
+  }
+ } catch(Throwable $settingsError) { error_log('Listing Monitor completeness settings: '.$settingsError->getMessage()); }
+
+ // Optional page-scoped mode: only assess the explicitly supplied activity IDs.
+ // The legacy full-report response remains unchanged for existing callers.
+ $requestedIds=[];
+ if(isset($_GET['ids'])){
+  $rawIds=explode(',',(string)$_GET['ids']);
+  if(count($rawIds)>30) bh_health_reply(400,['ok'=>false,'error'=>'A maximum of 30 activity IDs may be checked at once.']);
+  foreach($rawIds as $rawId){
+   $id=filter_var($rawId,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
+   if($id===false) bh_health_reply(400,['ok'=>false,'error'=>'Invalid activity ID supplied.']);
+   $requestedIds[]=(int)$id;
+  }
+  $requestedIds=array_values(array_unique($requestedIds));
+  if(!$requestedIds) bh_health_reply(400,['ok'=>false,'error'=>'Supply at least one activity ID.']);
+ }
  $columns=static function(PDO $db,string $table): array {
   if(!preg_match('/^[a-z_]+$/',$table)) return [];
   try { return $db->query("SHOW COLUMNS FROM `".$table."`")->fetchAll(PDO::FETCH_COLUMN); } catch(Throwable $e) { return []; }
@@ -75,8 +101,16 @@ try {
   }
  }
  $order=in_array('title',$activityCols,true)?'a.title':'a.id';
- $sql='SELECT '.implode(',',$select).' FROM bh_activities a'.$join.' ORDER BY '.$order.' LIMIT 5000';
- $rows=$db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+ $where='';
+ $params=[];
+ if($requestedIds){
+  $where=' WHERE a.id IN ('.implode(',',array_fill(0,count($requestedIds),'?')).')';
+  $params=$requestedIds;
+ }
+ $sql='SELECT '.implode(',',$select).' FROM bh_activities a'.$join.$where.' ORDER BY '.$order.($requestedIds?'':' LIMIT 5000');
+ $stmt=$db->prepare($sql);
+ $stmt->execute($params);
+ $rows=$stmt->fetchAll(PDO::FETCH_ASSOC);
  $fieldMap=[
   'Description'=>['description','short_description'],
   'Website'=>['activity_website','organiser_website'],
@@ -106,12 +140,32 @@ try {
   $supported=array_values(array_filter($keys,static fn($key)=>in_array($key,$availableAliases,true)));
   if($supported) $fieldMap[$label]=$supported; else unset($fieldMap[$label]);
  }
+ // Keep supported fields available for display even when excluded from the completeness score.
+ $displayFieldMap=$fieldMap;
+ foreach($excludedFields as $excludedLabel) unset($fieldMap[$excludedLabel]);
  $has=static function(array $row,array $keys): bool { foreach($keys as $key) if(trim((string)($row[$key]??''))!=='') return true; return false; };
  $missingCounts=array_fill_keys(array_keys($fieldMap),0);
  foreach($rows as &$row){
   $missing=[];
-  foreach($fieldMap as $label=>$keys) if(!$has($row,$keys)){ $missing[]=$label; $missingCounts[$label]++; }
+  $complete=[];
+  $completeDetails=[];
+  foreach($fieldMap as $label=>$keys){
+   if(!$has($row,$keys)){ $missing[]=$label; $missingCounts[$label]++; }
+   else $complete[]=$label;
+  }
+  foreach($displayFieldMap as $label=>$keys){
+   if(!$has($row,$keys)) continue;
+   foreach($keys as $key){
+    $value=trim((string)($row[$key]??''));
+    if($value!==''){
+     $completeDetails[]=['label'=>$label,'value'=>mb_substr(preg_replace('/\\s+/u',' ',$value)??$value,0,180)];
+     break;
+    }
+   }
+  }
   $row['missing']=$missing;
+  $row['complete']=$complete;
+  $row['complete_details']=$completeDetails;
   $row['health_assessable_fields']=count($fieldMap);
   $row['health_score']=count($fieldMap)>0 ? (int)round((count($fieldMap)-count($missing))/count($fieldMap)*100) : null;
   $row['suggested_description']='';
@@ -179,8 +233,9 @@ try {
  unset($row);
  $totals=['listings'=>count($rows),'with_missing'=>0,'description_missing'=>0,'average_health'=>0,'validation_issues'=>0,'possible_duplicates'=>0];
  $score=0;
- foreach($rows as $row){ if(count($row['missing']))$totals['with_missing']++; if(in_array('Description',$row['missing'],true))$totals['description_missing']++; $totals['validation_issues']+=count($row['validation_issues']??[]); if(!empty($row['possible_duplicate']))$totals['possible_duplicates']++; $score+=(int)$row['health_score']; }
- $totals['average_health']=$totals['listings']?(int)round($score/$totals['listings']):0;
+ $scoredRows=0;
+ foreach($rows as $row){ if(count($row['missing']))$totals['with_missing']++; if(in_array('Description',$row['missing'],true))$totals['description_missing']++; $totals['validation_issues']+=count($row['validation_issues']??[]); if(!empty($row['possible_duplicate']))$totals['possible_duplicates']++; if($row['health_score']!==null){$score+=(int)$row['health_score'];$scoredRows++;} }
+ $totals['average_health']=$scoredRows?(int)round($score/$scoredRows):null;
  bh_health_reply(200,['ok'=>true,'read_only'=>true,'totals'=>$totals,'missing_counts'=>$missingCounts,'data'=>$rows,'message'=>'Read-only checks include completeness, format validation, past-date flags and likely same-title/same-location duplicates. Findings are suggestions only; no listings are changed.']);
 } catch(Throwable $e) {
  error_log('Listing health checker: '.$e->getMessage());

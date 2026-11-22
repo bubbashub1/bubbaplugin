@@ -1,23 +1,115 @@
 (async function(){
 const rows=document.getElementById('listingRows'),search=document.getElementById('listingSearch'),filter=document.getElementById('listingStatus'),message=document.getElementById('listingMessage'),retry=document.getElementById('retryListings'),count=document.getElementById('listingCount');
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let all=[],csrf="";let invitationById=new Map(),invitationLoaded=false; const selected=new Set(); const selectedCount=document.getElementById("selectedCount"); const selectAll=document.getElementById("selectAllListings"); const bulkButtons=["bulkEdit","bulkAssign","bulkDelete","bulkRestore","bulkPublish","bulkDraft","bulkCategory","bulkTags","bulkClaim"].map(id=>document.getElementById(id)); function syncSelection(){selectedCount.textContent=selected.size+" selected";bulkButtons.forEach(b=>b.disabled=!selected.size);const visible=[...rows.querySelectorAll("[data-select-id]")];selectAll.checked=visible.length>0&&visible.every(x=>x.checked);selectAll.indeterminate=visible.some(x=>x.checked)&&!selectAll.checked;}
+let all=[],csrf="",reviewHealthById=new Map(),openFindingByActivity=new Map(),reviewStatusReady=false;let invitationById=new Map(),invitationLoaded=false; const selected=new Set(); const selectedCount=document.getElementById("selectedCount"); const selectAll=document.getElementById("selectAllListings"); const bulkButtons=["bulkEdit","bulkAssign","bulkDelete","bulkRestore","bulkPublish","bulkDraft","bulkCategory","bulkTags","bulkClaim"].map(id=>document.getElementById(id)); function syncSelection(){selectedCount.textContent=selected.size+" selected";bulkButtons.forEach(b=>b.disabled=!selected.size);const visible=[...rows.querySelectorAll("[data-select-id]")];selectAll.checked=visible.length>0&&visible.every(x=>x.checked);selectAll.indeterminate=visible.some(x=>x.checked)&&!selectAll.checked;}
+let currentPage=1,pageSize=30,healthRequestKey='',failedHealthKey='',healthRequestSequence=0;
+const pageSizeSelect=document.getElementById('listingPageSize'),pageInfo=document.getElementById('listingPageInfo'),prevPage=document.getElementById('listingPrev'),nextPage=document.getElementById('listingNext');
 function render(){
  const q=search.value.trim().toLowerCase(),status=filter.value;
- const isClosed=status==='archived';document.getElementById('bulkRestore').hidden=!isClosed;document.getElementById('bulkDelete').hidden=isClosed;document.getElementById('bulkEdit').hidden=isClosed;document.getElementById('bulkAssign').hidden=isClosed;['bulkPublish','bulkDraft','bulkCategory','bulkTags'].forEach(id=>document.getElementById(id).hidden=isClosed);const list=all.filter(a=>((status? (a.status==='publish'?'published':a.status)===status : a.status!=='archived'))&&[a.title,a.organisation_name,a.town,a.category,a.region].join(' ').toLowerCase().includes(q));
- count.textContent=list.length+' of '+all.length+' listings';
- rows.innerHTML=list.map(a=>{
+ const reviewFilter=status.startsWith('review_'),reviewWanted=reviewFilter?status.slice(7):'';
+ const isClosed=status==='archived';document.getElementById('bulkRestore').hidden=!isClosed;document.getElementById('bulkDelete').hidden=isClosed;document.getElementById('bulkEdit').hidden=isClosed;document.getElementById('bulkAssign').hidden=isClosed;['bulkPublish','bulkDraft','bulkCategory','bulkTags'].forEach(id=>document.getElementById(id).hidden=isClosed);const list=all.filter(a=>{
+  const lifecycle=(a.status==='publish'?'published':a.status)||'unknown';
+  const lifecycleMatch=status==='archived'?lifecycle==='archived':(reviewFilter?a.status!=='archived':(status?lifecycle===status:a.status!=='archived'));
+  return lifecycleMatch&&[a.title,a.organisation_name,a.town,a.category,a.region].join(' ').toLowerCase().includes(q);
+ });
+ const pageCount=Math.max(1,Math.ceil(list.length/pageSize));currentPage=Math.min(currentPage,pageCount);const start=(currentPage-1)*pageSize;const pageItems=list.slice(start,start+pageSize);
+ const visibleItems=reviewFilter?pageItems.filter(a=>{const health=reviewHealthById.get(Number(a.id)),finding=openFindingByActivity.get(Number(a.id));if(!health)return false;const state=(health.missing||[]).length?'red':(Number(health.issue_count||0)>0||finding)?'orange':'green';return state===reviewWanted;}):pageItems;
+ count.textContent=list.length+' matching · '+all.length+' total listings';
+ pageInfo.textContent='Page '+currentPage+' of '+pageCount+' · Showing '+(list.length?start+1:0)+'–'+Math.min(start+pageSize,list.length);
+ prevPage.disabled=currentPage<=1;nextPage.disabled=currentPage>=pageCount;
+ rows.innerHTML=visibleItems.map(a=>{
   const rawStatus=(a.status==='publish'?'published':a.status)||'unknown';
   const statusLabel=rawStatus.charAt(0).toUpperCase()+rawStatus.slice(1);
   const statusClass=['published','draft','pending'].includes(rawStatus)?rawStatus:'other';
   const summary=String(a.session_summary||'').trim();
   const sessions=summary?summary.split(',').map(x=>x.trim()).filter(Boolean):[];
   const sessionHtml=sessions.length>2?'<details class="listing-sessions"><summary>'+sessions.length+' sessions</summary><div>'+escape(summary)+'</div></details>':escape(summary||'—');
-  const invite=invitationById.get(Number(a.id));const inviteStatus=invite?.invitation_status||'not sent';const blocked=['sent','approved','pending','sending'].includes(inviteStatus);const inviteLabel=!invitationLoaded?'Checking…':inviteStatus==='sent'?'Sent (SMTP accepted)':inviteStatus==='approved'?'Claimed':inviteStatus==='pending'?'Claim pending':inviteStatus==='sending'?'Sending':inviteStatus==='failed'?'Failed — retry':'Not sent';const inviteDate=invite?.sent_at?' · '+new Date(String(invite.sent_at).replace(' ','T')).toLocaleDateString('en-GB'):'';
-  return '<tr><td data-label="Select"><input type="checkbox" data-select-id="'+escape(a.id)+'" '+(selected.has(Number(a.id))?'checked':'')+' aria-label="Select '+escape(a.title)+'"></td><td data-label="Activity"><strong class="listing-title">'+escape(a.title)+'</strong>'+(a.organisation_name?'<small class="listing-organiser">'+escape(a.organisation_name)+'</small>':'')+'</td><td data-label="Category / Tags"><button type="button" class="listing-taxonomy" data-edit-category="'+escape(a.id)+'" title="Edit category">'+escape(a.category||'Set category')+'</button><small class="listing-organiser"><button type="button" class="listing-taxonomy listing-taxonomy-tags" data-edit-tags="'+escape(a.id)+'" title="Edit tags">'+escape(a.tags||'Edit tags')+'</button></small></td><td data-label="Town">'+escape(a.town||'—')+'</td><td data-label="Sessions">'+sessionHtml+'</td><td data-label="Status"><span class="listing-status listing-status--'+statusClass+'">'+escape(statusLabel)+'</span><small class="listing-organiser" title="Invitation status (SMTP acceptance is not proof of delivery)">Claim: '+escape(inviteLabel+inviteDate)+'</small></td><td data-label="Actions"><div class="listing-actions">'+(rawStatus==='archived'?'<button type="button" class="listing-action" data-restore="'+escape(a.id)+'">Restore</button>':'<a class="listing-action listing-action--edit" href="/admin/admin-activities-add-listing.html?id='+encodeURIComponent(a.id)+'">Edit</a><button type="button" class="listing-action" data-assign="'+escape(a.id)+'">Assign</button><button type="button" class="listing-action" data-select-claim="'+escape(a.id)+'" '+(blocked||!invitationLoaded?'disabled title="Already invited or status still loading"':'')+'>'+(blocked?'Already invited':'Send claim')+'</button><details class="listing-more"><summary aria-label="More actions for '+escape(a.title)+'">⋯</summary><button type="button" data-delete="'+escape(a.id)+'">Close listing</button></details>')+'</div></td></tr>';;
- }).join('')||'<tr><td colspan="7" class="listing-empty">No listings found. Try changing your search or status filter.</td></tr>';syncSelection();
+  const health=reviewHealthById.get(Number(a.id));const finding=openFindingByActivity.get(Number(a.id));let reviewLabel='Status unavailable',reviewClass='unknown';if(reviewStatusReady&&health){if((health.missing||[]).length){reviewLabel='Missing information';reviewClass='red';}else if(Number(health.issue_count||0)>0||finding){reviewLabel='Check information';reviewClass='orange';}else{reviewLabel='No changes';reviewClass='green';}}const reviewHtml='<td data-label="Listing review"><span class="listing-review listing-review--'+reviewClass+'">'+escape(reviewLabel)+'</span><a class="listing-review-link" href="/admin/admin-activities-add-listing.html?id='+encodeURIComponent(a.id)+'" data-review-id="'+escape(a.id)+'">Review</a></td>';const invite=invitationById.get(Number(a.id));const inviteStatus=invite?.invitation_status||'not sent';const blocked=['sent','approved','pending','sending'].includes(inviteStatus);const inviteLabel=!invitationLoaded?'Checking…':inviteStatus==='sent'?'Sent (SMTP accepted)':inviteStatus==='approved'?'Claimed':inviteStatus==='pending'?'Claim pending':inviteStatus==='sending'?'Sending':inviteStatus==='failed'?'Failed — retry':'Not sent';const inviteDate=invite?.sent_at?' · '+new Date(String(invite.sent_at).replace(' ','T')).toLocaleDateString('en-GB'):'';
+  return '<tr><td data-label="Select"><input type="checkbox" data-select-id="'+escape(a.id)+'" '+(selected.has(Number(a.id))?'checked':'')+' aria-label="Select '+escape(a.title)+'"></td><td data-label="Activity"><strong class="listing-title">'+escape(a.title)+'</strong>'+(a.organisation_name?'<small class="listing-organiser">'+escape(a.organisation_name)+'</small>':'')+'</td><td data-label="Category / Tags"><button type="button" class="listing-taxonomy" data-edit-category="'+escape(a.id)+'" title="Edit category">'+escape(a.category||'Set category')+'</button><small class="listing-organiser"><button type="button" class="listing-taxonomy listing-taxonomy-tags" data-edit-tags="'+escape(a.id)+'" title="Edit tags">'+escape(a.tags||'Edit tags')+'</button></small></td><td data-label="Town">'+escape(a.town||'—')+'</td><td data-label="Sessions">'+sessionHtml+'</td><td data-label="Status"><span class="listing-status listing-status--'+statusClass+'">'+escape(statusLabel)+'</span><small class="listing-organiser" title="Invitation status (SMTP acceptance is not proof of delivery)">Claim: '+escape(inviteLabel+inviteDate)+'</small></td>'+reviewHtml+'<td data-label="Actions"><div class="listing-actions">'+(rawStatus==='archived'?'<button type="button" class="listing-action" data-restore="'+escape(a.id)+'">Restore</button>':'<a class="listing-action listing-action--edit" href="/admin/admin-activities-add-listing.html?id='+encodeURIComponent(a.id)+'">Edit</a><button type="button" class="listing-action" data-assign="'+escape(a.id)+'">Assign</button><button type="button" class="listing-action" data-select-claim="'+escape(a.id)+'" '+(blocked||!invitationLoaded?'disabled title="Already invited or status still loading"':'')+'>'+(blocked?'Already invited':'Send claim')+'</button><details class="listing-more"><summary aria-label="More actions for '+escape(a.title)+'">⋯</summary><button type="button" data-delete="'+escape(a.id)+'">Close listing</button></details>')+'</div></td></tr>';;
+ }).join('')||'<tr><td colspan="8" class="listing-empty">No listings found on this page. Try another page or change your search or status filter.</td></tr>';syncSelection();loadPageHealth(pageItems);
 }
-async function load(){message.textContent='';retry.hidden=true;try{const r=await fetch('/api/admin-activities.php',{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});if(r.status===401){location.replace('/admin-login.html?next='+encodeURIComponent(location.pathname));return;}const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load listings.');csrf=d.csrf||"";all=Array.isArray(d.data)?d.data:[];for(const id of [...selected])if(!all.some(a=>Number(a.id)===id))selected.delete(id);render();try{const cr=await fetch('/api/admin-claim-invitations.php',{credentials:'same-origin',cache:'no-store'});const cj=await cr.json();if(!cr.ok||!cj.ok)throw Error(cj.error||'Claim status unavailable');invitationById=new Map((cj.data||[]).map(x=>[Number(x.id),x]));invitationLoaded=true;render();}catch(err){invitationLoaded=false;message.textContent='Claim invitation status unavailable: '+err.message+' — sending disabled until status can be checked.';}}catch(e){count.textContent='Listings unavailable';message.textContent=e.message;retry.hidden=false;}}
+async function loadPageHealth(pageItems){
+ const ids=pageItems.map(a=>Number(a.id)).filter(id=>id>0&&!reviewHealthById.has(id));
+ if(!ids.length)return;
+ const key=ids.join(',');
+ if(healthRequestKey===key||failedHealthKey===key)return;
+ healthRequestKey=key;
+ const sequence=++healthRequestSequence;
+ try{
+  const response=await fetch('/api/admin-listing-health.php?ids='+encodeURIComponent(ids.join(',')),{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
+  const data=await response.json();
+  if(!response.ok||!data.ok)throw Error(data.error||'Page health status unavailable');
+  (data.data||[]).forEach(item=>reviewHealthById.set(Number(item.id),item));
+  reviewStatusReady=true;
+  failedHealthKey='';
+  if(sequence===healthRequestSequence){healthRequestKey='';render();}
+ }catch(error){
+  failedHealthKey=key;
+  if(sequence===healthRequestSequence)healthRequestKey='';
+  console.warn('Page listing health unavailable',error);
+ }
+}
+const reviewDialog=document.getElementById('listingReviewDialog');
+const reviewBody=document.getElementById('listingReviewBody');
+const reviewTitle=document.getElementById('listingReviewTitle');
+const reviewMeta=document.getElementById('listingReviewMeta');
+const editorLink=document.getElementById('openListingEditor');
+function reviewList(items,emptyText){
+ if(!items.length)return '<p class="listing-review-empty">'+escape(emptyText)+'</p>';
+ return '<ul>'+items.map(item=>'<li>'+escape(item)+'</li>').join('')+'</ul>';
+}
+async function openListingReview(id){
+ const listing=all.find(item=>Number(item.id)===id);
+ if(!listing)return;
+ reviewTitle.textContent=listing.title||'Listing review';
+ reviewMeta.textContent=[listing.organisation_name,listing.town,listing.region].filter(Boolean).join(' · ')||'Activity listing';
+ editorLink.href='/admin/admin-activities-add-listing.html?id='+encodeURIComponent(id);
+ reviewBody.innerHTML='<p>Loading the latest checks for this listing…</p>';
+ reviewDialog.showModal();
+ try{
+  // Always request a fresh report when the modal opens; the table cache may contain
+  // an older health payload without the detailed values needed for this report.
+  const response=await fetch('/api/admin-listing-health.php?ids='+encodeURIComponent(String(id))+'&report=1',{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
+  const data=await response.json();
+  if(!response.ok||!data.ok)throw Error(data.error||'Could not load the listing checks.');
+  const health=(data.data||[]).find(item=>Number(item.id)===id);
+  if(health)reviewHealthById.set(id,health);
+  const finding=openFindingByActivity.get(id);
+  if(!health){
+   reviewBody.innerHTML='<p class="listing-review-warning">No health report was returned for this listing. Please try again.</p>';
+   return;
+  }
+  const missing=Array.isArray(health.missing)?health.missing:[];
+  const complete=Array.isArray(health.complete)?health.complete:[];
+  const completeDetails=Array.isArray(health.complete_details)?health.complete_details:[];
+  const issues=Array.isArray(health.validation_issues)?health.validation_issues:[];
+  const duplicate=!!health.possible_duplicate;
+  const findingLabel=finding?.finding_type?String(finding.finding_type).replace(/_/g,' '):'';
+  const hasConcerns=missing.length||issues.length||duplicate||finding;
+  const score=health.health_score===null||health.health_score===undefined?'Not scored':Number(health.health_score)+'%';
+  let sections='';
+  sections+='<section class="listing-review-report-section"><h3>Missing information</h3>'+reviewList(missing,'No missing core information was detected.')+'</section>';
+  const assessedCount=Number(health.health_assessable_fields||0);
+  const recordedCompleteCount=Math.max(0,assessedCount-missing.length);
+  const completeHtml=completeDetails.length?'<ul>'+completeDetails.map(item=>'<li><strong>'+escape(item.label)+':</strong> '+escape(item.value)+'</li>').join('')+'</ul>':(complete.length?reviewList(complete,'No complete fields were returned.'):('<p class="listing-review-warning">'+(recordedCompleteCount>0?escape(recordedCompleteCount)+' fields are counted as complete, but their names and saved values were not returned by the health report. Please open the full listing editor to verify them.':'No complete field details were returned by the health report. Please open the full listing editor to verify the saved information.')+'</p>'));
+  sections+='<section class="listing-review-report-section"><h3>Already on the listing</h3>'+completeHtml+'</section>';
+  sections+='<section class="listing-review-report-section"><h3>Information to check</h3>'+reviewList(issues,'No format or date issues were detected.')+(duplicate?'<p class="listing-review-warning">Possible duplicate: another listing has a similar title and location. Please compare before changing anything.</p>':'')+(finding?'<p class="listing-review-warning">Outstanding monitor finding: '+escape(findingLabel)+'.</p>':'')+'</section>';
+  sections+='<p class="listing-review-report-note">This is an automated completeness and validation report, not confirmation that every detail is current. A missing website response does not mean an organisation has closed. Nothing has been changed.</p>';
+  reviewBody.innerHTML='<div class="listing-review-score"><strong>'+escape(score)+'</strong><span>Completeness score</span><span class="listing-review-result '+(hasConcerns?'needs-attention':'looks-good')+'">'+(hasConcerns?'Needs attention':'No issues detected')+'</span></div>'+sections;
+ }catch(error){
+  reviewBody.innerHTML='<p class="listing-review-warning">'+escape(error.message||'The review report could not be loaded.')+'</p>';
+ }
+}
+document.getElementById('closeListingReview').addEventListener('click',()=>reviewDialog.close());
+document.getElementById('closeListingReviewBottom').addEventListener('click',()=>reviewDialog.close());
+reviewDialog.addEventListener('click',event=>{if(event.target===reviewDialog)reviewDialog.close();});
+rows.addEventListener('click',event=>{
+ const link=event.target.closest('[data-review-id]');
+ if(!link)return;
+ event.preventDefault();
+ openListingReview(Number(link.dataset.reviewId));
+});
+async function load(){message.textContent='';retry.hidden=true;try{const r=await fetch('/api/admin-activities.php',{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});if(r.status===401){location.replace('/admin-login.html?next='+encodeURIComponent(location.pathname));return;}const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load listings.');csrf=d.csrf||"";all=Array.isArray(d.data)?d.data:[];reviewStatusReady=false;reviewHealthById=new Map();openFindingByActivity=new Map();healthRequestKey='';failedHealthKey='';render();(async()=>{try{const findingsResponse=await fetch("/api/admin-listing-review.php?summary=1",{credentials:"same-origin",cache:"no-store"});const findingsData=await findingsResponse.json();if(!findingsResponse.ok||!findingsData.ok)throw Error("Listing review status unavailable");openFindingByActivity=new Map((findingsData.items||[]).map(x=>[Number(x.activity_id),x]));render();}catch(reviewError){console.warn("Listing review status unavailable",reviewError);}})();for(const id of [...selected])if(!all.some(a=>Number(a.id)===id))selected.delete(id);render();try{const cr=await fetch('/api/admin-claim-invitations.php',{credentials:'same-origin',cache:'no-store'});const cj=await cr.json();if(!cr.ok||!cj.ok)throw Error(cj.error||'Claim status unavailable');invitationById=new Map((cj.data||[]).map(x=>[Number(x.id),x]));invitationLoaded=true;render();}catch(err){invitationLoaded=false;message.textContent='Claim invitation status unavailable: '+err.message+' — sending disabled until status can be checked.';}}catch(e){count.textContent='Listings unavailable';message.textContent=e.message;retry.hidden=false;}}
 const dialog=document.createElement('dialog');
 dialog.setAttribute('aria-labelledby','assignLeaderTitle');
 dialog.style.cssText='width:min(480px,calc(100% - 32px));box-sizing:border-box;border:1px solid #d8e6db;border-radius:22px;padding:24px;color:#144400';
@@ -100,7 +192,7 @@ document.getElementById('bulkEdit').addEventListener('click',()=>{const ids=[...
 document.getElementById('bulkAssign').addEventListener('click',async()=>{try{const r=await fetch('/api/admin-activities.php?action=leaders',{credentials:'same-origin'}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load leaders');if(!d.data?.length)throw Error('No active leaders available');csrf=d.csrf;assigningIds=[...selected];document.getElementById('assignListingTitle').textContent='Assign '+assigningIds.length+' selected listings to one leader. Their organiser storefronts will change.';document.getElementById('assignLeaderSelect').innerHTML='<option value="">Choose a leader</option>'+d.data.map(o=>'<option value="'+escape(o.id)+'">'+escape(o.organisation_name+' — '+o.email)+'</option>').join('');document.getElementById('assignLeaderError').textContent='';dialog.showModal();}catch(err){message.textContent=err.message;}});
 document.getElementById('bulkDelete').addEventListener('click',async e=>{const ids=[...selected];if(!confirm('Close '+ids.length+' selected listings? They will disappear from the directory; session and venue records will be retained.'))return;const btn=e.currentTarget;btn.disabled=true;let done=0;try{for(const id of ids){await action({action:'delete',id});done++;selected.delete(id);}await load();message.textContent=done+' listing(s) closed.';}catch(err){await load();message.textContent=done+' closed before error: '+err.message;}finally{btn.disabled=false;syncSelection();}});
 document.getElementById('viewActive').addEventListener('click',()=>{filter.value='';selected.clear();render();});document.getElementById('viewClosed').addEventListener('click',()=>{filter.value='archived';selected.clear();render();});document.getElementById('bulkRestore').addEventListener('click',async e=>{const ids=[...selected].filter(id=>all.some(a=>Number(a.id)===id&&a.status==='archived'));if(!ids.length||!confirm('Restore '+ids.length+' closed listings as published?'))return;const btn=e.currentTarget;btn.disabled=true;let done=0;try{for(const id of ids){await action({action:'restore',id});selected.delete(id);done++;}await load();message.textContent=done+' listings restored.';}catch(err){await load();message.textContent=done+' restored before error: '+err.message;}finally{btn.disabled=false;syncSelection();}});
-search.addEventListener('input',render);filter.addEventListener('change',render);retry.addEventListener('click',load);
+search.addEventListener('input',()=>{currentPage=1;render();});filter.addEventListener('change',()=>{currentPage=1;render();});pageSizeSelect.addEventListener('change',()=>{pageSize=Number(pageSizeSelect.value)||30;currentPage=1;render();});prevPage.addEventListener('click',()=>{if(currentPage>1){currentPage--;render();}});nextPage.addEventListener('click',()=>{currentPage++;render();});retry.addEventListener('click',load);
 document.querySelector('[data-admin-logout]').addEventListener('click',async()=>{await fetch('/admin-auth.php?action=logout',{method:'POST',credentials:'same-origin'});location.href='/admin-login.html';});
 await load();
 })();

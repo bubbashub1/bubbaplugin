@@ -16,10 +16,15 @@ function bh_lcr_reply(int $status,array $data): never { http_response_code($stat
 if(empty($_SESSION['bh_admin_authenticated'])) bh_lcr_reply(401,['ok'=>false,'error'=>'Admin login required.']);
 try {
  require_once __DIR__.'/db.php'; $db=bh_mysql();
- foreach(['bh_listing_check_findings','bh_activities'] as $table){$q=$db->prepare('SHOW TABLES LIKE ?');$q->execute([$table]);if(!$q->fetchColumn())bh_lcr_reply(503,['ok'=>false,'error'=>'Listing Checker database migration is required.']);}
+ foreach(['bh_listing_check_findings','bh_activities'] as $table){$q=$db->prepare('SELECT 1 FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=? LIMIT 1');$q->execute([$table]);if(!$q->fetchColumn())bh_lcr_reply(503,['ok'=>false,'error'=>'Listing Checker database migration is required.']);}
  $_SESSION['bh_listing_review_csrf']??=bin2hex(random_bytes(32));
  $method=$_SERVER['REQUEST_METHOD']??'GET';
  if($method==='GET'){
+  if(isset($_GET['summary'])&&$_GET['summary']==='1'){
+   $summarySql="SELECT f.id AS finding_id,f.activity_id,f.finding_type,f.review_status,f.checked_at FROM bh_listing_check_findings f INNER JOIN (SELECT activity_id,MAX(id) AS latest_id FROM bh_listing_check_findings WHERE activity_id IS NOT NULL AND review_status IN ('new','follow_up') GROUP BY activity_id) latest ON latest.latest_id=f.id ORDER BY f.checked_at DESC,f.id DESC";
+   $summary=$db->query($summarySql)->fetchAll(PDO::FETCH_ASSOC);
+   bh_lcr_reply(200,['ok'=>true,'csrf'=>$_SESSION['bh_listing_review_csrf'],'items'=>$summary]);
+  }
   $status=(string)($_GET['status']??'new');$allowed=['all','new','follow_up','approved','rejected','correct','incorrect','resolved'];
   if(!in_array($status,$allowed,true))$status='new';
   $limit=max(1,min(100,(int)($_GET['limit']??50)));$offset=max(0,min(100000,(int)($_GET['offset']??0)));

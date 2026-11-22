@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8"><base href="/"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Listing Monitor Settings · Admin · Bubba Hub</title>
+<link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/admin-settings.css"><link rel="stylesheet" href="/assets/css/admin-support-v2.css">
+<style>
+.bh-settings{max-width:980px;margin:0 auto;padding:28px 20px 64px;color:#244333}
+.bh-settings-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.bh-settings-head h1{margin:.25rem 0}.bh-muted{color:#617267;font-size:14px}
+.bh-panel{background:#fff;border:1px solid #dce8dd;border-radius:14px;padding:20px;margin:18px 0}
+.bh-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 28px;margin-top:14px}
+.bh-field{display:flex;align-items:flex-start;gap:11px;padding:13px 2px;border-bottom:1px solid #e8eee8}
+.bh-field input{width:18px;height:18px;margin:2px 0 0;accent-color:#287451}
+.bh-field strong{display:block}.bh-field small{display:block;color:#617267;margin-top:3px}
+.bh-setting-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px}
+.bh-status{padding:12px 14px;border-radius:10px;background:#eef5ef;margin:14px 0}
+.bh-status.error{background:#fff0ed;color:#8c2e25}
+.bh-note{border-left:3px solid #9fb7a5;padding:10px 14px;background:#f4f8f7;border-radius:0 8px 8px 0}
+@media(max-width:650px){.bh-fields{grid-template-columns:1fr}.bh-settings{padding:20px 14px 48px}}
+</style></head>
+<body class="bh-admin-v2">
+<header class="site-header"><a class="brand" href="/index.html"><img class="brand-logo" src="/images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav"><a href="/directory.html">Find activities</a><a href="/my-hub.html">My Hub</a><a href="/leader.html">Class Leaders</a><a href="/admin/">Admin</a></nav><a class="button button-soft" href="/account.html">My account</a></header>
+<main class="bh-settings">
+<p><a href="/admin/admin-listing-monitor.html">← Back to Listing Monitor</a></p>
+<div class="bh-settings-head"><div><span class="eyebrow">Admin · Directory quality</span><h1>Listing Monitor settings</h1><p class="bh-muted">Choose which information is required for a listing to count as complete.</p></div><button class="button button-soft" type="button" data-admin-logout>Sign out</button></div>
+<div id="settingsStatus" class="bh-status" role="status">Loading settings…</div>
+<section class="bh-panel">
+<h2>Completeness fields</h2>
+<p class="bh-muted">Tick a field to include it in the completeness check. Untick optional fields that should not lower a listing’s score or appear as missing information.</p>
+<p class="bh-note"><strong>This only changes the health report.</strong> It does not remove information from listings, alter public pages, or approve any suggested changes. Fields excluded here can still be reviewed in the full listing editor.</p>
+<div id="completenessFields" class="bh-fields" aria-live="polite"></div>
+<div class="bh-setting-actions"><button class="button button-primary" id="saveCompleteness" type="button" disabled>Save settings</button><button class="button button-soft" id="selectAll" type="button" disabled>Include all fields</button><button class="button button-soft" id="optionalOnly" type="button" disabled>Exclude optional fields</button></div>
+<p class="bh-muted">Optional fields preset: Facebook and Instagram. You can change these selections at any time.</p>
+</section>
+<section class="bh-panel">
+<h2>Monitor safety</h2>
+<ul class="bh-muted">
+<li>Checks and reports are advisory; they do not change public listings.</li>
+<li>Suggested edits require your review and explicit approval.</li>
+<li>A website error is not treated as proof that a business has closed.</li>
+<li>Automatic monitoring and scheduled research remain off while testing is in progress.</li>
+</ul>
+</section>
+</main>
+<footer class="site-footer"><div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div></footer>
+<script>
+(()=> {
+ const api='/api/admin-listing-monitor-settings.php';
+ const fields=[
+  ['Description','Description','Core listing information'],
+  ['Website','Website','Official website'],
+  ['Booking link','Booking link','How families book or enquire'],
+  ['Email','Email','Contact email address'],
+  ['Telephone','Telephone','Contact phone number'],
+  ['Facebook','Facebook','Facebook page'],
+  ['Instagram','Instagram','Instagram profile'],
+  ['Age range','Age range','Suitable ages'],
+  ['Category','Category','Directory category'],
+  ['Location','Location','Town or venue location'],
+  ['Postcode','Postcode','Venue postcode'],
+  ['Image','Image','Listing image']
+ ];
+ const $=id=>document.getElementById(id);
+ let csrf='';
+ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function status(message,error=false){$('settingsStatus').textContent=message;$('settingsStatus').className='bh-status'+(error?' error':'');}
+ function draw(excluded){
+  $('completenessFields').innerHTML=fields.map(([key,label,desc])=>'<label class="bh-field"><input type="checkbox" data-field="'+esc(key)+'" '+(!excluded.includes(key)?'checked':'')+'><span><strong>'+esc(label)+'</strong><small>'+esc(desc)+'</small></span></label>').join('');
+  ['saveCompleteness','selectAll','optionalOnly'].forEach(id=>$(id).disabled=false);
+ }
+ async function request(payload){
+  const response=await fetch(api,{method:payload?'POST':'GET',credentials:'same-origin',cache:'no-store',headers:payload?{'Content-Type':'application/json'}:{},body:payload?JSON.stringify({...payload,csrf}):undefined});
+  const data=await response.json();
+  if(response.status===401){location.replace('/admin-login.html?next='+encodeURIComponent(location.pathname));throw Error('Admin login required.');}
+  if(!response.ok||!data.ok)throw Error(data.error||'Unable to save settings.');
+  return data;
+ }
+ async function load(){
+  try{const data=await request();csrf=data.csrf||'';draw(data.excluded_fields||[]);status('Settings loaded. Changes are not saved until you select Save settings.');}
+  catch(error){status(error.message,true);}
+ }
+ $('saveCompleteness').addEventListener('click',async()=>{
+  const excluded=[...document.querySelectorAll('[data-field]:not(:checked)')].map(input=>input.dataset.field);
+  $('saveCompleteness').disabled=true;
+  try{await request({action:'save_completeness',excluded_fields:excluded});status('Completeness settings saved. The next health report will use these fields.');}
+  catch(error){status(error.message,true);}
+  finally{$('saveCompleteness').disabled=false;}
+ });
+ $('selectAll').addEventListener('click',()=>{document.querySelectorAll('[data-field]').forEach(input=>input.checked=true);status('All fields are included. Select Save settings to keep this change.');});
+ $('optionalOnly').addEventListener('click',()=>{document.querySelectorAll('[data-field]').forEach(input=>input.checked=!['Facebook','Instagram'].includes(input.dataset.field));status('Facebook and Instagram are excluded. Select Save settings to keep this change.');});
+ document.addEventListener('click',event=>{if(event.target.closest('[data-admin-logout]'))fetch('/api/admin-logout.php',{method:'POST',credentials:'same-origin'}).finally(()=>location.href='/admin-login.html');});
+ load();
+})();
+</script></body></html>
