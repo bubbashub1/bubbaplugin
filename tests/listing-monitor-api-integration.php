@@ -193,12 +193,12 @@ try {
     echo "\n{$passed} checks passed; " . count($failed) . " failed.\n";
     if ($failed) { exit(1); }
 } finally {
-    if ($failed && is_file($logFile)) {
-        fwrite(STDOUT, "\nPHP test-server diagnostics:\n" . substr((string)file_get_contents($logFile), -6000) . "\n");
-    }
     if (is_resource($server)) {
         proc_terminate($server);
         proc_close($server);
+    }
+    if ($failed && is_file($logFile)) {
+        fwrite(STDOUT, "\nPHP test-server diagnostics:\n" . substr((string)file_get_contents($logFile), -6000) . "\n");
     }
     @unlink($privateConfig);
     foreach (glob($sessionDir . '/sess_*') ?: [] as $file) { @unlink($file); }
