@@ -9,17 +9,17 @@ RewriteRule ^ https://bubbahub.co.uk%{REQUEST_URI} [R=301,L,NE]
 
 # Revalidate page documents after deployments; do not cache personalised responses.
 <IfModule mod_headers.c>
-  <FilesMatch "\.(html|htm)$">
+  <FilesMatch "\\.(html|htm)$">
     Header always set Cache-Control "no-cache, must-revalidate, max-age=0"
   </FilesMatch>
-  <FilesMatch "^(auth|stripe-checkout|my-hub)\.php$">
+  <FilesMatch "^(auth|stripe-checkout|my-hub)\\.php$">
     Header always set Cache-Control "no-store"
   </FilesMatch>
 </IfModule>
 # Development/launch cache control: always revalidate CSS and JavaScript.
 # This prevents phones and CDNs from keeping an older Bubba Hub build.
 <IfModule mod_headers.c>
-  <FilesMatch "\.(css|js)$">
+  <FilesMatch "\\.(css|js)$">
     Header set Cache-Control "no-cache, must-revalidate, max-age=0"
     Header set Pragma "no-cache"
   </FilesMatch>
