@@ -20,9 +20,16 @@ if((int)$lock!==1){echo "Website monitor is already running.\n";exit;}
 function bh_lm_public_host(string $host): array {
  $host=strtolower(rtrim($host,'.'));
  if($host===''||strlen($host)>253||preg_match('/[^a-z0-9.:-]/',$host)||$host==='localhost'||str_ends_with($host,'.localhost')||str_ends_with($host,'.local'))throw new RuntimeException('Unsafe or invalid host.');
- if(filter_var($host,FILTER_VALIDATE_IP))$ips=[$host];else{$ips=gethostbynamel($host);if(!$ips)throw new RuntimeException('DNS lookup failed (NXDOMAIN or no IPv4 address).');}
+ if(filter_var($host,FILTER_VALIDATE_IP))$ips=[$host];else{
+  $records=@dns_get_record($host,DNS_A|DNS_AAAA);
+  if(!is_array($records)||!$records)throw new RuntimeException('DNS lookup failed (NXDOMAIN or no address records).');
+  $ips=[];$ipv4=[];
+  foreach($records as $record){$ip=(string)($record['ip']??$record['ipv6']??'');if($ip!==''){$ips[]=$ip;if(filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4))$ipv4[]=$ip;}}
+  if(!$ips)throw new RuntimeException('DNS lookup failed (no usable address records).');
+  if(!$ipv4)throw new RuntimeException('IPv6-only website cannot be checked by this worker yet.');
+ }
  foreach($ips as $ip){if(!filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE))throw new RuntimeException('Host resolves to a private or reserved IP address.');}
- return array_values(array_unique($ips));
+ return array_values(array_unique(array_filter($ips,static fn($ip)=>filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4))));
 }
 function bh_lm_fetch(string $url): array {
  if(!function_exists('curl_init'))throw new RuntimeException('PHP cURL is unavailable.');
