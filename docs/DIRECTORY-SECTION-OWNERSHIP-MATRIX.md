@@ -1,4 +1,5 @@
 # Bubba Hub Directory: Leader ownership and section matrix
+> **Historical design reference — not current staging status.** This document records an earlier Directory design. For the installed tables, current admin tools, schema-upgrade step, public API wiring and verified status, use [`DIRECTORY-ARCHITECTURE-AND-STATUS-2026-11-22.md`](DIRECTORY-ARCHITECTURE-AND-STATUS-2026-11-22.md). Do not assume every workflow or schema described here is already enabled on staging.
 
 This is the shared implementation contract for all six Directory sections. It complements `LEADER-ACCOUNT-DIRECTORY-STANDARD.md`. It does not create tables or change live data.
 
