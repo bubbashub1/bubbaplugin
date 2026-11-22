@@ -16,8 +16,8 @@
 ## Before deployment
 
 - [ ] Confirm the feature branch and draft PR are still the intended source.
-- [x] PHP lint, security guards and offline rule tests passed on `0bf2f33bc2d71f0a76eaf191705a599665e566f3`.
-- [x] Disposable MySQL 8.0 integration tests passed 14/14.
+- [x] PHP lint, security guards and offline rule tests passed on `e5bf854ab2dcd856dbf8e43332a4df93e4e6f9c3`.
+- [x] Disposable MySQL 8.0 integration tests passed 15/15.
 - [x] Admin API HTTP integration tests passed 14/14.
 - [ ] Redeploy this exact feature-branch commit to staging before browser validation.
 - [ ] Confirm a fresh staging backup exists and can be restored.
