@@ -75,10 +75,11 @@ try{
  $q=$db->prepare("SELECT s.activity_id,s.website_url FROM bh_listing_monitor_website_state s WHERE s.website_url IS NOT NULL AND TRIM(s.website_url)<>'' AND (s.next_check_at IS NULL OR s.next_check_at<=NOW()) ORDER BY COALESCE(s.next_check_at,'1970-01-01'),s.activity_id LIMIT ?");
  $q->bindValue(1,$batch,PDO::PARAM_INT);$q->execute();$items=$q->fetchAll(PDO::FETCH_ASSOC);
  $history=$db->prepare('INSERT INTO bh_listing_monitor_website_history(activity_id,website_url,outcome,http_status,evidence) VALUES(?,?,?,?,?)');
- $state=$db->prepare('UPDATE bh_listing_monitor_website_state SET last_checked_at=NOW(),next_check_at=DATE_ADD(NOW(),INTERVAL 4 HOUR),last_outcome=?,consecutive_dead_checks=IF(? IN ("possible_closure","closure_indicated"),consecutive_dead_checks+1,IF(?="healthy",0,consecutive_dead_checks)) WHERE activity_id=?');
+ $state=$db->prepare('UPDATE bh_listing_monitor_website_state SET last_checked_at=NOW(),next_check_at=DATE_ADD(NOW(),INTERVAL 4 HOUR),last_outcome=?,consecutive_dead_checks=IF(? IN ("possible_closure","closure_indicated"),consecutive_dead_checks+1,0) WHERE activity_id=?');
  $find=$db->prepare("SELECT id,candidate_json FROM bh_listing_check_findings WHERE check_type='health' AND activity_id=? AND finding_type=? ORDER BY id DESC LIMIT 1");
  $insert=$db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,candidate_json,finding_type,confidence,source_url,checked_at,review_status) VALUES('health',?,?,?,?,?,NOW(),'new')");
  $refresh=$db->prepare("UPDATE bh_listing_check_findings SET candidate_json=?,confidence=?,source_url=?,checked_at=NOW(),review_status=IF(review_status='resolved','new',review_status),reviewed_at=IF(review_status='resolved',NULL,reviewed_at) WHERE id=?");
+ $resolve=$db->prepare("UPDATE bh_listing_check_findings SET review_status='resolved',reviewed_at=NOW() WHERE check_type='health' AND activity_id=? AND finding_type IN ('website_possible_closure','website_closure_indicated','website_temporary_closure','website_unable_to_verify') AND review_status IN ('new','follow_up')");
  $counts=['healthy'=>0,'possible_closure'=>0,'closure_indicated'=>0,'temporary_closure'=>0,'unable_to_verify'=>0];
  foreach($items as $item){
   $id=(int)$item['activity_id'];$url=trim((string)$item['website_url']);$status=null;$evidence='';$outcome='unable_to_verify';$finalUrl=$url;
@@ -96,7 +97,8 @@ try{
    $evidence=substr($message,0,500);
   }
   $counts[$outcome]++;$history->execute([$id,$url,$outcome,$status,$evidence]);
-  $state->execute([$outcome,$outcome,$outcome,$id]);
+  $state->execute([$outcome,$outcome,$id]);
+  if($outcome==='healthy'){$resolve->execute([$id]);}
   if(in_array($outcome,['possible_closure','closure_indicated','temporary_closure','unable_to_verify'],true)){
    $type='website_'.$outcome;$candidate=['website'=>$url,'checked_url'=>$finalUrl,'http_status'=>$status,'outcome'=>$outcome,'evidence_note'=>$evidence,'checked_at'=>gmdate('c'),'source'=>'Bubba Hub Listing Monitor','note'=>'Investigate this evidence. No listing status or public content has been changed.'];
    $find->execute([$id,$type]);$existing=$find->fetch(PDO::FETCH_ASSOC);$json=json_encode($candidate,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);
