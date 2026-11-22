@@ -10,7 +10,8 @@ require_once __DIR__.'/admin-session-guard.php';
 function bh_lm_reply(int $status,array $data): never { http_response_code($status); echo json_encode($data,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE); exit; }
 try {
  require_once __DIR__.'/db.php'; $db=bh_mysql();
- foreach(['bh_listing_monitor_drafts','bh_listing_check_findings','bh_activities'] as $table){$q=$db->prepare('SHOW TABLES LIKE ?');$q->execute([$table]);if(!$q->fetchColumn())bh_lm_reply(503,['ok'=>false,'error'=>'Listing Monitor database migration is required.']);}
+ $tableCheck=$db->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=?');
+ foreach(['bh_listing_monitor_drafts','bh_listing_check_findings','bh_activities'] as $table){$tableCheck->execute([$table]);if((int)$tableCheck->fetchColumn()!==1)bh_lm_reply(503,['ok'=>false,'error'=>'Listing Monitor database migration is required.']);}
  $_SESSION['bh_listing_monitor_csrf']??=bin2hex(random_bytes(32));
  $method=$_SERVER['REQUEST_METHOD']??'GET';
  if($method==='GET'){
