@@ -14,7 +14,7 @@ try {
     $q->execute([$slug]);
     $row=$q->fetch();
     if(!$row){
-        $all=$db->query("SELECT organisation_name,terms_content,about_content,logo_url,facebook_url,instagram_url,tiktok_url FROM bh_organisers")->fetchAll();
+        $all=$db->query("SELECT id,organisation_name,terms_content,about_content,logo_url,facebook_url,instagram_url,tiktok_url,website,email,phone FROM bh_organisers")->fetchAll();
         foreach($all as $candidate){
             $normal=strtolower(trim((string)$candidate['organisation_name']));
             $normal=str_replace('&','and',$normal);
