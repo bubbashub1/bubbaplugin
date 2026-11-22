@@ -39,7 +39,10 @@ $b=json_decode($raw,true);if(!is_array($b)||empty($_SESSION['bh_admin_business_c
 if (($b['action']??'')==='create_missing_leader_storefronts') {
  require_once __DIR__.'/lib/business-storefront.php'; $db->beginTransaction();
  try {
-  $leaders=$db->query("SELECT o.id AS organiser_id,o.organisation_name,u.id AS user_id FROM bh_organisers o INNER JOIN bh_users u ON (u.id=o.user_id OR (o.user_id IS NULL AND LOWER(u.email)=LOWER(o.email))) WHERE u.role='leader' AND u.status='active' GROUP BY o.id,o.organisation_name,u.id ORDER BY o.id");
+  $orgCols=$db->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers'")->fetchAll(PDO::FETCH_COLUMN);
+  $ownerJoin=in_array('user_id',$orgCols,true) ? "u.id=o.user_id" : "1=0";
+  if(in_array('email',$orgCols,true)) $ownerJoin=in_array('user_id',$orgCols,true) ? "($ownerJoin OR (o.user_id IS NULL AND LOWER(u.email)=LOWER(o.email)))" : "LOWER(u.email)=LOWER(o.email)";
+  $leaders=$db->query("SELECT o.id AS organiser_id,o.organisation_name,u.id AS user_id FROM bh_organisers o INNER JOIN bh_users u ON $ownerJoin WHERE u.role='leader' AND u.status='active' ORDER BY o.id");
   $created=0; $existing=0; $skipped=0;
   foreach ($leaders->fetchAll(PDO::FETCH_ASSOC) as $leader) {
    $before=$db->prepare("SELECT id FROM bh_directory_businesses WHERE organiser_id=? LIMIT 1"); $before->execute([(int)$leader['organiser_id']]);
