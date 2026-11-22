@@ -20,6 +20,7 @@ on:
       - 'api/activities.php'
       - 'assets/js/directory-businesses.js'
       - 'assets/js/directory-sector.js'
+      - 'assets/js/directory-universal.js'
       - 'businesses.html'
       - 'childcare-schools.html'
       - 'places-days-out.html'
@@ -63,6 +64,7 @@ jobs:
         run: |
           node --check assets/js/directory-businesses.js
           node --check assets/js/directory-sector.js
+          node --check assets/js/directory-universal.js
 
       - name: Check public organiser page inline JavaScript
         run: |
@@ -153,4 +155,8 @@ jobs:
           assert "if(!$has($spec[0]))continue" in review_api, "Admin review must skip uninstalled optional sections"
           assert "age_min" in sector_admin and "holiday_provision" in sector_admin and "registration_details" in sector_admin, "Admin editor missing Leader-specific fields"
           print("Leader submission schema and moderation compatibility checks passed")
+          universal = Path("assets/js/directory-universal.js").read_text()
+          assert '/api/directory-businesses.php' in universal, "Universal directory search must use the storefront API"
+          assert 'x.logo_url||x.image_path' in universal and 'x.website||x.website_url' in universal, "Universal search should use storefront logo and contact website fields"
+          print("Universal directory storefront integration checks passed")
           PY
