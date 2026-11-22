@@ -18,6 +18,18 @@ if(($_SERVER['REQUEST_METHOD']??'GET')!=='GET') bh_health_reply(405,['ok'=>false
 try {
  require_once __DIR__.'/db.php';
  $db=bh_mysql();
+ // Listing Monitor completeness exclusions are independent of the legacy checker controls.
+ $excludedFields=[];
+ try {
+  if($db->query('SHOW TABLES LIKE '.$db->quote('bh_listing_checker_settings'))->fetchColumn()){
+   $settingStmt=$db->prepare('SELECT setting_value FROM bh_listing_checker_settings WHERE setting_key=? LIMIT 1');
+   $settingStmt->execute(['monitor_completeness_excluded_fields']);
+   $savedExcluded=$settingStmt->fetchColumn();
+   $decodedExcluded=is_string($savedExcluded)?json_decode($savedExcluded,true):[];
+   if(is_array($decodedExcluded)) $excludedFields=array_values(array_intersect(['Description','Website','Booking link','Email','Telephone','Facebook','Instagram','Age range','Category','Location','Postcode','Image'],array_map('strval',$decodedExcluded)));
+  }
+ } catch(Throwable $settingsError) { error_log('Listing Monitor completeness settings: '.$settingsError->getMessage()); }
+
  // Optional page-scoped mode: only assess the explicitly supplied activity IDs.
  // The legacy full-report response remains unchanged for existing callers.
  $requestedIds=[];
@@ -113,6 +125,8 @@ try {
   'Postcode'=>['postcode','venue_postcode'],
   'Image'=>['image_path']
  ];
+ // Fields excluded in Listing Monitor settings do not count as missing or affect the completeness score.
+ foreach($excludedFields as $excludedLabel) unset($fieldMap[$excludedLabel]);
  // A health dimension is assessed only when at least one real source column supports it.
  $availableAliases=[];
  $activityAliasColumns=['description'=>'description','short_description'=>'short_description','activity_website'=>'website','booking_url'=>'booking_url','contact_email'=>'contact_email','activity_phone'=>'contact_phone','facebook_url'=>'facebook_url','instagram_url'=>'instagram_url','town'=>'town','region'=>'region','postcode'=>'postcode','image_path'=>'image_path','age_range'=>'age_range','category'=>'category'];
@@ -217,8 +231,9 @@ try {
  unset($row);
  $totals=['listings'=>count($rows),'with_missing'=>0,'description_missing'=>0,'average_health'=>0,'validation_issues'=>0,'possible_duplicates'=>0];
  $score=0;
- foreach($rows as $row){ if(count($row['missing']))$totals['with_missing']++; if(in_array('Description',$row['missing'],true))$totals['description_missing']++; $totals['validation_issues']+=count($row['validation_issues']??[]); if(!empty($row['possible_duplicate']))$totals['possible_duplicates']++; $score+=(int)$row['health_score']; }
- $totals['average_health']=$totals['listings']?(int)round($score/$totals['listings']):0;
+ $scoredRows=0;
+ foreach($rows as $row){ if(count($row['missing']))$totals['with_missing']++; if(in_array('Description',$row['missing'],true))$totals['description_missing']++; $totals['validation_issues']+=count($row['validation_issues']??[]); if(!empty($row['possible_duplicate']))$totals['possible_duplicates']++; if($row['health_score']!==null){$score+=(int)$row['health_score'];$scoredRows++;} }
+ $totals['average_health']=$scoredRows?(int)round($score/$scoredRows):null;
  bh_health_reply(200,['ok'=>true,'read_only'=>true,'totals'=>$totals,'missing_counts'=>$missingCounts,'data'=>$rows,'message'=>'Read-only checks include completeness, format validation, past-date flags and likely same-title/same-location duplicates. Findings are suggestions only; no listings are changed.']);
 } catch(Throwable $e) {
  error_log('Listing health checker: '.$e->getMessage());
