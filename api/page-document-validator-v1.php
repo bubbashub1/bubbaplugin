@@ -45,6 +45,25 @@ function bh_validate_page_document_v1(mixed $document): array {
    elseif($key==='border_color'&&(!is_string($value)||!preg_match('/^#[0-9a-fA-F]{6}$/',$value)))$errors[]='Invalid container border colour.';
    elseif($key==='align'&&!in_array($value,['left','center','right'],true))$errors[]='Invalid container alignment.';
    elseif($key==='margin_bottom'&&(!is_int($value)||$value<0||$value>96))$errors[]='Invalid container spacing.';
+   elseif($key==='background_image'){
+    $safeImage=$value==='';
+    if(is_string($value)&&strlen($value)<=2048&&!preg_match('/\s/',$value)&&!str_contains($value,chr(92))&&!str_starts_with($value,'//')){
+     $scheme=parse_url($value,PHP_URL_SCHEME);
+     $safeImage=$safeImage||str_starts_with($value,'/')||($scheme==='https'&&filter_var($value,FILTER_VALIDATE_URL)!==false);
+    }
+    if(!$safeImage)$errors[]='Invalid container background image.';
+   }
+   elseif($key==='overlay_color'&&(!is_string($value)||!preg_match('/^#[0-9a-fA-F]{6}$/',$value)))$errors[]='Invalid container overlay colour.';
+   elseif($key==='overlay_opacity'&&(!is_numeric($value)||$value<0||$value>1))$errors[]='Invalid container overlay opacity.';
+   elseif($key==='background_position'&&!in_array($value,['center center','center top','center bottom','left center','right center'],true))$errors[]='Invalid container background position.';
+   elseif($key==='color'&&(!is_string($value)||!preg_match('/^#[0-9a-fA-F]{6}$/',$value)))$errors[]='Invalid container text colour.';
+   elseif($key==='palette'&&!in_array($value,['custom','meadow','coastal','sunshine','blush','neutral'],true))$errors[]='Invalid container colour theme.';
+   elseif($key==='gradient'&&!in_array($value,['','meadow','coastal','sunset','berry','sand'],true))$errors[]='Invalid container background style.';
+   elseif($key==='columns'&&(!is_int($value)||$value<1||$value>4))$errors[]='Invalid container column count.';
+   elseif($key==='column_widths'){
+    if(!is_array($value)||count($value)<1||count($value)>4)$errors[]='Invalid container column widths.';
+    else foreach($value as $columnWidth)if(!is_numeric($columnWidth)||$columnWidth<10||$columnWidth>100)$errors[]='Invalid container column width.';
+   }
    elseif($key==='mobile'){
     $mobileAllowed=['width','padding','gap','min_height','radius','border_width','margin_bottom','align'];
     if(!is_array($value)||array_diff(array_keys($value),$mobileAllowed))$errors[]='Invalid mobile layout properties.';
@@ -59,7 +78,7 @@ function bh_validate_page_document_v1(mixed $document): array {
      elseif($mobileKey==='align'&&!in_array($mobileValue,['left','center','right'],true))$errors[]='Invalid mobile container alignment.';
     }
    }
-   elseif(!in_array($key,['background','padding','gap','width','min_height','radius','border_width','border_color','align','margin_bottom','mobile'],true))$errors[]='Unknown section property.';
+   elseif(!in_array($key,['background','background_image','overlay_color','overlay_opacity','background_position','color','palette','gradient','columns','column_widths','padding','gap','width','min_height','radius','border_width','border_color','align','margin_bottom','mobile'],true))$errors[]='Unknown section property.';
   }
   if(!array_key_exists('children',$section))$errors[]='Section children are required.';
   $children=$section['children']??null;
