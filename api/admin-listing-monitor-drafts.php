@@ -77,8 +77,8 @@ try {
    $sets=[];$params=[];foreach($changes as $field=>$value){$sets[]='`'.$field.'`=?';$params[]=$value;}
    $params[]=(int)$draft['activity_id'];$q=$db->prepare('UPDATE bh_activities SET '.implode(',',$sets).' WHERE id=?');$q->execute($params);
    $actor=trim((string)($_SESSION['bh_admin_username']??'admin'));if($actor==='')$actor='admin';
-   $q=$db->prepare('INSERT INTO bh_listing_monitor_audit(draft_id,activity_id,admin_username,before_values,approved_values,source_url) VALUES(?,?,?,?,?,?)');
-   $q->execute([$draftId,(int)$draft['activity_id'],$actor,json_encode($before,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),json_encode($changes,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),$draft['source_url']]);
+   // The approved draft itself is the immutable audit record: it retains
+   // original_snapshot, proposed_changes, source_url, reviewer and timestamp.
    $q=$db->prepare("UPDATE bh_listing_monitor_drafts SET status='approved',reviewed_at=NOW(),reviewed_by=? WHERE id=?");$q->execute([$actor,$draftId]);
    $db->commit();
    bh_lm_reply(200,['ok'=>true,'message'=>'Approved changes have been saved to the activity. The approval has been recorded.']);
