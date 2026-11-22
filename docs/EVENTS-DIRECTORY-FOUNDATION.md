@@ -24,11 +24,13 @@ Create a genuine one-off and recurring Events directory without repurposing the 
 
 ## Businesses directory foundation
 
-The Businesses directory is a separate public directory of businesses and family services. It must not be limited to organisations that already run classes on Bubba Hub.
+The Businesses directory is the public storefront directory for independent family businesses and every active class-leader account. It must not be limited to organisations that already run classes on Bubba Hub.
 
 - `bh_directory_businesses` stores the business identity and its directory-specific description, category and location.
 - `organiser_id` is optional. When linked, the existing `bh_organisers` profile is the canonical source for organisation name and contact details. The business record may contain explicit business-specific overrides; do not copy organiser profile values into the business row.
-- Businesses can be created by an admin without requiring a leader login or organiser profile.
+- Every active `bh_users` account with role `leader` and a linked `bh_organisers` profile automatically receives a public storefront. The storefront is generated from the canonical organiser profile; no duplicate business row or leader opt-in is required.
+- Automatic storefronts show the leader's published Listings count and link families through to the Listings directory using the leader's organisation name. Only published Listings are counted.
+- Standalone independent businesses can be created by an admin without requiring a leader login or organiser profile. A published admin business linked to a leader profile takes precedence over the generated storefront so the same leader is not shown twice.
 - `bh_directory_business_listings` links a business to existing `bh_activities` records. A linked class remains one Listing and is not duplicated in the Businesses data.
 - Only records with `status='published'` may appear publicly. New admin-created records remain drafts until explicitly reviewed and published.
 - The schema deliberately does not add foreign keys because the legacy database installations have differing table definitions. Validate referenced IDs in application code.
@@ -40,6 +42,8 @@ The Businesses directory is a separate public directory of businesses and family
 - [x] Admin-only business management screen and create/edit workflow added; it fails closed until the staging schema exists.
 - [x] Public read-only Businesses feed with keyword, category, region and dependent town filters, using the Listings directory card layout and shared hero search controls.
 - [x] Public feed reuses linked organiser website, email, phone and logo when no business-specific override exists.
+- [x] Every active leader account with a linked organiser profile is automatically represented in the public Businesses directory, without a separate business record.
+- [x] Automatic leader storefronts count all of that organiser's published Listings and provide a link to browse those Listings.
 - [ ] Validate duplicate detection and multiple business-to-listing links.
 - [ ] Review schema against the actual staging database, take a staging backup and obtain explicit approval before installation.
 - [ ] Browser and permission tests before enabling public search.
@@ -82,7 +86,8 @@ This document and `database/events-directory-schema.sql` are a code-level founda
 - The sector selector switches between Listings, Events and Businesses without sending families to a separate visual system.
 - Business filters currently include keyword, category, region, town and sorting. Only published businesses are returned by the public API.
 - The public feed falls back to the linked organiser's website, email, phone and logo when the business record has no override.
-- The feed is read-only; admin creation and publication remain in the admin Businesses screen.
+- Every active leader account with an organiser profile automatically appears as a class-leader storefront. Their storefront details come from the existing organiser profile and their published Listings are counted directly from `bh_activities`.
+- Independent business entries and optional admin-managed overrides remain in the admin Businesses screen; no leader needs to create or opt in to a storefront.
 
 ### Listings-baseline review refinements
 
