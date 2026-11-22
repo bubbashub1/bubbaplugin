@@ -105,9 +105,19 @@ if ($a === 'logout') {
     respond(200, ['ok'=>true]);
 }
 
+if ($a === 'heartbeat') {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') respond(405, ['ok'=>false, 'error'=>'POST required']);
+    if (empty($_SESSION['bh_admin_authenticated'])) respond(401, ['ok'=>false, 'error'=>'Admin login required.']);
+    $last = (int)($_SESSION['bh_admin_last_activity'] ?? 0);
+    if ($last < 1 || time() - $last > 1800) {
+        unset($_SESSION['bh_admin_authenticated'], $_SESSION['bh_admin_username'], $_SESSION['bh_admin_last_activity']);
+        respond(401, ['ok'=>false, 'error'=>'Admin session expired.']);
+    }
+    $_SESSION['bh_admin_last_activity'] = time();
+    respond(200, ['ok'=>true]);
+}
 if (empty($_SESSION['bh_admin_authenticated'])) {
     respond(401, ['ok'=>false, 'error'=>'Admin login required.']);
 }
-
 respond(200, ['ok'=>true]);
 ?>
