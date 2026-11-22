@@ -22,6 +22,28 @@ Create a genuine one-off and recurring Events directory without repurposing the 
 - Store event date-times in the `Europe/London` timezone. Test GMT/BST transitions and events spanning midnight before release.
 - Latitude/longitude are optional; do not geocode or publish an unverified location automatically.
 
+## Businesses directory foundation
+
+The Businesses directory is a separate public directory of businesses and family services. It must not be limited to organisations that already run classes on Bubba Hub.
+
+- `bh_directory_businesses` stores the business identity and its directory-specific description, category and location.
+- `organiser_id` is optional. When linked, the existing `bh_organisers` profile is the canonical source for organisation name and contact details. The business record may contain explicit business-specific overrides; do not copy organiser profile values into the business row.
+- Businesses can be created by an admin without requiring a leader login or organiser profile.
+- `bh_directory_business_listings` links a business to existing `bh_activities` records. A linked class remains one Listing and is not duplicated in the Businesses data.
+- Only records with `status='published'` may appear publicly. New admin-created records remain drafts until explicitly reviewed and published.
+- The schema deliberately does not add foreign keys because the legacy database installations have differing table definitions. Validate referenced IDs in application code.
+
+## Businesses delivery status (staging-site)
+
+- [x] Existing organiser-profile fields and activity-to-organiser relationship reviewed.
+- [x] Schema proposal updated to allow standalone business records, optional organiser-profile reuse and many-to-many links to existing Listings.
+- [ ] Admin-only business management screen and create/edit workflow.
+- [ ] Read-only public Businesses feed with keyword, category, region and town filters.
+- [ ] Confirm linked organiser contact fallback and business-specific overrides.
+- [ ] Validate duplicate detection and multiple business-to-listing links.
+- [ ] Review schema against the actual staging database, take a staging backup and obtain explicit approval before installation.
+- [ ] Browser and permission tests before enabling public search.
+
 ## Delivery status (staging-site)
 - [x] Schema proposal created; not installed.
 - [x] Leader create/draft/submit endpoint created with session authentication, CSRF, same-origin checks, field validation and server-resolved organiser ownership.
@@ -30,7 +52,7 @@ Create a genuine one-off and recurring Events directory without repurposing the 
 - [x] Public Events feed limited to published events with future scheduled occurrences.
 - [x] Public Events page keeps one-off events separate from regular Listings sessions.
 - [x] Leader Hub navigation includes Add an Event.
-- [ ] Draft editing, event owner management list, cancellation/rescheduling controls and rate limiting.
+- [x] Draft editing for event owners; cancellation/rescheduling controls and rate limiting remain outstanding.
 - [ ] Schema review against the actual staging database, backup and explicit approval before installation.
 - [ ] End-to-end tests after schema installation, including cross-Leader ownership attempts, public visibility, cancellation, multiple occurrences, mobile layout and GMT/BST.
 
