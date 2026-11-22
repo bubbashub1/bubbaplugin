@@ -67,14 +67,13 @@ async function openListingReview(id){
  reviewBody.innerHTML='<p>Loading the latest checks for this listing…</p>';
  reviewDialog.showModal();
  try{
-  let health=reviewHealthById.get(id);
-  if(!health){
-   const response=await fetch('/api/admin-listing-health.php?ids='+encodeURIComponent(String(id)),{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
-   const data=await response.json();
-   if(!response.ok||!data.ok)throw Error(data.error||'Could not load the listing checks.');
-   health=(data.data||[]).find(item=>Number(item.id)===id);
-   if(health)reviewHealthById.set(id,health);
-  }
+  // Always request a fresh report when the modal opens; the table cache may contain
+  // an older health payload without the detailed values needed for this report.
+  const response=await fetch('/api/admin-listing-health.php?ids='+encodeURIComponent(String(id))+'&report=1',{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
+  const data=await response.json();
+  if(!response.ok||!data.ok)throw Error(data.error||'Could not load the listing checks.');
+  const health=(data.data||[]).find(item=>Number(item.id)===id);
+  if(health)reviewHealthById.set(id,health);
   const finding=openFindingByActivity.get(id);
   if(!health){
    reviewBody.innerHTML='<p class="listing-review-warning">No health report was returned for this listing. Please try again.</p>';
@@ -90,7 +89,9 @@ async function openListingReview(id){
   const score=health.health_score===null||health.health_score===undefined?'Not scored':Number(health.health_score)+'%';
   let sections='';
   sections+='<section class="listing-review-report-section"><h3>Missing information</h3>'+reviewList(missing,'No missing core information was detected.')+'</section>';
-  const completeHtml=completeDetails.length?'<ul>'+completeDetails.map(item=>'<li><strong>'+escape(item.label)+':</strong> '+escape(item.value)+'</li>').join('')+'</ul>':reviewList(complete,'No fields were available to assess.');
+  const assessedCount=Number(health.health_assessable_fields||0);
+  const recordedCompleteCount=Math.max(0,assessedCount-missing.length);
+  const completeHtml=completeDetails.length?'<ul>'+completeDetails.map(item=>'<li><strong>'+escape(item.label)+':</strong> '+escape(item.value)+'</li>').join('')+'</ul>':(complete.length?reviewList(complete,'No complete fields were returned.'):('<p class="listing-review-warning">'+(recordedCompleteCount>0?escape(recordedCompleteCount)+' fields are counted as complete, but their names and saved values were not returned by the health report. Please open the full listing editor to verify them.':'No complete field details were returned by the health report. Please open the full listing editor to verify the saved information.')+'</p>'));
   sections+='<section class="listing-review-report-section"><h3>Already on the listing</h3>'+completeHtml+'</section>';
   sections+='<section class="listing-review-report-section"><h3>Information to check</h3>'+reviewList(issues,'No format or date issues were detected.')+(duplicate?'<p class="listing-review-warning">Possible duplicate: another listing has a similar title and location. Please compare before changing anything.</p>':'')+(finding?'<p class="listing-review-warning">Outstanding monitor finding: '+escape(findingLabel)+'.</p>':'')+'</section>';
   sections+='<p class="listing-review-report-note">This is an automated completeness and validation report, not confirmation that every detail is current. A missing website response does not mean an organisation has closed. Nothing has been changed.</p>';
