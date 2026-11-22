@@ -149,6 +149,29 @@ try {
     if ($col('bh_sessions','venue_id')) $integrity['sessions']=['total'=>$safeCount('SELECT COUNT(*) FROM bh_sessions'),'valid_venue_refs'=>$safeCount('SELECT COUNT(*) FROM bh_sessions s INNER JOIN bh_venues v ON v.id=s.venue_id'),'orphan_venue_refs'=>$safeCount('SELECT COUNT(*) FROM bh_sessions s LEFT JOIN bh_venues v ON v.id=s.venue_id WHERE s.venue_id IS NOT NULL AND v.id IS NULL')];
     if ($col('bh_directory_business_listings','business_id') && $col('bh_directory_business_listings','activity_id')) $integrity['business_activity_links']=['total'=>$safeCount('SELECT COUNT(*) FROM bh_directory_business_listings'),'valid_pairs'=>$safeCount('SELECT COUNT(*) FROM bh_directory_business_listings l INNER JOIN bh_directory_businesses b ON b.id=l.business_id INNER JOIN bh_activities a ON a.id=l.activity_id'),'orphan_business_refs'=>$safeCount('SELECT COUNT(*) FROM bh_directory_business_listings l LEFT JOIN bh_directory_businesses b ON b.id=l.business_id WHERE b.id IS NULL'),'orphan_activity_refs'=>$safeCount('SELECT COUNT(*) FROM bh_directory_business_listings l LEFT JOIN bh_activities a ON a.id=l.activity_id WHERE a.id IS NULL'),'duplicate_pairs'=>$safeCount('SELECT COUNT(*) FROM (SELECT business_id,activity_id FROM bh_directory_business_listings GROUP BY business_id,activity_id HAVING COUNT(*)>1) d')];
 
+    // Venue relationship coverage: compare the legacy single-owner column with
+    // the newer activity/venue join table across ALL venues, not only session venues.
+    // Every metric is aggregate-only; no IDs or venue/listing values are returned.
+    $venueRelationshipCoverage = [];
+    if ($col('bh_venues', 'id') && $col('bh_venues', 'activity_id')
+        && $col('bh_activities', 'id')
+        && $col('bh_activity_venues', 'venue_id')
+        && $col('bh_activity_venues', 'activity_id')) {
+        $venueRelationshipCoverage = [
+            'total_venues' => $safeCount('SELECT COUNT(*) FROM bh_venues'),
+            'unique_venues_with_legacy_activity_owner' => $safeCount('SELECT COUNT(DISTINCT v.id) FROM bh_venues v WHERE v.activity_id IS NOT NULL'),
+            'unique_venues_with_join_activity_links' => $safeCount('SELECT COUNT(DISTINCT av.venue_id) FROM bh_activity_venues av INNER JOIN bh_venues v ON v.id=av.venue_id'),
+            'unique_venues_with_both_legacy_and_join_links' => $safeCount('SELECT COUNT(*) FROM bh_venues v WHERE v.activity_id IS NOT NULL AND EXISTS (SELECT 1 FROM bh_activity_venues av WHERE av.venue_id=v.id)'),
+            'unique_venues_with_legacy_link_only' => $safeCount('SELECT COUNT(*) FROM bh_venues v WHERE v.activity_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM bh_activity_venues av WHERE av.venue_id=v.id)'),
+            'unique_venues_with_join_link_only' => $safeCount('SELECT COUNT(DISTINCT av.venue_id) FROM bh_activity_venues av INNER JOIN bh_venues v ON v.id=av.venue_id WHERE v.activity_id IS NULL'),
+            'unique_venues_with_neither_link' => $safeCount('SELECT COUNT(*) FROM bh_venues v WHERE v.activity_id IS NULL AND NOT EXISTS (SELECT 1 FROM bh_activity_venues av WHERE av.venue_id=v.id)'),
+            'unique_venues_linked_to_multiple_activities' => $safeCount('SELECT COUNT(*) FROM (SELECT av.venue_id FROM bh_activity_venues av INNER JOIN bh_venues v ON v.id=av.venue_id GROUP BY av.venue_id HAVING COUNT(DISTINCT av.activity_id)>1) multi'),
+            'unique_venues_where_legacy_owner_is_not_in_join_links' => $safeCount('SELECT COUNT(*) FROM bh_venues v WHERE v.activity_id IS NOT NULL AND EXISTS (SELECT 1 FROM bh_activity_venues av WHERE av.venue_id=v.id) AND NOT EXISTS (SELECT 1 FROM bh_activity_venues av WHERE av.venue_id=v.id AND av.activity_id=v.activity_id)'),
+            'join_links_to_missing_venues' => $safeCount('SELECT COUNT(*) FROM bh_activity_venues av LEFT JOIN bh_venues v ON v.id=av.venue_id WHERE v.id IS NULL'),
+            'join_links_to_missing_activities' => $safeCount('SELECT COUNT(*) FROM bh_activity_venues av LEFT JOIN bh_activities a ON a.id=av.activity_id WHERE a.id IS NULL')
+        ];
+    }
+
     // Session attribution: bh_sessions only has venue_id in some deployed schemas.
     // Count how many sessions can be associated through legacy venue ownership
     // versus the activity_venues join, and identify shared/unassigned venues.
