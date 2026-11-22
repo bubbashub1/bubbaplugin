@@ -162,10 +162,13 @@ function installElementResizeHandle(node){
  const handle=doc.createElement('button');
  handle.type='button';handle.className='bhvb-canvas-handle bhvb-element-resize-handle';
  handle.textContent='↔';handle.title='Drag to resize this element';handle.setAttribute('aria-label','Drag to resize this element');
- handle.style.cssText='position:absolute;z-index:25;right:-8px;top:50%;transform:translateY(-50%);width:26px;height:30px;border:2px solid #fff;border-radius:7px;background:#0f766e;color:#fff;box-shadow:0 1px 5px #0005;font:700 14px/1 Arial;touch-action:none;cursor:ew-resize;padding:0;display:grid;place-items:center;';
- const priorPosition=node.style.position;
- if(!priorPosition||priorPosition==='static')node.style.position='relative';
- node.appendChild(handle);
+ handle.style.cssText='position:absolute;z-index:25;width:26px;height:30px;border:2px solid #fff;border-radius:7px;background:#0f766e;color:#fff;box-shadow:0 1px 5px #0005;font:700 14px/1 Arial;touch-action:none;cursor:ew-resize;padding:0;display:grid;place-items:center;transform:translateY(-50%);';
+ const host=node.parentElement;
+ if(!host)return;
+ const priorPosition=host.style.position;
+ if(!priorPosition||priorPosition==='static')host.style.position='relative';
+ const positionHandle=()=>{const left=node.offsetLeft+node.offsetWidth-13,top=node.offsetTop+node.offsetHeight/2;handle.style.left=left+'px';handle.style.top=top+'px';};
+ host.appendChild(handle);positionHandle();
  handle.addEventListener('pointerdown',event=>{
   if(event.button!==0&&event.pointerType!=='touch')return;
   event.preventDefault();event.stopPropagation();
@@ -174,7 +177,7 @@ function installElementResizeHandle(node){
   const onMove=e=>{
    const width=Math.max(10,Math.min(100,Math.round((startWidth+e.clientX-startX)/parentWidth*100)));
    currentBlock.props=currentBlock.props||{};currentBlock.props.width=width;
-   node.style.width=width+'%';node.style.maxWidth='100%';node.style.boxSizing='border-box';
+   node.style.width=width+'%';node.style.maxWidth='100%';node.style.boxSizing='border-box';positionHandle();
    const control=$('elementWidth');if(control)control.value=width;
    const value=$('elementWidthValue');if(value)value.textContent=width+'%';
    $('saveDraft').disabled=false;
