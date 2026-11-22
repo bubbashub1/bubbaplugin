@@ -140,3 +140,5 @@ A disposable MySQL integration suite now runs in GitHub Actions using its own te
 - Latest tested code/workflow commit `dd00c0b906116b3c7183645e176742cf526688b0` passed PHP lint, security guards, offline website-rule tests and disposable MySQL integration tests in GitHub Actions run `45021371000`.
 
 Database integration is still not the same as a full staging/browser test. The PR remains a draft; no migration has been applied to staging or live, and the website worker remains disabled and unscheduled.
+
+- The draft API now uses the shared `admin-session-guard.php`, so expired admin sessions are rejected after the same 30-minute idle period as other admin APIs. JSON request bodies are capped while reading, including requests without a trustworthy `Content-Length`.
