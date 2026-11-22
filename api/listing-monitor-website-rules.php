@@ -43,7 +43,7 @@ function bh_lm_classify_response(int $status, string $body): array {
         $pos = (int) (stripos($lower, $match[0]) ?: 0);
         return ['outcome' => 'temporary_closure', 'evidence' => substr($plain, max(0, $pos - 160), 360)];
     }
-    if ($status >= 200 && $status < 400) {
+    if ($status >= 200 && $status < 300) {
         return ['outcome' => 'healthy', 'evidence' => 'Website responded successfully (HTTP ' . $status . ').'];
     }
     if ($status >= 500) {
