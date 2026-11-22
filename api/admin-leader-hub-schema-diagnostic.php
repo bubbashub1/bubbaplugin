@@ -41,7 +41,7 @@ try {
     $wanted = [
         'bh_users', 'bh_organisers', 'bh_activities',
         'bh_venues', 'bh_activity_venues', 'bh_activity_schedules', 'bh_sessions',
-        'bh_booking_slots', 'bh_booking_reservations',
+        'bh_booking_sources', 'bh_booking_slots', 'bh_booking_reservations', 'bh_bookings',
         'bh_directory_businesses', 'bh_directory_business_listings',
         'bh_directory_childcare', 'bh_directory_places', 'bh_directory_school_clubs',
         'bh_directory_events', 'bh_directory_event_occurrences', 'bh_directory_event_listings',
@@ -90,6 +90,7 @@ try {
     // are populated without returning any listing values or personal data.
     $countWanted = [
         'bh_activities', 'bh_venues', 'bh_activity_venues', 'bh_activity_schedules', 'bh_sessions',
+        'bh_booking_sources', 'bh_booking_slots', 'bh_booking_reservations', 'bh_bookings',
         'bh_directory_businesses', 'bh_directory_business_listings',
         'bh_directory_childcare', 'bh_directory_places', 'bh_directory_school_clubs',
         'bh_directory_events', 'bh_directory_event_occurrences', 'bh_directory_event_listings'
@@ -148,6 +149,48 @@ try {
     if ($col('bh_sessions','venue_id')) $integrity['sessions']=['total'=>$safeCount('SELECT COUNT(*) FROM bh_sessions'),'valid_venue_refs'=>$safeCount('SELECT COUNT(*) FROM bh_sessions s INNER JOIN bh_venues v ON v.id=s.venue_id'),'orphan_venue_refs'=>$safeCount('SELECT COUNT(*) FROM bh_sessions s LEFT JOIN bh_venues v ON v.id=s.venue_id WHERE s.venue_id IS NOT NULL AND v.id IS NULL')];
     if ($col('bh_directory_business_listings','business_id') && $col('bh_directory_business_listings','activity_id')) $integrity['business_activity_links']=['total'=>$safeCount('SELECT COUNT(*) FROM bh_directory_business_listings'),'valid_pairs'=>$safeCount('SELECT COUNT(*) FROM bh_directory_business_listings l INNER JOIN bh_directory_businesses b ON b.id=l.business_id INNER JOIN bh_activities a ON a.id=l.activity_id'),'orphan_business_refs'=>$safeCount('SELECT COUNT(*) FROM bh_directory_business_listings l LEFT JOIN bh_directory_businesses b ON b.id=l.business_id WHERE b.id IS NULL'),'orphan_activity_refs'=>$safeCount('SELECT COUNT(*) FROM bh_directory_business_listings l LEFT JOIN bh_activities a ON a.id=l.activity_id WHERE a.id IS NULL'),'duplicate_pairs'=>$safeCount('SELECT COUNT(*) FROM (SELECT business_id,activity_id FROM bh_directory_business_listings GROUP BY business_id,activity_id HAVING COUNT(*)>1) d')];
 
+    // Booking reconciliation: keep recurring timetable sessions, legacy direct
+    // bookings, and dated booking slots/reservations as distinct models.
+    // These aggregate-only checks return counts, never booking or family details.
+    $bookingIntegrity = [];
+    if ($col('bh_bookings', 'session_id') && $col('bh_sessions', 'id')) {
+        $bookingIntegrity['legacy_session_bookings'] = [
+            'total' => $safeCount('SELECT COUNT(*) FROM bh_bookings'),
+            'with_session_reference' => $safeCount('SELECT COUNT(*) FROM bh_bookings WHERE session_id IS NOT NULL'),
+            'valid_session_references' => $safeCount('SELECT COUNT(*) FROM bh_bookings b INNER JOIN bh_sessions s ON s.id=b.session_id'),
+            'orphan_session_references' => $safeCount('SELECT COUNT(*) FROM bh_bookings b LEFT JOIN bh_sessions s ON s.id=b.session_id WHERE b.session_id IS NOT NULL AND s.id IS NULL')
+        ];
+        if ($col('bh_bookings', 'activity_id') && $col('bh_activities', 'id')) {
+            $bookingIntegrity['legacy_session_bookings']['valid_activity_references'] = $safeCount('SELECT COUNT(*) FROM bh_bookings b INNER JOIN bh_activities a ON a.id=b.activity_id');
+            $bookingIntegrity['legacy_session_bookings']['orphan_activity_references'] = $safeCount('SELECT COUNT(*) FROM bh_bookings b LEFT JOIN bh_activities a ON a.id=b.activity_id WHERE a.id IS NULL');
+        }
+    }
+    if ($col('bh_booking_sources', 'activity_id') && $col('bh_activities', 'id')) {
+        $bookingIntegrity['booking_sources'] = [
+            'total' => $safeCount('SELECT COUNT(*) FROM bh_booking_sources'),
+            'valid_activity_references' => $safeCount('SELECT COUNT(*) FROM bh_booking_sources s INNER JOIN bh_activities a ON a.id=s.activity_id'),
+            'orphan_activity_references' => $safeCount('SELECT COUNT(*) FROM bh_booking_sources s LEFT JOIN bh_activities a ON a.id=s.activity_id WHERE a.id IS NULL')
+        ];
+    }
+    if ($col('bh_booking_slots', 'activity_id') && $col('bh_activities', 'id')) {
+        $bookingIntegrity['dated_booking_slots'] = [
+            'total' => $safeCount('SELECT COUNT(*) FROM bh_booking_slots'),
+            'valid_activity_references' => $safeCount('SELECT COUNT(*) FROM bh_booking_slots s INNER JOIN bh_activities a ON a.id=s.activity_id'),
+            'orphan_activity_references' => $safeCount('SELECT COUNT(*) FROM bh_booking_slots s LEFT JOIN bh_activities a ON a.id=s.activity_id WHERE a.id IS NULL')
+        ];
+        if ($col('bh_booking_slots', 'venue_id') && $col('bh_venues', 'id')) {
+            $bookingIntegrity['dated_booking_slots']['valid_venue_references'] = $safeCount('SELECT COUNT(*) FROM bh_booking_slots s INNER JOIN bh_venues v ON v.id=s.venue_id WHERE s.venue_id IS NOT NULL');
+            $bookingIntegrity['dated_booking_slots']['orphan_venue_references'] = $safeCount('SELECT COUNT(*) FROM bh_booking_slots s LEFT JOIN bh_venues v ON v.id=s.venue_id WHERE s.venue_id IS NOT NULL AND v.id IS NULL');
+        }
+    }
+    if ($col('bh_booking_reservations', 'slot_id') && $col('bh_booking_slots', 'id')) {
+        $bookingIntegrity['slot_reservations'] = [
+            'total' => $safeCount('SELECT COUNT(*) FROM bh_booking_reservations'),
+            'valid_slot_references' => $safeCount('SELECT COUNT(*) FROM bh_booking_reservations r INNER JOIN bh_booking_slots s ON s.id=r.slot_id'),
+            'orphan_slot_references' => $safeCount('SELECT COUNT(*) FROM bh_booking_reservations r LEFT JOIN bh_booking_slots s ON s.id=r.slot_id WHERE s.id IS NULL')
+        ];
+    }
+
     leader_schema_reply(200, [
         'ok' => true,
         'read_only' => true,
@@ -156,6 +199,7 @@ try {
         'tables' => $tables,
         'row_counts' => $rowCounts,
         'relationship_integrity_counts' => $integrity,
+        'booking_integrity_counts' => $bookingIntegrity,
         'foreign_keys' => $foreignKeys,
         'relationship_hints' => $relationships,
         'note' => 'Schema metadata and exact table row counts only. No listing values, contact details, user records or other personal data were read. No database changes were made.'
