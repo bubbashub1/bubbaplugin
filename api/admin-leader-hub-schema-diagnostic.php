@@ -149,6 +149,27 @@ try {
     if ($col('bh_sessions','venue_id')) $integrity['sessions']=['total'=>$safeCount('SELECT COUNT(*) FROM bh_sessions'),'valid_venue_refs'=>$safeCount('SELECT COUNT(*) FROM bh_sessions s INNER JOIN bh_venues v ON v.id=s.venue_id'),'orphan_venue_refs'=>$safeCount('SELECT COUNT(*) FROM bh_sessions s LEFT JOIN bh_venues v ON v.id=s.venue_id WHERE s.venue_id IS NOT NULL AND v.id IS NULL')];
     if ($col('bh_directory_business_listings','business_id') && $col('bh_directory_business_listings','activity_id')) $integrity['business_activity_links']=['total'=>$safeCount('SELECT COUNT(*) FROM bh_directory_business_listings'),'valid_pairs'=>$safeCount('SELECT COUNT(*) FROM bh_directory_business_listings l INNER JOIN bh_directory_businesses b ON b.id=l.business_id INNER JOIN bh_activities a ON a.id=l.activity_id'),'orphan_business_refs'=>$safeCount('SELECT COUNT(*) FROM bh_directory_business_listings l LEFT JOIN bh_directory_businesses b ON b.id=l.business_id WHERE b.id IS NULL'),'orphan_activity_refs'=>$safeCount('SELECT COUNT(*) FROM bh_directory_business_listings l LEFT JOIN bh_activities a ON a.id=l.activity_id WHERE a.id IS NULL'),'duplicate_pairs'=>$safeCount('SELECT COUNT(*) FROM (SELECT business_id,activity_id FROM bh_directory_business_listings GROUP BY business_id,activity_id HAVING COUNT(*)>1) d')];
 
+    // Session attribution: bh_sessions only has venue_id in some deployed schemas.
+    // Count how many sessions can be associated through legacy venue ownership
+    // versus the activity_venues join, and identify shared/unassigned venues.
+    // These are aggregate counts only; no session or listing values are returned.
+    $sessionAttribution = [];
+    if ($col('bh_sessions', 'venue_id') && $col('bh_venues', 'id')) {
+        if ($col('bh_venues', 'activity_id')) {
+            $sessionAttribution['sessions_on_legacy_activity_venues'] = $safeCount('SELECT COUNT(*) FROM bh_sessions s INNER JOIN bh_venues v ON v.id=s.venue_id WHERE v.activity_id IS NOT NULL');
+            $sessionAttribution['sessions_on_unassigned_legacy_venues'] = $safeCount('SELECT COUNT(*) FROM bh_sessions s INNER JOIN bh_venues v ON v.id=s.venue_id WHERE v.activity_id IS NULL');
+        }
+        if ($col('bh_activity_venues', 'activity_id') && $col('bh_activity_venues', 'venue_id')) {
+            $sessionAttribution['sessions_on_join_linked_venues'] = $safeCount('SELECT COUNT(*) FROM bh_sessions s WHERE EXISTS (SELECT 1 FROM bh_activity_venues av WHERE av.venue_id=s.venue_id)');
+            $sessionAttribution['sessions_on_venues_linked_to_multiple_activities'] = $safeCount('SELECT COUNT(*) FROM bh_sessions s WHERE (SELECT COUNT(DISTINCT av.activity_id) FROM bh_activity_venues av WHERE av.venue_id=s.venue_id)>1');
+            $sessionAttribution['sessions_on_venues_linked_to_one_activity'] = $safeCount('SELECT COUNT(*) FROM bh_sessions s WHERE (SELECT COUNT(DISTINCT av.activity_id) FROM bh_activity_venues av WHERE av.venue_id=s.venue_id)=1');
+            $sessionAttribution['sessions_on_venues_with_no_activity_link'] = $safeCount('SELECT COUNT(*) FROM bh_sessions s WHERE NOT EXISTS (SELECT 1 FROM bh_activity_venues av WHERE av.venue_id=s.venue_id)');
+            if ($col('bh_venues', 'activity_id')) {
+                $sessionAttribution['sessions_where_legacy_owner_disagrees_with_join_link'] = $safeCount('SELECT COUNT(*) FROM bh_sessions s INNER JOIN bh_venues v ON v.id=s.venue_id WHERE v.activity_id IS NOT NULL AND EXISTS (SELECT 1 FROM bh_activity_venues av WHERE av.venue_id=v.id AND av.activity_id<>v.activity_id)');
+            }
+        }
+    }
+
     // Booking reconciliation: keep recurring timetable sessions, legacy direct
     // bookings, and dated booking slots/reservations as distinct models.
     // These aggregate-only checks return counts, never booking or family details.
@@ -200,6 +221,7 @@ try {
         'row_counts' => $rowCounts,
         'relationship_integrity_counts' => $integrity,
         'booking_integrity_counts' => $bookingIntegrity,
+        'session_attribution_counts' => $sessionAttribution,
         'foreign_keys' => $foreignKeys,
         'relationship_hints' => $relationships,
         'note' => 'Schema metadata and exact table row counts only. No listing values, contact details, user records or other personal data were read. No database changes were made.'
