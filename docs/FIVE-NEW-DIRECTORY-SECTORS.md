@@ -1,4 +1,5 @@
 # Five new Directory sectors — staging build status
+> **Historical design reference — not current staging status.** This document records an earlier Directory design. For the installed tables, current admin tools, schema-upgrade step, public API wiring and verified status, use [`DIRECTORY-ARCHITECTURE-AND-STATUS-2026-11-22.md`](DIRECTORY-ARCHITECTURE-AND-STATUS-2026-11-22.md). Do not assume every workflow or schema described here is already enabled on staging.
 
 This build treats Events, Businesses, Childcare & Schools, Places & Days Out, and School Clubs as five new sections alongside the existing Listings directory. Listings continue to use the existing activity tables and are not migrated.
 
