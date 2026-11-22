@@ -55,6 +55,7 @@ foreach($allowed as $field){
  if($field==='verified_on'&&$v!==''&&!preg_match('/^\d{4}-\d{2}-\d{2}$/',$v))sector_reply(422,['ok'=>false,'message'=>'Enter the verification date as YYYY-MM-DD.']);
  $values[$field]=$v===''?null:$v;
 }
+if($key==='clubs'&&($values['age_min']??null)===null)sector_reply(422,['ok'=>false,'message'=>'Enter the minimum age for this School Club.']);
 if(isset($values['age_min'],$values['age_max'])&&$values['age_min']!==null&&$values['age_max']!==null&&$values['age_min']>$values['age_max'])sector_reply(422,['ok'=>false,'message'=>'Minimum age cannot be greater than maximum age.']);
 $status=($input['publish']??false)===true?'published':'draft';
 try{
