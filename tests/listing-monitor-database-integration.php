@@ -75,6 +75,13 @@ foreach ([
     $db->exec($sql);
 }
 $check('all Listing Checker and Listing Monitor migrations apply to MySQL', true);
+$websiteSettings = $db->query("SELECT setting_key,setting_value FROM bh_listing_checker_settings WHERE setting_key LIKE 'website_monitor_%'")->fetchAll(PDO::FETCH_KEY_PAIR);
+$check('website monitor has separate safe defaults for enable, interval, batch and runtime',
+    ($websiteSettings['website_monitor_enabled'] ?? '') === '0'
+    && ($websiteSettings['website_monitor_paused'] ?? '') === '0'
+    && ($websiteSettings['website_monitor_interval_hours'] ?? '') === '4'
+    && ($websiteSettings['website_monitor_batch_size'] ?? '') === '30'
+    && ($websiteSettings['website_monitor_max_runtime_seconds'] ?? '') === '240');
 
 $originalWebsite = 'https://old.example.org';
 $insertActivity = $db->prepare('INSERT INTO bh_activities(title,description,website) VALUES(?,?,?)');
