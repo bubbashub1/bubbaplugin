@@ -2,6 +2,8 @@
 const $=id=>document.getElementById(id);
 const frame=$('pageCanvas');
 let pages=[],page=null,device='desktop',layerNodes=[],draft=null,csrf='',revisionRows=[],currentBlock=null,currentSection=null,previewMode='published',draftHasValidationError=false;
+let idCounter=0;
+function newElementId(prefix){idCounter++;return prefix+'-'+Date.now()+'-'+idCounter;}
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function status(message){$('builderStatus').textContent=message;}
 function draftStatus(message){$('draftStatus').textContent=message;}
@@ -39,7 +41,7 @@ function selectNode(node){
   node.classList.add('bhvb-selected-preview');
   currentBlock=draft&&node.dataset.bhBlockId?findBlock(node.dataset.bhBlockId):null;
   currentSection=draft&&node.dataset.bhSectionId?findSection(node.dataset.bhSectionId):null;
-  ['addHeading','addParagraph','addButtonBlock'].forEach(id=>$(id).disabled=!currentSection||previewMode!=='draft');
+  const canAddBlocks=!!currentSection&&previewMode==='draft'&&(currentSection.children||[]).length<80;['addHeading','addParagraph','addButtonBlock'].forEach(id=>$(id).disabled=!canAddBlocks);$('duplicateContainer').disabled=!currentSection||previewMode!=='draft'||(draft?.sections||[]).length>=40;
   updateSelectionDetails(node);
   const index=layerNodes.indexOf(node);
   document.querySelectorAll('.bhvb-layer-button').forEach((button,i)=>button.classList.toggle('active',i===index));
@@ -140,7 +142,7 @@ function renderDraft(){
  frame.srcdoc='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="/"><style>*{box-sizing:border-box}body{margin:0;padding:32px;background:#f4f8f7;color:#17221c;font:16px Calibri,Arial,sans-serif}main{max-width:960px;margin:auto}h1,h2,h3,h4{font-family:Quicksand,Arial,sans-serif;color:#244d37}section{margin:0 0 18px;border-radius:14px}p{line-height:1.7}.cta{display:inline-block;padding:12px 20px;background:#416651;color:white;border-radius:999px;text-decoration:none;font-weight:700}@media(max-width:600px){body{padding:14px}}</style><style id="bhvb-mobile-overrides">'+mobileCss+'</style></head><body><main>'+titleMarkup+sections+'</main></body></html>';
  $('canvasEmpty').hidden=true;frame.hidden=false;
  $('canvasDimensions').textContent=(page?.title||title)+' · '+device+' · Draft';
- $('saveDraft').disabled=false;$('addContainer').disabled=false;
+ $('saveDraft').disabled=false;$('addContainer').disabled=(draft.sections||[]).length>=40;
 }
 function convertPage(){
  const doc=frame.contentDocument;
@@ -251,11 +253,12 @@ function toggleMobileOverrides(){if(!currentSection||previewMode!=='draft')retur
 ['sectionBackground','sectionPadding','sectionGap','containerWidth','containerHeight','containerRadius','containerBorderWidth','containerBorderColor','containerAlign','containerSpacing'].forEach(id=>$(id).addEventListener('input',applySectionEdit));
 $('mobileOverrideEnabled').addEventListener('change',toggleMobileOverrides);
 ['mobileContainerWidth','mobileContainerPadding','mobileContainerGap','mobileContainerHeight','mobileContainerRadius','mobileContainerBorderWidth','mobileContainerSpacing','mobileContainerAlign'].forEach(id=>$(id).addEventListener('input',applyMobileEdit));
-function addContainer(){if(!draft)return;draft.sections.push({id:'container-'+Date.now(),type:'section',props:{background:'#ffffff',padding:24,gap:16,width:100,min_height:120,radius:12,border_width:1,border_color:'#dce8df',align:'center',margin_bottom:18},children:[]});renderDraft();draftStatus('New container added. Select it in the canvas or Layers to style it.');}
-function addBlock(type){if(!currentSection||!draft)return;const id='block-'+Date.now();let block;if(type==='heading')block={id,type,props:{text:'New heading',level:2}};else if(type==='paragraph')block={id,type,props:{text:'Add your text here.'}};else block={id,type:'button',props:{text:'Learn more',href:'/index.html'}};currentSection.children.push(block);renderDraft();draftStatus('Element added to selected container. Select it in the preview to edit its content.');}
+function addContainer(){if(!draft)return;if(draft.sections.length>=40){draftStatus('The draft can contain up to 40 containers.');return;}draft.sections.push({id:newElementId('container'),type:'section',props:{background:'#ffffff',padding:24,gap:16,width:100,min_height:120,radius:12,border_width:1,border_color:'#dce8df',align:'center',margin_bottom:18},children:[]});currentSection=null;currentBlock=null;renderDraft();draftStatus('New container added. Select it in the canvas or Layers to style it.');}
+function addBlock(type){if(!currentSection||!draft)return;if((currentSection.children||[]).length>=80){draftStatus('A container can hold up to 80 elements.');return;}const id=newElementId('block');let block;if(type==='heading')block={id,type,props:{text:'New heading',level:2}};else if(type==='paragraph')block={id,type,props:{text:'Add your text here.'}};else block={id,type:'button',props:{text:'Learn more',href:'/index.html'}};currentSection.children.push(block);renderDraft();draftStatus('Element added to selected container. Select it in the preview to edit its content.');}
+function duplicateContainer(){if(!draft||!currentSection||previewMode!=='draft')return;if(draft.sections.length>=40){draftStatus('The draft can contain up to 40 containers.');return;}const index=draft.sections.indexOf(currentSection);if(index<0)return;const actions=window.BHVisualBuilderDocumentActions;if(!actions?.duplicateSection){draftStatus('Container duplication is unavailable. Refresh the editor and try again.');return;}const copy=actions.duplicateSection(currentSection,newElementId);draft.sections.splice(index+1,0,copy);currentSection=copy;currentBlock=null;frame.addEventListener('load',()=>{const node=frame.contentDocument?.querySelector('[data-bh-section-id="'+copy.id+'"]');if(node)selectNode(node);},{once:true});renderDraft();draftStatus('Container duplicated with its content, style and mobile settings. Save draft to keep the copy.');}
 function moveContainer(direction){if(!currentSection||!draft)return;const index=draft.sections.indexOf(currentSection),next=index+direction;if(next<0||next>=draft.sections.length)return;[draft.sections[index],draft.sections[next]]=[draft.sections[next],draft.sections[index]];renderDraft();draftStatus('Container moved. Save draft to keep this order.');}
 function deleteContainer(){if(!currentSection||!draft||draft.sections.length<2){draftStatus('A page must keep at least one container.');return;}if(!window.confirm('Delete this container and its contents from the private draft?'))return;draft.sections=draft.sections.filter(section=>section!==currentSection);currentSection=null;renderDraft();$('sectionControls').hidden=true;draftStatus('Container removed from the private draft. Save draft to keep the change.');}
-$('addContainer').addEventListener('click',addContainer);$('addHeading').addEventListener('click',()=>addBlock('heading'));$('addParagraph').addEventListener('click',()=>addBlock('paragraph'));$('addButtonBlock').addEventListener('click',()=>addBlock('button'));$('moveContainerUp').addEventListener('click',()=>moveContainer(-1));$('moveContainerDown').addEventListener('click',()=>moveContainer(1));$('deleteContainer').addEventListener('click',deleteContainer);
+$('addContainer').addEventListener('click',addContainer);$('duplicateContainer').addEventListener('click',duplicateContainer);$('addHeading').addEventListener('click',()=>addBlock('heading'));$('addParagraph').addEventListener('click',()=>addBlock('paragraph'));$('addButtonBlock').addEventListener('click',()=>addBlock('button'));$('moveContainerUp').addEventListener('click',()=>moveContainer(-1));$('moveContainerDown').addEventListener('click',()=>moveContainer(1));$('deleteContainer').addEventListener('click',deleteContainer);
 async function init(){
  try{
   const auth=await fetch('/admin-auth.php?action=check',{credentials:'same-origin',cache:'no-store'});
