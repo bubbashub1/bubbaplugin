@@ -38,7 +38,7 @@ The Businesses directory is a separate public directory of businesses and family
 - [x] Existing organiser-profile fields and activity-to-organiser relationship reviewed.
 - [x] Schema proposal updated to allow standalone business records, optional organiser-profile reuse and many-to-many links to existing Listings.
 - [x] Admin-only business management screen and create/edit workflow added; it fails closed until the staging schema exists.
-- [x] Public read-only Businesses feed with category, region and town filters, using the Listings directory card layout.
+- [x] Public read-only Businesses feed with keyword, category, region and dependent town filters, using the Listings directory card layout and shared hero search controls.
 - [x] Public feed reuses linked organiser website, email, phone and logo when no business-specific override exists.
 - [ ] Validate duplicate detection and multiple business-to-listing links.
 - [ ] Review schema against the actual staging database, take a staging backup and obtain explicit approval before installation.
@@ -83,3 +83,11 @@ This document and `database/events-directory-schema.sql` are a code-level founda
 - Business filters currently include keyword, category, region, town and sorting. Only published businesses are returned by the public API.
 - The public feed falls back to the linked organiser's website, email, phone and logo when the business record has no override.
 - The feed is read-only; admin creation and publication remain in the admin Businesses screen.
+
+### Listings-baseline review refinements
+
+- Businesses now uses the shared hero search controls from the Listings directory instead of presenting a second duplicate filter row.
+- Region changes repopulate the town selector to show towns in that region, matching the Listings region-to-town interaction.
+- The hero search heading and submit label switch between Activities and Businesses when the directory selector changes; the Activities heading and search behaviour are restored when switching back.
+- Businesses styling is placed in `directory-platform.css`, which is loaded by the directory page. The page cache-busts the updated stylesheet and scripts.
+- Organiser options for the admin editor are served by the Businesses API itself, avoiding a GET to the legacy organiser-profile API that can run a schema ALTER on older installations.
