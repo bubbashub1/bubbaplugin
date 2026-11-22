@@ -39,7 +39,8 @@ jobs:
             api/listing-monitor-website-cron.php \
             api/listing-monitor-website-rules.php \
             tests/listing-monitor-website-rules.php \
-            tests/listing-monitor-database-integration.php
+            tests/listing-monitor-database-integration.php \\
+            tests/listing-monitor-api-integration.php
           do
             php -l "$file"
           done
@@ -129,3 +130,9 @@ jobs:
           LISTING_MONITOR_TEST_USER: root
           LISTING_MONITOR_TEST_PASSWORD: root
         run: php tests/listing-monitor-database-integration.php
+      - name: Run Listing Monitor admin API integration tests
+        env:
+          LISTING_MONITOR_TEST_DSN: mysql:host=127.0.0.1;port=3306;dbname=listing_monitor_test;charset=utf8mb4
+          LISTING_MONITOR_TEST_USER: root
+          LISTING_MONITOR_TEST_PASSWORD: root
+        run: php tests/listing-monitor-api-integration.php
