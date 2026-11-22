@@ -93,3 +93,18 @@
 @media(max-width:760px){
   .bh-directory .bh-directory-sector-select{flex-basis:135px;width:135px!important;font-size:11px!important}
 }
+
+/* Businesses uses the same responsive listing-card shell as Activities. */
+.bh-directory #directoryBusinessesView[hidden],
+.bh-directory .directory-results-column[hidden]{display:none!important}
+.bh-directory #directoryBusinessesView{width:100%;min-width:0}
+.bh-directory #businessResults{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr));gap:18px}
+.bh-directory #businessResults .activity-card{min-width:0}
+.bh-directory #businessResults .activity-card .activity-footer{display:flex;align-items:center;justify-content:flex-start;gap:12px;flex-wrap:wrap}
+.bh-directory #businessResults .business-linked-count{color:#416651;font-size:12px;font-weight:700}
+.bh-directory .bh-directory-business-empty{grid-column:1/-1;padding:22px;border:1px solid #d8e6db;border-radius:16px;background:#fff;color:#416651}
+.bh-directory .bh-directory-business-empty h3{margin:0 0 6px;color:#144400}
+@media(max-width:760px){.bh-directory #businessResults{grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:12px}}
+
+/* Honour hidden controls even where directory form styles set display explicitly. */
+.bh-directory .directory-hero-search [hidden]{display:none!important}

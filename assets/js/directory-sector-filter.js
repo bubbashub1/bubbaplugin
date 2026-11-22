@@ -12,6 +12,8 @@
     const content=document.getElementById("directorySectorContent");
     const empty=document.getElementById("directorySectorComingSoon");
     if(!content||!empty)return;
+    const businesses=document.getElementById("directoryBusinessesView");
+    const listingsColumn=content.querySelector(".directory-results-column");
     try{await (window.bhDirectoryHeroReady||Promise.resolve());}catch(_){}
     const keyword=document.querySelector('[data-bh-hero-field="keyword"]');
     const keywordLabel=keyword?.closest("label");
@@ -38,17 +40,20 @@
     function activate(key,updateUrl,triggerView){
       if(!sectors[key])key="listings";
       select.value=key;
-      const live=key==="listings"||key==="events";
+      const live=key==="listings"||key==="events"||key==="businesses";
       content.hidden=!live;
       empty.hidden=live;
+      if(listingsColumn)listingsColumn.hidden=key==="businesses";
+      if(businesses)businesses.hidden=key!=="businesses";
       if(!live){
         emptyTitle.textContent=sectors[key].title;
         emptyIcon.textContent=sectors[key].icon;
         emptyText.textContent="We are preparing this searchable section, including its own filters and listing cards. It will appear here when its data and directory tools are ready.";
       }else if(triggerView){
         if(key==="events")window.dispatchEvent(new CustomEvent("bh:directory-show-events"));
-        else document.getElementById("directoryShowList")?.click();
+        else if(key==="listings")document.getElementById("directoryShowList")?.click();
       }
+      window.dispatchEvent(new CustomEvent("bh:directory-sector-change",{detail:{sector:key}}));
       if(updateUrl){
         const url=new URL(window.location.href);
         if(key==="listings")url.searchParams.delete("sector");

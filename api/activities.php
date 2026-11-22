@@ -270,7 +270,7 @@ try {
                     'email' => $row['organiser_email'] ?: '',
                     'phone' => $row['organiser_phone'] ?: '',
                     'website' => $row['organiser_website'] ?: '',
-                    'slug' => strtolower(trim(preg_replace('/[^a-z0-9]+/i', '-', (string)($row['organisation_name'] ?: 'organiser')), '-')),
+                    'slug' => strtolower(trim(preg_replace('/[^a-z0-9]+/i', '-', str_replace('&', 'and', (string)($row['organisation_name'] ?: 'organiser'))), '-')),
                 ],
                 'venues' => [],
                 'sessions' => [],

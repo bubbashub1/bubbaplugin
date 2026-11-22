@@ -243,7 +243,9 @@
 
     const renderMap = async venues => {
       const mapEl = document.getElementById("organiserMap");
-      if (!mapEl || !venues.length || typeof L === "undefined") return;
+      if (!mapEl) return;
+      if (!venues.length) { mapEl.innerHTML = '<div class="organiser-map-empty">Venue locations will appear here when published activities are added.</div>'; return; }
+      if (typeof L === "undefined") return;
 
       const geocode = async venue => {
         const lat = Number(venue.latitude ?? venue.lat);
@@ -366,7 +368,7 @@
           cleanSlug(activity.organiser_slug || activity.organiser_name || activity.organiser || "") === cleanSlug(requested)
         );
 
-        if (!organiserGroups.length) {
+        if (!publicContent || !publicContent.ok || !publicContent.organisation_name) {
           state.innerHTML = `
             <section class="organiser-empty">
               <div class="organiser-empty-icon">!</div>
@@ -378,8 +380,8 @@
           return;
         }
 
-        const first = organiserGroups[0];
-        const name = first.organiser_name || first.organiser || "Local organiser";
+        const first = organiserGroups[0] || {};
+        const name = first.organiser_name || first.organiser || publicContent.organisation_name || "Local organiser";
         const organiserSlug = cleanSlug(first.organiser_slug || name);
         const venues = getUniqueVenues(organiserGroups);
         const categories = [...new Set(organiserGroups.map(a => a.category).filter(Boolean))];
@@ -394,9 +396,9 @@
         const facebook = safeExternalUrl(publicContent.facebook_url || "");
         const instagram = safeExternalUrl(publicContent.instagram_url || "");
         const tiktok = safeExternalUrl(publicContent.tiktok_url || "");
-        const website = safeExternalUrl(first.organiser_website);
-        const email = String(first.organiser_email || "").trim();
-        const phone = String(first.organiser_phone || "").replace(/[^+\d]/g, "");
+        const website = safeExternalUrl(first.organiser_website || publicContent.website || "");
+        const email = String(first.organiser_email || publicContent.email || "").trim();
+        const phone = String(first.organiser_phone || publicContent.phone || "").replace(/[^+\d]/g, "");
         const faqs = Array.isArray(publicContent.faqs) ? publicContent.faqs : [];
         const termsUrl = "organiser/" + encodeURIComponent(organiserSlug) + "/terms.html";
 
@@ -454,7 +456,7 @@
               </div>
               <section id="activities" class="storefront-section" aria-label="Organiser activities">
                 <div class="storefront-grid">
-                  ${organiserGroups.slice(0,12).map(renderActivity).join("")}
+                  ${organiserGroups.length ? organiserGroups.slice(0,12).map(renderActivity).join("") : '<p class="organiser-no-activities">This class leader has a public Bubba Hub storefront. Their activities will appear here as soon as they are published.</p>'}
                 </div>
                 <p id="organiserActivityCount" class="organiser-list-progress" aria-live="polite"></p>
                 <div id="organiserScrollSentinel" class="organiser-scroll-sentinel" aria-hidden="true"></div>
@@ -574,7 +576,7 @@
         const count = document.getElementById("organiserActivityCount");
         let visible = Math.min(12, organiserGroups.length);
         const updateCount = () => {
-          if (count) count.textContent = "Showing " + visible + " of " + organiserGroups.length + " activities";
+          if (count) count.textContent = organiserGroups.length ? "Showing " + visible + " of " + organiserGroups.length + " activities" : "No published activities yet";
           if (sentinel) sentinel.hidden = visible >= organiserGroups.length;
         };
         updateCount();

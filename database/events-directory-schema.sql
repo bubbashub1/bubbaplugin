@@ -77,22 +77,36 @@ CREATE TABLE IF NOT EXISTS bh_directory_event_reviews (
 -- Places & Days Out, and School Clubs.
 -- Together with the Events tables above, this is the consolidated five-sector
 -- staging installation. Listings continue using the existing bh_activities.
--- All new records belong to an existing bh_organisers profile and are moderated.
+-- Specialist records are moderated; business records may be standalone or linked to an organiser.
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS bh_directory_businesses (
  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
- organiser_id BIGINT UNSIGNED NOT NULL, created_by_user_id BIGINT UNSIGNED NULL,
+ -- A business may be entered directly by an admin without a leader account.
+ -- When an existing organiser profile is linked, use it as the canonical contact
+ -- source; do not copy its name, email, phone or website into this record.
+ organiser_id BIGINT UNSIGNED NULL, created_by_user_id BIGINT UNSIGNED NULL,
  title VARCHAR(190) NOT NULL, category VARCHAR(120) NOT NULL, summary VARCHAR(500) NULL,
- description MEDIUMTEXT NOT NULL, town VARCHAR(120) NOT NULL, region VARCHAR(120) NULL,
- address VARCHAR(500) NULL, postcode VARCHAR(20) NULL, website_url VARCHAR(1000) NULL,
- contact_email VARCHAR(190) NULL, contact_phone VARCHAR(60) NULL,
+ description MEDIUMTEXT NULL, town VARCHAR(120) NOT NULL, region VARCHAR(120) NULL,
+ address VARCHAR(500) NULL, postcode VARCHAR(20) NULL,
+ -- These are optional business-specific overrides only. Empty values fall back
+ -- to the linked organiser profile at read time.
+ website_url VARCHAR(1000) NULL, contact_email VARCHAR(190) NULL, contact_phone VARCHAR(60) NULL,
  status ENUM('draft','pending','published','rejected','archived') NOT NULL DEFAULT 'draft',
  submitted_at DATETIME NULL, reviewed_at DATETIME NULL, reviewed_by_user_id BIGINT UNSIGNED NULL,
  review_note VARCHAR(2000) NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  KEY idx_business_owner_status (organiser_id,status), KEY idx_business_town_category (town,category),
  KEY idx_business_title (title)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- One business can advertise multiple existing Listings without copying them.
+CREATE TABLE IF NOT EXISTS bh_directory_business_listings (
+ business_id BIGINT UNSIGNED NOT NULL,
+ activity_id BIGINT UNSIGNED NOT NULL,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ PRIMARY KEY (business_id,activity_id),
+ KEY idx_business_listing_activity (activity_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS bh_directory_childcare (
