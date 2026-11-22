@@ -792,8 +792,8 @@ function mountFullScreenEditor(){
  const brand=document.createElement('a');brand.className='bhvb-editor-brand';brand.href='/admin.html';brand.textContent='Bubba Hub';
  const title=document.createElement('span');title.className='bhvb-editor-title';title.textContent='Page Builder';
  const tools=document.createElement('div');tools.className='bhvb-editor-toptools';
- const save=$('saveDraft'),prepare=$('prepareDraft'),actions=document.querySelector('.bhvb-builder-actions');
- if(save)tools.append(save);if(prepare)tools.append(prepare);
+ const save=$('saveDraft'),prepare=$('prepareDraft'),setup=$('setupDraftStorage'),actions=document.querySelector('.bhvb-builder-actions');
+ if(save)tools.append(save);if(prepare)tools.append(prepare);if(setup)tools.append(setup);
  const status=$('builderStatus'),draftMessage=$('draftStatus'),mediaLibrary=$('mediaLibrary'),revisions=$('revisionControls');if(status)tools.append(status);if(draftMessage)tools.append(draftMessage);
  top.append(brand,title,toolbar,tools);
  const body=document.createElement('div');body.className='bhvb-editor-body';
