@@ -8,6 +8,7 @@ on:
       - 'api/auth.php'
       - 'api/lib/business-storefront.php'
       - 'api/admin-directory-businesses.php'
+      - 'admin/admin-directory-businesses.html'
       - 'api/organiser-terms.php'
       - 'api/activities.php'
       - 'assets/js/directory-businesses.js'
@@ -92,5 +93,13 @@ jobs:
           assert "publicContent.organisation_name" in page, "Public organiser profile should load without activity records"
           assert "Their activities will appear here as soon as they are published" in page, "Missing no-activity storefront state"
           assert "'website'=>$row['website']" in terms and "'email'=>$row['email']" in terms, "Public organiser contact fields missing"
+          helper = Path("api/lib/business-storefront.php").read_text()
+          auth = Path("api/auth.php").read_text()
+          admin_api = Path("api/admin-directory-businesses.php").read_text()
+          admin_page = Path("admin/admin-directory-businesses.html").read_text()
+          assert "bh_ensure_business_storefront" in auth and "bh_ensure_business_storefront" in helper, "Leader registration should create storefront records"
+          assert "'status'=>'draft'" in helper, "Automatic storefronts must remain drafts"
+          assert "create_missing_leader_storefronts" in admin_api and "create_missing_leader_storefronts" in admin_page, "Admin backfill action is not wired up"
+          assert "already_had_storefront" in admin_api, "Backfill should report existing storefronts"
           print("Automatic leader storefront checks passed")
           PY
