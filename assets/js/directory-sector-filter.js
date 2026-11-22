@@ -16,19 +16,22 @@
     const keyword=document.querySelector('[data-bh-hero-field="keyword"]');
     const keywordLabel=keyword?.closest("label");
     if(!keywordLabel)return;
-    const select=document.createElement("select");
-    select.id="directorySectorSelect";
-    select.name="sector";
-    select.className="bh-directory-sector-select";
-    select.setAttribute("aria-label","Choose a directory");
-    select.title="Choose which directory to search";
-    Object.entries(sectors).forEach(([key,sector])=>{
-      const option=document.createElement("option");
-      option.value=key;
-      option.textContent=sector.title;
-      select.appendChild(option);
-    });
-    keywordLabel.appendChild(select);
+    let select=document.getElementById("directorySectorSelect");
+    if(!select){
+      select=document.createElement("select");
+      select.id="directorySectorSelect";
+      select.name="sector";
+      select.className="bh-directory-sector-select";
+      select.setAttribute("aria-label","Choose a directory");
+      select.title="Choose which directory to search";
+      Object.entries(sectors).forEach(([key,sector])=>{
+        const option=document.createElement("option");
+        option.value=key;
+        option.textContent=sector.title;
+        select.appendChild(option);
+      });
+      keywordLabel.appendChild(select);
+    }
     const emptyTitle=document.getElementById("directorySectorEmptyTitle");
     const emptyIcon=document.getElementById("directorySectorEmptyIcon");
     const emptyText=document.getElementById("directorySectorEmptyText");
