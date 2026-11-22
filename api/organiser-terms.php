@@ -10,7 +10,7 @@ try {
     $slug=preg_replace('/[^a-z0-9]+/','-',str_replace('&','and',$slug));
     $slug=trim((string)$slug,'-');
     if($slug===''){http_response_code(400);echo json_encode(['ok'=>false,'error'=>'slug_required']);exit;}
-    $q=$db->prepare("SELECT id,organisation_name,terms_content,about_content,logo_url,facebook_url,instagram_url,tiktok_url FROM bh_organisers WHERE LOWER(TRIM(REPLACE(REPLACE(organisation_name,'&','and'),' ','-'))) = ? LIMIT 1");
+    $q=$db->prepare("SELECT id,organisation_name,terms_content,about_content,logo_url,facebook_url,instagram_url,tiktok_url,website,email,phone FROM bh_organisers WHERE LOWER(TRIM(REPLACE(REPLACE(organisation_name,'&','and'),' ','-'))) = ? LIMIT 1");
     $q->execute([$slug]);
     $row=$q->fetch();
     if(!$row){
@@ -30,7 +30,7 @@ try {
         $f->execute([(int)$row['id']]);
         $faqs=$f->fetchAll();
     }catch(Throwable $ignored){}
-    echo json_encode(['ok'=>true,'organisation_name'=>$row['organisation_name'],'terms_content'=>$row['terms_content']??'','about_content'=>$row['about_content']??'','logo_url'=>$row['logo_url']??'','facebook_url'=>$row['facebook_url']??'','instagram_url'=>$row['instagram_url']??'','tiktok_url'=>$row['tiktok_url']??'','faqs'=>$faqs],JSON_UNESCAPED_SLASHES);
+    echo json_encode(['ok'=>true,'organisation_name'=>$row['organisation_name'],'terms_content'=>$row['terms_content']??'','about_content'=>$row['about_content']??'','logo_url'=>$row['logo_url']??'','facebook_url'=>$row['facebook_url']??'','instagram_url'=>$row['instagram_url']??'','tiktok_url'=>$row['tiktok_url']??'','website'=>$row['website']??'','email'=>$row['email']??'','phone'=>$row['phone']??'','faqs'=>$faqs],JSON_UNESCAPED_SLASHES);
 } catch(Throwable $e) {
     http_response_code(500);
     echo json_encode(['ok'=>false,'error'=>'terms_load_failed']);
