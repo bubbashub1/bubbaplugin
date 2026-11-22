@@ -82,6 +82,7 @@ async function openListingReview(id){
   }
   const missing=Array.isArray(health.missing)?health.missing:[];
   const complete=Array.isArray(health.complete)?health.complete:[];
+  const completeDetails=Array.isArray(health.complete_details)?health.complete_details:[];
   const issues=Array.isArray(health.validation_issues)?health.validation_issues:[];
   const duplicate=!!health.possible_duplicate;
   const findingLabel=finding?.finding_type?String(finding.finding_type).replace(/_/g,' '):'';
@@ -89,7 +90,8 @@ async function openListingReview(id){
   const score=health.health_score===null||health.health_score===undefined?'Not scored':Number(health.health_score)+'%';
   let sections='';
   sections+='<section class="listing-review-report-section"><h3>Missing information</h3>'+reviewList(missing,'No missing core information was detected.')+'</section>';
-  sections+='<section class="listing-review-report-section"><h3>Already on the listing</h3>'+reviewList(complete,'No fields were available to assess.')+'</section>';
+  const completeHtml=completeDetails.length?'<ul>'+completeDetails.map(item=>'<li><strong>'+escape(item.label)+':</strong> '+escape(item.value)+'</li>').join('')+'</ul>':reviewList(complete,'No fields were available to assess.');
+  sections+='<section class="listing-review-report-section"><h3>Already on the listing</h3>'+completeHtml+'</section>';
   sections+='<section class="listing-review-report-section"><h3>Information to check</h3>'+reviewList(issues,'No format or date issues were detected.')+(duplicate?'<p class="listing-review-warning">Possible duplicate: another listing has a similar title and location. Please compare before changing anything.</p>':'')+(finding?'<p class="listing-review-warning">Outstanding monitor finding: '+escape(findingLabel)+'.</p>':'')+'</section>';
   sections+='<p class="listing-review-report-note">This is an automated completeness and validation report, not confirmation that every detail is current. A missing website response does not mean an organisation has closed. Nothing has been changed.</p>';
   reviewBody.innerHTML='<div class="listing-review-score"><strong>'+escape(score)+'</strong><span>Completeness score</span><span class="listing-review-result '+(hasConcerns?'needs-attention':'looks-good')+'">'+(hasConcerns?'Needs attention':'No issues detected')+'</span></div>'+sections;
