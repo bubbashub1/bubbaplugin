@@ -160,10 +160,15 @@ try {
     $check('approval requires explicit confirmation', $notConfirmed['status'] === 422);
 
     $approved = $request('', 'POST', ['action' => 'approve_draft', 'csrf' => $csrf, 'draft_id' => $draftId, 'confirm' => true], $validSession);
-    $audit = $db->query("SELECT admin_username,before_values,approved_values FROM bh_listing_monitor_audit WHERE draft_id={$draftId}")->fetch();
-    $check('confirmed approval updates selected field and records named admin audit', $approved['status'] === 200
+    $approvalRecord = $db->query("SELECT status,reviewed_by,reviewed_at,original_snapshot,proposed_changes,source_url FROM bh_listing_monitor_drafts WHERE id={$draftId}")->fetch();
+    $check('confirmed approval updates selected field and retains named admin, before/after values and source', $approved['status'] === 200
         && $db->query("SELECT title FROM bh_activities WHERE id={$activityId}")->fetchColumn() === 'Revised suggestion'
-        && ($audit['admin_username'] ?? '') === 'integration-admin');
+        && ($approvalRecord['status'] ?? '') === 'approved'
+        && ($approvalRecord['reviewed_by'] ?? '') === 'integration-admin'
+        && !empty($approvalRecord['reviewed_at'])
+        && json_decode($approvalRecord['original_snapshot'], true)['title'] === 'API test activity'
+        && json_decode($approvalRecord['proposed_changes'], true)['title'] === 'Revised suggestion'
+        && ($approvalRecord['source_url'] ?? '') === 'https://api-test.example.org');
 
     $insertActivity->execute(['Stale API test activity', 'Original description', 'https://stale-test.example.org']);
     $staleActivityId = (int)$db->lastInsertId();
@@ -173,10 +178,10 @@ try {
     $staleDraftId = (int)($staleSaved['json']['draft_id'] ?? 0);
     $db->prepare('UPDATE bh_activities SET title=? WHERE id=?')->execute(['Changed elsewhere', $staleActivityId]);
     $staleApproval = $request('', 'POST', ['action' => 'approve_draft', 'csrf' => $csrf, 'draft_id' => $staleDraftId, 'confirm' => true], $validSession);
-    $staleAuditCount = (int)$db->query("SELECT COUNT(*) FROM bh_listing_monitor_audit WHERE draft_id={$staleDraftId}")->fetchColumn();
+    $staleDraftStatus = $db->query("SELECT status FROM bh_listing_monitor_drafts WHERE id={$staleDraftId}")->fetchColumn();
     $check('API blocks approval when a live field changed after the snapshot', $staleApproval['status'] === 409
         && $db->query("SELECT title FROM bh_activities WHERE id={$staleActivityId}")->fetchColumn() === 'Changed elsewhere'
-        && $staleAuditCount === 0);
+        && $staleDraftStatus === 'draft');
 
     $invalidUrl = $request('', 'POST', ['action' => 'save_draft', 'csrf' => $csrf, 'finding_id' => $staleFindingId, 'changes' => ['website' => 'javascript:alert(1)']], $validSession);
     $check('API rejects unsafe website schemes in proposed fields', $invalidUrl['status'] === 422);
