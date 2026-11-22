@@ -123,6 +123,7 @@ const bhInitDirectory=async()=>{
       }
     };
     updateTowns(canonicalRegion(params.get("region")),params.get("town")||"");
+    window.dispatchEvent(new CustomEvent("bh:directory-listings-filters-ready"));
     for(const id of ["area","heroRegion"]){
       $(id)?.addEventListener("change",()=>{
         const region=$(id).value;
