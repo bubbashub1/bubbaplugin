@@ -38,8 +38,8 @@ The Businesses directory is a separate public directory of businesses and family
 - [x] Existing organiser-profile fields and activity-to-organiser relationship reviewed.
 - [x] Schema proposal updated to allow standalone business records, optional organiser-profile reuse and many-to-many links to existing Listings.
 - [x] Admin-only business management screen and create/edit workflow added; it fails closed until the staging schema exists.
-- [ ] Read-only public Businesses feed with keyword, category, region and town filters.
-- [ ] Confirm linked organiser contact fallback and business-specific overrides.
+- [x] Public read-only Businesses feed with category, region and town filters, using the Listings directory card layout.
+- [x] Public feed reuses linked organiser website, email, phone and logo when no business-specific override exists.
 - [ ] Validate duplicate detection and multiple business-to-listing links.
 - [ ] Review schema against the actual staging database, take a staging backup and obtain explicit approval before installation.
 - [ ] Browser and permission tests before enabling public search.
@@ -75,3 +75,11 @@ This document and `database/events-directory-schema.sql` are a code-level founda
 - Saves as draft by default. Publishing is an explicit admin action.
 - Both the page and API require the new Businesses schema; the API returns a clear schema-not-installed response and performs no writes when the tables are absent.
 - This screen has not yet been browser-tested because the schema is intentionally not installed.
+
+### Public Businesses directory view
+
+- Businesses appears inside the existing `directory.html` page and keeps the Listings directory's main shell and activity-card visual treatment.
+- The sector selector switches between Listings, Events and Businesses without sending families to a separate visual system.
+- Business filters currently include keyword, category, region, town and sorting. Only published businesses are returned by the public API.
+- The public feed falls back to the linked organiser's website, email, phone and logo when the business record has no override.
+- The feed is read-only; admin creation and publication remain in the admin Businesses screen.
