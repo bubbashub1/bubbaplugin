@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const frame=$('pageCanvas');
-let pages=[],page=null,device='desktop',layerNodes=[],draft=null,csrf='',revisionRows=[],currentBlock=null,currentSection=null,previewMode='published',draftHasValidationError=false,inlineEditingNode=null,mediaLibraryTarget='block',searchWidgetDefaults=null;
+let pages=[],page=null,device='desktop',layerNodes=[],draft=null,csrf='',revisionRows=[],currentBlock=null,currentSection=null,previewMode='published',draftHasValidationError=false,inlineEditingNode=null,mediaLibraryTarget='block',searchWidgetDefaults=null,searchDirectorySchema={};
 function normalizedColumnWidths(value,count){const parts=Array.isArray(value)?value:String(value||'').split(',');const widths=parts.slice(0,count).map(v=>Math.max(10,Math.min(90,Number(v)||0)));if(widths.length!==count||widths.some(v=>!v))return Array(count).fill(100/count);const total=widths.reduce((a,b)=>a+b,0);return widths.map(v=>Math.round(v/total*100));}
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function status(message){$('builderStatus').textContent=message;}
@@ -33,7 +33,7 @@ function updateSelectionDetails(node){
   const isButton=currentBlock.type==='button';
   $('editHref').hidden=!isButton;$('editHrefLabel').hidden=!isButton;
   $('editHref').value=isButton?(props.href||''):'';
-  if(currentBlock.type==='directory_search'){$('searchWidgetScope').value=props.search_scope||'all';$('searchWidgetLabel').value=props.label||'Search Bubba Hub';$('searchWidgetPlaceholder').value=props.placeholder||'What are you looking for?';$('searchWidgetFilters').checked=props.show_filters!==false;}
+  if(currentBlock.type==='directory_search'){$('searchWidgetScope').value=props.search_scope||'all';$('searchWidgetLabel').value=props.label||'Search Bubba Hub';$('searchWidgetPlaceholder').value=props.placeholder||'What are you looking for?';$('searchWidgetFilters').checked=props.show_filters!==false;renderSearchWidgetFields();}
   const size=Math.max(10,Math.min(72,Number(props.font_size)||(currentBlock.type==='heading'?32:16)));
   $('elementFontSize').value=size;$('elementFontSizeValue').textContent=size+'px';
   $('elementWidth').value=Math.max(10,Math.min(100,Number(props.width)||100));$('elementWidthValue').textContent=$('elementWidth').value+'%';
@@ -713,6 +713,40 @@ document.querySelectorAll('[data-bh-add]').forEach(button=>{
  button.addEventListener('dragend',()=>button.classList.remove('is-dragging'));
  button.addEventListener('click',()=>$(button.dataset.bhAdd)?.click());
 });
+function renderSearchWidgetFields(){
+ const wrap=$('searchWidgetFieldSettings');if(!wrap)return;wrap.replaceChildren();
+ const scope=$('searchWidgetScope')?.value||'all',keys=scope==='all'?Object.keys(searchDirectorySchema):[scope];
+ const searchMap=currentBlock?.props?.search_fields||{},filterMap=currentBlock?.props?.filter_fields||{};
+ if(!keys.some(key=>searchDirectorySchema[key])){wrap.textContent='Available field settings could not be loaded. Refresh the builder and try again.';return;}
+ keys.forEach(key=>{
+  const meta=searchDirectorySchema[key];if(!meta)return;
+  const group=document.createElement('section');group.className='bhvb-search-field-group';
+  const heading=document.createElement('strong');heading.textContent=meta.label;group.append(heading);
+  const addFields=(title,kind,columns,map,defaults)=>{
+   const sub=document.createElement('p');sub.className='bhvb-search-field-title';sub.textContent=title;group.append(sub);
+   (columns||[]).filter(c=>kind==='search'?c.searchable:c.filterable).forEach(c=>{
+    const label=document.createElement('label');label.className='bhvb-search-field-option';
+    const input=document.createElement('input');input.type='checkbox';input.dataset.searchDirectory=key;input.dataset.searchField=c.field;input.dataset.searchKind=kind;
+    input.checked=Array.isArray(map[key])?map[key].includes(c.field):defaults.includes(c.field);
+    label.append(input,document.createTextNode(c.field.replaceAll('_',' ')));group.append(label);
+   });
+  };
+  addFields('Searchable fields','search',meta.columns,searchMap,['title','summary','description','town','region','category','school_name','venue_name']);
+  addFields('Available filters','filter',meta.columns,filterMap,meta.columns.filter(c=>c.filterable).map(c=>c.field));
+  if(key==='events'){const note=document.createElement('p');note.className='bhvb-edit-help';note.textContent='Event date filters use scheduled event occurrences; cancelled occurrences are excluded.';group.append(note);}
+  wrap.append(group);
+ });
+}
+function updateSearchWidgetFields(){
+ if(!currentBlock||currentBlock.type!=='directory_search'||previewMode!=='draft')return;
+ const search={},filters={};
+ $('searchWidgetFieldSettings')?.querySelectorAll('input[type="checkbox"]:checked').forEach(input=>{
+  const target=input.dataset.searchKind==='search'?search:filters,key=input.dataset.searchDirectory;
+  (target[key]||(target[key]=[])).push(input.dataset.searchField);
+ });
+ currentBlock.props.search_fields=search;currentBlock.props.filter_fields=filters;
+ draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Searchable fields and filters changed. Save draft when ready.');
+}
 function updateSearchWidgetSetting(key,value){
  if(!currentBlock||currentBlock.type!=='directory_search'||previewMode!=='draft')return;
  currentBlock.props=currentBlock.props||{};currentBlock.props[key]=value;
@@ -721,16 +755,17 @@ function updateSearchWidgetSetting(key,value){
  if(node){const label=node.querySelector('strong'),input=node.querySelector('input');if(label)label.textContent=currentBlock.props.label||'Search Bubba Hub';if(input)input.placeholder=currentBlock.props.placeholder||'What are you looking for?';const note=node.querySelector('small');if(note){const names={all:'All directories',activities:'Activities / Classes',businesses:'Businesses',childcare:'Childcare',events:'Events',places:'Places',school_clubs:'School Clubs'};note.textContent=(names[currentBlock.props.search_scope]||names.all)+(currentBlock.props.show_filters?' · Filters enabled':' · Filters hidden');}}
  $('selectedText').textContent=currentBlock.props.label||'Search Bubba Hub';draftStatus('Search widget settings changed. Save draft when ready.');
 }
-$('searchWidgetScope').addEventListener('change',()=>updateSearchWidgetSetting('search_scope',$('searchWidgetScope').value));
+$('searchWidgetScope').addEventListener('change',()=>{updateSearchWidgetSetting('search_scope',$('searchWidgetScope').value);renderSearchWidgetFields();});
 $('searchWidgetLabel').addEventListener('input',()=>updateSearchWidgetSetting('label',$('searchWidgetLabel').value.slice(0,100)));
 $('searchWidgetPlaceholder').addEventListener('input',()=>updateSearchWidgetSetting('placeholder',$('searchWidgetPlaceholder').value.slice(0,150)));
 $('searchWidgetFilters').addEventListener('change',()=>updateSearchWidgetSetting('show_filters',$('searchWidgetFilters').checked));
+$('searchWidgetFieldSettings').addEventListener('change',updateSearchWidgetFields);
 async function loadSearchWidgetLibrary(){
  const button=$('addDirectorySearch');if(!button)return;
  try{const response=await fetch('/api/admin-visual-widgets.php',{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||'Widget library unavailable.');
  const widget=(data.widgets||[]).find(item=>item.widget_key==='directory-search'&&item.enabled);
  if(!widget){button.hidden=true;return;}
- searchWidgetDefaults=widget.settings||{};button.hidden=false;button.disabled=false;
+ searchWidgetDefaults=widget.settings||{};searchDirectorySchema=data.directory_schema||{};button.hidden=false;button.disabled=false;if(currentBlock?.type==='directory_search')renderSearchWidgetFields();
  }catch(error){button.hidden=true;status('Widget Library could not be checked. Open Widget Library to confirm Search widget is enabled.');}
 }
 $('duplicateElement').addEventListener('click',duplicateSelectedBlock);$('deleteElement').addEventListener('click',deleteSelectedBlock);$('duplicateContainer').addEventListener('click',duplicateSelectedContainer);$('addContainer').addEventListener('click',addContainer);document.querySelectorAll('[data-section-preset]').forEach(button=>button.addEventListener('click',()=>addSectionPreset(button.dataset.sectionPreset)));$('addHeading').addEventListener('click',()=>addBlock('heading'));$('addParagraph').addEventListener('click',()=>addBlock('paragraph'));$('addButtonBlock').addEventListener('click',()=>addBlock('button'));$('addImageBlock').addEventListener('click',()=>addBlock('image'));$('addDirectorySearch').addEventListener('click',()=>addBlock('directory_search'));$('moveContainerUp').addEventListener('click',()=>moveContainer(-1));$('moveContainerDown').addEventListener('click',()=>moveContainer(1));$('deleteContainer').addEventListener('click',deleteContainer);
