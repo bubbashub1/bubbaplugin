@@ -6,6 +6,7 @@ declare(strict_types=1);
  * It never edits, closes, hides or deletes an activity.
  */
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
+require_once __DIR__.'/listing-monitor-website-rules.php';
 require_once __DIR__.'/db.php';
 $db=bh_mysql();
 $required=['bh_listing_checker_settings','bh_listing_monitor_website_state','bh_listing_monitor_website_history','bh_listing_check_findings','bh_activities'];
@@ -28,7 +29,7 @@ function bh_lm_public_host(string $host): array {
   if(!$ips)throw new RuntimeException('DNS lookup failed (no usable address records).');
   if(!$ipv4)throw new RuntimeException('IPv6-only website cannot be checked by this worker yet.');
  }
- foreach($ips as $ip){if(!filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE))throw new RuntimeException('Host resolves to a private or reserved IP address.');}
+ foreach($ips as $ip){if(!bh_lm_is_public_ip($ip))throw new RuntimeException('Host resolves to a private or reserved IP address.');}
  return array_values(array_unique(array_filter($ips,static fn($ip)=>filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4))));
 }
 function bh_lm_fetch(string $url): array {
@@ -50,16 +51,7 @@ function bh_lm_fetch(string $url): array {
   if(in_array($status,[301,302,303,307,308],true)){
    if($hop===3)throw new RuntimeException('Website redirected too many times.');
    if($location==='')throw new RuntimeException('Website redirect did not provide a destination.');
-   if(str_starts_with($location,'//')){$location=$scheme.':'.$location;}
-   elseif(!str_starts_with($location,'http://')&&!str_starts_with($location,'https://')){
-    $base=$scheme.'://'.$host.($port!==($scheme==='https'?443:80)?':'.$port:'');
-    $currentPath=(string)($p['path']??'/');
-    if(str_starts_with($location,'/'))$targetPath=$location;
-    elseif(str_starts_with($location,'?'))$targetPath=$currentPath.$location;
-    else $targetPath=rtrim(dirname($currentPath),'/').'/'.$location;
-    $location=$base.$targetPath;
-   }
-   $url=$location;continue;
+   $url=bh_lm_resolve_redirect($location,$scheme,$host,$port,(string)($p['path']??'/'));continue;
   }
   return ['status'=>$status,'body'=>$body,'url'=>$url];
  }
@@ -84,14 +76,7 @@ try{
  foreach($items as $item){
   $id=(int)$item['activity_id'];$url=trim((string)$item['website_url']);$status=null;$evidence='';$outcome='unable_to_verify';$finalUrl=$url;
   try{
-   $result=bh_lm_fetch($url);$status=$result['status'];$finalUrl=$result['url'];$plain=html_entity_decode(strip_tags($result['body']),ENT_QUOTES|ENT_HTML5,'UTF-8');$plain=preg_replace('/\s+/u',' ',trim($plain));$lower=strtolower($plain);
-   if($status===404||$status===410){$outcome='possible_closure';$evidence='Website returned HTTP '.$status.'. This is a dead-link warning, not proof that the activity has closed.';}
-   elseif($status>=200&&$status<300&&preg_match('/\\b(permanently closed|business has closed|we have closed|ceased trading|no longer trading|closing permanently)\\b/u',$lower,$m)){ $outcome='closure_indicated';$pos=stripos($lower,$m[0]);$evidence=substr($plain,max(0,(int)$pos-160),360); }
-   elseif($status>=200&&$status<300&&preg_match('/\\b(temporarily closed|closed for the holidays|seasonal closure|closed today|reopening on|back open on)\\b/u',$lower,$m)){ $outcome='temporary_closure';$pos=stripos($lower,$m[0]);$evidence=substr($plain,max(0,(int)$pos-160),360); }
-
-   elseif($status>=200&&$status<400){$outcome='healthy';$evidence='Website responded successfully (HTTP '.$status.').';}
-   elseif($status>=500){$outcome='unable_to_verify';$evidence='Website server error HTTP '.$status.'.';}
-   else{$outcome='unable_to_verify';$evidence='Website returned HTTP '.$status.'.';}
+   $result=bh_lm_fetch($url);$status=$result['status'];$finalUrl=$result['url'];$classification=bh_lm_classify_response($status,$result['body']);$outcome=$classification['outcome'];$evidence=$classification['evidence'];
   }catch(Throwable $e){
    $message=$e->getMessage();$outcome='unable_to_verify';
    $evidence=substr($message,0,500);
