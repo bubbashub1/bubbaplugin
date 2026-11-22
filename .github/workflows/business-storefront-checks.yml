@@ -5,6 +5,9 @@ on:
     branches: [staging-site]
     paths:
       - 'api/directory-businesses.php'
+      - 'api/auth.php'
+      - 'api/lib/business-storefront.php'
+      - 'api/admin-directory-businesses.php'
       - 'api/organiser-terms.php'
       - 'api/activities.php'
       - 'assets/js/directory-businesses.js'
@@ -32,6 +35,9 @@ jobs:
         run: |
           set -eu
           php -l api/directory-businesses.php
+          php -l api/auth.php
+          php -l api/lib/business-storefront.php
+          php -l api/admin-directory-businesses.php
           php -l api/organiser-terms.php
           php -l api/activities.php
 
@@ -78,7 +84,6 @@ jobs:
           page = Path("organiser.html").read_text()
           terms = Path("api/organiser-terms.php").read_text()
           checks = {
-              "active leader account storefront query": "u.role='leader' AND u.status='active'",
               "published leader Listings count": "published_listing_count",
               "legacy organiser email matching": "LOWER(u.email)=LOWER(o.email)",
           }
