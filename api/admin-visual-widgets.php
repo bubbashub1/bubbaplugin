@@ -47,7 +47,33 @@ $presets=[
 ['directory-search','directory_search','Search widget','Content','A search bar for finding activities, businesses and other directory listings.',1,['label'=>'Search Bubba Hub','placeholder'=>'What are you looking for?','help_text'=>'','search_scope'=>'all','show_filters'=>true]]
 ];
 $ins=$db->prepare("INSERT IGNORE INTO bh_visual_widget_library(widget_key,widget_type,name,category,description,enabled,settings_json) VALUES(?,?,?,?,?,?,?)");foreach($presets as $w)$ins->execute([$w[0],$w[1],$w[2],$w[3],$w[4],$w[5],json_encode($w[6],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)]);
-if($method==='GET'){$q=$db->query("SELECT id,widget_key,widget_type,name,category,description,enabled,settings_json,updated_at FROM bh_visual_widget_library ORDER BY FIELD(category,'Content','Forms','Interactive','Layout'),name");$items=[];foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){$row['enabled']=(bool)$row['enabled'];$row['settings']=json_decode((string)$row['settings_json'],true)?:[];unset($row['settings_json']);$items[]=$row;}bh_wl_out(200,['ok'=>true,'csrf'=>$csrf,'widgets'=>$items]);}
+$directoryTables = [
+ 'activities'=>['label'=>'Activities / Classes','table'=>'bh_activities','date_table'=>null],
+ 'businesses'=>['label'=>'Businesses','table'=>'bh_directory_businesses','date_table'=>null],
+ 'childcare'=>['label'=>'Childcare','table'=>'bh_directory_childcare','date_table'=>null],
+ 'events'=>['label'=>'Events','table'=>'bh_directory_events','date_table'=>'bh_directory_event_occurrences'],
+ 'places'=>['label'=>'Places','table'=>'bh_directory_places','date_table'=>null],
+ 'school_clubs'=>['label'=>'School Clubs','table'=>'bh_directory_school_clubs','date_table'=>null],
+];
+$directorySchema=[];
+foreach($directoryTables as $key=>$config){
+ $columns=[];
+ $columnQ=$db->query("SHOW COLUMNS FROM `".$config['table']."`");
+ foreach($columnQ->fetchAll(PDO::FETCH_ASSOC) as $column){
+  $field=(string)$column['Field'];$type=strtolower((string)$column['Type']);
+  if(in_array($field,['id','organiser_id','leader_id','created_by_user_id','reviewed_by_user_id','review_note','submitted_at','reviewed_at','created_at','updated_at','status','slug','facebook_url','instagram_url','contact_email','contact_phone','website','website_url','booking_url','verification_url'],true))continue;
+  $textual=(bool)preg_match('/^(varchar|char|text|mediumtext|longtext|tinytext)/',$type);
+  $numeric=(bool)preg_match('/^(tinyint|smallint|mediumint|int|bigint|decimal|float|double)/',$type);
+  $columns[]=['field'=>$field,'type'=>$type,'searchable'=>$textual,'filterable'=>in_array($field,['category','town','region','age_min','age_max','age_min_months','age_max_months','price','price_from','price_type','term_time_only','school_name','venue_name'],true)];
+ }
+ $directorySchema[$key]=['label'=>$config['label'],'table'=>$config['table'],'columns'=>$columns,'date_table'=>$config['date_table']];
+}
+if($directorySchema['events']['date_table']){
+ $dateQ=$db->query("SHOW COLUMNS FROM `bh_directory_event_occurrences`");
+ $directorySchema['events']['date_fields']=array_map(fn($c)=>(string)$c['Field'],$dateQ->fetchAll(PDO::FETCH_ASSOC));
+}
+
+if($method==='GET'){$q=$db->query("SELECT id,widget_key,widget_type,name,category,description,enabled,settings_json,updated_at FROM bh_visual_widget_library ORDER BY FIELD(category,'Content','Forms','Interactive','Layout'),name");$items=[];foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){$row['enabled']=(bool)$row['enabled'];$row['settings']=json_decode((string)$row['settings_json'],true)?:[];unset($row['settings_json']);$items[]=$row;}bh_wl_out(200,['ok'=>true,'csrf'=>$csrf,'widgets'=>$items,'directory_schema'=>$directorySchema]);}
 $action=(string)($body['action']??'');
 if($action==='save_widget'){
 $id=filter_var($body['id']??0,FILTER_VALIDATE_INT)?:0;$key=strtolower(trim((string)($body['widget_key']??'')));$type=strtolower(trim((string)($body['widget_type']??'')));$name=trim((string)($body['name']??''));$category=(string)($body['category']??'Content');$description=trim((string)($body['description']??''));$settings=$body['settings']??[];
