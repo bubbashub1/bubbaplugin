@@ -777,16 +777,17 @@ $('inlineEditToggle').addEventListener('click',()=>{if(!currentBlock||previewMod
 $('editText').addEventListener('input',applyEdit);$('editHref').addEventListener('change',applyEdit);
 $('libraryWidgetControls').addEventListener('input',event=>{
  if(!currentBlock||previewMode!=='draft')return;
- if(currentBlock.props?.widget_type==='accordion'){const st=currentBlock.props.settings||(currentBlock.props.settings={});if(event.target.id==='bhvbAccordionLabel')st.label=event.target.value.slice(0,100);const ix=Number(event.target.dataset.accordionIndex),field=event.target.dataset.accordionField;if(field&&st.items?.[ix])st.items[ix][field]=event.target.value;else if(event.target.id!=='bhvbAccordionLabel')return;refreshAccordionWidgetPreview();$('saveDraft').disabled=false;draftStatus('Unsaved Accordion changes. Save draft when ready.');return;}
+ if(currentBlock.props?.widget_type==='accordion'){const st=currentBlock.props.settings||(currentBlock.props.settings={});if(event.target.id==='bhvbAccordionLabel')st.label=event.target.value.slice(0,100);const ix=Number(event.target.dataset.accordionIndex),field=event.target.dataset.accordionField;if(field&&Number.isInteger(ix)&&st.items?.[ix])st.items[ix][field]=event.target.value;else if(event.target.id!=='bhvbAccordionLabel')return;draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Unsaved Accordion changes. Keep typing; the preview refreshes when you leave the field.');return;}
  if(currentBlock.props?.widget_type!=='tabs')return;
  const target=event.target,index=Number(target.dataset.tabIndex),field=target.dataset.tabField;
  if(field&&Number.isInteger(index)&&currentBlock.props.settings?.items?.[index]){
   currentBlock.props.settings.items[index][field]=target.value;
-  if(currentBlock.props.settings.active_tab===index)refreshTabsWidgetPreview();
-  draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Unsaved Tabs changes. Save draft when ready.');
+  draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Unsaved Tabs changes. Keep typing; the preview refreshes when you leave the field.');
  }
 });
 $('libraryWidgetControls').addEventListener('change',event=>{
+ if(currentBlock?.props?.widget_type==='accordion'){refreshAccordionWidgetPreview();return;}
+ if(currentBlock?.props?.widget_type==='tabs'&&(event.target.dataset.tabField||event.target.id==='bhvbTabStyle')){refreshTabsWidgetPreview();}
  if(event.target.id==='bhvbTabStyle'&&currentBlock?.props?.widget_type==='tabs'){
   currentBlock.props.settings.tab_style=event.target.value;refreshTabsWidgetPreview();$('saveDraft').disabled=false;draftStatus('Tab appearance updated. Save draft when ready.');
  }
