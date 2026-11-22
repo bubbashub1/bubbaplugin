@@ -781,7 +781,23 @@ $('libraryWidgetControls').addEventListener('change',event=>{
 });
 $('libraryWidgetControls').addEventListener('click',event=>{
  const aa=event.target.closest('[data-accordion-action]');if(aa&&currentBlock?.props?.widget_type==='accordion'){const st=currentBlock.props.settings,ix=Number(aa.dataset.accordionIndex),act=aa.dataset.accordionAction;if(act==='remove'&&st.items.length>1)st.items.splice(ix,1);if(act==='up'&&ix>0)[st.items[ix-1],st.items[ix]]=[st.items[ix],st.items[ix-1]];if(act==='down'&&ix<st.items.length-1)[st.items[ix+1],st.items[ix]]=[st.items[ix],st.items[ix+1]];renderLibraryWidgetControls();refreshAccordionWidgetPreview();$('saveDraft').disabled=false;draftStatus('Accordion items updated. Save draft when ready.');return;}
- if(event.target.id==='bhvbAddAccordionItem'&&currentBlock?.props?.widget_type==='accordion'){const items=currentBlock.props.settings.items;if(items.length<20){items.push({title:'New question',content:'Add your answer here.'});renderLibraryWidgetControls();refreshAccordionWidgetPreview();$('saveDraft').disabled=false;draftStatus('New FAQ item added. Save draft when ready.');}return;}
+ const addAccordionButton=event.target.closest('#bhvbAddAccordionItem');
+ if(addAccordionButton){
+  event.preventDefault();
+  if(currentBlock?.props?.widget_type!=='accordion'){draftStatus('Select the Accordion widget before adding a question.');return;}
+  const settings=currentBlock.props.settings||(currentBlock.props.settings={});
+  if(!Array.isArray(settings.items))settings.items=[];
+  if(settings.items.length<20){
+   settings.items.push({title:'Question '+(settings.items.length+1),content:'Add your answer here.'});
+   renderLibraryWidgetControls();
+   refreshAccordionWidgetPreview();
+   $('saveDraft').disabled=false;
+   draftStatus('New question added. Edit its question and answer, then save your draft.');
+  }else{
+   draftStatus('You can add up to 20 questions to one Accordion.');
+  }
+  return;
+ }
  const actionButton=event.target.closest('[data-tab-action]');
  if(actionButton&&currentBlock?.props?.widget_type==='tabs'){
   const settings=currentBlock.props.settings,index=Number(actionButton.dataset.tabIndex),action=actionButton.dataset.tabAction;
