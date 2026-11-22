@@ -361,30 +361,30 @@ function attachCanvas(){
    blockNode.classList.add('bhvb-dragging');
   });
   doc.addEventListener('dragover',event=>{
-   if(event.dataTransfer?.types?.includes('application/x-bhvb-widget'))draggedNewType='pending';
+   const carriesWidget=Array.from(event.dataTransfer?.types||[]).includes('application/x-bhvb-widget');
+   if(carriesWidget)draggedNewType='pending';
    if(previewMode!=='draft'||(!draggedBlockId&&!draggedNewType))return;
-   const targetBlock=event.target.closest('[data-bh-block-id]');
-   const targetSection=event.target.closest('[data-bh-section-id]');
-   if(targetBlock||targetSection){
-    event.preventDefault();event.dataTransfer.dropEffect=draggedNewType?'copy':'move';
-    doc.querySelectorAll('.bhvb-drag-over,.bhvb-drop-before,.bhvb-drop-after').forEach(node=>node.classList.remove('bhvb-drag-over','bhvb-drop-before','bhvb-drop-after'));
-    if(targetBlock){const rect=targetBlock.getBoundingClientRect();targetBlock.classList.add(event.clientY>rect.top+rect.height/2?'bhvb-drop-after':'bhvb-drop-before');}
-    else targetSection.classList.add('bhvb-drag-over');
-   }
+   // Accept new widgets anywhere over the page canvas, not only directly over a recognised block.
+   event.preventDefault();
+   if(event.dataTransfer)event.dataTransfer.dropEffect=draggedNewType?'copy':'move';
+   const targetBlock=event.target.closest?.('[data-bh-block-id]');
+   const targetSection=event.target.closest?.('[data-bh-section-id]')||targetBlock?.closest('[data-bh-section-id]');
+   doc.querySelectorAll('.bhvb-drag-over,.bhvb-drop-before,.bhvb-drop-after').forEach(node=>node.classList.remove('bhvb-drag-over','bhvb-drop-before','bhvb-drop-after'));
+   if(targetBlock){const rect=targetBlock.getBoundingClientRect();targetBlock.classList.add(event.clientY>rect.top+rect.height/2?'bhvb-drop-after':'bhvb-drop-before');}
+   else if(targetSection)targetSection.classList.add('bhvb-drag-over');
   });
   doc.addEventListener('drop',event=>{
-   if(event.dataTransfer?.types?.includes('application/x-bhvb-widget'))draggedNewType=event.dataTransfer.getData('application/x-bhvb-widget')||'';
+   const carriesWidget=Array.from(event.dataTransfer?.types||[]).includes('application/x-bhvb-widget');
+   if(carriesWidget)draggedNewType=event.dataTransfer.getData('application/x-bhvb-widget')||'';
    if(previewMode!=='draft'||(!draggedBlockId&&!draggedNewType))return;
-   const targetBlock=event.target.closest('[data-bh-block-id]');
-   const targetSection=event.target.closest('[data-bh-section-id]');
-   if(!targetBlock&&!targetSection)return;
    event.preventDefault();event.stopPropagation();
-   const sourceId=draggedBlockId;
-   const sectionId=(targetBlock?.closest('[data-bh-section-id]')||targetSection)?.dataset.bhSectionId;
+   const targetBlock=event.target.closest?.('[data-bh-block-id]');
+   const targetSection=event.target.closest?.('[data-bh-section-id]')||targetBlock?.closest('[data-bh-section-id]')||doc.querySelector('[data-bh-section-id]');
+   const sectionId=targetSection?.dataset.bhSectionId;
    const targetId=targetBlock?.dataset.bhBlockId||'';
    const after=targetBlock?event.clientY>targetBlock.getBoundingClientRect().top+targetBlock.getBoundingClientRect().height/2:false;
    if(sectionId&&draggedNewType)insertDraftBlock(draggedNewType,sectionId,targetId,after);
-   else if(sectionId&&sourceId!==targetId)moveDraftBlock(sourceId,sectionId,targetId,after);
+   else if(sectionId&&draggedBlockId&&draggedBlockId!==targetId)moveDraftBlock(draggedBlockId,sectionId,targetId,after);
    draggedBlockId='';draggedNewType='';
   });
   doc.addEventListener('dragend',()=>{draggedBlockId='';draggedNewType='';doc.querySelectorAll('.bhvb-dragging,.bhvb-drag-over,.bhvb-drop-before,.bhvb-drop-after').forEach(node=>node.classList.remove('bhvb-dragging','bhvb-drag-over','bhvb-drop-before','bhvb-drop-after'));});
