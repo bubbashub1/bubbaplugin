@@ -35,8 +35,9 @@ try{
  $hasVenueActivity=(bool)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_venues' AND COLUMN_NAME='activity_id'")->fetchColumn();
  $locationJoin=$hasVenueActivity?"LEFT JOIN (SELECT a.organiser_id,MAX(v.town) AS town,MAX(v.region) AS region FROM bh_activities a LEFT JOIN bh_venues v ON v.activity_id=a.id WHERE LOWER(TRIM(COALESCE(a.status,''))) IN ('published','publish') GROUP BY a.organiser_id) loc ON loc.organiser_id=o.id":"";
  $locationSelect=$hasVenueActivity?"loc.town,loc.region":"NULL AS town,NULL AS region";
- $orgSql="SELECT o.*,u.id AS leader_user_id,".$locationSelect."
+ $orgSql="SELECT o.*,u.id AS leader_user_id,".$locationSelect.",COALESCE(listing_stats.published_listing_count,0) AS published_listing_count
  FROM bh_organisers o INNER JOIN bh_users u ON (".$leaderJoin.") AND u.role='leader' AND u.status='active'
+ LEFT JOIN (SELECT organiser_id,COUNT(*) AS published_listing_count FROM bh_activities WHERE LOWER(TRIM(COALESCE(status,''))) IN ('published','publish') GROUP BY organiser_id) listing_stats ON listing_stats.organiser_id=o.id
  ".$locationJoin."
  WHERE NOT EXISTS (SELECT 1 FROM bh_directory_businesses existing WHERE existing.organiser_id=o.id AND existing.status='published')
  ORDER BY o.id";
@@ -46,7 +47,6 @@ try{
   $uid=(int)$leader['leader_user_id'];if($uid<1||isset($seenUsers[$uid]))continue;$seenUsers[$uid]=true;
   $title=trim((string)($leader['organisation_name']??$leader['name']??$leader['business_name']??''));if($title==='')$title='Class leader';
   $description=trim((string)($leader['about_content']??$leader['description']??''));
-  $listingCountQ=$db->prepare("SELECT COUNT(*) FROM bh_activities WHERE organiser_id=? AND LOWER(TRIM(COALESCE(status,''))) IN ('published','publish')");$listingCountQ->execute([(int)$leader['id']]);
   $slug=trim((string)($leader['slug']??''));if($slug==='')$slug=strtolower(trim((string)preg_replace('/[^a-z0-9]+/i','-', $title),'-'));
   $rows[]=[
    'id'=>'leader-'.$uid,'organiser_id'=>(int)$leader['id'],'title'=>$title,'category'=>'Class leader',
@@ -54,7 +54,7 @@ try{
    'description'=>$description,'town'=>(string)($leader['town']??''),'region'=>(string)($leader['region']??''),
    'address'=>'','postcode'=>'','website'=>(string)($leader['website']??''),'contact_email'=>(string)($leader['email']??''),
    'contact_phone'=>(string)($leader['phone']??''),'organisation_name'=>$title,'logo_url'=>(string)($leader['logo_url']??''),
-   'linked_listing_count'=>(int)$listingCountQ->fetchColumn(),'storefront_type'=>'class_leader','organiser_slug'=>$slug
+   'linked_listing_count'=>(int)($leader['published_listing_count']??0),'storefront_type'=>'class_leader','organiser_slug'=>$slug
   ];
  }
  // Apply the same public filters to automatically generated leader storefronts.
