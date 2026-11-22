@@ -93,8 +93,31 @@ if($_SERVER['REQUEST_METHOD']==='GET' && ($_GET['csv']??'')==='template'){
 
 if($_SERVER['REQUEST_METHOD']==='GET'){
  $classes=[];try{$a=$db->prepare("SELECT * FROM bh_activities WHERE organiser_id=? AND status<>'archived' ORDER BY title");$a->execute([$oid]);$classes=$a->fetchAll();}catch(Throwable $e){lp(500,['ok'=>false,'error'=>'classes_query_failed','message'=>$e->getMessage()]);}
- foreach($classes as &$c){$c['venues']=[];try{$v=$db->prepare("SELECT * FROM bh_venues WHERE activity_id=? ORDER BY id");$v->execute([(int)$c['id']]);$c['venues']=$v->fetchAll();}catch(Throwable $ignored){}
-  foreach($c['venues'] as &$venue){$venue['sessions']=[];try{$s=$db->prepare("SELECT * FROM bh_sessions WHERE venue_id=? ORDER BY day_of_week,start_time");$s->execute([(int)$venue['id']]);$venue['sessions']=$s->fetchAll();}catch(Throwable $ignored){}}
+ foreach($classes as &$c){
+  $c['venues']=[];
+  try{
+   $v=$db->prepare("SELECT v.*,
+    (SELECT COUNT(DISTINCT av2.activity_id) FROM bh_activity_venues av2 WHERE av2.venue_id=v.id) AS linked_activity_count,
+    CASE WHEN (v.activity_id IS NULL OR EXISTS (SELECT 1 FROM bh_activities legacy_owner WHERE legacy_owner.id=v.activity_id AND legacy_owner.organiser_id=?))
+      AND NOT EXISTS (SELECT 1 FROM bh_activity_venues avx JOIN bh_activities ax ON ax.id=avx.activity_id WHERE avx.venue_id=v.id AND ax.organiser_id<>?)
+    THEN 1 ELSE 0 END AS can_edit_shared_details,
+    CASE WHEN v.activity_id=? THEN 'legacy' ELSE 'shared' END AS relationship_type
+   FROM bh_venues v
+   WHERE v.activity_id=? OR EXISTS (SELECT 1 FROM bh_activity_venues av WHERE av.venue_id=v.id AND av.activity_id=?)
+   ORDER BY v.id");
+   $v->execute([$oid,$oid,(int)$c['id'],(int)$c['id'],(int)$c['id']]);
+   $c['venues']=$v->fetchAll();
+  }catch(Throwable $ignored){
+   try{$v=$db->prepare("SELECT *,1 AS linked_activity_count,1 AS can_edit_shared_details,'legacy' AS relationship_type FROM bh_venues WHERE activity_id=? ORDER BY id");$v->execute([(int)$c['id']]);$c['venues']=$v->fetchAll();}catch(Throwable $ignoredAgain){}
+  }
+  foreach($c['venues'] as &$venue){
+   $venue['sessions']=[];
+   // Sessions only have venue_id. Until activity attribution is explicit, expose
+   // them solely through their legacy owning activity, not every shared link.
+   if((int)($venue['activity_id']??0)===(int)$c['id']){
+    try{$s=$db->prepare("SELECT * FROM bh_sessions WHERE venue_id=? ORDER BY day_of_week,start_time");$s->execute([(int)$venue['id']]);$venue['sessions']=$s->fetchAll();}catch(Throwable $ignored){}
+   }
+  }
  }unset($c,$venue);
  $bookings=[];try{$bookingCheck=$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('bh_booking_reservations','bh_booking_slots','bh_users')");if((int)$bookingCheck->fetchColumn()===3){$r=$db->prepare("SELECT br.id,br.status,br.quantity,br.created_at,bs.starts_at,bs.ends_at,bs.activity_id,bs.venue_id,a.title,v.venue_name,u.email FROM bh_booking_reservations br JOIN bh_booking_slots bs ON bs.id=br.slot_id JOIN bh_activities a ON a.id=bs.activity_id JOIN bh_venues v ON v.id=bs.venue_id JOIN bh_users u ON u.id=br.user_id WHERE a.organiser_id=? ORDER BY bs.starts_at DESC,br.id DESC");$r->execute([$oid]);$bookings=$r->fetchAll();}}catch(Throwable $ignored){}
  $faqs=[];try{$f=$db->prepare("SELECT * FROM bh_leader_faqs WHERE organiser_id=? AND status<>'archived' ORDER BY sort_order,id");$f->execute([$oid]);$faqs=$f->fetchAll();}catch(Throwable $ignored){}
@@ -301,7 +324,16 @@ if($action==='create_listing'){
  try{$baseSlug=strtolower(trim(preg_replace('/[^a-z0-9]+/i','-', $title),'-'));if($baseSlug==='')$baseSlug='class';$slug=$baseSlug;$suffix=2;$slugCheck=$db->prepare("SELECT id FROM bh_activities WHERE slug=? LIMIT 1");while(true){$slugCheck->execute([$slug]);if(!$slugCheck->fetch())break;$slug=$baseSlug.'-'.$suffix++;}
   $countyExists=false;try{$cc=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_activities' AND COLUMN_NAME='county'");$cc->execute();$countyExists=((int)$cc->fetchColumn())>0;}catch(Throwable $ignored){}
 if($countyExists){$q=$db->prepare("INSERT INTO bh_activities (title,slug,description,category,age_range,age_min_months,age_max_months,accessibility,tags,county,price_from,price_per_family,price_per_session,booking_url,weekly_schedule,booking_required,drop_in_welcome,trial_available,term_time_only,holiday_sessions,siblings_welcome,what_to_bring,good_to_know,status,organiser_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");$q->execute([$title,$slug,$description,$category,$age,$ageMin,$ageMax,$accessibilityJson,$tags,'',$price,$pricePerFamily,$pricePerSession,'',$scheduleJson,$bookingRequired,$dropInWelcome,$trialAvailable,$termTimeOnly,$holidaySessions,$siblingsWelcome,$whatToBring,$goodToKnow,$submissionStatus,$oid]);}else{$q=$db->prepare("INSERT INTO bh_activities (title,slug,description,category,age_range,age_min_months,age_max_months,accessibility,tags,price_from,price_per_family,price_per_session,booking_url,weekly_schedule,booking_required,drop_in_welcome,trial_available,term_time_only,holiday_sessions,siblings_welcome,what_to_bring,good_to_know,status,organiser_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");$q->execute([$title,$slug,$description,$category,$age,$ageMin,$ageMax,$accessibilityJson,$tags,$price,$pricePerFamily,$pricePerSession,'',$scheduleJson,$bookingRequired,$dropInWelcome,$trialAvailable,$termTimeOnly,$holidaySessions,$siblingsWelcome,$whatToBring,$goodToKnow,$submissionStatus,$oid]);}
-  $activityId=(int)$db->lastInsertId();foreach(['facebook_url','instagram_url'] as $socialKey){$socialUrl=trim((string)($b[$socialKey]??''));if($socialUrl!==''){try{$db->prepare("UPDATE bh_activities SET ".$socialKey."=? WHERE id=?")->execute([$socialUrl,$activityId]);}catch(Throwable $ignored){}}}if($photos){try{$db->prepare("UPDATE bh_activities SET gallery_images=? WHERE id=?")->execute([json_encode($photos,JSON_UNESCAPED_SLASHES),$activityId]);}catch(Throwable $ignored){}}if($photos){try{$db->prepare("UPDATE bh_activities SET image_path=? WHERE id=?")->execute([$photos[0],$activityId]);}catch(Throwable $ignored){}}if($existingVenueId>0){$v=$db->prepare("SELECT id FROM bh_venues WHERE id=? LIMIT 1");$v->execute([$existingVenueId]);if(!$v->fetch())throw new RuntimeException('Selected venue could not be found.');$linked=$db->prepare("SELECT id FROM bh_venues WHERE id=? AND activity_id=?");$linked->execute([$existingVenueId,$activityId]);if(!$linked->fetch()){$src=$db->prepare("SELECT venue_name,address,town,region,postcode,latitude,longitude,notes FROM bh_venues WHERE id=?");$src->execute([$existingVenueId]);$sv=$src->fetch();$db->prepare("INSERT INTO bh_venues (venue_name,address,town,region,postcode,latitude,longitude,notes,activity_id) VALUES (?,?,?,?,?,?,?,?,?)")->execute([$sv['venue_name'],$sv['address'],$sv['town'],$sv['region'],$sv['postcode'],$sv['latitude'],$sv['longitude'],$sv['notes'],$activityId]);}}else{$v=$db->prepare("INSERT INTO bh_venues (venue_name,address,town,region,postcode,latitude,longitude,notes,activity_id) VALUES (?,?,?,?,?,?,?,?,?)");$v->execute([$venueName,$address,$town,$region,$postcode,$lat===''?null:$lat,$lng===''?null:$lng,'',$activityId]);}$db->commit();
+  $activityId=(int)$db->lastInsertId();foreach(['facebook_url','instagram_url'] as $socialKey){$socialUrl=trim((string)($b[$socialKey]??''));if($socialUrl!==''){try{$db->prepare("UPDATE bh_activities SET ".$socialKey."=? WHERE id=?")->execute([$socialUrl,$activityId]);}catch(Throwable $ignored){}}}if($photos){try{$db->prepare("UPDATE bh_activities SET gallery_images=? WHERE id=?")->execute([json_encode($photos,JSON_UNESCAPED_SLASHES),$activityId]);}catch(Throwable $ignored){}}if($photos){try{$db->prepare("UPDATE bh_activities SET image_path=? WHERE id=?")->execute([$photos[0],$activityId]);}catch(Throwable $ignored){}}if($existingVenueId>0){
+   $v=$db->prepare("SELECT id FROM bh_venues WHERE id=? LIMIT 1");$v->execute([$existingVenueId]);if(!$v->fetch())throw new RuntimeException('Selected venue could not be found.');
+   // Reuse the existing venue row; do not clone its details.
+   $link=$db->prepare("SELECT activity_id FROM bh_activity_venues WHERE activity_id=? AND venue_id=? LIMIT 1");$link->execute([$activityId,$existingVenueId]);
+   if(!$link->fetch())$db->prepare("INSERT INTO bh_activity_venues (activity_id,venue_id,is_primary) VALUES (?,?,1)")->execute([$activityId,$existingVenueId]);
+  }else{
+   $v=$db->prepare("INSERT INTO bh_venues (venue_name,address,town,region,postcode,latitude,longitude,notes,activity_id) VALUES (?,?,?,?,?,?,?,?,?)");
+   $v->execute([$venueName,$address,$town,$region,$postcode,$lat===''?null:$lat,$lng===''?null:$lng,'',$activityId]);$newVenueId=(int)$db->lastInsertId();
+   $db->prepare("INSERT INTO bh_activity_venues (activity_id,venue_id,is_primary) VALUES (?,?,1)")->execute([$activityId,$newVenueId]);
+  }$db->commit();
   if($leaderEmail!==''){try{$safeTitle=htmlspecialchars($title,ENT_QUOTES,'UTF-8');$safeOrg=htmlspecialchars((string)($org['organisation_name']??''),ENT_QUOTES,'UTF-8');$html='<div style="font-family:Arial,sans-serif;line-height:1.6;color:#26352b;max-width:640px;margin:0 auto"><h1 style="color:#617261">Welcome to Bubba Hub</h1><p>Hi'.($safeOrg!==''?' '.$safeOrg:'').',</p><p>Thanks for adding <strong>'.$safeTitle.'</strong> to Bubba Hub.</p><p>'.$submissionMessage.'</p><p>The Bubba Hub team</p></div>';$plain="Welcome to Bubba Hub\n\nThanks for adding {$title} to Bubba Hub.\n\n{$submissionMessage}\n\nThe Bubba Hub team";bh_send_smtp_mail($leaderEmail,'Welcome to Bubba Hub – your listing has been submitted',$html,$plain);}catch(Throwable $ignored){}}
   lp(201,['ok'=>true,'id'=>$activityId,'status'=>$submissionStatus,'auto_approved'=>$autoApproved,'message'=>$submissionMessage]);
  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
@@ -310,7 +342,23 @@ if($action==='save_class'){
  $id=(int)($b['id']??0);$title=trim((string)($b['title']??''));$description=trim((string)($b['description']??''));$category=trim((string)($b['category']??''));$age=trim((string)($b['age_range']??''));$accessibility=is_array($b['accessibility']??null)?array_values(array_filter(array_map('strval',$b['accessibility']))):[];$accessibilityJson=json_encode($accessibility,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);$price=($b['price_from']??'')===''?null:(float)$b['price_from'];$url=trim((string)($b['booking_url']??''));if($title==='')lp(422,['ok'=>false,'error'=>'title_required']);$q=$db->prepare("UPDATE bh_activities SET title=?,description=?,category=?,age_range=?,accessibility=?,price_from=?,booking_url=? WHERE id=? AND organiser_id=?");$q->execute([$title,$description,$category,$age,$accessibilityJson,$price,$url,$id,$oid]);if(!$q->rowCount())lp(404,['ok'=>false,'error'=>'class_not_found']);lp(200,['ok'=>true]);
 }
 if($action==='save_venue'){
- $id=(int)($b['id']??0);$fields=['venue_name','address','town','region','postcode','latitude','longitude','notes'];$vals=[];foreach($fields as $f)$vals[]=trim((string)($b[$f]??''));$q=$db->prepare("UPDATE bh_venues v JOIN bh_activities a ON a.id=v.activity_id SET v.venue_name=?,v.address=?,v.town=?,v.region=?,v.postcode=?,v.latitude=NULLIF(?,''),v.longitude=NULLIF(?,''),v.notes=? WHERE v.id=? AND a.organiser_id=?");$q->execute([...$vals,$id,$oid]);if(!$q->rowCount())lp(404,['ok'=>false,'error'=>'venue_not_found']);lp(200,['ok'=>true]);
+ $id=(int)($b['id']??0);$fields=['venue_name','address','town','region','postcode','latitude','longitude','notes'];$vals=[];foreach($fields as $f)$vals[]=trim((string)($b[$f]??''));
+ // Shared venue edits are allowed only when the legacy owner and every linked
+ // activity belong to this organiser.
+ $q=$db->prepare("UPDATE bh_venues v SET v.venue_name=?,v.address=?,v.town=?,v.region=?,v.postcode=?,v.latitude=NULLIF(?,''),v.longitude=NULLIF(?,''),v.notes=?
+  WHERE v.id=?
+  AND ((v.activity_id IS NOT NULL AND EXISTS (SELECT 1 FROM bh_activities legacy_owner WHERE legacy_owner.id=v.activity_id AND legacy_owner.organiser_id=?))
+    OR EXISTS (SELECT 1 FROM bh_activity_venues own_link JOIN bh_activities own_activity ON own_activity.id=own_link.activity_id WHERE own_link.venue_id=v.id AND own_activity.organiser_id=?))
+  AND (v.activity_id IS NULL OR EXISTS (SELECT 1 FROM bh_activities legacy_owner_check WHERE legacy_owner_check.id=v.activity_id AND legacy_owner_check.organiser_id=?))
+  AND NOT EXISTS (SELECT 1 FROM bh_activity_venues other_link JOIN bh_activities other_activity ON other_activity.id=other_link.activity_id WHERE other_link.venue_id=v.id AND other_activity.organiser_id<>?)");
+ $q->execute([...$vals,$id,$oid,$oid,$oid,$oid]);
+ if(!$q->rowCount()){
+  $check=$db->prepare("SELECT v.id FROM bh_venues v WHERE v.id=? AND ((v.activity_id IS NOT NULL AND EXISTS (SELECT 1 FROM bh_activities la WHERE la.id=v.activity_id AND la.organiser_id=?)) OR EXISTS (SELECT 1 FROM bh_activity_venues av JOIN bh_activities aa ON aa.id=av.activity_id WHERE av.venue_id=v.id AND aa.organiser_id=?))");
+  $check->execute([$id,$oid,$oid]);
+  if($check->fetch())lp(409,['ok'=>false,'error'=>'shared_venue_locked','message'=>'This venue is linked to another organisation. Please ask Bubba Hub to update the shared venue details.']);
+  lp(404,['ok'=>false,'error'=>'venue_not_found']);
+ }
+ lp(200,['ok'=>true]);
 }
 if($action==='save_booking'){
  $id=(int)($b['id']??0);$status=$b['status']??'';if(!in_array($status,['reserved','confirmed','cancelled','attended'],true))lp(422,['ok'=>false,'error'=>'invalid_status']);$q=$db->prepare("UPDATE bh_booking_reservations br JOIN bh_booking_slots bs ON bs.id=br.slot_id JOIN bh_activities a ON a.id=bs.activity_id SET br.status=? WHERE br.id=? AND a.organiser_id=?");$q->execute([$status,$id,$oid]);if(!$q->rowCount())lp(404,['ok'=>false,'error'=>'booking_not_found']);lp(200,['ok'=>true]);
