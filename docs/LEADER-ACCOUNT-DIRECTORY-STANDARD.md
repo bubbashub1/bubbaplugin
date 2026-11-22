@@ -1,4 +1,5 @@
 # Bubba Hub Leader account and Directory ownership standard
+> **Historical design reference — not current staging status.** This document records an earlier Directory design. For the installed tables, current admin tools, schema-upgrade step, public API wiring and verified status, use [`DIRECTORY-ARCHITECTURE-AND-STATUS-2026-11-22.md`](DIRECTORY-ARCHITECTURE-AND-STATUS-2026-11-22.md). Do not assume every workflow or schema described here is already enabled on staging.
 
 ## Product language
 - Use **Leader** as the umbrella account type for people and organisations providing family-facing activities, events, services, childcare, places or clubs.
