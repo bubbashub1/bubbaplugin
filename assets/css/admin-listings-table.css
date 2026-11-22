@@ -23,3 +23,7 @@
 .listing-table .listing-taxonomy{border:0;background:transparent;color:#195235;cursor:pointer;padding:3px 2px;font-weight:600}
 .listing-table .listing-taxonomy:hover{text-decoration:underline;background:#eff7f0}
 @media(max-width:760px){.listing-table .listing-taxonomy{max-width:190px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.listing-table td:nth-child(3){align-items:center}}
+
+/* Traffic-light listing review status */
+.listing-review{display:inline-block;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800;line-height:1.25;white-space:nowrap}.listing-review--red{background:#fde7e5;color:#a52d25}.listing-review--orange{background:#fff0d9;color:#8b5100}.listing-review--green{background:#e2f3e6;color:#176437}.listing-review--unknown{background:#edf1ed;color:#59675d}.listing-review-link{display:inline-block;margin:5px 0 0 3px;color:#155b3b;font-size:12px;font-weight:700;text-decoration:underline;white-space:nowrap}
+@media(min-width:761px){.listing-table th:nth-child(1){width:5%}.listing-table th:nth-child(2){width:24%}.listing-table th:nth-child(3){width:16%}.listing-table th:nth-child(4){width:9%}.listing-table th:nth-child(5){width:12%}.listing-table th:nth-child(6){width:8%}.listing-table th:nth-child(7){width:13%}.listing-table th:nth-child(8){width:13%}}
