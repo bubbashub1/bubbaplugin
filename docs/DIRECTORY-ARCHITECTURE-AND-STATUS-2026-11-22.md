@@ -15,7 +15,7 @@ This document records the current agreed direction and the implementation actual
 4. **Only published records are public.** Draft and archived records must not appear in public search.
 5. **Staging first.** Database setup is performed through the authenticated admin setup controls on staging. Do not run destructive SQL or change production data as part of this work.
 6. **Keep the admin experience simple.** One shared admin manager for Childcare, Places and Clubs, with a sector selector and only the relevant sector fields visible. Businesses retains its own storefront manager.
-7. **Do not assume the older leader submission/review workflow is compatible.** It needs a deliberate schema and lifecycle reconciliation before being re-enabled for these tables.
+7. **Leader submissions use the existing Leader account and organiser identity.** Leaders save drafts or submit for review; admins approve, reject or return submissions. Changes to published records are submitted as revisions and do not alter the live record until approved. The schema upgrade described below must be run on staging before this workflow is considered enabled.
 
 ## 2. Public pages and routes
 
@@ -62,13 +62,15 @@ Table: `bh_directory_school_clubs`
 
 Common fields as above, plus `school_name, age_min, age_max, days_times, collection_arrangements, price_details, verification_url, verified_on`.
 
-The current installed schema permits age values 0–18. If the product rule is to enforce a minimum age of 3 for public School Club records, that validation and its wording still need to be agreed and implemented; it is not enforced by the current admin API.
+The workflow enforces a minimum age of 3 for School Clubs in both the Leader submission API and the shared admin manager. Childcare age ranges are stored in months.
 
 ### Status lifecycle currently implemented by the new admin manager
 - `draft`: private, editable from admin, not public.
 - `published`: public.
-- `archived`: available in schema, but the new shared admin manager does not yet expose an archive action.
-- The new admin manager saves either draft or published. It does not create a `pending` state or send records to the older review queue.
+- `pending`: submitted by a Leader and awaiting admin review; never public.
+- `rejected`: retained for the Leader to correct and resubmit; never public.
+- `archived`: hidden from public results; Leader archiving is limited to unpublished records.
+- Admins can save drafts or publish directly. Leaders can save drafts or submit for review. Changes to published records use a separate pending revision snapshot.
 
 ## 4. Admin management
 
@@ -90,50 +92,61 @@ The shared manager provides:
 - One selector for Childcare & Schools, Places & Days Out and School Clubs.
 - Search, add, edit, save draft and save & publish.
 - Core fields shared across the three directories.
-- Sector-specific fields displayed only for the selected section.
+- Sector-specific fields displayed only for the selected section, including childcare age ranges and School Club holiday/registration details.
 - Server-side fixed table and field allowlists, admin-session authentication, same-origin HTTPS POST checks and a per-session CSRF token.
 
-PR #1104 was merged into `staging-site` as commit `32a5bfa6e29d3d80686fc6b40b1da025929862f8`. Its PHP lint/security workflow passed. The staging deployment workflow was queued after the merge; deployment completion and browser/database verification are not confirmed by this review. Automated checks are not a substitute for browser and database testing.
+PR #1104 was merged and its staging deployment succeeded. PR #1106 fixed the Businesses public API connection and search. PR #1107 added the specialist public-card details. PR #1108 added an additive schema upgrade and aligned the existing Leader submission and Admin review APIs. All associated PHP/security and storefront checks passed, and the staging deployment completed for PRs #1106 and #1107. PR #1108 is merged; its deployment and the admin-triggered database upgrade must be confirmed separately. Automated checks are not a substitute for browser and database testing.
 
-## 5. Important compatibility findings — not yet resolved
+## 5. Compatibility fixes and remaining limitations
 
-### A. Legacy Leader submission APIs do not match the currently installed tables
-The existing `api/leader-directory-records.php`, `leader/directory-new.html`, `api/leader-directory-manage.php` and older planning documents describe a richer Leader submission lifecycle. The current three tables installed by the admin setup do not contain all columns expected by that older code. Examples include:
-- `organiser_id` ownership columns on the childcare, places and clubs tables;
-- age-range, holiday provision, registration and other richer sector fields;
-- a `pending` status and review lifecycle.
+### A. Leader submission schema upgrade — code merged, staging action still required
+PR #1108 adds **Admin → Businesses → Enable Leader submissions & approval**. After the staging deployment completes, an administrator must run this confirmed action once.
+It safely:
+- Adds organiser ownership and creator columns to Childcare, Places and School Clubs.
+- Adds childcare age ranges, School Club holiday provision and registration/safeguarding details.
+- Adds submission timestamps and review notes.
+- Expands the four directory status enums to include `pending` and `rejected`, preserving all existing row values.
+- Creates `bh_directory_record_reviews` and `bh_directory_record_revisions`.
 
-The current new admin manager deliberately uses a simpler draft/published workflow and does not depend on those Leader APIs. **Do not present Leader submission, ownership isolation or approval workflows for these three tables as working until the schema and APIs have been reconciled and tested together.**
+The action is additive and designed to be re-runnable. It does not update existing records, publish drafts, alter Activities, change organiser profiles or modify production. **Until the action reports success on staging, Leader submissions and the Admin review queue must be treated as not yet enabled.**
 
-### B. Legacy Admin Directory Review is not compatible with the simplified setup
-`api/admin-directory-review.php` expects the consolidated older schema, including Events and shared revision/review structures, and queries `pending` records. The current admin manager saves `draft` or `published` records directly. Do not route these new admin-managed records into the older review queue until a single agreed moderation lifecycle is implemented.
+### B. Leader ownership and review lifecycle — compatibility code merged
+The existing Leader wizard now uses the existing Leader login and resolves the organiser on the server. It supports draft and pending submissions, and published-record changes are stored as revision snapshots. The Admin review API handles installed sections and skips the optional Events table when it is not installed. The Leader workspace likewise skips unavailable optional sections.
+- Business Leaders reuse their existing organiser-linked storefront; the wizard must not create a duplicate storefront.
+- Leaders can manage only records linked to their resolved organiser.
+- Only published records appear in public results.
+- Run owner-isolation, submission, approval, return, rejection and published-revision tests after the staging schema upgrade.
 
-### C. Businesses public API wiring needs correction
-The current `businesses.html` uses the shared `directory-sector.js` client and `api/directory-sector.php?type=business`. That generic API reads the storefront table but returns the raw business title. The dedicated `api/directory-businesses.php` contains the intended organiser-name fallback and linked-listing/storefront logic, but the current Businesses page is not using that dedicated endpoint/client.
-- Reconnect the public Businesses page to the intended storefront API, or deliberately bring the required storefront logic into the shared endpoint.
-- Preserve the rule that only published storefront rows are returned.
-- Verify that the visible title is the storefront/organisation name (e.g. “The Boulder Bunker”), not a generic account label.
-- Verify website/contact fallback and linked activity counts without turning activities into business rows.
+### C. Businesses public API — fixed in PR #1106
+The standalone Businesses page now uses `api/directory-businesses.php`, including the organiser-name fallback, contact details, logo and related published-activity count. Category options come from published storefront records. Keyword search includes address/postcode, and town search supports partial town/postcode matches.
+The universal directory search also uses the dedicated storefront API. Both paths continue to return only published storefront records; activities are never emitted as Businesses rows.
 
-### D. Public sector cards are currently basic
-The shared sector client currently displays title, summary/description, category, town, region and a website link. It does not yet display all useful sector-specific fields such as childcare registration source/last-checked date, place facilities/accessibility, or club age/days/collection/price details. Decide and implement the appropriate public card/detail presentation for each sector before calling the public directories complete.
+### D. Specialist public cards — improved in PR #1107
+- Childcare cards show age range, registration body/reference, verification link and last-checked date.
+- Places cards show facilities.
+- School Club cards show school, age range, days/times, collection arrangements, holiday provision, costs and registration/safeguarding details.
+- The dedicated pages continue using the sector client without loading the universal Activities results script.
 
-### E. Review metadata
-The new admin manager uses the admin session flag. The standalone admin login session does not necessarily contain a Bubba Hub user ID, so `reviewed_by_user_id` may remain null. If named audit attribution is required, add a proper admin identity/audit model rather than assuming `bh_user_id` exists in the admin session.
+### E. Admin attribution
+The standalone admin session does not necessarily contain a Bubba Hub user ID, so `reviewed_by_user_id` may remain null for admin decisions. If named audit attribution is required, add a proper admin identity/audit model rather than assuming `bh_user_id` exists in the admin session.
+
+### F. Browser and data verification still outstanding
+GitHub checks and successful deployment do not prove that every screen works against the live staging database. The manual staging checklist below remains required, especially the one-time schema upgrade and a full Leader-to-admin approval cycle.
 
 ## 6. Older documents to reconcile
 
-These documents pre-date the simplified staging implementation and contain assumptions that now conflict with the installed schema or workflow:
+These documents contain the earlier full Leader-owned directory proposal and should be treated as historical design references, not the source of current staging implementation status:
 - `docs/FIVE-NEW-DIRECTORY-SECTORS.md`
 - `docs/DIRECTORY-SECTION-OWNERSHIP-MATRIX.md`
-- `docs/LEADER-ACCOUNT-DIRECTORY-STANDARD.md)
+- `docs/LEADER-ACCOUNT-DIRECTORY-STANDARD.md`
 
-In particular, older statements about one consolidated SQL install, Leader-owned specialist entries, pending review, revision snapshots and a shared review queue must be labelled as legacy/planned until rebuilt against the current schema. This document is the current staging architecture clarification, not proof that those older features work.
+The current staging source of truth is this document. PR #1108 has now reconciled the missing schema/API fields in code, but the administrator-triggered staging upgrade and end-to-end testing remain outstanding. Do not use older statements such as “no SQL has been executed” or “no schema is installed” as current status without checking the actual staging database.
 
 ## 7. Staging verification checklist
 
 ### Admin and schema
 - [ ] Confirm all four directory tables exist on staging: Businesses, Childcare, Places and School Clubs, plus the Business-to-Activity relationship table.
+- [ ] After deployment, run **Enable Leader submissions & approval** once on staging and confirm success. This adds schema only and preserves existing records/statuses.
 - [ ] Confirm setup actions are idempotent and do not change existing Activities, venues, organisers or Businesses records.
 - [ ] Confirm admin login, refresh, navigation and logout work on the new manager.
 - [ ] Create one draft in each of the three new sections.
@@ -153,10 +166,12 @@ In particular, older statements about one consolidated SQL install, Leader-owned
 - [ ] Check browser console and server logs.
 
 ### Leader and moderation workflows
-- [ ] Keep Leader submission for these three tables marked **not ready** until schema/API compatibility is resolved.
-- [ ] Test owner isolation and forged organiser IDs before enabling any Leader write route.
-- [ ] Decide whether the future lifecycle is direct admin draft/publish or Leader draft → pending review → admin approval.
-- [ ] Do not run the older review queue against these tables until its required schema and status model exist.
+- [ ] Test Leader draft creation and editing in each of the four directories.
+- [ ] Test Leader submit → Admin approve/return/reject → public visibility.
+- [ ] Test that pending/rejected/draft entries stay private.
+- [ ] Test published-entry revision requests and confirm the public version stays unchanged until approval.
+- [ ] Test Leader A cannot read, edit, submit or archive Leader B's records; forged organiser IDs must be ignored.
+- [ ] Confirm the Business wizard reuses the existing storefront draft and cannot create a duplicate.
 
 ### Release control
 - [ ] Keep all work on `staging-site` until verified.
@@ -165,9 +180,10 @@ In particular, older statements about one consolidated SQL install, Leader-owned
 
 ## 8. Next implementation order
 
-1. Complete code review and merge the shared admin manager (PR #1104) after checks pass.
-2. Connect Businesses to the intended storefront public API and verify the organisation-name behaviour.
-3. Improve public cards/details so each sector displays its meaningful sector-specific information.
-4. Reconcile and update the older directory planning documents so they no longer describe incompatible schemas as current.
-5. Decide the future Leader ownership/submission/moderation model, then implement schema and APIs together.
-6. Complete the staging verification checklist before any production release.
+1. Confirm PR #1108 deployment has completed on staging.
+2. In Admin → Businesses, run **Enable Leader submissions & approval** and confirm success.
+3. Complete one full Leader-to-admin review cycle for Business, Childcare, Places and School Clubs.
+4. Verify Businesses in both the standalone page and universal directory search.
+5. Test public sector cards, filters, canonical routes, mobile layout and empty/error states.
+6. Reconcile historical documents and record verified staging results.
+7. Obtain explicit approval before any production deployment or live database changes.
