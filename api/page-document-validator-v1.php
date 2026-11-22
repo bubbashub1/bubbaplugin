@@ -156,7 +156,17 @@ function bh_validate_page_document_v1(mixed $document): array {
     if(isset($p['description'])&&(!is_string($p['description'])||mb_strlen($p['description'])>500))$errors[]='Library widget description invalid.';
     if(isset($p['text'])&&(!is_string($p['text'])||mb_strlen($p['text'])>500))$errors[]='Library widget label invalid.';
     if(isset($p['settings'])&&(!is_array($p['settings'])||strlen((string)json_encode($p['settings']))>12000))$errors[]='Library widget settings invalid.';
-    if(($p['widget_type']??null)==='tabs'&&isset($p['settings'])){
+    if(($p['widget_type']??null)==='accordion'&&isset($p['settings'])){
+      $as=$p['settings'];
+      if(!is_array($as)||array_diff(array_keys($as),['label','items']))$errors[]='Accordion settings invalid.';
+      else{
+       if(isset($as['label'])&&(!is_string($as['label'])||mb_strlen($as['label'])>100))$errors[]='Accordion heading is invalid.';
+       $items=$as['items']??null;
+       if(!is_array($items)||count($items)<1||count($items)>20)$errors[]='Accordion must contain between 1 and 20 items.';
+       else foreach($items as $item){if(!is_array($item)||array_diff(array_keys($item),['title','content'])||!is_string($item['title']??null)||trim($item['title'])===''||mb_strlen($item['title'])>160||!is_string($item['content']??null)||mb_strlen($item['content'])>5000)$errors[]='An accordion question or answer is invalid.';}
+      }
+     }
+     if(($p['widget_type']??null)==='tabs'&&isset($p['settings'])){
      $tabSettings=$p['settings'];
      if(!is_array($tabSettings)||array_diff(array_keys($tabSettings),['label','items','active_tab','tab_style']))$errors[]='Tabs settings invalid.';
      else{
