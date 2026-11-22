@@ -116,8 +116,8 @@ The first website-check worker is `api/listing-monitor-website-cron.php` and is 
 
 - It reads `bh_activities.website` and writes only to the private Listing Monitor state/history tables and existing findings table.
 - It uses bounded batches, connection/overall timeouts, a 1 MB response cap, a small redirect limit, HTTPS certificate verification, public-address checks and pinned IPv4 resolution for each requested host.
-- HTTP 404/410 and DNS lookup failures create **possible closure** findings; explicit permanent-closure wording creates **closure indicated** findings; temporary-closure wording is kept separate. Other access failures remain **unable to verify**.
+- HTTP 404/410 create **possible closure** findings; explicit permanent-closure wording creates **closure indicated** findings; temporary-closure wording is kept separate. DNS lookup failures remain **unable to verify** in this first pass because a DNS failure alone cannot reliably distinguish an expired domain from a temporary resolver problem.
 - Every result is recorded in website history. Findings are refreshed rather than duplicated for the same activity/outcome.
-- The worker currently uses the existing `health_enabled` / `health_paused` settings as its master on/off switch and uses the existing batch-size setting. It is not yet scheduled or connected to a new dashboard control.
+- The worker currently uses the existing `health_enabled` / `health_paused` settings as its master on/off switch and uses the existing batch-size setting. It is not yet scheduled. Website findings now open in the dashboard review pop-up with the captured evidence and an explicit note that no listing change is proposed.
 - Do not enable or schedule it on production. First deploy to staging, apply both Listing Monitor migrations there, inspect the worker and run controlled test URLs. In particular, verify redirect handling, DNS behavior, and that the monitor never changes `bh_activities`.
 - This first pass checks availability and explicit closure wording only. It does not yet compare page content over time to detect ordinary text/price/session changes. That remains a later monitoring enhancement.
