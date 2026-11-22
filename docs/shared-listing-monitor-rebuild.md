@@ -142,3 +142,17 @@ A disposable MySQL integration suite now runs in GitHub Actions using its own te
 Database integration is still not the same as a full staging/browser test. The PR remains a draft; no migration has been applied to staging or live, and the website worker remains disabled and unscheduled.
 
 - The draft API now uses the shared `admin-session-guard.php`, so expired admin sessions are rejected after the same 30-minute idle period as other admin APIs. JSON request bodies are capped while reading, including requests without a trustworthy `Content-Length`.
+
+
+## End-to-end admin API verification (2026-11-22)
+
+The first HTTP integration run exposed two issues that the isolated schema tests could not catch:
+
+- The review endpoint opened the PHP session before including the shared admin-session guard. Because the guard correctly avoids reopening an active session, that ordering bypassed the shared authentication/expiry check. The endpoint now delegates session startup entirely to the shared guard.
+- The endpoint used a parameter placeholder in `SHOW TABLES LIKE ?`. The test MySQL server rejected that prepared statement. Table existence is now checked through a parameterised `information_schema.tables` query.
+
+The disposable HTTP suite now passes all 14 checks, including unauthenticated and expired-session rejection, valid admin session, CSRF and cross-origin rejection, private draft save/re-save, full draft preview, explicit approval, named audit identity, stale snapshot conflict, unsafe URL rejection and oversized-body rejection.
+
+Confirmed in GitHub Actions run `45026373014`, code commit `4720a8b03d2d780e8dafec7b6243d031fde985c7`: PHP lint/security/offline rules passed; MySQL persistence suite passed 13/13; HTTP admin API suite passed 14/14. The subsequent `7fa71776316ffc1c9aade062868695143afb6d65` commit only improves diagnostic output in the test harness; its full CI rerun is pending.
+
+These checks run exclusively against the disposable GitHub Actions MySQL service. They do not apply migrations to staging or production, and do not enable or schedule the website worker.
