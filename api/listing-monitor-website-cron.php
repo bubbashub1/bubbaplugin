@@ -86,7 +86,7 @@ try{
    elseif($status>=500){$outcome='unable_to_verify';$evidence='Website server error HTTP '.$status.'.';}
    else{$outcome='unable_to_verify';$evidence='Website returned HTTP '.$status.'.';}
   }catch(Throwable $e){
-   $message=$e->getMessage();$outcome=(stripos($message,'DNS lookup failed')!==false)?'possible_closure':'unable_to_verify';
+   $message=$e->getMessage();$outcome='unable_to_verify';
    $evidence=substr($message,0,500);
   }
   $counts[$outcome]++;$history->execute([$id,$url,$outcome,$status,$evidence]);
