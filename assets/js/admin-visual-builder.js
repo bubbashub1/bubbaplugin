@@ -628,9 +628,21 @@ function convertPage(){
  $('selectedDetails').hidden=true;
 }
 async function api(path,body){
- const response=await fetch(path,{method:body?'POST':'GET',credentials:'same-origin',cache:'no-store',headers:body?{'Content-Type':'application/json','Accept':'application/json'}:{Accept:'application/json'},body:body?JSON.stringify({...body,csrf}):undefined});
- const data=await response.json();
+ const send=()=>fetch(path,{method:body?'POST':'GET',credentials:'same-origin',cache:'no-store',headers:body?{'Content-Type':'application/json','Accept':'application/json'}:{Accept:'application/json'},body:body?JSON.stringify({...body,csrf}):undefined});
+ let response=await send();
+ let data=await response.json();
+ // The Page Manager and Visual Builder use separate CSRF tokens. Refresh the
+ // builder token from its own endpoint and retry once if a save has a stale token.
+ if(body&&response.status===403&&/security check failed/i.test(String(data.error||''))){
+  const pageId=Number(body.page_id||0);
+  if(pageId>0){
+   const refresh=await fetch('/api/admin-visual-page-drafts.php?page_id='+encodeURIComponent(pageId),{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
+   const fresh=await refresh.json();
+   if(refresh.ok&&fresh.ok&&fresh.csrf){csrf=fresh.csrf;response=await send();data=await response.json();}
+  }
+ }
  if(!response.ok||!data.ok)throw new Error(data.error||'Visual Builder request failed.');
+ if(data.csrf)csrf=data.csrf;
  return data;
 }
 async function loadDraft(){
