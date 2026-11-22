@@ -133,12 +133,23 @@ try {
  foreach($rows as &$row){
   $missing=[];
   $complete=[];
+  $completeDetails=[];
   foreach($fieldMap as $label=>$keys){
    if(!$has($row,$keys)){ $missing[]=$label; $missingCounts[$label]++; }
-   else { $complete[]=$label; }
+   else {
+    $complete[]=$label;
+    foreach($keys as $key){
+     $value=trim((string)($row[$key]??''));
+     if($value!==''){
+      $completeDetails[]=['label'=>$label,'value'=>mb_substr(preg_replace('/\\s+/u',' ',$value)??$value,0,180)];
+      break;
+     }
+    }
+   }
   }
   $row['missing']=$missing;
   $row['complete']=$complete;
+  $row['complete_details']=$completeDetails;
   $row['health_assessable_fields']=count($fieldMap);
   $row['health_score']=count($fieldMap)>0 ? (int)round((count($fieldMap)-count($missing))/count($fieldMap)*100) : null;
   $row['suggested_description']='';
