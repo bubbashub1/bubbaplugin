@@ -794,7 +794,7 @@ function mountFullScreenEditor(){
  const tools=document.createElement('div');tools.className='bhvb-editor-toptools';
  const save=$('saveDraft'),prepare=$('prepareDraft'),actions=document.querySelector('.bhvb-builder-actions');
  if(save)tools.append(save);if(prepare)tools.append(prepare);
- const status=$('builderStatus');if(status)tools.append(status);
+ const status=$('builderStatus'),draftMessage=$('draftStatus'),mediaLibrary=$('mediaLibrary'),revisions=$('revisionControls');if(status)tools.append(status);if(draftMessage)tools.append(draftMessage);
  top.append(brand,title,toolbar,tools);
  const body=document.createElement('div');body.className='bhvb-editor-body';
  const left=document.createElement('aside');left.className='bhvb-editor-left';
@@ -810,10 +810,10 @@ function mountFullScreenEditor(){
  elementsContent.append(elements);
  settingsContent.append(propertyPanel);
  layersContent.append(layerPanel);
- left.append(nav,elementsContent,settingsContent,layersContent);
+ left.append(nav,elementsContent,settingsContent,layersContent);if(revisions)settingsContent.append(revisions);
  const canvasWrap=document.createElement('main');canvasWrap.className='bhvb-editor-canvas';canvasWrap.append(canvas);
  body.append(left,canvasWrap);
- shell.replaceChildren(top,body,actions);
+ shell.replaceChildren(top,body,actions);if(mediaLibrary)shell.append(mediaLibrary);
  const note=document.querySelector('.bhvb-inspector-note');
  if(note)actions.append(note);
  setBuilderPanel('elements');
