@@ -52,7 +52,7 @@ The Businesses directory is a separate public directory of businesses and family
 - [x] Public Events feed limited to published events with future scheduled occurrences.
 - [x] Public Events page keeps one-off events separate from regular Listings sessions.
 - [x] Leader Hub navigation includes Add an Event.
-- [x] Draft editing for event owners; cancellation/rescheduling controls and rate limiting remain outstanding.
+- [ ] Draft editing, event owner management list, cancellation/rescheduling controls and rate limiting.
 - [ ] Schema review against the actual staging database, backup and explicit approval before installation.
 - [ ] End-to-end tests after schema installation, including cross-Leader ownership attempts, public visibility, cancellation, multiple occurrences, mobile layout and GMT/BST.
 
