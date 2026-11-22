@@ -70,7 +70,7 @@ try{
  $state=$db->prepare('UPDATE bh_listing_monitor_website_state SET last_checked_at=NOW(),next_check_at=DATE_ADD(NOW(),INTERVAL 4 HOUR),last_outcome=?,consecutive_dead_checks=IF(? IN ("possible_closure","closure_indicated"),consecutive_dead_checks+1,0) WHERE activity_id=?');
  $find=$db->prepare("SELECT id,candidate_json FROM bh_listing_check_findings WHERE check_type='health' AND activity_id=? AND finding_type=? ORDER BY id DESC LIMIT 1");
  $insert=$db->prepare("INSERT INTO bh_listing_check_findings(check_type,activity_id,candidate_json,finding_type,confidence,source_url,checked_at,review_status) VALUES('health',?,?,?,?,?,NOW(),'new')");
- $refresh=$db->prepare("UPDATE bh_listing_check_findings SET candidate_json=?,confidence=?,source_url=?,checked_at=NOW(),review_status=IF(review_status='resolved','new',review_status),reviewed_at=IF(review_status='resolved',NULL,reviewed_at) WHERE id=?");
+ $refresh=$db->prepare("UPDATE bh_listing_check_findings SET candidate_json=?,confidence=?,source_url=?,checked_at=NOW(),reviewed_at=IF(review_status='resolved',NULL,reviewed_at),review_status=IF(review_status='resolved','new',review_status) WHERE id=?");
  $resolve=$db->prepare("UPDATE bh_listing_check_findings SET review_status='resolved',reviewed_at=NOW() WHERE check_type='health' AND activity_id=? AND finding_type IN ('website_possible_closure','website_closure_indicated','website_temporary_closure','website_unable_to_verify') AND review_status IN ('new','follow_up')");
  $counts=['healthy'=>0,'possible_closure'=>0,'closure_indicated'=>0,'temporary_closure'=>0,'unable_to_verify'=>0];
  foreach($items as $item){
