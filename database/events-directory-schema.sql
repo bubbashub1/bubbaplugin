@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS bh_directory_event_reviews (
 -- Places & Days Out, and School Clubs.
 -- Together with the Events tables above, this is the consolidated five-sector
 -- staging installation. Listings continue using the existing bh_activities.
--- All new records belong to an existing bh_organisers profile and are moderated.
+-- Specialist records are moderated; business records may be standalone or linked to an organiser.
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS bh_directory_businesses (
