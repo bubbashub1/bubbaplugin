@@ -63,7 +63,8 @@ try{
  $columns=$db->query('SHOW COLUMNS FROM bh_activities')->fetchAll(PDO::FETCH_COLUMN);
  if(!in_array('id',$columns,true)||!in_array('website',$columns,true))throw new RuntimeException('Activity website field is unavailable.');
  // Seed/update monitor state without changing activity records.
- $db->exec("INSERT INTO bh_listing_monitor_website_state(activity_id,website_url,next_check_at) SELECT id,website,NOW() FROM bh_activities WHERE website IS NOT NULL AND TRIM(website)<>'' ON DUPLICATE KEY UPDATE website_url=IF(website_url<>VALUES(website_url),VALUES(website_url),website_url),next_check_at=IF(website_url<>VALUES(website_url),NOW(),next_check_at)");
+ $db->exec("INSERT INTO bh_listing_monitor_website_state(activity_id,website_url,next_check_at) SELECT id,website,NOW() FROM bh_activities WHERE website IS NOT NULL AND TRIM(website)<>'' ON DUPLICATE KEY UPDATE next_check_at=IF(website_url<>VALUES(website_url),NOW(),next_check_at),website_url=VALUES(website_url)");
+ $db->exec("UPDATE bh_listing_monitor_website_state s INNER JOIN bh_activities a ON a.id=s.activity_id SET s.website_url=NULL,s.next_check_at=NULL WHERE a.website IS NULL OR TRIM(a.website)=''");
  $batch=max(1,min(30,(int)$get('batch_size','30')));
  $q=$db->prepare("SELECT s.activity_id,s.website_url FROM bh_listing_monitor_website_state s WHERE s.website_url IS NOT NULL AND TRIM(s.website_url)<>'' AND (s.next_check_at IS NULL OR s.next_check_at<=NOW()) ORDER BY COALESCE(s.next_check_at,'1970-01-01'),s.activity_id LIMIT ?");
  $q->bindValue(1,$batch,PDO::PARAM_INT);$q->execute();$items=$q->fetchAll(PDO::FETCH_ASSOC);
