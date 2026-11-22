@@ -831,7 +831,7 @@ $('libraryWidgetControls').addEventListener('input',event=>{
  }
 });
 $('libraryWidgetControls').addEventListener('change',event=>{
- if(currentBlock?.type==='library_widget'&&!['tabs','accordion'].includes(currentBlock.props?.widget_type)&&event.target.dataset.widgetSetting){draftStatus('Widget settings updated. Save draft to keep your changes.');return;}
+ if(currentBlock?.type==='library_widget'&&!['tabs','accordion'].includes(currentBlock.props?.widget_type)&&event.target.dataset.widgetSetting){const node=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');if(node)node.outerHTML=renderLibraryWidgetMarkup(currentBlock.props,currentBlock.id);draftStatus('Widget settings updated. Save draft to keep your changes.');return;}
  if(currentBlock?.props?.widget_type==='accordion'){refreshAccordionWidgetPreview();return;}
  if(currentBlock?.props?.widget_type==='tabs'&&(event.target.dataset.tabField||event.target.id==='bhvbTabStyle')){refreshTabsWidgetPreview();}
  if(event.target.id==='bhvbTabStyle'&&currentBlock?.props?.widget_type==='tabs'){
