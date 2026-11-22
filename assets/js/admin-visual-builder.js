@@ -672,7 +672,12 @@ async function api(path,body){
  let result=await read(await send());
  if(body&&result.response.status===403){
   const pageId=Number(body.page_id||page?.id||0);
-  if(pageId>0){
+  // The API can return the current token with a CSRF rejection. Prefer it;
+  // this avoids a second request and handles session-token rotation cleanly.
+  if(result.data.csrf){
+   csrf=result.data.csrf;
+   result=await read(await send(csrf));
+  }else if(pageId>0){
    const refresh=await fetch('/api/admin-visual-page-drafts.php?page_id='+encodeURIComponent(pageId)+'&_csrf_refresh='+Date.now(),{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json','X-Requested-With':'XMLHttpRequest'}});
    const fresh=await read(refresh);
    if(refresh.ok&&fresh.data.ok&&fresh.data.csrf){
