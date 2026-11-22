@@ -506,7 +506,7 @@ function renderLibraryWidgetControls(){
    if(Array.isArray(value)){input=document.createElement('textarea');input.rows=4;input.value=value.map(item=>typeof item==='object'?(item.label||item.value||''):String(item)).join('\\n');input.dataset.widgetSettingType='array';}
    else if(typeof value==='boolean'){input=document.createElement('input');input.type='checkbox';input.checked=value;input.dataset.widgetSettingType='boolean';}
    else if(typeof value==='number'){input=document.createElement('input');input.type='number';input.value=String(value);input.dataset.widgetSettingType='number';}
-   else {input=document.createElement(key==='caption'||key==='help_text'?'textarea':'input');if(input.tagName==='TEXTAREA')input.rows=3;input.value=String(value??'');input.dataset.widgetSettingType='string';}
+   else {input=document.createElement((currentBlock.props.widget_type==='rich_text'&&key==='label')||key==='caption'||key==='help_text'?'textarea':'input');if(input.tagName==='TEXTAREA')input.rows=currentBlock.props.widget_type==='rich_text'?8:3;input.value=String(value??'');input.dataset.widgetSettingType='string';}
    input.dataset.widgetSetting=key;input.style.width='100%';input.style.maxWidth='100%';input.style.boxSizing='border-box';label.append(input);host.append(label);
   });
   return;
