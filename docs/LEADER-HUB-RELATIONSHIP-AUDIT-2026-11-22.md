@@ -83,3 +83,17 @@ while signed in to the staging admin account and share the returned JSON. The di
 ## Count-only relationship integrity pass
 
 The diagnostic revision adds aggregate-only counts for legacy venue/activity reference validity; activity–venue join totals, valid/orphan references and duplicate pairs; schedule reference integrity; activities with non-empty legacy weekly schedule text; session-to-venue validity; and business/activity link validity and duplicate pairs. Schema checks guard each metric. These checks return no IDs or record values and are intended to inform design before any migration or reconciliation. No records are changed.
+
+
+## Booking and timetable reconciliation — follow-up code review
+
+The codebase contains two booking paths which must remain distinct until runtime staging counts are confirmed:
+
+- **Legacy session booking:** `bh_bookings` references `bh_sessions` through nullable `session_id`, and also stores `activity_id`. The admin timetable editor checks this table before allowing a session row to be removed. The checked-in schema defines statuses `pending`, `confirmed`, `cancelled` and `completed`.
+- **Dated slot booking:** `bh_booking_sources` configures a booking source per activity; `bh_booking_slots` stores dated `starts_at` / `ends_at` records with activity and optional venue references; `bh_booking_reservations` references a slot and family user. The Leader Hub and family hub read this newer path when all required tables exist.
+- **Recurring timetable:** `bh_sessions` stores weekly day/time patterns attached to a venue. These are not dated booking slots. The 237 staging session rows reported by the earlier diagnostic therefore must not be converted into booking slots without a separately verified mapping.
+- **Legacy JSON:** Add Class writes `bh_activities.weekly_schedule`, while the current Leader Hub payload reads sessions by venue. Edit Class does not update either the JSON schedule or venue relationship. This is a workflow mismatch, not evidence that one representation can safely overwrite the other.
+
+The follow-up read-only diagnostic adds the four booking tables to its fixed schema allowlist and reports aggregate row totals and referential-integrity counts for legacy session bookings, booking sources, dated slots and slot reservations. It does not return booking rows, user details, child information or contact data, and performs no writes or DDL.
+
+**Next decision gate:** run the updated diagnostic on staging, then document a record-preserving mapping between legacy session bookings and dated slot reservations only if runtime data shows both models are populated. No booking migration or timetable rewrite is authorised by this audit.
