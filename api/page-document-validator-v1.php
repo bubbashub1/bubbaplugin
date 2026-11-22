@@ -91,8 +91,10 @@ function bh_validate_page_document_v1(mixed $document): array {
    if(!array_key_exists('id',$child)||!array_key_exists('type',$child)||!array_key_exists('props',$child))$errors[]='Block id, type and props are required.';
    $idCheck($child['id']??null);$p=$child['props']??null;
    if(!is_array($p)){$errors[]='Block props must be an object.';continue;}
+   $sectionColumnCount=max(1,min(4,(int)($props['columns']??1)));
+   if(isset($p['column'])&&(!is_int($p['column'])||$p['column']<1||$p['column']>$sectionColumnCount))$errors[]='Block column placement is invalid for its container.';
    if($type==='image'){
-    if(array_diff(array_keys($p),['src','alt','width','fit','radius','margin_bottom','font_size','align','color','background']))$errors[]='Unknown image property.';
+    if(array_diff(array_keys($p),['src','alt','width','fit','radius','margin_bottom','font_size','align','color','background' ,'column']))$errors[]='Unknown image property.';
     $src=$p['src']??null;$safe=false;if(is_string($src)&&strlen($src)<=2048&&!preg_match('/[\\x00-\\x20\\x7f\\\\]/',$src)&&!str_starts_with($src,'//')){$scheme=parse_url($src,PHP_URL_SCHEME);$safe=str_starts_with($src,'/')||($scheme==='https'&&filter_var($src,FILTER_VALIDATE_URL)!==false);}
     if(!$safe)$errors[]='Image source must be a safe https URL or site-relative path.';
     if(!is_string($p['alt']??null)||mb_strlen($p['alt'])>300)$errors[]='Image alternative text invalid.';
@@ -104,16 +106,16 @@ function bh_validate_page_document_v1(mixed $document): array {
     if(isset($p['align'])&&!in_array($p['align'],['left','center','right'],true))$errors[]='Image alignment invalid.';
     foreach(['color','background'] as $colourKey)if(isset($p[$colourKey])&&(!is_string($p[$colourKey])||!preg_match('/^#[0-9a-fA-F]{6}$/',$p[$colourKey])))$errors[]='Image colour invalid.';
    }elseif($type==='heading'){
-    if(array_diff(array_keys($p),['text','level','align','font_size','width','margin_bottom','color','background','radius','padding']))$errors[]='Unknown heading property.';
+    if(array_diff(array_keys($p),['text','level','align','font_size','width','margin_bottom','color','background','radius','padding' ,'column']))$errors[]='Unknown heading property.';
     if(!array_key_exists('text',$p)||!array_key_exists('level',$p))$errors[]='Heading text and level are required.';
     if(!is_string($p['text']??null)||mb_strlen($p['text'])>500)$errors[]='Heading text invalid.';
     if(!in_array($p['level']??null,[1,2,3,4],true))$errors[]='Heading level invalid.';
    }elseif($type==='paragraph'){
-    if(array_diff(array_keys($p),['text','align','font_size','width','margin_bottom','color','background','radius','padding']))$errors[]='Unknown paragraph property.';
+    if(array_diff(array_keys($p),['text','align','font_size','width','margin_bottom','color','background','radius','padding' ,'column']))$errors[]='Unknown paragraph property.';
     if(!array_key_exists('text',$p))$errors[]='Paragraph text is required.';
     if(!is_string($p['text']??null)||mb_strlen($p['text'])>10000)$errors[]='Paragraph text invalid.';
    }elseif($type==='directory_search'){
-    $allowedSearch=['label','placeholder','search_scope','show_filters','search_fields','filter_fields','font_size','width','align','margin_bottom','color','background','radius','padding'];
+    $allowedSearch=['label','placeholder','search_scope','show_filters','search_fields','filter_fields','font_size','width','align','margin_bottom','color','background','radius','padding','column'];
     if(array_diff(array_keys($p),$allowedSearch))$errors[]='Unknown directory search property.';
     if(!is_string($p['label']??null)||mb_strlen($p['label'])>100)$errors[]='Directory search label invalid.';
     if(!is_string($p['placeholder']??null)||mb_strlen($p['placeholder'])>150)$errors[]='Directory search placeholder invalid.';
@@ -143,13 +145,13 @@ function bh_validate_page_document_v1(mixed $document): array {
     if(isset($p['radius'])&&(!is_int($p['radius'])||$p['radius']<0||$p['radius']>48))$errors[]='Directory search radius invalid.';
     if(isset($p['padding'])&&(!is_int($p['padding'])||$p['padding']<0||$p['padding']>48))$errors[]='Directory search padding invalid.';
    }elseif($type==='button'){
-    if(array_diff(array_keys($p),['text','href','font_size','width','align','margin_bottom','color','background','radius','padding']))$errors[]='Unknown button property.';
+    if(array_diff(array_keys($p),['text','href','font_size','width','align','margin_bottom','color','background','radius','padding' ,'column']))$errors[]='Unknown button property.';
     if(!array_key_exists('text',$p)||!array_key_exists('href',$p))$errors[]='Button text and link are required.';
     if(!is_string($p['text']??null)||trim($p['text'])===''||mb_strlen($p['text'])>120)$errors[]='Button text invalid.';
     $href=$p['href']??null;
     if(!is_string($href)||strlen($href)>2048||!bh_page_document_safe_href_v1($href))$errors[]='Button link invalid.';
    }elseif($type==='library_widget'){
-    if(array_diff(array_keys($p),['widget_key','widget_type','name','description','settings','text','width','align','margin_bottom','color','background','radius','padding','font_size']))$errors[]='Unknown library widget property.';
+    if(array_diff(array_keys($p),['widget_key','widget_type','name','description','settings','text','width','align','margin_bottom','color','background','radius','padding','font_size' ,'column']))$errors[]='Unknown library widget property.';
     if(!is_string($p['widget_key']??null)||!preg_match('/^[a-z0-9][a-z0-9-]{1,79}$/',$p['widget_key']))$errors[]='Library widget key invalid.';
     if(!is_string($p['widget_type']??null)||!preg_match('/^[a-z][a-z0-9_]{1,59}$/',$p['widget_type']))$errors[]='Library widget type invalid.';
     if(!is_string($p['name']??null)||trim($p['name'])===''||mb_strlen($p['name'])>120)$errors[]='Library widget name invalid.';
