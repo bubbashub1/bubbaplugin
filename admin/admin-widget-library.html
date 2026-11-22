@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en-GB" class="bh-admin-auth-pending">
-<head><meta charset="utf-8"><style>html.bh-admin-auth-pending body{visibility:hidden}</style><base href="/"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Widget Library · Admin · Bubba Hub</title><link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/admin-settings.css"><link rel="stylesheet" href="/assets/css/admin-support-v2.css"><link rel="stylesheet" href="/assets/css/admin-widget-library.css?v=20261122-1"></head>
+<head><meta charset="utf-8"><style>html.bh-admin-auth-pending body{visibility:hidden}</style><base href="/"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Widget Library · Admin · Bubba Hub</title><link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/admin-settings.css"><link rel="stylesheet" href="/assets/css/admin-support-v2.css"><link rel="stylesheet" href="/assets/css/admin-widget-library.css?v=20261122-2"></head>
 <body class="bh-admin-v2"><header class="site-header"><a class="brand" href="/index.html"><img class="brand-logo" src="/images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav"><a href="/directory.html">Find activities</a><a href="/my-hub.html">My Hub</a><a href="/admin.html">Admin</a></nav><a class="button button-soft" href="/account.html">My account</a></header>
 <main class="bhwl-shell"><div class="bhwl-heading"><div><a href="/admin.html">← Admin dashboard</a><span class="eyebrow">Website management</span><h1>Widget Library</h1><p>Manage the reusable building blocks available to the Visual Builder. Changes here set the library defaults; page-specific edits will remain on their own drafts.</p></div><span id="widgetStatus" role="status">Checking admin access…</span></div>
 <div class="bhwl-layout"><section class="bhwl-library"><div class="bhwl-toolbar"><div><h2>Available widgets</h2><p id="widgetCount">Loading library…</p></div><label>Filter by category<select id="widgetFilter"><option value="">All categories</option><option>Content</option><option>Forms</option><option>Interactive</option><option>Layout</option></select></label></div><div id="widgetList" class="bhwl-list"></div></section>
@@ -9,6 +9,16 @@
 <label for="widgetCategory">Category</label><select id="widgetCategory" disabled><option>Content</option><option>Forms</option><option>Interactive</option><option>Layout</option></select>
 <label for="widgetDescription">Description</label><textarea id="widgetDescription" rows="2" maxlength="500" disabled></textarea>
 <div class="bhwl-settings"><strong>Default settings</strong><label for="settingLabel">Default label / heading</label><input id="settingLabel" maxlength="160" disabled><label for="settingPlaceholder">Placeholder</label><input id="settingPlaceholder" maxlength="160" disabled><label for="settingHelp">Help text</label><textarea id="settingHelp" rows="2" maxlength="500" disabled></textarea><label class="bhwl-check"><input id="settingRequired" type="checkbox" disabled> Required by default</label><label for="settingOptions">Options (one per line)</label><textarea id="settingOptions" rows="4" maxlength="2000" placeholder="Option one&#10;Option two" disabled></textarea><p class="bhwl-hint">Options are used by dropdowns and radio buttons. Other widget types may use additional settings in later phases.</p></div>
+<div id="directorySearchAdvanced" class="bhwl-settings" hidden>
+<strong>Search widget · Advanced settings</strong>
+<p class="bhwl-hint">Choose which directory this search covers. Available fields are read from the staging database schema.</p>
+<label for="searchScope">Directory to search</label>
+<select id="searchScope" disabled>
+<option value="all">All directories</option><option value="activities">Activities / Classes</option><option value="businesses">Businesses</option><option value="childcare">Childcare</option><option value="events">Events</option><option value="places">Places</option><option value="school_clubs">School Clubs</option>
+</select>
+<label class="bhwl-check"><input id="searchShowFilters" type="checkbox" disabled> Show filters on the search form</label>
+<div id="searchFieldGroups" class="bhwl-search-field-groups"><p class="bhwl-hint">Select a Search widget to load its available fields.</p></div>
+</div>
 <label class="bhwl-check"><input id="widgetEnabled" type="checkbox" disabled> Available in Visual Builder</label><div class="bhwl-actions"><button type="submit" id="saveWidget" disabled>Save settings</button><button type="button" id="resetWidget" class="secondary" disabled>Reset changes</button></div><p id="widgetFormStatus" role="status"></p></form></aside></div>
 <p class="bhwl-footer"><a href="/admin/admin-visual-builder.html">Open Visual Builder →</a> · Library settings are separate from saved page drafts.</p></main>
-<script src="/assets/js/admin-widget-library.js?v=20261122-1" defer></script></body></html>
+<script src="/assets/js/admin-widget-library.js?v=20261122-2" defer></script></body></html>
