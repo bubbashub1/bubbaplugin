@@ -47,17 +47,18 @@ try{
   $uid=(int)$leader['leader_user_id'];if($uid<1||isset($seenUsers[$uid]))continue;$seenUsers[$uid]=true;
   $title=trim((string)($leader['organisation_name']??$leader['name']??$leader['business_name']??''));if($title==='')$title='Class leader';
   $description=trim((string)($leader['about_content']??$leader['description']??''));
-  $slug=trim((string)($leader['slug']??''));if($slug==='')$slug=strtolower(trim((string)preg_replace('/[^a-z0-9]+/i','-', $title),'-'));
+  $slug=strtolower(trim((string)preg_replace('/[^a-z0-9]+/i','-',str_replace('&','and',$title)),'-'));
   $rows[]=[
-   'id'=>'leader-'.$uid,'organiser_id'=>(int)$leader['id'],'title'=>$title,'category'=>'Class leader',
+   'id'=>'leader-'.$uid,'organiser_id'=>(int)$leader['id'],'organiser_slug'=>$slug,'title'=>$title,'category'=>'Class leader',
    'summary'=>$description!==''?mb_substr(trim(strip_tags($description)),0,500):'Discover this class leader and their activities on Bubba Hub.',
    'description'=>$description,'town'=>(string)($leader['town']??''),'region'=>(string)($leader['region']??''),
    'address'=>'','postcode'=>'','website'=>(string)($leader['website']??''),'contact_email'=>(string)($leader['email']??''),
    'contact_phone'=>(string)($leader['phone']??''),'organisation_name'=>$title,'logo_url'=>(string)($leader['logo_url']??''),
-   'linked_listing_count'=>(int)($leader['published_listing_count']??0),'storefront_type'=>'class_leader','organiser_slug'=>$slug
+   'linked_listing_count'=>(int)($leader['published_listing_count']??0),'storefront_type'=>'class_leader'
   ];
  }
  // Apply the same public filters to automatically generated leader storefronts.
+ foreach($rows as &$row){if(($row['storefront_type']??'')==='class_leader'&&!empty($row['organisation_name'])){$row['organiser_slug']=strtolower(trim((string)preg_replace('/[^a-z0-9]+/i','-',str_replace('&','and',(string)$row['organisation_name'])),'-'));}}unset($row);
  $rows=array_values(array_filter($rows,static function(array $row)use($q,$category,$town,$region):bool{
   if($category!==''&&($row['category']??'')!==$category)return false;
   if($town!==''&&($row['town']??'')!==$town)return false;
