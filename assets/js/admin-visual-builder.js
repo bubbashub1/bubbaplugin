@@ -667,22 +667,29 @@ function convertPage(){
  $('selectedDetails').hidden=true;
 }
 async function api(path,body){
- const send=()=>fetch(path,{method:body?'POST':'GET',credentials:'same-origin',cache:'no-store',headers:body?{'Content-Type':'application/json','Accept':'application/json'}:{Accept:'application/json'},body:body?JSON.stringify({...body,csrf}):undefined});
- let response=await send();
- let data=await response.json();
- // The Page Manager and Visual Builder use separate CSRF tokens. Refresh the
- // builder token from its own endpoint and retry once if a save has a stale token.
- if(body&&response.status===403&&/security check failed/i.test(String(data.error||''))){
-  const pageId=Number(body.page_id||0);
+ const send=(token=csrf)=>fetch(path,{method:body?'POST':'GET',credentials:'same-origin',cache:'no-store',headers:body?{'Content-Type':'application/json','Accept':'application/json','X-Requested-With':'XMLHttpRequest'}:{Accept:'application/json','X-Requested-With':'XMLHttpRequest'},body:body?JSON.stringify({...body,csrf:token}):undefined});
+ const read=async response=>{const raw=await response.text();let data;try{data=JSON.parse(raw);}catch{throw new Error('The Visual Builder server returned an unreadable response (HTTP '+response.status+').');}return {response,data};};
+ let result=await read(await send());
+ if(body&&result.response.status===403){
+  const pageId=Number(body.page_id||page?.id||0);
   if(pageId>0){
-   const refresh=await fetch('/api/admin-visual-page-drafts.php?page_id='+encodeURIComponent(pageId),{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
-   const fresh=await refresh.json();
-   if(refresh.ok&&fresh.ok&&fresh.csrf){csrf=fresh.csrf;response=await send();data=await response.json();}
+   const refresh=await fetch('/api/admin-visual-page-drafts.php?page_id='+encodeURIComponent(pageId)+'&_csrf_refresh='+Date.now(),{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json','X-Requested-With':'XMLHttpRequest'}});
+   const fresh=await read(refresh);
+   if(refresh.ok&&fresh.data.ok&&fresh.data.csrf){
+    csrf=fresh.data.csrf;
+    result=await read(await send(csrf));
+   }else if(refresh.status===401||fresh.data.error==='admin_session_expired'||fresh.data.error==='admin_login_required'){
+    throw new Error('Your admin session has expired. Sign in again in another tab, then return here. Keep this builder tab open so your unsaved draft stays in place.');
+   }
   }
  }
- if(!response.ok||!data.ok)throw new Error(data.error||'Visual Builder request failed.');
- if(data.csrf)csrf=data.csrf;
- return data;
+ if(!result.response.ok||!result.data.ok){
+  const error=result.data.error||'Visual Builder request failed.';
+  if(result.response.status===403)throw new Error('The builder security token is out of date and could not be refreshed. Keep this tab open; your draft has not been saved.');
+  throw new Error(error);
+ }
+ if(result.data.csrf)csrf=result.data.csrf;
+ return result.data;
 }
 async function loadDraft(){
  if(!page)return;
