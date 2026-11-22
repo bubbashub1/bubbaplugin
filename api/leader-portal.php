@@ -99,7 +99,7 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
    $v=$db->prepare("SELECT v.*,
     (SELECT COUNT(DISTINCT av2.activity_id) FROM bh_activity_venues av2 WHERE av2.venue_id=v.id) AS linked_activity_count,
     CASE WHEN (v.activity_id IS NULL OR EXISTS (SELECT 1 FROM bh_activities legacy_owner WHERE legacy_owner.id=v.activity_id AND legacy_owner.organiser_id=?))
-      AND NOT EXISTS (SELECT 1 FROM bh_activity_venues avx JOIN bh_activities ax ON ax.id=avx.activity_id WHERE avx.venue_id=v.id AND ax.organiser_id<>?)
+      AND NOT EXISTS (SELECT 1 FROM bh_activity_venues avx JOIN bh_activities ax ON ax.id=avx.activity_id WHERE avx.venue_id=v.id AND COALESCE(ax.organiser_id,0)<>?)
     THEN 1 ELSE 0 END AS can_edit_shared_details,
     CASE WHEN v.activity_id=? THEN 'legacy' ELSE 'shared' END AS relationship_type
    FROM bh_venues v
@@ -350,12 +350,18 @@ if($action==='save_venue'){
   AND ((v.activity_id IS NOT NULL AND EXISTS (SELECT 1 FROM bh_activities legacy_owner WHERE legacy_owner.id=v.activity_id AND legacy_owner.organiser_id=?))
     OR EXISTS (SELECT 1 FROM bh_activity_venues own_link JOIN bh_activities own_activity ON own_activity.id=own_link.activity_id WHERE own_link.venue_id=v.id AND own_activity.organiser_id=?))
   AND (v.activity_id IS NULL OR EXISTS (SELECT 1 FROM bh_activities legacy_owner_check WHERE legacy_owner_check.id=v.activity_id AND legacy_owner_check.organiser_id=?))
-  AND NOT EXISTS (SELECT 1 FROM bh_activity_venues other_link JOIN bh_activities other_activity ON other_activity.id=other_link.activity_id WHERE other_link.venue_id=v.id AND other_activity.organiser_id<>?)");
+  AND NOT EXISTS (SELECT 1 FROM bh_activity_venues other_link JOIN bh_activities other_activity ON other_activity.id=other_link.activity_id WHERE other_link.venue_id=v.id AND COALESCE(other_activity.organiser_id,0)<>?)");
  $q->execute([...$vals,$id,$oid,$oid,$oid,$oid]);
  if(!$q->rowCount()){
-  $check=$db->prepare("SELECT v.id FROM bh_venues v WHERE v.id=? AND ((v.activity_id IS NOT NULL AND EXISTS (SELECT 1 FROM bh_activities la WHERE la.id=v.activity_id AND la.organiser_id=?)) OR EXISTS (SELECT 1 FROM bh_activity_venues av JOIN bh_activities aa ON aa.id=av.activity_id WHERE av.venue_id=v.id AND aa.organiser_id=?))");
-  $check->execute([$id,$oid,$oid]);
-  if($check->fetch())lp(409,['ok'=>false,'error'=>'shared_venue_locked','message'=>'This venue is linked to another organisation. Please ask Bubba Hub to update the shared venue details.']);
+  $check=$db->prepare("SELECT v.id,
+   CASE WHEN ((v.activity_id IS NOT NULL AND EXISTS (SELECT 1 FROM bh_activities la WHERE la.id=v.activity_id AND la.organiser_id=?)) OR EXISTS (SELECT 1 FROM bh_activity_venues av JOIN bh_activities aa ON aa.id=av.activity_id WHERE av.venue_id=v.id AND aa.organiser_id=?))
+    AND (v.activity_id IS NULL OR EXISTS (SELECT 1 FROM bh_activities la2 WHERE la2.id=v.activity_id AND la2.organiser_id=?))
+    AND NOT EXISTS (SELECT 1 FROM bh_activity_venues avx JOIN bh_activities ax ON ax.id=avx.activity_id WHERE avx.venue_id=v.id AND COALESCE(ax.organiser_id,0)<>?)
+   THEN 1 ELSE 0 END AS can_edit
+   FROM bh_venues v WHERE v.id=?");
+  $check->execute([$oid,$oid,$oid,$oid,$id]);$state=$check->fetch();
+  if($state && (int)$state['can_edit']===1)lp(200,['ok'=>true]);
+  if($state)lp(409,['ok'=>false,'error'=>'shared_venue_locked','message'=>'This venue is linked to another organisation. Please ask Bubba Hub to update the shared venue details.']);
   lp(404,['ok'=>false,'error'=>'venue_not_found']);
  }
  lp(200,['ok'=>true]);
