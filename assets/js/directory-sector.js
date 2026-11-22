@@ -5,6 +5,29 @@ let timer,requestId=0,businessCategoriesLoaded=false;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const safeUrl=value=>{const v=String(value||"").trim();return /^https?:\/\//i.test(v)?v:""};
 const safeImage=value=>{const v=String(value||"").trim();return safeUrl(v)||(/^\/(?!\/)/.test(v)?v:"")};
+function formatDate(value){const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value||''));return match?match[3]+'/'+match[2]+'/'+match[1]:String(value||'')}
+function sectorDetails(x){
+ const parts=[],verification=safeUrl(x.verification_url);
+ if(type==='childcare'){
+  const registration=[x.registration_body,x.registration_reference].filter(Boolean).join(' · ');
+  if(registration)parts.push('<p><strong>Registration:</strong> '+esc(registration)+'</p>');
+  if(x.verified_on)parts.push('<p><strong>Information checked:</strong> '+esc(formatDate(x.verified_on))+'</p>');
+  if(verification)parts.push('<p><a href="'+esc(verification)+'" target="_blank" rel="noopener noreferrer">View registration information ↗</a></p>');
+ }else if(type==='place'){
+  if(x.facilities)parts.push('<p><strong>Facilities:</strong> '+esc(x.facilities)+'</p>');
+ }else if(type==='school_club'){
+  if(x.school_name)parts.push('<p><strong>School:</strong> '+esc(x.school_name)+'</p>');
+  const min=x.age_min!==null&&x.age_min!==undefined&&x.age_min!==''?Number(x.age_min):null,max=x.age_max!==null&&x.age_max!==undefined&&x.age_max!==''?Number(x.age_max):null;
+  const age=min!==null&&max!==null?'Ages '+min+'–'+max:min!==null?'From age '+min:max!==null?'Up to age '+max:'';
+  if(age)parts.push('<p><strong>Age range:</strong> '+esc(age)+'</p>');
+  if(x.days_times)parts.push('<p><strong>Days and times:</strong> '+esc(x.days_times)+'</p>');
+  if(x.collection_arrangements)parts.push('<p><strong>Collection:</strong> '+esc(x.collection_arrangements)+'</p>');
+  if(x.price_details)parts.push('<p><strong>Cost:</strong> '+esc(x.price_details)+'</p>');
+  if(x.verified_on)parts.push('<p><strong>Information checked:</strong> '+esc(formatDate(x.verified_on))+'</p>');
+  if(verification)parts.push('<p><a href="'+esc(verification)+'" target="_blank" rel="noopener noreferrer">View club information ↗</a></p>');
+ }
+ return parts.length?'<div class="bh-sector-details">'+parts.join('')+'</div>':'';
+}
 function businessCard(x){
  const logo=safeImage(x.logo_url),website=safeUrl(x.website),email=String(x.contact_email||"").trim(),phone=String(x.contact_phone||"").trim(),place=[x.town,x.region].filter(Boolean).join(" · "),count=Number(x.linked_listing_count)||0;
  return '<article class="bh-sector-card">'+(logo?'<img class="bh-business-logo" src="'+esc(logo)+'" alt="" loading="lazy">':'')+'<h2>'+esc(x.title)+'</h2>'+(x.summary||x.description?'<p>'+esc(x.summary||x.description)+'</p>':'')+'<p class="bh-sector-meta">'+esc([x.category,place].filter(Boolean).join(" · "))+'</p>'+(count?'<p class="bh-sector-meta">'+count+' related '+(count===1?'activity':'activities')+'</p>':'')+(website?'<p><a href="'+esc(website)+'" target="_blank" rel="noopener noreferrer">Visit website ↗</a></p>':'')+(email?'<p><a href="mailto:'+esc(email)+'">Email business</a></p>':'')+(phone?'<p><a href="tel:'+esc(phone)+'">'+esc(phone)+'</a></p>':'')+'</article>';
@@ -35,7 +58,7 @@ async function load(){
    businessCategoriesLoaded=true;
   }
   status.textContent=rows.length?rows.length+(type==="business"?" published business profile(s)":" approved result(s)"):"No matching entries yet.";
-  list.innerHTML=rows.length?rows.map(x=>type==="business"?businessCard(x):'<article class="bh-sector-card"><h2>'+esc(x.title)+'</h2><p>'+esc(x.summary||x.description||"")+'</p><p class="bh-sector-meta">'+esc([x.category,x.town,x.region].filter(Boolean).join(" · "))+'</p>'+(x.website_url?'<p><a href="'+esc(x.website_url)+'" target="_blank" rel="noopener">Visit website ↗</a></p>':'')+'</article>').join(""):'<div class="bh-sector-empty">No matching entries. Try another town or search term.</div>';
+  list.innerHTML=rows.length?rows.map(x=>type==="business"?businessCard(x):'<article class="bh-sector-card"><h2>'+esc(x.title)+'</h2>'+(x.summary||x.description?'<p>'+esc(x.summary||x.description)+'</p>':'')+'<p class="bh-sector-meta">'+esc([x.category,x.town,x.region].filter(Boolean).join(" · "))+'</p>'+sectorDetails(x)+(safeUrl(x.website_url)?'<p><a href="'+esc(safeUrl(x.website_url))+'" target="_blank" rel="noopener noreferrer">Visit website ↗</a></p>':'')+'</article>').join(""):'<div class="bh-sector-empty">No matching entries. Try another town or search term.</div>';
  }catch(e){if(current!==requestId)return;status.textContent=e.message;list.innerHTML='<div class="bh-sector-empty">We could not load directory results just now. Please try again shortly.</div>'}
  finally{if(current===requestId)list.removeAttribute("aria-busy")}
 }
