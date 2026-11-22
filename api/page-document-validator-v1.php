@@ -148,6 +148,14 @@ function bh_validate_page_document_v1(mixed $document): array {
     if(!is_string($p['text']??null)||trim($p['text'])===''||mb_strlen($p['text'])>120)$errors[]='Button text invalid.';
     $href=$p['href']??null;
     if(!is_string($href)||strlen($href)>2048||!bh_page_document_safe_href_v1($href))$errors[]='Button link invalid.';
+   }elseif($type==='library_widget'){
+    if(array_diff(array_keys($p),['widget_key','widget_type','name','description','settings','text','width','align','margin_bottom','color','background','radius','padding','font_size']))$errors[]='Unknown library widget property.';
+    if(!is_string($p['widget_key']??null)||!preg_match('/^[a-z0-9][a-z0-9-]{1,79}$/',$p['widget_key']))$errors[]='Library widget key invalid.';
+    if(!is_string($p['widget_type']??null)||!preg_match('/^[a-z][a-z0-9_]{1,59}$/',$p['widget_type']))$errors[]='Library widget type invalid.';
+    if(!is_string($p['name']??null)||trim($p['name'])===''||mb_strlen($p['name'])>120)$errors[]='Library widget name invalid.';
+    if(isset($p['description'])&&(!is_string($p['description'])||mb_strlen($p['description'])>500))$errors[]='Library widget description invalid.';
+    if(isset($p['text'])&&(!is_string($p['text'])||mb_strlen($p['text'])>500))$errors[]='Library widget label invalid.';
+    if(isset($p['settings'])&&(!is_array($p['settings'])||strlen((string)json_encode($p['settings']))>12000))$errors[]='Library widget settings invalid.';
    }else $errors[]='Unsupported block type.';
    foreach(['font_size'=>[10,72],'width'=>[10,100],'margin_bottom'=>[0,80],'radius'=>[0,48],'padding'=>[0,48]] as $styleKey=>$range){
     if(isset($p[$styleKey])&&(!is_int($p[$styleKey])||$p[$styleKey]<$range[0]||$p[$styleKey]>$range[1]))$errors[]='Invalid block '.$styleKey.'.';
