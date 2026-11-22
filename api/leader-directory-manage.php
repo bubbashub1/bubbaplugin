@@ -5,6 +5,7 @@ ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');i
 function ldm(int $c,array $d):never{http_response_code($c);echo json_encode($d,JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);exit;}
 $map=['event'=>'bh_directory_events','business'=>'bh_directory_businesses','childcare'=>'bh_directory_childcare','place'=>'bh_directory_places','school_club'=>'bh_directory_school_clubs'];
 require_once __DIR__.'/db.php';$db=bh_mysql();
+$tableExists=static function(string $table)use($db):bool{$q=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?");$q->execute([$table]);return (int)$q->fetchColumn()>0;};
 if(empty($_SESSION['bh_user_id']))ldm(401,['ok'=>false,'error'=>'login_required','message'=>'Sign in with your Leader account to continue.']);
 $q=$db->prepare("SELECT id,email,role,status FROM bh_users WHERE id=? LIMIT 1");$q->execute([(int)$_SESSION['bh_user_id']]);$u=$q->fetch(PDO::FETCH_ASSOC);
 if(!$u||$u['role']!=='leader'||$u['status']!=='active')ldm(403,['ok'=>false,'error'=>'leader_required']);
@@ -14,7 +15,7 @@ if(!$org){try{$q=$db->prepare("SELECT COUNT(*) FROM bh_organisers WHERE LOWER(em
 if(!$org)ldm(403,['ok'=>false,'error'=>'organiser_required','message'=>'Your Leader account needs an organisation profile first.']);
 if($_SERVER['REQUEST_METHOD']==='GET'){
  $_SESSION['bh_directory_manage_csrf']??=bin2hex(random_bytes(32));$all=[];
- foreach($map as $section=>$table){$q=$db->prepare("SELECT id,title,category,town,status,created_at,updated_at,review_note FROM ".$table." WHERE organiser_id=? ORDER BY updated_at DESC LIMIT 250");$q->execute([(int)$org]);foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){$row['section']=$section;$all[]=$row;}}
+ foreach($map as $section=>$table){if(!$tableExists($table))continue;$q=$db->prepare("SELECT id,title,category,town,status,created_at,updated_at,review_note FROM ".$table." WHERE organiser_id=? ORDER BY updated_at DESC LIMIT 250");$q->execute([(int)$org]);foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){$row['section']=$section;$all[]=$row;}}
  usort($all,static fn($a,$b)=>strcmp((string)$b['updated_at'],(string)$a['updated_at']));
  ldm(200,['ok'=>true,'csrf'=>$_SESSION['bh_directory_manage_csrf'],'records'=>$all]);
 }
@@ -25,7 +26,7 @@ $b=json_decode((string)file_get_contents('php://input'),true);
 if(!is_array($b)||empty($_SESSION['bh_directory_manage_csrf'])||!is_string($b['csrf']??null)||!hash_equals($_SESSION['bh_directory_manage_csrf'],$b['csrf']))ldm(403,['ok'=>false,'error'=>'invalid_csrf']);
 $section=(string)($b['section']??'');$id=filter_var($b['record_id']??null,FILTER_VALIDATE_INT);
 if(!isset($map[$section])||!$id||$id<1)ldm(422,['ok'=>false,'error'=>'invalid_record']);
-$table=$map[$section];
+$table=$map[$section];if(!$tableExists($table))ldm(503,['ok'=>false,'error'=>'section_schema_not_installed','message'=>'This Directory section is not installed yet.']);
 try{$db->beginTransaction();$q=$db->prepare("SELECT id,status FROM ".$table." WHERE id=? AND organiser_id=? FOR UPDATE");$q->execute([$id,(int)$org]);$row=$q->fetch(PDO::FETCH_ASSOC);
 if(!$row){$db->rollBack();ldm(404,['ok'=>false,'error'=>'record_not_found']);}
 if($row['status']==='published'){ $db->rollBack();ldm(409,['ok'=>false,'error'=>'published_change_requires_review','message'=>'Published entries cannot be changed or removed directly. Please contact Bubba Hub to request an update.']);}
