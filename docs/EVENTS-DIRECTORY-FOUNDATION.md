@@ -30,14 +30,16 @@ Create a genuine one-off and recurring Events directory without repurposing the 
 - [x] Public Events feed limited to published events with future scheduled occurrences.
 - [x] Public Events page keeps one-off events separate from regular Listings sessions.
 - [x] Leader Hub navigation includes Add an Event.
-- [ ] Draft editing, event owner management list, cancellation/rescheduling controls and rate limiting.
+- [x] Shared Leader My Directory entries list includes Events and the other directory sectors.
+- [x] Safe in-place editing/resubmission for owned event drafts and returned events implemented in PR #1093; awaiting staging validation.
+- [ ] Cancellation/rescheduling controls and rate limiting.
 - [ ] Schema review against the actual staging database, backup and explicit approval before installation.
 - [ ] End-to-end tests after schema installation, including cross-Leader ownership attempts, public visibility, cancellation, multiple occurrences, mobile layout and GMT/BST.
 
 ## Delivery sequence
 1. Review the schema against the staging database and confirm the exact organiser/user linkage.
 2. Obtain explicit approval, take a staging backup and install the schema on staging only.
-3. Build the Leader's My Events list and safe draft editing, resubmission and cancellation/rescheduling.
+3. Complete the remaining event owner controls: cancellation/rescheduling, then validate the shared My Directory entries list and draft editing on staging.
 4. Run end-to-end tests with at least two distinct Leader accounts; verify one Leader cannot read, change or link another Leader's records.
 5. Test GMT/BST boundaries, event dates spanning midnight, public filters and mobile presentation.
 6. Only after staging sign-off, prepare a separate production migration and deployment plan.

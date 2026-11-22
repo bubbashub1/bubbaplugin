@@ -32,7 +32,7 @@ if($_SERVER['REQUEST_METHOD']==='GET'){
  $listings=[];try{$q=$db->prepare("SELECT id,title FROM bh_activities WHERE organiser_id=? AND status IN ('published','pending','draft') ORDER BY title");$q->execute([$oid]);$listings=$q->fetchAll(PDO::FETCH_ASSOC);}catch(Throwable $e){}
  $event=null;$eventId=filter_var($_GET['id']??null,FILTER_VALIDATE_INT);
  if($eventId&&le_table($db,'bh_directory_events')){
-  $q=$db->prepare("SELECT * FROM bh_directory_events WHERE id=? AND organiser_id=? AND status='published' LIMIT 1");$q->execute([$eventId,$oid]);$event=$q->fetch(PDO::FETCH_ASSOC)?:null;
+  $q=$db->prepare("SELECT * FROM bh_directory_events WHERE id=? AND organiser_id=? AND status IN ('published','draft','rejected') LIMIT 1");$q->execute([$eventId,$oid]);$event=$q->fetch(PDO::FETCH_ASSOC)?:null;
   if($event){
    $q=$db->prepare("SELECT starts_at,ends_at FROM bh_directory_event_occurrences WHERE event_id=? AND occurrence_status='scheduled' ORDER BY starts_at");$q->execute([$eventId]);$event['occurrences']=$q->fetchAll(PDO::FETCH_ASSOC);
    $q=$db->prepare("SELECT activity_id FROM bh_directory_event_listings WHERE event_id=?");$q->execute([$eventId]);$event['listing_ids']=array_map('intval',$q->fetchAll(PDO::FETCH_COLUMN));
@@ -62,6 +62,22 @@ $ageMin=($body['age_min_months']??'')===''?null:(int)$body['age_min_months'];$ag
 if(($ageMin!==null&&($ageMin<0||$ageMin>216))||($ageMax!==null&&($ageMax<0||$ageMax>216))||($ageMin!==null&&$ageMax!==null&&$ageMax<$ageMin))le_reply(422,['ok'=>false,'error'=>'invalid_age_range','message'=>'Check the age range.']);
 $linked=array_values(array_unique(array_filter(array_map('intval',is_array($body['listing_ids']??null)?$body['listing_ids']:[]),fn($v)=>$v>0)));
 if($linked){$marks=implode(',',array_fill(0,count($linked),'?'));$q=$db->prepare("SELECT id FROM bh_activities WHERE organiser_id=? AND id IN ($marks)");$q->execute(array_merge([$oid],$linked));if(count($q->fetchAll(PDO::FETCH_COLUMN))!==count($linked))le_reply(403,['ok'=>false,'error'=>'listing_link_not_owned','message'=>'You can only link events to your own listings.']);}
+$draftId=filter_var($body['draft_id']??null,FILTER_VALIDATE_INT);
+if($draftId){
+ try{
+  $db->beginTransaction();
+  $q=$db->prepare("SELECT id,status FROM bh_directory_events WHERE id=? AND organiser_id=? FOR UPDATE");$q->execute([$draftId,$oid]);$existing=$q->fetch(PDO::FETCH_ASSOC);
+  if(!$existing||!in_array($existing['status'],['draft','rejected'],true)){$db->rollBack();le_reply(409,['ok'=>false,'error'=>'event_draft_not_editable','message'=>'This event is no longer an editable draft. Refresh My Directory entries and try again.']);}
+  $q=$db->prepare("UPDATE bh_directory_events SET title=?,summary=?,description=?,category=?,age_min_months=?,age_max_months=?,booking_url=?,venue_name=?,address=?,town=?,region=?,postcode=?,status=?,submitted_at=?,reviewed_at=NULL,reviewed_by_user_id=NULL,review_note=NULL WHERE id=? AND organiser_id=?");
+  $q->execute([$title,$summary?:null,$description,$category?:null,$ageMin,$ageMax,$booking?:null,$venue,$address?:null,$town,$region?:null,$postcode?:null,$status,$status==='pending'?date('Y-m-d H:i:s'):null,$draftId,$oid]);
+  $q=$db->prepare("DELETE FROM bh_directory_event_occurrences WHERE event_id=?");$q->execute([$draftId]);
+  $q=$db->prepare("INSERT INTO bh_directory_event_occurrences (event_id,starts_at,ends_at,timezone) VALUES (?,?,?,'Europe/London')");foreach($occurrences as $occurrence)$q->execute([$draftId,$occurrence['start'],$occurrence['end']]);
+  $q=$db->prepare("DELETE FROM bh_directory_event_listings WHERE event_id=?");$q->execute([$draftId]);
+  if($linked){$q=$db->prepare("INSERT INTO bh_directory_event_listings (event_id,activity_id) VALUES (?,?)");foreach($linked as $id)$q->execute([$draftId,$id]);}
+  $db->commit();
+  le_reply(200,['ok'=>true,'event_id'=>$draftId,'status'=>$status,'message'=>$status==='pending'?'Your updated event has been sent to Bubba Hub for review.':'Your event draft has been updated.']);
+ }catch(Throwable $e){if($db->inTransaction())$db->rollBack();error_log('Leader event draft update: '.$e->getMessage());le_reply(500,['ok'=>false,'error'=>'event_draft_update_failed','message'=>'The event draft could not be updated. Please try again.']);}
+}
 $recordId=filter_var($body['record_id']??null,FILTER_VALIDATE_INT);
 if($recordId){
  if(!le_table($db,'bh_directory_record_revisions'))le_reply(503,['ok'=>false,'error'=>'revision_schema_not_installed','message'=>'Published event changes are not enabled until the Directory update is installed.']);
