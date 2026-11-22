@@ -11,9 +11,9 @@
   async function init(){
     const content=document.getElementById("directorySectorContent");
     const empty=document.getElementById("directorySectorComingSoon");
+    if(!content||!empty)return;
     const businesses=document.getElementById("directoryBusinessesView");
     const listingsColumn=content.querySelector(".directory-results-column");
-    if(!content||!empty)return;
     try{await (window.bhDirectoryHeroReady||Promise.resolve());}catch(_){}
     const keyword=document.querySelector('[data-bh-hero-field="keyword"]');
     const keywordLabel=keyword?.closest("label");
@@ -53,6 +53,7 @@
         if(key==="events")window.dispatchEvent(new CustomEvent("bh:directory-show-events"));
         else if(key==="listings")document.getElementById("directoryShowList")?.click();
       }
+      window.dispatchEvent(new CustomEvent("bh:directory-sector-change",{detail:{sector:key}}));
       if(updateUrl){
         const url=new URL(window.location.href);
         if(key==="listings")url.searchParams.delete("sector");
