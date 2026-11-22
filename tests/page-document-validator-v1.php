@@ -29,6 +29,7 @@ $badMobile=$validMobile;$badMobile['sections'][0]['props']['mobile']['evil']='x'
 $badMobile=$validMobile;$badMobile['sections'][0]['props']['mobile']['align']='stretch';assert_test(!bh_validate_page_document_v1($badMobile)['ok'],'invalid mobile alignment rejected');
 $bad=$valid;$bad['sections'][0]['props']['width']=101;assert_test(!bh_validate_page_document_v1($bad)['ok'],'container width upper bound');
 $columnDoc=$valid;$columnDoc['sections'][0]['props']['columns']=2;$columnDoc['sections'][0]['props']['column_widths']=[35,65];$columnDoc['sections'][0]['children'][0]['props']['column']=2;assert_test(bh_validate_page_document_v1($columnDoc)['ok'],'block can be assigned to an available column');
+$badWidths=$columnDoc;$badWidths['sections'][0]['props']['column_widths']=[100];assert_test(!bh_validate_page_document_v1($badWidths)['ok'],'column width count must match configured columns');
 $badColumn=$columnDoc;$badColumn['sections'][0]['children'][0]['props']['column']=3;assert_test(!bh_validate_page_document_v1($badColumn)['ok'],'block cannot be assigned outside its container columns');
 $badColumn=$columnDoc;$badColumn['sections'][0]['children'][0]['props']['column']=0;assert_test(!bh_validate_page_document_v1($badColumn)['ok'],'block column index lower bound');
 $bad=$valid;$bad['sections'][0]['props']['min_height']=801;assert_test(!bh_validate_page_document_v1($bad)['ok'],'container height upper bound');
