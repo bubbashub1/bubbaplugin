@@ -43,10 +43,10 @@ $presets=[
 ['notice','notice','Notice / callout','Interactive','A highlighted message or important note.',1,['label'=>'Important information','tone'=>'info']],
 ['columns','columns','Columns','Layout','A responsive multi-column layout.',1,['columns'=>2,'gap'=>16]],
 ['feature-box','feature_box','Feature box','Layout','A feature with icon, heading and text.',1,['label'=>'Feature heading','icon_name'=>'star']],
-['reusable-section','reusable_section','Reusable section','Layout','A saved section that can be reused on pages.',1,['label'=>'Reusable section']]
+['reusable-section','reusable_section','Reusable section','Layout','A saved section that can be reused on pages.',1,['label'=>'Reusable section']],
+['directory-search','directory_search','Search widget','Content','A search bar for finding activities, businesses and other directory listings.',1,['label'=>'Search Bubba Hub','placeholder'=>'What are you looking for?','help_text'=>'','search_scope'=>'all','show_filters'=>true]]
 ];
-$count=(int)$db->query("SELECT COUNT(*) FROM bh_visual_widget_library")->fetchColumn();
-if($count===0){$ins=$db->prepare("INSERT IGNORE INTO bh_visual_widget_library(widget_key,widget_type,name,category,description,enabled,settings_json) VALUES(?,?,?,?,?,?,?)");foreach($presets as $w)$ins->execute([$w[0],$w[1],$w[2],$w[3],$w[4],$w[5],json_encode($w[6],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)]);}
+$ins=$db->prepare("INSERT IGNORE INTO bh_visual_widget_library(widget_key,widget_type,name,category,description,enabled,settings_json) VALUES(?,?,?,?,?,?,?)");foreach($presets as $w)$ins->execute([$w[0],$w[1],$w[2],$w[3],$w[4],$w[5],json_encode($w[6],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)]);
 if($method==='GET'){$q=$db->query("SELECT id,widget_key,widget_type,name,category,description,enabled,settings_json,updated_at FROM bh_visual_widget_library ORDER BY FIELD(category,'Content','Forms','Interactive','Layout'),name");$items=[];foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){$row['enabled']=(bool)$row['enabled'];$row['settings']=json_decode((string)$row['settings_json'],true)?:[];unset($row['settings_json']);$items[]=$row;}bh_wl_out(200,['ok'=>true,'csrf'=>$csrf,'widgets'=>$items]);}
 $action=(string)($body['action']??'');
 if($action==='save_widget'){
