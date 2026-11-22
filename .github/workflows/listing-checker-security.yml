@@ -99,7 +99,11 @@ jobs:
           ! grep -q "bh_listing_monitor_website_state" database/migrations/20261122_create_listing_monitor_website_checks.sql
           ! grep -q "bh_listing_monitor_audit" database/migrations/20261121_create_listing_monitor_drafts.sql
           grep -q "website_monitor_enabled','0'" database/migrations/20261122_create_listing_monitor_website_checks.sql
+          grep -q "website_monitor_interval_hours','4'" database/migrations/20261122_create_listing_monitor_website_checks.sql
+          grep -q "website_monitor_batch_size','30'" database/migrations/20261122_create_listing_monitor_website_checks.sql
+          grep -q "website_monitor_max_runtime_seconds','240'" database/migrations/20261122_create_listing_monitor_website_checks.sql
           grep -q "website_monitor_enabled" api/listing-monitor-website-cron.php
+          grep -q "website_monitor_max_runtime_seconds" api/listing-monitor-website-cron.php
           ! grep -q "bh_listing_check_queue" api/listing-monitor-website-cron.php
           ! grep -q "bh_listing_check_runs" api/listing-monitor-website-cron.php
           ! grep -Eq "UPDATE[[:space:]]+bh_activities|DELETE[[:space:]]+FROM[[:space:]]+bh_activities" api/listing-monitor-website-cron.php
