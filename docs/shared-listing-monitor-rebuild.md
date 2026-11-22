@@ -88,10 +88,10 @@ Website fetching must also be hardened: allow only public HTTP(S) destinations, 
 1. Audit the existing activity tables, APIs, workers, review data and admin authentication.
 2. Design the activity-first schema and service boundaries; preserve existing checker data.
 3. Build the simple combined dashboard and alert detail pop-up.
-4. Implement the dashboard, private change drafts, full-listing preview, explicit field approval and audit log. These foundations are now in the feature branch and await staging validation.
-5. Build safe website monitoring, evidence capture, change detection and closure/temporary-closure classification; distinguish inaccessible sites from closure evidence.
-6. Add a controlled new-listing discovery review and approval flow.
-7. Test the activity directory end-to-end on staging, including the additive draft-table migration, monitoring worker safety, and approval conflict handling.
+4. Implement the dashboard, private change drafts, full-listing preview, explicit field approval and audit log. These foundations are in the feature branch and await staging validation.
+5. Add the read-only website-check worker and private check-history tables. The first worker version is now in the feature branch; it checks saved activity website URLs and creates private findings only. It does not edit listing data.
+6. Connect website-check findings to the dashboard, add controlled new-listing discovery review, and improve page-content change detection.
+7. Test the activity directory end-to-end on staging, including both additive migrations, worker security, closure classification, approval conflict handling and dashboard visibility.
 8. Retire/redirect the old confusing screens only after the replacement is tested and data is verified.
 9. Only when requested later, map the other five directories and add team assignment.
 
@@ -108,3 +108,16 @@ Website fetching must also be hardened: allow only public HTTP(S) destinations, 
 - Repeated dead-link checks retain their individual evidence and timestamps.
 - Existing activities, venues, findings and scan history remain intact.
 - The activity monitor is modular enough to support later directory adapters without requiring a rebuild.
+
+
+## Website monitoring implementation notes (2026-11-22)
+
+The first website-check worker is `api/listing-monitor-website-cron.php` and is CLI-only. Its additive schema is `database/migrations/20261122_create_listing_monitor_website_checks.sql`.
+
+- It reads `bh_activities.website` and writes only to the private Listing Monitor state/history tables and existing findings table.
+- It uses bounded batches, connection/overall timeouts, a 1 MB response cap, a small redirect limit, HTTPS certificate verification, public-address checks and pinned IPv4 resolution for each requested host.
+- HTTP 404/410 and DNS lookup failures create **possible closure** findings; explicit permanent-closure wording creates **closure indicated** findings; temporary-closure wording is kept separate. Other access failures remain **unable to verify**.
+- Every result is recorded in website history. Findings are refreshed rather than duplicated for the same activity/outcome.
+- The worker currently uses the existing `health_enabled` / `health_paused` settings as its master on/off switch and uses the existing batch-size setting. It is not yet scheduled or connected to a new dashboard control.
+- Do not enable or schedule it on production. First deploy to staging, apply both Listing Monitor migrations there, inspect the worker and run controlled test URLs. In particular, verify redirect handling, DNS behavior, and that the monitor never changes `bh_activities`.
+- This first pass checks availability and explicit closure wording only. It does not yet compare page content over time to detect ordinary text/price/session changes. That remains a later monitoring enhancement.
