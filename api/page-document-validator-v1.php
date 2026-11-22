@@ -104,12 +104,12 @@ function bh_validate_page_document_v1(mixed $document): array {
     if(isset($p['align'])&&!in_array($p['align'],['left','center','right'],true))$errors[]='Image alignment invalid.';
     foreach(['color','background'] as $colourKey)if(isset($p[$colourKey])&&(!is_string($p[$colourKey])||!preg_match('/^#[0-9a-fA-F]{6}$/',$p[$colourKey])))$errors[]='Image colour invalid.';
    }elseif($type==='heading'){
-    if(array_diff(array_keys($p),['text','level','align']))$errors[]='Unknown heading property.';
+    if(array_diff(array_keys($p),['text','level','align','font_size','width','margin_bottom','color','background','radius','padding']))$errors[]='Unknown heading property.';
     if(!array_key_exists('text',$p)||!array_key_exists('level',$p))$errors[]='Heading text and level are required.';
     if(!is_string($p['text']??null)||mb_strlen($p['text'])>500)$errors[]='Heading text invalid.';
     if(!in_array($p['level']??null,[1,2,3,4],true))$errors[]='Heading level invalid.';
    }elseif($type==='paragraph'){
-    if(array_diff(array_keys($p),['text','align']))$errors[]='Unknown paragraph property.';
+    if(array_diff(array_keys($p),['text','align','font_size','width','margin_bottom','color','background','radius','padding']))$errors[]='Unknown paragraph property.';
     if(!array_key_exists('text',$p))$errors[]='Paragraph text is required.';
     if(!is_string($p['text']??null)||mb_strlen($p['text'])>10000)$errors[]='Paragraph text invalid.';
    }elseif($type==='directory_search'){
@@ -143,12 +143,16 @@ function bh_validate_page_document_v1(mixed $document): array {
     if(isset($p['radius'])&&(!is_int($p['radius'])||$p['radius']<0||$p['radius']>48))$errors[]='Directory search radius invalid.';
     if(isset($p['padding'])&&(!is_int($p['padding'])||$p['padding']<0||$p['padding']>48))$errors[]='Directory search padding invalid.';
    }elseif($type==='button'){
-    if(array_diff(array_keys($p),['text','href']))$errors[]='Unknown button property.';
+    if(array_diff(array_keys($p),['text','href','font_size','width','align','margin_bottom','color','background','radius','padding']))$errors[]='Unknown button property.';
     if(!array_key_exists('text',$p)||!array_key_exists('href',$p))$errors[]='Button text and link are required.';
     if(!is_string($p['text']??null)||trim($p['text'])===''||mb_strlen($p['text'])>120)$errors[]='Button text invalid.';
     $href=$p['href']??null;
     if(!is_string($href)||strlen($href)>2048||!bh_page_document_safe_href_v1($href))$errors[]='Button link invalid.';
    }else $errors[]='Unsupported block type.';
+   foreach(['font_size'=>[10,72],'width'=>[10,100],'margin_bottom'=>[0,80],'radius'=>[0,48],'padding'=>[0,48]] as $styleKey=>$range){
+    if(isset($p[$styleKey])&&(!is_int($p[$styleKey])||$p[$styleKey]<$range[0]||$p[$styleKey]>$range[1]))$errors[]='Invalid block '.$styleKey.'.';
+   }
+   foreach(['color','background'] as $colourKey)if(isset($p[$colourKey])&&(!is_string($p[$colourKey])||!preg_match('/^#[0-9a-fA-F]{6}$/',$p[$colourKey])))$errors[]='Invalid block colour.';
    if(isset($p['align'])&&!in_array($p['align'],['left','center','right'],true))$errors[]='Invalid alignment.';
   }
  }
