@@ -78,3 +78,8 @@ while signed in to the staging admin account and share the returned JSON. The di
 - No database schema or records are changed.
 - No claims, submissions or approval work is included.
 - Staging only. Production changes require separate explicit approval.
+
+
+## Count-only relationship integrity pass
+
+The diagnostic revision adds aggregate-only counts for legacy venue/activity reference validity; activity–venue join totals, valid/orphan references and duplicate pairs; schedule reference integrity; activities with non-empty legacy weekly schedule text; session-to-venue validity; and business/activity link validity and duplicate pairs. Schema checks guard each metric. These checks return no IDs or record values and are intended to inform design before any migration or reconciliation. No records are changed.
