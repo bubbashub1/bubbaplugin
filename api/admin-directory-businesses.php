@@ -34,7 +34,28 @@ if($_SERVER['REQUEST_METHOD']!=='POST')business_reply(405,['ok'=>false,'error'=>
 $host=strtolower(explode(':',(string)($_SERVER['HTTP_HOST']??''))[0]);$origin=(string)($_SERVER['HTTP_ORIGIN']??'');
 if(!$origin||parse_url($origin,PHP_URL_SCHEME)!=='https'||strtolower((string)parse_url($origin,PHP_URL_HOST))!==$host)business_reply(403,['ok'=>false,'error'=>'invalid_origin']);
 $raw=(string)file_get_contents('php://input');if(strlen($raw)>100000)business_reply(413,['ok'=>false,'error'=>'request_too_large']);
+
 $b=json_decode($raw,true);if(!is_array($b)||empty($_SESSION['bh_admin_business_csrf'])||!is_string($b['csrf']??null)||!hash_equals($_SESSION['bh_admin_business_csrf'],$b['csrf']))business_reply(403,['ok'=>false,'error'=>'invalid_csrf']);
+if (($b['action']??'')==='create_missing_leader_storefronts') {
+ require_once __DIR__.'/lib/business-storefront.php'; $db->beginTransaction();
+ try {
+  $orgCols=$db->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_organisers'")->fetchAll(PDO::FETCH_COLUMN);
+  $ownerJoin=in_array('user_id',$orgCols,true) ? "u.id=o.user_id" : "1=0";
+  if(in_array('email',$orgCols,true)) $ownerJoin=in_array('user_id',$orgCols,true) ? "($ownerJoin OR (o.user_id IS NULL AND LOWER(u.email)=LOWER(o.email)))" : "LOWER(u.email)=LOWER(o.email)";
+  $leaders=$db->query("SELECT o.id AS organiser_id,o.organisation_name,u.id AS user_id FROM bh_organisers o INNER JOIN bh_users u ON $ownerJoin WHERE u.role='leader' AND u.status='active' ORDER BY o.id");
+  $created=0; $existing=0; $skipped=0;
+  foreach ($leaders->fetchAll(PDO::FETCH_ASSOC) as $leader) {
+   $before=$db->prepare("SELECT id FROM bh_directory_businesses WHERE organiser_id=? LIMIT 1"); $before->execute([(int)$leader['organiser_id']]);
+   if ($before->fetchColumn()) { $existing++; continue; }
+   $id=bh_ensure_business_storefront($db,(int)$leader['organiser_id'],(int)$leader['user_id'],(string)$leader['organisation_name']);
+   if ($id) $created++; else $skipped++;
+  }
+  $db->commit(); business_reply(200,['ok'=>true,'created'=>$created,'already_had_storefront'=>$existing,'skipped'=>$skipped,'message'=>'Missing leader storefront drafts have been created. Nothing was published.']);
+ } catch(Throwable $e) {
+  if ($db->inTransaction()) $db->rollBack(); error_log('Admin storefront backfill: '.$e->getMessage());
+  business_reply(500,['ok'=>false,'error'=>'storefront_backfill_failed','message'=>'No storefronts were changed because the backfill could not be completed.']);
+ }
+}
 $title=trim((string)($b['title']??''));$category=trim((string)($b['category']??''));$town=trim((string)($b['town']??''));$description=trim((string)($b['description']??''));$summary=trim((string)($b['summary']??''));
 if($title===''||mb_strlen($title)>190||$category===''||mb_strlen($category)>120||$town===''||mb_strlen($town)>120||mb_strlen($summary)>500||mb_strlen($description)>100000)business_reply(422,['ok'=>false,'error'=>'required_fields_invalid','message'=>'Enter a business name, category and town. Check field lengths.']);
 $fields=['region'=>120,'address'=>500,'postcode'=>20,'website_url'=>1000,'contact_email'=>190,'contact_phone'=>60];$values=[];
