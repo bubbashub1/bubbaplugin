@@ -9,17 +9,17 @@ RewriteRule ^ https://bubbahub.co.uk%{REQUEST_URI} [R=301,L,NE]
 
 # Revalidate page documents after deployments; do not cache personalised responses.
 <IfModule mod_headers.c>
-  <FilesMatch "\\.(html|htm)$">
+  <FilesMatch "\.(html|htm)$">
     Header always set Cache-Control "no-cache, must-revalidate, max-age=0"
   </FilesMatch>
-  <FilesMatch "^(auth|stripe-checkout|my-hub)\\.php$">
+  <FilesMatch "^(auth|stripe-checkout|my-hub)\.php$">
     Header always set Cache-Control "no-store"
   </FilesMatch>
 </IfModule>
 # Development/launch cache control: always revalidate CSS and JavaScript.
 # This prevents phones and CDNs from keeping an older Bubba Hub build.
 <IfModule mod_headers.c>
-  <FilesMatch "\\.(css|js)$">
+  <FilesMatch "\.(css|js)$">
     Header set Cache-Control "no-cache, must-revalidate, max-age=0"
     Header set Pragma "no-cache"
   </FilesMatch>
@@ -87,12 +87,12 @@ RewriteRule ^expo\.html$ /expo [R=301,L,NE]
 RewriteRule ^expo/?$ expo.html [L,QSA]
 
 # Dedicated directory sector pages. Keep the older .html URLs as permanent redirects.
-RewriteCond %{THE_REQUEST} \\s/+childcare-schools\\.html(?:[?\\s]|$) [NC]
-RewriteRule ^childcare-schools\\.html$ /childcare.html [R=301,L,NE]
-RewriteCond %{THE_REQUEST} \\s/+places-days-out\\.html(?:[?\\s]|$) [NC]
-RewriteRule ^places-days-out\\.html$ /daysout [R=301,L,NE]
-RewriteCond %{THE_REQUEST} \\s/+school-clubs\\.html(?:[?\\s]|$) [NC]
-RewriteRule ^school-clubs\\.html$ /clubs [R=301,L,NE]
+RewriteCond %{THE_REQUEST} \s/+childcare-schools\.html(?:[?\s]|$) [NC]
+RewriteRule ^childcare-schools\.html$ /childcare.html [R=301,L,NE]
+RewriteCond %{THE_REQUEST} \s/+places-days-out\.html(?:[?\s]|$) [NC]
+RewriteRule ^places-days-out\.html$ /daysout [R=301,L,NE]
+RewriteCond %{THE_REQUEST} \s/+school-clubs\.html(?:[?\s]|$) [NC]
+RewriteRule ^school-clubs\.html$ /clubs [R=301,L,NE]
 RewriteRule ^childcare/?$ childcare-schools.html [L,QSA]
 RewriteRule ^daysout/?$ places-days-out.html [L,QSA]
 RewriteRule ^clubs/?$ school-clubs.html [L,QSA]
