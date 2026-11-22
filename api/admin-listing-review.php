@@ -16,7 +16,7 @@ function bh_lcr_reply(int $status,array $data): never { http_response_code($stat
 if(empty($_SESSION['bh_admin_authenticated'])) bh_lcr_reply(401,['ok'=>false,'error'=>'Admin login required.']);
 try {
  require_once __DIR__.'/db.php'; $db=bh_mysql();
- foreach(['bh_listing_check_findings','bh_activities'] as $table){$q=$db->prepare('SHOW TABLES LIKE ?');$q->execute([$table]);if(!$q->fetchColumn())bh_lcr_reply(503,['ok'=>false,'error'=>'Listing Checker database migration is required.']);}
+ foreach(['bh_listing_check_findings','bh_activities'] as $table){$q=$db->prepare('SELECT 1 FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=? LIMIT 1');$q->execute([$table]);if(!$q->fetchColumn())bh_lcr_reply(503,['ok'=>false,'error'=>'Listing Checker database migration is required.']);}
  $_SESSION['bh_listing_review_csrf']??=bin2hex(random_bytes(32));
  $method=$_SERVER['REQUEST_METHOD']??'GET';
  if($method==='GET'){
