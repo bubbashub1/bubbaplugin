@@ -8,6 +8,8 @@ declare(strict_types=1);
  */
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: public, max-age=30, stale-while-revalidate=60');
+header('X-Content-Type-Options: nosniff');
+if (!in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['GET','POST'], true)) bh_ds_reply(405, ['ok'=>false,'error'=>'Method not allowed.']);
 
 function bh_ds_reply(int $status, array $payload): never {
     http_response_code($status);
@@ -34,10 +36,10 @@ try {
     $input = array_merge($_GET, $body);
 
     $q = trim((string)($input['q'] ?? $input['search'] ?? ''));
-    if (mb_strlen($q) > 120) $q = mb_substr($q, 0, 120);
+    if (mb_strlen($q) > 120) bh_ds_reply(422, ['ok'=>false,'error'=>'Search text is too long.']);
     $scope = strtolower(trim((string)($input['scope'] ?? 'all')));
     if ($scope !== 'all' && !isset($sources[$scope])) bh_ds_reply(422, ['ok'=>false,'error'=>'Invalid directory scope.']);
-    $limit = max(1, min(60, (int)($input['limit'] ?? 30)));
+    $limit = max(1, min(30, (int)($input['limit'] ?? 12)));
 
     $decodeMap = static function ($value): array {
         if (is_string($value)) {
@@ -55,6 +57,8 @@ try {
     $dateEnd = trim((string)($input['date_to'] ?? ''));
     $validDate = static fn(string $v): bool => $v === '' || (bool)preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $v);
     if (!$validDate($dateStart) || !$validDate($dateEnd)) bh_ds_reply(422, ['ok'=>false,'error'=>'Dates must use YYYY-MM-DD.']);
+    if ($dateMode !== '' && !in_array($dateMode, ['upcoming','today','weekend','month','custom'], true)) bh_ds_reply(422, ['ok'=>false,'error'=>'Invalid event date filter.']);
+    if ($dateStart !== '' && $dateEnd !== '' && $dateStart > $dateEnd) bh_ds_reply(422, ['ok'=>false,'error'=>'The event date range is invalid.']);
 
     $results = [];
     $warnings = [];
@@ -99,6 +103,26 @@ try {
 
         $where = ["LOWER(TRIM(COALESCE(d.status,''))) IN ('published','publish')"];
         $params = [];
+
+        // When searching every directory, suppress an Activity that is explicitly
+        // linked to a published Event with a future scheduled occurrence. The
+        // activity remains discoverable in its own directory scope.
+        if ($key === 'activities' && $scope === 'all') {
+            $hasEventLinks = (int)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_directory_event_listings'")->fetchColumn() > 0;
+            $hasEventOccurrences = (int)$db->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_directory_event_occurrences'")->fetchColumn() > 0;
+            if ($hasEventLinks && $hasEventOccurrences) {
+                $where[] = "NOT EXISTS (
+                    SELECT 1 FROM bh_directory_event_listings el
+                    INNER JOIN bh_directory_events ev ON ev.id=el.event_id
+                    WHERE el.activity_id=d.id
+                      AND LOWER(TRIM(COALESCE(ev.status,''))) IN ('published','publish')
+                      AND EXISTS (
+                        SELECT 1 FROM bh_directory_event_occurrences eo
+                        WHERE eo.event_id=ev.id AND eo.occurrence_status='scheduled' AND eo.starts_at>=NOW()
+                      )
+                )";
+            }
+        }
         if ($q !== '' && $selectedSearch) {
             $likes = [];
             foreach ($selectedSearch as $i => $field) {
