@@ -10,6 +10,9 @@ function sectorDetails(x){
  const parts=[],verification=safeUrl(x.verification_url);
  if(type==='childcare'){
   const registration=[x.registration_body,x.registration_reference].filter(Boolean).join(' · ');
+  const min=x.age_min!==null&&x.age_min!==undefined&&x.age_min!==''?Number(x.age_min):null,max=x.age_max!==null&&x.age_max!==undefined&&x.age_max!==''?Number(x.age_max):null;
+  const age=min!==null&&max!==null?min+'–'+max+' months':min!==null?'From '+min+' months':max!==null?'Up to '+max+' months':'';
+  if(age)parts.push('<p><strong>Age range:</strong> '+esc(age)+'</p>');
   if(registration)parts.push('<p><strong>Registration:</strong> '+esc(registration)+'</p>');
   if(x.verified_on)parts.push('<p><strong>Information checked:</strong> '+esc(formatDate(x.verified_on))+'</p>');
   if(verification)parts.push('<p><a href="'+esc(verification)+'" target="_blank" rel="noopener noreferrer">View registration information ↗</a></p>');
@@ -22,6 +25,8 @@ function sectorDetails(x){
   if(age)parts.push('<p><strong>Age range:</strong> '+esc(age)+'</p>');
   if(x.days_times)parts.push('<p><strong>Days and times:</strong> '+esc(x.days_times)+'</p>');
   if(x.collection_arrangements)parts.push('<p><strong>Collection:</strong> '+esc(x.collection_arrangements)+'</p>');
+  if(x.holiday_provision)parts.push('<p><strong>Holiday provision:</strong> '+esc(x.holiday_provision)+'</p>');
+  if(x.registration_details)parts.push('<p><strong>Registration / safeguarding:</strong> '+esc(x.registration_details)+'</p>');
   if(x.price_details)parts.push('<p><strong>Cost:</strong> '+esc(x.price_details)+'</p>');
   if(x.verified_on)parts.push('<p><strong>Information checked:</strong> '+esc(formatDate(x.verified_on))+'</p>');
   if(verification)parts.push('<p><a href="'+esc(verification)+'" target="_blank" rel="noopener noreferrer">View club information ↗</a></p>');
