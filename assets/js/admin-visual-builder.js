@@ -429,6 +429,17 @@ function attachCanvas(){
    if(!node||node===doc.body)return;
    event.preventDefault();event.stopPropagation();selectNode(node);
   },true);
+  doc.addEventListener('keydown',event=>{
+   const tab=event.target.closest('[data-bh-tab-trigger]');if(!tab)return;
+   const widget=tab.closest('[data-bh-tabs-widget]');if(!widget)return;
+   const tabs=Array.from(widget.querySelectorAll('[data-bh-tab-trigger]'));const index=tabs.indexOf(tab);let next=index;
+   if(event.key==='ArrowRight')next=(index+1)%tabs.length;
+   else if(event.key==='ArrowLeft')next=(index-1+tabs.length)%tabs.length;
+   else if(event.key==='Home')next=0;
+   else if(event.key==='End')next=tabs.length-1;
+   else return;
+   event.preventDefault();tabs[next]?.focus();tabs[next]?.click();
+  });
   status(previewMode==='draft'?'Draft preview ready · unpublished':'Published page preview · read-only');
  }catch(error){status('Preview loaded · selection unavailable');}
 }
