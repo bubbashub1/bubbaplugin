@@ -409,3 +409,47 @@ body.bhvb-fullscreen-editor .bhvb-editor-canvas{height:100%;min-height:0;overflo
 .bhvb-tab-editor-item textarea{min-height:82px;resize:vertical}
 .bhvb-tab-editor-item .bhvb-container-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .bhvb-library-widget-controls>#bhvbAddTab{width:100%;margin-top:8px}
+
+
+/* Refined full-screen editor toolbar and widget settings */
+.bhvb-editor-topbar{
+ display:grid;
+ grid-template-columns:auto minmax(0,1fr);
+ grid-template-areas:"brand actions" "toolbar toolbar";
+ gap:8px 16px;
+ min-height:0;
+ padding:10px 16px;
+}
+.bhvb-editor-brand{grid-area:brand;align-self:center}
+.bhvb-editor-title{grid-area:brand;margin-left:82px;align-self:center}
+.bhvb-editor-toptools{grid-area:actions;justify-self:end;min-width:0}
+.bhvb-editor-topbar>.bhvb-toolbar{grid-area:toolbar;width:100%;box-sizing:border-box;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.bhvb-editor-topbar .bhvb-page-picker{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.bhvb-editor-topbar .bhvb-page-picker select{min-width:175px;max-width:260px}
+.bhvb-editor-topbar .bhvb-history-controls{display:flex;gap:5px}
+.bhvb-editor-topbar .bhvb-device-switch{margin-left:auto}
+.bhvb-editor-toptools #builderStatus{display:block;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bhvb-library-widget-controls{display:grid;gap:9px;padding:13px;background:#f6faf7;border-color:#dce9df}
+.bhvb-library-widget-controls>label{display:block;margin-top:3px;color:#405e4b;font-size:.76rem;font-weight:750}
+.bhvb-library-widget-controls input:not([type=checkbox]),.bhvb-library-widget-controls textarea{width:100%;min-height:38px;box-sizing:border-box;padding:9px 10px;border:1px solid #d4e2d7;border-radius:8px;background:#fff;color:#203c2c;font:inherit;font-size:.83rem}
+.bhvb-library-widget-controls input:focus,.bhvb-library-widget-controls textarea:focus{outline:3px solid #c8e2d8;outline-offset:1px}
+.bhvb-tab-editor-item{display:grid;gap:7px;margin:8px 0;padding:12px;border-color:#e0eae2;border-radius:10px}
+.bhvb-tab-editor-item legend{font-size:.78rem}
+.bhvb-tab-editor-item .bhvb-container-actions button{flex:1;min-width:0;padding:8px 6px;font-size:.72rem}
+.bhvb-library-widget-controls>#bhvbAddTab,.bhvb-library-widget-controls>#bhvbAddAccordionItem{width:100%;min-height:40px;margin-top:4px;border:1px solid #b9d2c1;border-radius:9px;background:#eaf4ed;color:#285c40;font:inherit;font-size:.8rem;font-weight:750;cursor:pointer}
+.bhvb-library-widget-controls button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:900px){
+ .bhvb-editor-topbar{grid-template-columns:minmax(0,1fr) auto}
+ .bhvb-editor-title{display:none}
+ .bhvb-editor-topbar>.bhvb-toolbar{gap:8px}
+ .bhvb-editor-topbar .bhvb-device-switch{margin-left:0}
+ .bhvb-editor-toptools #builderStatus{max-width:180px}
+}
+@media(max-width:650px){
+ .bhvb-editor-topbar{display:flex;flex-wrap:wrap;gap:8px;padding:8px 10px}
+ .bhvb-editor-topbar .bhvb-toolbar{order:3;flex-basis:100%}
+ .bhvb-editor-toptools{margin-left:auto}
+ .bhvb-editor-toptools #builderStatus{display:none}
+ .bhvb-editor-topbar .bhvb-page-picker{flex:1 1 145px}
+ .bhvb-editor-topbar .bhvb-page-picker select{min-width:0;max-width:none;width:100%}
+}
