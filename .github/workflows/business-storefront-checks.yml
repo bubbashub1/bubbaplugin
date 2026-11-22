@@ -1,0 +1,91 @@
+name: Businesses and leader storefront checks
+
+on:
+  pull_request:
+    branches: [staging-site]
+    paths:
+      - 'api/directory-businesses.php'
+      - 'api/organiser-terms.php'
+      - 'api/activities.php'
+      - 'assets/js/directory-businesses.js'
+      - 'organiser.html'
+      - '.github/workflows/business-storefront-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  storefront-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo_mysql
+          coverage: none
+
+      - name: Check PHP syntax
+        run: |
+          set -eu
+          php -l api/directory-businesses.php
+          php -l api/organiser-terms.php
+          php -l api/activities.php
+
+      - name: Check Businesses directory JavaScript
+        run: node --check assets/js/directory-businesses.js
+
+      - name: Check public organiser page inline JavaScript
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class InlineScripts(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.scripts = []
+                  self.current = None
+              def handle_starttag(self, tag, attrs):
+                  if tag.lower() == "script":
+                      attrs = dict(attrs)
+                      self.current = [] if not attrs.get("src") else None
+              def handle_data(self, data):
+                  if self.current is not None:
+                      self.current.append(data)
+              def handle_endtag(self, tag):
+                  if tag.lower() == "script" and self.current is not None:
+                      self.scripts.append("".join(self.current))
+                      self.current = None
+
+          parser = InlineScripts()
+          parser.feed(Path("organiser.html").read_text())
+          source = "\n;\n".join(parser.scripts)
+          assert source.strip(), "No inline organiser page scripts found"
+          Path("/tmp/organiser-inline.js").write_text(source)
+          print(f"Extracted {len(parser.scripts)} inline script block(s)")
+          PY
+          node --check /tmp/organiser-inline.js
+
+      - name: Verify automatic storefront and empty-state safeguards
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          feed = Path("api/directory-businesses.php").read_text()
+          page = Path("organiser.html").read_text()
+          terms = Path("api/organiser-terms.php").read_text()
+          checks = {
+              "active leader account storefront query": "u.role='leader' AND u.status='active'",
+              "published leader Listings count": "published_listing_count",
+              "legacy organiser email matching": "LOWER(u.email)=LOWER(o.email)",
+          }
+          for label, marker in checks.items():
+              assert marker in feed, f"Missing {label}"
+          assert "publicContent.organisation_name" in page, "Public organiser profile should load without activity records"
+          assert "Their activities will appear here as soon as they are published" in page, "Missing no-activity storefront state"
+          assert "'website'=>$row['website']" in terms and "'email'=>$row['email']" in terms, "Public organiser contact fields missing"
+          print("Automatic leader storefront checks passed")
+          PY
