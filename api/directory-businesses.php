@@ -14,7 +14,7 @@ try{
   $value=$$key;if($value==='')continue;$where[]=$condition;
   if($key==='q'){for($i=0;$i<6;$i++)$args[]='%'.$value.'%';}else $args[]=$value;
  }
- $sql="SELECT b.id,b.title,b.category,b.summary,b.description,b.town,b.region,b.address,b.postcode,
+ $sql="SELECT b.id,COALESCE(NULLIF(TRIM(o.organisation_name),''),b.title) AS title,b.category,b.summary,b.description,b.town,b.region,b.address,b.postcode,
  COALESCE(NULLIF(b.website_url,''),o.website) AS website,
  COALESCE(NULLIF(b.contact_email,''),o.email) AS contact_email,
  COALESCE(NULLIF(b.contact_phone,''),o.phone) AS contact_phone,
@@ -27,7 +27,7 @@ try{
  CASE WHEN u.id IS NOT NULL THEN 'class_leader' ELSE 'business' END AS storefront_type
  FROM bh_directory_businesses b LEFT JOIN bh_organisers o ON o.id=b.organiser_id
  LEFT JOIN bh_users u ON (".$leaderJoin.") AND u.role='leader' AND u.status='active'
- WHERE ".implode(' AND ',$where)." ORDER BY b.title ASC LIMIT 300";
+ WHERE ".implode(' AND ',$where)." ORDER BY COALESCE(NULLIF(TRIM(o.organisation_name),''),b.title) ASC LIMIT 300";
  $s=$db->prepare($sql);$s->execute($args);$rows=$s->fetchAll(PDO::FETCH_ASSOC);
 
  // Every active leader account with an organiser profile gets a public storefront.
