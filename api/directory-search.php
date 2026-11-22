@@ -127,11 +127,11 @@ try {
                 $eventSelect = 'occ.next_occurrence';
                 if ($dateMode !== '' || $dateStart !== '' || $dateEnd !== '') {
                     $dateWhere = [];
-                    if ($dateMode === 'today') $dateWhere[] = 'DATE(occ.next_occurrence)=CURDATE()';
-                    elseif ($dateMode === 'weekend') $dateWhere[] = 'WEEKDAY(occ.next_occurrence) IN (5,6) AND occ.next_occurrence < DATE_ADD(CURDATE(), INTERVAL (7-WEEKDAY(CURDATE())) DAY)';
-                    elseif ($dateMode === 'month') $dateWhere[] = 'YEAR(occ.next_occurrence)=YEAR(CURDATE()) AND MONTH(occ.next_occurrence)=MONTH(CURDATE())';
-                    if ($dateStart !== '') { $dateWhere[] = 'DATE(occ.next_occurrence) >= :date_from'; $params[':date_from'] = $dateStart; }
-                    if ($dateEnd !== '') { $dateWhere[] = 'DATE(occ.next_occurrence) <= :date_to'; $params[':date_to'] = $dateEnd; }
+                    if ($dateMode === 'today') $dateWhere[] = 'DATE(eo.starts_at)=CURDATE()';
+                    elseif ($dateMode === 'weekend') $dateWhere[] = 'WEEKDAY(eo.starts_at) IN (5,6) AND eo.starts_at < DATE_ADD(CURDATE(), INTERVAL (7-WEEKDAY(CURDATE())) DAY)';
+                    elseif ($dateMode === 'month') $dateWhere[] = 'YEAR(eo.starts_at)=YEAR(CURDATE()) AND MONTH(eo.starts_at)=MONTH(CURDATE())';
+                    if ($dateStart !== '') { $dateWhere[] = 'DATE(eo.starts_at) >= :date_from'; $params[':date_from'] = $dateStart; }
+                    if ($dateEnd !== '') { $dateWhere[] = 'DATE(eo.starts_at) <= :date_to'; $params[':date_to'] = $dateEnd; }
                     if ($dateWhere) $where[] = 'EXISTS (SELECT 1 FROM bh_directory_event_occurrences eo WHERE eo.event_id=d.id AND eo.occurrence_status=\'scheduled\' AND eo.starts_at >= NOW() AND '.implode(' AND ', $dateWhere).')';
                 }
             }
