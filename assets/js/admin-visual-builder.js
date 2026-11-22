@@ -302,7 +302,7 @@ function buildLayers(doc){
    });
    button.addEventListener('dragover',event=>{
     if(!dragged)return;
-    event.preventDefault();event.dataTransfer.dropEffect='move';
+    event.preventDefault();event.dataTransfer.dropEffect=draggedNewType?'copy':'move';
     list.querySelectorAll('.bhvb-layer-button.is-drop-target').forEach(item=>item.classList.remove('is-drop-target'));
     button.classList.add('is-drop-target');
    });
@@ -326,12 +326,32 @@ function buildLayers(doc){
   });
  }
 }
+function createDraftBlock(type){
+ const id='block-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
+ if(type==='image')return {id,type,props:{src:'/images/home/hero-family-art.svg',alt:'',width:100,fit:'cover',radius:0}};
+ if(type==='heading')return {id,type,props:{text:'New heading',level:2}};
+ if(type==='paragraph')return {id,type,props:{text:'Add your text here.'}};
+ if(type==='button')return {id,type,props:{text:'Learn more',href:'/index.html'}};
+ return null;
+}
+function insertDraftBlock(type,sectionId,targetBlockId='',after=false){
+ if(!draft||previewMode!=='draft')return false;
+ const section=findSection(sectionId),block=createDraftBlock(type);if(!section||!block)return false;
+ const items=section.children||(section.children=[]);
+ const index=targetBlockId?items.findIndex(item=>item.id===targetBlockId):-1;
+ items.splice(index<0?items.length:index+(after?1:0),0,block);
+ currentSection=section;currentBlock=block;renderDraft();
+ const node=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(block.id)+'"]');
+ if(node)selectNode(node);
+ draftStatus('New '+type+' added to the container. Edit it, then save your draft.');
+ return true;
+}
 function attachCanvas(){
  try{
   const doc=frame.contentDocument;if(!doc||!doc.body)throw new Error('Page not ready');
   const style=doc.createElement('style');style.textContent='.bhvb-selected-preview{outline:3px solid #0f8b83!important;outline-offset:2px!important;cursor:pointer!important}.bhvb-canvas-handle{opacity:.96}.bhvb-canvas-handle:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.bhvb-dragging{opacity:.35!important}.bhvb-drag-over{outline:2px dashed #0f766e!important;outline-offset:3px!important}#bhvb-floating-toolbar{position:fixed;z-index:2147483000;display:flex;align-items:center;gap:3px;padding:5px;border:1px solid #cbded2;border-radius:10px;background:#fff;box-shadow:0 5px 20px rgba(25,60,42,.2);font:600 12px/1.2 Arial,sans-serif;white-space:nowrap}#bhvb-floating-toolbar button{min-width:30px;min-height:28px;padding:5px 8px;border:0;border-radius:6px;background:#f1f6f2;color:#28563e;font:700 12px/1.2 Arial,sans-serif;cursor:pointer}#bhvb-floating-toolbar button:hover{background:#dfeee4;color:#17452e}#bhvb-floating-toolbar button:last-child{background:#fff1f1;color:#9a3838}#bhvb-floating-toolbar button:last-child:hover{background:#ffe2e2}';doc.head.appendChild(style);
   buildLayers(doc);
-  let draggedBlockId='';
+  let draggedBlockId='',draggedNewType='';
   doc.addEventListener('dragstart',event=>{
    const blockNode=event.target.closest('[data-bh-block-id]');
    if(previewMode!=='draft'||!blockNode)return;
@@ -341,7 +361,7 @@ function attachCanvas(){
    blockNode.classList.add('bhvb-dragging');
   });
   doc.addEventListener('dragover',event=>{
-   if(previewMode!=='draft'||!draggedBlockId)return;
+   if(previewMode!=='draft'||(!draggedBlockId&&!draggedNewType))return;
    const targetBlock=event.target.closest('[data-bh-block-id]');
    const targetSection=event.target.closest('[data-bh-section-id]');
    if(targetBlock||targetSection){
@@ -352,7 +372,7 @@ function attachCanvas(){
    }
   });
   doc.addEventListener('drop',event=>{
-   if(previewMode!=='draft'||!draggedBlockId)return;
+   if(previewMode!=='draft'||(!draggedBlockId&&!draggedNewType))return;
    const targetBlock=event.target.closest('[data-bh-block-id]');
    const targetSection=event.target.closest('[data-bh-section-id]');
    if(!targetBlock&&!targetSection)return;
@@ -360,13 +380,12 @@ function attachCanvas(){
    const sourceId=draggedBlockId;
    const sectionId=(targetBlock?.closest('[data-bh-section-id]')||targetSection)?.dataset.bhSectionId;
    const targetId=targetBlock?.dataset.bhBlockId||'';
-   if(sectionId&&sourceId!==targetId){
-    const after=targetBlock?event.clientY>targetBlock.getBoundingClientRect().top+targetBlock.getBoundingClientRect().height/2:false;
-    moveDraftBlock(sourceId,sectionId,targetId,after);
-   }
-   draggedBlockId='';
+   const after=targetBlock?event.clientY>targetBlock.getBoundingClientRect().top+targetBlock.getBoundingClientRect().height/2:false;
+   if(sectionId&&draggedNewType)insertDraftBlock(draggedNewType,sectionId,targetId,after);
+   else if(sectionId&&sourceId!==targetId)moveDraftBlock(sourceId,sectionId,targetId,after);
+   draggedBlockId='';draggedNewType='';
   });
-  doc.addEventListener('dragend',()=>{draggedBlockId='';doc.querySelectorAll('.bhvb-dragging,.bhvb-drag-over,.bhvb-drop-before,.bhvb-drop-after').forEach(node=>node.classList.remove('bhvb-dragging','bhvb-drag-over','bhvb-drop-before','bhvb-drop-after'));});
+  doc.addEventListener('dragend',()=>{draggedBlockId='';draggedNewType='';doc.querySelectorAll('.bhvb-dragging,.bhvb-drag-over,.bhvb-drop-before,.bhvb-drop-after').forEach(node=>node.classList.remove('bhvb-dragging','bhvb-drag-over','bhvb-drop-before','bhvb-drop-after'));});
   doc.addEventListener('input',event=>{
    const node=event.target.closest('[data-bh-inline-editing="true"]');
    if(!node||previewMode!=='draft'||!currentBlock)return;
@@ -658,7 +677,16 @@ function addBlock(type){if(!currentSection||!draft)return;const id='block-'+Date
 function moveContainer(direction){if(!currentSection||!draft)return;const index=draft.sections.indexOf(currentSection),next=index+direction;if(next<0||next>=draft.sections.length)return;[draft.sections[index],draft.sections[next]]=[draft.sections[next],draft.sections[index]];renderDraft();draftStatus('Container moved. Save draft to keep this order.');}
 function deleteContainer(){if(!currentSection||!draft||draft.sections.length<2){draftStatus('A page must keep at least one container.');return;}if(!window.confirm('Delete this container and its contents from the private draft?'))return;draft.sections=draft.sections.filter(section=>section!==currentSection);currentSection=null;renderDraft();$('sectionControls').hidden=true;draftStatus('Container removed from the private draft. Save draft to keep the change.');}
 $('pageColumns').addEventListener('change',()=>{if(!draft)return;draft.settings=draft.settings||{};draft.settings.columns=Math.max(1,Math.min(3,Number($('pageColumns').value)||1));renderDraft();draftStatus('Page layout changed to '+draft.settings.columns+' columns. Mobile preview automatically stacks to one column. Save draft when ready.');});
-document.querySelectorAll('[data-bh-add]').forEach(button=>button.addEventListener('click',()=>$(button.dataset.bhAdd)?.click()));
+document.querySelectorAll('[data-bh-add]').forEach(button=>{
+ button.draggable=true;button.addEventListener('dragstart',event=>{
+  const map={addHeading:'heading',addParagraph:'paragraph',addButtonBlock:'button',addImageBlock:'image'};
+  const type=map[button.dataset.bhAdd];if(!type||previewMode!=='draft'||!draft){event.preventDefault();return;}
+  event.dataTransfer.effectAllowed='copy';event.dataTransfer.setData('text/plain','bhvb-new:'+type);
+  button.classList.add('is-dragging');
+ });
+ button.addEventListener('dragend',()=>button.classList.remove('is-dragging'));
+ button.addEventListener('click',()=>$(button.dataset.bhAdd)?.click());
+});
 $('duplicateElement').addEventListener('click',duplicateSelectedBlock);$('duplicateContainer').addEventListener('click',duplicateSelectedContainer);$('addContainer').addEventListener('click',addContainer);document.querySelectorAll('[data-section-preset]').forEach(button=>button.addEventListener('click',()=>addSectionPreset(button.dataset.sectionPreset)));$('addHeading').addEventListener('click',()=>addBlock('heading'));$('addParagraph').addEventListener('click',()=>addBlock('paragraph'));$('addButtonBlock').addEventListener('click',()=>addBlock('button'));$('addImageBlock').addEventListener('click',()=>addBlock('image'));$('moveContainerUp').addEventListener('click',()=>moveContainer(-1));$('moveContainerDown').addEventListener('click',()=>moveContainer(1));$('deleteContainer').addEventListener('click',deleteContainer);
 async function init(){
  try{
