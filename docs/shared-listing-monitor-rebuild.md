@@ -88,11 +88,12 @@ Website fetching must also be hardened: allow only public HTTP(S) destinations, 
 1. Audit the existing activity tables, APIs, workers, review data and admin authentication.
 2. Design the activity-first schema and service boundaries; preserve existing checker data.
 3. Build the simple combined dashboard and alert detail pop-up.
-4. Build save-to-review-draft and full-listing review/approval flow. The first draft-save and full-listing preview foundation is now in the feature branch; final approval/publishing remains to be implemented.
-5. Add safe website checking and evidence-based change/closure classification.
-6. Test the activity directory end-to-end on staging, including the additive draft-table migration.
-7. Retire/redirect the old confusing screens only after the replacement is tested and data is verified.
-8. Only when requested later, map the other five directories and add team assignment.
+4. Implement the dashboard, private change drafts, full-listing preview, explicit field approval and audit log. These foundations are now in the feature branch and await staging validation.
+5. Build safe website monitoring, evidence capture, change detection and closure/temporary-closure classification; distinguish inaccessible sites from closure evidence.
+6. Add a controlled new-listing discovery review and approval flow.
+7. Test the activity directory end-to-end on staging, including the additive draft-table migration, monitoring worker safety, and approval conflict handling.
+8. Retire/redirect the old confusing screens only after the replacement is tested and data is verified.
+9. Only when requested later, map the other five directories and add team assignment.
 
 ## Acceptance checks
 
