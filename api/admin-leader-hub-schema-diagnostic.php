@@ -136,6 +136,18 @@ try {
         'business_links_support_activity_id' => $has('bh_directory_business_listings', 'activity_id'),
     ];
 
+
+    // Aggregate-only relationship integrity counts (schema guarded).
+    $integrity = [];
+    $safeCount = static function (string $sql) use ($db): int { return (int)$db->query($sql)->fetchColumn(); };
+    $col = static function (string $table, string $column) use (&$tables): bool { foreach ($tables[$table]['columns'] ?? [] as $item) if ($item['name'] === $column) return true; return false; };
+    if ($col('bh_venues','activity_id') && $col('bh_activities','id')) $integrity['legacy_venues'] = ['linked_to_activity'=>$safeCount('SELECT COUNT(*) FROM bh_venues WHERE activity_id IS NOT NULL'),'valid_activity_reference'=>$safeCount('SELECT COUNT(*) FROM bh_venues v INNER JOIN bh_activities a ON a.id=v.activity_id'),'orphan_activity_reference'=>$safeCount('SELECT COUNT(*) FROM bh_venues v LEFT JOIN bh_activities a ON a.id=v.activity_id WHERE v.activity_id IS NOT NULL AND a.id IS NULL')];
+    if ($col('bh_activity_venues','activity_id') && $col('bh_activity_venues','venue_id')) $integrity['activity_venue_links'] = ['total'=>$safeCount('SELECT COUNT(*) FROM bh_activity_venues'),'valid_pairs'=>$safeCount('SELECT COUNT(*) FROM bh_activity_venues l INNER JOIN bh_activities a ON a.id=l.activity_id INNER JOIN bh_venues v ON v.id=l.venue_id'),'orphan_activity_refs'=>$safeCount('SELECT COUNT(*) FROM bh_activity_venues l LEFT JOIN bh_activities a ON a.id=l.activity_id WHERE a.id IS NULL'),'orphan_venue_refs'=>$safeCount('SELECT COUNT(*) FROM bh_activity_venues l LEFT JOIN bh_venues v ON v.id=l.venue_id WHERE v.id IS NULL'),'duplicate_pairs'=>$safeCount('SELECT COUNT(*) FROM (SELECT activity_id,venue_id FROM bh_activity_venues GROUP BY activity_id,venue_id HAVING COUNT(*)>1) d'];
+    if ($col('bh_activity_schedules','activity_id')) { $integrity['activity_schedules']=['total'=>$safeCount('SELECT COUNT(*) FROM bh_activity_schedules'),'valid_activity_refs'=>$safeCount('SELECT COUNT(*) FROM bh_activity_schedules s INNER JOIN bh_activities a ON a.id=s.activity_id'),'orphan_activity_refs'=>$safeCount('SELECT COUNT(*) FROM bh_activity_schedules s LEFT JOIN bh_activities a ON a.id=s.activity_id WHERE a.id IS NULL')]; if ($col('bh_activity_schedules','venue_id')) { $integrity['activity_schedules']['valid_venue_refs']=$safeCount('SELECT COUNT(*) FROM bh_activity_schedules s INNER JOIN bh_venues v ON v.id=s.venue_id WHERE s.venue_id IS NOT NULL'); $integrity['activity_schedules']['orphan_venue_refs']=$safeCount('SELECT COUNT(*) FROM bh_activity_schedules s LEFT JOIN bh_venues v ON v.id=s.venue_id WHERE s.venue_id IS NOT NULL AND v.id IS NULL'); } }
+    if ($col('bh_activities','weekly_schedule')) $integrity['activities_with_weekly_schedule']=$safeCount("SELECT COUNT(*) FROM bh_activities WHERE weekly_schedule IS NOT NULL AND TRIM(weekly_schedule)<>'' AND TRIM(weekly_schedule)<>'[]' AND TRIM(weekly_schedule)<>'{}'");
+    if ($col('bh_sessions','venue_id')) $integrity['sessions']=['total'=>$safeCount('SELECT COUNT(*) FROM bh_sessions'),'valid_venue_refs'=>$safeCount('SELECT COUNT(*) FROM bh_sessions s INNER JOIN bh_venues v ON v.id=s.venue_id'),'orphan_venue_refs'=>$safeCount('SELECT COUNT(*) FROM bh_sessions s LEFT JOIN bh_venues v ON v.id=s.venue_id WHERE s.venue_id IS NOT NULL AND v.id IS NULL'];
+    if ($col('bh_directory_business_listings','business_id') && $col('bh_directory_business_listings','activity_id')) $integrity['business_activity_links']=['total'=>$safeCount('SELECT COUNT(*) FROM bh_directory_business_listings'),'valid_pairs'=>$safeCount('SELECT COUNT(*) FROM bh_directory_business_listings l INNER JOIN bh_directory_businesses b ON b.id=l.business_id INNER JOIN bh_activities a ON a.id=l.activity_id'),'orphan_business_refs'=>$safeCount('SELECT COUNT(*) FROM bh_directory_business_listings l LEFT JOIN bh_directory_businesses b ON b.id=l.business_id WHERE b.id IS NULL'),'orphan_activity_refs'=>$safeCount('SELECT COUNT(*) FROM bh_directory_business_listings l LEFT JOIN bh_activities a ON a.id=l.activity_id WHERE a.id IS NULL'),'duplicate_pairs'=>$safeCount('SELECT COUNT(*) FROM (SELECT business_id,activity_id FROM bh_directory_business_listings GROUP BY business_id,activity_id HAVING COUNT(*)>1) d'];
+
     leader_schema_reply(200, [
         'ok' => true,
         'read_only' => true,
@@ -143,6 +155,7 @@ try {
         'checked_at' => date(DATE_ATOM),
         'tables' => $tables,
         'row_counts' => $rowCounts,
+        'relationship_integrity_counts' => $integrity,
         'foreign_keys' => $foreignKeys,
         'relationship_hints' => $relationships,
         'note' => 'Schema metadata and exact table row counts only. No listing values, contact details, user records or other personal data were read. No database changes were made.'
