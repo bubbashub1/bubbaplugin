@@ -4,7 +4,15 @@ const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>'
 let all=[],csrf="",reviewHealthById=new Map(),openFindingByActivity=new Map(),reviewStatusReady=false;let invitationById=new Map(),invitationLoaded=false; const selected=new Set(); const selectedCount=document.getElementById("selectedCount"); const selectAll=document.getElementById("selectAllListings"); const bulkButtons=["bulkEdit","bulkAssign","bulkDelete","bulkRestore","bulkPublish","bulkDraft","bulkCategory","bulkTags","bulkClaim"].map(id=>document.getElementById(id)); function syncSelection(){selectedCount.textContent=selected.size+" selected";bulkButtons.forEach(b=>b.disabled=!selected.size);const visible=[...rows.querySelectorAll("[data-select-id]")];selectAll.checked=visible.length>0&&visible.every(x=>x.checked);selectAll.indeterminate=visible.some(x=>x.checked)&&!selectAll.checked;}
 function render(){
  const q=search.value.trim().toLowerCase(),status=filter.value;
- const isClosed=status==='archived';document.getElementById('bulkRestore').hidden=!isClosed;document.getElementById('bulkDelete').hidden=isClosed;document.getElementById('bulkEdit').hidden=isClosed;document.getElementById('bulkAssign').hidden=isClosed;['bulkPublish','bulkDraft','bulkCategory','bulkTags'].forEach(id=>document.getElementById(id).hidden=isClosed);const list=all.filter(a=>((status? (a.status==='publish'?'published':a.status)===status : a.status!=='archived'))&&[a.title,a.organisation_name,a.town,a.category,a.region].join(' ').toLowerCase().includes(q));
+ const reviewFilter=status.startsWith('review_'),reviewWanted=reviewFilter?status.slice(7):'';
+ const isClosed=status==='archived';document.getElementById('bulkRestore').hidden=!isClosed;document.getElementById('bulkDelete').hidden=isClosed;document.getElementById('bulkEdit').hidden=isClosed;document.getElementById('bulkAssign').hidden=isClosed;['bulkPublish','bulkDraft','bulkCategory','bulkTags'].forEach(id=>document.getElementById(id).hidden=isClosed);const list=all.filter(a=>{
+  const lifecycle=(a.status==='publish'?'published':a.status)||'unknown';
+  const lifecycleMatch=reviewFilter?a.status!=='archived':(status?lifecycle===status:a.status!=='archived');
+  const health=reviewHealthById.get(Number(a.id)),finding=openFindingByActivity.get(Number(a.id));
+  let reviewState='unknown';
+  if(reviewStatusReady&&health){if((health.missing||[]).length)reviewState='red';else if(Number(health.issue_count||0)>0||finding)reviewState='orange';else reviewState='green';}
+  return lifecycleMatch&&(!reviewFilter||reviewState===reviewWanted)&&[a.title,a.organisation_name,a.town,a.category,a.region].join(' ').toLowerCase().includes(q);
+});
  count.textContent=list.length+' of '+all.length+' listings';
  rows.innerHTML=list.map(a=>{
   const rawStatus=(a.status==='publish'?'published':a.status)||'unknown';
