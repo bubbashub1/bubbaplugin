@@ -86,6 +86,24 @@ try {
         ];
     }
 
+    // Exact row totals only: this reveals whether legacy and relationship tables
+    // are populated without returning any listing values or personal data.
+    $countWanted = [
+        'bh_activities', 'bh_venues', 'bh_activity_venues', 'bh_activity_schedules', 'bh_sessions',
+        'bh_directory_businesses', 'bh_directory_business_listings',
+        'bh_directory_childcare', 'bh_directory_places', 'bh_directory_school_clubs',
+        'bh_directory_events', 'bh_directory_event_occurrences', 'bh_directory_event_listings'
+    ];
+    $rowCounts = [];
+    foreach ($countWanted as $table) {
+        if (!isset($engines[$table])) {
+            $rowCounts[$table] = null;
+            continue;
+        }
+        // Table names come exclusively from the fixed allowlist above.
+        $rowCounts[$table] = (int)$db->query('SELECT COUNT(*) FROM `' . $table . '`')->fetchColumn();
+    }
+
     $fkQuery = $db->prepare(
         "SELECT TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME
          FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
@@ -124,9 +142,10 @@ try {
         'database' => $database,
         'checked_at' => date(DATE_ATOM),
         'tables' => $tables,
+        'row_counts' => $rowCounts,
         'foreign_keys' => $foreignKeys,
         'relationship_hints' => $relationships,
-        'note' => 'Schema metadata only. No listing rows, contact details, user records or other personal data were read. No database changes were made.'
+        'note' => 'Schema metadata and exact table row counts only. No listing values, contact details, user records or other personal data were read. No database changes were made.'
     ]);
 } catch (Throwable $e) {
     error_log('Leader Hub schema diagnostic failed: ' . $e->getMessage());
