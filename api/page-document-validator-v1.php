@@ -156,6 +156,19 @@ function bh_validate_page_document_v1(mixed $document): array {
     if(isset($p['description'])&&(!is_string($p['description'])||mb_strlen($p['description'])>500))$errors[]='Library widget description invalid.';
     if(isset($p['text'])&&(!is_string($p['text'])||mb_strlen($p['text'])>500))$errors[]='Library widget label invalid.';
     if(isset($p['settings'])&&(!is_array($p['settings'])||strlen((string)json_encode($p['settings']))>12000))$errors[]='Library widget settings invalid.';
+    if(($p['widget_type']??null)==='tabs'&&isset($p['settings'])){
+     $tabSettings=$p['settings'];
+     if(!is_array($tabSettings)||array_diff(array_keys($tabSettings),['label','items','active_tab','tab_style']))$errors[]='Tabs settings invalid.';
+     else{
+      $items=$tabSettings['items']??null;
+      if(!is_array($items)||count($items)<1||count($items)>20)$errors[]='Tabs must contain between 1 and 20 items.';
+      else foreach($items as $tab){
+       if(!is_array($tab)||array_diff(array_keys($tab),['title','content'])||!is_string($tab['title']??null)||trim($tab['title'])===''||mb_strlen($tab['title'])>100||!is_string($tab['content']??null)||mb_strlen($tab['content'])>5000)$errors[]='A tab title or content is invalid.';
+      }
+      if(isset($tabSettings['active_tab'])&&(!is_int($tabSettings['active_tab'])||$tabSettings['active_tab']<0||$tabSettings['active_tab']>=count($items)))$errors[]='Active tab selection is invalid.';
+      if(isset($tabSettings['tab_style'])&&!in_array($tabSettings['tab_style'],['classic','pills','underline'],true))$errors[]='Tabs appearance is invalid.';
+     }
+    }
    }else $errors[]='Unsupported block type.';
    foreach(['font_size'=>[10,72],'width'=>[10,100],'margin_bottom'=>[0,80],'radius'=>[0,48],'padding'=>[0,48]] as $styleKey=>$range){
     if(isset($p[$styleKey])&&(!is_int($p[$styleKey])||$p[$styleKey]<$range[0]||$p[$styleKey]>$range[1]))$errors[]='Invalid block '.$styleKey.'.';
