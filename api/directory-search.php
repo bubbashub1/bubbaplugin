@@ -97,13 +97,13 @@ try {
         if (!is_array($selectedFilters) || !$selectedFilters) $selectedFilters = $filterableColumns;
         $selectedFilters = array_values(array_unique(array_intersect(array_filter($selectedFilters, 'is_string'), $filterableColumns)));
 
-        $where = ["LOWER(TRIM(COALESCE(status,''))) IN ('published','publish')"];
+        $where = ["LOWER(TRIM(COALESCE(d.status,''))) IN ('published','publish')"];
         $params = [];
         if ($q !== '' && $selectedSearch) {
             $likes = [];
             foreach ($selectedSearch as $i => $field) {
                 $param = ':q'.$i;
-                $likes[] = "`".$field."` LIKE ".$param;
+                $likes[] = "d.`".$field."` LIKE ".$param;
                 $params[$param] = '%'.$q.'%';
             }
             $where[] = '(' . implode(' OR ', $likes) . ')';
@@ -114,7 +114,7 @@ try {
             $value = trim((string)$filters[$field]);
             if ($value === '') continue;
             $param = ':f_' . $field;
-            $where[] = "`".$field."` = ".$param;
+            $where[] = "d.`".$field."` = ".$param;
             $params[$param] = $value;
         }
 
@@ -141,7 +141,7 @@ try {
         foreach (['slug','summary','description','category','town','region','address','postcode','image_path','image_url','price_from','age_min','age_max','age_min_months','age_max_months','school_name','venue_name'] as $optional) {
             if (isset($columns[$optional])) $selectFields[] = 'd.`'.$optional.'`';
         }
-        $sql = 'SELECT '.implode(',', $selectFields).', '.$eventSelect.' FROM `'.$source['table'].'` d '.$eventJoin.' WHERE '.implode(' AND ', array_map(static fn($w) => str_replace(['status','title','id'], ['d.status','d.title','d.id'], $w), $where)).' ORDER BY '.($key === 'events' && $eventSelect !== 'NULL AS next_occurrence' ? 'occ.next_occurrence IS NULL, occ.next_occurrence ASC, ' : '').'d.title ASC LIMIT '.(int)$limit;
+        $sql = 'SELECT '.implode(',', $selectFields).', '.$eventSelect.' FROM `'.$source['table'].'` d '.$eventJoin.' WHERE '.implode(' AND ', $where).' ORDER BY '.($key === 'events' && $eventSelect !== 'NULL AS next_occurrence' ? 'occ.next_occurrence IS NULL, occ.next_occurrence ASC, ' : '').'d.title ASC LIMIT '.(int)$limit;
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
