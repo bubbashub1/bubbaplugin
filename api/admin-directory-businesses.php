@@ -14,6 +14,10 @@ $exists=static function(string $table)use($db):bool{$q=$db->prepare("SELECT COUN
 if(!$exists('bh_directory_businesses')||!$exists('bh_directory_business_listings'))business_reply(503,['ok'=>false,'error'=>'business_schema_not_installed','message'=>'The Businesses directory schema has not been installed on staging. No records have been changed.']);
 if($_SERVER['REQUEST_METHOD']==='GET'){
  $_SESSION['bh_admin_business_csrf']??=bin2hex(random_bytes(32));$action=(string)($_GET['action']??'list');
+ if($action==='organisers'){
+  $s=$db->query("SELECT id,organisation_name,email,phone FROM bh_organisers ORDER BY organisation_name,id LIMIT 500");
+  business_reply(200,['ok'=>true,'csrf'=>$_SESSION['bh_admin_business_csrf'],'organisers'=>$s->fetchAll(PDO::FETCH_ASSOC)]);
+ }
  if($action==='list'){
   $q=trim((string)($_GET['q']??''));$sql="SELECT b.id,b.title,b.category,b.town,b.region,b.status,b.updated_at,o.organisation_name FROM bh_directory_businesses b LEFT JOIN bh_organisers o ON o.id=b.organiser_id";$args=[];
   if($q!==''){$sql.=" WHERE b.title LIKE ? OR b.category LIKE ? OR b.town LIKE ? OR o.organisation_name LIKE ?";$like='%'.$q.'%';$args=[$like,$like,$like,$like];}
