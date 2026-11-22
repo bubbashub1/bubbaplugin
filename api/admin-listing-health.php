@@ -18,6 +18,20 @@ if(($_SERVER['REQUEST_METHOD']??'GET')!=='GET') bh_health_reply(405,['ok'=>false
 try {
  require_once __DIR__.'/db.php';
  $db=bh_mysql();
+ // Optional page-scoped mode: only assess the explicitly supplied activity IDs.
+ // The legacy full-report response remains unchanged for existing callers.
+ $requestedIds=[];
+ if(isset($_GET['ids'])){
+  $rawIds=explode(',',(string)$_GET['ids']);
+  if(count($rawIds)>30) bh_health_reply(400,['ok'=>false,'error'=>'A maximum of 30 activity IDs may be checked at once.']);
+  foreach($rawIds as $rawId){
+   $id=filter_var($rawId,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
+   if($id===false) bh_health_reply(400,['ok'=>false,'error'=>'Invalid activity ID supplied.']);
+   $requestedIds[]=(int)$id;
+  }
+  $requestedIds=array_values(array_unique($requestedIds));
+  if(!$requestedIds) bh_health_reply(400,['ok'=>false,'error'=>'Supply at least one activity ID.']);
+ }
  $columns=static function(PDO $db,string $table): array {
   if(!preg_match('/^[a-z_]+$/',$table)) return [];
   try { return $db->query("SHOW COLUMNS FROM `".$table."`")->fetchAll(PDO::FETCH_COLUMN); } catch(Throwable $e) { return []; }
@@ -75,8 +89,16 @@ try {
   }
  }
  $order=in_array('title',$activityCols,true)?'a.title':'a.id';
- $sql='SELECT '.implode(',',$select).' FROM bh_activities a'.$join.' ORDER BY '.$order.' LIMIT 5000';
- $rows=$db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+ $where='';
+ $params=[];
+ if($requestedIds){
+  $where=' WHERE a.id IN ('.implode(',',array_fill(0,count($requestedIds),'?')).')';
+  $params=$requestedIds;
+ }
+ $sql='SELECT '.implode(',',$select).' FROM bh_activities a'.$join.$where.' ORDER BY '.$order.($requestedIds?'':' LIMIT 5000');
+ $stmt=$db->prepare($sql);
+ $stmt->execute($params);
+ $rows=$stmt->fetchAll(PDO::FETCH_ASSOC);
  $fieldMap=[
   'Description'=>['description','short_description'],
   'Website'=>['activity_website','organiser_website'],
