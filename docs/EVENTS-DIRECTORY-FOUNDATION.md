@@ -104,3 +104,11 @@ This document and `database/events-directory-schema.sql` are a code-level founda
 - Admin sign-out returns to the admin login page.
 - Listings filters are snapshotted when the existing Activities directory finishes initializing and restored when leaving Businesses, preventing the new sector from permanently replacing the Listings category/region/town choices.
 - JavaScript syntax checks passed for the directory controller, sector selector, Businesses controller and admin screen inline script. The latest PHP/security workflow also passed on the earlier commit; it will rerun against this final set of changes.
+
+### Public class-leader storefront pages
+
+- Businesses cards for class leaders link to the existing public organiser storefront at `/organiser.html?slug=...`, reusing the established public profile rather than creating a second profile system.
+- The public organiser content endpoint now also returns the organiser's public website, email and phone so the storefront can render even when the leader has no published Listings yet.
+- The existing organiser page now supports a valid public profile with zero published activities: it shows the leader's public details and a clear empty-state message, rather than incorrectly reporting that the organiser cannot be found.
+- Once Listings are published, the existing organiser page automatically displays them using the existing activity cards, venue map and profile sections.
+- The public profile continues to use the existing organiser data and published Listing feed; no duplicate profile records or activity copies are created.
