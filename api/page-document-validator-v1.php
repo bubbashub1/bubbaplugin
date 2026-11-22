@@ -112,6 +112,21 @@ function bh_validate_page_document_v1(mixed $document): array {
     if(array_diff(array_keys($p),['text','align']))$errors[]='Unknown paragraph property.';
     if(!array_key_exists('text',$p))$errors[]='Paragraph text is required.';
     if(!is_string($p['text']??null)||mb_strlen($p['text'])>10000)$errors[]='Paragraph text invalid.';
+   }elseif($type==='directory_search'){
+    $allowedSearch=['label','placeholder','search_scope','show_filters','search_fields','filter_fields','font_size','width','align','margin_bottom','color','background','radius','padding'];
+    if(array_diff(array_keys($p),$allowedSearch))$errors[]='Unknown directory search property.';
+    if(!is_string($p['label']??null)||mb_strlen($p['label'])>100)$errors[]='Directory search label invalid.';
+    if(!is_string($p['placeholder']??null)||mb_strlen($p['placeholder'])>150)$errors[]='Directory search placeholder invalid.';
+    if(!in_array($p['search_scope']??'all',['all','activities','businesses','childcare','events','places','school_clubs'],true))$errors[]='Directory search scope invalid.';
+    if(isset($p['show_filters'])&&!is_bool($p['show_filters']))$errors[]='Directory search filter setting invalid.';
+    foreach(['search_fields','filter_fields'] as $fieldList){if(isset($p[$fieldList])){if(!is_array($p[$fieldList])||count($p[$fieldList])>80)$errors[]='Directory search field list invalid.';else foreach($p[$fieldList] as $field)if(!is_string($field)||!preg_match('/^[a-z][a-z0-9_]{0,63}$/',$field))$errors[]='Directory search field name invalid.';}}
+    if(isset($p['font_size'])&&(!is_int($p['font_size'])||$p['font_size']<10||$p['font_size']>72))$errors[]='Directory search size invalid.';
+    if(isset($p['width'])&&(!is_int($p['width'])||$p['width']<10||$p['width']>100))$errors[]='Directory search width invalid.';
+    if(isset($p['align'])&&!in_array($p['align'],['left','center','right'],true))$errors[]='Directory search alignment invalid.';
+    if(isset($p['margin_bottom'])&&(!is_int($p['margin_bottom'])||$p['margin_bottom']<0||$p['margin_bottom']>80))$errors[]='Directory search spacing invalid.';
+    foreach(['color','background'] as $colourKey)if(isset($p[$colourKey])&&(!is_string($p[$colourKey])||!preg_match('/^#[0-9a-fA-F]{6}$/',$p[$colourKey])))$errors[]='Directory search colour invalid.';
+    if(isset($p['radius'])&&(!is_int($p['radius'])||$p['radius']<0||$p['radius']>48))$errors[]='Directory search radius invalid.';
+    if(isset($p['padding'])&&(!is_int($p['padding'])||$p['padding']<0||$p['padding']>48))$errors[]='Directory search padding invalid.';
    }elseif($type==='button'){
     if(array_diff(array_keys($p),['text','href']))$errors[]='Unknown button property.';
     if(!array_key_exists('text',$p)||!array_key_exists('href',$p))$errors[]='Button text and link are required.';
