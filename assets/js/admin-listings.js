@@ -24,7 +24,7 @@ function render(){
   const summary=String(a.session_summary||'').trim();
   const sessions=summary?summary.split(',').map(x=>x.trim()).filter(Boolean):[];
   const sessionHtml=sessions.length>2?'<details class="listing-sessions"><summary>'+sessions.length+' sessions</summary><div>'+escape(summary)+'</div></details>':escape(summary||'—');
-  const health=reviewHealthById.get(Number(a.id));const finding=openFindingByActivity.get(Number(a.id));let reviewLabel='Status unavailable',reviewClass='unknown';if(reviewStatusReady&&health){if((health.missing||[]).length){reviewLabel='Missing information';reviewClass='red';}else if(Number(health.issue_count||0)>0||finding){reviewLabel='Check information';reviewClass='orange';}else{reviewLabel='No changes';reviewClass='green';}}const reviewHtml='<td data-label="Listing review"><span class="listing-review listing-review--'+reviewClass+'">'+escape(reviewLabel)+'</span><a class="listing-review-link" href="/admin/admin-activities-add-listing.html?id='+encodeURIComponent(a.id)+'">Review</a></td>';const invite=invitationById.get(Number(a.id));const inviteStatus=invite?.invitation_status||'not sent';const blocked=['sent','approved','pending','sending'].includes(inviteStatus);const inviteLabel=!invitationLoaded?'Checking…':inviteStatus==='sent'?'Sent (SMTP accepted)':inviteStatus==='approved'?'Claimed':inviteStatus==='pending'?'Claim pending':inviteStatus==='sending'?'Sending':inviteStatus==='failed'?'Failed — retry':'Not sent';const inviteDate=invite?.sent_at?' · '+new Date(String(invite.sent_at).replace(' ','T')).toLocaleDateString('en-GB'):'';
+  const health=reviewHealthById.get(Number(a.id));const finding=openFindingByActivity.get(Number(a.id));let reviewLabel='Status unavailable',reviewClass='unknown';if(reviewStatusReady&&health){if((health.missing||[]).length){reviewLabel='Missing information';reviewClass='red';}else if(Number(health.issue_count||0)>0||finding){reviewLabel='Check information';reviewClass='orange';}else{reviewLabel='No changes';reviewClass='green';}}const reviewHtml='<td data-label="Listing review"><span class="listing-review listing-review--'+reviewClass+'">'+escape(reviewLabel)+'</span><a class="listing-review-link" href="/admin/admin-activities-add-listing.html?id='+encodeURIComponent(a.id)+'" data-review-id="'+escape(a.id)+'">Review</a></td>';const invite=invitationById.get(Number(a.id));const inviteStatus=invite?.invitation_status||'not sent';const blocked=['sent','approved','pending','sending'].includes(inviteStatus);const inviteLabel=!invitationLoaded?'Checking…':inviteStatus==='sent'?'Sent (SMTP accepted)':inviteStatus==='approved'?'Claimed':inviteStatus==='pending'?'Claim pending':inviteStatus==='sending'?'Sending':inviteStatus==='failed'?'Failed — retry':'Not sent';const inviteDate=invite?.sent_at?' · '+new Date(String(invite.sent_at).replace(' ','T')).toLocaleDateString('en-GB'):'';
   return '<tr><td data-label="Select"><input type="checkbox" data-select-id="'+escape(a.id)+'" '+(selected.has(Number(a.id))?'checked':'')+' aria-label="Select '+escape(a.title)+'"></td><td data-label="Activity"><strong class="listing-title">'+escape(a.title)+'</strong>'+(a.organisation_name?'<small class="listing-organiser">'+escape(a.organisation_name)+'</small>':'')+'</td><td data-label="Category / Tags"><button type="button" class="listing-taxonomy" data-edit-category="'+escape(a.id)+'" title="Edit category">'+escape(a.category||'Set category')+'</button><small class="listing-organiser"><button type="button" class="listing-taxonomy listing-taxonomy-tags" data-edit-tags="'+escape(a.id)+'" title="Edit tags">'+escape(a.tags||'Edit tags')+'</button></small></td><td data-label="Town">'+escape(a.town||'—')+'</td><td data-label="Sessions">'+sessionHtml+'</td><td data-label="Status"><span class="listing-status listing-status--'+statusClass+'">'+escape(statusLabel)+'</span><small class="listing-organiser" title="Invitation status (SMTP acceptance is not proof of delivery)">Claim: '+escape(inviteLabel+inviteDate)+'</small></td>'+reviewHtml+'<td data-label="Actions"><div class="listing-actions">'+(rawStatus==='archived'?'<button type="button" class="listing-action" data-restore="'+escape(a.id)+'">Restore</button>':'<a class="listing-action listing-action--edit" href="/admin/admin-activities-add-listing.html?id='+encodeURIComponent(a.id)+'">Edit</a><button type="button" class="listing-action" data-assign="'+escape(a.id)+'">Assign</button><button type="button" class="listing-action" data-select-claim="'+escape(a.id)+'" '+(blocked||!invitationLoaded?'disabled title="Already invited or status still loading"':'')+'>'+(blocked?'Already invited':'Send claim')+'</button><details class="listing-more"><summary aria-label="More actions for '+escape(a.title)+'">⋯</summary><button type="button" data-delete="'+escape(a.id)+'">Close listing</button></details>')+'</div></td></tr>';;
  }).join('')||'<tr><td colspan="8" class="listing-empty">No listings found on this page. Try another page or change your search or status filter.</td></tr>';syncSelection();loadPageHealth(pageItems);
 }
@@ -49,6 +49,61 @@ async function loadPageHealth(pageItems){
   console.warn('Page listing health unavailable',error);
  }
 }
+const reviewDialog=document.getElementById('listingReviewDialog');
+const reviewBody=document.getElementById('listingReviewBody');
+const reviewTitle=document.getElementById('listingReviewTitle');
+const reviewMeta=document.getElementById('listingReviewMeta');
+const editorLink=document.getElementById('openListingEditor');
+function reviewList(items,emptyText){
+ if(!items.length)return '<p class="listing-review-empty">'+escape(emptyText)+'</p>';
+ return '<ul>'+items.map(item=>'<li>'+escape(item)+'</li>').join('')+'</ul>';
+}
+async function openListingReview(id){
+ const listing=all.find(item=>Number(item.id)===id);
+ if(!listing)return;
+ reviewTitle.textContent=listing.title||'Listing review';
+ reviewMeta.textContent=[listing.organisation_name,listing.town,listing.region].filter(Boolean).join(' · ')||'Activity listing';
+ editorLink.href='/admin/admin-activities-add-listing.html?id='+encodeURIComponent(id);
+ reviewBody.innerHTML='<p>Loading the latest checks for this listing…</p>';
+ reviewDialog.showModal();
+ try{
+  let health=reviewHealthById.get(id);
+  if(!health){
+   const response=await fetch('/api/admin-listing-health.php?ids='+encodeURIComponent(String(id)),{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
+   const data=await response.json();
+   if(!response.ok||!data.ok)throw Error(data.error||'Could not load the listing checks.');
+   health=(data.data||[]).find(item=>Number(item.id)===id);
+   if(health)reviewHealthById.set(id,health);
+  }
+  const finding=openFindingByActivity.get(id);
+  if(!health){
+   reviewBody.innerHTML='<p class="listing-review-warning">No health report was returned for this listing. Please try again.</p>';
+   return;
+  }
+  const missing=Array.isArray(health.missing)?health.missing:[];
+  const issues=Array.isArray(health.validation_issues)?health.validation_issues:[];
+  const duplicate=!!health.possible_duplicate;
+  const findingLabel=finding?.finding_type?String(finding.finding_type).replace(/_/g,' '):'';
+  const hasConcerns=missing.length||issues.length||duplicate||finding;
+  const score=health.health_score===null||health.health_score===undefined?'Not scored':Number(health.health_score)+'%';
+  let sections='';
+  sections+='<section class="listing-review-report-section"><h3>Missing information</h3>'+reviewList(missing,'No missing core information was detected.')+'</section>';
+  sections+='<section class="listing-review-report-section"><h3>Information to check</h3>'+reviewList(issues,'No format or date issues were detected.')+(duplicate?'<p class="listing-review-warning">Possible duplicate: another listing has a similar title and location. Please compare before changing anything.</p>':'')+(finding?'<p class="listing-review-warning">Outstanding monitor finding: '+escape(findingLabel)+'.</p>':'')+'</section>';
+  sections+='<p class="listing-review-report-note">This is an automated completeness and validation report, not confirmation that every detail is current. A missing website response does not mean an organisation has closed. Nothing has been changed.</p>';
+  reviewBody.innerHTML='<div class="listing-review-score"><strong>'+escape(score)+'</strong><span>Completeness score</span><span class="listing-review-result '+(hasConcerns?'needs-attention':'looks-good')+'">'+(hasConcerns?'Needs attention':'No issues detected')+'</span></div>'+sections;
+ }catch(error){
+  reviewBody.innerHTML='<p class="listing-review-warning">'+escape(error.message||'The review report could not be loaded.')+'</p>';
+ }
+}
+document.getElementById('closeListingReview').addEventListener('click',()=>reviewDialog.close());
+document.getElementById('closeListingReviewBottom').addEventListener('click',()=>reviewDialog.close());
+reviewDialog.addEventListener('click',event=>{if(event.target===reviewDialog)reviewDialog.close();});
+rows.addEventListener('click',event=>{
+ const link=event.target.closest('[data-review-id]');
+ if(!link)return;
+ event.preventDefault();
+ openListingReview(Number(link.dataset.reviewId));
+});
 async function load(){message.textContent='';retry.hidden=true;try{const r=await fetch('/api/admin-activities.php',{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});if(r.status===401){location.replace('/admin-login.html?next='+encodeURIComponent(location.pathname));return;}const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Could not load listings.');csrf=d.csrf||"";all=Array.isArray(d.data)?d.data:[];reviewStatusReady=false;reviewHealthById=new Map();openFindingByActivity=new Map();healthRequestKey='';failedHealthKey='';render();(async()=>{try{const findingsResponse=await fetch("/api/admin-listing-review.php?summary=1",{credentials:"same-origin",cache:"no-store"});const findingsData=await findingsResponse.json();if(!findingsResponse.ok||!findingsData.ok)throw Error("Listing review status unavailable");openFindingByActivity=new Map((findingsData.items||[]).map(x=>[Number(x.activity_id),x]));render();}catch(reviewError){console.warn("Listing review status unavailable",reviewError);}})();for(const id of [...selected])if(!all.some(a=>Number(a.id)===id))selected.delete(id);render();try{const cr=await fetch('/api/admin-claim-invitations.php',{credentials:'same-origin',cache:'no-store'});const cj=await cr.json();if(!cr.ok||!cj.ok)throw Error(cj.error||'Claim status unavailable');invitationById=new Map((cj.data||[]).map(x=>[Number(x.id),x]));invitationLoaded=true;render();}catch(err){invitationLoaded=false;message.textContent='Claim invitation status unavailable: '+err.message+' — sending disabled until status can be checked.';}}catch(e){count.textContent='Listings unavailable';message.textContent=e.message;retry.hidden=false;}}
 const dialog=document.createElement('dialog');
 dialog.setAttribute('aria-labelledby','assignLeaderTitle');
