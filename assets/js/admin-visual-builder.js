@@ -96,6 +96,7 @@ function showCanvasToolbar(node){
 }
 function selectNode(node){
  if(!node)return;
+ setTab('properties');
  if(inlineEditingNode&&inlineEditingNode!==node){inlineEditingNode.contentEditable='false';inlineEditingNode.removeAttribute('data-bh-inline-editing');inlineEditingNode=null;}
  $('inlineEditToggle').hidden=true;$('inlineEditToggle').textContent='Edit directly on page';
  try{
@@ -490,7 +491,15 @@ function renderTabsWidgetMarkup(props,id){
 function renderLibraryWidgetControls(){
  const host=$('libraryWidgetControls');if(!host)return;
  const isTabs=previewMode==='draft'&&currentBlock?.type==='library_widget'&&currentBlock.props?.widget_type==='tabs';
- host.hidden=!isTabs;if(!isTabs){host.replaceChildren();return;}
+ const isAccordion=previewMode==='draft'&&currentBlock?.type==='library_widget'&&currentBlock.props?.widget_type==='accordion';
+ host.hidden=!(isTabs||isAccordion);if(!isTabs&&!isAccordion){host.replaceChildren();return;}
+ if(isAccordion){
+  const settings=currentBlock.props.settings||(currentBlock.props.settings={});
+  if(!Array.isArray(settings.items)||!settings.items.length)settings.items=[{title:'Question 1',content:''}];
+  settings.items=settings.items.slice(0,20);
+  host.innerHTML='<strong>Accordion / FAQ items</strong><p class="bhvb-edit-help">Edit questions and answers below. Select a question in the preview to expand or collapse it.</p><label>Section heading</label><input id="bhvbAccordionLabel" maxlength="100" value="'+esc(settings.label||'Frequently asked questions')+'"><div class="bhvb-tab-editor-list">'+settings.items.map((item,index)=>'<fieldset class="bhvb-tab-editor-item"><legend>Question '+(index+1)+'</legend><label>Question</label><input data-accordion-field="title" data-accordion-index="'+index+'" maxlength="160" value="'+esc(item.title||'')+'"><label>Answer</label><textarea data-accordion-field="content" data-accordion-index="'+index+'" rows="4" maxlength="5000">'+esc(item.content||'')+'</textarea><div class="bhvb-container-actions"><button type="button" data-accordion-action="up" data-accordion-index="'+index+'" '+(index===0?'disabled':'')+'>Move up</button><button type="button" data-accordion-action="down" data-accordion-index="'+index+'" '+(index===settings.items.length-1?'disabled':'')+'>Move down</button><button type="button" data-accordion-action="remove" data-accordion-index="'+index+'" '+(settings.items.length===1?'disabled':'')+'>Remove</button></div></fieldset>').join('')+'</div><button type="button" id="bhvbAddAccordionItem" '+(settings.items.length>=20?'disabled':'')+'>＋ Add question</button>';
+  return;
+ }
  const settings=currentBlock.props.settings||(currentBlock.props.settings={});
  if(!Array.isArray(settings.items)||!settings.items.length)settings.items=[{title:'Tab 1',content:''}];
  settings.items=settings.items.slice(0,20);
