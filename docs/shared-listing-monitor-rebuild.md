@@ -124,3 +124,19 @@ The first website-check worker is `api/listing-monitor-website-cron.php` and is 
 - The worker currently uses the existing `health_enabled` / `health_paused` settings as its master on/off switch and uses the existing batch-size setting. It is not yet scheduled. Website findings now open in the dashboard review pop-up with the captured evidence and an explicit note that no listing change is proposed.
 - Do not enable or schedule it on production. First deploy to staging, apply both Listing Monitor migrations there, inspect the worker and run controlled test URLs. In particular, verify redirect handling, DNS behavior, and that the monitor never changes `bh_activities`.
 - This first pass checks availability and explicit closure wording only. It does not yet compare page content over time to detect ordinary text/price/session changes. That remains a later monitoring enhancement.
+
+
+## Database integration tests (2026-11-22)
+
+A disposable MySQL integration suite now runs in GitHub Actions using its own temporary MySQL 8.0 service and a database named `listing_monitor_test`. It does not connect to staging or production.
+
+- Applies the existing Listing Checker schema and both additive Listing Monitor migrations against MySQL.
+- Checks website state/history inserts and findings insert/refresh/recovery against the actual table definitions and enum values.
+- Confirms a healthy recovery resolves outstanding findings but preserves an administrator-approved decision.
+- Exercises private draft storage, explicit field approval, audit insertion and stale-snapshot rejection.
+- Confirms website-check persistence leaves the public activity fields untouched.
+- The tests exposed a MySQL update-order issue: when reopening a resolved finding, `reviewed_at` must be cleared before `review_status` changes from `resolved` to `new`. The worker query has been corrected and the integration test checks this exact behavior.
+- Confirmed the real admin session identity key is `bh_admin_username`; approval audit records use that value.
+- Latest tested code/workflow commit `dd00c0b906116b3c7183645e176742cf526688b0` passed PHP lint, security guards, offline website-rule tests and disposable MySQL integration tests in GitHub Actions run `45021371000`.
+
+Database integration is still not the same as a full staging/browser test. The PR remains a draft; no migration has been applied to staging or live, and the website worker remains disabled and unscheduled.
