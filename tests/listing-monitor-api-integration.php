@@ -72,8 +72,8 @@ try {
         $_SESSION['bh_admin_last_activity'] = $lastActivity;
         session_write_close();
     };
-    $validSession = 'monitorvalid' . getmypid();
-    $expiredSession = 'monitorexpired' . getmypid();
+    $validSession = bin2hex(random_bytes(16));
+    $expiredSession = bin2hex(random_bytes(16));
     $seedSession($validSession, time());
     $seedSession($expiredSession, time() - 1900);
 
