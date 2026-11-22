@@ -14,6 +14,7 @@ $exists=static function(string $table)use($db):bool{$q=$db->prepare("SELECT COUN
 
 if($_SERVER['REQUEST_METHOD']==='GET'){
  $_SESSION['bh_admin_business_csrf']??=bin2hex(random_bytes(32));$action=(string)($_GET['action']??'list');
+ if(($action==='list'||$action==='get')&&(!$exists('bh_directory_businesses')||!$exists('bh_directory_business_listings')))business_reply(503,['ok'=>false,'error'=>'business_schema_not_installed','message'=>'Install the Businesses directory tables before loading storefront records.']);
  if($action==='organisers'){
   $s=$db->query("SELECT id,organisation_name,email,phone FROM bh_organisers ORDER BY organisation_name,id LIMIT 500");
   business_reply(200,['ok'=>true,'csrf'=>$_SESSION['bh_admin_business_csrf'],'organisers'=>$s->fetchAll(PDO::FETCH_ASSOC)]);
