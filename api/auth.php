@@ -267,6 +267,8 @@ function bh_send_family_welcome(string $email, string $firstName=''): bool {
  * Accounts / sessions
  * ---------------------------------------------------------------------- */
 
+require_once __DIR__.'/lib/business-storefront.php';
+
 function bh_create_leader_organiser(PDO $db, int $userId, string $email, string $displayName='New organiser', string $phone='', string $website=''): int {
     $displayName = trim($displayName) !== '' ? mb_substr(trim($displayName), 0, 190) : 'New organiser';
     $columns = [];
@@ -332,7 +334,10 @@ function bh_create_leader_organiser(PDO $db, int $userId, string $email, string 
 
     $q=$db->prepare("INSERT INTO bh_organisers (".implode(',',$fields).") VALUES (".implode(',',array_fill(0,count($fields),'?')).")");
     $q->execute($values);
-    return (int)$db->lastInsertId();
+    $organiserId=(int)$db->lastInsertId();
+    try { bh_ensure_business_storefront($db,$organiserId,$userId,$displayName); }
+    catch(Throwable $storefrontError) { error_log('Bubba Hub automatic storefront creation deferred: '.$storefrontError->getMessage()); }
+    return $organiserId;
 }
 
 /** Status + role/context gate shared by password and social sign-in. */
