@@ -429,12 +429,16 @@ function setDevice(next){
  frame.dataset.device=device;
  $('canvasDimensions').textContent=(page?.title||'Page')+' · '+device+(previewMode==='draft'?' · Draft':'');
 }
-function setTab(tab){
- const properties=tab==='properties';
- $('propertiesTab').classList.toggle('active',properties);$('layersTab').classList.toggle('active',!properties);
- $('propertiesTab').setAttribute('aria-selected',String(properties));$('layersTab').setAttribute('aria-selected',String(!properties));
- $('propertiesPanel').hidden=!properties;$('layersPanel').hidden=properties;
+function setBuilderPanel(panel){
+ const elements=$('bhvbElementsPanel'),settings=$('propertiesPanel'),layers=$('layersPanel');
+ if(!elements||!settings||!layers)return;
+ elements.hidden=panel!=='elements';settings.hidden=panel!=='properties';layers.hidden=panel!=='layers';
+ document.querySelectorAll('[data-bhvb-panel]').forEach(button=>{
+  const active=button.dataset.bhvbPanel===panel;
+  button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));
+ });
 }
+function setTab(tab){setBuilderPanel(tab==='layers'?'layers':'properties');}
 function safeHref(value){
  const href=String(value||'').trim();
  if(!href||/[\\u0000-\\u0020\\u007f\\\\]/.test(href)||href.startsWith('//'))return false;
@@ -769,6 +773,52 @@ async function loadSearchWidgetLibrary(){
  }catch(error){button.hidden=true;status('Widget Library could not be checked. Open Widget Library to confirm Search widget is enabled.');}
 }
 $('duplicateElement').addEventListener('click',duplicateSelectedBlock);$('deleteElement').addEventListener('click',deleteSelectedBlock);$('duplicateContainer').addEventListener('click',duplicateSelectedContainer);$('addContainer').addEventListener('click',addContainer);document.querySelectorAll('[data-section-preset]').forEach(button=>button.addEventListener('click',()=>addSectionPreset(button.dataset.sectionPreset)));$('addHeading').addEventListener('click',()=>addBlock('heading'));$('addParagraph').addEventListener('click',()=>addBlock('paragraph'));$('addButtonBlock').addEventListener('click',()=>addBlock('button'));$('addImageBlock').addEventListener('click',()=>addBlock('image'));$('addDirectorySearch').addEventListener('click',()=>addBlock('directory_search'));$('moveContainerUp').addEventListener('click',()=>moveContainer(-1));$('moveContainerDown').addEventListener('click',()=>moveContainer(1));$('deleteContainer').addEventListener('click',deleteContainer);
+
+// Elementor-inspired full-screen editor shell. Existing editing controls and IDs are
+// retained; this only changes their workspace placement and panel navigation.
+function mountFullScreenEditor(){
+ const shell=$('builderStatus')?.closest('.bhvb-shell');
+ const workspace=document.querySelector('.bhvb-workspace');
+ const toolbar=document.querySelector('.bhvb-toolbar');
+ const elements=document.querySelector('.bhvb-elements-panel');
+ const inspector=document.querySelector('.bhvb-inspector');
+ const canvas=document.querySelector('.bhvb-canvas-panel');
+ if(!shell||!workspace||!toolbar||!elements||!inspector||!canvas)return;
+ document.body.classList.add('bhvb-fullscreen-editor');
+ document.querySelector('.site-header')?.setAttribute('hidden','');
+ document.querySelector('.bhvb-heading')?.setAttribute('hidden','');
+ document.querySelector('.bhvb-footer-note')?.setAttribute('hidden','');
+ const top=document.createElement('header');top.className='bhvb-editor-topbar';top.setAttribute('aria-label','Visual Builder controls');
+ const brand=document.createElement('a');brand.className='bhvb-editor-brand';brand.href='/admin.html';brand.textContent='Bubba Hub';
+ const title=document.createElement('span');title.className='bhvb-editor-title';title.textContent='Page Builder';
+ const tools=document.createElement('div');tools.className='bhvb-editor-toptools';
+ const save=$('saveDraft'),prepare=$('prepareDraft'),actions=document.querySelector('.bhvb-builder-actions');
+ if(save)tools.append(save);if(prepare)tools.append(prepare);
+ const status=$('builderStatus');if(status)tools.append(status);
+ top.append(brand,title,toolbar,tools);
+ const body=document.createElement('div');body.className='bhvb-editor-body';
+ const left=document.createElement('aside');left.className='bhvb-editor-left';
+ const nav=document.createElement('div');nav.className='bhvb-editor-panel-nav';nav.setAttribute('role','tablist');nav.setAttribute('aria-label','Editor panel');
+ [['elements','Elements'],['properties','Settings'],['layers','Structure']].forEach(([key,label])=>{
+  const button=document.createElement('button');button.type='button';button.dataset.bhvbPanel=key;button.setAttribute('role','tab');button.textContent=label;
+  button.addEventListener('click',()=>setBuilderPanel(key));nav.append(button);
+ });
+ const elementsContent=document.createElement('div');elementsContent.id='bhvbElementsPanel';elementsContent.className='bhvb-editor-panel-content';
+ const settingsContent=document.createElement('div');settingsContent.className='bhvb-editor-panel-content bhvb-settings-content';
+ const layersContent=document.createElement('div');layersContent.className='bhvb-editor-panel-content';
+ const propertyPanel=$('propertiesPanel'),layerPanel=$('layersPanel');
+ elementsContent.append(elements);
+ settingsContent.append(propertyPanel);
+ layersContent.append(layerPanel);
+ left.append(nav,elementsContent,settingsContent,layersContent);
+ const canvasWrap=document.createElement('main');canvasWrap.className='bhvb-editor-canvas';canvasWrap.append(canvas);
+ body.append(left,canvasWrap);
+ shell.replaceChildren(top,body,actions);
+ const note=document.querySelector('.bhvb-inspector-note');
+ if(note)actions.append(note);
+ setBuilderPanel('elements');
+}
+
 async function init(){
  try{
   const auth=await fetch('/admin-auth.php?action=check',{credentials:'same-origin',cache:'no-store'});
@@ -783,5 +833,5 @@ async function init(){
   if(!pages.length)$('canvasEmpty').textContent='There are no published managed pages to preview yet. Your existing homepage and system pages are not modified by this first prototype.';
  }catch(error){status(error.message);$('canvasEmpty').textContent=error.message;}
 }
-init();loadSearchWidgetLibrary();
+mountFullScreenEditor();init();loadSearchWidgetLibrary();
 })();
