@@ -12,6 +12,8 @@ on:
       - 'api/organiser-terms.php'
       - 'api/activities.php'
       - 'assets/js/directory-businesses.js'
+      - 'assets/js/directory-sector.js'
+      - 'businesses.html'
       - 'organiser.html'
       - '.github/workflows/business-storefront-checks.yml'
   workflow_dispatch:
@@ -43,7 +45,9 @@ jobs:
           php -l api/activities.php
 
       - name: Check Businesses directory JavaScript
-        run: node --check assets/js/directory-businesses.js
+        run: |
+          node --check assets/js/directory-businesses.js
+          node --check assets/js/directory-sector.js
 
       - name: Check public organiser page inline JavaScript
         run: |
@@ -103,4 +107,13 @@ jobs:
           assert "create_missing_leader_storefronts" in admin_api and "create_missing_leader_storefronts" in admin_page, "Admin backfill action is not wired up"
           assert "already_had_storefront" in admin_api, "Backfill should report existing storefronts"
           print("Automatic leader storefront checks passed")
+          business_page = Path("businesses.html").read_text()
+          sector_client = Path("assets/js/directory-sector.js").read_text()
+          assert 'data-sector="business"' in business_page and '/assets/js/directory-sector.js' in business_page, "Businesses page is not wired to the sector client"
+          assert 'endpoint="/api/directory-businesses.php"' in sector_client, "Businesses page must use the dedicated storefront API"
+          assert 'data.businesses' in sector_client and 'linked_listing_count' in sector_client, "Storefront response fields are not rendered"
+          assert 'businessCategoriesLoaded' in sector_client, "Business category options should reflect published storefront categories"
+          assert "b.postcode LIKE ?" in feed and "b.address LIKE ?" in feed, "Business keyword search should include postcode and address"
+          assert "b.town LIKE ? OR b.postcode LIKE ?" in feed, "Town filter should support partial town/postcode matches"
+          print("Public Businesses page and search wiring checks passed")
           PY

@@ -10,9 +10,9 @@ try{
  $hasOwnerId=in_array('user_id',$orgColumns,true);$hasOrgEmail=in_array('email',$orgColumns,true);
  $leaderJoin=$hasOwnerId ? "u.id=o.user_id".($hasOrgEmail?" OR (o.user_id IS NULL AND LOWER(u.email)=LOWER(o.email))":"") : ($hasOrgEmail?"LOWER(u.email)=LOWER(o.email)":"1=0");
  $where=["b.status='published'"];$args=[];
- foreach([['q',"(b.title LIKE ? OR b.summary LIKE ? OR b.description LIKE ? OR b.category LIKE ? OR b.town LIKE ? OR o.organisation_name LIKE ?)"],['category','b.category = ?'],['town','b.town = ?'],['region','b.region = ?']] as [$key,$condition]){
+ foreach([['q',"(b.title LIKE ? OR b.summary LIKE ? OR b.description LIKE ? OR b.category LIKE ? OR b.town LIKE ? OR b.postcode LIKE ? OR b.address LIKE ? OR o.organisation_name LIKE ?)"],['category','b.category = ?'],['town','(b.town LIKE ? OR b.postcode LIKE ?)'],['region','b.region = ?']] as [$key,$condition]){
   $value=$$key;if($value==='')continue;$where[]=$condition;
-  if($key==='q'){for($i=0;$i<6;$i++)$args[]='%'.$value.'%';}else $args[]=$value;
+  if($key==='q'){for($i=0;$i<8;$i++)$args[]='%'.$value.'%';}elseif($key==='town'){$args[]='%'.$value.'%';$args[]='%'.$value.'%';}else $args[]=$value;
  }
  $sql="SELECT b.id,COALESCE(NULLIF(TRIM(o.organisation_name),''),b.title) AS title,b.category,b.summary,b.description,b.town,b.region,b.address,b.postcode,
  COALESCE(NULLIF(b.website_url,''),o.website) AS website,
