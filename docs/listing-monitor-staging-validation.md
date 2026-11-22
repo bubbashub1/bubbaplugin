@@ -34,7 +34,7 @@
 3. Verify the two new private tables exist:
    - `bh_listing_monitor_drafts`
    - `bh_listing_monitor_website_history`
-   - the two `website_monitor_*` disabled settings in `bh_listing_checker_settings`
+   - the five `website_monitor_*` settings in `bh_listing_checker_settings` (disabled, paused, 4-hour interval, batch 30, 240-second runtime)
 4. Keep `website_monitor_enabled` at `0`. Do not add or run a cron schedule for `api/listing-monitor-website-cron.php`.
 5. Do not turn on existing health settings as part of this validation.
 
@@ -76,7 +76,7 @@ If the staging UI or migration fails, stop testing. Do not attempt ad-hoc live f
 ## Database reuse decisions
 
 - Reuse `bh_listing_check_findings` for private alerts and suggested evidence.
-- Reuse `bh_listing_checker_settings` for the separate, default-disabled website-monitor switches and existing batch/interval settings.
+- Reuse `bh_listing_checker_settings` for separate website-monitor settings: disabled by default, 4-hour interval, batch size 30 and 240-second runtime. These do not change the existing health-check settings.
 - Do not reuse `bh_listing_check_queue` or `bh_listing_check_runs` for website checks: the legacy health worker relies on them for its own due calculations and last-run interval. Sharing them would cause the two workers to interfere.
 - Do not reuse `bh_listing_check_results`: it stores discovery/search result snapshots rather than a chronological website-check log.
 - Do not reuse `bh_directory_record_revisions`: it requires organiser-submission ownership fields and is not an admin research draft.
