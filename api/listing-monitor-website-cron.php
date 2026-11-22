@@ -80,7 +80,7 @@ try{
    $result=bh_lm_fetch($url);$status=$result['status'];$finalUrl=$result['url'];$plain=html_entity_decode(strip_tags($result['body']),ENT_QUOTES|ENT_HTML5,'UTF-8');$plain=preg_replace('/\s+/u',' ',trim($plain));$lower=strtolower($plain);
    if(preg_match('/\b(permanently closed|business has closed|we have closed|ceased trading|no longer trading|closing permanently)\b/u',$lower,$m)){ $outcome='closure_indicated';$pos=stripos($lower,$m[0]);$evidence=substr($plain,max(0,(int)$pos-160),360); }
    elseif(preg_match('/\b(temporarily closed|closed for the holidays|seasonal closure|closed today|reopening on|back open on)\b/u',$lower,$m)){ $outcome='temporary_closure';$pos=mb_stripos($lower,$m[0]);$evidence=mb_substr($plain,max(0,(int)$pos-160),360); }
-   elseif($status===404||$status===410){$outcome='possible_closure';$evidence='Website returned HTTP '.$status.'. This is a dead-link warning, not proof that the activity has closed.';}
+
    elseif($status>=200&&$status<400){$outcome='healthy';$evidence='Website responded successfully (HTTP '.$status.').';}
    elseif($status>=500){$outcome='unable_to_verify';$evidence='Website server error HTTP '.$status.'.';}
    else{$outcome='unable_to_verify';$evidence='Website returned HTTP '.$status.'.';}
