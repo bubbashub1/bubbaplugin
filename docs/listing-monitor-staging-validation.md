@@ -28,7 +28,7 @@
 2. Apply only the two revised, additive migrations to the confirmed staging database:
    - `database/migrations/20261121_create_listing_monitor_drafts.sql`
    - `database/migrations/20261122_create_listing_monitor_website_checks.sql`
-3. Verify the four new private tables exist:
+3. Verify the two new private tables exist:
    - `bh_listing_monitor_drafts`
    - `bh_listing_monitor_website_history`
    - the two `website_monitor_*` disabled settings in `bh_listing_checker_settings`
