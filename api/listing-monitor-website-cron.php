@@ -12,7 +12,7 @@ $required=['bh_listing_checker_settings','bh_listing_monitor_website_state','bh_
 $exists=$db->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=?');
 foreach($required as $table){$exists->execute([$table]);if(!(int)$exists->fetchColumn()){fwrite(STDERR,"Listing Monitor migration required: ".$table." is missing.\n");exit(2);}}
 $settings=[];foreach($db->query('SELECT setting_key,setting_value FROM bh_listing_checker_settings')->fetchAll(PDO::FETCH_ASSOC) as $row)$settings[$row['setting_key']]=$row['setting_value'];
-$get=static fn(string $key,string $default=''):(string)($settings[$key]??$default);
+$get=static fn(string $key,string $default=''): string => (string)($settings[$key]??$default);
 if($get('health_enabled','0')!=='1'){echo "Website monitoring is disabled.\n";exit;}
 if($get('health_paused','0')==='1'){echo "Website monitoring is paused.\n";exit;}
 $lock=$db->query("SELECT GET_LOCK('bh_listing_monitor_websites',0)")->fetchColumn();
@@ -42,9 +42,10 @@ function bh_lm_fetch(string $url): array {
   $ips=bh_lm_public_host($host);$resolve=[];
   foreach($ips as $ip){if(str_contains($ip,':'))continue;$resolve[]=$host.':'.$port.':'.$ip;}
   if(!$resolve)throw new RuntimeException('No safe IPv4 address available for website check.');
-  $body='';$redirectLocation='';$ch=curl_init($url);
-  curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>false,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>6,CURLOPT_TIMEOUT=>15,CURLOPT_MAXREDIRS=>0,CURLOPT_USERAGENT=>'BubbaHub-ListingMonitor/1.0 (+https://bubbahub.co.uk)',CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_PROTOCOLS=>CURLPROTO_HTTP|CURLPROTO_HTTPS,CURLOPT_RESOLVE=>$resolve,CURLOPT_HEADERFUNCTION=>static function($ch,string $line)use(&$redirectLocation):int{if(stripos($line,'Location:')===0)$redirectLocation=trim(substr($line,9));return strlen($line);},CURLOPT_WRITEFUNCTION=>static function($ch,string $chunk)use(&$body):int{if(strlen($body)+strlen($chunk)>1048576)return 0;$body.=$chunk;return strlen($chunk);}]);
+  $body='';$bodyTooLarge=false;$redirectLocation='';$ch=curl_init($url);
+  curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>false,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>6,CURLOPT_TIMEOUT=>15,CURLOPT_MAXREDIRS=>0,CURLOPT_USERAGENT=>'BubbaHub-ListingMonitor/1.0 (+https://bubbahub.co.uk)',CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_PROTOCOLS=>CURLPROTO_HTTP|CURLPROTO_HTTPS,CURLOPT_RESOLVE=>$resolve,CURLOPT_HEADERFUNCTION=>static function($ch,string $line)use(&$redirectLocation):int{if(stripos($line,'Location:')===0)$redirectLocation=trim(substr($line,9));return strlen($line);},CURLOPT_WRITEFUNCTION=>static function($ch,string $chunk)use(&$body,&$bodyTooLarge):int{if(strlen($body)+strlen($chunk)>1048576){$bodyTooLarge=true;return 0;}$body.=$chunk;return strlen($chunk);}]);
   $ok=curl_exec($ch);$status=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);$error=curl_error($ch);$location=$redirectLocation;curl_close($ch);
+  if($bodyTooLarge)throw new RuntimeException('Website response exceeded the 1 MB safety limit; result is incomplete.');
   if($ok===false&&$status===0)throw new RuntimeException('Website could not be reached: '.($error?:'connection failed'));
   if(in_array($status,[301,302,303,307,308],true)){
    if($hop===3)throw new RuntimeException('Website redirected too many times.');
