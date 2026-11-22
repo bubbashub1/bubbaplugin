@@ -12,6 +12,6 @@ async function load(){try{const r=await api('GET');widgets=r.widgets||[];status(
 $('widgetFilter').addEventListener('change',render);
 $('widgetForm').addEventListener('submit',async e=>{e.preventDefault();if(!selected)return;const save=$('saveWidget');save.disabled=true;formStatus('Saving…');try{await api('POST',{action:'save_widget',id:selected.id,widget_key:selected.widget_key,widget_type:selected.widget_type,name:$('widgetName').value.trim(),category:$('widgetCategory').value,description:$('widgetDescription').value.trim(),enabled:$('widgetEnabled').checked,settings:drawSettings()});formStatus('Saved. New widgets added in the Visual Builder will use these defaults.');await load()}catch(err){formStatus(err.message)}finally{save.disabled=false}});
 $('resetWidget').addEventListener('click',()=>{const w=widgets.find(x=>x.id===selected?.id);if(w)select(w)});
-async function init(){try{const r=await api('POST',{action:'setup'});csrf=r.csrf||csrf;status('Library ready');await load()}catch(e){status(e.message)}}
-document.documentElement.classList.remove('bh-admin-auth-pending');init();
+async function init(){await load();document.documentElement.classList.remove('bh-admin-auth-pending')}
+init();
 })();
