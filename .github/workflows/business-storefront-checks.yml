@@ -85,7 +85,8 @@ jobs:
           page = Path("organiser.html").read_text()
           terms = Path("api/organiser-terms.php").read_text()
           checks = {
-              "published leader Listings count": "published_listing_count",
+              "published linked Listings count": "linked_listing_count",
+              "published storefront-only query": "FROM bh_directory_businesses b LEFT JOIN bh_organisers o",
               "legacy organiser email matching": "LOWER(u.email)=LOWER(o.email)",
           }
           for label, marker in checks.items():
