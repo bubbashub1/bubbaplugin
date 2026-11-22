@@ -39,7 +39,7 @@ jobs:
             api/listing-monitor-website-cron.php \
             api/listing-monitor-website-rules.php \
             tests/listing-monitor-website-rules.php \
-            tests/listing-monitor-database-integration.php \\
+            tests/listing-monitor-database-integration.php \
             tests/listing-monitor-api-integration.php
           do
             php -l "$file"
