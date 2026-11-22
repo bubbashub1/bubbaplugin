@@ -85,7 +85,7 @@ try {
             $headers[] = 'Sec-Fetch-Site: same-origin';
         }
         if ($session !== null) { $headers[] = 'Cookie: BUBBAHUB_ADMINSESSID=' . $session; }
-        $headers = array_merge($headers, $extraHeaders);
+        foreach ($extraHeaders as $extraHeader) {\n            $headerName = strtolower(trim(strtok($extraHeader, ':') ?: ''));\n            $headers = array_values(array_filter($headers, static fn(string $header): bool => strtolower(trim(strtok($header, ':') ?: '')) !== $headerName));\n            $headers[] = $extraHeader;\n        }
         $options = [
             'http' => [
                 'method' => $method,
