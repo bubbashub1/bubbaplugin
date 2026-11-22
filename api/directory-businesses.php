@@ -3,8 +3,8 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');header('X-Content-Type-Options: nosniff');
 try{
  require_once __DIR__.'/db.php';$db=bh_mysql();
- $check=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='bh_directory_businesses'");$check->execute();
- if(!(int)$check->fetchColumn()){http_response_code(503);echo json_encode(['ok'=>false,'error'=>'business_directory_not_ready']);exit;}
+ $check=$db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('bh_directory_businesses','bh_directory_business_listings')");$check->execute();
+ if((int)$check->fetchColumn()!==2){http_response_code(503);echo json_encode(['ok'=>false,'error'=>'business_directory_not_ready']);exit;}
  $q=trim((string)($_GET['q']??''));$category=trim((string)($_GET['category']??''));$town=trim((string)($_GET['town']??''));$region=trim((string)($_GET['region']??''));
  $where=["b.status='published'"];$args=[];
  foreach([['q',"(b.title LIKE ? OR b.summary LIKE ? OR b.description LIKE ? OR b.category LIKE ? OR b.town LIKE ? OR o.organisation_name LIKE ?)"],['category','b.category = ?'],['town','b.town = ?'],['region','b.region = ?']] as [$key,$condition]){
