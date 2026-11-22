@@ -24,7 +24,9 @@ if ($method === 'POST') {
     $body = json_decode((string)file_get_contents('php://input'), true);
     if (!is_array($body)) bh_vb_out(400, ['ok'=>false, 'error'=>'Invalid request body.']);
     if (!hash_equals($csrf, (string)($body['csrf'] ?? ''))) {
-        bh_vb_out(403, ['ok'=>false, 'error'=>'Security check failed. Refresh and try again.']);
+        // Return the current session token with the rejection so the builder can
+        // retry once without depending on a second request racing session changes.
+        bh_vb_out(403, ['ok'=>false, 'error'=>'Security check failed. Refresh and try again.', 'csrf'=>$csrf, 'code'=>'csrf_mismatch']);
     }
 } elseif ($method !== 'GET') {
     bh_vb_out(405, ['ok'=>false, 'error'=>'Method not allowed.']);
