@@ -86,6 +86,17 @@ RewriteCond %{THE_REQUEST} \s/+expo\.html(?:[\s?]|$) [NC]
 RewriteRule ^expo\.html$ /expo [R=301,L,NE]
 RewriteRule ^expo/?$ expo.html [L,QSA]
 
+# Dedicated directory sector pages. Keep the older .html URLs as permanent redirects.
+RewriteCond %{THE_REQUEST} \s/+childcare-schools\.html(?:[?\s]|$) [NC]
+RewriteRule ^childcare-schools\.html$ /childcare.html [R=301,L,NE]
+RewriteCond %{THE_REQUEST} \s/+places-days-out\.html(?:[?\s]|$) [NC]
+RewriteRule ^places-days-out\.html$ /daysout [R=301,L,NE]
+RewriteCond %{THE_REQUEST} \s/+school-clubs\.html(?:[?\s]|$) [NC]
+RewriteRule ^school-clubs\.html$ /clubs [R=301,L,NE]
+RewriteRule ^childcare/?$ childcare-schools.html [L,QSA]
+RewriteRule ^daysout/?$ places-days-out.html [L,QSA]
+RewriteRule ^clubs/?$ school-clubs.html [L,QSA]
+
 # Clean section URLs
 RewriteRule ^my-hub/?$ my-hub.html [L,QSA]
 RewriteRule ^planner/?$ planner.html [L,QSA]
