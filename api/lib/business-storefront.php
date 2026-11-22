@@ -11,7 +11,7 @@ function bh_ensure_business_storefront(PDO $db, int $organiserId, int $userId, s
  $columns=[]; foreach ($db->query("SHOW COLUMNS FROM bh_directory_businesses")->fetchAll(PDO::FETCH_ASSOC) as $column) { $name=(string)($column['Field']??''); if ($name!=='') $columns[$name]=$column; }
  foreach (['organiser_id','title','category','town','status'] as $required) if (!isset($columns[$required])) throw new RuntimeException('Business storefront schema is missing '.$required.'.');
  $name=trim($organisationName); if ($name==='') $name='New class leader';
- $values=['organiser_id'=>$organiserId,'created_by_user_id'=>$userId?:null,'title'=>mb_substr($name,0,190),'category'=>'Classes & Activities','summary'=>'','description'=>'','town'=>'To be confirmed','region'=>null,'address'=>null,'postcode'=>null,'website_url'=>null,'contact_email'=>null,'contact_phone'=>null,'status'=>'draft','reviewed_at'=>null,'reviewed_by_user_id'=>null];
+ $values=['organiser_id'=>$organiserId,'created_by_user_id'=>$userId?:null,'title'=>mb_substr($name,0,190),'category'=>'Classes & Activities','summary'=>'','description'=>'','town'=>'To be confirmed','region'=>null,'address'=>null,'postcode'=>null,'website_url'=>null,'contact_email'=>null,'contact_phone'=>null,'status'=>'draft','reviewed_at'=>null,'reviewed_by_user_id'=>null,'created_at'=>date('Y-m-d H:i:s'),'updated_at'=>date('Y-m-d H:i:s')];
  $fields=[]; $params=[]; foreach ($values as $field=>$value) if (isset($columns[$field])) { $fields[]=$field; $params[]=$value; }
  foreach ($columns as $field=>$meta) {
   if (in_array($field,$fields,true) || ($meta['Null']??'YES')!=='NO' || ($meta['Default']??null)!==null || stripos((string)($meta['Extra']??''),'auto_increment')!==false) continue;
