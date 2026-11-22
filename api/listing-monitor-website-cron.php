@@ -49,9 +49,14 @@ function bh_lm_fetch(string $url): array {
   if(in_array($status,[301,302,303,307,308],true)){
    if($hop===3)throw new RuntimeException('Website redirected too many times.');
    if($location==='')throw new RuntimeException('Website redirect did not provide a destination.');
-   if(!str_starts_with($location,'http://')&&!str_starts_with($location,'https://')){
+   if(str_starts_with($location,'//')){$location=$scheme.':'.$location;}
+   elseif(!str_starts_with($location,'http://')&&!str_starts_with($location,'https://')){
     $base=$scheme.'://'.$host.($port!==($scheme==='https'?443:80)?':'.$port:'');
-    $location=str_starts_with($location,'/')?$base.$location:$base.'/'.($p['path']??'').'/'.$location;
+    $currentPath=(string)($p['path']??'/');
+    if(str_starts_with($location,'/'))$targetPath=$location;
+    elseif(str_starts_with($location,'?'))$targetPath=$currentPath.$location;
+    else $targetPath=rtrim(dirname($currentPath),'/').'/'.$location;
+    $location=$base.$targetPath;
    }
    $url=$location;continue;
   }
