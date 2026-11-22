@@ -79,6 +79,8 @@ jobs:
           test -f database/listing-checker-search-settings-migration.sql
           grep -q "columnsFor('bh_activity_schedules')" api/listing-checker-health-cron.php
           grep -q "admin-session-guard.php" api/admin-listing-monitor-drafts.php
+          ! grep -q "session_start" api/admin-listing-monitor-drafts.php
+          test "$(grep -n "admin-session-guard.php" api/admin-listing-monitor-drafts.php | head -1 | cut -d: -f1)" -lt "$(grep -n "session_start" api/admin-session-guard.php | head -1 | cut -d: -f1)"
           grep -q "bh_admin_authenticated" api/admin-session-guard.php
           grep -q "hash_equals" api/admin-listing-monitor-drafts.php
           grep -q "65537" api/admin-listing-monitor-drafts.php
