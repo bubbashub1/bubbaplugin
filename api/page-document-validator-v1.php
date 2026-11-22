@@ -34,6 +34,7 @@ function bh_validate_page_document_v1(mixed $document): array {
   $idCheck($section['id']??null);
   $props=$section['props']??[];
   if(!array_key_exists('props',$section)||!is_array($props)){$errors[]='Section props must be an object.';$props=[];}
+  $sectionColumnCount=max(1,min(4,(int)($props['columns']??1)));
   foreach($props as $key=>$value){
    if($key==='background'&&(!is_string($value)||!preg_match('/^#[0-9a-fA-F]{6}$/',$value)))$errors[]='Invalid section background.';
    elseif($key==='padding'&&(!is_int($value)||$value<0||$value>96))$errors[]='Invalid section padding.';
@@ -91,7 +92,6 @@ function bh_validate_page_document_v1(mixed $document): array {
    if(!array_key_exists('id',$child)||!array_key_exists('type',$child)||!array_key_exists('props',$child))$errors[]='Block id, type and props are required.';
    $idCheck($child['id']??null);$p=$child['props']??null;
    if(!is_array($p)){$errors[]='Block props must be an object.';continue;}
-   $sectionColumnCount=max(1,min(4,(int)($props['columns']??1)));
    if(isset($p['column'])&&(!is_int($p['column'])||$p['column']<1||$p['column']>$sectionColumnCount))$errors[]='Block column placement is invalid for its container.';
    if($type==='image'){
     if(array_diff(array_keys($p),['src','alt','width','fit','radius','margin_bottom','font_size','align','color','background' ,'column']))$errors[]='Unknown image property.';
