@@ -105,3 +105,6 @@
 .bh-directory .bh-directory-business-empty{grid-column:1/-1;padding:22px;border:1px solid #d8e6db;border-radius:16px;background:#fff;color:#416651}
 .bh-directory .bh-directory-business-empty h3{margin:0 0 6px;color:#144400}
 @media(max-width:760px){.bh-directory #businessResults{grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:12px}}
+
+/* Honour hidden controls even where directory form styles set display explicitly. */
+.bh-directory .directory-hero-search [hidden]{display:none!important}
