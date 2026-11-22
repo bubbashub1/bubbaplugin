@@ -227,6 +227,21 @@ function duplicateSelectedBlock(){
   return;
  }
 }
+function deleteSelectedBlock(){
+ if(!currentBlock||!draft)return;
+ const blockId=currentBlock.id;
+ for(const section of draft.sections||[]){
+  const index=(section.children||[]).findIndex(item=>item.id===blockId);
+  if(index<0)continue;
+  section.children.splice(index,1);
+  currentSection=section;currentBlock=null;
+  renderDraft();
+  const node=frame.contentDocument?.querySelector('[data-bh-section-id="'+CSS.escape(section.id)+'"]');
+  if(node)selectNode(node);
+  draftStatus('Element deleted from this private draft. Use Undo to restore it, or save the draft to keep the change.');
+  return;
+ }
+}
 function duplicateSelectedContainer(){
  if(!currentSection||!draft)return;
  const index=draft.sections.indexOf(currentSection);if(index<0)return;
@@ -493,7 +508,7 @@ function undoBuilderChange(){if(historyTimer){clearTimeout(historyTimer);history
 function redoBuilderChange(){if(historyTimer){clearTimeout(historyTimer);historyTimer=null;recordHistory(historyBefore,historySnapshot());historyBefore=null;}applyHistorySnapshot(builderRedoStack,builderUndoStack,'Change restored.');}
 document.addEventListener('input',event=>{if(event.target.closest('.bhvb-inspector')||event.target.id==='pageColumns')scheduleHistoryCapture();},true);
 document.addEventListener('change',event=>{if(event.target.closest('.bhvb-inspector')||event.target.id==='pageColumns')scheduleHistoryCapture();},true);
-document.addEventListener('click',event=>{if(event.target.closest('.bhvb-builder-actions,.bhvb-add-controls,[data-bh-add],#duplicateElement,#duplicateContainer,#moveContainerUp,#moveContainerDown,#deleteContainer,[data-section-preset]'))scheduleHistoryCapture();},true);
+document.addEventListener('click',event=>{if(event.target.closest('.bhvb-builder-actions,.bhvb-add-controls,[data-bh-add],#duplicateElement,#deleteElement,#duplicateContainer,#moveContainerUp,#moveContainerDown,#deleteContainer,[data-section-preset]'))scheduleHistoryCapture();},true);
 $('builderUndo').addEventListener('click',undoBuilderChange);
 $('builderRedo').addEventListener('click',redoBuilderChange);
 
@@ -693,7 +708,7 @@ document.querySelectorAll('[data-bh-add]').forEach(button=>{
  button.addEventListener('dragend',()=>button.classList.remove('is-dragging'));
  button.addEventListener('click',()=>$(button.dataset.bhAdd)?.click());
 });
-$('duplicateElement').addEventListener('click',duplicateSelectedBlock);$('duplicateContainer').addEventListener('click',duplicateSelectedContainer);$('addContainer').addEventListener('click',addContainer);document.querySelectorAll('[data-section-preset]').forEach(button=>button.addEventListener('click',()=>addSectionPreset(button.dataset.sectionPreset)));$('addHeading').addEventListener('click',()=>addBlock('heading'));$('addParagraph').addEventListener('click',()=>addBlock('paragraph'));$('addButtonBlock').addEventListener('click',()=>addBlock('button'));$('addImageBlock').addEventListener('click',()=>addBlock('image'));$('moveContainerUp').addEventListener('click',()=>moveContainer(-1));$('moveContainerDown').addEventListener('click',()=>moveContainer(1));$('deleteContainer').addEventListener('click',deleteContainer);
+$('duplicateElement').addEventListener('click',duplicateSelectedBlock);$('deleteElement').addEventListener('click',deleteSelectedBlock);$('duplicateContainer').addEventListener('click',duplicateSelectedContainer);$('addContainer').addEventListener('click',addContainer);document.querySelectorAll('[data-section-preset]').forEach(button=>button.addEventListener('click',()=>addSectionPreset(button.dataset.sectionPreset)));$('addHeading').addEventListener('click',()=>addBlock('heading'));$('addParagraph').addEventListener('click',()=>addBlock('paragraph'));$('addButtonBlock').addEventListener('click',()=>addBlock('button'));$('addImageBlock').addEventListener('click',()=>addBlock('image'));$('moveContainerUp').addEventListener('click',()=>moveContainer(-1));$('moveContainerDown').addEventListener('click',()=>moveContainer(1));$('deleteContainer').addEventListener('click',deleteContainer);
 async function init(){
  try{
   const auth=await fetch('/admin-auth.php?action=check',{credentials:'same-origin',cache:'no-store'});
