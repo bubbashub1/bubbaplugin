@@ -1,0 +1,42 @@
+name: Admin Classic Editor checks
+
+on:
+  pull_request:
+    paths:
+      - "admin/admin-activities-add-listing.html"
+      - "assets/js/admin-new-listing.js"
+      - ".github/workflows/admin-classic-editor-checks.yml"
+  push:
+    branches:
+      - "feature/admin-classic-description-editor"
+    paths:
+      - "admin/admin-activities-add-listing.html"
+      - "assets/js/admin-new-listing.js"
+      - ".github/workflows/admin-classic-editor-checks.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  classic-editor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check admin listing JavaScript syntax
+        run: node --check assets/js/admin-new-listing.js
+      - name: Check Classic Editor page wiring
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          page = Path("admin/admin-activities-add-listing.html").read_text()
+          script = Path("assets/js/admin-new-listing.js").read_text()
+          assert 'id="adminDescriptionEditor" name="description"' in page
+          assert 'tinymce@7.6.1/tinymce.min.js' in page
+          assert 'initClassicEditor' in script
+          assert "editor.save()" in script
+          assert "startsWith('https://')" in script
+          print("Classic Editor page wiring checks passed.")
+          PY
