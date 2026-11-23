@@ -587,7 +587,21 @@ try {
     // Render a friendly mobile-first page for verification links opened in a browser.
     // Browser verification links render branded HTML, never raw JSON.
     if ($action === 'verify_email' && in_array($_SERVER['REQUEST_METHOD'], ['GET','POST'], true)) {
-        $verificationResponse = static function (int $status, bool $success, string $message): void {
+        $returnTo = '';
+        $returnRaw = trim((string)(($_SERVER['REQUEST_METHOD'] === 'POST' ? ($_POST['return_to'] ?? '') : ($_GET['return_to'] ?? ''))));
+        if ($returnRaw !== '') {
+            $returnParts = parse_url($returnRaw);
+            $returnQuery = [];
+            if (is_array($returnParts) && ($returnParts['path'] ?? '') === '/claim-invitation.html') {
+                parse_str((string)($returnParts['query'] ?? ''), $returnQuery);
+                $returnId = filter_var($returnQuery['activity_id'] ?? null, FILTER_VALIDATE_INT);
+                $returnInvite = (string)($returnQuery['invite'] ?? '');
+                if ($returnId !== false && $returnId > 0 && preg_match('/^[a-f0-9]{64}$/D', $returnInvite)) {
+                    $returnTo = '/claim-invitation.html?activity_id=' . $returnId . '&invite=' . $returnInvite;
+                }
+            }
+        }
+        $verificationResponse = function (int $status, bool $success, string $message) use (&$returnTo): void {
             http_response_code($status);
             header('Content-Type: text/html; charset=utf-8');
             header('Cache-Control: no-store, private');
@@ -598,6 +612,9 @@ try {
                 : $message;
             $heading = htmlspecialchars($heading, ENT_QUOTES, 'UTF-8');
             $description = htmlspecialchars($description, ENT_QUOTES, 'UTF-8');
+            $signInUrl = '/auth.html?context=leader';
+            if ($success && $returnTo !== '') $signInUrl .= '&next=' . rawurlencode($returnTo);
+            $safeSignInUrl = htmlspecialchars($signInUrl, ENT_QUOTES, 'UTF-8');
             $icon = $success ? '&#10003;' : '&#9993;';
             $cardClass = $success ? 'success' : 'failure';
             $extra = $success
@@ -624,7 +641,7 @@ try {
             .bh-v-help p{font-size:15px;margin:8px 0 0}.bh-v-help a{color:#206d77;font-weight:700}
             .bh-v-footer{padding:0 16px 28px;text-align:center}
             @media(max-width:700px){.bh-v-card{margin:14px 12px 24px;padding:30px 20px 20px;border-radius:28px}.bh-v-header img{max-height:100px}.bh-v-features{padding:16px 4px}.bh-v-features span{font-size:12px}}
-            </style></head><body><header class="bh-v-header"><a href="/"><img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a></header><main class="bh-v-card '.$cardClass.'"><div class="bh-v-icon" aria-hidden="true">'.$icon.'</div><h1>'.$heading.'</h1><p>'.$description.'</p><a class="bh-v-btn" href="/auth.html?context=leader">Sign in to Bubba Hub &rarr;</a>'.$extra.'<a class="bh-v-btn secondary" href="/">Go to Bubba Hub homepage &rarr;</a><div class="bh-v-help"><strong>Need help?</strong><p>Visit <a href="/help-support">Support &amp; Guidance &rarr;</a> if you have trouble accessing your account.</p></div></main><footer class="bh-v-footer">Bubba Hub South West</footer></body></html>';
+            </style></head><body><header class="bh-v-header"><a href="/"><img src="/wp-content/uploads/logo/logoheader.png" alt="Bubba Hub"></a></header><main class="bh-v-card '.$cardClass.'"><div class="bh-v-icon" aria-hidden="true">'.$icon.'</div><h1>'.$heading.'</h1><p>'.$description.'</p><a class="bh-v-btn" href="'.$safeSignInUrl.'">Sign in to Bubba Hub &rarr;</a>'.$extra.'<a class="bh-v-btn secondary" href="/">Go to Bubba Hub homepage &rarr;</a><div class="bh-v-help"><strong>Need help?</strong><p>Visit <a href="/help-support">Support &amp; Guidance &rarr;</a> if you have trouble accessing your account.</p></div></main><footer class="bh-v-footer">Bubba Hub South West</footer></body></html>';
             exit;
         };
 
@@ -655,7 +672,8 @@ try {
                 header('Cache-Control: no-store, private');
                 header('X-Robots-Tag: noindex, nofollow');
                 $safeToken = htmlspecialchars($token, ENT_QUOTES, 'UTF-8');
-                echo '<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Confirm your email | Bubba Hub</title><style>body{font-family:Quicksand,Calibri,Arial,sans-serif;background:#eef7ed;color:#144400;text-align:center;padding:40px 16px}main{max-width:480px;margin:auto;background:white;padding:32px;border-radius:24px}button{background:#144400;color:white;border:0;border-radius:25px;padding:16px 28px;font-size:17px;cursor:pointer}</style></head><body><main><h1>Verify your Bubba Hub email</h1><p>Press the button below to confirm your class leader email address.</p><form method="post" action="/api/auth.php?action=verify_email"><input type="hidden" name="token" value="'.$safeToken.'"><button type="submit">Verify my email</button></form></main></body></html>';
+                $safeReturnTo = htmlspecialchars($returnTo, ENT_QUOTES, 'UTF-8');
+                echo '<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Confirm your email | Bubba Hub</title><style>body{font-family:Quicksand,Calibri,Arial,sans-serif;background:#eef7ed;color:#144400;text-align:center;padding:40px 16px}main{max-width:480px;margin:auto;background:white;padding:32px;border-radius:24px}button{background:#144400;color:white;border:0;border-radius:25px;padding:16px 28px;font-size:17px;cursor:pointer}</style></head><body><main><h1>Verify your Bubba Hub email</h1><p>Press the button below to confirm your class leader email address.</p><form method="post" action="/api/auth.php?action=verify_email"><input type="hidden" name="token" value="'.$safeToken.'"><input type="hidden" name="return_to" value="'.$safeReturnTo.'"><button type="submit">Verify my email</button></form></main></body></html>';
                 exit;
             }
             $db->beginTransaction();
@@ -742,6 +760,18 @@ try {
             $db->prepare("INSERT INTO bh_email_verifications (user_id,token_hash,expires_at) VALUES (?,?,DATE_ADD(NOW(),INTERVAL 24 HOUR))")->execute([$userId,hash('sha256',$token)]);
             $base=rtrim((string)(($config['app']['base_url'] ?? '') ?: (getenv('BUBBAHUB_BASE_URL') ?: 'https://bubbahub.co.uk')),'/');
             $url=$base.'/api/auth.php?action=verify_email&token='.rawurlencode($token);
+            $returnRaw=trim((string)($body['return_to']??''));
+            if($returnRaw!==''){
+                $returnParts=parse_url($returnRaw);$returnQuery=[];
+                if(is_array($returnParts)&&($returnParts['path']??'')==='/claim-invitation.html'){
+                    parse_str((string)($returnParts['query']??''),$returnQuery);
+                    $returnId=filter_var($returnQuery['activity_id']??null,FILTER_VALIDATE_INT);
+                    $returnInvite=(string)($returnQuery['invite']??'');
+                    if($returnId!==false&&$returnId>0&&preg_match('/^[a-f0-9]{64}$/D',$returnInvite)){
+                        $url.='&return_to='.rawurlencode('/claim-invitation.html?activity_id='.$returnId.'&invite='.$returnInvite);
+                    }
+                }
+            }
             $html='<div style="font-family:Arial,sans-serif;color:#144400;max-width:560px;margin:auto"><h2>Verify your Bubba Hub email</h2><p>Confirm your email address to continue setting up your class leader profile.</p><p><a href="'.htmlspecialchars($url,ENT_QUOTES,'UTF-8').'" style="background:#144400;color:white;padding:12px 18px;border-radius:9px;display:inline-block;text-decoration:none">Verify my email</a></p><p>This link expires in 24 hours.</p></div>';
             require_once __DIR__.'/mailer.php';
             $sent=bh_send_smtp_mail((string)$user['email'],'Verify your Bubba Hub email',$html,"Verify your Bubba Hub email: ".$url."\nThis link expires in 24 hours.");
@@ -837,6 +867,20 @@ try {
         /* Do not authenticate a leader until their email is verified. */
         $base = rtrim((string)(($config['app']['base_url'] ?? '') ?: (getenv('BUBBAHUB_BASE_URL') ?: 'https://bubbahub.co.uk')), '/');
         $verificationUrl = $base . '/api/auth.php?action=verify_email&token=' . rawurlencode($rawToken);
+        $returnRaw = trim((string)($body['return_to'] ?? ''));
+        if ($returnRaw !== '') {
+            $returnParts = parse_url($returnRaw);
+            $returnQuery = [];
+            if (is_array($returnParts) && ($returnParts['path'] ?? '') === '/claim-invitation.html') {
+                parse_str((string)($returnParts['query'] ?? ''), $returnQuery);
+                $returnId = filter_var($returnQuery['activity_id'] ?? null, FILTER_VALIDATE_INT);
+                $returnInvite = (string)($returnQuery['invite'] ?? '');
+                if ($returnId !== false && $returnId > 0 && preg_match('/^[a-f0-9]{64}$/D', $returnInvite)) {
+                    $safeReturnTo = '/claim-invitation.html?activity_id=' . $returnId . '&invite=' . $returnInvite;
+                    $verificationUrl .= '&return_to=' . rawurlencode($safeReturnTo);
+                }
+            }
+        }
         $html = '<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#144400"><h1 style="color:#416651">Verify your Bubba Hub leader account</h1><p>Thanks for registering as a Bubba Hub leader.</p><p>Please verify your email address before signing in.</p><p><a href="' . htmlspecialchars($verificationUrl, ENT_QUOTES, 'UTF-8') . '" style="display:inline-block;padding:12px 18px;background:#416651;color:#fff;text-decoration:none;border-radius:10px">Verify my email</a></p><p>This link expires in 24 hours and can only be used once.</p><p>If you did not create this account, you can ignore this email.</p></div>';
         $plain = "Verify your Bubba Hub leader account\n\nOpen this link within 24 hours:\n{$verificationUrl}\n\nIf you did not create this account, ignore this email.";
         require_once __DIR__.'/mailer.php';
