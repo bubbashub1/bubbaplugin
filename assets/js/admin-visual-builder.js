@@ -127,7 +127,8 @@ function attachCanvas(){
   const doc=frame.contentDocument;if(!doc||!doc.body)throw new Error('Page not ready');
   const style=doc.createElement('style');style.textContent='.bhvb-selected-preview{outline:3px solid #0f8b83!important;outline-offset:2px!important;cursor:pointer!important}';doc.head.appendChild(style);
   buildLayers(doc);
-  doc.addEventListener('keydown',handleHistoryShortcut,true);\n  doc.addEventListener('click',event=>{
+  doc.addEventListener('keydown',handleHistoryShortcut,true);
+  doc.addEventListener('click',event=>{
    const node=event.target.closest('h1,h2,h3,h4,p,a,button,img,section,article');
    if(!node||node===doc.body)return;
    event.preventDefault();event.stopPropagation();selectNode(node);
