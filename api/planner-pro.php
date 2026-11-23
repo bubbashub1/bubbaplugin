@@ -30,37 +30,28 @@ try {
         bh_pro_response(401, ['ok'=>false,'error'=>'login_required']);
     }
 
-    $db->exec("CREATE TABLE IF NOT EXISTS bh_user_subscriptions (
-        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,user_id BIGINT UNSIGNED NOT NULL,
-        plan VARCHAR(40) NOT NULL DEFAULT 'family_pro',status VARCHAR(30) NOT NULL DEFAULT 'active',
-        source VARCHAR(40) NOT NULL DEFAULT 'event',stripe_customer_id VARCHAR(255) NULL,
-        stripe_subscription_id VARCHAR(255) NULL,stripe_checkout_session_id VARCHAR(255) NULL,
-        started_at DATETIME NULL,expires_at DATETIME NULL,created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        PRIMARY KEY(id),UNIQUE KEY uq_bh_user_subscription(user_id),
-        UNIQUE KEY uq_bh_stripe_subscription(stripe_subscription_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    // Schema changes are applied by numbered migrations, never by public API requests.
+    $tableCheck = $db->prepare("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?");
+    $tableCheck->execute(['bh_user_subscriptions']);
+    if (!(int)$tableCheck->fetchColumn()) {
+        bh_pro_response(503, ['ok'=>false,'error'=>'subscription_storage_unavailable']);
+    }
+
 
     $q=$db->prepare("SELECT status,expires_at FROM bh_user_subscriptions WHERE user_id=? LIMIT 1");
     $q->execute([$userId]); $subscription=$q->fetch();
     $isPro=!!$subscription && in_array(($subscription['status']??''),['active','trialing'],true)
         && (empty($subscription['expires_at']) || strtotime((string)$subscription['expires_at'])>=time());
 
-    if (!$isPro) {
-        bh_pro_response(403, ['ok'=>false,'error'=>'pro_required','message'=>'Family Pro is required for Planner Pro.']);
-    }
-
+    // Basic nap windows are available to every active family account. The
+    // remainder of Planner Pro state stays subscription-gated below.
     if (!isset($_SESSION['bh_csrf'])) $_SESSION['bh_csrf']=bin2hex(random_bytes(24));
 
-    // Legacy databases may have subscriptions but not the Planner Pro state table.
-    // Create only the missing table; never modify or replace existing planner data.
-    $db->exec("CREATE TABLE IF NOT EXISTS bh_planner_pro_state (
-        user_id BIGINT UNSIGNED NOT NULL,
-        state_json LONGTEXT NOT NULL,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        PRIMARY KEY (user_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    $tableCheck->execute(['bh_planner_pro_state']);
+    if (!(int)$tableCheck->fetchColumn()) {
+        bh_pro_response(503, ['ok'=>false,'error'=>'planner_storage_unavailable']);
+    }
+
 
     if ($_SERVER['REQUEST_METHOD']==='GET') {
         $stmt=$db->prepare("SELECT state_json,updated_at FROM bh_planner_pro_state WHERE user_id=? LIMIT 1");
@@ -70,7 +61,11 @@ try {
             $decoded=json_decode((string)$row['state_json'],true);
             if(is_array($decoded))$state=$decoded;
         }
-        bh_pro_response(200,['ok'=>true,'pro'=>true,'state'=>$state,'updated_at'=>$row['updated_at']??null,'csrf'=>$_SESSION['bh_csrf']]);
+        $napWindows = is_array($state['freeNapWindows'] ?? null) ? $state['freeNapWindows'] : [];
+        if (!$isPro) {
+            bh_pro_response(200,['ok'=>true,'pro'=>false,'napWindows'=>$napWindows,'updated_at'=>$row['updated_at']??null,'csrf'=>$_SESSION['bh_csrf']]);
+        }
+        bh_pro_response(200,['ok'=>true,'pro'=>true,'state'=>$state,'napWindows'=>$napWindows,'updated_at'=>$row['updated_at']??null,'csrf'=>$_SESSION['bh_csrf']]);
     }
 
     if ($_SERVER['REQUEST_METHOD']!=='POST') bh_pro_response(405,['ok'=>false,'error'=>'method_not_allowed']);
@@ -79,14 +74,106 @@ try {
     if(!is_array($body)) bh_pro_response(400,['ok'=>false,'error'=>'invalid_json']);
     $csrf=(string)($body['csrf']??'');
     if($csrf===''||!hash_equals((string)$_SESSION['bh_csrf'],$csrf)) bh_pro_response(403,['ok'=>false,'error'=>'csrf_invalid']);
+    // Narrow write path for the basic Free nap-window feature. It updates
+    // only its own key in the existing planner state JSON and preserves every
+    // other Pro planner field.
+    if (($body['action'] ?? '') === 'save_nap_windows') {
+        $windows = $body['napWindows'] ?? null;
+        if (!is_array($windows) || count($windows) > 50) bh_pro_response(422,['ok'=>false,'error'=>'nap_windows_invalid']);
+        $normalised = [];
+        $ownedChildren = [];
+        $seenChildDates = [];
+        $childCheck = $db->prepare("SELECT id FROM bh_children WHERE id=? AND user_id=? LIMIT 1");
+        foreach ($windows as $item) {
+            if (!is_array($item)) bh_pro_response(422,['ok'=>false,'error'=>'nap_window_invalid']);
+            $id = substr(trim((string)($item['id'] ?? '')),0,80);
+            $childId = (int)($item['child_id'] ?? 0);
+            $date = (string)($item['date'] ?? '');
+            $start = (string)($item['start'] ?? '');
+            $end = (string)($item['end'] ?? '');
+            if ($id === '' || $childId < 1 || !preg_match('/^\d{4}-\d{2}-\d{2}$/',$date)
+                || !checkdate((int)substr($date,5,2),(int)substr($date,8,2),(int)substr($date,0,4))
+                || !preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d$/',$start)
+                || !preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d$/',$end) || $end <= $start) {
+                bh_pro_response(422,['ok'=>false,'error'=>'nap_window_invalid']);
+            }
+            $childDateKey = $childId . '|' . $date;
+            if (isset($seenChildDates[$childDateKey])) bh_pro_response(422,['ok'=>false,'error'=>'duplicate_nap_window']);
+            $seenChildDates[$childDateKey] = true;
+            if (!isset($ownedChildren[$childId])) {
+                $childCheck->execute([$childId,$userId]);
+                $ownedChildren[$childId] = (bool)$childCheck->fetchColumn();
+            }
+            if (!$ownedChildren[$childId]) bh_pro_response(403,['ok'=>false,'error'=>'child_not_owned']);
+            $normalised[] = ['id'=>$id,'child_id'=>$childId,'date'=>$date,'start'=>$start,'end'=>$end];
+        }
+        $db->beginTransaction();
+        try {
+            // Ensure a row exists, then lock it so nap saves cannot race Pro planner saves.
+            $ensure=$db->prepare("INSERT IGNORE INTO bh_planner_pro_state (user_id,state_json,created_at,updated_at) VALUES (?,'{}',NOW(),NOW())");
+            $ensure->execute([$userId]);
+            $stmt=$db->prepare("SELECT state_json FROM bh_planner_pro_state WHERE user_id=? FOR UPDATE");
+            $stmt->execute([$userId]);
+            $existing=$stmt->fetchColumn();
+            $existingState=is_string($existing)?json_decode($existing,true):[];
+            if(!is_array($existingState))$existingState=[];
+            $existingState['freeNapWindows']=$normalised;
+            $encoded=json_encode($existingState,JSON_UNESCAPED_SLASHES);
+            if(!is_string($encoded)||strlen($encoded)>500000) {
+                $db->rollBack();
+                bh_pro_response(413,['ok'=>false,'error'=>'state_too_large']);
+            }
+            $save=$db->prepare("UPDATE bh_planner_pro_state SET state_json=?,updated_at=NOW() WHERE user_id=?");
+            $save->execute([$encoded,$userId]);
+            $db->commit();
+        } catch(Throwable $e) {
+            if($db->inTransaction())$db->rollBack();
+            throw $e;
+        }
+        bh_pro_response(200,['ok'=>true,'pro'=>$isPro,'napWindows'=>$normalised,'csrf'=>$_SESSION['bh_csrf']]);
+    }
+
+    if (!$isPro) {
+        bh_pro_response(403, ['ok'=>false,'error'=>'pro_required','message'=>'Family Pro is required for the full Planner Pro workspace.']);
+    }
+
     $state=$body['state']??null;
     if(!is_array($state)) bh_pro_response(422,['ok'=>false,'error'=>'state_required']);
-    $encoded=json_encode($state,JSON_UNESCAPED_SLASHES);
-    if(!is_string($encoded)) bh_pro_response(422,['ok'=>false,'error'=>'state_invalid']);
-    if(strlen($encoded)>500000) bh_pro_response(413,['ok'=>false,'error'=>'state_too_large']);
 
-    $stmt=$db->prepare("INSERT INTO bh_planner_pro_state (user_id,state_json,created_at,updated_at) VALUES (?,?,NOW(),NOW()) ON DUPLICATE KEY UPDATE state_json=VALUES(state_json),updated_at=NOW()");
-    $stmt->execute([$userId,$encoded]);
+    $db->beginTransaction();
+    try {
+        // Lock the user's single state row so a stale Pro save cannot erase a
+        // nap-window save that completed concurrently (or vice versa).
+        $ensure=$db->prepare("INSERT IGNORE INTO bh_planner_pro_state (user_id,state_json,created_at,updated_at) VALUES (?,'{}',NOW(),NOW())");
+        $ensure->execute([$userId]);
+        $existingStmt=$db->prepare("SELECT state_json FROM bh_planner_pro_state WHERE user_id=? FOR UPDATE");
+        $existingStmt->execute([$userId]);
+        $existingJson=$existingStmt->fetchColumn();
+        $existingState=is_string($existingJson)?json_decode($existingJson,true):[];
+        if(!is_array($existingState))$existingState=[];
+        // Preserve Free nap windows when an older Pro client posts a state
+        // object that does not yet include that collection.
+        if (!array_key_exists('freeNapWindows',$state)
+            && isset($existingState['freeNapWindows'])
+            && is_array($existingState['freeNapWindows'])) {
+            $state['freeNapWindows']=$existingState['freeNapWindows'];
+        }
+        $encoded=json_encode($state,JSON_UNESCAPED_SLASHES);
+        if(!is_string($encoded)) {
+            $db->rollBack();
+            bh_pro_response(422,['ok'=>false,'error'=>'state_invalid']);
+        }
+        if(strlen($encoded)>500000) {
+            $db->rollBack();
+            bh_pro_response(413,['ok'=>false,'error'=>'state_too_large']);
+        }
+        $save=$db->prepare("UPDATE bh_planner_pro_state SET state_json=?,updated_at=NOW() WHERE user_id=?");
+        $save->execute([$encoded,$userId]);
+        $db->commit();
+    } catch(Throwable $e) {
+        if($db->inTransaction())$db->rollBack();
+        throw $e;
+    }
     bh_pro_response(200,['ok'=>true,'pro'=>true,'updated_at'=>date('Y-m-d H:i:s'),'csrf'=>$_SESSION['bh_csrf']]);
 } catch(Throwable $e) {
     bh_pro_response(500,['ok'=>false,'error'=>'planner_pro_error']);
