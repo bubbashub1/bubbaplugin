@@ -1,0 +1,169 @@
+{
+  "schema": "bubbahub.directorist.single-directory-blueprint",
+  "schema_version": "1.0.0",
+  "project": {
+    "name": "Bubba Hub",
+    "repository": "bubbashub1/bubbaplugin",
+    "purpose": "Six connected discovery directories for families across Devon and Cornwall.",
+    "audiences": [
+      "Expectant parents",
+      "Parents and carers",
+      "Babies",
+      "Toddlers",
+      "Preschool children",
+      "School-age children",
+      "Families"
+    ],
+    "important_distinction": "Pregnancy, baby and toddler are audiences/age or life-stage filters, NOT separate directory types."
+  },
+  "directory": {
+    "name": "Listings",
+    "slug": "listings",
+    "description": "Regular classes, activities, groups and sessions for pregnancy, babies, toddlers, children and families. This is the core activity directory currently represented by BubbaPlugin's bh_activities data.",
+    "existing_bubbaplugin_source": [
+      "bh_activities",
+      "bh_organisers",
+      "bh_venues",
+      "activity sessions"
+    ],
+    "categories": [
+      "Pregnancy and antenatal",
+      "Baby classes and groups",
+      "Toddler classes and groups",
+      "Preschool activities",
+      "Children's activities",
+      "Family activities",
+      "Parent and child groups",
+      "Sensory and messy play",
+      "Music and singing",
+      "Dance and movement",
+      "Swimming",
+      "Sports and active play",
+      "Outdoor and nature",
+      "Arts and crafts",
+      "Storytime and libraries",
+      "Community groups",
+      "Parent support groups"
+    ],
+    "fields": [
+      "title",
+      "description",
+      "category",
+      "age_min_months",
+      "age_max_months",
+      "age_range",
+      "county",
+      "region",
+      "town",
+      "postcode",
+      "price_from",
+      "price_free",
+      "booking_url",
+      "booking_required",
+      "drop_in_welcome",
+      "trial_available",
+      "term_time_only",
+      "holiday_sessions",
+      "siblings_welcome",
+      "what_to_bring",
+      "good_to_know",
+      "accessibility",
+      "organisation_name",
+      "email",
+      "phone",
+      "website",
+      "venues",
+      "sessions",
+      "images"
+    ],
+    "filters": [
+      "keyword",
+      "category",
+      "life_stage_or_age",
+      "region",
+      "town",
+      "day",
+      "price_or_free",
+      "drop_in",
+      "term_time_or_holidays",
+      "accessibility"
+    ]
+  },
+  "shared_configuration": {
+    "geography": {
+      "country": "United Kingdom",
+      "counties": [
+        "Devon",
+        "Cornwall"
+      ],
+      "regions": [
+        "East Cornwall",
+        "East Devon",
+        "Exeter",
+        "Mid Cornwall",
+        "Mid Devon",
+        "North Cornwall",
+        "North Devon",
+        "Plymouth",
+        "South Cornwall",
+        "South Hams",
+        "Teignbridge",
+        "Torbay",
+        "West Cornwall",
+        "West Devon"
+      ],
+      "location_hierarchy": [
+        "county",
+        "region",
+        "town",
+        "postcode"
+      ],
+      "postcode_is_primary_venue_match_key": true
+    },
+    "audience_and_age": {
+      "life_stages": [
+        "Pregnancy",
+        "Newborn",
+        "Baby",
+        "Toddler",
+        "Preschool",
+        "School age",
+        "Family"
+      ],
+      "rule": "Life stages and age ranges are reusable taxonomy/filter fields across the relevant directory types, not separate directories."
+    },
+    "shared_entities": [
+      "Organiser or provider",
+      "Venue or place",
+      "Contact details",
+      "Images",
+      "Location"
+    ],
+    "listing_workflow": {
+      "default_submission_status": "pending_review",
+      "public_visibility_requires_approval": true,
+      "owner_permissions_checked_server_side": true
+    },
+    "planner_and_booking": {
+      "planner_is_a_connected_family_feature_not_a_directory_type": true,
+      "families_can_save_relevant_listings_and_events_to_my_planner": true,
+      "booking_is_a_connected_workflow_not_a_directory_type": true,
+      "preserve_advertised_provider_price": true,
+      "show_any_parent_facing_booking_fee_separately": true
+    },
+    "data_integrity": {
+      "reuse_shared_organiser_and_venue_records_where_they_are_the_same_real_entity": true,
+      "do_not_duplicate_activity_records_to_show_them_in_multiple_filters": true,
+      "do_not_treat_all_organisers_as_business_directory_listings": true,
+      "do_not_treat_all_venues_as_places_days_out_records": true,
+      "normalise_postcodes_before_matching": true,
+      "use_venue_name_address_and_town_as_secondary_match_checks": true,
+      "flag_uncertain_matches_for_manual_review": true
+    }
+  },
+  "directorist_setup_notes": {
+    "native_import_status": "Blueprint only; not yet a verified native Directorist export.",
+    "native_import_requirement": "Use a configuration exported from the installed Directorist version as the exact structural template. Map this directory definition into the native format and test on staging before importing.",
+    "safety": "Do not import this blueprint into Directorist's global settings importer. Do not overwrite existing site settings."
+  }
+}
