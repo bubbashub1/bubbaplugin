@@ -3,6 +3,43 @@ const $=id=>document.getElementById(id);
 const frame=$('pageCanvas');
 let pages=[],page=null,device='desktop',layerNodes=[],draft=null,csrf='',revisionRows=[],currentBlock=null,currentSection=null,previewMode='published',draftHasValidationError=false;
 let idCounter=0;
+const draftHistory=window.BHVisualBuilderDocumentActions?.createHistory?.(50)||null;
+function updateHistoryControls(){
+ const undo=$('undoDraft'),redo=$('redoDraft');
+ if(!undo||!redo)return;
+ undo.disabled=!draftHistory||!draft||!draftHistory.canUndo(draft);
+ redo.disabled=!draftHistory||!draft||!draftHistory.canRedo(draft);
+}
+function resetDraftHistory(){draftHistory?.reset();updateHistoryControls();}
+function checkpointDraft(){
+ if(!draft||previewMode!=='draft'||!draftHistory)return;
+ draftHistory.checkpoint(draft);updateHistoryControls();
+}
+function applyHistorySnapshot(snapshot,message){
+ if(!snapshot)return;
+ draft=snapshot;currentBlock=null;currentSection=null;draftHasValidationError=false;
+ renderDraft();
+ $('selectedName').textContent='Draft updated';
+ $('selectedDescription').textContent='Select an element in the preview or Layers to continue editing.';
+ $('selectedDetails').hidden=true;$('editControls').hidden=true;$('sectionControls').hidden=true;
+ draftStatus(message);updateHistoryControls();
+}
+function undoDraft(){
+ if(!draft||!draftHistory)return;
+ applyHistorySnapshot(draftHistory.undo(draft),'Undid the last draft change. Save draft to keep this version.');
+}
+function redoDraft(){
+ if(!draft||!draftHistory)return;
+ applyHistorySnapshot(draftHistory.redo(draft),'Redid the last draft change. Save draft to keep this version.');
+}
+function handleHistoryShortcut(event){
+ if(!(event.ctrlKey||event.metaKey)||event.altKey)return;
+ const target=event.target,tag=String(target?.tagName||'').toUpperCase();
+ if(target?.isContentEditable||['INPUT','TEXTAREA','SELECT'].includes(tag))return;
+ const key=String(event.key||'').toLowerCase();
+ if(key==='z'){event.preventDefault();event.shiftKey?redoDraft():undoDraft();}
+ else if(key==='y'){event.preventDefault();redoDraft();}
+}
 function newElementId(prefix){idCounter++;return prefix+'-'+Date.now()+'-'+idCounter;}
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function status(message){$('builderStatus').textContent=message;}
@@ -90,7 +127,7 @@ function attachCanvas(){
   const doc=frame.contentDocument;if(!doc||!doc.body)throw new Error('Page not ready');
   const style=doc.createElement('style');style.textContent='.bhvb-selected-preview{outline:3px solid #0f8b83!important;outline-offset:2px!important;cursor:pointer!important}';doc.head.appendChild(style);
   buildLayers(doc);
-  doc.addEventListener('click',event=>{
+  doc.addEventListener('keydown',handleHistoryShortcut,true);\n  doc.addEventListener('click',event=>{
    const node=event.target.closest('h1,h2,h3,h4,p,a,button,img,section,article');
    if(!node||node===doc.body)return;
    event.preventDefault();event.stopPropagation();selectNode(node);
@@ -142,7 +179,7 @@ function renderDraft(){
  frame.srcdoc='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="/"><style>*{box-sizing:border-box}body{margin:0;padding:32px;background:#f4f8f7;color:#17221c;font:16px Calibri,Arial,sans-serif}main{max-width:960px;margin:auto}h1,h2,h3,h4{font-family:Quicksand,Arial,sans-serif;color:#244d37}section{margin:0 0 18px;border-radius:14px}p{line-height:1.7}.cta{display:inline-block;padding:12px 20px;background:#416651;color:white;border-radius:999px;text-decoration:none;font-weight:700}@media(max-width:600px){body{padding:14px}}</style><style id="bhvb-mobile-overrides">'+mobileCss+'</style></head><body><main>'+titleMarkup+sections+'</main></body></html>';
  $('canvasEmpty').hidden=true;frame.hidden=false;
  $('canvasDimensions').textContent=(page?.title||title)+' · '+device+' · Draft';
- $('saveDraft').disabled=false;$('addContainer').disabled=(draft.sections||[]).length>=40;
+ $('saveDraft').disabled=false;$('addContainer').disabled=(draft.sections||[]).length>=40;updateHistoryControls();
 }
 function convertPage(){
  const doc=frame.contentDocument;
@@ -163,7 +200,7 @@ function convertPage(){
   else skipped++;
  });
  const images=main.querySelectorAll('img').length;
- draft={schema_version:1,page:{title:page.title,slug:page.slug},settings:{max_width:'960px'},sections:[{id:'main-content',type:'section',props:{padding:24,gap:16},children}]};
+ draft={schema_version:1,page:{title:page.title,slug:page.slug},settings:{max_width:'960px'},sections:[{id:'main-content',type:'section',props:{padding:24,gap:16},children}]};resetDraftHistory();
  const message='Conversion preview: '+children.length+' supported text/link blocks. '+skipped+' empty or unsupported items skipped; '+images+' images are not converted. Original layout and styling are not carried over. Review this simplified draft before saving.';
  draftStatus(message);
  renderDraft();
@@ -190,12 +227,12 @@ async function loadDraft(){
   revisionRows=data.revisions||[];
   const select=$('revisionSelect');select.innerHTML=revisionRows.map(r=>'<option value="'+esc(r.id)+'">Revision '+esc(r.id)+' · '+esc(r.created_at)+'</option>').join('');
   $('revisionControls').hidden=!revisionRows.length;
-  if(data.draft){draft=data.draft;renderDraft();draftStatus('Existing unpublished draft loaded. You can edit and save it.');}
-  else{draft=null;previewMode='published';draftStatus('No builder draft exists yet. Prepare a simplified draft from this page to begin.');}
+  if(data.draft){draft=data.draft;resetDraftHistory();renderDraft();draftStatus('Existing unpublished draft loaded. You can edit and save it.');}
+  else{draft=null;resetDraftHistory();previewMode='published';draftStatus('No builder draft exists yet. Prepare a simplified draft from this page to begin.');}
  }catch(error){draftStatus(error.message);$('saveDraft').disabled=true;}
 }
 async function loadPage(slug){
- page=pages.find(item=>item.slug===slug)||null;draft=null;previewMode='published';currentBlock=null;currentSection=null;layerNodes=[];
+ page=pages.find(item=>item.slug===slug)||null;draft=null;previewMode='published';currentBlock=null;currentSection=null;layerNodes=[];resetDraftHistory();
  $('selectedName').textContent='Nothing selected';$('selectedDescription').textContent='Choose a page to begin.';$('selectedDetails').hidden=true;$('editControls').hidden=true;$('sectionControls').hidden=true;
  $('builderLayers').replaceChildren();$('saveDraft').disabled=true;$('prepareDraft').disabled=!page;$('setupDraftStorage').hidden=true;$('revisionControls').hidden=true;
  if(!page){frame.hidden=true;$('canvasEmpty').hidden=false;return;}
@@ -210,6 +247,8 @@ $('builderPage').addEventListener('change',event=>loadPage(event.target.value));
 document.querySelectorAll('.bhvb-device-switch [data-device]').forEach(button=>button.addEventListener('click',()=>setDevice(button.dataset.device)));
 $('propertiesTab').addEventListener('click',()=>setTab('properties'));$('layersTab').addEventListener('click',()=>setTab('layers'));
 frame.addEventListener('load',attachCanvas);
+$('undoDraft').addEventListener('click',undoDraft);$('redoDraft').addEventListener('click',redoDraft);
+document.addEventListener('keydown',handleHistoryShortcut,true);
 $('prepareDraft').addEventListener('click',convertPage);
 $('setupDraftStorage').addEventListener('click',async()=>{
  try{const data=await api('/api/admin-visual-page-drafts.php',{action:'setup'});csrf=data.csrf||csrf;draftStatus(data.message||'Draft storage is ready.');$('setupDraftStorage').hidden=true;await loadDraft();}
@@ -244,20 +283,21 @@ function applyEdit(){
  const node=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');
  if(node){node.textContent=props.text;if(currentBlock.type==='button')node.setAttribute('href',props.href);}
  if(node){$('selectedText').textContent=props.text;$('selectedName').textContent=readableName(node);}
- draftStatus('Unsaved draft changes. Save draft when ready.');
+ draftStatus('Unsaved draft changes. Save draft when ready.');updateHistoryControls();
 }
 $('editText').addEventListener('input',applyEdit);$('editHref').addEventListener('change',applyEdit);
-function applySectionEdit(){if(!currentSection||previewMode!=='draft')return;const p=currentSection.props||(currentSection.props={});p.background=$('sectionBackground').value;p.padding=Number($('sectionPadding').value);p.gap=Number($('sectionGap').value);p.width=Number($('containerWidth').value);p.min_height=Number($('containerHeight').value);p.radius=Number($('containerRadius').value);p.border_width=Number($('containerBorderWidth').value);p.border_color=$('containerBorderColor').value;p.align=$('containerAlign').value;p.margin_bottom=Number($('containerSpacing').value);['sectionPadding','sectionGap','containerWidth','containerHeight','containerRadius','containerBorderWidth','containerSpacing'].forEach(id=>{const o=$(id+'Value');if(o)o.textContent=$(id).value+(id==='containerWidth'?'%':'px');});const node=frame.contentDocument?.querySelector('[data-bh-section-id="'+CSS.escape(currentSection.id)+'"]');if(node){node.style.background=p.background;node.style.padding=p.padding+'px';node.style.gap=p.gap+'px';node.style.width=p.width+'%';node.style.minHeight=p.min_height+'px';node.style.borderRadius=p.radius+'px';node.style.border=p.border_width+'px solid '+p.border_color;node.style.alignSelf=p.align==='left'?'flex-start':p.align==='right'?'flex-end':'center';node.style.marginBottom=p.margin_bottom+'px';}draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Unsaved container changes. Save draft when ready.');}
-function applyMobileEdit(){if(!currentSection||previewMode!=='draft'||!$('mobileOverrideEnabled').checked)return;const p=currentSection.props||(currentSection.props={});p.mobile={width:Number($('mobileContainerWidth').value),padding:Number($('mobileContainerPadding').value),gap:Number($('mobileContainerGap').value),min_height:Number($('mobileContainerHeight').value),radius:Number($('mobileContainerRadius').value),border_width:Number($('mobileContainerBorderWidth').value),margin_bottom:Number($('mobileContainerSpacing').value),align:$('mobileContainerAlign').value};['mobileContainerWidth','mobileContainerPadding','mobileContainerGap','mobileContainerHeight','mobileContainerRadius','mobileContainerBorderWidth','mobileContainerSpacing'].forEach(id=>{const o=$(id+'Value');if(o)o.textContent=$(id).value+(id==='mobileContainerWidth'?'%':'px');});updateMobilePreviewStyle();draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Unsaved mobile layout changes. Save draft when ready.');}
-function toggleMobileOverrides(){if(!currentSection||previewMode!=='draft')return;const p=currentSection.props||(currentSection.props={});if($('mobileOverrideEnabled').checked){p.mobile={width:100,padding:16,gap:12,min_height:0,radius:12,border_width:0,margin_bottom:16,align:'center'};populateMobileControls(p.mobile);$('mobileOverrideControls').hidden=false;applyMobileEdit();}else{delete p.mobile;$('mobileOverrideControls').hidden=true;updateMobilePreviewStyle();draftStatus('Mobile overrides removed. The container now inherits its desktop settings.');}}
+function applySectionEdit(){if(!currentSection||previewMode!=='draft')return;const p=currentSection.props||(currentSection.props={});p.background=$('sectionBackground').value;p.padding=Number($('sectionPadding').value);p.gap=Number($('sectionGap').value);p.width=Number($('containerWidth').value);p.min_height=Number($('containerHeight').value);p.radius=Number($('containerRadius').value);p.border_width=Number($('containerBorderWidth').value);p.border_color=$('containerBorderColor').value;p.align=$('containerAlign').value;p.margin_bottom=Number($('containerSpacing').value);['sectionPadding','sectionGap','containerWidth','containerHeight','containerRadius','containerBorderWidth','containerSpacing'].forEach(id=>{const o=$(id+'Value');if(o)o.textContent=$(id).value+(id==='containerWidth'?'%':'px');});const node=frame.contentDocument?.querySelector('[data-bh-section-id="'+CSS.escape(currentSection.id)+'"]');if(node){node.style.background=p.background;node.style.padding=p.padding+'px';node.style.gap=p.gap+'px';node.style.width=p.width+'%';node.style.minHeight=p.min_height+'px';node.style.borderRadius=p.radius+'px';node.style.border=p.border_width+'px solid '+p.border_color;node.style.alignSelf=p.align==='left'?'flex-start':p.align==='right'?'flex-end':'center';node.style.marginBottom=p.margin_bottom+'px';}draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Unsaved container changes. Save draft when ready.');updateHistoryControls();}
+function applyMobileEdit(){if(!currentSection||previewMode!=='draft'||!$('mobileOverrideEnabled').checked)return;const p=currentSection.props||(currentSection.props={});p.mobile={width:Number($('mobileContainerWidth').value),padding:Number($('mobileContainerPadding').value),gap:Number($('mobileContainerGap').value),min_height:Number($('mobileContainerHeight').value),radius:Number($('mobileContainerRadius').value),border_width:Number($('mobileContainerBorderWidth').value),margin_bottom:Number($('mobileContainerSpacing').value),align:$('mobileContainerAlign').value};['mobileContainerWidth','mobileContainerPadding','mobileContainerGap','mobileContainerHeight','mobileContainerRadius','mobileContainerBorderWidth','mobileContainerSpacing'].forEach(id=>{const o=$(id+'Value');if(o)o.textContent=$(id).value+(id==='mobileContainerWidth'?'%':'px');});updateMobilePreviewStyle();draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Unsaved mobile layout changes. Save draft when ready.');updateHistoryControls();}
+function toggleMobileOverrides(){if(!currentSection||previewMode!=='draft')return;const p=currentSection.props||(currentSection.props={});if($('mobileOverrideEnabled').checked){p.mobile={width:100,padding:16,gap:12,min_height:0,radius:12,border_width:0,margin_bottom:16,align:'center'};populateMobileControls(p.mobile);$('mobileOverrideControls').hidden=false;applyMobileEdit();}else{delete p.mobile;$('mobileOverrideControls').hidden=true;updateMobilePreviewStyle();draftStatus('Mobile overrides removed. The container now inherits its desktop settings.');updateHistoryControls();}}
+['editText','editHref','sectionBackground','sectionPadding','sectionGap','containerWidth','containerHeight','containerRadius','containerBorderWidth','containerBorderColor','containerAlign','containerSpacing','mobileOverrideEnabled','mobileContainerWidth','mobileContainerPadding','mobileContainerGap','mobileContainerHeight','mobileContainerRadius','mobileContainerBorderWidth','mobileContainerSpacing','mobileContainerAlign'].forEach(id=>$(id).addEventListener('focus',checkpointDraft));
 ['sectionBackground','sectionPadding','sectionGap','containerWidth','containerHeight','containerRadius','containerBorderWidth','containerBorderColor','containerAlign','containerSpacing'].forEach(id=>$(id).addEventListener('input',applySectionEdit));
 $('mobileOverrideEnabled').addEventListener('change',toggleMobileOverrides);
 ['mobileContainerWidth','mobileContainerPadding','mobileContainerGap','mobileContainerHeight','mobileContainerRadius','mobileContainerBorderWidth','mobileContainerSpacing','mobileContainerAlign'].forEach(id=>$(id).addEventListener('input',applyMobileEdit));
-function addContainer(){if(!draft)return;if(draft.sections.length>=40){draftStatus('The draft can contain up to 40 containers.');return;}draft.sections.push({id:newElementId('container'),type:'section',props:{background:'#ffffff',padding:24,gap:16,width:100,min_height:120,radius:12,border_width:1,border_color:'#dce8df',align:'center',margin_bottom:18},children:[]});currentSection=null;currentBlock=null;renderDraft();draftStatus('New container added. Select it in the canvas or Layers to style it.');}
-function addBlock(type){if(!currentSection||!draft)return;if((currentSection.children||[]).length>=80){draftStatus('A container can hold up to 80 elements.');return;}const id=newElementId('block');let block;if(type==='heading')block={id,type,props:{text:'New heading',level:2}};else if(type==='paragraph')block={id,type,props:{text:'Add your text here.'}};else block={id,type:'button',props:{text:'Learn more',href:'/index.html'}};currentSection.children.push(block);renderDraft();draftStatus('Element added to selected container. Select it in the preview to edit its content.');}
-function duplicateContainer(){if(!draft||!currentSection||previewMode!=='draft')return;if(draft.sections.length>=40){draftStatus('The draft can contain up to 40 containers.');return;}const index=draft.sections.indexOf(currentSection);if(index<0)return;const actions=window.BHVisualBuilderDocumentActions;if(!actions?.duplicateSection){draftStatus('Container duplication is unavailable. Refresh the editor and try again.');return;}const copy=actions.duplicateSection(currentSection,newElementId);draft.sections.splice(index+1,0,copy);currentSection=copy;currentBlock=null;frame.addEventListener('load',()=>{const node=frame.contentDocument?.querySelector('[data-bh-section-id="'+copy.id+'"]');if(node)selectNode(node);},{once:true});renderDraft();draftStatus('Container duplicated with its content, style and mobile settings. Save draft to keep the copy.');}
-function moveContainer(direction){if(!currentSection||!draft)return;const index=draft.sections.indexOf(currentSection),next=index+direction;if(next<0||next>=draft.sections.length)return;[draft.sections[index],draft.sections[next]]=[draft.sections[next],draft.sections[index]];renderDraft();draftStatus('Container moved. Save draft to keep this order.');}
-function deleteContainer(){if(!currentSection||!draft||draft.sections.length<2){draftStatus('A page must keep at least one container.');return;}if(!window.confirm('Delete this container and its contents from the private draft?'))return;draft.sections=draft.sections.filter(section=>section!==currentSection);currentSection=null;renderDraft();$('sectionControls').hidden=true;draftStatus('Container removed from the private draft. Save draft to keep the change.');}
+function addContainer(){if(!draft)return;if(draft.sections.length>=40){draftStatus('The draft can contain up to 40 containers.');return;}checkpointDraft();draft.sections.push({id:newElementId('container'),type:'section',props:{background:'#ffffff',padding:24,gap:16,width:100,min_height:120,radius:12,border_width:1,border_color:'#dce8df',align:'center',margin_bottom:18},children:[]});currentSection=null;currentBlock=null;renderDraft();draftStatus('New container added. Select it in the canvas or Layers to style it.');}
+function addBlock(type){if(!currentSection||!draft)return;if((currentSection.children||[]).length>=80){draftStatus('A container can hold up to 80 elements.');return;}checkpointDraft();const id=newElementId('block');let block;if(type==='heading')block={id,type,props:{text:'New heading',level:2}};else if(type==='paragraph')block={id,type,props:{text:'Add your text here.'}};else block={id,type:'button',props:{text:'Learn more',href:'/index.html'}};currentSection.children.push(block);renderDraft();draftStatus('Element added to selected container. Select it in the preview to edit its content.');}
+function duplicateContainer(){if(!draft||!currentSection||previewMode!=='draft')return;if(draft.sections.length>=40){draftStatus('The draft can contain up to 40 containers.');return;}const index=draft.sections.indexOf(currentSection);if(index<0)return;checkpointDraft();const actions=window.BHVisualBuilderDocumentActions;if(!actions?.duplicateSection){draftStatus('Container duplication is unavailable. Refresh the editor and try again.');return;}const copy=actions.duplicateSection(currentSection,newElementId);draft.sections.splice(index+1,0,copy);currentSection=copy;currentBlock=null;frame.addEventListener('load',()=>{const node=frame.contentDocument?.querySelector('[data-bh-section-id="'+copy.id+'"]');if(node)selectNode(node);},{once:true});renderDraft();draftStatus('Container duplicated with its content, style and mobile settings. Save draft to keep the copy.');}
+function moveContainer(direction){if(!currentSection||!draft)return;const index=draft.sections.indexOf(currentSection),next=index+direction;if(next<0||next>=draft.sections.length)return;checkpointDraft();[draft.sections[index],draft.sections[next]]=[draft.sections[next],draft.sections[index]];renderDraft();draftStatus('Container moved. Save draft to keep this order.');}
+function deleteContainer(){if(!currentSection||!draft||draft.sections.length<2){draftStatus('A page must keep at least one container.');return;}if(!window.confirm('Delete this container and its contents from the private draft?'))return;checkpointDraft();draft.sections=draft.sections.filter(section=>section!==currentSection);currentSection=null;renderDraft();$('sectionControls').hidden=true;draftStatus('Container removed from the private draft. Save draft to keep the change.');}
 $('addContainer').addEventListener('click',addContainer);$('duplicateContainer').addEventListener('click',duplicateContainer);$('addHeading').addEventListener('click',()=>addBlock('heading'));$('addParagraph').addEventListener('click',()=>addBlock('paragraph'));$('addButtonBlock').addEventListener('click',()=>addBlock('button'));$('moveContainerUp').addEventListener('click',()=>moveContainer(-1));$('moveContainerDown').addEventListener('click',()=>moveContainer(1));$('deleteContainer').addEventListener('click',deleteContainer);
 async function init(){
  try{

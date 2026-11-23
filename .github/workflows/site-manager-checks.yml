@@ -9,6 +9,7 @@ on:
       - 'api/admin-visual-page-drafts.php'
       - 'tests/page-document-validator-v1.php'
       - 'tests/visual-builder-document-actions.js'
+      - 'tests/visual-builder-document-history.js'
       - 'admin/admin-site-manager.html'
       - 'admin/admin-visual-builder.html'
       - 'assets/js/admin-site-manager.js'
@@ -37,6 +38,7 @@ on:
       - 'api/admin-visual-page-drafts.php'
       - 'tests/page-document-validator-v1.php'
       - 'tests/visual-builder-document-actions.js'
+      - 'tests/visual-builder-document-history.js'
       - 'admin/admin-site-manager.html'
       - 'admin/admin-visual-builder.html'
       - 'admin.html'
@@ -92,6 +94,8 @@ jobs:
         run: node --check assets/js/visual-builder-document-actions.js
       - name: Test duplicate-container document cloning
         run: node tests/visual-builder-document-actions.js
+      - name: Test draft undo and redo history
+        run: node tests/visual-builder-document-history.js
       - name: Check shared header JavaScript syntax
         run: node --check assets/js/header.js
       - name: Check homepage JavaScript syntax

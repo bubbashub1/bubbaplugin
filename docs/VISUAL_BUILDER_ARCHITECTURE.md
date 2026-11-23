@@ -191,3 +191,12 @@ The editor now duplicates a selected draft container immediately after the origi
 ## Branch synchronization audit — 22 November 2026
 
 The `staging-site` base now diverges from this feature branch. The current compare reports 136 commits ahead and 130 behind, with the common ancestor still `dd7dc6c2e9a5e5fc72e2f5573b547ca85d12ee8b`. GitHub's pull-request mergeability indicator has fluctuated after updates. No merge, force-update or automatic synchronization was attempted. Before staging deployment, reconcile this drift through a reviewed merge commit and re-run the full checks; avoid blindly rebasing or overwriting either branch.
+
+
+## Stage 3 — local draft undo and redo
+
+The Visual Builder now provides a bounded, in-memory history for unsaved structured-draft edits. Undo and redo cover text/link edits, container styling, mobile overrides, adding blocks or containers, moving, duplicating and deleting containers. The history is limited to the most recent 50 checkpoints; text and control edits are grouped from focus until the user moves to another control. The toolbar buttons expose the actions, and Ctrl/Cmd+Z, Ctrl/Cmd+Y and Ctrl/Cmd+Shift+Z are supported outside text-entry controls. History is reset when a page/draft is loaded or a save/restore completes. Undo and redo only change the private in-memory draft; an explicit Save draft request is still required, and no publish action exists. The pure history helper has Node regression coverage for no-op checkpoints, undo/redo, redo invalidation and the history limit.
+
+## Branch synchronization audit — 23 November 2026
+
+The latest comparison with `staging-site` reports 138 feature commits ahead and 156 base commits behind, diverged from common ancestor `dd7dc6c2e9a5e5fc72e2f5573b547ca85d12ee8b`. The current `staging-site` head is `c02d7191b8a9096316bbbf5747f259f7a2c210ca`; the PR still points at the older base SHA and GitHub currently reports `mergeable: false`. Several paths overlap between the two lines of work, including `admin.html`, `index.html` and `assets/css/styles.css`. No branch synchronization, rebase, merge, force-update or deployment was attempted. Continue isolated builder work on the feature branch, then reconcile the overlapping staging changes with a reviewed merge commit and full regression checks before any staging deployment.
