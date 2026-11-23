@@ -1,0 +1,163 @@
+{
+  "schema": "bubbahub.directorist.directory-blueprint",
+  "schema_version": "1.0.0",
+  "project": {
+    "name": "Bubba Hub",
+    "repository": "bubbashub1/bubbaplugin",
+    "purpose": "Six connected family discovery directories for pregnancy, baby, toddler and family life across Devon and Cornwall.",
+    "architecture_note": "This is a Bubba Hub configuration blueprint based on the existing BubbaPlugin data model. It is not a verified native Directorist export. Use Directorist Directory Builder's own Export Config File to obtain the native JSON envelope, then map these definitions into that format."
+  },
+  "geography": {
+    "country": "United Kingdom",
+    "county_scope": ["Devon", "Cornwall"],
+    "regions": ["East Cornwall", "East Devon", "Exeter", "Mid Cornwall", "Mid Devon", "North Cornwall", "North Devon", "Plymouth", "South Cornwall", "South Hams", "Teignbridge", "Torbay", "West Cornwall", "West Devon"],
+    "location_hierarchy": ["region", "town", "postcode"],
+    "postcode_is_primary_venue_match_key": true
+  },
+  "data_model": {
+    "relationships": ["Organiser has many Activities", "Activity has many Venues", "Venue has many Sessions", "Activity may appear in more than one discovery directory"],
+    "canonical_record": "Activity",
+    "shared_records": ["Organiser", "Venue", "Session"],
+    "avoid_duplicate_listing_records": true,
+    "planner_and_booking_are_connected_features_not_directory_types": true
+  },
+  "shared_fields": [
+    {"key":"title","label":"Name","type":"text","required":true,"source":"bh_activities"},
+    {"key":"description","label":"Description","type":"textarea","required":true,"source":"bh_activities"},
+    {"key":"category","label":"Category","type":"select_or_multi_select","required":true,"source":"bh_activities"},
+    {"key":"age_range","label":"Age range","type":"text","required":false,"source":"bh_activities"},
+    {"key":"age_min_months","label":"Minimum age (months)","type":"number","required":false,"source":"bh_activities"},
+    {"key":"age_max_months","label":"Maximum age (months)","type":"number","required":false,"source":"bh_activities"},
+    {"key":"county","label":"County","type":"select","options":["Devon","Cornwall"],"required":true,"source":"bh_activities"},
+    {"key":"region","label":"Region","type":"select","options_ref":"geography.regions","required":false,"source":"bh_venues"},
+    {"key":"town","label":"Town","type":"text","required":false,"source":"bh_venues"},
+    {"key":"postcode","label":"Postcode","type":"text","required":false,"source":"bh_venues","normalise":"uppercase_and_remove_internal_spaces_for_matching"},
+    {"key":"price_from","label":"Price from","type":"number","required":false,"source":"bh_activities"},
+    {"key":"price_free","label":"Free activity","type":"boolean","required":false,"source":"bh_activities"},
+    {"key":"booking_url","label":"Booking link","type":"url","required":false,"source":"bh_activities"},
+    {"key":"booking_required","label":"Booking required","type":"boolean","required":false,"source":"bh_activities"},
+    {"key":"drop_in_welcome","label":"Drop-ins welcome","type":"boolean","required":false,"source":"bh_activities"},
+    {"key":"trial_available","label":"Free or paid trial available","type":"boolean","required":false,"source":"bh_activities"},
+    {"key":"term_time_only","label":"Term-time only","type":"boolean","required":false,"source":"bh_activities"},
+    {"key":"holiday_sessions","label":"Runs during school holidays","type":"boolean","required":false,"source":"bh_activities"},
+    {"key":"siblings_welcome","label":"Siblings welcome","type":"boolean","required":false,"source":"bh_activities"},
+    {"key":"what_to_bring","label":"What to bring","type":"textarea","required":false,"source":"bh_activities"},
+    {"key":"good_to_know","label":"Good to know","type":"textarea","required":false,"source":"bh_activities"},
+    {"key":"accessibility","label":"Accessibility information","type":"textarea","required":false,"source":"bh_activities"},
+    {"key":"tags","label":"Search tags","type":"multi_select_or_text","required":false,"source":"bh_activities"},
+    {"key":"organisation_name","label":"Organiser","type":"text","required":false,"source":"bh_organisers"},
+    {"key":"email","label":"Contact email","type":"email","required":false,"source":"bh_organisers"},
+    {"key":"phone","label":"Contact telephone","type":"tel","required":false,"source":"bh_organisers"},
+    {"key":"website","label":"Website","type":"url","required":false,"source":"bh_organisers"},
+    {"key":"venue_name","label":"Venue name","type":"text","required":false,"source":"bh_venues"},
+    {"key":"address","label":"Venue address","type":"textarea","required":false,"source":"bh_venues"},
+    {"key":"latitude","label":"Latitude","type":"number","required":false,"source":"bh_venues"},
+    {"key":"longitude","label":"Longitude","type":"number","required":false,"source":"bh_venues"},
+    {"key":"image_path","label":"Main image","type":"image","required":false,"source":"bh_activities"},
+    {"key":"sessions","label":"Sessions and timetable","type":"repeater_or_related_records","required":false,"source":"bh_sessions"}
+  ],
+  "directories": [
+    {
+      "name":"Pregnancy",
+      "slug":"pregnancy",
+      "description":"Pregnancy, antenatal, birth preparation and expectant-parent services across Devon and Cornwall.",
+      "icon":"heart",
+      "categories":["Antenatal classes","Birth preparation","Pregnancy yoga","Pregnancy massage","Scans and keepsakes","Doulas and birth workers","Maternity services","Pregnancy groups","Pregnancy wellbeing"],
+      "directory_fields":["title","description","category","county","region","town","postcode","price_from","booking_url","booking_required","organisation_name","email","phone","website","venue_name","address","image_path","sessions"],
+      "additional_fields":[
+        {"key":"pregnancy_stage","label":"Suitable pregnancy stage","type":"multi_select","options":["Trying to conceive","First trimester","Second trimester","Third trimester","Any stage"]},
+        {"key":"birth_topic","label":"Birth preparation topics","type":"multi_select","options":["Labour and birth","Caesarean birth","Hypnobirthing","Feeding preparation","Newborn care","Partner preparation"]}
+      ],
+      "search_filters":["keyword","category","region","town","pregnancy_stage","price_free"]
+    },
+    {
+      "name":"Baby",
+      "slug":"baby",
+      "description":"Baby groups, baby classes, feeding, development and services for babies and new parents.",
+      "icon":"baby",
+      "categories":["Baby sensory","Baby massage","Baby yoga","Baby music","Baby swimming","Feeding support","Sleep support","Newborn groups","Postnatal groups","Baby photography","Baby health and wellbeing"],
+      "directory_fields":["title","description","category","age_range","age_min_months","age_max_months","county","region","town","postcode","price_from","price_free","booking_url","booking_required","drop_in_welcome","trial_available","siblings_welcome","what_to_bring","good_to_know","accessibility","organisation_name","email","phone","website","venue_name","address","image_path","sessions"],
+      "additional_fields":[
+        {"key":"baby_age_band","label":"Baby age","type":"multi_select","options":["Newborn–3 months","3–6 months","6–9 months","9–12 months","12–18 months","All baby ages"]},
+        {"key":"feeding_friendly","label":"Feeding-friendly environment","type":"boolean"},
+        {"key":"changing_facilities","label":"Baby changing facilities","type":"boolean"}
+      ],
+      "search_filters":["keyword","category","region","town","age_min_months","age_max_months","price_free","drop_in_welcome"]
+    },
+    {
+      "name":"Toddler",
+      "slug":"toddler",
+      "description":"Toddler groups, preschool activities, play, movement and early-years experiences.",
+      "icon":"footprints",
+      "categories":["Toddler groups","Stay and play","Toddler music","Dance and movement","Toddler swimming","Soft play","Outdoor play","Nature activities","Arts and crafts","Storytime","Early development","Preschool groups"],
+      "directory_fields":["title","description","category","age_range","age_min_months","age_max_months","county","region","town","postcode","price_from","price_free","booking_url","booking_required","drop_in_welcome","trial_available","term_time_only","holiday_sessions","siblings_welcome","what_to_bring","good_to_know","accessibility","organisation_name","email","phone","website","venue_name","address","image_path","sessions"],
+      "additional_fields":[
+        {"key":"parent_stays","label":"Does an adult stay?","type":"select","options":["Adult stays","Drop-off session","Varies by session"]},
+        {"key":"toilet_support","label":"Toilet training / changing facilities","type":"textarea"}
+      ],
+      "search_filters":["keyword","category","region","town","age_min_months","age_max_months","price_free","drop_in_welcome","term_time_only"]
+    },
+    {
+      "name":"Family Support",
+      "slug":"family-support",
+      "description":"Practical, emotional, health, wellbeing and community support for parents, carers and families.",
+      "icon":"hand-heart",
+      "categories":["Family hubs","Health visiting information","Breastfeeding support","Infant feeding","Parent wellbeing","Mental wellbeing","SEND support","Specialist family support","Parenting advice","Financial and practical support","Baby banks and essentials","Peer support groups","Bereavement support","Relationship support"],
+      "directory_fields":["title","description","category","county","region","town","postcode","price_from","price_free","booking_url","booking_required","organisation_name","email","phone","website","venue_name","address","accessibility","image_path","sessions"],
+      "additional_fields":[
+        {"key":"support_format","label":"How support is provided","type":"multi_select","options":["In person","Online","Telephone","Home visits","Group sessions","One-to-one"]},
+        {"key":"eligibility","label":"Who can access this support?","type":"textarea"},
+        {"key":"referral_required","label":"Referral required","type":"boolean"},
+        {"key":"confidentiality_note","label":"Confidentiality / access information","type":"textarea"}
+      ],
+      "search_filters":["keyword","category","region","town","price_free","support_format"]
+    },
+    {
+      "name":"Classes & Activities",
+      "slug":"classes-activities",
+      "description":"Regular classes, groups, clubs and activities for pregnancy, babies, toddlers and young families.",
+      "icon":"calendar-days",
+      "categories":["Baby classes","Toddler classes","Parent and child groups","Music and singing","Dance and movement","Swimming","Sensory play","Sports and active play","Outdoor and nature","Arts and crafts","Libraries and storytime","Messy play","Family days out","Community groups"],
+      "directory_fields":["title","description","category","age_range","age_min_months","age_max_months","county","region","town","postcode","price_from","price_free","booking_url","booking_required","drop_in_welcome","trial_available","term_time_only","holiday_sessions","siblings_welcome","what_to_bring","good_to_know","accessibility","tags","organisation_name","email","phone","website","venue_name","address","image_path","sessions"],
+      "additional_fields":[
+        {"key":"activity_frequency","label":"How often does it run?","type":"select","options":["One-off","Weekly","Fortnightly","Monthly","School holidays","Variable"]},
+        {"key":"indoor_outdoor","label":"Setting","type":"select","options":["Indoor","Outdoor","Both","Online"]},
+        {"key":"parent_participation","label":"Adult participation","type":"select","options":["Parent/carer joins in","Parent/carer stays nearby","Drop-off","Varies"]}
+      ],
+      "search_filters":["keyword","category","region","town","age_min_months","age_max_months","price_free","drop_in_welcome","term_time_only","holiday_sessions"]
+    },
+    {
+      "name":"Events",
+      "slug":"events",
+      "description":"One-off and date-specific events, family days, workshops, fairs and seasonal activities.",
+      "icon":"ticket",
+      "categories":["Family events","Baby events","Toddler events","Pregnancy events","Workshops","Fairs and expos","Seasonal events","Community events","Fundraisers","Open days","Holiday activities"],
+      "directory_fields":["title","description","category","age_range","age_min_months","age_max_months","county","region","town","postcode","price_from","price_free","booking_url","booking_required","siblings_welcome","what_to_bring","good_to_know","accessibility","organisation_name","email","phone","website","venue_name","address","image_path","sessions"],
+      "additional_fields":[
+        {"key":"event_start","label":"Start date and time","type":"datetime","required":true},
+        {"key":"event_end","label":"End date and time","type":"datetime","required":false},
+        {"key":"event_recurrence","label":"Is this event repeated?","type":"select","options":["One-off","Daily","Weekly","Monthly","Multiple selected dates"]},
+        {"key":"ticket_required","label":"Ticket required","type":"boolean"},
+        {"key":"event_capacity","label":"Capacity (optional)","type":"number"}
+      ],
+      "search_filters":["keyword","category","region","town","event_start","event_end","age_min_months","age_max_months","price_free"]
+    }
+  ],
+  "shared_behaviour": {
+    "listing_moderation": "pending_review",
+    "listing_owner_model": "organiser_owns_activity",
+    "venue_reuse": true,
+    "session_reuse": true,
+    "multiple_directory_membership": "A single canonical activity may be discoverable in more than one directory; do not clone the activity record.",
+    "planner": "Families can save activities and sessions to My Planner.",
+    "booking": "Booking is a connected workflow. Preserve the organiser's advertised price and show any parent-facing booking fee separately.",
+    "location_matching": "Normalised postcode is the primary venue matching checkpoint; use venue name, address and town as secondary checks. Flag uncertain matches for review.",
+    "privacy": "Do not expose private organiser or family contact details. Public contact fields must follow the listing owner's visibility choices."
+  },
+  "directorist_setup_notes": {
+    "multi_directory_required": true,
+    "recommended_creation_order": ["Pregnancy","Baby","Toddler","Family Support","Classes & Activities","Events"],
+    "per_directory_steps": ["Create directory type","Configure General tab","Add shared and directory-specific fields","Configure Single Page Layout","Configure All Listing Layout","Configure Search Form","Export the directory configuration JSON for backup"],
+    "native_import_requirement": "For native Directorist import, each directory configuration must be serialised using the exact JSON structure exported by the installed Directorist version. Importing a general Directorist settings JSON may overwrite existing site settings; do not use this blueprint in that settings importer."
+  }
+}
