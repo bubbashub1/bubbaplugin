@@ -80,9 +80,55 @@ function selectNode(node){
   currentSection=draft&&node.dataset.bhSectionId?findSection(node.dataset.bhSectionId):null;
   const canAddBlocks=!!currentSection&&previewMode==='draft'&&(currentSection.children||[]).length<80;['addHeading','addParagraph','addButtonBlock'].forEach(id=>$(id).disabled=!canAddBlocks);$('duplicateContainer').disabled=!currentSection||previewMode!=='draft'||(draft?.sections||[]).length>=40;
   updateSelectionDetails(node);
+  installContainerHandles(currentSection?node:null);
   const index=layerNodes.indexOf(node);
   document.querySelectorAll('.bhvb-layer-button').forEach((button,i)=>button.classList.toggle('active',i===index));
  }catch(error){$('selectedName').textContent='Preview unavailable';$('selectedDescription').textContent='The page could not be inspected safely.';}
+}
+function installContainerHandles(node){
+ const doc=frame.contentDocument;
+ if(!doc||!node||!node.dataset.bhSectionId||previewMode!=='draft')return;
+ doc.querySelectorAll('.bhvb-canvas-handle').forEach(handle=>handle.remove());
+ node.style.position='relative';
+ const makeHandle=(label,cls,title)=>{
+  const handle=doc.createElement('button');handle.type='button';handle.className='bhvb-canvas-handle '+cls;handle.textContent=label;handle.title=title;handle.setAttribute('aria-label',title);handle.style.cssText='position:absolute;z-index:20;border:2px solid #fff;border-radius:7px;background:#0f766e;color:#fff;box-shadow:0 1px 5px #0005;font:700 14px/1 Arial;touch-action:none;cursor:grab;display:grid;place-items:center;padding:0;';
+  node.appendChild(handle);return handle;
+ };
+ const move=makeHandle('↕','bhvb-move-handle','Drag vertically to move this container');
+ move.style.cssText+=';left:8px;top:8px;width:30px;height:30px;';
+ const resize=makeHandle('↘','bhvb-resize-handle','Drag to resize this container');
+ resize.style.cssText+=';right:5px;bottom:5px;width:28px;height:28px;cursor:nwse-resize;';
+ const start=(event,mode)=>{
+  if(event.button!==0&&event.pointerType!=='touch')return;
+  event.preventDefault();event.stopPropagation();event.currentTarget.setPointerCapture?.(event.pointerId);
+  const startX=event.clientX,startY=event.clientY,startWidth=node.getBoundingClientRect().width,startHeight=node.getBoundingClientRect().height,parentWidth=node.parentElement?.getBoundingClientRect().width||960;
+  let moved=false,done=false;
+  const onMove=e=>{
+   const dx=e.clientX-startX,dy=e.clientY-startY;
+   if(Math.abs(dx)+Math.abs(dy)<5)return;
+   moved=true;
+   if(mode==='resize'){
+    const width=Math.max(25,Math.min(100,Math.round((startWidth+dx)/parentWidth*100)));
+    const height=Math.max(0,Math.min(800,Math.round((startHeight+dy)/20)*20));
+    const section=findSection(node.dataset.bhSectionId);if(!section)return;
+    section.props=section.props||{};section.props.width=width;section.props.min_height=height;
+    node.style.width=width+'%';node.style.minHeight=height+'px';
+    $('containerWidth').value=width;$('containerWidthValue').textContent=width+'%';
+    $('containerHeight').value=height;$('containerHeightValue').textContent=height+'px';
+    draftStatus('Resizing container · '+width+'% wide · '+height+'px minimum height. Save draft when ready.');
+   }else if(!done&&Math.abs(dy)>=36){
+    const section=findSection(node.dataset.bhSectionId),index=draft.sections.indexOf(section),next=dy<0?index-1:index+1;
+    if(section&&next>=0&&next<draft.sections.length){
+     [draft.sections[index],draft.sections[next]]=[draft.sections[next],draft.sections[index]];
+     done=true;renderDraft();draftStatus('Container moved by dragging. Save draft to keep this order.');
+    }
+   }
+  };
+  const onEnd=()=>{doc.removeEventListener('pointermove',onMove,true);doc.removeEventListener('pointerup',onEnd,true);doc.removeEventListener('pointercancel',onEnd,true);if(moved&&!done&&mode==='resize'){$('saveDraft').disabled=false;}};
+  doc.addEventListener('pointermove',onMove,true);doc.addEventListener('pointerup',onEnd,true);doc.addEventListener('pointercancel',onEnd,true);
+ };
+ move.addEventListener('pointerdown',event=>start(event,'move'));
+ resize.addEventListener('pointerdown',event=>start(event,'resize'));
 }
 function findBlock(id){
  for(const section of draft?.sections||[])for(const block of section.children||[])if(block.id===id)return block;
@@ -125,7 +171,7 @@ function buildLayers(doc){
 function attachCanvas(){
  try{
   const doc=frame.contentDocument;if(!doc||!doc.body)throw new Error('Page not ready');
-  const style=doc.createElement('style');style.textContent='.bhvb-selected-preview{outline:3px solid #0f8b83!important;outline-offset:2px!important;cursor:pointer!important}';doc.head.appendChild(style);
+  const style=doc.createElement('style');style.textContent='.bhvb-selected-preview{outline:3px solid #0f8b83!important;outline-offset:2px!important;cursor:pointer!important}.bhvb-canvas-handle{opacity:.96}.bhvb-canvas-handle:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}';doc.head.appendChild(style);
   buildLayers(doc);
   doc.addEventListener('keydown',handleHistoryShortcut,true);
   doc.addEventListener('click',event=>{
