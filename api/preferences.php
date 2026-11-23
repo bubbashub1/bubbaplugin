@@ -19,6 +19,9 @@ try{
     require __DIR__.'/db.php';
     $secure=(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off');
     if(session_status()!==PHP_SESSION_ACTIVE){
+        ini_set('session.use_strict_mode','1');
+        ini_set('session.use_only_cookies','1');
+        session_name('BUBBAHUBSESSID');
         session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax']);
         session_start();
     }
@@ -109,6 +112,7 @@ try{
     $db->prepare($sql)->execute(array_merge([$userId],$values));
     bh_preferences_json(200,['ok'=>true,'preferences'=>array_merge(bh_preferences_default(),$body),'csrf'=>$_SESSION['bh_csrf']]);
 }catch(Throwable $e){
-    bh_preferences_json(500,['ok'=>false,'error'=>'preferences_error','message'=>$e->getMessage()]);
+    error_log('Bubba Hub preferences API failed: '.$e->getMessage());
+    bh_preferences_json(500,['ok'=>false,'error'=>'preferences_error','message'=>'Your preferences are temporarily unavailable. Please try again.']);
 }
 ?>

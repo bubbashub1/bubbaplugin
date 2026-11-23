@@ -16,6 +16,9 @@ try {
 
     $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
     if (session_status() !== PHP_SESSION_ACTIVE) {
+        ini_set('session.use_strict_mode', '1');
+        ini_set('session.use_only_cookies', '1');
+        session_name('BUBBAHUBSESSID');
         session_set_cookie_params([
             'lifetime' => 0,
             'path' => '/',
@@ -186,6 +189,7 @@ try {
 
     bh_planner_response(400, ['ok' => false, 'error' => 'unknown_action']);
 } catch (Throwable $e) {
-    bh_planner_response(500, ['ok' => false, 'error' => 'planner_error', 'message' => $e->getMessage()]);
+    error_log('Bubba Hub planner API failed: ' . $e->getMessage());
+    bh_planner_response(500, ['ok' => false, 'error' => 'planner_error', 'message' => 'Your planner is temporarily unavailable. Please try again.']);
 }
 ?>
