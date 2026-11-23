@@ -75,7 +75,8 @@ try {
   }
  }
  $order=in_array('title',$activityCols,true)?'a.title':'a.id';
- $sql='SELECT '.implode(',',$select).' FROM bh_activities a'.$join.' ORDER BY '.$order.' LIMIT 5000';
+ $statusFilter=in_array('status',$activityCols,true)?" WHERE COALESCE(a.status,'')<>'archived'":'';
+ $sql='SELECT '.implode(',',$select).' FROM bh_activities a'.$join.$statusFilter.' ORDER BY '.$order.' LIMIT 5000';
  $rows=$db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
  $fieldMap=[
   'Description'=>['description','short_description'],

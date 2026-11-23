@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS bh_listing_checker_settings (
 INSERT IGNORE INTO bh_listing_checker_settings (setting_key, setting_value) VALUES
  ('health_enabled','0'),
  ('discovery_enabled','0'),
+ ('closure_checks_enabled','0'),
  ('interval_hours','4'),
  ('preferred_start_time','02:00'),
  ('window_start','00:00'),
@@ -27,6 +28,9 @@ CREATE TABLE IF NOT EXISTS bh_listing_discovery_terms (
   term VARCHAR(190) NOT NULL,
   term_group VARCHAR(100) NOT NULL DEFAULT 'General',
   regions_json TEXT NOT NULL,
+  source_platform VARCHAR(20) NOT NULL DEFAULT 'web',
+  search_keywords VARCHAR(255) NOT NULL DEFAULT '',
+  frequency_hours SMALLINT UNSIGNED NOT NULL DEFAULT 4,
   enabled TINYINT(1) NOT NULL DEFAULT 1,
   last_searched_at DATETIME NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -79,6 +83,29 @@ CREATE TABLE IF NOT EXISTS bh_listing_check_findings (
   reviewed_at DATETIME NULL,
   KEY idx_listing_findings_review (review_status,checked_at),
   KEY idx_listing_findings_activity (activity_id)
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS bh_listing_health_approvals (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  activity_id BIGINT UNSIGNED NOT NULL,
+  activity_title VARCHAR(190) NULL,
+  field_name VARCHAR(64) NOT NULL,
+  original_value MEDIUMTEXT NULL,
+  proposed_value MEDIUMTEXT NOT NULL,
+  source_url VARCHAR(2048) NOT NULL,
+  evidence TEXT NULL,
+  source_platform VARCHAR(40) NULL,
+  confidence TINYINT UNSIGNED NULL,
+  status ENUM('pending','approved','rejected','stale') NOT NULL DEFAULT 'pending',
+  imported_by VARCHAR(80) NOT NULL DEFAULT 'admin',
+  reviewed_by VARCHAR(80) NULL,
+  reviewed_at DATETIME NULL,
+  applied_value MEDIUMTEXT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_lha_status_created(status,created_at),
+  INDEX idx_lha_activity(activity_id),
+  INDEX idx_lha_source(source_url(191))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Editable starter terms. Administrators can amend these in the control centre.
@@ -94,3 +121,11 @@ INSERT IGNORE INTO bh_listing_discovery_terms (term,term_group,regions_json) VAL
  ('toddler music classes','Music & sensory','["all"]'),
  ('forest school under 5s','Outdoor & nature','["all"]'),
  ('parent and baby groups','Baby & pregnancy','["all"]');
+ 
+-- Publicly indexed social pages are discovery leads only; private content is not accessible.
+INSERT IGNORE INTO bh_listing_discovery_terms
+ (term,term_group,regions_json,source_platform,search_keywords,frequency_hours) VALUES
+ ('baby groups','Public Facebook discovery','["all"]','facebook','under 5s',24),
+ ('toddler groups','Public Facebook discovery','["all"]','facebook','Devon Cornwall',24),
+ ('baby classes','Public Instagram discovery','["all"]','instagram','pregnancy',24),
+ ('toddler classes','Public Instagram discovery','["all"]','instagram','Devon Cornwall',24);
