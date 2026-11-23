@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict');
+const {duplicateSection}=require('../assets/js/visual-builder-document-actions.js');
+const source={id:'container-1',type:'section',props:{background:'#f4f8f7',padding:24,mobile:{width:90,padding:12,align:'center'}},children:[{id:'heading-1',type:'heading',props:{text:'Hello',level:2}},{id:'button-1',type:'button',props:{text:'Go',href:'/directory.html'}}]};
+const original=JSON.parse(JSON.stringify(source));
+let counter=0;
+const copy=duplicateSection(source,prefix=>prefix+'-'+(++counter));
+assert.notEqual(copy.id,source.id,'container ID is remapped');
+assert.equal(copy.children.length,source.children.length,'child count is preserved');
+assert.notEqual(copy.children[0].id,source.children[0].id,'heading ID is remapped');
+assert.notEqual(copy.children[1].id,source.children[1].id,'button ID is remapped');
+assert.deepEqual(copy.props,source.props,'container styling and mobile overrides are preserved');
+assert.deepEqual(copy.children.map(x=>x.props),source.children.map(x=>x.props),'child content and settings are preserved');
+assert.deepEqual(source,original,'source section is not mutated');
+assert.equal(new Set([copy.id,...copy.children.map(x=>x.id)]).size,3,'all cloned IDs are unique');
+assert.throws(()=>duplicateSection(null,()=> 'id'),TypeError,'invalid source is rejected');
+assert.throws(()=>duplicateSection(source,null),TypeError,'missing ID factory is rejected');
+console.log('Visual Builder duplicate-container tests passed.');
