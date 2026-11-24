@@ -200,3 +200,14 @@ The Visual Builder now provides a bounded, in-memory history for unsaved structu
 ## Branch synchronization audit — 23 November 2026
 
 The latest comparison with `staging-site` reports 138 feature commits ahead and 156 base commits behind, diverged from common ancestor `dd7dc6c2e9a5e5fc72e2f5573b547ca85d12ee8b`. The current `staging-site` head is `c02d7191b8a9096316bbbf5747f259f7a2c210ca`; the PR still points at the older base SHA and GitHub currently reports `mergeable: false`. Several paths overlap between the two lines of work, including `admin.html`, `index.html` and `assets/css/styles.css`. No branch synchronization, rebase, merge, force-update or deployment was attempted. Continue isolated builder work on the feature branch, then reconcile the overlapping staging changes with a reviewed merge commit and full regression checks before any staging deployment.
+
+
+## Stage 3 — direct inline text editing (24 November 2026)
+
+The private draft canvas now supports direct text editing for the three existing v1 text-bearing block types: headings, paragraphs and buttons. A single click still selects an element for inspection; a double-click on a marked draft block enters inline editing. Enter commits the edit, Escape cancels it, and Shift+Enter inserts a line break in paragraphs. Pasted content is inserted as plain text. The editor stores only the element's text content, not user-supplied markup; button labels cannot be emptied. Client-side limits mirror the v1 block limits, while the server-side document validator remains authoritative at save time.
+
+Inline editing is available only in the structured private draft preview. Published-page preview remains read-only. It does not add images, arbitrary rich text, HTML, CSS, scripts or public-renderer integration. The inspector remains available for text and link destinations, and the existing draft history captures the pre-edit document so Undo can reverse a committed inline edit.
+
+## Branch synchronization status — 24 November 2026
+
+The feature branch was reconciled with the current `staging-site` head on 23 November using a normal GitHub-generated merge commit. The verified compare from staging commit `c02d7191b8a9096316bbbf5747f259f7a2c210ca` to feature head `06118ad8db7f55fb215136774710e0ec00659447` was 142 commits ahead and 0 behind, with the merge base equal to the staging head. This supersedes the earlier 22–23 November drift notes above. No rebase, force update or PR merge was performed.
