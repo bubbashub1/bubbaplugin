@@ -1,5 +1,38 @@
 document.addEventListener('DOMContentLoaded',async()=>{
 const form=document.getElementById('newListingForm');if(!form)return;
+// Read-only individual Listing Health check, shown only when editing a saved activity.
+const healthActivityId=Number(new URLSearchParams(location.search).get('id')||0);
+if(healthActivityId>0){
+ const panel=document.createElement('section');panel.className='bh-card';panel.id='bhIndividualListingHealth';
+ panel.style.cssText='padding:16px;margin:16px 0;border:1px solid #d5e5d8;border-radius:14px;background:#f8fbf8';
+ panel.innerHTML='<h2>Listing Health &amp; Checks</h2><p>Run the same read-only checks used by the scheduled Listing Checker. This never changes your listing.</p><div class="bh-health-status" role="status" aria-live="polite">Loading latest check…</div><div class="bh-health-findings"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button type="button" class="button button-primary" data-bh-run-check>Run Check Now</button><button type="button" class="button button-soft" data-bh-refresh-check>Refresh results</button></div><p class="bh-health-note" style="font-size:13px;color:#617267;margin-bottom:0">A manual check is prioritised by the server worker. Results appear after the next scheduled worker invocation; the worker must be configured on the server.</p>';
+ const identity=document.getElementById('adminListingIdentity');if(identity)identity.after(panel);else form.prepend(panel);
+ const status=panel.querySelector('.bh-health-status'),findings=panel.querySelector('.bh-health-findings'),run=panel.querySelector('[data-bh-run-check]');
+ let healthCsrf='';
+ const escHealth=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+ async function loadIndividualHealth(){
+  try{
+   const response=await fetch('/api/admin-listing-checker-run-one.php?id='+encodeURIComponent(healthActivityId),{credentials:'same-origin',cache:'no-store'});
+   const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'Could not load listing check results.');
+   healthCsrf=data.csrf||healthCsrf;
+   status.textContent=data.queue?.last_checked_at?'Last checked: '+data.queue.last_checked_at+(data.queue.status==='failed'?' · Last run failed':''):(data.queue?.status==='pending'?'Check queued for the next server worker run.':'This listing has not been checked yet.');
+   findings.innerHTML=data.findings?.length?'<ul style="padding-left:20px">'+data.findings.map(f=>'<li><strong>'+escHealth(f.label||f.finding_type)+'</strong> · '+escHealth(f.review_status||'new')+'</li>').join('')+'</ul>':'<p>No outstanding findings recorded for this listing.</p>';
+   if(data.queue?.status==='pending'&&data.queue?.last_error)findings.insertAdjacentHTML('beforeend','<p>'+escHealth(data.queue.last_error)+'</p>');
+  }catch(error){status.textContent=error.message;status.style.color='#9c302c';}
+ }
+ run.addEventListener('click',async()=>{
+  run.disabled=true;status.textContent='Queueing an individual check…';
+  try{
+   const response=await fetch('/api/admin-listing-checker-run-one.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:healthActivityId,csrf:healthCsrf})});
+   const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'Could not queue this check.');
+   status.textContent=data.message||'Individual check queued for the next server worker run.';
+   panel.querySelector('.bh-health-note').textContent='This check is prioritised ahead of the normal batch and checks only this listing. Refresh results after the server worker has run.';
+  }catch(error){status.textContent=error.message;status.style.color='#9c302c';}
+  finally{run.disabled=false;}
+ });
+ panel.querySelector('[data-bh-refresh-check]').addEventListener('click',loadIndividualHealth);
+ loadIndividualHealth();
+}
 const tidyStyle=document.createElement('style');
 tidyStyle.textContent=[
  '.bh-wizard-layout{grid-template-columns:190px minmax(0,1fr);gap:24px}',
