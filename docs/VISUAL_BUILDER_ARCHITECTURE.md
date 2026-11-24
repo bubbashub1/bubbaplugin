@@ -210,4 +210,4 @@ Inline editing is available only in the structured private draft preview. Publis
 
 ## Branch synchronization status — 24 November 2026
 
-The feature branch was reconciled with the current `staging-site` head on 23 November using a normal GitHub-generated merge commit. The verified compare from staging commit `c02d7191b8a9096316bbbf5747f259f7a2c210ca` to feature head `06118ad8db7f55fb215136774710e0ec00659447` was 142 commits ahead and 0 behind, with the merge base equal to the staging head. This supersedes the earlier 22–23 November drift notes above. No rebase, force update or PR merge was performed.
+The feature branch was reconciled with the current `staging-site` head on 23 November using a normal GitHub-generated merge commit. After the 24 November inline-editing work, the verified compare from staging commit `c02d7191b8a9096316bbbf5747f259f7a2c210ca` to feature head `b3d28d7a114a577d04d7bd22cf2dc8d865c449c2` is 150 commits ahead and 0 behind, with the merge base equal to the staging head. This supersedes the earlier 22–23 November drift notes above. No rebase, force update or PR merge was performed.
