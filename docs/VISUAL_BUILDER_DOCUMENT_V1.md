@@ -9,6 +9,7 @@ This is the first structured-content contract for the native Wix-style builder.
 - Layout controls are deliberately constrained to approved values; no arbitrary HTML, JavaScript, event handlers, CSS declarations or unknown properties are accepted.
 - Container nesting is intentionally flat in this stage: each page-level container holds heading, paragraph or button blocks. Containers can be added, reordered and deleted in the private draft. Each has independent background, padding, inner gap, width, minimum height, corner radius, border colour/thickness, horizontal alignment and spacing after. An optional, constrained mobile override object (width, padding, gap, minimum height, radius, border thickness, alignment and spacing after) applies at 600px or narrower and inherits desktop values when absent.
 - Page documents are data, not rendered HTML. The public renderer must escape text and validate link destinations before output.
+- In the private draft canvas, headings, paragraphs and button labels can be edited by double-clicking the rendered text. Inline editing accepts plain text only; Enter commits, Escape cancels, and Shift+Enter inserts a paragraph line break. Link destinations remain in the inspector.
 
 ## Persistence boundary
 
@@ -41,6 +42,7 @@ The server must independently enforce the schema and also check:
 - Reject `javascript:`, `data:`, protocol-relative URLs, control characters and malformed links.
 - Confirm saving a draft does not change the public page.
 - Confirm draft preview displays only the saved draft for the authorised admin session.
+- Confirm double-click inline edits commit as plain text, Escape cancels, paragraph line breaks survive, and Undo restores the pre-edit text.
 - Confirm each update creates a complete revision and restore returns the exact previous document.
 - Confirm legacy `content_html` pages and existing Page Manager routes continue to work.
 
