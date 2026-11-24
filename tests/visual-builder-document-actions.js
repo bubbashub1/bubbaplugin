@@ -26,6 +26,9 @@ const button={id:'b1',type:'button',props:{text:'Continue',href:'/directory.html
 const invalidButton=commitInlineText(button,'   ');
 assert.equal(invalidButton.ok,false,'button labels cannot be empty');
 assert.equal(button.props.text,'Continue','invalid button edit leaves original text unchanged');
+const validButtonEdit=commitInlineText(button,'Continue exploring');
+assert.equal(validButtonEdit.ok,true,'valid button label edits are accepted');
+assert.equal(button.props.href,'/directory.html','inline button text edits preserve the existing destination');
 const heading={id:'h1',type:'heading',props:{text:'Old'}};
 assert.equal(commitInlineText(heading,'x'.repeat(600)).text.length,500,'heading text respects its client-side limit');
 assert.equal(heading.props.level,undefined,'inline editing does not alter other block properties');
