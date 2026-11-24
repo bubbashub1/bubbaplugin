@@ -49,7 +49,22 @@ function createHistory(limit=50){
   canRedo(current){return !!current&&hasDifferent(redoStack,current);}
  });
 }
-const api=Object.freeze({duplicateSection,createHistory});
+function canInlineEdit(type){return ['heading','paragraph','button'].includes(type);}
+function normaliseInlineText(value,maxLength){
+ const limit=Number.isInteger(maxLength)&&maxLength>=0?maxLength:10000;
+ return String(value??'').replace(/\r\n?/g,'\n').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g,'').slice(0,limit);
+}
+function commitInlineText(block,value){
+ if(!block||typeof block!=='object'||!canInlineEdit(block.type))return {ok:false,changed:false,error:'This element cannot be edited inline.'};
+ const max=block.type==='heading'?500:block.type==='button'?120:10000;
+ const text=normaliseInlineText(value,max);
+ if(block.type==='button'&&!text.trim())return {ok:false,changed:false,error:'Button text cannot be empty.'};
+ if(!block.props||typeof block.props!=='object'||Array.isArray(block.props))block.props={};
+ const changed=String(block.props.text??'')!==text;
+ block.props.text=text;
+ return {ok:true,changed,text};
+}
+const api=Object.freeze({duplicateSection,createHistory,canInlineEdit,normaliseInlineText,commitInlineText});
 if(typeof window!=='undefined')window.BHVisualBuilderDocumentActions=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })();
