@@ -48,7 +48,7 @@ function readableName(node){const tag=node.tagName.toLowerCase();const text=(nod
 function updateSelectionDetails(node){
  draftHasValidationError=false;$('saveDraft').disabled=!draft||!page;
  $('selectedName').textContent=node.getAttribute('aria-label')||readableName(node);
- $('selectedDescription').textContent=previewMode==='draft'?'Edit the selected supported block below. Changes remain in this private draft.':'This is the published page preview. Prepare a structured draft before editing.';
+ $('selectedDescription').textContent=previewMode==='draft'?'Edit in the inspector or double-click supported text in the canvas. Changes remain in this private draft.':'This is the published page preview. Prepare a structured draft before editing.';
  $('selectedDetails').hidden=false;$('selectedTag').textContent=node.tagName.toLowerCase();
  $('selectedText').textContent=String(node.getAttribute('alt')||node.innerText||node.textContent||'').trim().replace(/\s+/g,' ').slice(0,240)||'No text content';
  const editable=previewMode==='draft'&&currentBlock;
@@ -83,6 +83,48 @@ function selectNode(node){
   const index=layerNodes.indexOf(node);
   document.querySelectorAll('.bhvb-layer-button').forEach((button,i)=>button.classList.toggle('active',i===index));
  }catch(error){$('selectedName').textContent='Preview unavailable';$('selectedDescription').textContent='The page could not be inspected safely.';}
+}
+function insertInlineTextAtCaret(doc,node,text){
+ const selection=doc.getSelection();let range=selection&&selection.rangeCount?selection.getRangeAt(0):null;
+ if(!range||!node.contains(range.commonAncestorContainer)){range=doc.createRange();range.selectNodeContents(node);range.collapse(false);}
+ range.deleteContents();const textNode=doc.createTextNode(text);range.insertNode(textNode);range.setStartAfter(textNode);range.collapse(true);
+ if(selection){selection.removeAllRanges();selection.addRange(range);}
+}
+function startInlineEdit(node){
+ if(previewMode!=='draft'){draftStatus('Prepare a draft before editing text directly.');return;}
+ const block=node&&node.dataset&&node.dataset.bhBlockId?findBlock(node.dataset.bhBlockId):null;
+ const actions=window.BHVisualBuilderDocumentActions;
+ if(!block||!actions||!actions.canInlineEdit(block.type)||node.isContentEditable)return;
+ checkpointDraft();selectNode(node);
+ const original=String(block.props&&block.props.text||''),oldTitle=node.getAttribute('title'),doc=frame.contentDocument;let finished=false;
+ node.setAttribute('contenteditable','plaintext-only');node.setAttribute('spellcheck','true');node.classList.add('bhvb-inline-editing');
+ node.setAttribute('title','Editing text · Enter to finish · Escape to cancel');
+ const finish=commit=>{
+  if(finished)return;finished=true;
+  node.removeEventListener('blur',onBlur);node.removeEventListener('keydown',onKeydown);node.removeEventListener('paste',onPaste);
+  node.removeAttribute('contenteditable');node.removeAttribute('spellcheck');node.classList.remove('bhvb-inline-editing');
+  if(oldTitle===null)node.removeAttribute('title');else node.setAttribute('title',oldTitle);
+  if(!commit){node.textContent=original;$('editText').value=original;draftStatus('Inline edit cancelled.');updateHistoryControls();return;}
+  const result=actions.commitInlineText(block,node.textContent);
+  if(!result.ok){node.textContent=original;$('editText').value=original;draftStatus(result.error||'This text could not be saved.');updateHistoryControls();return;}
+  node.textContent=result.text;$('editText').value=result.text;
+  $('selectedText').textContent=result.text.slice(0,240)||'No text content';$('selectedName').textContent=readableName(node);
+  const layerButton=document.querySelectorAll('.bhvb-layer-button')[layerNodes.indexOf(node)];if(layerButton)layerButton.textContent=readableName(node);
+  draftHasValidationError=false;$('saveDraft').disabled=false;
+  draftStatus(result.changed?'Unsaved inline text edit. Save draft when ready.':'No text changes were made.');
+  updateHistoryControls();
+ };
+ const onBlur=()=>finish(true);
+ const onKeydown=event=>{
+  if(event.key==='Escape'){event.preventDefault();finish(false);node.blur();return;}
+  if(event.key==='Enter'){
+   if(block.type==='paragraph'&&event.shiftKey){event.preventDefault();insertInlineTextAtCaret(doc,node,'\\n');return;}
+   if(!event.shiftKey||block.type!=='paragraph'){event.preventDefault();finish(true);node.blur();}
+  }
+ };
+ const onPaste=event=>{event.preventDefault();insertInlineTextAtCaret(doc,node,event.clipboardData&&event.clipboardData.getData('text/plain')||'');};
+ node.addEventListener('blur',onBlur);node.addEventListener('keydown',onKeydown);node.addEventListener('paste',onPaste);
+ node.focus();const selection=doc.getSelection();if(selection){const range=doc.createRange();range.selectNodeContents(node);range.collapse(false);selection.removeAllRanges();selection.addRange(range);}
 }
 function findBlock(id){
  for(const section of draft?.sections||[])for(const block of section.children||[])if(block.id===id)return block;
@@ -125,7 +167,7 @@ function buildLayers(doc){
 function attachCanvas(){
  try{
   const doc=frame.contentDocument;if(!doc||!doc.body)throw new Error('Page not ready');
-  const style=doc.createElement('style');style.textContent='.bhvb-selected-preview{outline:3px solid #0f8b83!important;outline-offset:2px!important;cursor:pointer!important}';doc.head.appendChild(style);
+  const style=doc.createElement('style');style.textContent='.bhvb-selected-preview{outline:3px solid #0f8b83!important;outline-offset:2px!important;cursor:pointer!important}[data-bh-inline-editable="true"]{cursor:text!important}.bhvb-inline-editing{outline:3px solid #0f8b83!important;outline-offset:3px!important;cursor:text!important;white-space:pre-wrap!important;min-width:1em}';doc.head.appendChild(style);
   buildLayers(doc);
   doc.addEventListener('keydown',handleHistoryShortcut,true);
   doc.addEventListener('click',event=>{
@@ -133,7 +175,8 @@ function attachCanvas(){
    if(!node||node===doc.body)return;
    event.preventDefault();event.stopPropagation();selectNode(node);
   },true);
-  status(previewMode==='draft'?'Draft preview ready · unpublished':'Published page preview · read-only');
+  doc.addEventListener('dblclick',event=>{const target=event.target;const node=target&&target.closest?target.closest('[data-bh-inline-editable="true"]'):null;if(!node)return;event.preventDefault();event.stopPropagation();startInlineEdit(node);},true);
+  status(previewMode==='draft'?'Draft preview ready · unpublished · double-click text to edit':'Published page preview · read-only');
  }catch(error){status('Preview loaded · selection unavailable');}
 }
 function setDevice(next){
@@ -165,9 +208,9 @@ function renderDraft(){
  const sections=(draft.sections||[]).map(section=>{
   const children=(section.children||[]).map(block=>{
    const p=block.props||{},id=esc(block.id);
-   if(block.type==='heading'){const level=Math.max(1,Math.min(4,Number(p.level)||2));return '<h'+level+' data-bh-block-id="'+id+'" style="text-align:'+esc(p.align||'left')+'">'+esc(p.text)+'</h'+level+'>';}
-   if(block.type==='paragraph')return '<p data-bh-block-id="'+id+'" style="text-align:'+esc(p.align||'left')+'">'+esc(p.text)+'</p>';
-   if(block.type==='button'&&safeHref(p.href))return '<p><a class="cta" data-bh-block-id="'+id+'" href="'+esc(p.href)+'">'+esc(p.text)+'</a></p>';
+   if(block.type==='heading'){const level=Math.max(1,Math.min(4,Number(p.level)||2));return '<h'+level+' data-bh-block-id="'+id+'" data-bh-inline-editable="true" title="Double-click to edit" style="text-align:'+esc(p.align||'left')+'">'+esc(p.text)+'</h'+level+'>';}
+   if(block.type==='paragraph')return '<p data-bh-block-id="'+id+'" data-bh-inline-editable="true" title="Double-click to edit" style="text-align:'+esc(p.align||'left')+'">'+esc(p.text)+'</p>';
+   if(block.type==='button'&&safeHref(p.href))return '<p><a class="cta" data-bh-block-id="'+id+'" data-bh-inline-editable="true" title="Double-click to edit" href="'+esc(p.href)+'">'+esc(p.text)+'</a></p>';
    return '';
   }).join('');
   const p=section.props||{};const w=Math.min(100,Math.max(25,Number(p.width??100))),h=Math.min(800,Math.max(0,Number(p.min_height??0))),rad=Math.min(48,Math.max(0,Number(p.radius??12))),bw=Math.min(8,Math.max(0,Number(p.border_width??0))),al=['left','center','right'].includes(p.align)?p.align:'center',bc=/^#[0-9a-f]{6}$/i.test(p.border_color||'')?p.border_color:'#dce8df';
