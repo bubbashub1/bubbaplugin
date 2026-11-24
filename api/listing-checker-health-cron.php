@@ -13,18 +13,15 @@ foreach($required as $table){$tableCheck->execute([$table]);if(!(int)$tableCheck
 ");exit(2);}}
 $settings=[];foreach($db->query('SELECT setting_key,setting_value FROM bh_listing_checker_settings')->fetchAll(PDO::FETCH_ASSOC) as $r)$settings[$r['setting_key']]=$r['setting_value'];
 $get=static fn($k,$d='')=>(string)($settings[$k]??$d);
-if($get('health_enabled','0')!=='1'){echo "Health checks disabled
-";exit;}
-if($get('health_paused','0')==='1'){echo "Health checks paused
-";exit;}
 $manualRun=$get('health_run_now','0')==='1';
+$manualTargetId=max(0,(int)$get('health_manual_target_id','0'));
+if($get('health_enabled','0')!=='1'&&!$manualRun){echo "Health checks disabled\n";exit;}
+if($get('health_paused','0')==='1'&&!$manualRun){echo "Health checks paused\n";exit;}
 $tz=new DateTimeZone($get('timezone','Europe/London'));$now=new DateTimeImmutable('now',$tz);
 $days=json_decode($get('active_days','[1,2,3,4,5,6,7]'),true)?:[1,2,3,4,5,6,7];
-if(!in_array((int)$now->format('N'),array_map('intval',$days),true)){echo "Not an active day
-";exit;}
+if(!$manualRun&&!in_array((int)$now->format('N'),array_map('intval',$days),true)){echo "Not an active day\n";exit;}
 $start=$get('window_start','00:00');$end=$get('window_end','23:59');$clock=$now->format('H:i');
-if(($start<=$end&&($clock<$start||$clock>$end))||($start>$end&&$clock>$end&&$clock<$start)){echo "Outside run window
-";exit;}
+if(!$manualRun&&(($start<=$end&&($clock<$start||$clock>$end))||($start>$end&&$clock>$end&&$clock<$start))){echo "Outside run window\n";exit;}
 $interval=max(1,min(24,(int)$get('interval_hours','4')));
 $preferred=$get('preferred_start_time','00:00');
 $last=$db->query("SELECT MAX(finished_at) FROM bh_listing_check_runs WHERE check_type='health' AND status='completed'")->fetchColumn();
@@ -50,9 +47,9 @@ try{
  // INSERT IGNORE discovers newly-created listings; existing queue rows are retained for recurring checks.
  $db->exec("INSERT IGNORE INTO bh_listing_check_queue(check_type,target_id,target_term_id,status,next_check_at) SELECT 'health',id,0,'pending',NOW() FROM bh_activities");
  $q=$db->prepare("INSERT INTO bh_listing_check_runs(check_type,status,started_at) VALUES('health','running',NOW())");$q->execute();$runId=(int)$db->lastInsertId();
- if($manualRun){$clear=$db->prepare("INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES(?, '0') ON DUPLICATE KEY UPDATE setting_value='0'");$clear->execute(['health_run_now']);}
+ if($manualRun){$clear=$db->prepare("INSERT INTO bh_listing_checker_settings(setting_key,setting_value) VALUES(?, '0') ON DUPLICATE KEY UPDATE setting_value='0'");$clear->execute(['health_run_now']);$clear->execute(['health_manual_target_id']);}
  $limit=max(1,min(100,(int)$get('batch_size','30')));$runtime=max(30,min(600,(int)$get('max_runtime_seconds','240')));$deadline=microtime(true)+$runtime;
- $due=$db->prepare("SELECT id,target_id FROM bh_listing_check_queue WHERE check_type='health' AND status IN('pending','failed') AND (next_check_at IS NULL OR next_check_at<=NOW()) ORDER BY COALESCE(next_check_at,created_at),id LIMIT ?");$due->bindValue(1,$limit,PDO::PARAM_INT);$due->execute();$queue=$due->fetchAll(PDO::FETCH_ASSOC);
+ if($manualRun&&$manualTargetId>0){$due=$db->prepare("SELECT id,target_id FROM bh_listing_check_queue WHERE check_type='health' AND target_id=? AND status IN('pending','failed') AND (next_check_at IS NULL OR next_check_at<=NOW()) ORDER BY id LIMIT 1");$due->execute([$manualTargetId]);$queue=$due->fetchAll(PDO::FETCH_ASSOC);$limit=1;}else{$due=$db->prepare("SELECT id,target_id FROM bh_listing_check_queue WHERE check_type='health' AND status IN('pending','failed') AND (next_check_at IS NULL OR next_check_at<=NOW()) ORDER BY COALESCE(next_check_at,created_at),id LIMIT ?");$due->bindValue(1,$limit,PDO::PARAM_INT);$due->execute();$queue=$due->fetchAll(PDO::FETCH_ASSOC);}
  $fields=['title','description','short_description','category','age_range','booking_url','facebook_url','instagram_url','image_path','start_date','end_date','next_session_date','updated_at'];
  $select=['a.id'];foreach($fields as $f)if(in_array($f,$cols,true))$select[]='a.`'.$f.'`';
  $fallbacks=[
