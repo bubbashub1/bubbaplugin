@@ -1,0 +1,108 @@
+{
+  "schema": "bubbahub.directorist.directory-blueprint",
+  "schema_version": "1.1.0",
+  "project": {
+    "name": "Bubba Hub",
+    "repository": "bubbashub1/bubbaplugin",
+    "purpose": "Six connected discovery directories for families across Devon and Cornwall.",
+    "audiences": ["Expectant parents", "Parents and carers", "Babies", "Toddlers", "Preschool children", "School-age children", "Families"],
+    "important_distinction": "Pregnancy, baby and toddler are audiences/age or life-stage filters, NOT separate directory types."
+  },
+  "directory_types": [
+    {
+      "name": "Listings",
+      "slug": "listings",
+      "description": "Regular classes, activities, groups and sessions for pregnancy, babies, toddlers, children and families. This is the core activity directory currently represented by BubbaPlugin's bh_activities data.",
+      "existing_bubbaplugin_source": ["bh_activities", "bh_organisers", "bh_venues", "activity sessions"],
+      "categories": ["Pregnancy and antenatal", "Baby classes and groups", "Toddler classes and groups", "Preschool activities", "Children's activities", "Family activities", "Parent and child groups", "Sensory and messy play", "Music and singing", "Dance and movement", "Swimming", "Sports and active play", "Outdoor and nature", "Arts and crafts", "Storytime and libraries", "Community groups", "Parent support groups"],
+      "fields": ["title", "description", "category", "age_min_months", "age_max_months", "age_range", "county", "region", "town", "postcode", "price_from", "price_free", "booking_url", "booking_required", "drop_in_welcome", "trial_available", "term_time_only", "holiday_sessions", "siblings_welcome", "what_to_bring", "good_to_know", "accessibility", "organisation_name", "email", "phone", "website", "venues", "sessions", "images"],
+      "filters": ["keyword", "category", "life_stage_or_age", "region", "town", "day", "price_or_free", "drop_in", "term_time_or_holidays", "accessibility"]
+    },
+    {
+      "name": "Events",
+      "slug": "events",
+      "description": "One-off and date-specific family events, fairs, expos, workshops, open days and seasonal activities.",
+      "existing_bubbaplugin_source": ["bh_activities and related sessions where event-like records already exist", "event-specific records where implemented"],
+      "categories": ["Family events", "Pregnancy events", "Baby events", "Toddler and preschool events", "Children's events", "Workshops", "Fairs and expos", "Open days", "Seasonal events", "Community events", "Fundraisers", "Holiday events"],
+      "fields": ["title", "description", "category", "event_start", "event_end", "all_day", "repeat_or_multiple_dates", "age_min_months", "age_max_months", "county", "region", "town", "postcode", "venue", "price", "price_free", "ticket_or_booking_url", "booking_required", "capacity_if_applicable", "organiser", "contact_details", "accessibility", "images"],
+      "filters": ["keyword", "event_date_or_date_range", "category", "life_stage_or_age", "region", "town", "free_or_paid"]
+    },
+    {
+      "name": "Businesses",
+      "slug": "businesses",
+      "description": "Local businesses and independent providers offering products or services relevant to pregnancy, babies, children and family life.",
+      "existing_bubbaplugin_source": ["bh_organisers as a possible linked owner/contact only; do not assume every organiser is a public business listing"],
+      "categories": ["Pregnancy services", "Baby services", "Child and family services", "Photography", "Retail and shops", "Baby and children's products", "Health and wellbeing providers", "Food and family-friendly services", "Professional services", "Party and celebration services", "Family attractions and entertainment providers"],
+      "fields": ["business_name", "description", "business_category", "logo", "cover_images", "website", "telephone", "public_email_if_opted_in", "social_links", "address", "town", "postcode", "region", "county", "service_area", "opening_hours_if_relevant", "price_or_price_band_if_relevant", "booking_or_enquiry_url", "accessibility", "owner_account", "verification_status"],
+      "filters": ["keyword", "business_category", "region", "town", "service_area"]
+    },
+    {
+      "name": "Childcare & Schools",
+      "slug": "childcare-schools",
+      "description": "Childcare providers, early-years settings and schools to help families find care and education options.",
+      "existing_bubbaplugin_source": ["new directory type; do not force these records into bh_activities"],
+      "categories": ["Nurseries", "Preschools", "Day nurseries", "Childminders", "Primary schools", "Independent schools", "Special schools", "Wraparound care", "Breakfast clubs", "After-school care", "Holiday childcare", "Forest and outdoor nurseries"],
+      "fields": ["provider_or_setting_name", "description", "setting_type", "age_range_or_age_min_max", "county", "region", "town", "postcode", "address", "telephone", "website", "public_email_if_opted_in", "opening_days_and_hours", "term_time_or_year_round", "funding_or_places_information_if_supplied", "inspection_or_registration_reference_if_supplied", "accessibility", "contact_or_enquiry_url", "verification_status"],
+      "filters": ["keyword", "setting_type", "age_range", "region", "town", "care_type"]
+    },
+    {
+      "name": "Places & Days Out",
+      "slug": "places-days-out",
+      "description": "Places families can visit and things to explore together, including attractions, parks, play venues and days-out destinations.",
+      "existing_bubbaplugin_source": ["bh_venues may be linked where a place is also a class venue; keep public destination records distinct from activity venue records"],
+      "categories": ["Indoor play and soft play", "Outdoor play areas", "Parks and gardens", "Beaches", "Farms and animal experiences", "Museums and heritage", "Family attractions", "Nature reserves and walks", "Leisure centres", "Swimming pools", "Libraries and community places", "Rainy-day activities", "Free days out"],
+      "fields": ["place_name", "description", "place_category", "county", "region", "town", "postcode", "address", "latitude", "longitude", "website", "telephone", "opening_hours_or_season", "admission_price_or_free", "age_suitability", "facilities", "accessibility", "parking_and_transport", "booking_url", "images", "verification_status"],
+      "filters": ["keyword", "place_category", "region", "town", "age_suitability", "free_or_paid", "indoor_outdoor"]
+    },
+    {
+      "name": "School Clubs",
+      "slug": "school-clubs",
+      "description": "Clubs and organised activities delivered for school-age children, including before-school, lunchtime, after-school and holiday provision.",
+      "existing_bubbaplugin_source": ["new directory type; may share organiser, venue and session concepts with Listings but remains its own directory type"],
+      "categories": ["Before-school clubs", "Breakfast clubs", "Lunchtime clubs", "After-school clubs", "Sports clubs", "Dance and performing arts", "Music and drama", "STEM and coding", "Arts and crafts", "Outdoor and nature clubs", "Language and learning clubs", "Holiday clubs"],
+      "fields": ["club_name", "description", "club_category", "age_min_months", "age_max_months", "school_or_venue_name", "school_or_venue_address", "county", "region", "town", "postcode", "days_and_session_times", "term_time_or_holidays", "price_and_payment_frequency", "booking_or_registration_url", "eligibility_or_school_restrictions", "provider_or_organiser", "contact_details", "accessibility", "images", "verification_status"],
+      "filters": ["keyword", "club_category", "age_range", "region", "town", "day", "before_school_after_school_or_holiday"]
+    }
+  ],
+  "shared_configuration": {
+    "geography": {
+      "country": "United Kingdom",
+      "counties": ["Devon", "Cornwall"],
+      "regions": ["East Cornwall", "East Devon", "Exeter", "Mid Cornwall", "Mid Devon", "North Cornwall", "North Devon", "Plymouth", "South Cornwall", "South Hams", "Teignbridge", "Torbay", "West Cornwall", "West Devon"],
+      "location_hierarchy": ["county", "region", "town", "postcode"],
+      "postcode_is_primary_venue_match_key": true
+    },
+    "audience_and_age": {
+      "life_stages": ["Pregnancy", "Newborn", "Baby", "Toddler", "Preschool", "School age", "Family"],
+      "rule": "Life stages and age ranges are reusable taxonomy/filter fields across the relevant directory types, not separate directories."
+    },
+    "shared_entities": ["Organiser or provider", "Venue or place", "Contact details", "Images", "Location"],
+    "listing_workflow": {
+      "default_submission_status": "pending_review",
+      "public_visibility_requires_approval": true,
+      "owner_permissions_checked_server_side": true
+    },
+    "planner_and_booking": {
+      "planner_is_a_connected_family_feature_not_a_directory_type": true,
+      "families_can_save_relevant_listings_and_events_to_my_planner": true,
+      "booking_is_a_connected_workflow_not_a_directory_type": true,
+      "preserve_advertised_provider_price": true,
+      "show_any_parent_facing_booking_fee_separately": true
+    },
+    "data_integrity": {
+      "reuse_shared_organiser_and_venue_records_where_they_are_the_same_real_entity": true,
+      "do_not_duplicate_activity_records_to_show_them_in_multiple_filters": true,
+      "do_not_treat_all_organisers_as_business_directory_listings": true,
+      "do_not_treat_all_venues_as_places_days_out_records": true,
+      "normalise_postcodes_before_matching": true,
+      "use_venue_name_address_and_town_as_secondary_match_checks": true,
+      "flag_uncertain_matches_for_manual_review": true
+    }
+  },
+  "directorist_setup_notes": {
+    "recommended_creation_order": ["Listings", "Events", "Businesses", "Childcare & Schools", "Places & Days Out", "School Clubs"],
+    "native_import_status": "Blueprint only; not yet a verified native Directorist export.",
+    "native_import_requirement": "Use a configuration exported from the installed Directorist version as the exact structural template. Map these six definitions into the native format and test one directory on staging before importing the remaining five.",
+    "safety": "Do not import this blueprint into Directorist's global settings importer. Do not overwrite existing site settings."
+  }
+}
