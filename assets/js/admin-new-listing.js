@@ -15,7 +15,7 @@ if(healthActivityId>0){
    const response=await fetch('/api/admin-listing-checker-run-one.php?id='+encodeURIComponent(healthActivityId),{credentials:'same-origin',cache:'no-store'});
    const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'Could not load listing check results.');
    healthCsrf=data.csrf||healthCsrf;
-   status.textContent=data.queue?.last_checked_at?'Last checked: '+data.queue.last_checked_at+' · '+(data.queue.status==='failed'?'Last run failed':data.queue.status==='pending'?'Next check queued':'Check recorded'):'This listing has not been checked yet.';
+   status.textContent=data.queue?.last_checked_at?'Last checked: '+data.queue.last_checked_at+(data.queue.status==='failed'?' · Last run failed':''):(data.queue?.status==='pending'?'Check queued for the next server worker run.':'This listing has not been checked yet.');
    findings.innerHTML=data.findings?.length?'<ul style="padding-left:20px">'+data.findings.map(f=>'<li><strong>'+escHealth(f.label||f.finding_type)+'</strong> · '+escHealth(f.review_status||'new')+'</li>').join('')+'</ul>':'<p>No outstanding findings recorded for this listing.</p>';
    if(data.queue?.status==='pending'&&data.queue?.last_error)findings.insertAdjacentHTML('beforeend','<p>'+escHealth(data.queue.last_error)+'</p>');
   }catch(error){status.textContent=error.message;status.style.color='#9c302c';}
