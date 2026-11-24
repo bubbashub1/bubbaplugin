@@ -18,7 +18,7 @@ assert.equal(canInlineEdit('heading'),true,'headings support inline editing');
 assert.equal(canInlineEdit('paragraph'),true,'paragraphs support inline editing');
 assert.equal(canInlineEdit('button'),true,'buttons support inline editing');
 assert.equal(canInlineEdit('image'),false,'unsupported elements cannot be edited inline');
-assert.equal(normaliseInlineText('First\r\nSecond\u0000!',12),'First\nSecond!','inline text is normalised and control characters are removed');
+assert.equal(normaliseInlineText('First\r\nSecond\u0000!',20),'First\nSecond!','inline text is normalised and control characters are removed');
 const paragraph={id:'p1',type:'paragraph',props:{text:'Before'}};
 assert.deepEqual(commitInlineText(paragraph,'Line one\r\nLine two'),{ok:true,changed:true,text:'Line one\nLine two'});
 assert.equal(paragraph.props.text,'Line one\nLine two','paragraph text is committed as plain text');
