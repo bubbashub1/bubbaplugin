@@ -27,8 +27,10 @@ try {
         bhvm_out(503, ['ok'=>false, 'error'=>'The current deployment image directory is not available.']);
     }
     $folderPath = realpath($imagesRoot . DIRECTORY_SEPARATOR . $folder);
-    if ($folderPath === false || !is_dir($folderPath) ||
-        !str_starts_with($folderPath, $imagesRoot . DIRECTORY_SEPARATOR)) {
+    if ($folderPath === false || !is_dir($folderPath)) {
+        bhvm_out(200, ['ok'=>true, 'folder'=>$folder, 'files'=>[]]);
+    }
+    if (!str_starts_with($folderPath, $imagesRoot . DIRECTORY_SEPARATOR)) {
         bhvm_out(404, ['ok'=>false, 'error'=>'This image folder is not available in the current deployment.']);
     }
     $files = [];
