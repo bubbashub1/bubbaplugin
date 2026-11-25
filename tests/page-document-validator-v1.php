@@ -40,5 +40,17 @@ assert_test(!bh_page_document_safe_href_v1('tel:abc'),'malformed tel URL rejecte
 assert_test(!bh_page_document_safe_href_v1('mailto:not-an-email'),'malformed mailto URL rejected');
 assert_test(!bh_page_document_safe_href_v1('/\\\\evil.test'),'backslash URL rejected');
 assert_test(!bh_page_document_safe_href_v1('data:text/html,evil'),'data URL rejected');
+$validImage=$valid;
+$validImage['sections'][0]['children'][]=['id'=>'img1','type'=>'image','props'=>['src'=>'/images/home/hero-family-art.png','alt'=>'Family enjoying an activity']];
+assert_test(bh_validate_page_document_v1($validImage)['ok'],'valid local image block');
+$badImage=$validImage;$badImage['sections'][0]['children'][3]['props']['src']='https://example.com/image.jpg';assert_test(!bh_validate_page_document_v1($badImage)['ok'],'external image URL rejected');
+$badImage=$validImage;$badImage['sections'][0]['children'][3]['props']['src']='/images/home/../logos/logo.png';assert_test(!bh_validate_page_document_v1($badImage)['ok'],'image path traversal rejected');
+$badImage=$validImage;$badImage['sections'][0]['children'][3]['props']['src']='/images/home/unsafe.svg';assert_test(!bh_validate_page_document_v1($badImage)['ok'],'unsupported image type rejected');
+$badImage=$validImage;$badImage['sections'][0]['children'][3]['props']['alt']=str_repeat('x',301);assert_test(!bh_validate_page_document_v1($badImage)['ok'],'image alternative text limit enforced');
+$badImage=$validImage;unset($badImage['sections'][0]['children'][3]['props']['alt']);assert_test(!bh_validate_page_document_v1($badImage)['ok'],'missing image alt rejected');
+assert_test(bh_page_document_safe_image_src_v1('/images/logos/logoheader.png'),'approved local image path');
+assert_test(!bh_page_document_safe_image_src_v1('//evil.test/image.png'),'protocol-relative image URL rejected');
+assert_test(!bh_page_document_safe_image_src_v1('/images/general/../../secret.png'),'traversal image path rejected');
+assert_test(!bh_page_document_safe_image_src_v1('/uploads/outside.png'),'unapproved image directory rejected');
 echo "All validator tests passed.
 ";

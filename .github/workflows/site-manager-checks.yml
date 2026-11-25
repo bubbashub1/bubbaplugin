@@ -7,6 +7,7 @@ on:
       - 'api/site-design.php'
       - 'api/page-document-validator-v1.php'
       - 'api/admin-visual-page-drafts.php'
+      - 'api/admin-visual-media.php'
       - 'tests/page-document-validator-v1.php'
       - 'tests/visual-builder-document-actions.js'
       - 'tests/visual-builder-document-history.js'
@@ -36,6 +37,7 @@ on:
       - 'api/site-design.php'
       - 'api/page-document-validator-v1.php'
       - 'api/admin-visual-page-drafts.php'
+      - 'api/admin-visual-media.php'
       - 'tests/page-document-validator-v1.php'
       - 'tests/visual-builder-document-actions.js'
       - 'tests/visual-builder-document-history.js'
@@ -78,6 +80,8 @@ jobs:
         run: node -e "JSON.parse(require('fs').readFileSync('schemas/page-document-v1.schema.json', 'utf8'))"
       - name: Lint visual draft API
         run: php -l api/admin-visual-page-drafts.php
+      - name: Lint read-only visual media API
+        run: php -l api/admin-visual-media.php
       - name: Lint visual document validator
         run: php -l api/page-document-validator-v1.php
       - name: Run visual document validator tests

@@ -86,6 +86,12 @@ function bh_validate_page_document_v1(mixed $document): array {
     if(!is_string($p['text']??null)||trim($p['text'])===''||mb_strlen($p['text'])>120)$errors[]='Button text invalid.';
     $href=$p['href']??null;
     if(!is_string($href)||strlen($href)>2048||!bh_page_document_safe_href_v1($href))$errors[]='Button link invalid.';
+   }elseif($type==='image'){
+    if(array_diff(array_keys($p),['src','alt']))$errors[]='Unknown image property.';
+    if(!array_key_exists('src',$p)||!array_key_exists('alt',$p))$errors[]='Image source and alternative text are required.';
+    $src=$p['src']??null;$alt=$p['alt']??null;
+    if(!is_string($src)||!bh_page_document_safe_image_src_v1($src))$errors[]='Image source is invalid.';
+    if(!is_string($alt)||mb_strlen($alt)>300)$errors[]='Image alternative text is invalid.';
    }else $errors[]='Unsupported block type.';
    if(isset($p['align'])&&!in_array($p['align'],['left','center','right'],true))$errors[]='Invalid alignment.';
   }
@@ -112,4 +118,9 @@ function bh_page_document_safe_href_v1(string $href): bool {
  if(str_starts_with($href,'/'))return true;
  if(str_starts_with($href,'#')||str_starts_with($href,'?'))return strlen($href)>1;
  return false;
+}
+
+function bh_page_document_safe_image_src_v1(string $src): bool {
+ if(strlen($src)>512||str_contains($src,'..')||str_contains($src,chr(92))||preg_match('/[\\x00-\\x20\\x7f]/',$src))return false;
+ return preg_match('#^/images/(?:general|home|listings|logos)/[A-Za-z0-9][A-Za-z0-9._-]{0,180}\\.(?:jpg|jpeg|png|webp|gif)$#D',$src)===1;
 }

@@ -16,3 +16,24 @@
 .bhvb-history-controls button:disabled{opacity:.42;cursor:not-allowed}
 .bhvb-history-controls button:focus-visible{outline:3px solid #3c8e96;outline-offset:2px}
 @media(max-width:600px){.bhvb-history-controls{width:100%}.bhvb-history-controls button{flex:1}}
+
+/* Read-only media selection. Upload and delete remain outside the Visual Builder. */
+.bhvb-inspector-tabs{flex-wrap:wrap;gap:14px}
+.bhvb-media-panel{padding:12px;max-height:620px;overflow:auto}
+.bhvb-media-panel[hidden]{display:none!important}
+.bhvb-media-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:end}
+.bhvb-media-toolbar label{grid-column:1/-1;color:#49614f;font-size:.78rem;font-weight:800}
+.bhvb-media-toolbar select{min-width:0;width:100%;padding:9px;border:1px solid #cfd8cf;border-radius:8px;background:#fff;color:#203c2c;font:inherit}
+.bhvb-media-toolbar button{border:1px solid #b7c9bb;border-radius:8px;background:#f5f8f5;color:#315d40;padding:9px 12px;font:inherit;font-size:.8rem;font-weight:750;cursor:pointer}
+.bhvb-media-status{margin:10px 0;color:#68796c;font-size:.78rem;line-height:1.45}
+.bhvb-media-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.bhvb-media-card{min-width:0;border:1px solid #dce8df;border-radius:10px;overflow:hidden;background:#fff}
+.bhvb-media-preview{display:grid;place-items:center;aspect-ratio:4/3;padding:5px;background:#f2f6f2}
+.bhvb-media-preview img{display:block;max-width:100%;max-height:100%;object-fit:contain}
+.bhvb-media-card-body{display:grid;gap:5px;padding:8px}
+.bhvb-media-card-body strong{font-size:.72rem;color:#31533d;overflow-wrap:anywhere}
+.bhvb-media-card-body small{font-size:.68rem;color:#718075}
+.bhvb-media-add{width:100%;border:1px solid #b7c9bb;border-radius:7px;background:#f5f8f5;color:#315d40;padding:7px 5px;font:inherit;font-size:.7rem;font-weight:750;cursor:pointer}
+.bhvb-media-add:disabled{opacity:.42;cursor:not-allowed}
+.bhvb-image-controls textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #cfd8cf;border-radius:8px;background:#fff;color:#203c2c;font:inherit;font-size:.88rem;resize:vertical}
+@media(max-width:900px){.bhvb-media-panel{grid-column:1/-1}}
