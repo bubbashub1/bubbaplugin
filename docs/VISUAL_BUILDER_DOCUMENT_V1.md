@@ -5,7 +5,7 @@ This is the first structured-content contract for the native Wix-style builder.
 - Machine-readable schema: `schemas/page-document-v1.schema.json`
 - Schema dialect: JSON Schema 2020-12
 - Version: `schema_version: 1`
-- Initial blocks: section/container, heading, paragraph and button
+- Initial blocks: section/container, heading, paragraph, button and image
 - Layout controls are deliberately constrained to approved values; no arbitrary HTML, JavaScript, event handlers, CSS declarations or unknown properties are accepted.
 - Container nesting is intentionally flat in this stage: each page-level container holds heading, paragraph or button blocks. Containers can be added, reordered and deleted in the private draft. Each has independent background, padding, inner gap, width, minimum height, corner radius, border colour/thickness, horizontal alignment and spacing after. An optional, constrained mobile override object (width, padding, gap, minimum height, radius, border thickness, alignment and spacing after) applies at 600px or narrower and inherits desktop values when absent.
 - Page documents are data, not rendered HTML. The public renderer must escape text and validate link destinations before output.
@@ -49,3 +49,12 @@ The server must independently enforce the schema and also check:
 ## Scope deliberately deferred
 
 Images/media uploads, columns, freeform drag-and-drop, tablet overrides, templates, navigation editing and Bubba Hub data-backed blocks remain out of scope. The optional mobile-only container overrides are a constrained v1 extension, not a general responsive CSS system.
+
+
+## Existing media selection — 25 November 2026
+
+The v1 document supports a constrained image block with a same-site path under `/images/general`, `/images/home`, `/images/listings` or `/images/logos`, plus alternative text up to 300 characters. Remote URLs, data URLs, SVG files, traversal paths and unapproved directories are rejected by the PHP validator.
+
+The Visual Builder Media tab reads up to 250 validated raster images from the current deployment through `api/admin-visual-media.php`. The endpoint is administrator-session protected and GET-only; it does not upload, overwrite or delete files. Empty folders return an empty list.
+
+The separate File Manager at `/library/` remains a distinct tool. Its existing API is GitHub-backed and hard-coded to `main`, so it must not be used for staging Visual Builder writes or staging uploads. Images are added explicitly to private structured drafts; existing page images are not automatically converted.
