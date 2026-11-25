@@ -211,3 +211,14 @@ Inline editing is available only in the structured private draft preview. Publis
 ## Branch synchronization status — 24 November 2026
 
 The feature branch was reconciled with the current `staging-site` head on 23 November using a normal GitHub-generated merge commit. After the 24 November inline-editing work, the verified compare from staging commit `c02d7191b8a9096316bbbf5747f259f7a2c210ca` to feature head `b3d28d7a114a577d04d7bd22cf2dc8d865c449c2` is 150 commits ahead and 0 behind, with the merge base equal to the staging head. This supersedes the earlier 22–23 November drift notes above. No rebase, force update or PR merge was performed.
+
+
+## Stage 4 — existing media selection (25 November 2026)
+
+The Visual Builder now has a read-only Media inspector tab for selecting existing Bubba Hub raster images and adding them to a selected structured-draft container. The v1 `image` block contains only `src` and `alt`; the source is restricted to approved local image folders and raster extensions. Alternative text is editable in Properties.
+
+The `api/admin-visual-media.php` endpoint uses the shared administrator session guard, accepts GET only, checks real paths and image MIME types, excludes symlinks, caps results at 250 and performs no writes. It reads the current deployment's filesystem, so staging lists staging-deployed assets rather than GitHub `main`. Missing allowed folders return an empty list.
+
+The existing File Manager at `/library/` remains separate. Its `library/api.php` is GitHub-backed and hard-coded to `main` for listing, upload and delete. The Visual Builder must not call those write actions. No image is uploaded, deleted, published or written to a public page by this change.
+
+Navigation remains deferred: the admin navigation subpages are placeholders, the menu manager script lacks its expected editor DOM, and `api/menu.php` creates its table during GET and has no CSRF validation on writes. Harden and integrate the existing menu system before adding another navigation editor.
