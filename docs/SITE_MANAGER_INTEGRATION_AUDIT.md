@@ -14,12 +14,22 @@ Bubba Hub is a standalone PHP/JavaScript application, not a WordPress-rendered s
 - This run adds `api/admin-visual-media.php`, a GET-only endpoint protected by `admin-session-guard.php`. It lists raster images from the current deployment's local `images` directory, checks real paths and image MIME types, excludes symlinks, allows only four folders and caps results at 250. It has no upload, overwrite or delete action.
 - The Visual Builder's Media tab can add one of these approved images to a private draft container. The image source is checked by the client and the PHP document validator; alternative text is editable and length-limited. No public page is changed.
 
-## Existing navigation/menu system
+## Existing navigation/menu system — secured and reused on 26 November 2026
 
-- The admin dashboard links to `admin/admin-navigation.html`; its three menu subpages are currently placeholders.
-- `assets/js/menu-manager.js` expects `#menuManagerLists`, `#saveMenus` and `#menuManagerStatus`, which are not present in the current admin dashboard markup; it does not initialise as a complete editor.
-- `api/menu.php` creates `bh_site_menus` during GET and has no CSRF validation for writes. It should not be connected to the Site Manager until hardened.
-- Keep current public header/footer navigation and family/leader application navigation unchanged.
+- The existing store remains `bh_site_menus`; no parallel menu table or page registry was introduced.
+- The existing `api/menu.php` is now split into a public read route and authenticated admin routes. Public GET is read-only, does not start an administrator session, and falls back to safe defaults if the table is absent or the database is temporarily unavailable.
+- Table creation has moved to the explicit administrator-only POST setup action. A GET request no longer creates or changes database structures.
+- Admin reads and writes use the shared `admin-session-guard.php`, a session-bound CSRF token, same-origin/Fetch Metadata checks, allow-listed menu groups and item fields, bounded labels/URLs/item counts, safe URL schemes, and a transaction for all four menu groups. Error responses no longer expose database exception messages.
+- The existing Navigation & menus page is now a working editor for the main header and three footer groups. Reordering uses accessible Move up / Move down controls; no non-functional drag handle is presented.
+- `assets/js/site-auth.js` already consumed the public footer menu data; it now also uses the configured main menu for the public header, with the existing default links as a fallback. The account link retains leader-account routing for authenticated leaders, and the existing logout control remains appended for authenticated users.
+- The old individual navigation subpages remain legacy placeholders and are no longer the entry point. The admin dashboard continues to link to the consolidated Navigation & menus page.
+- The Navigation Manager is separate from Visual Builder drafts. Saving changes the current deployment's menu configuration; deploy this code to staging only for QA. No page content, booking, directory, family or leader data is written by this feature.
+
+## Navigation verification boundary
+
+- Added pure PHP tests for allowed URL forms, unsafe schemes, path traversal, normalisation, group/item allow-lists, visibility, label length and item-count limits.
+- GitHub Actions checks PHP syntax, menu validation tests, and JavaScript syntax for the manager and public auth/menu consumer.
+- Repository tests do not prove browser behaviour or database permissions. Staging QA must verify unauthenticated public menu reads, administrator-only setup/save, CSRF rejection, all four menu groups, header/footer rendering, and regression behaviour before any live deployment.
 
 ## Safe next steps
 

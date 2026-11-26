@@ -8,13 +8,19 @@ on:
       - 'api/page-document-validator-v1.php'
       - 'api/admin-visual-page-drafts.php'
       - 'api/admin-visual-media.php'
+      - 'api/menu.php'
+      - 'api/menu-validation.php'
       - 'tests/page-document-validator-v1.php'
+      - 'tests/menu-validation.php'
       - 'tests/visual-builder-document-actions.js'
       - 'tests/visual-builder-document-history.js'
       - 'admin/admin-site-manager.html'
       - 'admin/admin-visual-builder.html'
+      - 'admin/admin-navigation.html'
       - 'assets/js/admin-site-manager.js'
       - 'assets/js/admin-visual-builder.js'
+      - 'assets/js/menu-manager.js'
+      - 'assets/js/site-auth.js'
       - 'assets/js/visual-builder-document-actions.js'
       - 'assets/js/header.js'
       - 'assets/js/explore.js'
@@ -27,6 +33,7 @@ on:
       - 'schemas/page-document-v1.schema.json'
       - 'assets/css/admin-site-manager.css'
       - 'assets/css/admin-visual-builder.css'
+      - 'assets/css/admin-navigation-manager.css'
       - 'assets/css/site-manager-design.css'
       - 'assets/css/styles.css'
       - '.github/workflows/site-manager-checks.yml'
@@ -39,14 +46,20 @@ on:
       - 'api/page-document-validator-v1.php'
       - 'api/admin-visual-page-drafts.php'
       - 'api/admin-visual-media.php'
+      - 'api/menu.php'
+      - 'api/menu-validation.php'
       - 'tests/page-document-validator-v1.php'
+      - 'tests/menu-validation.php'
       - 'tests/visual-builder-document-actions.js'
       - 'tests/visual-builder-document-history.js'
       - 'admin/admin-site-manager.html'
       - 'admin/admin-visual-builder.html'
+      - 'admin/admin-navigation.html'
       - 'admin.html'
       - 'assets/js/admin-site-manager.js'
       - 'assets/js/admin-visual-builder.js'
+      - 'assets/js/menu-manager.js'
+      - 'assets/js/site-auth.js'
       - 'assets/js/visual-builder-document-actions.js'
       - 'assets/js/header.js'
       - 'assets/js/explore.js'
@@ -59,6 +72,7 @@ on:
       - 'schemas/page-document-v1.schema.json'
       - 'assets/css/admin-site-manager.css'
       - 'assets/css/admin-visual-builder.css'
+      - 'assets/css/admin-navigation-manager.css'
       - 'assets/css/site-manager-design.css'
       - 'assets/css/styles.css'
       - '.github/workflows/site-manager-checks.yml'
@@ -84,6 +98,12 @@ jobs:
         run: php -l api/admin-visual-page-drafts.php
       - name: Lint read-only visual media API
         run: php -l api/admin-visual-media.php
+      - name: Lint menu API
+        run: php -l api/menu.php
+      - name: Lint menu validation helpers
+        run: php -l api/menu-validation.php
+      - name: Run menu validation tests
+        run: php tests/menu-validation.php
       - name: Lint visual document validator
         run: php -l api/page-document-validator-v1.php
       - name: Run visual document validator tests
@@ -106,3 +126,7 @@ jobs:
         run: node --check assets/js/header.js
       - name: Check homepage JavaScript syntax
         run: node --check assets/js/explore.js
+      - name: Check menu manager JavaScript syntax
+        run: node --check assets/js/menu-manager.js
+      - name: Check public menu consumer JavaScript syntax
+        run: node --check assets/js/site-auth.js
