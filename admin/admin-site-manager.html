@@ -7,6 +7,15 @@
 <main class="admin-subpage-shell bhsm-shell">
 <div class="admin-back"><a href="/admin.html">← Admin dashboard</a></div>
 <header class="admin-subpage-head"><div><span class="eyebrow">Website management</span><h1>Site Manager</h1><p>Control Bubba Hub's visual identity from one place. Changes are saved as drafts first; published settings apply supported design tokens across pages using the shared stylesheet.</p></div><span class="bhsm-status" id="connectionStatus">Connecting…</span></header>
+<section class="bhsm-tools-panel admin-setting-panel" aria-labelledby="bhsm-tools-title">
+<div class="bhsm-panel-heading"><div><span class="eyebrow">Website tools</span><h2 id="bhsm-tools-title">Manage other parts of Bubba Hub</h2></div><span class="bhsm-icon" aria-hidden="true">↗</span></div>
+<p class="admin-help">Open the existing editors from here. Site Manager links to these tools rather than creating a second page or menu manager.</p>
+<div class="bhsm-tools-grid">
+<a class="bhsm-tool-link" href="/admin/admin-visual-builder.html"><strong>Visual Builder</strong><span>Build and edit supported page layouts in private structured drafts.</span><span class="bhsm-tool-open">Open Visual Builder →</span></a>
+<a class="bhsm-tool-link" href="/admin/admin-navigation.html"><strong>Navigation &amp; menus</strong><span>Manage the existing header and footer menu groups.</span><span class="bhsm-tool-open">Open Navigation Manager →</span></a>
+</div>
+<p class="bhsm-tools-note"><strong>Staging safety:</strong> Menu saves apply to the database of the deployment you are using, so test this editor on staging only. Visual Builder changes are isolated drafts and are not published by the builder. Images can be selected from the current deployment inside Visual Builder; upload and delete are not enabled.</p>
+</section>
 <div class="bhsm-setup admin-setting-panel" id="setupPanel" hidden><h2>One-time setup</h2><p>Create the small settings table in the existing Bubba Hub database. This does not change existing content or application tables.</p><button class="button button-primary" id="setupButton" type="button">Set up Site Manager</button><p class="admin-status" id="setupMessage" role="status"></p></div>
 <div class="bhsm-layout" id="managerContent" hidden>
 <section class="admin-setting-panel"><div class="bhsm-panel-heading"><div><span class="eyebrow">Brand identity</span><h2>Colours</h2></div><span class="bhsm-icon">◉</span></div>
