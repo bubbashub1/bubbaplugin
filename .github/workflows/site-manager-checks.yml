@@ -12,6 +12,7 @@ on:
       - 'api/menu-validation.php'
       - 'tests/page-document-validator-v1.php'
       - 'tests/menu-validation.php'
+      - 'tests/site-manager-entrypoints.js'
       - 'tests/visual-builder-document-actions.js'
       - 'tests/visual-builder-document-history.js'
       - 'admin/admin-site-manager.html'
@@ -50,6 +51,7 @@ on:
       - 'api/menu-validation.php'
       - 'tests/page-document-validator-v1.php'
       - 'tests/menu-validation.php'
+      - 'tests/site-manager-entrypoints.js'
       - 'tests/visual-builder-document-actions.js'
       - 'tests/visual-builder-document-history.js'
       - 'admin/admin-site-manager.html'
@@ -104,6 +106,8 @@ jobs:
         run: php -l api/menu-validation.php
       - name: Run menu validation tests
         run: php tests/menu-validation.php
+      - name: Test Site Manager entry points and safety copy
+        run: node tests/site-manager-entrypoints.js
       - name: Lint visual document validator
         run: php -l api/page-document-validator-v1.php
       - name: Run visual document validator tests
