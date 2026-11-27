@@ -222,3 +222,8 @@ The `api/admin-visual-media.php` endpoint uses the shared administrator session 
 The existing File Manager at `/library/` remains separate. Its `library/api.php` is GitHub-backed and hard-coded to `main` for listing, upload and delete. The Visual Builder must not call those write actions. No image is uploaded, deleted, published or written to a public page by this change.
 
 Navigation remains deferred: the admin navigation subpages are placeholders, the menu manager script lacks its expected editor DOM, and `api/menu.php` creates its table during GET and has no CSRF validation on writes. Harden and integrate the existing menu system before adding another navigation editor.
+
+
+## Site Manager tool integration — 27 November 2026
+
+The Site Manager landing page provides launch links to the existing Visual Builder and consolidated Navigation & menus editor. It does not create a second page manager, media store or navigation editor. The Navigation Manager continues to use the existing `bh_site_menus` store and saves to the current deployment; use it on staging only during QA. Visual Builder changes remain isolated structured drafts with no publish control. Existing media is selected through the read-only current-deployment inventory endpoint; upload and deletion remain disabled. The Site Manager intentionally does not link to the GitHub-`main`-backed File Manager.
