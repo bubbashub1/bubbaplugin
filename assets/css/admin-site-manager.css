@@ -20,3 +20,14 @@
 .bhsm-order-actions button:disabled{opacity:.35;cursor:not-allowed}
 .bhsm-order-actions button:focus-visible,.bhsm-section-options input:focus-visible{outline:3px solid #3c8e96;outline-offset:2px}
 @media(max-width:480px){.bhsm-order-list li{gap:7px;padding:8px}.bhsm-order-name{font-size:.82rem}.bhsm-order-actions button{width:32px;height:32px}}
+
+.bhsm-tools-panel{margin:0 0 18px}
+.bhsm-tools-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.bhsm-tool-link{display:grid;gap:7px;min-width:0;padding:15px 16px;border:1px solid #d8e5da;border-radius:12px;background:#fbfdfb;color:#31533d;text-decoration:none;transition:border-color .15s,background .15s}
+.bhsm-tool-link:hover{border-color:#3c8e96;background:#f3f8f5}
+.bhsm-tool-link strong{color:#244d37;font-size:1rem}
+.bhsm-tool-link>span{font-size:.84rem;line-height:1.45;color:#65776a}
+.bhsm-tool-link .bhsm-tool-open{color:#315d40;font-weight:800}
+.bhsm-tool-link:focus-visible{outline:3px solid #3c8e96;outline-offset:3px}
+.bhsm-tools-note{margin:13px 0 0;padding:11px 13px;border-left:3px solid #3c8e96;background:#f3f8f5;color:#506458;font-size:.84rem;line-height:1.5}
+@media(max-width:640px){.bhsm-tools-grid{grid-template-columns:1fr}}
