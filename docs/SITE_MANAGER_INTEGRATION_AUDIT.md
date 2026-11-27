@@ -1,4 +1,4 @@
-# Site Manager integration audit — 25 November 2026
+# Site Manager integration audit — 27 November 2026
 
 ## Application and page ownership
 
@@ -31,14 +31,23 @@ Bubba Hub is a standalone PHP/JavaScript application, not a WordPress-rendered s
 - GitHub Actions checks PHP syntax, menu validation tests, and JavaScript syntax for the manager and public auth/menu consumer.
 - Repository tests do not prove browser behaviour or database permissions. Staging QA must verify unauthenticated public menu reads, administrator-only setup/save, CSRF rejection, all four menu groups, header/footer rendering, and regression behaviour before any live deployment.
 
+## Site Manager tool entry points — 27 November 2026
+
+- The Site Manager landing page now links to the existing Visual Builder and consolidated Navigation & menus editor.
+- These are launch links, not new editor implementations: the existing page registry, structured draft store, and `bh_site_menus` store remain authoritative.
+- The page explains that menu saves affect the current deployment, Visual Builder changes remain private drafts, and media upload/delete are not enabled.
+- The Site Manager deliberately does not link to `/library/`: the existing File Manager writes to GitHub `main`, so it is not a safe staging media-upload route.
+- A Node regression test checks both existing editor links and the visible safety wording; the Site Manager workflow runs this test on relevant PR changes.
+
 ## Safe next steps
 
-1. Test the local media inventory on staging; confirm only staging-deployed files are listed.
-2. Decide on a staging-safe upload/approval model before adding upload or delete capabilities. Do not use the existing File Manager write actions from staging.
-3. Harden menu API setup and writes: shared admin guard, explicit setup, CSRF, allow-listed menu keys and destinations, generic errors.
-4. Identify public navigation/footer consumers, then build a working editor in the existing Navigation area rather than creating a duplicate menu store.
-5. Only expose menu editing in the Visual Builder after regression tests confirm login, booking, directory, family and leader navigation remain intact.
+1. Deploy the feature branch to staging only, then browser-test global design settings and homepage visibility/order.
+2. Test the consolidated Navigation Manager against the staging database: explicit setup, authenticated save, CSRF rejection, all four groups, and public header/footer rendering.
+3. Test the read-only media inventory on staging and verify that only images present in the staging deployment are selectable.
+4. Test Visual Builder draft save/reload/restore and confirm that published pages remain unchanged.
+5. Regression-check login, bookings, directory, family/leader dashboards and Page Manager before considering any wider rollout.
+6. Design a staging-safe media upload and approval flow separately; do not reuse the File Manager's GitHub `main` upload/delete API.
 
 ## Verification boundary
 
-Repository code and PR metadata were reviewed. This change has not been deployed to staging and has not been tested in a browser or against a server filesystem. The new inventory endpoint lists only files present on the deployment where it runs.
+Repository code, PR metadata and the current feature-branch files were reviewed. This update has not been deployed to staging and has not been tested in a browser or against a live staging database/server filesystem. The media inventory lists only files present on the deployment where it runs.
