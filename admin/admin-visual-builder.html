@@ -48,6 +48,11 @@
 <div class="bhvb-edit-controls bhvb-image-controls" id="imageControls" hidden>
 <label for="imageAlt">Alternative text</label><textarea id="imageAlt" rows="3" maxlength="300" placeholder="Describe the image for people using screen readers"></textarea>
 <p class="bhvb-edit-help">Describe the useful information in the image. Leave this blank only when the image is purely decorative.</p>
+<label for="imageFit">Image fit</label><select id="imageFit"><option value="contain">Show the whole image</option><option value="cover">Fill the frame and crop</option></select>
+<label for="imageAspectRatio">Image frame shape</label><select id="imageAspectRatio"><option value="auto">Original image shape</option><option value="16:9">Landscape · 16:9</option><option value="4:3">Landscape · 4:3</option><option value="1:1">Square · 1:1</option><option value="3:4">Portrait · 3:4</option></select>
+<label for="imagePositionX">Focal point · left to right <output id="imagePositionXValue">50%</output></label><input id="imagePositionX" type="range" min="0" max="100" step="1" value="50">
+<label for="imagePositionY">Focal point · top to bottom <output id="imagePositionYValue">50%</output></label><input id="imagePositionY" type="range" min="0" max="100" step="1" value="50">
+<p class="bhvb-edit-help" id="imageFocalHelp">Choose “Fill the frame and crop” and a fixed frame shape to enable focal-point positioning.</p>
 </div>
 <div class="bhvb-edit-controls bhvb-section-controls" id="sectionControls" hidden><strong>Container settings</strong>
 <label for="sectionBackground">Section background</label><input id="sectionBackground" type="color" value="#ffffff">

@@ -87,11 +87,16 @@ function bh_validate_page_document_v1(mixed $document): array {
     $href=$p['href']??null;
     if(!is_string($href)||strlen($href)>2048||!bh_page_document_safe_href_v1($href))$errors[]='Button link invalid.';
    }elseif($type==='image'){
-    if(array_diff(array_keys($p),['src','alt']))$errors[]='Unknown image property.';
+    if(array_diff(array_keys($p),['src','alt','fit','aspect_ratio','position_x','position_y']))$errors[]='Unknown image property.';
     if(!array_key_exists('src',$p)||!array_key_exists('alt',$p))$errors[]='Image source and alternative text are required.';
     $src=$p['src']??null;$alt=$p['alt']??null;
     if(!is_string($src)||!bh_page_document_safe_image_src_v1($src))$errors[]='Image source is invalid.';
     if(!is_string($alt)||mb_strlen($alt)>300)$errors[]='Image alternative text is invalid.';
+    if(array_key_exists('fit',$p)&&!in_array($p['fit'],['contain','cover'],true))$errors[]='Image fit is invalid.';
+    if(array_key_exists('aspect_ratio',$p)&&!in_array($p['aspect_ratio'],['auto','16:9','4:3','1:1','3:4'],true))$errors[]='Image aspect ratio is invalid.';
+    foreach(['position_x','position_y'] as $positionKey){
+     if(array_key_exists($positionKey,$p)&&(!is_int($p[$positionKey])||$p[$positionKey]<0||$p[$positionKey]>100))$errors[]='Image focal position is invalid.';
+    }
    }else $errors[]='Unsupported block type.';
    if(isset($p['align'])&&!in_array($p['align'],['left','center','right'],true))$errors[]='Invalid alignment.';
   }

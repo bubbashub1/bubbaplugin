@@ -49,6 +49,23 @@ function createHistory(limit=50){
   canRedo(current){return !!current&&hasDifferent(redoStack,current);}
  });
 }
+function normaliseImagePresentation(props){
+ const source=props&&typeof props==='object'&&!Array.isArray(props)?props:{};
+ const fits=['contain','cover'],ratios=['auto','16:9','4:3','1:1','3:4'];
+ const clamp=value=>Number.isInteger(value)?Math.max(0,Math.min(100,value)):50;
+ return Object.freeze({
+  fit:fits.includes(source.fit)?source.fit:'contain',
+  aspectRatio:ratios.includes(source.aspect_ratio)?source.aspect_ratio:'auto',
+  positionX:clamp(source.position_x),
+  positionY:clamp(source.position_y)
+ });
+}
+function imagePresentationStyle(props){
+ const value=normaliseImagePresentation(props);
+ const ratio=value.aspectRatio==='auto'?'':value.aspectRatio.replace(':',' / ');
+ const frame=ratio?'display:block;width:100%;height:auto;aspect-ratio:'+ratio+';':'';
+ return frame+'object-fit:'+value.fit+';object-position:'+value.positionX+'% '+value.positionY+'%;';
+}
 function canInlineEdit(type){return ['heading','paragraph','button'].includes(type);}
 function normaliseInlineText(value,maxLength){
  const limit=Number.isInteger(maxLength)&&maxLength>=0?maxLength:10000;
@@ -64,7 +81,7 @@ function commitInlineText(block,value){
  block.props.text=text;
  return {ok:true,changed,text};
 }
-const api=Object.freeze({duplicateSection,createHistory,canInlineEdit,normaliseInlineText,commitInlineText});
+const api=Object.freeze({duplicateSection,createHistory,canInlineEdit,normaliseInlineText,commitInlineText,normaliseImagePresentation,imagePresentationStyle});
 if(typeof window!=='undefined')window.BHVisualBuilderDocumentActions=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })();

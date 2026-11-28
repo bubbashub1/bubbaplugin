@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');
-const {duplicateSection,canInlineEdit,normaliseInlineText,commitInlineText}=require('../assets/js/visual-builder-document-actions.js');
+const {duplicateSection,canInlineEdit,normaliseInlineText,commitInlineText,normaliseImagePresentation,imagePresentationStyle}=require('../assets/js/visual-builder-document-actions.js');
 const source={id:'container-1',type:'section',props:{background:'#f4f8f7',padding:24,mobile:{width:90,padding:12,align:'center'}},children:[{id:'heading-1',type:'heading',props:{text:'Hello',level:2}},{id:'button-1',type:'button',props:{text:'Go',href:'/directory.html'}}]};
 const original=JSON.parse(JSON.stringify(source));
 let counter=0;
@@ -32,4 +32,9 @@ assert.equal(button.props.href,'/directory.html','inline button text edits prese
 const heading={id:'h1',type:'heading',props:{text:'Old'}};
 assert.equal(commitInlineText(heading,'x'.repeat(600)).text.length,500,'heading text respects its client-side limit');
 assert.equal(heading.props.level,undefined,'inline editing does not alter other block properties');
-console.log('Visual Builder duplicate-container and inline-edit tests passed.');
+assert.deepEqual(normaliseImagePresentation({}),{fit:'contain',aspectRatio:'auto',positionX:50,positionY:50},'legacy images retain natural-size contained defaults');
+assert.deepEqual(normaliseImagePresentation({fit:'cover',aspect_ratio:'16:9',position_x:25,position_y:70}),{fit:'cover',aspectRatio:'16:9',positionX:25,positionY:70},'valid image crop and focal point are normalised');
+assert.deepEqual(normaliseImagePresentation({fit:'stretch',aspect_ratio:'2:1',position_x:-10,position_y:150}),{fit:'contain',aspectRatio:'auto',positionX:0,positionY:100},'invalid image presentation values fall back to safe defaults and clamp focal points');
+assert.equal(imagePresentationStyle({}),'object-fit:contain;object-position:50% 50%;','legacy image preview keeps its natural shape');
+assert.equal(imagePresentationStyle({fit:'cover',aspect_ratio:'16:9',position_x:25,position_y:70}),'display:block;width:100%;height:auto;aspect-ratio:16 / 9;object-fit:cover;object-position:25% 70%;','cover crop uses the selected frame and focal point');
+console.log('Visual Builder duplicate-container, inline-edit and image-presentation tests passed.');

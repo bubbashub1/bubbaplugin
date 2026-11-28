@@ -52,5 +52,16 @@ assert_test(bh_page_document_safe_image_src_v1('/images/logos/logoheader.png'),'
 assert_test(!bh_page_document_safe_image_src_v1('//evil.test/image.png'),'protocol-relative image URL rejected');
 assert_test(!bh_page_document_safe_image_src_v1('/images/general/../../secret.png'),'traversal image path rejected');
 assert_test(!bh_page_document_safe_image_src_v1('/uploads/outside.png'),'unapproved image directory rejected');
+$croppedImage=$validImage;
+$croppedImage['sections'][0]['children'][3]['props']+=['fit'=>'cover','aspect_ratio'=>'16:9','position_x'=>35,'position_y'=>70];
+assert_test(bh_validate_page_document_v1($croppedImage)['ok'],'valid cover crop and focal point');
+$containedImage=$validImage;
+$containedImage['sections'][0]['children'][3]['props']+=['fit'=>'contain','aspect_ratio'=>'1:1','position_x'=>50,'position_y'=>50];
+assert_test(bh_validate_page_document_v1($containedImage)['ok'],'valid contained square image frame');
+$badImage=$croppedImage;$badImage['sections'][0]['children'][3]['props']['fit']='stretch';assert_test(!bh_validate_page_document_v1($badImage)['ok'],'unsupported image fit rejected');
+$badImage=$croppedImage;$badImage['sections'][0]['children'][3]['props']['aspect_ratio']='2:1';assert_test(!bh_validate_page_document_v1($badImage)['ok'],'unsupported image aspect ratio rejected');
+$badImage=$croppedImage;$badImage['sections'][0]['children'][3]['props']['position_x']=-1;assert_test(!bh_validate_page_document_v1($badImage)['ok'],'negative image focal position rejected');
+$badImage=$croppedImage;$badImage['sections'][0]['children'][3]['props']['position_y']=101;assert_test(!bh_validate_page_document_v1($badImage)['ok'],'image focal position above 100 rejected');
+$badImage=$croppedImage;$badImage['sections'][0]['children'][3]['props']['position_x']=50.5;assert_test(!bh_validate_page_document_v1($badImage)['ok'],'non-integer image focal position rejected');
 echo "All validator tests passed.
 ";

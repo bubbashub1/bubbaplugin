@@ -56,7 +56,7 @@ function updateSelectionDetails(node){
  $('editControls').hidden=!editable;$('imageControls').hidden=!imageEditable;
  const sectionEditable=previewMode==='draft'&&currentSection;
  $('sectionControls').hidden=!sectionEditable;
- if(imageEditable)$('imageAlt').value=String(currentBlock.props?.alt||'');
+ if(imageEditable){$('imageAlt').value=String(currentBlock.props?.alt||'');populateImageControls(currentBlock.props||{});}
  if(sectionEditable){const p=currentSection.props||{};const set=(id,v)=>{if($(id))$(id).value=v;};set('sectionBackground',/^#[0-9a-f]{6}$/i.test(p.background||'')?p.background:'#ffffff');set('sectionPadding',Number.isInteger(p.padding)?p.padding:24);set('sectionGap',Number.isInteger(p.gap)?p.gap:16);set('containerWidth',Number.isInteger(p.width)?p.width:100);set('containerHeight',Number.isInteger(p.min_height)?p.min_height:0);set('containerRadius',Number.isInteger(p.radius)?p.radius:12);set('containerBorderWidth',Number.isInteger(p.border_width)?p.border_width:0);set('containerBorderColor',/^#[0-9a-f]{6}$/i.test(p.border_color||'')?p.border_color:'#dce8df');set('containerAlign',p.align||'center');set('containerSpacing',Number.isInteger(p.margin_bottom)?p.margin_bottom:18);['sectionPadding','sectionGap','containerWidth','containerHeight','containerRadius','containerBorderWidth','containerSpacing'].forEach(id=>{const o=$(id+'Value');if(o)o.textContent=$(id).value+(id==='containerWidth'?'%':'px');});
  const mobile=p.mobile&&typeof p.mobile==='object'?p.mobile:{};
  $('mobileOverrideEnabled').checked=Object.keys(mobile).length>0;
@@ -228,6 +228,14 @@ async function loadMedia(force=false){
   $('mediaStatus').textContent=data.files.length+' image'+(data.files.length===1?'':'s')+' available in this deployment. The picker cannot upload or delete files.';
  }catch(error){mediaFolderLoaded='';$('mediaGrid').replaceChildren();$('mediaStatus').textContent=error.message;}
 }
+function imagePresentationValues(props){
+ const actions=window.BHVisualBuilderDocumentActions;
+ return actions?.normaliseImagePresentation?.(props)||{fit:'contain',aspectRatio:'auto',positionX:50,positionY:50};
+}
+function imagePresentationCss(props){
+ const actions=window.BHVisualBuilderDocumentActions;
+ return actions?.imagePresentationStyle?.(props)||'object-fit:contain;object-position:50% 50%;';
+}
 function safeHref(value){
  const href=String(value||'').trim();
  if(!href||/[\\u0000-\\u0020\\u007f\\\\]/.test(href)||href.startsWith('//'))return false;
@@ -249,7 +257,7 @@ function renderDraft(){
    if(block.type==='heading'){const level=Math.max(1,Math.min(4,Number(p.level)||2));return '<h'+level+' data-bh-block-id="'+id+'"'+sectionAttr+' data-bh-inline-editable="true" title="Double-click to edit" style="text-align:'+esc(p.align||'left')+'">'+esc(p.text)+'</h'+level+'>';}
    if(block.type==='paragraph')return '<p data-bh-block-id="'+id+'"'+sectionAttr+' data-bh-inline-editable="true" title="Double-click to edit" style="text-align:'+esc(p.align||'left')+'">'+esc(p.text)+'</p>';
    if(block.type==='button'&&safeHref(p.href))return '<p><a class="cta" data-bh-block-id="'+id+'"'+sectionAttr+' data-bh-inline-editable="true" title="Double-click to edit" href="'+esc(p.href)+'">'+esc(p.text)+'</a></p>';
-   if(block.type==='image'&&safeMediaPath(p.src)){const mediaName=String(p.src).split('/').pop();return '<img class="bhvb-image-block" src="'+esc(p.src)+'" alt="'+esc(p.alt||'')+'" data-bh-block-id="'+id+'"'+sectionAttr+' data-bh-media-name="'+esc(mediaName)+'" loading="lazy">';}
+   if(block.type==='image'&&safeMediaPath(p.src)){const mediaName=String(p.src).split('/').pop();return '<img class="bhvb-image-block" src="'+esc(p.src)+'" alt="'+esc(p.alt||'')+'" style="'+esc(imagePresentationCss(p))+'" data-bh-block-id="'+id+'"'+sectionAttr+' data-bh-media-name="'+esc(mediaName)+'" loading="lazy">';}
    return '';
   }).join('');
   const p=section.props||{};const w=Math.min(100,Math.max(25,Number(p.width??100))),h=Math.min(800,Math.max(0,Number(p.min_height??0))),rad=Math.min(48,Math.max(0,Number(p.radius??12))),bw=Math.min(8,Math.max(0,Number(p.border_width??0))),al=['left','center','right'].includes(p.align)?p.align:'center',bc=/^#[0-9a-f]{6}$/i.test(p.border_color||'')?p.border_color:'#dce8df';
@@ -379,7 +387,38 @@ function applyImageAlt(){
  draftHasValidationError=false;$('saveDraft').disabled=false;
  draftStatus('Unsaved image alternative text. Save draft when ready.');updateHistoryControls();
 }
-$('imageAlt').addEventListener('focus',checkpointDraft);$('imageAlt').addEventListener('input',applyImageAlt);
+function populateImageControls(props){
+ const value=imagePresentationValues(props);
+ $('imageFit').value=value.fit;$('imageAspectRatio').value=value.aspectRatio;
+ $('imagePositionX').value=value.positionX;$('imagePositionY').value=value.positionY;
+ $('imagePositionXValue').textContent=value.positionX+'%';$('imagePositionYValue').textContent=value.positionY+'%';
+ updateImageControlAvailability();
+}
+function updateImageControlAvailability(){
+ const enabled=$('imageFit').value==='cover'&&$('imageAspectRatio').value!=='auto';
+ $('imagePositionX').disabled=!enabled;$('imagePositionY').disabled=!enabled;
+ $('imageFocalHelp').textContent=enabled?'Move the focal point towards the important subject. The preview crops the opposite edges to fill the selected frame.':'Choose “Fill the frame and crop” and a fixed frame shape to enable focal-point positioning.';
+}
+function applyImagePresentation(){
+ if(!currentBlock||currentBlock.type!=='image'||previewMode!=='draft')return;
+ const props=currentBlock.props||(currentBlock.props={});
+ props.fit=$('imageFit').value;props.aspect_ratio=$('imageAspectRatio').value;
+ props.position_x=Number($('imagePositionX').value);props.position_y=Number($('imagePositionY').value);
+ const value=imagePresentationValues(props),node=frame.contentDocument?.querySelector('[data-bh-block-id="'+CSS.escape(currentBlock.id)+'"]');
+ $('imagePositionXValue').textContent=value.positionX+'%';$('imagePositionYValue').textContent=value.positionY+'%';
+ updateImageControlAvailability();
+ if(node){
+  node.style.objectFit=value.fit;node.style.objectPosition=value.positionX+'% '+value.positionY+'%';
+  if(value.aspectRatio==='auto'){node.style.removeProperty('display');node.style.removeProperty('width');node.style.removeProperty('height');node.style.removeProperty('aspect-ratio');}
+  else{node.style.display='block';node.style.width='100%';node.style.height='auto';node.style.aspectRatio=value.aspectRatio.replace(':',' / ');}
+ }
+ draftHasValidationError=false;$('saveDraft').disabled=false;
+ draftStatus('Unsaved image layout changes. Save draft when ready.');updateHistoryControls();
+}
+$('imageAlt').addEventListener('focus',checkpointDraft);
+$('imageAlt').addEventListener('input',applyImageAlt);
+['imageFit','imageAspectRatio'].forEach(id=>{$(id).addEventListener('focus',checkpointDraft);$(id).addEventListener('change',applyImagePresentation);});
+['imagePositionX','imagePositionY'].forEach(id=>{$(id).addEventListener('focus',checkpointDraft);$(id).addEventListener('input',applyImagePresentation);});
 function applySectionEdit(){if(!currentSection||previewMode!=='draft')return;const p=currentSection.props||(currentSection.props={});p.background=$('sectionBackground').value;p.padding=Number($('sectionPadding').value);p.gap=Number($('sectionGap').value);p.width=Number($('containerWidth').value);p.min_height=Number($('containerHeight').value);p.radius=Number($('containerRadius').value);p.border_width=Number($('containerBorderWidth').value);p.border_color=$('containerBorderColor').value;p.align=$('containerAlign').value;p.margin_bottom=Number($('containerSpacing').value);['sectionPadding','sectionGap','containerWidth','containerHeight','containerRadius','containerBorderWidth','containerSpacing'].forEach(id=>{const o=$(id+'Value');if(o)o.textContent=$(id).value+(id==='containerWidth'?'%':'px');});const node=frame.contentDocument?.querySelector('[data-bh-section-id="'+CSS.escape(currentSection.id)+'"]');if(node){node.style.background=p.background;node.style.padding=p.padding+'px';node.style.gap=p.gap+'px';node.style.width=p.width+'%';node.style.minHeight=p.min_height+'px';node.style.borderRadius=p.radius+'px';node.style.border=p.border_width+'px solid '+p.border_color;node.style.alignSelf=p.align==='left'?'flex-start':p.align==='right'?'flex-end':'center';node.style.marginBottom=p.margin_bottom+'px';}draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Unsaved container changes. Save draft when ready.');updateHistoryControls();}
 function applyMobileEdit(){if(!currentSection||previewMode!=='draft'||!$('mobileOverrideEnabled').checked)return;const p=currentSection.props||(currentSection.props={});p.mobile={width:Number($('mobileContainerWidth').value),padding:Number($('mobileContainerPadding').value),gap:Number($('mobileContainerGap').value),min_height:Number($('mobileContainerHeight').value),radius:Number($('mobileContainerRadius').value),border_width:Number($('mobileContainerBorderWidth').value),margin_bottom:Number($('mobileContainerSpacing').value),align:$('mobileContainerAlign').value};['mobileContainerWidth','mobileContainerPadding','mobileContainerGap','mobileContainerHeight','mobileContainerRadius','mobileContainerBorderWidth','mobileContainerSpacing'].forEach(id=>{const o=$(id+'Value');if(o)o.textContent=$(id).value+(id==='mobileContainerWidth'?'%':'px');});updateMobilePreviewStyle();draftHasValidationError=false;$('saveDraft').disabled=false;draftStatus('Unsaved mobile layout changes. Save draft when ready.');updateHistoryControls();}
 function toggleMobileOverrides(){if(!currentSection||previewMode!=='draft')return;const p=currentSection.props||(currentSection.props={});if($('mobileOverrideEnabled').checked){p.mobile={width:100,padding:16,gap:12,min_height:0,radius:12,border_width:0,margin_bottom:16,align:'center'};populateMobileControls(p.mobile);$('mobileOverrideControls').hidden=false;applyMobileEdit();}else{delete p.mobile;$('mobileOverrideControls').hidden=true;updateMobilePreviewStyle();draftStatus('Mobile overrides removed. The container now inherits its desktop settings.');updateHistoryControls();}}

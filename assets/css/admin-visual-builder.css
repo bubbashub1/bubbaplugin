@@ -35,5 +35,10 @@
 .bhvb-media-card-body small{font-size:.68rem;color:#718075}
 .bhvb-media-add{width:100%;border:1px solid #b7c9bb;border-radius:7px;background:#f5f8f5;color:#315d40;padding:7px 5px;font:inherit;font-size:.7rem;font-weight:750;cursor:pointer}
 .bhvb-media-add:disabled{opacity:.42;cursor:not-allowed}
-.bhvb-image-controls textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #cfd8cf;border-radius:8px;background:#fff;color:#203c2c;font:inherit;font-size:.88rem;resize:vertical}
+.bhvb-image-controls textarea,.bhvb-image-controls select{width:100%;box-sizing:border-box;padding:10px;border:1px solid #cfd8cf;border-radius:8px;background:#fff;color:#203c2c;font:inherit;font-size:.88rem}
+.bhvb-image-controls textarea{resize:vertical}
+.bhvb-image-controls input[type=range]{width:100%;accent-color:#3c8e96}
+.bhvb-image-controls output{float:right;color:#315d40;font-weight:750}
+.bhvb-image-controls select:focus,.bhvb-image-controls input:focus,.bhvb-image-controls textarea:focus{outline:3px solid #b8d8d2;outline-offset:1px}
+.bhvb-image-controls input:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:900px){.bhvb-media-panel{grid-column:1/-1}}

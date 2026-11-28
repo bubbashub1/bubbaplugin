@@ -57,4 +57,6 @@ The v1 document supports a constrained image block with a same-site path under `
 
 The Visual Builder Media tab reads up to 250 validated raster images from the current deployment through `api/admin-visual-media.php`. The endpoint is administrator-session protected and GET-only; it does not upload, overwrite or delete files. Empty folders return an empty list.
 
+Image blocks support constrained presentation settings: `fit` (`contain` or `cover`), `aspect_ratio` (`auto`, `16:9`, `4:3`, `1:1` or `3:4`) and horizontal/vertical focal positions (`position_x` and `position_y`, integer percentages from 0 to 100). Existing documents omit these optional values and retain natural image dimensions with a centred, contained default. Cropping is visible only when a fixed frame shape and Cover are selected; focal-point controls are disabled otherwise. All values are allow-listed in the PHP validator and remain private-draft presentation data.
+
 The separate File Manager at `/library/` remains a distinct tool. Its existing API is GitHub-backed and hard-coded to `main`, so it must not be used for staging Visual Builder writes or staging uploads. Images are added explicitly to private structured drafts; existing page images are not automatically converted.
