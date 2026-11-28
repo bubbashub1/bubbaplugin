@@ -1,1 +1,44 @@
-<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><base href="/"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Navigation & menus · Admin · Bubba Hub</title><link rel="stylesheet" href="/assets/css/styles.css"><link rel="stylesheet" href="/assets/css/admin-settings.css"><link rel="stylesheet" href="/assets/css/admin-support-v2.css"></head><body class="bh-admin-v2"><header class="site-header"><a class="brand" href="/index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a><nav class="main-nav" aria-label="Main navigation"><a href="/directory.html">Find activities</a><a href="/my-hub.html">My Hub</a><a href="/leader.html">Class Leaders</a><a href="/admin/">Admin</a></nav><a class="button button-soft" href="/account.html">My account</a></header><main class="admin-subpage-shell"><div class="admin-back"><a href="/admin/">← Admin dashboard</a></div><div class="admin-subpage-head"><div><span class="eyebrow">Menu manager</span><h1>Navigation & menus</h1><p>Manage the main navigation and footer links from one place.</p></div><div class="admin-setting-actions"><button class="button button-soft" type="button" data-admin-logout>Sign out of admin</button></div></div><div id="settingsContent"></div></main><footer class="site-footer"><div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div></footer><script src="/assets/js/admin-settings.js"></script></body></html>
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<base href="/">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Navigation & menus · Admin · Bubba Hub</title>
+<link rel="stylesheet" href="/assets/css/styles.css">
+<link rel="stylesheet" href="/assets/css/admin-settings.css">
+<link rel="stylesheet" href="/assets/css/admin-support-v2.css">
+<link rel="stylesheet" href="/assets/css/admin-navigation-manager.css">
+</head>
+<body class="bh-admin-v2">
+<header class="site-header">
+  <a class="brand" href="/index.html" aria-label="Bubba Hub home"><img class="brand-logo" src="/images/logos/mainlogo-20260924-221429-7e305d.jpg" alt="Bubba Hub"></a>
+  <nav class="main-nav" aria-label="Main navigation"><a href="/directory.html">Find activities</a><a href="/my-hub.html">My Hub</a><a href="/leader.html">Class Leaders</a><a href="/admin.html">Admin</a></nav>
+  <a class="button button-soft" href="/account.html">My account</a>
+</header>
+<main class="admin-subpage-shell">
+  <div class="admin-back"><a href="/admin.html">← Admin dashboard</a></div>
+  <div class="admin-subpage-head">
+    <div><span class="eyebrow">Website management</span><h1>Navigation & menus</h1><p>Edit the public header and footer links from one place.</p></div>
+    <div class="admin-setting-actions"><button class="button button-soft" type="button" data-admin-logout>Sign out of admin</button></div>
+  </div>
+  <p class="menu-manager-intro">The main menu controls the public header. The three footer groups control the public footer. You can change labels, destinations, visibility and order. Saving updates the menu configuration for this deployment; it does not publish Visual Builder drafts or change page content.</p>
+  <section class="admin-setting-panel" id="menuSetupPanel" hidden>
+    <span class="eyebrow">One-time setup</span><h2>Prepare menu storage</h2>
+    <p>This creates the existing Bubba Hub menu table only when you explicitly choose the setup button. It does not alter existing activity, account, booking or page tables.</p>
+    <button class="button button-primary" type="button" id="setupMenuStorage">Set up menu storage</button>
+  </section>
+  <section id="menuEditorPanel" hidden>
+    <div id="menuManagerLists"></div>
+    <div class="menu-manager-actions">
+      <button class="button button-soft" type="button" id="reloadMenus">Discard unsaved edits</button>
+      <button class="button button-primary" type="button" id="saveMenus">Save menus</button>
+    </div>
+  </section>
+  <p id="menuManagerStatus" role="status" aria-live="polite">Checking administrator access…</p>
+</main>
+<footer class="site-footer"><div class="site-footer-bottom"><span>&copy; 2026 Bubba Hub</span><span>Devon &amp; Cornwall</span></div></footer>
+<script defer src="/assets/js/admin-session-warning.js"></script>
+<script defer src="/assets/js/menu-manager.js"></script>
+</body>
+</html>

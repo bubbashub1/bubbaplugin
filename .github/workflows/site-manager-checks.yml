@@ -1,0 +1,136 @@
+name: Site Manager checks
+
+on:
+  pull_request:
+    paths:
+      - 'api/admin-site-settings.php'
+      - 'api/site-design.php'
+      - 'api/page-document-validator-v1.php'
+      - 'api/admin-visual-page-drafts.php'
+      - 'api/admin-visual-media.php'
+      - 'api/menu.php'
+      - 'api/menu-validation.php'
+      - 'tests/page-document-validator-v1.php'
+      - 'tests/menu-validation.php'
+      - 'tests/site-manager-entrypoints.js'
+      - 'tests/visual-builder-document-actions.js'
+      - 'tests/visual-builder-document-history.js'
+      - 'admin/admin-site-manager.html'
+      - 'admin/admin-visual-builder.html'
+      - 'admin/admin-navigation.html'
+      - 'assets/js/admin-site-manager.js'
+      - 'assets/js/admin-visual-builder.js'
+      - 'assets/js/menu-manager.js'
+      - 'assets/js/site-auth.js'
+      - 'assets/js/visual-builder-document-actions.js'
+      - 'assets/js/header.js'
+      - 'assets/js/explore.js'
+      - 'index.html'
+      - 'docs/SITE_MANAGER_NATIVE_FOUNDATION.md'
+      - 'docs/VISUAL_BUILDER_ARCHITECTURE.md'
+      - 'docs/VISUAL_BUILDER_DOCUMENT_V1.md'
+      - 'docs/SITE_MANAGER_INTEGRATION_AUDIT.md'
+      - 'docs/VISUAL_BUILDER_VALIDATOR.md'
+      - 'schemas/page-document-v1.schema.json'
+      - 'assets/css/admin-site-manager.css'
+      - 'assets/css/admin-visual-builder.css'
+      - 'assets/css/admin-navigation-manager.css'
+      - 'assets/css/site-manager-design.css'
+      - 'assets/css/styles.css'
+      - '.github/workflows/site-manager-checks.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'api/admin-site-settings.php'
+      - 'api/site-design.php'
+      - 'api/page-document-validator-v1.php'
+      - 'api/admin-visual-page-drafts.php'
+      - 'api/admin-visual-media.php'
+      - 'api/menu.php'
+      - 'api/menu-validation.php'
+      - 'tests/page-document-validator-v1.php'
+      - 'tests/menu-validation.php'
+      - 'tests/site-manager-entrypoints.js'
+      - 'tests/visual-builder-document-actions.js'
+      - 'tests/visual-builder-document-history.js'
+      - 'admin/admin-site-manager.html'
+      - 'admin/admin-visual-builder.html'
+      - 'admin/admin-navigation.html'
+      - 'admin.html'
+      - 'assets/js/admin-site-manager.js'
+      - 'assets/js/admin-visual-builder.js'
+      - 'assets/js/menu-manager.js'
+      - 'assets/js/site-auth.js'
+      - 'assets/js/visual-builder-document-actions.js'
+      - 'assets/js/header.js'
+      - 'assets/js/explore.js'
+      - 'index.html'
+      - 'docs/SITE_MANAGER_NATIVE_FOUNDATION.md'
+      - 'docs/VISUAL_BUILDER_ARCHITECTURE.md'
+      - 'docs/VISUAL_BUILDER_DOCUMENT_V1.md'
+      - 'docs/SITE_MANAGER_INTEGRATION_AUDIT.md'
+      - 'docs/VISUAL_BUILDER_VALIDATOR.md'
+      - 'schemas/page-document-v1.schema.json'
+      - 'assets/css/admin-site-manager.css'
+      - 'assets/css/admin-visual-builder.css'
+      - 'assets/css/admin-navigation-manager.css'
+      - 'assets/css/site-manager-design.css'
+      - 'assets/css/styles.css'
+      - '.github/workflows/site-manager-checks.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    name: PHP and JavaScript syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: none
+      - name: Validate visual builder JSON schema syntax
+        run: node -e "JSON.parse(require('fs').readFileSync('schemas/page-document-v1.schema.json', 'utf8'))"
+      - name: Lint visual draft API
+        run: php -l api/admin-visual-page-drafts.php
+      - name: Lint read-only visual media API
+        run: php -l api/admin-visual-media.php
+      - name: Lint menu API
+        run: php -l api/menu.php
+      - name: Lint menu validation helpers
+        run: php -l api/menu-validation.php
+      - name: Run menu validation tests
+        run: php tests/menu-validation.php
+      - name: Test Site Manager entry points and safety copy
+        run: node tests/site-manager-entrypoints.js
+      - name: Lint visual document validator
+        run: php -l api/page-document-validator-v1.php
+      - name: Run visual document validator tests
+        run: php tests/page-document-validator-v1.php
+      - name: Lint admin settings API
+        run: php -l api/admin-site-settings.php
+      - name: Lint public design API
+        run: php -l api/site-design.php
+      - name: Check admin JavaScript syntax
+        run: node --check assets/js/admin-site-manager.js
+      - name: Check visual builder JavaScript syntax
+        run: node --check assets/js/admin-visual-builder.js
+      - name: Check duplicate-container helper syntax
+        run: node --check assets/js/visual-builder-document-actions.js
+      - name: Test duplicate-container document cloning
+        run: node tests/visual-builder-document-actions.js
+      - name: Test draft undo and redo history
+        run: node tests/visual-builder-document-history.js
+      - name: Check shared header JavaScript syntax
+        run: node --check assets/js/header.js
+      - name: Check homepage JavaScript syntax
+        run: node --check assets/js/explore.js
+      - name: Check menu manager JavaScript syntax
+        run: node --check assets/js/menu-manager.js
+      - name: Check public menu consumer JavaScript syntax
+        run: node --check assets/js/site-auth.js

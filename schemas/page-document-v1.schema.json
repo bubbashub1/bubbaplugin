@@ -1,0 +1,372 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bubbahub.co.uk/schemas/page-document-v1.schema.json",
+  "title": "Bubba Hub visual page document",
+  "description": "Strict data-only contract for native visual-builder blocks. Server-side validation remains authoritative.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "page",
+    "settings",
+    "sections"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "slug"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 190
+        },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 190
+        }
+      }
+    },
+    "settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_width": {
+          "enum": [
+            "960px",
+            "1100px",
+            "1200px"
+          ]
+        },
+        "background": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$"
+        }
+      }
+    },
+    "sections": {
+      "type": "array",
+      "maxItems": 40,
+      "items": {
+        "$ref": "#/$defs/section"
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,64}$"
+    },
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "props",
+        "children"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "type": {
+          "const": "section"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "background": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            },
+            "padding": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 96
+            },
+            "gap": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 64
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 25,
+              "maximum": 100
+            },
+            "min_height": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 800
+            },
+            "radius": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 48
+            },
+            "border_width": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 8
+            },
+            "border_color": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            },
+            "align": {
+              "enum": [
+                "left",
+                "center",
+                "right"
+              ]
+            },
+            "margin_bottom": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 96
+            },
+            "mobile": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "width": {
+                  "type": "integer",
+                  "minimum": 25,
+                  "maximum": 100
+                },
+                "padding": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 96
+                },
+                "gap": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 64
+                },
+                "min_height": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 800
+                },
+                "radius": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 48
+                },
+                "border_width": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 8
+                },
+                "margin_bottom": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 96
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "children": {
+          "type": "array",
+          "maxItems": 80,
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/heading"
+              },
+              {
+                "$ref": "#/$defs/paragraph"
+              },
+              {
+                "$ref": "#/$defs/button"
+              },
+              {
+                "$ref": "#/$defs/image"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "heading": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "props"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "type": {
+          "const": "heading"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "text",
+            "level"
+          ],
+          "properties": {
+            "text": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "level": {
+              "enum": [
+                1,
+                2,
+                3,
+                4
+              ]
+            },
+            "align": {
+              "enum": [
+                "left",
+                "center",
+                "right"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "paragraph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "props"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "type": {
+          "const": "paragraph"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "text"
+          ],
+          "properties": {
+            "text": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "align": {
+              "enum": [
+                "left",
+                "center",
+                "right"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "button": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "props"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "type": {
+          "const": "button"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "text",
+            "href"
+          ],
+          "properties": {
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "href": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048,
+              "pattern": "^(https?://|mailto:|tel:|/(?!/)|#|\\\\?).+"
+            }
+          }
+        }
+      }
+    },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "props"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "type": {
+          "const": "image"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "src",
+            "alt"
+          ],
+          "properties": {
+            "src": {
+              "type": "string",
+              "maxLength": 512,
+              "pattern": "^/images/(general|home|listings|logos)/[A-Za-z0-9][A-Za-z0-9._-]{0,180}\\.(jpg|jpeg|png|webp|gif)$"
+            },
+            "alt": {
+              "type": "string",
+              "maxLength": 300
+            },
+            "fit": {"enum": ["contain", "cover"]},
+            "aspect_ratio": {"enum": ["auto", "16:9", "4:3", "1:1", "3:4"]},
+            "position_x": {"type": "integer", "minimum": 0, "maximum": 100},
+            "position_y": {"type": "integer", "minimum": 0, "maximum": 100}
+          }
+        }
+      }
+    }
+  }
+}

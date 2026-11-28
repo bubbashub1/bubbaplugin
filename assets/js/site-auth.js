@@ -28,14 +28,22 @@
       const nav=header.querySelector(".main-nav");
       if(nav){
         nav.innerHTML="";
-        const configured=[
+        const fallback=[
           {label:"Find activities",url:"directory.html"},
           {label:"My Hub",url:"my-hub.html"},
           {label:"Support & Guidance",url:"help-support.html"},
           {label:"Class Leaders",url:"leader.html"},
           {label:"Account",url:"account.html"}
         ];
-        configured.forEach(item=>nav.appendChild(makeLink(item.label,rootUrl(item.url).href)));
+        const configured=Array.isArray(menus?.main)
+          ? menus.main.filter(item=>item&&item.visible!==false&&item.label&&item.url)
+          : [];
+        (configured.length?configured:fallback).forEach(item=>{
+          let destination=String(item.url);
+          const accountPath=(destination.charAt(0)==="/" ? destination.slice(1) : destination).split(/[?#]/)[0];
+          if(auth.authenticated&&auth.user&&auth.user.role==="leader"&&accountPath==="account.html")destination="leader-account.html";
+          nav.appendChild(makeLink(item.label,new URL(destination,document.baseURI).href));
+        });
         if(auth.authenticated)nav.appendChild(makeLink("Log out","#","bh-logout-link"));
       }
 
